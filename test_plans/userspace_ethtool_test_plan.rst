@@ -50,7 +50,7 @@ application in linux app environment with 4 lcores, 2 ports.
 
 	ethtool -c f -n 4
 
-The sample should be validated on Forville, Niantic and i350 Nics.
+The sample should be validated on Fortville, Niantic and i350 Nics.
 
 other requirements:
 *. igxbe driver (version >= 4.3.13).
@@ -161,7 +161,7 @@ re-compile examples/ethtool
 	make -C examples/ethtool
 
 Add vlan 0 to port 0 and vlan 1 to port1, send packet without vlan to port0,1
-Verify port0 and port1 recevied vlan packets
+Verify port0 and port1 received vlan packets
 
 	EthApp> vlan 0 add 0
 	VLAN vid 0 added
