@@ -142,7 +142,7 @@ check the port info::
 
 the info status is consistent to the status before reset.
 
-Test Case 2: vf reset -- create two vfs on one pf, run testpmd seperatly
+Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
 ========================================================================
 
 1. excute step1-step3 of test case 1
