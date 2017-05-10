@@ -607,17 +607,21 @@ class Tester(Crb):
             recv_pkts = load_f(rx_inst[rxport])
 
             # only report when recevied number not matched
-            if len(tx_pkts[txport]) != len(recv_pkts):
-                print "Pkt number not matched,%d sent and %d received\n" \
-                       % (len(tx_pkts[txport]), len(recv_pkts))
+            if len(tx_pkts[txport]) > len(recv_pkts):
+                print ("Pkt number not matched,%d sent and %d received\n" \
+                       % (len(tx_pkts[txport]), len(recv_pkts)))
+
                 if allow_miss is False:
                     return False
 
             # check each received packet content
             print GREEN("Comparing sniffed packets, please wait few minutes...")
             for idx in range(len(recv_pkts)):
-                l3_type = recv_pkts[idx].strip_element_layer2('type')
-                sip = recv_pkts[idx].strip_element_layer3('src')
+                try:
+                    l3_type = recv_pkts[idx].strip_element_layer2('type')
+                    sip = recv_pkts[idx].strip_element_layer3('src')
+                except:
+                    continue
                 # ipv4 packet
                 if l3_type == 2048:
                     t_idx = convert_ip2int(sip, 4)
