@@ -153,10 +153,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('start')
 
@@ -201,10 +198,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
@@ -228,8 +222,11 @@ class TestVfVlan(TestCase):
 
         # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        self.verify(
-            "received" not in out, "Received vlan packet without pvid!!!")
+        if self.kdriver == "i40e":
+            self.verify("received" in out, "Failed to received vlan packet!!!")
+        else:
+            self.verify(
+                "received" not in out, "Received vlan packet without pvid!!!")
 
         # send packe with vlan 0
         out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
@@ -263,16 +260,14 @@ class TestVfVlan(TestCase):
             tx_vlan in vlans, "Tx packet with vlan not received!!!")
 
     def test_vf_vlan_tx(self):
+        self.verify(self.kdriver not in ["ixgbe"], "NIC Unsupported: " + str(self.nic))
         random_vlan = random.randint(1, MAX_VLAN)
         tx_vlans = [1, random_vlan, MAX_VLAN]
         # start testpmd in VM
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set verbose 1')
 
         for tx_vlan in tx_vlans:
@@ -293,10 +288,7 @@ class TestVfVlan(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('vlan set strip on 0')
@@ -348,8 +340,12 @@ class TestVfVlan(TestCase):
 
         # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        self.verify(
-            "received 1 packets" not in out, "Received mismatched vlan packet while vlan filter on")
+        if self.kdriver == "i40e":
+            self.verify(
+                "received 1 packets" in out, "Received mismatched vlan packet while vlan filter on")
+        else:
+            self.verify(
+                "received 1 packets" not in out, "Received mismatched vlan packet while vlan filter on")
 
         self.vm0_testpmd.quit()
 
@@ -361,7 +357,7 @@ class TestVfVlan(TestCase):
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
+            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '')
         else:
             self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
