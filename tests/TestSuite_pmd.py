@@ -37,11 +37,19 @@ Test userland 10Gb PMD
 import utils
 import re
 import time
+import os
+
 from test_case import TestCase
 from time import sleep
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput
 from etgen import IxiaPacketGenerator
+
+from settings import FOLDERS
+from system_info import SystemInfo
+import perf_report
+from datetime import datetime
+
 
 class TestPmd(TestCase,IxiaPacketGenerator):
 
@@ -53,7 +61,7 @@ class TestPmd(TestCase,IxiaPacketGenerator):
         """
         self.tester.extend_external_packet_generator(TestPmd, self)
 
-        self.frame_sizes = [64, 65, 128, 256, 512, 1024, 1280, 1518]
+        self.frame_sizes = [64, 72, 128, 256, 512, 1024, 1280, 1518]
 
         self.rxfreet_values = [0, 8, 16, 32, 64, 128]
 
@@ -62,9 +70,10 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         self.table_header = ['Frame Size']
         for test_cycle in self.test_cycles:
-            self.table_header.append("app")
             self.table_header.append("%s Mpps" % test_cycle['cores'])
             self.table_header.append("% linerate")
+
+        self.perf_results = {'header': [], 'data': []}
 
         self.blacklist = ""
 
@@ -74,6 +83,19 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
+
+        # Get dut system information
+        port_num = self.dut_ports[0]
+        pci_device_id = self.dut.ports_info[port_num]['pci']
+        ori_driver = self.dut.ports_info[port_num]['port'].get_nic_driver()
+        self.dut.ports_info[port_num]['port'].bind_driver()
+
+        sut = SystemInfo(self.dut, pci_device_id)
+        self.system_info = sut.get_system_info()
+        self.nic_info = sut.get_nic_info()
+
+        self.dut.ports_info[port_num]['port'].bind_driver(ori_driver)
+        ######
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['tcp']
@@ -92,12 +114,38 @@ class TestPmd(TestCase,IxiaPacketGenerator):
         """
         Run single core performance
         """
+        self.perf_results['header'] = []
+        self.perf_results['data'] = []
+
         if len(self.dut_ports) >= 4:
             self.pmd_performance_4ports()
         else:
             self.verify(len(self.dut_ports) >= 2, "Insufficient ports for 2 ports performance test")
             self.pmd_performance_2ports()
         
+        #To replace False to True for if condition to send the result by email.
+        if False:
+            #it need place dpdk source git repo under dep directory.
+            repo_dir = FOLDERS["Depends"] + r'/dpdk'
+            git_info = perf_report.get_dpdk_git_info(repo_dir)
+            self.verify(git_info is not None, "get dpdk git repo error")
+
+            tpl_path = FOLDERS["NicDriver"] + r'/perf_report.jinja'
+            file_tpl = os.path.abspath(tpl_path)
+            html_msg = perf_report.generate_html_report(file_tpl, \
+                                                        perf_data = self.perf_results['data'], \
+                                                        git_info = git_info, \
+                                                        nic_info = self.nic_info, \
+                                                        system_info = self.system_info)
+            self.verify(html_msg is not None, "generate html report error")
+
+            subject = "Single core performance test with %d ports %s -- %s" % \
+                      (len(self.dut_ports), self.nic, datetime.now().strftime('%Y-%m-%d %H:%M'))
+            sender = 'xxxxxx@intel.com'
+            mailto = ['xxxxxx@intel.com']
+            smtp_server = 'smtp.intel.com'
+            perf_report.send_html_report(sender, mailto, subject, html_msg, smtp_server)
+
     def pmd_performance_4ports(self):
         """
         PMD Performance Benchmarking with 4 ports.
@@ -159,8 +207,9 @@ class TestPmd(TestCase,IxiaPacketGenerator):
                 _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
 
                 pps /= 1000000.0
-                test_cycle['Mpps'][frame_size] = pps
-                test_cycle['pct'][frame_size] = pps * 100 / wirespeed
+                pct = pps * 100 / wirespeed
+                test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
+                test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("quit", "# ", 30)
@@ -173,16 +222,16 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         # Print results
         self.result_table_create(self.table_header)
+        self.perf_results['header'] = self.table_header
 
         for frame_size in self.frame_sizes:
             table_row = [frame_size]
-
             for test_cycle in self.test_cycles:
-                table_row.append("testpmd")
                 table_row.append(test_cycle['Mpps'][frame_size])
                 table_row.append(test_cycle['pct'][frame_size])
 
             self.result_table_add(table_row)
+            self.perf_results['data'].append(table_row)
 
         self.result_table_print()
 
@@ -241,10 +290,10 @@ class TestPmd(TestCase,IxiaPacketGenerator):
                 # run traffic generator
                 _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
 
-
                 pps /= 1000000.0
-                test_cycle['Mpps'][frame_size] = pps
-                test_cycle['pct'][frame_size] = pps * 100 / wirespeed
+                pct = pps * 100 / wirespeed
+                test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
+                test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("quit", "# ", 30)
@@ -257,14 +306,15 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         # Print results
         self.result_table_create(self.table_header)
+        self.perf_results['header'] = self.table_header
         for frame_size in self.frame_sizes:
             table_row = [frame_size]
             for test_cycle in self.test_cycles:
-                table_row.append("testpmd")
                 table_row.append(test_cycle['Mpps'][frame_size])
                 table_row.append(test_cycle['pct'][frame_size])
 
             self.result_table_add(table_row)
+            self.perf_results['data'].append(table_row)
 
         self.result_table_print()
 
