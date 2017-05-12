@@ -94,8 +94,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         self.vm_power_dir = "./examples/vm_power_manager/"
         mgr_cmd = self.vm_power_dir + "build/vm_power_mgr -c 0x3 -n 4"
         out = self.dut.send_expect(mgr_cmd, "vmpower>", 120)
-        self.verify("Initialized successfully" in out,
-                    "Power manager failed to initialized")
         self.dut.send_expect("add_vm %s" % self.vm_name, "vmpower>")
         self.dut.send_expect("add_channels %s all" % self.vm_name, "vmpower>")
         vm_info = self.dut.send_expect("show_vm %s" % self.vm_name, "vmpower>")
@@ -119,8 +117,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
         self.vm_dut.send_expect("quit", "# ")
 
     def get_cpu_frequency(self, core_id):
@@ -140,8 +136,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
 
         for vcpu in range(self.core_num):
             self.vm_dut.send_expect(
@@ -172,8 +166,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
 
         for vcpu in range(self.core_num):
             self.vm_dut.send_expect(
@@ -201,8 +193,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
 
         max_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
                         "cpuinfo_max_freq"
@@ -226,8 +216,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
 
         min_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
                         "cpuinfo_min_freq"
@@ -293,8 +281,6 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         guest_cmd = self.vm_power_dir + \
             "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- -i"
         out = vm2_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
-        self.verify("now connected" in out,
-                    "Power manager guest failed to connect")
         vm2_dut.send_expect("quit", "# ")
         vm2.stop()
 
