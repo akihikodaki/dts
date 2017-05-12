@@ -67,7 +67,7 @@ class TestChecksumOffload(TestCase):
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s " %
                                   (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " +
-                                  "--crc-strip --port-topology=loop", socket=self.ports_socket)
+                                  "--port-topology=loop", socket=self.ports_socket)
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
 
