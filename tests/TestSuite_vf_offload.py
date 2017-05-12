@@ -2,6 +2,7 @@
 
 import re
 import time
+import string
 
 import utils
 from qemu_kvm import QEMUKvm
@@ -10,7 +11,6 @@ from pmd_output import PmdOutput
 from utils import RED, GREEN
 from net_device import NetDevice
 from crb import Crb
-from scapy.all import *
 from settings import HEADER_SIZE
 VM_CORES_MASK = 'all'
 
@@ -77,19 +77,20 @@ class TestVfOffload(TestCase):
             self.vm0_dut_ports = None
             #destroy vm0
             self.vm0.stop()
+            self.dut.virt_exit()
             self.vm0 = None
 
         if getattr(self, 'host_testpmd', None):
             self.host_testpmd.execute_cmd('quit', '# ')
             self.host_testpmd = None
 
-        if getattr(self, 'used_dut_port_0', None):
+        if getattr(self, 'used_dut_port_0', None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_0)
             port = self.dut.ports_info[self.used_dut_port_0]['port']
             port.bind_driver()
             self.used_dut_port_0 = None
 
-        if getattr(self, 'used_dut_port_1', None):
+        if getattr(self, 'used_dut_port_1', None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_1)
             port = self.dut.ports_info[self.used_dut_port_1]['port']
             port.bind_driver()
@@ -191,7 +192,7 @@ class TestVfOffload(TestCase):
         """
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
                                       (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " + "--txqflags=0 " +
-                                      "--crc-strip --port-topology=loop")
+                                      "--port-topology=loop")
         self.vm0_testpmd.execute_cmd('set fwd csum')
 
         time.sleep(2)
@@ -206,8 +207,8 @@ class TestVfOffload(TestCase):
                 'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(chksum=0xf)/("X"*46)' % (mac, sndIPv6),
                 'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/TCP(chksum=0xf)/("X"*46)' % (mac, sndIPv6)}
 
-        expIP = "10.0.0.2"
-        expIPv6 = '::2'
+        expIP = sndIP
+        expIPv6 = sndIPv6
         pkts_ref = {'IP/UDP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/UDP()/("X"*46)' % (mac, expIP),
                     'IP/TCP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/TCP()/("X"*46)' % (mac, expIP),
                     'IP/SCTP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/SCTP()/("X"*48)' % (mac, expIP),
@@ -241,7 +242,7 @@ class TestVfOffload(TestCase):
 
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
                                       (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " +
-                                      "--crc-strip --port-topology=loop")
+                                      "--port-topology=loop")
         self.vm0_testpmd.execute_cmd('set fwd csum')
 
         time.sleep(2)
@@ -254,8 +255,8 @@ class TestVfOffload(TestCase):
                    'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(chksum=0xf)/("X"*46)' % (mac, sndIPv6),
                    'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/TCP(chksum=0xf)/("X"*46)' % (mac, sndIPv6)}
 
-        expIP = "10.0.0.2"
-        expIPv6 = '::2'
+        expIP = sndIP
+        expIPv6 = sndIPv6
         expPkts = {'IP/UDP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/UDP()/("X"*46)' % (mac, expIP),
                    'IP/TCP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IP(src="%s")/TCP()/("X"*46)' % (mac, expIP),
                    'IPv6/UDP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IPv6(src="%s")/UDP()/("X"*46)' % (mac, expIPv6),
@@ -333,7 +334,7 @@ class TestVfOffload(TestCase):
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
                                       (self.portMask) + "--enable-rx-cksum " +
                                       "--txqflags=0 " + 
-                                      "--crc-strip --port-topology=loop")
+                                      "--port-topology=loop")
 
         mac = self.vm0_testpmd.get_port_mac(0)
 
