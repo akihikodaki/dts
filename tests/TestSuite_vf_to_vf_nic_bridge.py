@@ -100,6 +100,7 @@ class TestVF2VFBridge(TestCase):
         if self.vm1 is not None:
             self.vm1.stop()
             self.vm1 = None
+        self.dut.virt_exit()
         if self.pf_port_for_vfs is not None:
             self.dut.destroy_sriov_vfs_by_port(self.pf_port_for_vfs)
             port = self.dut.ports_info[self.pf_port_for_vfs]['port']
@@ -155,10 +156,7 @@ class TestVF2VFBridge(TestCase):
     def test_2vf_d2d_pktgen_stream(self):
         self.vm0_ports = self.vm0_dut.get_ports('any')
         self.vm0_pmd = PmdOutput(self.vm0_dut)
-        if self.kdriver == "i40e":
-            self.vm0_pmd.start_testpmd('all', '--crc-strip')
-        else:
-            self.vm0_pmd.start_testpmd('all')
+        self.vm0_pmd.start_testpmd('all')
         self.vm0_pmd.execute_cmd('set fwd rxonly')
         self.vm0_pmd.execute_cmd('start')
 
@@ -187,7 +185,6 @@ class TestVF2VFBridge(TestCase):
         self.vm0_dut.restore_interfaces()
         self.vm0_ports = self.vm0_dut.get_ports('any')
         vf0_intf = self.vm0_dut.ports_info[self.vm0_ports[0]]['intf']
-        self.vm0_dut.send_expect('tcpdump -i %s -s 1000 ' % vf0_intf, 'tcpdump', 30)
 
         self.vm1_ports = self.vm1_dut.get_ports('any')
         self.prepare_pktgen(self.vm1_dut)
@@ -201,6 +198,7 @@ class TestVF2VFBridge(TestCase):
         load = {}
         load['content'] = "'X'*46"
         self.generate_pcap_pkt(dst, src, load)
+        self.vm0_dut.send_expect('tcpdump -i %s -s 1000 "ether src %s and ether dst %s"' % (vf0_intf, src['ether'], dst['ether']), 'tcpdump', 30)
         self.send_stream_pktgen(self.vm1_dut)
         self.stop_stream_pktgen(self.vm1_dut)
 
@@ -217,12 +215,11 @@ class TestVF2VFBridge(TestCase):
     def test_2vf_k2d_scapy_stream(self):
         self.vm0_ports = self.vm0_dut.get_ports('any')
         self.vm0_pmd = PmdOutput(self.vm0_dut)
-        if self.kdriver == "i40e":
-            self.vm0_pmd.start_testpmd('all', '--crc-strip')
-        else:
-            self.vm0_pmd.start_testpmd('all')
+        self.vm0_pmd.start_testpmd('all')
         self.vm0_pmd.execute_cmd('set fwd rxonly')
         self.vm0_pmd.execute_cmd('start')
+        # disable promisc to filter misc packets from tester.
+        self.vm0_pmd.execute_cmd('set promisc all off')
         self.vm0_pmd.execute_cmd('clear port stats all')
 
         self.vm1_ports = self.vm1_dut.get_ports('any')
