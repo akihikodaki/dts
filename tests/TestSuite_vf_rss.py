@@ -305,10 +305,7 @@ class TestVfRss(TestCase):
         self.vm_dut_0.kill_all()
 
         # test with different rss queues
-        if self.kdriver == "i40e":
-            eal_param = '--crc-strip'
-        else:
-            eal_param = ''
+        eal_param = ''
         for queue in testQueues:
 
             self.vm0_testpmd.start_testpmd(
@@ -354,10 +351,7 @@ class TestVfRss(TestCase):
 
         self.vm_dut_0.kill_all()
 
-        if self.kdriver == "i40e":
-            eal_param = '--crc-strip'
-        else:
-            eal_param = ''
+        eal_param = ''
         # test with different rss queues
         for queue in testQueues:
 
@@ -367,7 +361,8 @@ class TestVfRss(TestCase):
             for iptype,rsstype in iptypes.items():
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
-                self.vm_dut_0.send_expect("port config all rss %s" % rsstype, "testpmd> ")
+                out = self.vm_dut_0.send_expect("port config all rss %s" % rsstype, "testpmd> ")
+                self.verify("Operation not supported" not in out, "Operation not supported")
                 self.vm_dut_0.send_expect(
                     "set nbcore %d" % (queue + 1), "testpmd> ")
 
