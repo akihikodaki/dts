@@ -307,7 +307,7 @@ class TestKni(TestCase):
         out_kni = self.dut.send_expect(
             './examples/kni/build/app/kni -c %s -n %d -- -P -p %s %s &' %
             (core_mask, self.dut.get_memory_channels(), port_mask, config_param),
-            "APP: Lcore [0-9]+ is reading from port [0-9]+", 20)
+            "Link Up", 20)
 
         time.sleep(5)
         if kthread_mode == 'single':

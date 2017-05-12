@@ -146,7 +146,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
         # file
         time.sleep(15)
         result = self.dut.send_expect('cat output.log', '# ')
-        self.verify('USER1: receive_stage() started' in result,
+        self.verify('probe driver:' in result,
                     'qw app failed to execute')
         self.execute_qwctl_app(memory_channels)
 

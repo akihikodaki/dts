@@ -133,7 +133,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
         # run ipv4_frag
         self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d -- -p %s -q %s" % (
-            coremask, self.dut.get_memory_channels(), portmask, numPortThread), "IP_FRAG:", 120)
+            coremask, self.dut.get_memory_channels(), portmask, numPortThread), "Link Up", 120)
 
         time.sleep(2)
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))

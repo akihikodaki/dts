@@ -128,7 +128,7 @@ class TestIpReassembly(TestCase):
         command = ('./examples/ip_reassembly/build/ip_reassembly -c {core_mask} ' +
                    '-n {memory_channels} --  -p {dut_port_mask} ' +
                    '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
-        self.dut.send_expect(command.format(**self.test_config.__dict__), 'IP_RSMBL: ')
+        self.dut.send_expect(command.format(**self.test_config.__dict__), 'Link Up')
 
     def tcp_ipv4_fragments(self, src_ip, identifier):
         """
