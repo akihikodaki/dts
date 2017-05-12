@@ -52,7 +52,10 @@ class TestVfPacketRxtx(TestCase):
                 self.host_testpmd = PmdOutput(self.dut)
                 eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
                                                        'vf1': self.sriov_vfs_port_1[0].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", "--crc-strip", eal_param=eal_param)
+                if (self.nic in ["niantic", "sageville", "sagepond"]):
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                else:
+                    self.host_testpmd.start_testpmd("1S/5C/1T", "", eal_param=eal_param)
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_packet_rxtx')
@@ -114,7 +117,7 @@ class TestVfPacketRxtx(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         port_id_0 = 0
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
+        out = self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(port_id_0)
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('start')
@@ -132,6 +135,7 @@ class TestVfPacketRxtx(TestCase):
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
 
         result = self.tester.check_random_pkts(tgen_ports, allow_miss=False, params=pkt_param)
+        print self.vm0_testpmd.execute_cmd('show port stats all')
         self.verify(result != False, "VF0 failed to forward packets to VF1")
 
 
@@ -244,7 +248,7 @@ class TestVfPacketRxtx(TestCase):
         port_id_1 = 1
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('show port info all')
         pmd0_vf0_mac = self.vm0_testpmd.get_port_mac(port_id_0)
         self.vm0_testpmd.execute_cmd('set fwd mac')
@@ -253,7 +257,7 @@ class TestVfPacketRxtx(TestCase):
         time.sleep(2)
 
         self.vm1_testpmd = PmdOutput(self.vm_dut_1)
-        self.vm1_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
+        self.vm1_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm1_testpmd.execute_cmd('show port info all')
 
         tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -305,6 +309,9 @@ class TestVfPacketRxtx(TestCase):
 
         for port_id in self.dut_ports:
             self.dut.destroy_sriov_vfs_by_port(port_id)
+            # DPDK-1754
+            intf = self.dut.ports_info[port_id]['intf']
+            self.dut.send_expect("ethtool -s %s autoneg on" % intf, "# ")
 
     def tear_down_all(self):
         pass
