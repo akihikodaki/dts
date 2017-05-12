@@ -446,7 +446,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # save the capture packet into pcap format
         self.tester.scapy_background()
         self.tester.scapy_append(
-            'p=sniff(iface="%s",count=1,timeout=5)' % self.recv_iface)
+            'p=sniff(iface="%s",filter="ether[12:2]!=0x88cc",count=1,timeout=5)' % self.recv_iface)
         self.tester.scapy_append(
             'wrpcap(\"%s\", p)' % config.capture_file)
         self.tester.scapy_foreground()
