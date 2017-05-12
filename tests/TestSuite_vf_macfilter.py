@@ -116,10 +116,7 @@ class TestVfMacFilter(TestCase):
 
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         # Get VF's MAC
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)
         vf0_wrongmac = "00:11:22:33:48:55"
@@ -163,10 +160,7 @@ class TestVfMacFilter(TestCase):
 
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        if self.kdriver == "i40e":
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--crc-strip')
-        else:
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         
         # Get VF0 port MAC address
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)
