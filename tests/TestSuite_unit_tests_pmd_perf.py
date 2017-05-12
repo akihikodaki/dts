@@ -71,12 +71,12 @@ class TestUnitTestsPmdPerf(TestCase):
         [arch, machine, env, toolchain] = self.target.split('-')
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=y/CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_%s" % env, "# ", 30)
         self.dut.build_install_dpdk(self.target)
-        out = self.dut.build_dpdk_apps('./app/test/')
+        out = self.dut.build_dpdk_apps('./test/test/')
         self.verify('make: Leaving directory' in out, "Compilation failed")
-        self.dut.send_expect("mv -f ./app/test/test ./app/test/test_scalar", "# ")
+        self.dut.send_expect("mv -f ./test/test/test ./test/test/test_scalar", "# ")
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=n/CONFIG_RTE_IXGBE_INC_VECTOR=y/' config/common_%s" % env, "# ", 30)
         self.dut.build_install_dpdk(self.target)
-        out = self.dut.build_dpdk_apps('./app/test/')
+        out = self.dut.build_dpdk_apps('./test/test/')
         self.verify('make: Leaving directory' in out, "Compilation failed")
 
     def set_up(self):
@@ -90,7 +90,7 @@ class TestUnitTestsPmdPerf(TestCase):
         Run pmd stream control mode burst test case.
         """
 
-        self.dut.send_expect("./app/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -113,9 +113,9 @@ class TestUnitTestsPmdPerf(TestCase):
 
         for mode in self.rxtx_modes:
             if mode is "scalar":
-                self.dut.send_expect("./app/test/test_scalar -n 1 -c f", "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./test/test/test_scalar -n 1 -c f", "R.*T.*E.*>.*>", 60)
             else:
-                self.dut.send_expect("./app/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
 
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
