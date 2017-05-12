@@ -77,7 +77,7 @@ be given but other fields must be as shown::
     IP(src="192.168.0.1", dst="192.168.0.2")/GRE(proto=0xff)/IP()/UDP()
 
 The test commands below assume that port 0 on the DUT is the port that is
-connected to the traffic generator. If this is not the case, the following
+connected to the traffic generator. All fdir cmdline please see doc on http://www.dpdk.org/doc/guides/testpmd_app_ug/testpmd_funcs.html#filter-functions.  If this is not the case, the following
 ``testpmd`` commands must be changed, and also the ``--portmask`` parameter.
 
   * ``show port fdir <port>``
@@ -684,3 +684,367 @@ and then to 0x0017. The packets should still match the filter:::
   PKT_RX_PKT_RX_FDIR
   PKT_RX_IP_CKSUM
   PKT_RX_IPV4_HDR
+
+ 
+Test Case : test with ipv4 TOS, PROTO, TTL
+===========================================
+
+1) start testpmd and initialize flow director flex payload configuration::
+
+  ./testpmd -c fffff -n 4 -- -i --disable-rss --pkt-filter-mode=perfect --rxq=8 --txq=8 --nb-cores=8
+  testpmd> port stop 0
+  testpmd> flow_director_flex_payload 0 l2 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l3 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l4 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_mask 0 flow all (0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff)
+  testpmd> port start 0
+  testpmd> set verbose 1
+  testpmd> set fwd rxonly
+  testpmd> start
+
+Note::
+  assume FLEXBYTES = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88"
+  assume payload = "\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88"
+
+2) setup the fdir input set of IPv4::
+
+  testpmd> set_fdir_input_set 0 ipv4-other none select
+  testpmd> set_fdir_input_set 0 ipv4-other src-ipv4 add
+  testpmd> set_fdir_input_set 0 ipv4-other dst-ipv4 add
+
+3) add ipv4-tos to fdir input set, set tos to 16 and 8::
+
+  testpmd> set_fdir_input_set 0 ipv4-other ipv4-tos add
+  setup flow director filter rules,
+
+rule_1::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 16 proto 255 ttl 255 vlan 0 \
+  flexbytes (FLEXBYTES) fwd pf queue 1 fd_id 1
+
+rule_2::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 8 proto 255 ttl 255 vlan 0 \
+  flexbytes (FLEXBYTES) fwd pf queue 2 fd_id 2
+
+send packet to DUT, 
+
+packet_1::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=16, proto=255, ttl=255)/Raw(%s)], iface="%s")'\
+   %(dst_mac, payload, itf) 
+
+packet_1 should be received by queue 1.
+
+packet_2::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=8, proto=255, ttl=255)/Raw(%s)], iface="%s")'\
+   %(dst_mac, payload, itf) 
+
+packet_2 should be received by queue 2.
+
+delete rule_1, send packet_1 again, packet_1 should be received by queue 0.
+delete rule_2, send packet_2 again, packet_2 should be received by queue 0.
+
+4) add ipv4-proto to fdir input set, set proto to 253 and 254::
+
+  testpmd> set_fdir_input_set 0 ipv4-other ipv4-proto add
+
+setup flow director filter rules  
+rule_3::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 16 proto 253 ttl 255 vlan 0 \
+  flexbytes (FLEXBYTES) fwd pf queue 3 fd_id 3
+
+rule_4::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 8 proto 254 ttl 255 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 4 fd_id 4
+
+send packet to DUT, 
+
+packet_3::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=16, proto=253, ttl=255)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_3 should be received by queue 3.
+
+packet_4::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=8, proto=254, ttl=255)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_4 should be received by queue 4.
+
+delete rule_3, send packet_3 again, packet_3 should be received by queue 0.
+delete rule_4, send packet_4 again, packet_4 should be received by queue 0.
+
+5) test ipv4-ttl, set ttl to 32 and 64::
+ 
+ testpmd> set_fdir_input_set 0 ipv4-other ipv4-ttl add
+
+setup flow director filter rules,  
+rule_5::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 16 proto 253 ttl 32 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 5 fd_id 5
+
+rule_6::
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 8 proto 254 ttl 64 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 6 fd_id 6
+
+send packet to DUT, 
+
+packet_5::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=16, proto=253, ttl=32)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_5 should be received by queue 5.
+
+packet_6::
+  'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=8, proto=254, ttl=64)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_6 should be received by queue 6.
+
+delete rule_5, send packet_5 again, packet_5 should be received by queue 0.
+delete rule_6, send packet_6 again, packet_6 should be received by queue 0.
+
+6) removed all entry of fdir::
+
+  testpmd>flush_flow_director 0
+  testpmd>show port fdir 0
+
+example::
+
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 16 proto 255 ttl 255 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 1 fd_id 1
+
+  flow_director_filter 0 mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 tos 8 proto 255 ttl 255 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 2 fd_id 2
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=255)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IP(src="192.168.1.1", dst="192.168.1.2", tos=8, proto=255, ttl=255)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+Test Case 2: test with ipv6 tc, next-header, hop-limits
+=======================================================
+1) start testpmd and initialize flow director flex payload configuration::
+
+  ./testpmd -c fffff -n 4 -- -i --disable-rss --pkt-filter-mode=perfect --rxq=8 --txq=8 --nb-cores=8
+  testpmd> port stop 0
+  testpmd> flow_director_flex_payload 0 l2 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l3 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l4 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_mask 0 flow all (0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff)
+  testpmd> port start 0
+  testpmd> set verbose 1
+  testpmd> set fwd rxonly
+  testpmd> start
+
+Note::
+  assume FLEXBYTES = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88"
+  assume payload = "\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88"
+
+2) setup the fdir input set of IPv6::
+
+  testpmd> set_fdir_input_set 0 ipv6-other none select
+  testpmd> set_fdir_input_set 0 ipv6-other src-ipv6 add
+  testpmd> set_fdir_input_set 0 ipv6-other dst-ipv6 add
+
+3) add ipv6-tc to fdir input set, set tc to 16 and 8:: 
+
+  testpmd> set_fdir_input_set 0 ipv6-other ipv6-tc add
+ 
+setup flow director filter rules,
+
+rule_1::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 255 ttl 64 vlan 0 \
+  flexbytes (FLEXBYTES) fwd pf queue 1 fd_id 1
+
+rule_2::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 255 ttl 64 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 2 fd_id 2
+
+send packet to DUT, 
+
+packet_1::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64)/Raw(%s)], iface="%s")' \
+  %(dst_mac, payload, itf) 
+
+packet_1 should be received by queue 1.
+
+packet_2::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=255, hlim=64)/Raw(%s)], iface="%s")' \
+  %(dst_mac, payload, itf)
+
+packet_2 should be received by queue 2.
+
+delete rule_1, send packet_1 again, packet_1 should be received by queue 0.
+delete rule_2, send packet_2 again, packet_2 should be received by queue 0.
+
+4) add ipv6-next-header to fdir input set, set nh to 253 and 254::
+
+  testpmd> set_fdir_input_set 0 ipv6-other ipv6-next-header add
+
+setup flow director filter rules,  
+rule_3::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 253 ttl 255 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 3 fd_id 3
+
+rule_4::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 254 ttl 255 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 4 fd_id 4
+
+send packet to DUT, 
+
+packet_3::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=64)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_3 should be received by queue 3.
+
+packet_4::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=254, hlim=64)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_4 should be received by queue 4.
+
+delete rule_3, send packet_3 again, packet_3 should be received by queue 0.
+delete rule_4, send packet_4 again, packet_4 should be received by queue 0.
+
+5) add ipv6-hop-limits to fdir input set, set hlim to 32 and 64::
+ 
+  testpmd> set_fdir_input_set 0 ipv6-other ipv6-hop-limits add
+
+setup flow director filter rules,  
+rule_5::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 253 ttl 32 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 5 fd_id 5
+
+rule_6::
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 254 ttl 64 vlan 0  \
+  flexbytes (FLEXBYTES) fwd pf queue 6 fd_id 6
+
+send packet to DUT, 
+
+packet_5::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=32)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_5 should be received by queue 5.
+
+packet_6::
+  'sendp([Ether(dst="%s")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=254, hlim=64)/Raw(%s)], iface="%s")'\
+  %(dst_mac, payload, itf) 
+
+packet_6 should be received by queue 6.
+
+delete rule_5, send packet_5 again, packet_5 should be received by queue 0.
+delete rule_6, send packet_6 again, packet_6 should be received by queue 0.
+
+6) removed all entry of fdir::
+
+  testpmd>flush_flow_director 0
+  testpmd>show port fdir 0
+
+example::
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 255 ttl 64 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 1 fd_id 1
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 255 ttl 64 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 2 fd_id 2
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 253 ttl 64 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 3 fd_id 3
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 254 ttl 64 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 4 fd_id 4
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 16 proto 253 ttl 32 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 5 fd_id 5
+
+  flow_director_filter 0 mode IP add flow ipv6-other src 2000::1 dst 2000::2 tos 8 proto 254 ttl 48 vlan 0 flexbytes (0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88) fwd pf queue 6 fd_id 6
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=255, hlim=64)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=64)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=254, hlim=64)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=32)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+  sendp([Ether(src="00:00:00:00:00:01", dst="00:00:00:00:01:00")/IPv6(src="2000::1", dst="2000::2", tc=8, nh=254, hlim=48)/Raw(load="\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88")], iface="ens260f0")
+
+
+Test Case 3: test with ivlan  (qinq not work)
+============================
+1) start testpmd and initialize flow director flex payload configuration::
+
+  ./testpmd -c fffff -n 4 -- -i --disable-rss --pkt-filter-mode=perfect --rxq=8 --txq=8 --nb-cores=8
+  testpmd> port stop 0
+  testpmd> flow_director_flex_payload 0 l2 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l3 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_payload 0 l4 (0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15)
+  testpmd> flow_director_flex_mask 0 flow all (0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff,0xff)
+  testpmd> port start 0
+
+  testpmd> vlan set qinq on 0  
+
+  testpmd> set verbose 1
+  testpmd> set fwd rxonly
+  testpmd> start
+
+Note::
+  assume FLEXBYTES = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88"
+  assume payload = "\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x88\x88"
+
+2) setup the fdir input set::
+
+  testpmd> set_fdir_input_set 0 ipv4-udp none select
+  testpmd> set_fdir_input_set 0 ipv4-udp ivlan add
+
+ 
+3) setup flow director filter rules,
+
+rule_1:: 
+  flow_director_filter 0 mode IP add flow ipv4-udp src 192.168.1.1 1021 dst 192.168.1.2 1022 tos 16 ttl 255 \
+  vlan 1 flexbytes (FLEXBYTES) fwd pf queue 1 fd_id 1
+
+rule_2:: 
+  flow_director_filter 0 mode IP add flow ipv4-udp src 192.168.1.1 1021 dst 192.168.1.2 1022 tos 16 ttl 255 \
+  vlan 15 flexbytes (FLEXBYTES) fwd pf queue 2 fd_id 2
+
+rule_3:: 
+  flow_director_filter 0 mode IP add flow ipv4-udp src 192.168.1.1 1021 dst 192.168.1.2 1022 tos 16 ttl 255 \
+  vlan 255 flexbytes (FLEXBYTES) fwd pf queue 3 fd_id 3
+
+rule_4::
+  flow_director_filter 0 mode IP add flow ipv4-udp src 192.168.1.1 1021 dst 192.168.1.2 1022 tos 16 ttl 255 \
+  vlan 4095 flexbytes (FLEXBYTES) fwd pf queue 4 fd_id 4
+
+4) send packet to DUT, 
+
+packet_1::
+
+  'sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=16)/Dot1Q(id=0x8100,vlan=1)/IP(src="192.168.0.1",dst="192.168.0.2", \
+  tos=16, ttl=255)/UDP(sport="1021",dport="1022")/Raw(%s)], iface="%s")' % (dst_mac, payload, itf)
+
+packet_1 should be received by queue 1.
+
+packet_2::
+  'sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=16)/Dot1Q(id=0x8100,vlan=15)/IP(src="192.168.0.1",dst="192.168.0.2", \
+  tos=16, ttl=255)/UDP(sport="1021",dport="1022")/Raw(%s)], iface="%s")' % (dst_mac, payload, itf)
+
+packet_2 should be received by queue 2.
+
+packet_3::
+  'sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=16)/Dot1Q(id=0x8100,vlan=255)/IP(src="192.168.0.1",dst="192.168.0.2", \
+  tos=16, ttl=255)/UDP(sport="1021",dport="1022")/Raw(%s)], iface="%s")' % (dst_mac, payload, itf)
+
+packet_3 should be received by queue 3.
+
+packet_4::
+  'sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=16)/Dot1Q(id=0x8100,vlan=4095)/IP(src="192.168.0.1",dst="192.168.0.2", \
+  tos=16, ttl=255)/UDP(sport="1021",dport="1022")/Raw(%s)], iface="%s")' % (dst_mac, payload, itf)
+
+packet_4 should be received by queue 4.
+
+delete rule_1, send packet_1 again, packet_1 should be received by queue 0.
+delete rule_2, send packet_2 again, packet_2 should be received by queue 0.
+delete rule_3, send packet_3 again, packet_3 should be received by queue 0.
+delete rule_4, send packet_4 again, packet_4 should be received by queue 0.
+
+5) removed all entry of fdir::
+
+  testpmd>flush_flow_director 0
+  testpmd>show port fdir 0
+
