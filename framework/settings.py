@@ -173,7 +173,7 @@ HEADER_SIZE = {
 dpdk send protocol packet size.
 """
 PROTOCOL_PACKET_SIZE = {
-    'lldp': 110,
+    'lldp': [110, 100],
 }
 
 """

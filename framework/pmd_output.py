@@ -203,7 +203,12 @@ class PmdOutput():
         so should used (tx_bytes - exp_bytes) % PROTOCOL_PACKET_SIZE['lldp']
         for check tx_bytes count right
         """
-        return not (tx_bytes - exp_bytes) % PROTOCOL_PACKET_SIZE['lldp']
+        # error_flage is true means tx_bytes different with expect bytes
+        error_flage = 1
+        for size in  PROTOCOL_PACKET_SIZE['lldp']:
+            error_flage = error_flage and  (tx_bytes - exp_bytes) % size
+
+        return not error_flage
 
     def get_port_vlan_offload(self, port_id):
         """
