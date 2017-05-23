@@ -417,10 +417,11 @@ class TestPmdrssHash(TestCase):
         """
 
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "redrockcanyou", "atwood", "boulderrapid", "fortpark_TLV"],
+                    "fortville_spirit_single", "redrockcanyou", "atwood",
+                    "boulderrapid", "fortpark_TLV", "fortville_25g"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]:
             reta_num = 512
         elif self.nic in ["niantic"]:
             reta_num = 128
@@ -429,7 +430,7 @@ class TestPmdrssHash(TestCase):
         else:
             self.verify(False, "NIC Unsupported:%s" % str(self.nic))
         ports = self.dut.get_ports(self.nic)
-        self.verify(len(ports) >= 1, "Not enough ports available")
+        self.verify(len(ports) >= 2, "Not enough ports available")
 
     def set_up(self):
         """
@@ -650,6 +651,41 @@ class TestPmdrssHash(TestCase):
                 self.send_packet_symmetric(itf, iptype)
 
             self.dut.send_expect("quit", "# ", 30)
+
+    def test_dynamic_rss_bond_config(self):
+        
+        # setup testpmd and finish bond config
+        self.dut.send_expect("./%s/app/testpmd -c f -n 4 -- -i --txqflags=0" % self.target, "testpmd> ", 120)
+        out = self.dut.send_expect("create bonded device 3 0", "testpmd> ", 30)
+        bond_device_id = int(re.search("port \d+", out).group().split(" ")[-1].strip())
+
+        self.dut.send_expect("add bonding slave 0 %d" % bond_device_id, "testpmd>", 30)
+        self.dut.send_expect("add bonding slave 1 %d" % bond_device_id, "testpmd>", 30)
+
+        # get slave device default rss hash algorithm
+        out = self.dut.send_expect("get_hash_global_config 0", "testpmd>")
+        slave0_hash_function = re.search("Hash function is .+", out).group().split(" ")[-1].strip()
+        out = self.dut.send_expect("get_hash_global_config 1", "testpmd>")
+        slave1_hash_function = re.search("Hash function is .+", out).group().split(" ")[-1].strip()
+        self.verify(slave0_hash_function == slave1_hash_function, "default hash function not match")
+
+        new_hash_function = ""
+        for hash_function in ["toeplitz", "simple_xor"]:
+            if slave0_hash_function[-3:].lower() != hash_function[-3:]:
+                new_hash_function = hash_function
+        # update slave 0 rss hash algorithm and get slave 0 and slave 1 rss new hash algorithm
+        self.dut.send_expect("set_hash_global_config 0 %s ipv4-other enable" % new_hash_function, "testpmd>")
+        out = self.dut.send_expect("get_hash_global_config 0", "testpmd>")
+        slave0_new_hash_function = re.search("Hash function is .+", out).group().split(" ")[-1].strip()
+        out = self.dut.send_expect("get_hash_global_config 1", "testpmd>")
+        slave1_new_hash_function = re.search("Hash function is .+", out).group().split(" ")[-1].strip()
+
+        self.verify(slave0_new_hash_function == slave1_new_hash_function, "bond slave auto sync hash function failed")
+        self.verify(slave0_new_hash_function[-3:].lower() == new_hash_function[-3:], "changed slave hash function failed")
+
+        self.dut.send_expect("remove bonding slave 0 %d" % bond_device_id, "testpmd>", 30)
+        self.dut.send_expect("remove bonding slave 1 %d" % bond_device_id, "testpmd>", 30)
+        self.dut.send_expect("quit","# ", 30)
 
     def tear_down(self):
         """
