@@ -16,6 +16,7 @@ from qemu_kvm import QEMUKvm
 from test_case import TestCase
 
 from pmd_output import PmdOutput
+from settings import PROTOCOL_PACKET_SIZE
 
 FRAME_SIZE_64 = 64
 VM_CORES_MASK = 'all'
@@ -76,7 +77,7 @@ class TestSriovKvm(TestCase):
                     'dest_mac':False
                     'src_mac':"52:00:00:00:00:00"
                 }
-            'dot1q':
+            'vlan':
                 {
                     'vlan':1
                 }
@@ -93,7 +94,7 @@ class TestSriovKvm(TestCase):
         """
         ret_ether_ip = {}
         ether = {}
-        dot1q = {}
+        vlan = {}
         ip = {}
         udp = {}
 
@@ -102,13 +103,14 @@ class TestSriovKvm(TestCase):
         except Exception as e:
             print e
 
-        tester_port = dut.ports_map[dut_dest_port]
+        # using api get_local_port() to get the correct tester port.
+        tester_port = self.tester.get_local_port(dut_dest_port)
         if not ether_ip.get('ether'):
-            ether['dest_mac'] = dut.get_mac_address(dut_dest_port)
+            ether['dest_mac'] = PmdOutput(dut).get_port_mac(dut_dest_port)
             ether['src_mac'] = dut.tester.get_mac(tester_port)
         else:
             if not ether_ip['ether'].get('dest_mac'):
-                ether['dest_mac'] = dut.get_mac_address(dut_dest_port)
+                ether['dest_mac'] = PmdOutput(dut).get_port_mac(dut_dest_port)
             else:
                 ether['dest_mac'] = ether_ip['ether']['dest_mac']
             if not ether_ip['ether'].get('src_mac'):
@@ -116,13 +118,13 @@ class TestSriovKvm(TestCase):
             else:
                 ether['src_mac'] = ether_ip["ether"]["src_mac"]
 
-        if not ether_ip.get('dot1q'):
+        if not ether_ip.get('vlan'):
             pass
         else:
-            if not ether_ip['dot1q'].get('vlan'):
-                dot1q['vlan'] = '1'
+            if not ether_ip['vlan'].get('vlan'):
+                vlan['vlan'] = '1'
             else:
-                dot1q['vlan'] = ether_ip['dot1q']['vlan']
+                vlan['vlan'] = ether_ip['vlan']['vlan']
 
         if not ether_ip.get('ip'):
             ip['dest_ip'] = "10.239.129.88"
@@ -151,7 +153,7 @@ class TestSriovKvm(TestCase):
                 udp['src_port'] = ether_ip['udp']['src_port']
 
         ret_ether_ip['ether'] = ether
-        ret_ether_ip['dot1q'] = dot1q
+        ret_ether_ip['vlan'] = vlan
         ret_ether_ip['ip'] = ip
         ret_ether_ip['udp'] = udp
 
@@ -179,7 +181,7 @@ class TestSriovKvm(TestCase):
                     'dest_mac':False
                     'src_mac':"52:00:00:00:00:00"
                 }
-            'dot1q':
+            'vlan':
                 {
                     'vlan':1
                 }
@@ -209,7 +211,7 @@ class TestSriovKvm(TestCase):
                                               for _ in self.get_stats(dut, dest_port, "rx")]
         if not src_port:
             itf = self.tester.get_interface(
-                dut.ports_map[dut_ports[dest_port]])
+                self.dut.ports_map[self.dut_ports[dest_port]])
         else:
             itf = src_port
 
@@ -230,9 +232,9 @@ class TestSriovKvm(TestCase):
             self.tester.scapy_append(
                 'srcmac="%s"' % ret_ether_ip['ether']['src_mac'])
 
-            if ether_ip.get('dot1q'):
+            if ether_ip.get('vlan'):
                 self.tester.scapy_append(
-                    'vlanvalue=%d' % int(ret_ether_ip['dot1q']['vlan']))
+                    'vlanvalue=%d' % int(ret_ether_ip['vlan']['vlan']))
             self.tester.scapy_append(
                 'destip="%s"' % ret_ether_ip['ip']['dest_ip'])
             self.tester.scapy_append(
@@ -241,7 +243,7 @@ class TestSriovKvm(TestCase):
                 'destport=%d' % ret_ether_ip['udp']['dest_port'])
             self.tester.scapy_append(
                 'srcport=%d' % ret_ether_ip['udp']['src_port'])
-            if not ret_ether_ip.get('dot1q'):
+            if not ret_ether_ip.get('vlan'):
                 send_cmd = 'sendp([Ether(dst=nutmac, src=srcmac)/' + \
                     'IP(dst=destip, src=srcip, len=%s)/' % pktlen + \
                     'UDP(sport=srcport, dport=destport)/' + \
@@ -290,8 +292,8 @@ class TestSriovKvm(TestCase):
         self.port1.unbind_driver()
         self.port1_pci = self.dut.ports_info[p1]['pci']
 
-        vf0_prop = {'prop_host': self.port0_pci}
-        vf1_prop = {'prop_host': self.port1_pci}
+        vf0_prop = {'opt_host': self.port0_pci}
+        vf1_prop = {'opt_host': self.port1_pci}
 
         # set up VM0 ENV
         self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
@@ -314,6 +316,8 @@ class TestSriovKvm(TestCase):
         self.port1.bind_driver('igb_uio')
         self.vm1 = None
 
+        self.dut.virt_exit()
+
         self.setup_2vm_2vf_env_flag = 0
 
     def setup_2vm_2vf_env(self, driver='igb_uio'):
@@ -331,8 +335,8 @@ class TestSriovKvm(TestCase):
 
             time.sleep(1)
 
-            vf0_prop = {'prop_host': self.sriov_vfs_port[0].pci}
-            vf1_prop = {'prop_host': self.sriov_vfs_port[1].pci}
+            vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
+            vf1_prop = {'opt_host': self.sriov_vfs_port[1].pci}
 
             for port_id in self.dut_ports:
                 if port_id == self.used_dut_port:
@@ -346,7 +350,7 @@ class TestSriovKvm(TestCase):
                 eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
                                                        'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", eal_param=eal_param)
+                    "1S/2C/2T", "--rxq=4 --txq=4 --txqflags=0", eal_param=eal_param)
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
@@ -380,7 +384,9 @@ class TestSriovKvm(TestCase):
             self.host_testpmd.execute_cmd('quit', '# ')
             self.host_testpmd = None
 
-        if getattr(self, 'used_dut_port', None):
+        self.dut.virt_exit()
+
+        if getattr(self, 'used_dut_port', None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             port = self.dut.ports_info[self.used_dut_port]['port']
             port.bind_driver('igb_uio')
@@ -405,10 +411,10 @@ class TestSriovKvm(TestCase):
 
             time.sleep(1)
 
-            vf0_prop = {'prop_host': self.sriov_vfs_port[0].pci}
-            vf1_prop = {'prop_host': self.sriov_vfs_port[1].pci}
-            vf2_prop = {'prop_host': self.sriov_vfs_port[2].pci}
-            vf3_prop = {'prop_host': self.sriov_vfs_port[3].pci}
+            vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
+            vf1_prop = {'opt_host': self.sriov_vfs_port[1].pci}
+            vf2_prop = {'opt_host': self.sriov_vfs_port[2].pci}
+            vf3_prop = {'opt_host': self.sriov_vfs_port[3].pci}
 
             for port_id in self.dut_ports:
                 if port_id == self.used_dut_port:
@@ -478,7 +484,9 @@ class TestSriovKvm(TestCase):
             self.host_testpmd.execute_cmd('quit', '# ')
             self.host_testpmd = None
 
-        if getattr(self, 'used_dut_port', None):
+        self.dut.virt_exit()
+
+        if getattr(self, 'used_dut_port', None) != None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             port = self.ports_info[self.used_dut_port]['port']
             port.bind_driver('igb_uio')
@@ -597,7 +605,7 @@ class TestSriovKvm(TestCase):
         if port not in self.port_mirror_ref.keys():
             pass
         else:
-            for rule_id in self.port_mirror_ref[port]:
+            for rule_id in self.port_mirror_ref[port][:]:
                 self.reset_port_mirror_rule(port, rule_id)
 
     def setup_two_vm_common_prerequisite(self):
@@ -625,6 +633,8 @@ class TestSriovKvm(TestCase):
         self.vm1_testpmd.execute_cmd('quit', '# ')
         self.vm0_testpmd = None
         self.vm1_dut_ports = None
+
+        self.dut.virt_exit()
 
         self.setup_2vm_prerequisite_flag = 0
 
@@ -752,7 +762,7 @@ class TestSriovKvm(TestCase):
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'],
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm1_ret_stats['RX-packets'],  vm0_ret_stats['TX-packets']),
                     "Downlink mirror failed between VM0 and VM1!")
 
         self.reset_port_mirror_rule(port_id_0, rule_id)
@@ -772,7 +782,7 @@ class TestSriovKvm(TestCase):
 
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
         ether_ip = {}
-        ether_ip['dot1q'] = {'vlan': '%d' % vlan_id}
+        ether_ip['vlan'] = {'vlan': '%d' % vlan_id}
         self.send_packet(
             self.vm_dut_0,
             self.vm0_dut_ports,
@@ -819,7 +829,7 @@ class TestSriovKvm(TestCase):
 
         vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         ether_ip = {}
-        ether_ip['dot1q'] = {'vlan': '%d' % vlan_id}
+        ether_ip['vlan'] = {'vlan': '%d' % vlan_id}
         self.send_packet(
             self.vm_dut_1,
             self.vm1_dut_ports,
@@ -831,7 +841,7 @@ class TestSriovKvm(TestCase):
 
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
 
-        self.verify(vm0_ret_stats['RX-packets'] == 10 * packet_num,
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 10 * packet_num),
                     "Vlan mirror failed between VM0 and VM1 when set vlan and pool mirror!")
 
         self.reset_port_all_mirror_rule(port_id_0)
@@ -934,9 +944,9 @@ class TestSriovKvm(TestCase):
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(vm0_ret_stats['RX-packets'] == packet_num and
-                    vm0_ret_stats['TX-packets'] == packet_num and
-                    vm1_ret_stats['RX-packets'] == 2 * packet_num,
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num) and
+                    self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], packet_num) and
+                    self.vm0_testpmd.check_tx_bytes(vm1_ret_stats['RX-packets'], 2 * packet_num),
                     "Uplink and downlink mirror failed between VM0 and VM1 " +
                     "when set vlan, pool, uplink and downlink mirror!")
 
@@ -945,7 +955,7 @@ class TestSriovKvm(TestCase):
         self.vm0_testpmd.execute_cmd('start')
 
         ether_ip = {}
-        ether_ip['dot1q'] = {'vlan': '%d' % vlan_id}
+        ether_ip['vlan'] = {'vlan': '%d' % vlan_id}
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
         vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         self.send_packet(
@@ -960,8 +970,8 @@ class TestSriovKvm(TestCase):
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(vm0_ret_stats['RX-packets'] == packet_num and
-                    vm0_ret_stats['TX-packets'] == packet_num and
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num) and
+                    self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], packet_num) and
                     vm1_ret_stats['RX-packets'] == 2 * packet_num,
                     "Vlan and downlink mirror failed between VM0 and VM1 " +
                     "when set vlan, pool, uplink and downlink mirror!")
@@ -977,8 +987,11 @@ class TestSriovKvm(TestCase):
         packet_num = 10
 
         for vf_mac in ["00:11:22:33:44:55", "00:55:44:33:22:11"]:
-            self.host_testpmd.execute_cmd("mac_addr add port %d vf %d %s" %
-                                          (port_id_0, vf_num, vf_mac))
+            if self.nic.startswith('niantic'):
+                set_mac_cmd = "mac_addr add port %d vf %d %s"
+            elif self.nic.startswith('fortville'):
+                set_mac_cmd = "set port %d vf %d %s exact-mac-vlan on"
+            self.host_testpmd.execute_cmd(set_mac_cmd % (port_id_0, vf_num, vf_mac))
 
             vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
             ether_ip = {}
@@ -994,11 +1007,15 @@ class TestSriovKvm(TestCase):
             vm0_ret_stats = self.calculate_stats(
                 vm0_start_stats, vm0_end_stats)
 
-            self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+            self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                         "Add exact MAC %s failed btween VF0 and VF1" % vf_mac +
                         "when add multi exact MAC address on VF!")
 
     def test_two_vms_enalbe_or_disable_one_uta_mac_on_vf(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1023,7 +1040,7 @@ class TestSriovKvm(TestCase):
 
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
 
-        self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                     "Enable one uta MAC failed between VM0 and VM1 " +
                     "when enable or disable one uta MAC address on VF!")
 
@@ -1040,11 +1057,15 @@ class TestSriovKvm(TestCase):
 
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
 
-        self.verify(vm0_ret_stats['RX-packets'] == 0,
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 0),
                     "Disable one uta MAC failed between VM0 and VM1 " +
                     "when enable or disable one uta MAC address on VF!")
 
     def test_two_vms_add_multi_uta_mac_on_vf(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1068,11 +1089,15 @@ class TestSriovKvm(TestCase):
             vm0_ret_stats = self.calculate_stats(
                 vm0_start_stats, vm0_end_stats)
 
-            self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+            self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                         "Add MULTI uta MAC %s failed between VM0 and VM1 " % vf_mac +
                         "when add multi uta MAC address on VF!")
 
     def test_two_vms_add_or_remove_uta_mac_on_vf(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1099,15 +1124,19 @@ class TestSriovKvm(TestCase):
                 vm0_start_stats, vm0_end_stats)
 
             if switch == 'on':
-                self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                             "Add MULTI uta MAC %s failed between VM0 and VM1 " % vf_mac +
                             "when add or remove multi uta MAC address on VF!")
             else:
-                self.verify(vm0_ret_stats['RX-packets'] == 0,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 0),
                             "Remove MULTI uta MAC %s failed between VM0 and VM1 " % vf_mac +
                             "when add or remove multi uta MAC address on VF!")
 
     def test_two_vms_pause_rx_queues(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1131,15 +1160,19 @@ class TestSriovKvm(TestCase):
                 vm0_start_stats, vm0_end_stats)
 
             if switch == 'on':
-                self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                             "Enable RX queues failed between VM0 and VM1 " +
                             "when enable or pause RX queues on VF!")
             else:
-                self.verify(vm0_ret_stats['RX-packets'] == 0,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 0),
                             "Pause RX queues failed between VM0 and VM1 " +
                             "when enable or pause RX queues on VF!")
 
     def test_two_vms_pause_tx_queuse(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1166,15 +1199,19 @@ class TestSriovKvm(TestCase):
                 vm0_start_stats, vm0_end_stats)
 
             if switch == 'on':
-                self.verify(vm0_ret_stats['TX-packets'] == packet_num,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], packet_num),
                             "Enable TX queues failed between VM0 and VM1 " +
                             "when enable or pause TX queues on VF!")
             else:
-                self.verify(vm0_ret_stats['TX-packets'] == 0,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], 0),
                             "Pause TX queues failed between VM0 and VM1 " +
                             "when enable or pause TX queues on VF!")
 
     def test_two_vms_prevent_rx_broadcast_on_vf(self):
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        if self.nic.startswith('fortville'):
+            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            return
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
 
@@ -1201,11 +1238,11 @@ class TestSriovKvm(TestCase):
                 vm0_start_stats, vm0_end_stats)
 
             if switch == 'on':
-                self.verify(vm0_ret_stats['RX-packets'] == packet_num,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num),
                             "Enable RX broadcast failed between VM0 and VM1 " +
                             "when enable or disable RX queues on VF!")
             else:
-                self.verify(vm0_ret_stats['RX-packets'] == 0,
+                self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 0),
                             "Disable RX broadcast failed between VM0 and VM1 " +
                             "when enable or pause TX queues on VF!")
 
@@ -1263,6 +1300,8 @@ class TestSriovKvm(TestCase):
             self.vm2.stop()
         if getattr(self, 'vm3', None):
             self.vm3.stop()
+
+        self.dut.virt_exit()
 
         for port_id in self.dut_ports:
             self.dut.destroy_sriov_vfs_by_port(port_id)
