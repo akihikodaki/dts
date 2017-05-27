@@ -159,9 +159,11 @@ class QEMUKvm(VirtBase):
             self.host_logger.error("No emulator [ %s ] on the DUT [ %s ]" %
                                    (qemu_emulator_path, self.host_dut.get_ip_address()))
             return None
-        out = self.host_session.send_expect("[ -x %s ];echo $?" % qemu_emulator_path, '# ')
+        out = self.host_session.send_expect(
+            "[ -x %s ];echo $?" % qemu_emulator_path, '# ')
         if out != '0':
-            self.host_logger.error("Emulator [ %s ] not executable on the DUT [ %s ]" %
+            self.host_logger.error(
+                "Emulator [ %s ] not executable on the DUT [ %s ]" %
                                    (qemu_emulator_path, self.host_dut.get_ip_address()))
             return None
         self.qemu_emulator = qemu_emulator_path
@@ -177,12 +179,14 @@ class QEMUKvm(VirtBase):
         """
         Check if host has the virtual ability.
         """
-        out = self.host_session.send_expect('cat /proc/cpuinfo | grep flags', '# ')
+        out = self.host_session.send_expect(
+            'cat /proc/cpuinfo | grep flags', '# ')
         rgx = re.search(' vmx ', out)
         if rgx:
             pass
         else:
-            self.host_logger.warning("Hardware virtualization disabled on host!!!")
+            self.host_logger.warning(
+                "Hardware virtualization disabled on host!!!")
             return False
 
         out = self.host_session.send_expect('lsmod | grep kvm', '# ')
@@ -252,9 +256,11 @@ class QEMUKvm(VirtBase):
         self.__pid_file = '/tmp/.%s.pid' % self.vm_name
         index = self.find_option_index('pid_file')
         if index:
-            self.params[index] = {'pid_file': [{'name': '%s' % self.__pid_file}]}
+            self.params[index] = {
+                'pid_file': [{'name': '%s' % self.__pid_file}]}
         else:
-            self.params.append({'pid_file': [{'name': '%s' % self.__pid_file}]})
+            self.params.append(
+                {'pid_file': [{'name': '%s' % self.__pid_file}]})
 
     def add_vm_pid_file(self, **options):
         """
@@ -262,7 +268,6 @@ class QEMUKvm(VirtBase):
         """
         if 'name' in options.keys():
             self.__add_boot_line('-pidfile %s' % options['name'])
-
 
     def set_vm_name(self, vm_name):
         """
@@ -592,6 +597,30 @@ class QEMUKvm(VirtBase):
                 self.__add_vm_virtio_user_pci(**options)
             elif options['driver'] == 'vhost-cuse':
                 self.__add_vm_virtio_cuse_pci(**options)
+            if options['driver'] == 'vfio-pci':
+                self.__add_vm_pci_vfio(**options)
+
+    def __add_vm_pci_vfio(self, **options):
+        """
+        driver: vfio-pci
+        opt_host: 08:00.0
+        opt_addr: 00:00:00:00:01:02
+        """
+        dev_boot_line = '-device vfio-pci'
+        separator = ','
+        if 'opt_host' in options.keys() and \
+                options['opt_host']:
+            dev_boot_line += separator + 'host=%s' % options['opt_host']
+            dev_boot_line += separator + 'id=pt_%d' % self.pt_idx
+            self.pt_idx += 1
+            self.pt_devices.append(options['opt_host'])
+        if 'opt_addr' in options.keys() and \
+                options['opt_addr']:
+            dev_boot_line += separator + 'addr=%s' % options['opt_addr']
+            self.assigned_pcis.append(options['opt_addr'])
+
+        if self.__string_has_multi_fields(dev_boot_line, separator):
+            self.__add_boot_line(dev_boot_line)
 
     def __add_vm_pci_assign(self, **options):
         """
@@ -627,21 +656,26 @@ class QEMUKvm(VirtBase):
             dev_boot_line = '-chardev socket'
             char_id = 'char%d' % self.char_idx
             if 'opt_server' in options.keys() and options['opt_server']:
-                dev_boot_line += separator + 'id=%s' % char_id + separator + 'path=%s' %options['opt_path'] + separator + '%s' % options['opt_server']
-		self.char_idx += 1
+                dev_boot_line += separator + 'id=%s' % char_id + separator + \
+                    'path=%s' % options[
+                        'opt_path'] + separator + '%s' % options['opt_server']
+                self.char_idx += 1
                 self.__add_boot_line(dev_boot_line)
             else:
-                dev_boot_line += separator + 'id=%s' % char_id + separator + 'path=%s' %options['opt_path']
+                dev_boot_line += separator + 'id=%s' % char_id + \
+                    separator + 'path=%s' % options['opt_path']
                 self.char_idx += 1
                 self.__add_boot_line(dev_boot_line)
             # netdev parameter
             netdev_id = 'netdev%d' % self.netdev_idx
             self.netdev_idx += 1
             if 'opt_queue' in options.keys() and options['opt_queue']:
-                queue_num=options['opt_queue']
-                dev_boot_line = '-netdev type=vhost-user,id=%s,chardev=%s,vhostforce,queues=%s' % (netdev_id, char_id,queue_num)
+                queue_num = options['opt_queue']
+                dev_boot_line = '-netdev type=vhost-user,id=%s,chardev=%s,vhostforce,queues=%s' % (
+                    netdev_id, char_id, queue_num)
             else:
-                dev_boot_line = '-netdev type=vhost-user,id=%s,chardev=%s,vhostforce' % (netdev_id, char_id)
+                dev_boot_line = '-netdev type=vhost-user,id=%s,chardev=%s,vhostforce' % (
+                    netdev_id, char_id)
             self.__add_boot_line(dev_boot_line)
             # device parameter
             opts = {'opt_netdev': '%s' % netdev_id}
@@ -650,7 +684,7 @@ class QEMUKvm(VirtBase):
                 opts['opt_mac'] = options['opt_mac']
             if 'opt_settings' in options.keys() and options['opt_settings']:
                 opts['opt_settings'] = options['opt_settings']
-	self.__add_vm_virtio_net_pci(**opts)
+        self.__add_vm_virtio_net_pci(**opts)
 
     def __add_vm_virtio_cuse_pci(self, **options):
         """
@@ -664,15 +698,17 @@ class QEMUKvm(VirtBase):
         else:
             cuse_id = 'vhost%d' % self.cuse_id
             self.cuse_id += 1
-        dev_boot_line += separator + 'id=%s' % cuse_id + separator + 'ifname=tap_%s' % cuse_id + separator + "vhost=on" + separator + "script=no"
+        dev_boot_line += separator + 'id=%s' % cuse_id + separator + \
+            'ifname=tap_%s' % cuse_id + separator + \
+            "vhost=on" + separator + "script=no"
         self.__add_boot_line(dev_boot_line)
         # device parameter
         opts = {'opt_netdev': '%s' % cuse_id,
                 'opt_id': '%s_net' % cuse_id}
         if 'opt_mac' in options.keys() and options['opt_mac']:
-                opts['opt_mac'] = options['opt_mac']
+            opts['opt_mac'] = options['opt_mac']
         if 'opt_settings' in options.keys() and options['opt_settings']:
-                opts['opt_settings'] = options['opt_settings']
+            opts['opt_settings'] = options['opt_settings']
 
         self.__add_vm_virtio_net_pci(**opts)
 
@@ -742,7 +778,8 @@ class QEMUKvm(VirtBase):
         path: if adding monitor to vm, need to specify unix socket patch
         """
         if 'path' in options.keys():
-            monitor_boot_line = '-monitor unix:%s,server,nowait' % options['path']
+            monitor_boot_line = '-monitor unix:%s,server,nowait' % options[
+                'path']
             self.__add_boot_line(monitor_boot_line)
             self.monitor_sock_path = options['path']
         else:
@@ -795,8 +832,10 @@ class QEMUKvm(VirtBase):
                 if 'port' in options.keys():
                     self.migrate_port = options['port']
                 else:
-                    self.migrate_port = str(self.virt_pool.alloc_port(self.vm_name))
-                migrate_boot_line = migrate_cmd % {'migrate_port': self.migrate_port}
+                    self.migrate_port = str(
+                        self.virt_pool.alloc_port(self.vm_name))
+                migrate_boot_line = migrate_cmd % {
+                    'migrate_port': self.migrate_port}
                 self.__add_boot_line(migrate_boot_line)
 
     def add_vm_serial_port(self, **options):
@@ -822,7 +861,8 @@ class QEMUKvm(VirtBase):
             if first:
                 # login into Fedora os, not sure can work on all distributions
                 self.serial_session.send_expect("", "login:")
-                self.serial_session.send_expect("%s" % self.username, "Password:")
+                self.serial_session.send_expect(
+                    "%s" % self.username, "Password:")
                 self.serial_session.send_expect("%s" % self.password, "# ")
             return self.serial_session
 
@@ -915,7 +955,8 @@ class QEMUKvm(VirtBase):
         Send migration command to host and check whether start migration
         """
         # send migration command
-        migration_port = 'tcp:%(IP)s:%(PORT)s' % {'IP': remote_ip, 'PORT': remote_port}
+        migration_port = 'tcp:%(IP)s:%(PORT)s' % {
+            'IP': remote_ip, 'PORT': remote_port}
 
         self.__monitor_session('migrate', '-d', migration_port)
         time.sleep(2)
@@ -943,7 +984,8 @@ class QEMUKvm(VirtBase):
             time.sleep(6)
             count -= 1
 
-        raise StartVMFailedException('Virtual machine can not finished in 180 seconds!!!')
+        raise StartVMFailedException(
+            'Virtual machine can not finished in 180 seconds!!!')
 
     def generate_qemu_boot_line(self):
         """
@@ -977,7 +1019,8 @@ class QEMUKvm(VirtBase):
             time.sleep(6)
             count -= 1
 
-        raise StartVMFailedException('Virtual machine control net not ready in 120 seconds!!!')
+        raise StartVMFailedException(
+            'Virtual machine control net not ready in 120 seconds!!!')
 
     def __alloc_vcpus(self):
         """
@@ -987,7 +1030,8 @@ class QEMUKvm(VirtBase):
         cpus = self.virt_pool.alloc_cpu(vm=self.vm_name, corelist=req_cpus)
 
         if len(req_cpus) != len(cpus):
-            self.host_logger.warning("VCPUs not enough, required [ %s ], just [ %s ]" %
+            self.host_logger.warning(
+                "VCPUs not enough, required [ %s ], just [ %s ]" %
                                      (req_cpus, cpus))
             raise Exception("No enough required vcpus!!!")
 
@@ -1146,7 +1190,8 @@ class QEMUKvm(VirtBase):
                 (self.host_dut.NAME, self.vm_name))
             return None
 
-        self.host_session.send_expect('nc -U %s' % self.monitor_sock_path, '(qemu)')
+        self.host_session.send_expect(
+            'nc -U %s' % self.monitor_sock_path, '(qemu)')
 
         cmd = command
         for arg in args:
@@ -1183,8 +1228,6 @@ class QEMUKvm(VirtBase):
         except:
             self.host_logger.info("Failed to capture pid!!!")
 
-
-
     def __strip_guest_pci(self):
         """
         Strip all pci-passthrough device information, based on qemu monitor
@@ -1204,7 +1247,8 @@ class QEMUKvm(VirtBase):
             m = re.match(pci_reg, line)
             n = re.match(id_reg, line)
             if m:
-                pci = "%02d:%02d.%d" % (int(m.group(2)), int(m.group(4)), int(m.group(5)))
+                pci = "%02d:%02d.%d" % (
+                    int(m.group(2)), int(m.group(4)), int(m.group(5)))
             if n:
                 dev_id = n.group(1)
                 if dev_id != '':
