@@ -1,22 +1,22 @@
-.. Copyright (c) <2010, 2011>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=========================
-Tespt PMD PCAP files test
-=========================
+==================
+TestPMD PCAP Tests
+==================
 
 This document provides tests for the userland Intel(R)
 82599 Gigabit Ethernet Controller (Niantic) Poll Mode Driver (PMD) when using
@@ -49,7 +49,7 @@ Prerequisites
 This test does not requires connections between DUT and tester as it is focused
 in PCAP devices created by Test PMD.
 
-It is Test PMD application itself which send and receibes traffic from and to
+It is Test PMD application itself which send and receives traffic from and to
 PCAP files, no traffic generator is involved.
 
 
@@ -57,7 +57,7 @@ Test Case: test_send_packets_with_one_device
 ============================================
 
 It is necessary to generate the input pcap file for one interface test. The
-pcap file can be created using scapy. Create a file with 1000 frames with the 
+pcap file can be created using scapy. Create a file with 1000 frames with the
 following structure::
 
   Ether(src='00:00:00:00:00:<last Eth>', dst='00:00:00:00:00:00')/IP(src='192.168.1.1', dst='192.168.1.2')/("X"*26))
@@ -72,8 +72,8 @@ The linuxapp is started with the following parameters:
   -i --port-topology=chained
 
 
-Start the application and the forwarding, by typing `start` in the command line 
-of the application. After a few seconds `stop` the forwarding and `quit` the 
+Start the application and the forwarding, by typing `start` in the command line
+of the application. After a few seconds `stop` the forwarding and `quit` the
 application.
 
 Check that the frames of in.pcap and out.pcap files are the same using scapy.
@@ -81,8 +81,8 @@ Check that the frames of in.pcap and out.pcap files are the same using scapy.
 Test Case: test_send_packets_with_two_devices
 =============================================
 
-Create 2 pcap files with 1000 and 500 frames as explained in 
-`test_send_packets_with_one_device` test case. 
+Create 2 pcap files with 1000 and 500 frames as explained in
+`test_send_packets_with_one_device` test case.
 
 The linuxapp is started with the following parameters:
 
@@ -92,8 +92,8 @@ The linuxapp is started with the following parameters:
   -- -i
 
 
-Start the application and the forwarding, by typing `start` in the command line 
-of the application. After a few seconds `stop` the forwarding and `quit` the 
+Start the application and the forwarding, by typing `start` in the command line
+of the application. After a few seconds `stop` the forwarding and `quit` the
 application.
 
 Check that the frames of the in1.pcap and out2.pcap, and in2.pcap and out1.pcap

@@ -1,22 +1,22 @@
-.. Copyright (c) <2010, 2011>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===
-PMD
-===
+=================
+Niantic PMD Tests
+=================
 
 This document provides benchmark tests for the userland Intel®
 82599 Gigabit Ethernet Controller (Niantic) Poll Mode Driver (PMD).
@@ -43,11 +43,13 @@ the configuration of Niantic NIC ports.
 The core configuration description is:
 
 - 1C/1T: 1 Physical Core, 1 Logical Core per physical core (1 Hyperthread)
-	using core #2 (socket 0, 2nd physical core)
+  using core #2 (socket 0, 2nd physical core)
+
 - 1C/2T: 1 Physical Core, 2 Logical Cores per physical core (2 Hyperthreads)
-	using core #2 and #14 (socket 0, 2nd physical core, 2 Hyperthreads)
+  using core #2 and #14 (socket 0, 2nd physical core, 2 Hyperthreads)
+
 - 2C/1T: 2 Physical Cores, 1 Logical Core per physical core
-	using core #2 and #4 (socket 0, 2nd and 3rd physical cores)
+  using core #2 and #4 (socket 0, 2nd and 3rd physical cores)
 
 
 Prerequisites
@@ -66,9 +68,13 @@ distribution of memory accesses among available Memory Channels.  This
 will only be done on the userland application, as the tool requires a
 Linux environment to be running in order to be used.
 
-Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+using vfio, use the following commands to to load the vfio driver and bind it
+to the device under test::
+
+   modprobe vfio
+   modprobe vfio-pci
+   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 Test Case: Packet Checking
 ==========================
@@ -97,10 +103,10 @@ The linuxapp is started with the following parameters:
   -c 0xffffff -n 3 -- -i --coremask=0x4 \
   --rxd={rxd} --txd={txd} --burst=32 --rxfreet=64 --mbcache=128 \
   --portmask=0xffff --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32
-  
+
 
 IXIA sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and
-1518 bytes) for diferent values of rxd and txd (between 128 and 4096)
+1518 bytes) for different values of rxd and txd (between 128 and 4096)
 The packets will be forwarded by the DUT. The test checks if the packets are
 correctly forwarded.
 
@@ -159,22 +165,17 @@ The memory partial writes are measured with the ``vtbwrun`` application and prin
 in the following table:::
 
 
-  Sampling Duration: 000000.00 micro-seconds
-  ---       Logical Processor 0       ---||---       Logical Processor 1       ---
-  ---------------------------------------||---------------------------------------
-  ---   Intersocket QPI Utilization   ---||---   Intersocket QPI Utilization   ---
-  ---------------------------------------||---------------------------------------
-  ---      Reads (MB/s):         0.00 ---||---      Reads (MB/s):         0.00 ---
-  ---      Writes(MB/s):         0.00 ---||---      Writes(MB/s):         0.00 ---
-  ---------------------------------------||---------------------------------------
-  ---  Memory Performance Monitoring  ---||---  Memory Performance Monitoring  ---
-  ---------------------------------------||---------------------------------------
-  --- Mem Ch 0: #Ptl Wr:      0000.00 ---||--- Mem Ch 0: #Ptl Wr:         0.00 ---
-  --- Mem Ch 1: #Ptl Wr:      0000.00 ---||--- Mem Ch 1: Ptl Wr (MB/s):   0.00 ---
-  --- Mem Ch 2: #Ptl Wr:      0000.00 ---||--- Mem Ch 2: #Ptl Wr:         0.00 ---
-  --- ND0 Mem #Ptl Wr:        0000.00 ---||--- ND1 #Ptl Wr:               0.00 ---
-
-
-
-
-
+   Sampling Duration: 000000.00 micro-seconds
+   ---       Logical Processor 0       ---||---       Logical Processor 1       ---
+   ---------------------------------------||---------------------------------------
+   ---   Intersocket QPI Utilization   ---||---   Intersocket QPI Utilization   ---
+   ---------------------------------------||---------------------------------------
+   ---      Reads (MB/s):         0.00 ---||---      Reads (MB/s):         0.00 ---
+   ---      Writes(MB/s):         0.00 ---||---      Writes(MB/s):         0.00 ---
+   ---------------------------------------||---------------------------------------
+   ---  Memory Performance Monitoring  ---||---  Memory Performance Monitoring  ---
+   ---------------------------------------||---------------------------------------
+   --- Mem Ch 0: #Ptl Wr:      0000.00 ---||--- Mem Ch 0: #Ptl Wr:         0.00 ---
+   --- Mem Ch 1: #Ptl Wr:      0000.00 ---||--- Mem Ch 1: Ptl Wr (MB/s):   0.00 ---
+   --- Mem Ch 2: #Ptl Wr:      0000.00 ---||--- Mem Ch 2: #Ptl Wr:         0.00 ---
+   --- ND0 Mem #Ptl Wr:        0000.00 ---||--- ND1 #Ptl Wr:               0.00 ---

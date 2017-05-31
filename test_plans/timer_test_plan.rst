@@ -1,22 +1,22 @@
-.. Copyright (c) <2010>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,31 +30,35 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=============
-Timer example
-=============
+=======================================
+Sample Application Tests: Timer Example
+=======================================
 
 This example shows how timer can be used in a RTE application. This
 program print some messages from different lcores regularly,
 demonstrating how to use timers.
 
-Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+using vfio, use the following commands to to load the vfio driver and bind it
+to the device under test::
 
-In the timer example there are two timers. 
+   modprobe vfio
+   modprobe vfio-pci
+   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-Timer 0 is periodical, running on the master lcore, 
+In the timer example there are two timers.
+
+Timer 0 is periodical, running on the master lcore,
 reloaded automatically every second.
 
-Timer 1 is single one, being loaded manually by every second/3 , 
+Timer 1 is single one, being loaded manually by every second/3 ,
 once manually load will switch to next lcore.
 
 Usage of application::
-        
+
   ./timer [EAL options]
 
-[EAL options]::
+Where the EAL options are::
 
     EAL option list:
       -c COREMASK: hexadecimal bitmask of cores we are running on
@@ -71,7 +75,7 @@ Usage of application::
 Prerequisites
 =============
 
-To find out the mapping of lcores (processor) to core id and socket 
+To find out the mapping of lcores (processor) to core id and socket
 (physical id), the command below can be used::
 
   $ grep "processor\|physical id\|core id\|^$" /proc/cpuinfo
@@ -81,16 +85,16 @@ The number of logical core will be used as parameter to the timer example.
 Test Case: timer callbacks running on targeted cores
 ====================================================
 
-To run the example in linuxapp environment ::
-        
+To run the example in linuxapp environment::
+
   ./timer -c ffffff
 
 Timer0, every second, on master lcore, reloaded automatically.
 The check output as below by every second on master lcore::
-        
+
   timer0_cb() on lcore 0
 
-Timer1, every second/3, on next lcore, reloaded manually.        
+Timer1, every second/3, on next lcore, reloaded manually.
 The check output as below by every second/3 on master lcore::
 
   timer1_cb() on lcore 1
@@ -102,12 +106,11 @@ The check output as below by every second/3 on master lcore::
         ...
   timer1_cb() on lcore 23
 
-Verfity the ``timer0_cb`` and ``timer1_cb`` care called properly
+Verify the ``timer0_cb`` and ``timer1_cb`` care called properly
 on the target cores.
 
 ..
    Don't add the accuracy test for timer example.
    It makes no sense if there is no timestamp on the timer callback.
-   If it's suitable to have accuracy test in the furture, 
+   If it's suitable to have accuracy test in the future,
    a report table will be given.
-

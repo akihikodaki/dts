@@ -1,22 +1,22 @@
-.. Copyright (c) 2010,2011 Intel Corporation
+.. Copyright (c) <2010-2017> Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -29,10 +29,10 @@
    STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
-      
-=========================================================================
-Support of RX/TX Packet Filtering using VMDQ Features of 40G&10G&1G  NIC
-=========================================================================
+
+==========
+VMDQ Tests
+==========
 
 The 1G, 10G 82599 and 40G FVL Network Interface Card (NIC), supports a number of packet
 filtering functions which can be used to distribute incoming packets into a
@@ -42,7 +42,7 @@ among up to 512 RX queues.
 
 The feature itself works by:
 
-- splitting the incoming packets up into different "pools" - each with its own 
+- splitting the incoming packets up into different "pools" - each with its own
   set of RX queues - based upon the MAC address and VLAN ID within the VLAN tag of the packet.
 - assigning each packet to a specific queue within the pool, based upon the
   user priority field within the VLAN tag and MAC address.
@@ -56,28 +56,28 @@ Prerequisites
 - All tests assume a linuxapp setup.
 - The port ids of the two 10G or 40G ports to be used for the testing are specified
   in the commandline. it use a portmask.
-- The Intel DPDK is compiled for the appropriate target type in each case, and 
+- The Intel DPDK is compiled for the appropriate target type in each case, and
   the VMDQ  example application is compiled and linked with that DPDK
   instance
 - Two ports are connected to the test system, one to be used for packet
   reception, the other for transmission
 - The traffic generator being used is configured to send to the application RX
   port a stream of packets with VLAN tags, where the VLAN IDs increment from 0
-  to the pools numbers(e.g: for FVL spirit, it's 63, inclusive) as well as the MAC address from 
+  to the pools numbers(e.g: for FVL spirit, it's 63, inclusive) as well as the MAC address from
   52:54:00:12:[port_index]:00 to 52:54:00:12:[port_index]:3e and the VLAN user priority field increments from 0 to 7
-  (inclusive) for each VLAN ID. In our case port_index = 0 or 1. 
+  (inclusive) for each VLAN ID. In our case port_index = 0 or 1.
 
 
 Test Case: Measure VMDQ pools queues
 ------------------------------------
 1. Put different number of pools: in the case of 10G 82599 Nic is 64, in the case
-   of FVL spirit is 63,in case of FVL eagle is 34. 
+   of FVL spirit is 63,in case of FVL eagle is 34.
 2. Start traffic transmission using approx 10% of line rate.
-3. After a number of seconds, e.g. 15, stop traffic, and ensure no traffic 
+3. After a number of seconds, e.g. 15, stop traffic, and ensure no traffic
    loss (<0.001%) has occurred.
 4. Send a hangup signal (SIGHUP) to the application to have it print out the
    statistics of how many packets were received per RX queue
-   
+
 Expected Result:
 
 - No packet loss is expected
@@ -89,7 +89,7 @@ Test Case: Measure VMDQ Performance
 
 1. Compile VMDQ  example application as in first test above.
 2. Run application using a core mask for the appropriate thread and core
-   settings given in the following list: 
+   settings given in the following list:
 
   * 1S/1C/1T
   * 1S/2C/1T
@@ -120,4 +120,3 @@ given in mpps:
 +------------+----------+----------+----------+----------+
 | 1518       | 6.395    | 6.502    | 6.502    | 6.502    |
 +------------+----------+----------+----------+----------+
-

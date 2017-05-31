@@ -1,4 +1,4 @@
-.. Copyright (c) <2011>, Intel Corporation
+.. Copyright (c) <2011-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,20 +30,21 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==================================================================
-Fortville RSS full support - Support configuring hash functions
-==================================================================
+===============================================
+Fortville RSS - Configuring Hash Function Tests
+===============================================
 
 This document provides test plan for testing the function of Fortville:
 Support configuring hash functions.
 
-Prerequisites
--------------
 
-2x Intel® 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
-1x Fortville_eagle NIC (4x 10G)
-1x Fortville_spirit NIC (2x 40G) 
-2x Fortville_spirit_single NIC (1x 40G)
+Prerequisites
+=============
+
+* 2x Intel® 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
+* 1x Fortville_eagle NIC (4x 10G)
+* 1x Fortville_spirit NIC (2x 40G)
+* 2x Fortville_spirit_single NIC (1x 40G)
 
 The four ports of the 82599 connect to the Fortville_eagle;
 The two ports of Fortville_spirit connect to Fortville_spirit_single.
@@ -57,58 +58,58 @@ The RSS feature is designed to improve networking performance by load balancing
 the packets received from a NIC port to multiple NIC RX queues, with each queue
 handled by a different logical core.
 
-#1. The receive packet is parsed into the header fields used by the hash
-operation (such as IP addresses, TCP port, etc.)
+#. The receive packet is parsed into the header fields used by the hash
+   operation (such as IP addresses, TCP port, etc.)
 
-#2. A hash calculation is performed. The Fortville  supports four hash function:
-Toeplitz, simple XOR and their Symmetric RSS.
+#. A hash calculation is performed. The Fortville supports four hash function:
+   Toeplitz, simple XOR and their Symmetric RSS.
 
-#3. The seven LSBs of the hash result are used as an index into a 128/512 entry
-'redirection table'. Each entry provides a 4-bit RSS output index.
+#. The seven LSBs of the hash result are used as an index into a 128/512 entry
+   'redirection table'. Each entry provides a 4-bit RSS output index.
 
-#4. There are four cases to test the four hash function.
+#. There are four cases to test the four hash function.
 
 Test Case:  test_toeplitz
 =========================
 
 Testpmd configuration - 16 RX/TX queues per port
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+------------------------------------------------
 
-#1. set up testpmd woth fortville NICs::
-  
-  ./testpmd -c fffff -n %d -- -i --coremask=0xffffe --rxq=16 --txq=16
+#. set up testpmd with fortville NICs::
 
-#2. Reta Configuration.  128 reta entries configuration::
+      ./testpmd -c fffff -n %d -- -i --coremask=0xffffe --rxq=16 --txq=16
 
-  testpmd command: port config 0 rss reta (hash_index,queue_id)
+#. Reta Configuration.  128 reta entries configuration::
 
-#3. PMD fwd only receive the packets::
+       testpmd command: port config 0 rss reta (hash_index,queue_id)
 
-  testpmd command: set fwd rxonly
+#. PMD fwd only receive the packets::
 
-#4. rss recived package type configuration two received packet types configuration::
+       testpmd command: set fwd rxonly
 
-  testpmd command: port config 0 rss ip/udp
+#. rss received package type configuration two received packet types configuration::
 
-#5. verbose configuration::
+       testpmd command: port config 0 rss ip/udp
 
-  testpmd command: set verbose 8
+#. verbose configuration::
 
-#6. set hash functions, can choose symmetric or not, chosse port and packet type::
+       testpmd command: set verbose 8
 
-  set_hash_function 0 toeplitz
+#. set hash functions, can choose symmetric or not, choose port and packet type::
 
-#7. start packet receive::
+       set_hash_function 0 toeplitz
 
-  testpmd command: start
+#. start packet receive::
+
+       testpmd command: start
 
 tester Configuration
 --------------------
 
-#1. set up scapy
+#. set up scapy
 
-#2. send packets with different type ipv4/ipv4 with tcp/ipv4 with udp/
-    ipv6/ipv6 with tcp/ipv6 with udp::
+#. send packets with different type ipv4/ipv4 with tcp/ipv4 with udp/
+   ipv6/ipv6 with tcp/ipv6 with udp::
 
     sendp([Ether(dst="90:e2:ba:36:99:3c")/IP(src="192.168.0.4", dst="192.168.0.5")], iface="eth3")
 
@@ -117,10 +118,10 @@ test result
 
 The testpmd will print the hash value and actual queue of every packet.
 
-#1. Calaute the queue id: hash value%128or512, then refer to teh redirection table
-    to get the theoretical queue id.
+#. Calculate the queue id: hash value%128or512, then refer to the redirection table
+   to get the theoretical queue id.
 
-#2. Compare the theoretical queue id with the actual queue id.
+#. Compare the theoretical queue id with the actual queue id.
 
 
 Test Case:  test_toeplitz_symmetric
@@ -153,19 +154,31 @@ Test Case:  test_dynamic_rss_bond_config
 ========================================
 This case test bond slaves will auto sync rss hash config, it only support by fortville.
 
-#1. set up testpmd woth fortville NICs::
-./testpmd -c f -n 4 -- -i --portmask 0x3 --txqflags=0
-#2 creat bond device with mode 3::
- create bonded device 3 0
-#3 add slave to bond device::
- add bonding slave 0 2
- add bonding slave 1 2
-#4 get default hash algorithm on slave::
- get_hash_global_config 0
- get_hash_global_config 1
-#5 set hash algorithm on slave 0::
- set_hash_global_config 0 simple_xor ipv4-other enable
-#6 get hash algorithm on slave 0 and 1::
- get_hash_global_config 0
- get_hash_global_config 1
-#7 check slave 0 and 1 use same hash algorithm
+#. set up testpmd with fortville NICs::
+
+      ./testpmd -c f -n 4 -- -i --portmask 0x3 --txqflags=0
+
+#. create bond device with mode 3::
+
+      create bonded device 3 0
+
+#. add slave to bond device::
+
+      add bonding slave 0 2
+      add bonding slave 1 2
+
+#. get default hash algorithm on slave::
+
+      get_hash_global_config 0
+      get_hash_global_config 1
+
+#. set hash algorithm on slave 0::
+
+      set_hash_global_config 0 simple_xor ipv4-other enable
+
+#. get hash algorithm on slave 0 and 1::
+
+      get_hash_global_config 0
+      get_hash_global_config 1
+
+#. check slave 0 and 1 use same hash algorithm

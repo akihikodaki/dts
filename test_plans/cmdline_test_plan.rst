@@ -1,22 +1,22 @@
-.. Copyright (c) <2010>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,12 +30,12 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============
-Cmdline example
-===============
+=========================================
+Sample Application Tests: Cmdline Example
+=========================================
 
-The cmdline example is a demo example of command line interface in RTE. 
-This library is a readline-like interface that can be used to debug your 
+The cmdline example is a demo example of command line interface in RTE.
+This library is a readline-like interface that can be used to debug your
 RTE application.
 
 It supports some features of GNU readline like completion, cut/paste,
@@ -58,16 +58,20 @@ Refer to programmer's guide in ``${RTE_SDK}/doc/rst`` for details.
 Prerequisites
 =============
 
-Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+using vfio, use the following commands to to load the vfio driver and bind it
+to the device under test::
+
+   modprobe vfio
+   modprobe vfio-pci
+   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 Launch the ``cmdline`` with 24 logical cores in linuxapp environment::
 
   $ ./build/app/cmdline -cffffff
 
 Test the 3 simple commands in below prompt ::
-  
+
   example>
 
 
@@ -75,29 +79,29 @@ Test Case: cmdline sample commands test
 =======================================
 
 Add a test object with an IP address associated to it::
-    
-  example>add object 192.168.0.1
-    Object object added, ip=192.168.0.1 
 
-Verify the object existance::
-        
+  example>add object 192.168.0.1
+    Object object added, ip=192.168.0.1
+
+Verify the object existence::
+
   example>add object 192.168.0.1
     Object object already exist
 
 Show the object result by ``show`` command::
-  
+
   example>show object
     Object object, ip=192.168.0.1
 
-Verify the output matchs the confiuration.
+Verify the output matches the configuration.
 
 Delete the object in cmdline and show the result again::
-        
+
   example>del object
     Object object removed, ip=192.168.0.1
 
 Double delete the object to verify the correctness::
-  
+
   example>del object
     Bad arguments
 
@@ -107,7 +111,7 @@ Verify no such object exist now.::
     Bad arguments
 
 Verify the hidden command ? and help command::
-       
+
   example>help
     Demo example of command line interface in RTE
 
@@ -133,13 +137,8 @@ Test Case: cmdline exit test
 ============================
 
 To verify exit cmdline process::
-        
+
   example>^D
 
-.. there should be an ``quit`` command instead of ^D, 
+.. there should be an ``quit`` command instead of ^D,
    or a hint make the user know how to exit.
-
-
-
-
-

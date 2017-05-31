@@ -1,22 +1,22 @@
-.. Copyright (c) <2010>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=============
-EAL Autotests
-=============
+===============
+Unit Tests: EAL
+===============
 
 This section describes the tests that are done to validate the EAL. Each
 test can be launched independently using the command line
@@ -153,7 +153,7 @@ Atomic Variables
   - Initialize 32-bit and 64-bit atomic variables to zero.
 
   - Invoke ``test_atomic_tas()`` on each lcore before doing anything
-    else. The cores are awaiting synchronizatioin using the ``while
+    else. The cores are awaiting synchronization using the ``while
     (rte_atomic32_read(&val) == 0)`` statement which is triggered by the
     main test function. Then all cores do an
     ``rte_atomicXX_test_and_set()`` at the same time. If it is successful,
@@ -169,7 +169,7 @@ Atomic Variables
   - Invoke ``test_atomic_addsub_return()`` on each lcore. Before doing
     anything else, the cores are waiting a synchro. Each lcore does
     this operation several times::
-      
+
       tmp = atomic_add_return(&a, 1);
       atomic_add(&count, tmp);
       tmp = atomic_sub_return(&a, 1);
@@ -192,7 +192,7 @@ Check the result of optimized byte swap functions for each size (16-,
 Cycles Test
 ===========
 
-- Loop N times and check that the timer alway increments and
+- Loop N times and check that the timer always increments and
   never decrements during this loop.
 
 - Wait one second using rte_usleep() and check that the increment
@@ -231,8 +231,8 @@ Memzone
 Memcpy
 ======
 
-Create two buffers, and initialise one with random values. These are copied
-to the second buffer and then compared to see if the copy was successfull.
+Create two buffers, and initialize one with random values. These are copied
+to the second buffer and then compared to see if the copy was successful.
 The bytes outside the copied area are also checked to make sure they were not
 changed.
 
@@ -256,7 +256,7 @@ Alarm
 - Check that no callback is called if all alarm removed.
 - Check that it is not possible to cancel an alarm within the callback itself.
 - Check that the callback which is the head of all is able to be removed.
-- Check that all alarms for the same callback can be cancelled.
+- Check that all alarms for the same callback can be canceled.
 
 
 CPU flags

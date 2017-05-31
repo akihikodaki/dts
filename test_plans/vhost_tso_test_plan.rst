@@ -1,4 +1,4 @@
-.. Copyright (c) <2015>, Intel Corporation
+.. Copyright (c) <2015-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,31 +30,31 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===================
-Vhost TSO Test Plan 
-===================
+===============
+Vhost TSO Tests
+===============
 
-The feature enabled the DPDK Vhost TX offload(checksum and TSO), so that it will let the NIC to do the TX offload, and it can improve performance. The feature added the negotiation between DPDK user space vhost and virtio-net, so we will verify the DPDK Vhost user + virtio-net for the TSO/cksum in the TCP/IP stack enabled environment. DPDK vhost + virtio-pmd will not be covered by this plan since virtio-pmd doesn't have TCP/IP stack and virtio TSO is not enabled, so it will not be tested. 
+The feature enabled the DPDK Vhost TX offload(checksum and TSO), so that it will let the NIC to do the TX offload, and it can improve performance. The feature added the negotiation between DPDK user space vhost and virtio-net, so we will verify the DPDK Vhost user + virtio-net for the TSO/cksum in the TCP/IP stack enabled environment. DPDK vhost + virtio-pmd will not be covered by this plan since virtio-pmd doesn't have TCP/IP stack and virtio TSO is not enabled, so it will not be tested.
 
-In the test plan, we will use vhost switch sample to test. 
-When testing vm2vm case, we will only test vm2vm=1(software switch), not test vm2vm=2(hardware switch). 
+In the test plan, we will use vhost switch sample to test.
+When testing vm2vm case, we will only test vm2vm=1(software switch), not test vm2vm=2(hardware switch).
 
-Prerequisites: 
-==============
+Prerequisites
+=============
 
-Install iperf on both host and guests. 
+Install iperf on both host and guests.
 
 
 Test Case1: DPDK vhost user + virtio-net one VM fwd tso
 =======================================================
 
-HW preparation: Connect 2 ports directly. In our case, connect 81:00.0(port1) and 81:00.1(port2) two ports directly. Port1 is binded to igb_uio for vhost-sample to use, while port2 is in kernel driver. 
+HW preparation: Connect 2 ports directly. In our case, connect 81:00.0(port1) and 81:00.1(port2) two ports directly. Port1 is bound to igb_uio for vhost-sample to use, while port2 is in kernel driver.
 
 SW preparation: Change one line of the vhost sample and rebuild::
 
     #In function virtio_tx_route(xxx)
-    m->vlan_tci = vlan_tag; 
-    #changed to 
+    m->vlan_tci = vlan_tag;
+    #changed to
     m->vlan_tci = 1000;
 
 1. Launch the Vhost sample by below commands, socket-mem is set for the vhost sample to use, need ensure that the PCI port located socket has the memory. In our case, the PCI BDF is 81:00.0, so we need assign memory for socket1. For TSO/CSUM test, we need set "--mergeable 1--tso 1 --csum 1".::
@@ -72,7 +72,7 @@ SW preparation: Change one line of the vhost sample and rebuild::
      -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:10:00:00:11:01 -nographic
 
 3. On host,configure port2, then you can see there is a interface called ens260f1.1000.::
-   
+
     ifconfig ens260f1
     vconfig add ens260f1 1000
     ifconfig ens260f1.1000 1.1.1.8
@@ -80,9 +80,9 @@ SW preparation: Change one line of the vhost sample and rebuild::
 4. On the VM1, set the virtio IP and run iperf::
 
     ifconfig ethX 1.1.1.2
-    ping 1.1.1.8 # let virtio and port2 can ping each other successfully, then the arp table will be set up automatically. 
-    
-5. In host, run : `iperf -s -i 1` ; In guest, run `iperf -c 1.1.1.2 -i 1 -t 60`, check if there is 64K (size: 65160) packet. If there is 64K packet, then TSO is enabled, or else TSO is disabled.  
+    ping 1.1.1.8 # let virtio and port2 can ping each other successfully, then the arp table will be set up automatically.
+
+5. In host, run : `iperf -s -i 1` ; In guest, run `iperf -c 1.1.1.2 -i 1 -t 60`, check if there is 64K (size: 65160) packet. If there is 64K packet, then TSO is enabled, or else TSO is disabled.
 
 6. On the VM1, run `tcpdump -i ethX -n -e -vv` to check if the cksum is correct. You should not see incorrect cksum output.
 
@@ -111,20 +111,18 @@ Test Case2: DPDK vhost user + virtio-net VM2VM=1 fwd tso
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2  \
      -netdev tap,id=ipvm1,ifname=tap4,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:10:00:00:11:02 -nographic
 
-3. On VM1, set the virtio IP and run iperf
+3. On VM1, set the virtio IP and run iperf::
 
     ifconfig ethX 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
-    arp # to check the arp table is complete and correct. 
+    arp # to check the arp table is complete and correct.
 
-4. On VM2, set the virtio IP and run iperf
+4. On VM2, set the virtio IP and run iperf::
 
     ifconfig ethX 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
-    arp # to check the arp table is complete and correct. 
- 
-5. Ensure virtio1 can ping virtio2. Then in VM1, run : `iperf -s -i 1` ; In VM2, run `iperf -c 1.1.1.2 -i 1 -t 60`, check if there is 64K (size: 65160) packet. If there is 64K packet, then TSO is enabled, or else TSO is disabled.  
+    arp # to check the arp table is complete and correct.
 
-6. On the VM1, run `tcpdump -i ethX -n -e -vv`. 
+5. Ensure virtio1 can ping virtio2. Then in VM1, run : `iperf -s -i 1` ; In VM2, run `iperf -c 1.1.1.2 -i 1 -t 60`, check if there is 64K (size: 65160) packet. If there is 64K packet, then TSO is enabled, or else TSO is disabled.
 
-    
+6. On the VM1, run `tcpdump -i ethX -n -e -vv`.

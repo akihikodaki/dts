@@ -1,4 +1,4 @@
-.. Copyright (c) <2015>, Intel Corporation
+.. Copyright (c) <2015-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-======================================
-DPDK Hotplug API Feature Tests
-======================================
+======================
+DPDK Hotplug API Tests
+======================
 
 This test for Hotplug API feature can be run on linux userspace. It
 will check if NIC port can be attached and detached without exiting the
@@ -47,270 +47,291 @@ and still be set at the command line when launching the application in
 order to be compatible with previous test framework.
 
 Prerequisites
--------------
+=============
+
 Assume DPDK managed at least one device for physical or none for virtual.
 This feature only supports igb_uio now, for uio_pci_generic is
 on the way, will test it after enabled.
 
 To run the testpmd application in linuxapp environment with 4 lcores,
-4 channels with other default parameters in interactive mode.
+4 channels with other default parameters in interactive mode::
 
         $ ./testpmd -c 0xf -n 4 -- -i
 
 Test ENV:
 
-All test cases can be run in 32bit and 64bit platform.
+* All test cases can be run in 32bit and 64bit platform.
 
-OS support: Fedora, Ubuntu, RHEL, SUSE, but freebsd will not be
-included as hotplug has no plan to support that platform
+* OS support: Fedora, Ubuntu, RHEL, SUSE, but freebsd will not be
+  included as hotplug has no plan to support that platform
 
-All kernel version(from 2.6) can be support, for vfio need kernel
-        version greater than 3.6.
+* All kernel version(from 2.6) can be support, for vfio need kernel
+  version greater than 3.6.
 
-Virtualization support: KVM/VMware/Xen, container is in the roadmap
+* Virtualization support: KVM/VMware/Xen, container is in the roadmap
 
--------------------------------------------------------------------------------
 Test Case 1: port detach & attach for physical devices with igb_uio
--------------------------------------------------------------------------------
+===================================================================
 
-1. Start testpmd
-    $ ./testpmd -c 0xf -n 4 -- -i
+1. Start testpmd::
 
-2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)
-    # ./tools/dpdk_nic_bind -b igb_uio 0000:02:00.0
+      $ ./testpmd -c 0xf -n 4 -- -i
+
+2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
+
+      # ./tools/dpdk_nic_bind -b igb_uio 0000:02:00.0
+
+3. Attach port 0::
+
+      run "port attach 0000:02:00.0"
+
+      run "port start 0"
+
+      run "show port info 0", check port 0 info display.
+
+4. Check package forwarding when startup::
+
+      run "start", then "show port stats 0" check forwarding packages start.
+
+      run "port detach 0", check the error message of port not stopped.
+
+      run "stop", then "show port stats 0", check forwarding packages stopped.
+
+5. Detach port 0 after port closed::
+
+      run "port stop 0"
+
+      run "port close 0".
+
+      run "port detach 0", check port detached successful.
+
+6. Re-attach port 0(assume BDF 0000:02:00.0)::
+
+      run "port attach 0000:02:00.0",
+
+      run "port start 0".
+
+      run "show port info 0", check port 0 info display.
+
+7. Check package forwarding after re-attach::
+
+      run "start", then "show port stats 0" check forwarding packages start.
+
+      run "port detach 0", check the error message of port not stopped.
+
+      run "stop", then "show port stats 0", check forwarding packages stopped.
 
 
-3. Attach port 0
-    run "port attach 0000:02:00.0"
+Test Case 2: port detach and attach for physical devices with vfio
+==================================================================
 
-    run "port start 0"
+1. Start testpmd::
 
-    run "show port info 0", check port 0 info display.
+      $ ./testpmd -c 0xf -n 4 -- -i
 
-4. Check package forwarding when startup
+2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
-    run "start", then "show port stats 0" check forwarding packages start.
+      # ./tools/dpdk_nic_bind -b vfio-pci 0000:02:00.0
 
-    run "port detach 0", check the error message of port not stopped.
+3. Attach port 0(assume BDF 0000:02:00.0)::
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "port attach 0000:02:00.0"
 
-5. Detach port 0 after port closed
-    run "port stop 0"
+      run "port start 0"
 
-    run "port close 0".
+      run "show port info 0", check port 0 info display.
 
-    run "port detach 0", check port detached successful.
+4. Detach port 0 after port closed::
 
-6. Re-attach port 0(assume BDF 0000:02:00.0)
-    run "port attach 0000:02:00.0",
+      run "port stop 0", then "show port stats 0", check port stopped.
 
-    run "port start 0".
+      run "port close 0".
 
-    run "show port info 0", check port 0 info display.
-
-7. Check package forwarding after re-attach
-    run "start", then "show port stats 0" check forwarding packages start.
-
-    run "port detach 0", check the error message of port not stopped.
-
-    run "stop", then "show port stats 0", check forwarding packages stopped.
-
--------------------------------------------------------------------------------
-Test Case 2: port dettach & attach for physical devices with vfio
--------------------------------------------------------------------------------
-
-1. Start testpmd
-    $ ./testpmd -c 0xf -n 4 -- -i
-
-2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)
-    # ./tools/dpdk_nic_bind -b vfio-pci 0000:02:00.0
-
-3. Attach port 0(assume BDF 0000:02:00.0)
-    run "port attach 0000:02:00.0"
-
-    run "port start 0"
-
-    run "show port info 0", check port 0 info display.
-
-4. Detach port 0 after port closed
-    run "port stop 0", then "show port stats 0", check port stopped.
-
-    run "port close 0".
-
-    run "port detach 0", check detach status(should fail as no detach
+      run "port detach 0", check detach status(should fail as no detach
                          support at the moment for vfio).
 
--------------------------------------------------------------------------------
 Test Case 3: port detach & attach for physical devices with uio_pci_generic
-             This case should be enabled after uio_pci_generic enabled for DPDK
--------------------------------------------------------------------------------
+===========================================================================
 
-1. Start testpmd
-    $ ./testpmd -c 0xf -n 4 -- -i
+This case should be enabled after uio_pci_generic enabled for DPDK
 
-2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)
-    # ./tools/dpdk_nic_bind -b uio_pci_generic 0000:02:00.0
+1. Start testpmd::
 
-3. Attach port 0(assume BDF 0000:02:00.0)
-    run "port attach 0000:02:00.0"
+      $ ./testpmd -c 0xf -n 4 -- -i
 
-    run "port start 0"
+2. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
-    run "show port info 0", check port 0 info display.
+      # ./tools/dpdk_nic_bind -b uio_pci_generic 0000:02:00.0
 
-4. Check package forwarding when startup
+3. Attach port 0(assume BDF 0000:02:00.0)::
 
-    run "start", then "show port stats 0" check forwarding packages start.
+      run "port attach 0000:02:00.0"
 
-    run "port detach 0", check the error message of port not stopped.
+      run "port start 0"
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "show port info 0", check port 0 info display.
 
-5. Detach port 0 after port closed
-    run "port stop 0"
+4. Check package forwarding when startup::
 
-    run "port close 0".
+      run "start", then "show port stats 0" check forwarding packages start.
 
-    run "port detach 0", check port detached successful.
+      run "port detach 0", check the error message of port not stopped.
 
-6. Re-attach port 0(assume BDF is 0000:02:00.0)
-    run "port attach 0000:02:00.0",
+      run "stop", then "show port stats 0", check forwarding packages stopped.
 
-    run "port start 0".
+5. Detach port 0 after port closed::
 
-    run "show port info 0", check port 0 info display.
+      run "port stop 0"
 
-7. Check package forwarding after re-attach
-    run "start", then "show port stats 0" check forwarding packages start.
+      run "port close 0".
 
-    run "port detach 0", check the error message of not stopped.
+      run "port detach 0", check port detached successful.
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+6. Re-attach port 0(assume BDF is 0000:02:00.0)::
 
--------------------------------------------------------------------------------
+      run "port attach 0000:02:00.0",
+
+      run "port start 0".
+
+      run "show port info 0", check port 0 info display.
+
+7. Check package forwarding after re-attach::
+
+      run "start", then "show port stats 0" check forwarding packages start.
+
+      run "port detach 0", check the error message of not stopped.
+
+      run "stop", then "show port stats 0", check forwarding packages stopped.
+
 Test Case 4: port detach & attach for physical devices with igb_uio
-             Bind driver before testpmd started, port will start automatically
--------------------------------------------------------------------------------
+===================================================================
 
-1. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)
-    # ./tools/dpdk_nic_bind -b uio_pci_generic 0000:02:00.0
+Bind driver before testpmd started, port will start automatically
 
-2. Start testpmd
-    $ ./testpmd -c 0xf -n 4 -- -i
 
-3. Check package forwarding when startup
+1. Bind new physical port to igb_uio(assume BDF 0000:02:00.0)::
 
-    run "start", then "show port stats 0" check forwarding packages start.
+      # ./tools/dpdk_nic_bind -b uio_pci_generic 0000:02:00.0
 
-    run "port detach 0", check the error message of port not stopped.
+2. Start testpmd::
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      $ ./testpmd -c 0xf -n 4 -- -i
 
-4. Detach port 0 after port closed
-    run "port stop 0"
+3. Check package forwarding when startup::
 
-    run "port close 0".
+      run "start", then "show port stats 0" check forwarding packages start.
 
-    run "port detach 0", check port detached successful.
+      run "port detach 0", check the error message of port not stopped.
 
-5. Re-attach port 0(assume BDF 0000:02:00.0)
-    run "port attach 0000:02:00.0",
+      run "stop", then "show port stats 0", check forwarding packages stopped.
 
-    run "port start 0".
+4. Detach port 0 after port closed::
 
-    run "show port info 0", check port 0 info display.
+      run "port stop 0"
 
-6. Check package forwarding after re-attach
-    run "start", then "show port stats 0" check forwarding packages start.
+      run "port close 0".
 
-    run "port detach 0", check the error message of port not stopped.
+      run "port detach 0", check port detached successful.
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+5. Re-attach port 0(assume BDF 0000:02:00.0)::
 
--------------------------------------------------------------------------------
+      run "port attach 0000:02:00.0",
+
+      run "port start 0".
+
+      run "show port info 0", check port 0 info display.
+
+6. Check package forwarding after re-attach::
+
+      run "start", then "show port stats 0" check forwarding packages start.
+
+      run "port detach 0", check the error message of port not stopped.
+
+      run "stop", then "show port stats 0", check forwarding packages stopped.
+
 Test Case 5: port detach & attach for virtual devices
--------------------------------------------------------------------------------
+=====================================================
 
-1. Start testpmd
-    $ ./testpmd -c 0xf -n 4 -- -i
+1. Start testpmd::
 
-2. Attach virtual device as port 0
-    run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
+      $ ./testpmd -c 0xf -n 4 -- -i
 
-    run "port start 0".
+2. Attach virtual device as port 0::
 
-    run "show port info 0", check port 0 info display correctly.
+      run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
 
-3. Check package forwarding after port start
+      run "port start 0".
 
-    run "start", then "show port stats 0" check forwarding packages start.
+      run "show port info 0", check port 0 info display correctly.
 
-    run "port detach 0", check the error message of port not stopped.
+3. Check package forwarding after port start::
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "start", then "show port stats 0" check forwarding packages start.
 
-4. Detach port 0 after port closed
+      run "port detach 0", check the error message of port not stopped.
 
-    run "port stop 0".
+      run "stop", then "show port stats 0", check forwarding packages stopped.
 
-    run "port close 0".
+4. Detach port 0 after port closed::
 
-    run "port detach 0", check port detached successful.
+      run "port stop 0".
 
-5. Re-attach port 0
+      run "port close 0".
 
-    run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
+      run "port detach 0", check port detached successful.
 
-    run "port start 0".
+5. Re-attach port 0::
 
-    run "show port info 0", check port 0 info display correctly.
+      run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
 
-6. Check package forwarding after port start
+      run "port start 0".
 
-    run "start", then "show port stats 0" check forwarding packages start.
+      run "show port info 0", check port 0 info display correctly.
 
-    run "port detach 0", check the error message of port not stopped.
+6. Check package forwarding after port start::
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "start", then "show port stats 0" check forwarding packages start.
 
--------------------------------------------------------------------------------
+      run "port detach 0", check the error message of port not stopped.
+
+      run "stop", then "show port stats 0", check forwarding packages stopped.
+
+
 Test Case 6: port detach & attach for virtual devices, with "--vdev"
--------------------------------------------------------------------------------
+====================================================================
 
-1. Start testpmd, ""xxxx" is one workable ifname
-    $ ./testpmd -c 0xf -n 4 --vdev "eth_pcap0,iface=xxxx" -- -i
+1. Start testpmd, ""xxxx" is one workable ifname::
 
-2. Check package forwarding after port start
+      $ ./testpmd -c 0xf -n 4 --vdev "eth_pcap0,iface=xxxx" -- -i
 
-    run "start", then "show port stats 0" check forwarding packages start.
+2. Check package forwarding after port start::
 
-    run "port detach 0", check the error message of port not stopped.
+      run "start", then "show port stats 0" check forwarding packages start.
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "port detach 0", check the error message of port not stopped.
 
-3. Detach port 0 after port closed
+      run "stop", then "show port stats 0", check forwarding packages stopped.
 
-    run "port stop 0".
+3. Detach port 0 after port closed::
 
-    run "port close 0".
+      run "port stop 0".
 
-    run "port detach 0", check port detached successful.
+      run "port close 0".
 
-4. Re-attach port 0
+      run "port detach 0", check port detached successful.
 
-    run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
+4. Re-attach port 0::
 
-    run "port start 0".
+      run "port attach eth_pcap0,iface=xxxx", where "xxxx" is one workable ifname.
 
-    run "show port info 0", check port 0 info display correctly.
+      run "port start 0".
 
-5. Check package forwarding after port start
+      run "show port info 0", check port 0 info display correctly.
 
-    run "start", then "show port stats 0" check forwarding packages start.
+5. Check package forwarding after port start::
 
-    run "port detach 0", check the error message of port not stopped.
+      run "start", then "show port stats 0" check forwarding packages start.
 
-    run "stop", then "show port stats 0", check forwarding packages stopped.
+      run "port detach 0", check the error message of port not stopped.
 
-successfully
+      run "stop", then "show port stats 0", check forwarding packages stopped.

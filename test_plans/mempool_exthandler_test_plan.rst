@@ -1,5 +1,5 @@
-.. Copyright (c) <2016>, Intel Corporation
-      All rights reserved.
+.. Copyright (c) <2016-2017>, Intel Corporation
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================
-External mempool handler
-========================
+==============================
+External Mempool Handler Tests
+==============================
 
 External Mempool Handler feature is an extension to the mempool API that
 allows users to add and use an alternative mempool handler, which allows
@@ -41,27 +41,30 @@ systems and software based memory allocators to be used with DPDK.
 
 Test Case 1: Multiple producers and multiple consumers mempool handler
 ======================================================================
+
 1. Change default mempool operation to "ring_mp_mc"
 2. Run l2fwd and check packet forwarding normally with this mempool handler.
 
 Test Case 2: Single producer and Single consumer mempool handler
 ================================================================
+
 1. Change default mempool operation to "ring_sp_sc"
 2. Run l2fwd and check packet forwarding normally with this mempool handler.
 
 Test Case 3: Single producer and Multiple consumers mempool handler
 ===================================================================
+
 1. Change default mempool operation to "ring_sp_mc"
 2. Run l2fwd and check packet forwarding normally with this mempool handler.
 
 Test Case 4: Multiple producers and single consumer mempool handler
 ===================================================================
+
 1. Change default mempool operation to "ring_mp_sc"
 2. Run l2fwd and check packet forwarding normally with this mempool handler.
 
 Test Case 5: External stack mempool handler
 ===========================================
+
 1. Change default mempool operation to "stack"
 2. Run l2fwd and check packet forwarding normally with this mempool handler.
-
-

@@ -1,5 +1,5 @@
-.. Copyright (c) <2015>, Intel Corporation
-      All rights reserved.
+.. Copyright (c) <2015-2017>, Intel Corporation
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -30,7 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
- 
+
+===================
+VF Jumboframe Tests
+===================
 
 The support of jumbo frames by Poll Mode Drivers consists in enabling a port
 to receive Jumbo Frames with a configurable maximum packet length that is
@@ -40,50 +43,52 @@ a maximum value imposed by the hardware.
 
 Prerequisites
 =============
-1. Create VF device from PF devices.
-	./dpdk_nic_bind.py --st
-	0000:87:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
-	0000:87:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
+1. Create VF device from PF devices.::
 
-    echo 1 > /sys/bus/pci/devices/0000\:87\:00.0/sriov_numvfs
-	echo 1 > /sys/bus/pci/devices/0000\:87\:00.1/sriov_numvfs
+      ./dpdk_nic_bind.py --st
+      0000:87:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
+      0000:87:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
 
-    ./dpdk_nic_bind.py --st
+      echo 1 > /sys/bus/pci/devices/0000\:87\:00.0/sriov_numvfs
+      echo 1 > /sys/bus/pci/devices/0000\:87\:00.1/sriov_numvfs
 
-    0000:87:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
-    0000:87:02.0 'XL710/X710 Virtual Function' unused=
-    0000:87:0a.0 'XL710/X710 Virtual Function' unused=
+      ./dpdk_nic_bind.py --st
 
-2. Detach VFs from the host, bind them to pci-stub driver,
+      0000:87:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
+      0000:87:02.0 'XL710/X710 Virtual Function' unused=
+      0000:87:0a.0 'XL710/X710 Virtual Function' unused=
 
-	/sbin/modprobe pci-stub
+2. Detach VFs from the host, bind them to pci-stub driver::
 
-	using `lspci -nn|grep -i ethernet` got VF device id, for example "8086 154c",
+      /sbin/modprobe pci-stub
 
-	echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
-	echo 0000:87:02.0 > /sys/bus/pci/devices/0000:87:02.0/driver/unbind
-	echo 0000:87:02.0 > /sys/bus/pci/drivers/pci-stub/bind
+      using `lspci -nn|grep -i ethernet` got VF device id, for example "8086 154c",
 
-	echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
-	echo 0000:87:0a.0 > /sys/bus/pci/devices/0000:87:0a.0/driver/unbind
-	echo 0000:87:0a.0 > /sys/bus/pci/drivers/pci-stub/bind
+      echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
+      echo 0000:87:02.0 > /sys/bus/pci/devices/0000:87:02.0/driver/unbind
+      echo 0000:87:02.0 > /sys/bus/pci/drivers/pci-stub/bind
 
-3. Passthrough VFs 87:02.0 & 87:02.1 to vm0 and start vm0,
+      echo "8086 154c" > /sys/bus/pci/drivers/pci-stub/new_id
+      echo 0000:87:0a.0 > /sys/bus/pci/devices/0000:87:0a.0/driver/unbind
+      echo 0000:87:0a.0 > /sys/bus/pci/drivers/pci-stub/bind
 
-    /usr/bin/qemu-system-x86_64  -name vm0 -enable-kvm \
-	-cpu host -smp 4 -m 2048 -drive file=/home/image/sriov-fc20-1.img -vnc :1 \
-	-device pci-assign,host=87:02.0,id=pt_0 \
-	-device pci-assign,host=87:0a.0,id=pt_1
+3. Passthrough VFs 87:02.0 & 87:02.1 to vm0 and start vm0::
 
-4. Login vm0 and them bind VF devices to igb_uio driver.
+      /usr/bin/qemu-system-x86_64  -name vm0 -enable-kvm \
+      -cpu host -smp 4 -m 2048 -drive file=/home/image/sriov-fc20-1.img -vnc :1 \
+      -device pci-assign,host=87:02.0,id=pt_0 \
+      -device pci-assign,host=87:0a.0,id=pt_1
 
-	./tools/dpdk_nic_bind.py --bind=igb_uio 00:04.0 00:05.0
+4. Login vm0 and them bind VF devices to igb_uio driver::
 
-5. Start testpmd, set it in mac forward mode
-	testpmd -c 0x0f-- -i --portmask=0x1 \
-	  --txqflags=0 --max-pkt-len=9000--port-topology=loop
-	testpmd> set fwd mac
-	testpmd> start
+      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:04.0 00:05.0
+
+5. Start testpmd, set it in mac forward mode::
+
+      testpmd -c 0x0f-- -i --portmask=0x1 \
+        --txqflags=0 --max-pkt-len=9000--port-topology=loop
+      testpmd> set fwd mac
+      testpmd> start
 
 Start packet forwarding in the ``testpmd`` application with the ``start``
 command. Then, make the Traffic Generator transmit to the target's port
@@ -117,25 +122,30 @@ sending to the test machine packets with the following lengths (CRC included):
 
 Test Case: Normal frames with no jumbo frame support
 ====================================================
+
 Check that packets of standard lengths are still received with setting
 max-pkt-len.
 
 Test Case: Normal frames with jumbo frame support
 =================================================
+
 Check that packets of standard lengths are still received when enabling the
 receipt of Jumbo Frames.
 
 Test Case: Jumbo frames with no jumbo frame support
 ====================================================
+
 Check that with jumbo frame support, packet lengths greater than the standard
 maximum frame (1518) can not received.
 
 Test Case: Jumbo frames with jumbo frame support
 ================================================
+
 Check that Jumbo Frames of lengths greater than the standard maximum frame
 (1518) and lower or equal to the maximum frame length can be received.
 
 Test Case: Jumbo frames over jumbo frame support
 ================================================
+
 Check that packets larger than the configured maximum packet length are
 effectively dropped by the hardware.

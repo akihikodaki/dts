@@ -1,5 +1,5 @@
 .. Copyright (c) <2017>, Intel Corporation
-      All rights reserved.
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -30,10 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================
-External mempool handler
-========================
-   
+==============================
+External Mempool Handler Tests
+==============================
+
 External Mempool Handler feature is an extension to the mempool API that
 allows users to add and use an alternative mempool handler, which allows
 external memory subsystems such as external hardware memory management
@@ -41,85 +41,90 @@ systems and software based memory allocators to be used with DPDK.
 
 Test Case 1: Multiple producers and multiple consumers
 ======================================================
+
 1. Change default mempool handler operations to "ring_mp_mc"
-2. Start test app and verify mempool autotest passed
+2. Start test app and verify mempool autotest passed::
 
-   test -n 4 -c f
-   RTE>> mempool_autotest
+      test -n 4 -c f
+      RTE>> mempool_autotest
 
-3. Start testpmd with two ports and start forwarding
+3. Start testpmd with two ports and start forwarding::
 
-   testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
-   testpmd> set fwd mac
-   testpmd> start
-   
+      testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
+      testpmd> set fwd mac
+      testpmd> start
+
 4. Send hundreds of packets from tester ports
 5. verify forwarded packets sequence and integrity
 
 Test Case 2: Single producer and Single consumer
 ================================================
+
 1. Change default mempool operation to "ring_sp_sc"
-2. Start test app and verify mempool autotest passed
+2. Start test app and verify mempool autotest passed::
 
-   test -n 4 -c f
-   RTE>> mempool_autotest
+      test -n 4 -c f
+      RTE>> mempool_autotest
 
-3. Start testpmd with two ports and start forwarding
+3. Start testpmd with two ports and start forwarding::
 
-   testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
-   testpmd> set fwd mac
-   testpmd> start
-   
+      testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
+      testpmd> set fwd mac
+      testpmd> start
+
 4. Send hundreds of packets from tester ports
 5. verify forwarded packets sequence and integrity
 
 Test Case 3: Single producer and Multiple consumers
 ===================================================
+
 1. Change default mempool operation to "ring_sp_mc"
-2. Start test app and verify mempool autotest passed
+2. Start test app and verify mempool autotest passed::
 
-   test -n 4 -c f
-   RTE>> mempool_autotest
+      test -n 4 -c f
+      RTE>> mempool_autotest
 
-3. Start testpmd with two ports and start forwarding
+3. Start testpmd with two ports and start forwarding::
 
-   testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
-   testpmd> set fwd mac
-   testpmd> start
-   
+      testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
+      testpmd> set fwd mac
+      testpmd> start
+
 4. Send hundreds of packets from tester ports
 5. verify forwarded packets sequence and integrity
 
 Test Case 4: Multiple producers and single consumer
 ===================================================
+
 1. Change default mempool operation to "ring_mp_sc"
-2. Start test app and verify mempool autotest passed
+2. Start test app and verify mempool autotest passed::
 
-   test -n 4 -c f
-   RTE>> mempool_autotest
+      test -n 4 -c f
+      RTE>> mempool_autotest
 
-3. Start testpmd with two ports and start forwarding
+3. Start testpmd with two ports and start forwarding::
 
-   testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
-   testpmd> set fwd mac
-   testpmd> start
-   
+      testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
+      testpmd> set fwd mac
+      testpmd> start
+
 4. Send hundreds of packets from tester ports
 5. verify forwarded packets sequence and integrity
-   
+
 Test Case 4: Stack mempool handler
 ==================================
+
 1. Change default mempool operation to "stack"
-2. Start test app and verify mempool autotest passed
+2. Start test app and verify mempool autotest passed::
 
-   test -n 4 -c f
-   RTE>> mempool_autotest
+      test -n 4 -c f
+      RTE>> mempool_autotest
 
-3. Start testpmd with two ports and start forwarding
+3. Start testpmd with two ports and start forwarding::
 
-   testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
-   testpmd> set fwd mac
-   testpmd> start
-   
+      testpmd -c 0x6 -n 4  -- -i --portmask=0x3 --txqflags=0
+      testpmd> set fwd mac
+      testpmd> start
+
 4. Send hundreds of packets from tester ports
 5. verify forwarded packets sequence and integrity

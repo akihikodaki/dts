@@ -1,22 +1,22 @@
-.. Copyright (c) <2010>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,14 +30,14 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=================
-LPM Autotest
-=================
+===============
+Unit Tests: LPM
+===============
 
 This is the test plan for the Intel®  DPDK LPM Method.
 
 This section explains how to run the unit tests for LPM.The test can be
-launched independently using the command line interface. 
+launched independently using the command line interface.
 This test is implemented as a linuxapp environment application.
 
 The complete test suite is launched automatically using a python-expect
@@ -46,22 +46,22 @@ the application and checks the results. A test report is displayed on
 stdout.
 
 The steps to run the unit test manually are as follow::
-  
+
   # make -C ./app/test/
   # ./app/test/test -n 1 -c ffff
   RTE>> lpm_autotest
 
 
-The final output of the test has to be "Test OK"   
-   
-=================
-LPM_ipv6 Autotest
-=================
+The final output of the test has to be "Test OK"
+
+====================
+Unit Tests: LPM_ipv6
+====================
 
 This is the test plan for the Intel®  DPDK LPM Method in IPv6.
 
 This section explains how to run the unit tests for LPM in IPv6.The test can be
-launched independently using the command line interface. 
+launched independently using the command line interface.
 This test is implemented as a linuxapp environment application.
 
 The complete test suite is launched automatically using a python-expect
@@ -70,11 +70,10 @@ the application and checks the results. A test report is displayed on
 stdout.
 
 The steps to run the unit test manually are as follow::
-  
+
   # make -C ./app/test/
   # ./app/test/test -n 1 -c ffff
   RTE>> lpm6_autotest
 
 
 The final output of the test has to be "Test OK"
-  

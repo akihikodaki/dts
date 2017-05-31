@@ -1,4 +1,4 @@
-.. Copyright (c) <2014>, Intel Corporation
+.. Copyright (c) <2014-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -18,7 +18,7 @@
      from this software without specific prior written permission.
 
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-   "AS IS" AND ANY EXPR   ESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
    FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
    COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
@@ -30,14 +30,15 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-================
- Fortville Vxlan
-================
-Cloud providers build virtual network overlays over existing network 
-infrastructure that provide tenant isolation and scaling. Tunneling 
+=====================
+Fortville Vxlan Tests
+=====================
+
+Cloud providers build virtual network overlays over existing network
+infrastructure that provide tenant isolation and scaling. Tunneling
 layers added to the packets carry the virtual networking frames over
-existing Layer 2 and IP networks. Conceptually, this is similar to 
-creating virtual private networks over the Internet. Fortville will 
+existing Layer 2 and IP networks. Conceptually, this is similar to
+creating virtual private networks over the Internet. Fortville will
 process these tunneling layers by the hardware.
 
 This document provides test plan for Fortville vxlan packet detecting,
@@ -45,11 +46,11 @@ checksum computing and filtering.
 
 Prerequisites
 =============
-1x Intel® X710 (Fortville) NICs (2x 40GbE full duplex optical ports per NIC)
+1x IntelÂ® X710 (Fortville) NICs (2x 40GbE full duplex optical ports per NIC)
 plugged into the available PCIe Gen3 8-lane slot.
 
-1x Intel® XL710-DA4 (Eagle Fountain) (1x 10GbE full duplex optical ports per NIC)
-plugged into the avaiable PCIe Gen3 8-lane slot.
+1x IntelÂ® XL710-DA4 (Eagle Fountain) (1x 10GbE full duplex optical ports per NIC)
+plugged into the available PCIe Gen3 8-lane slot.
 
 DUT board must be two sockets system and each cpu have more than 8 lcores.
 
@@ -57,15 +58,15 @@ Test Case: Vxlan ipv4 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-	testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
-	
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+
 Set rxonly packet forwarding mode and enable verbose log::
 
-	set fwd rxonly
-	set verbose 1
+    set fwd rxonly
+    set verbose 1
     rx_vxlan_port add 4789 0
 
-Send packet as table listed and check dumped packet type the same as column 
+Send packet as table listed and check dumped packet type the same as column
 "Rx packet type".
 
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
@@ -90,19 +91,19 @@ Test Case: Vxlan ipv6 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-	testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
-	
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+
 Set rxonly packet forwarding mode and enable verbose log::
 
-	set fwd rxonly
-	set verbose 1
+    set fwd rxonly
+    set verbose 1
     rx_vxlan_port add 4789 0
 
-Send ipv6 packet as table listed and check dumped packet type the same as 
+Send ipv6 packet as table listed and check dumped packet type the same as
 column "Rx packet type".
 
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 | Rx packet type      | Pkt Error |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  | Rx packet type      | Pkt Error |
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
 | No         | Ipv6     | None      | None       | None     | None      | PKT_RX_IPV6_HDR     | None      |
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
@@ -123,21 +124,21 @@ Test Case: Vxlan ipv4 checksum offload
 
 Start testpmd with tunneling packet type to vxlan::
 
-	testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
-	
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+
 Set csum packet forwarding mode and enable verbose log::
 
-	set fwd csum
-	set verbose 1
+    set fwd csum
+    set verbose 1
     rx_vxlan_port add 4789 0
 
-Enable VXLAN protocal on ports::
+Enable VXLAN protocol on ports::
 
     rx_vxlan_port add 4789 0
     rx_vxlan_port add 4789 1
 
 Enable IP,UDP,TCP,SCTP,OUTER-IP checksum offload::
-	
+
     csum parse_tunnel on 0
     csum parse_tunnel on 1
     csum set ip hw 0
@@ -146,20 +147,20 @@ Enable IP,UDP,TCP,SCTP,OUTER-IP checksum offload::
     csum set stcp hw 0
     csum set outer-ip hw 0
 
-Send packet with valid checksum and check there's no chksum error counter 
+Send packet with valid checksum and check there's no chksum error counter
 increased.
 
 +------------+----------+-----------+------------+----------+-----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 | Pkt Error |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  | Pkt Error |
 +------------+----------+-----------+------------+----------+-----------+-----------+
 | No         | Ipv4     | None      | None       | None     | None      | None      |
 +------------+----------+-----------+------------+----------+-----------+-----------+
 
-Send packet with invalid l3 checksum first. Then check forwarded packet checksum 
+Send packet with invalid l3 checksum first. Then check forwarded packet checksum
 corrected and there's correct l3 chksum error counter increased.
 
 +------------+----------+-----------+------------+----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  |
 +------------+----------+-----------+------------+----------+-----------+
 | No         | Bad Ipv4 | None      | None       | None     | None      |
 +------------+----------+-----------+------------+----------+-----------+
@@ -170,11 +171,11 @@ corrected and there's correct l3 chksum error counter increased.
 | No         | Bad Ipv4 | Vxlan     | None       | Bad Ipv4 | Udp       |
 +------------+----------+-----------+------------+----------+-----------+
 
-Send packet with invalid l4 checksum first. Then check forwarded packet checksum 
+Send packet with invalid l4 checksum first. Then check forwarded packet checksum
 corrected and there's correct l4 chksum error counter increased.
 
 +------------+----------+-----------+------------+----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  |
 +------------+----------+-----------+------------+----------+-----------+
 | No         | Ipv4     | Vxlan     | None       | Ipv4     | Bad Udp   |
 +------------+----------+-----------+------------+----------+-----------+
@@ -183,11 +184,11 @@ corrected and there's correct l4 chksum error counter increased.
 | No         | Ipv4     | Vxlan     | None       | Ipv4     | Bad Sctp  |
 +------------+----------+-----------+------------+----------+-----------+
 
-Send vlan packet with invalid l3 checksum first. Then check forwarded packet 
+Send vlan packet with invalid l3 checksum first. Then check forwarded packet
 checksum corrected and there's correct l3 chksum error counter increased.
 
 +------------+----------+-----------+------------+----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  |
 +------------+----------+-----------+------------+----------+-----------+
 | Yes        | Bad Ipv4 | Vxlan     | None       | Ipv4     | Udp       |
 +------------+----------+-----------+------------+----------+-----------+
@@ -202,11 +203,11 @@ checksum corrected and there's correct l3 chksum error counter increased.
 | Yes        | Bad Ipv4 | Vxlan     | Yes        | Bad Ipv4 | Udp       |
 +------------+----------+-----------+------------+----------+-----------+
 
-Send vlan packet with invalid l4 checksum first. Then check forwarded packet 
+Send vlan packet with invalid l4 checksum first. Then check forwarded packet
 checksum corrected and there's correct l4 chksum error counter increased.
 
 +------------+----------+-----------+------------+----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  |
 +------------+----------+-----------+------------+----------+-----------+
 | Yes        | Ipv4     | Vxlan     | None       | Ipv4     | Bad Udp   |
 +------------+----------+-----------+------------+----------+-----------+
@@ -220,21 +221,21 @@ Test Case: Vxlan ipv6 checksum offload
 ======================================
 Start testpmd with tunneling packet type::
 
-	testpmd -c ffff -n 4 -- -i --tunnel-type=1 --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
-	
+    testpmd -c ffff -n 4 -- -i --tunnel-type=1 --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
+
 Set csum packet forwarding mode and enable verbose log::
 
-	set fwd csum
-	set verbose 1
+    set fwd csum
+    set verbose 1
 
 
-Enable VXLAN protocal on ports::
+Enable VXLAN protocol on ports::
 
     rx_vxlan_port add 4789 0
     rx_vxlan_port add 4789 1
 
 Enable IP,UDP,TCP,SCTP,VXLAN checksum offload::
-	
+
     csum parse_tunnel on 0
     csum parse_tunnel on 1
     csum set ip hw 0
@@ -243,17 +244,17 @@ Enable IP,UDP,TCP,SCTP,VXLAN checksum offload::
     csum set stcp hw 0
     csum set outer-ip hw 0
 
-Send ipv6 packet with valid checksum and check there's no chksum error counter 
+Send ipv6 packet with valid checksum and check there's no chksum error counter
 increased.
 
 +------------+----------+-----------+------------+----------+-----------+-----------+
-| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Innter L4 | Pkt Error |
+| Outer Vlan | Outer IP | Outer UDP | Inner Vlan | Inner L3 | Inner L4  | Pkt Error |
 +------------+----------+-----------+------------+----------+-----------+-----------+
 | No         | Ipv6     | None      | None       | None     | None      | None      |
 +------------+----------+-----------+------------+----------+-----------+-----------+
 
 
-Send ipv6 packet with invalid l3 checksum first. Then check forwarded packet 
+Send ipv6 packet with invalid l3 checksum first. Then check forwarded packet
 checksum corrected and there's correct l3 chksum error counter increased.
 
 +------------+----------+-----------+------------+----------+-----------+
@@ -264,8 +265,8 @@ checksum corrected and there's correct l3 chksum error counter increased.
 | No         | Ipv6     | Vxlan     | None       | Bad Ipv4 | Udp       |
 +------------+----------+-----------+------------+----------+-----------+
 
-Send vlan+ipv6 packet with invalid l4 checksum first. Then check forwarded 
-packet checksum corrected and there's correct l4 chksum error counter 
+Send vlan+ipv6 packet with invalid l4 checksum first. Then check forwarded
+packet checksum corrected and there's correct l4 chksum error counter
 increased.
 
 +------------+----------+-----------+------------+----------+-----------+
@@ -286,19 +287,19 @@ increased.
 
 Test Case: Cloud Filter
 ========================
-Start testpmd with tunneling packet type to vxlan and disable receive side 
+Start testpmd with tunneling packet type to vxlan and disable receive side
 scale for hardware limitation::
 
-	testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
-	
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+
 Set rxonly packet forwarding mode and enable verbose log::
 
-	set fwd rxonly
-	set verbose 1
+    set fwd rxonly
+    set verbose 1
 
 Add one new Cloud filter as table listed first::
 
-	tunnel_filter add 0 11:22:33:44:55:66 00:00:20:00:00:01 192.168.2.2 1 vxlan imac-ivlan 1 3
+    tunnel_filter add 0 11:22:33:44:55:66 00:00:20:00:00:01 192.168.2.2 1 vxlan imac-ivlan 1 3
 
 Then send one packet and check packet was forwarded into right queue.
 
@@ -321,7 +322,7 @@ Then send one packet and check packet was forwarded into right queue.
 
 Add Cloud filter to max number will be failed.
 
-Remove Cloud filter which has been added. Then send one packet and check 
+Remove Cloud filter which has been added. Then send one packet and check
 packet was received in queue 0.
 
 Add Cloud filter with invalid Mac address "00:00:00:00:01" will be failed.
@@ -363,7 +364,7 @@ Test Case: Vxlan Tunnel filter Performance Benchmarking
 =======================================================
 The throughput is measured for different Vxlan tunnel filter types.
 Queue single mean there's only one flow and forwarded to the first queue.
-Queue multi mean there're two flows and configure to different queues.
+Queue multi mean there are two flows and configure to different queues.
 
 +--------+------------------+--------+--------+------------+
 | Packet | Filter           | Queue  | Mpps   | % linerate |

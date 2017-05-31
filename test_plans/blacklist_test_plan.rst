@@ -1,22 +1,22 @@
-.. Copyright (c) <2010,2011>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,24 +30,28 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=========================
-Support of port blacklist
-=========================
+====================
+Port Blacklist Tests
+====================
 
 Prerequisites
 =============
 
 Board with at least 2 DPDK supported NICs attached.
 
-Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+using vfio, use the following commands to to load the vfio driver and bind it
+to the device under test::
+
+   modprobe vfio
+   modprobe vfio-pci
+   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 Test Case: Testpmd with no blacklisted device
 =============================================
 
 Run testpmd in interactive mode and ensure that at least 2 ports
-are binded and available::
+are bound and available::
 
   build/testpmd -c 3 -- -i
   ....
@@ -135,4 +139,3 @@ only 1 ports is available now:::
   EAL: PCI memory mapped at 0x7f22e9aeb000
   Interactive-mode selected
   Initializing port 0... done:  Link Up - speed 10000 Mbps - full-duplex
-

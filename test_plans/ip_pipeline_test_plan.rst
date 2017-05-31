@@ -1,4 +1,4 @@
-.. Copyright (c) <2010>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=======================
-Ip_pipeline application
-=======================
+=============================
+IP Pipeline Application Tests
+=============================
 
 The ``ip_pipeline application`` is the main DPDK Packet Framework (PFW)
 application.
@@ -49,15 +49,15 @@ transmission.
 
 The traffic will pass through the pipeline if meets the following conditions:
 
-  - If ``flow add all`` is used in the setup then:
+- If ``flow add all`` is used in the setup then:
 
-    - TCP/IPv4
-    - IP destination = A.B.C.D with A = 0 and B,C,D random
-    - IP source = 0.0.0.0
-    - TCP destination port = 0
-    - TCP source port = 0
+  - TCP/IPv4
+  - IP destination = A.B.C.D with A = 0 and B,C,D random
+  - IP source = 0.0.0.0
+  - TCP destination port = 0
+  - TCP source port = 0
 
-  - If ``flow add all`` is not used then there is no restrictions.
+- If ``flow add all`` is not used then there is no restrictions.
 
 Prerequisites
 =============
@@ -84,7 +84,7 @@ The PCAP driver is used in some tests as a traffic generator and sniffer.
 
 NOTE: ``ip_pipeline`` is currently hardcoded to start the reception from ports
 automatically. Prior to running the test described in this document this
-behaviour has to be modified by commenting out the following lines in
+behavior has to be modified by commenting out the following lines in
 ``examples/ip_pipeline/pipeline_rx.c``::
 
     /* Enable input ports */
@@ -195,7 +195,7 @@ Test Case: test_pcap_frame_sizes
 ================================
 
 Compile DPDK to use PCAP driver. Modify the target config file to allow PCAP
-driver:
+driver::
 
     sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/'
     config/defconfig_<target>

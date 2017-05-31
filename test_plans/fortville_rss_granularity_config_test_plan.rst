@@ -1,4 +1,4 @@
-.. Copyright (c) <2015>, Intel Corporation
+.. Copyright (c) <2015-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,108 +30,119 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==================================================================
-Fortville - support granularity configuration of RSS, support 32-bit GRE keys
-==================================================================
+===================================================================
+Fortville Granularity Configuration of RSS and 32-bit GRE key Tests
+===================================================================
 
 Description
 ===========
+
 This document provides test plan for testing the function of Fortville:
 
 1. Support granularity configuration of RSS
 
-By default Fortville uses hash input set preloaded from NVM image which includes all fields 
-- IPv4/v6+TCP/UDP port. Potential problem for this is global configuration per device and can 
-affect all ports. It is required that hash input set can be configurable,  such as using IPv4
-only or IPv6 only or IPv4/v6+TCP/UDP.
+   By default Fortville uses hash input set preloaded from NVM image which
+   includes all fields IPv4/v6+TCP/UDP port. Potential problem for this is
+   global configuration per device and can affect all ports. It is required
+   that hash input set can be configurable, such as using IPv4 only or IPv6
+   only or IPv4/v6+TCP/UDP.
 
 2. support 32-bit GRE keys
 
-By default Fortville extracts only 24 bits of GRE key to FieldVector (NVGRE use case) but 
-for Telco use cases full 32-bit GRE key is needed. It is required that both 24-bit and 32-bit
-keys for GRE should be supported. the test plan is to test the API to switch between 24-bit and
-32-bit keys 
+   By default Fortville extracts only 24 bits of GRE key to FieldVector (NVGRE
+   use case) but for Telco use cases full 32-bit GRE key is needed. It is
+   required that both 24-bit and 32-bit keys for GRE should be supported. the
+   test plan is to test the API to switch between 24-bit and 32-bit keys
 
 
 Prerequisites
 -------------
 
 1. Hardware:
-  1x Fortville_eagle NIC (4x 10G) 
-  1x Fortville_spirit NIC (2x 40G)
-  2x Fortville_spirit_single NIC (1x 40G)
 
-2. software: 
-  dpdk: http://dpdk.org/git/dpdk
-  scapy: http://www.secdev.org/projects/scapy/
+   * 1x Fortville_eagle NIC (4x 10G)
+   * 1x Fortville_spirit NIC (2x 40G)
+   * 2x Fortville_spirit_single NIC (1x 40G)
+
+2. software:
+
+   * dpdk: http://dpdk.org/git/dpdk
+   * scapy: http://www.secdev.org/projects/scapy/
 
 
 Test Case 1: test with flow type ipv4-tcp
-===============================
+=========================================
 
 1. config testpmd on DUT
 
-1). set up testpmd with fortville NICs::
-  ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+   1. set up testpmd with Fortville NICs::
 
-2). Reta Configuration(optional, if not set, will use default)::
-  testpmd> port config 0 rss reta (hash_index,queue_id)
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
 
-3). PMD fwd only receive the packets::
-  testpmd> set fwd rxonly
-  
-4). rss recived package type configuration::
-  testpmd> port config all rss tcp  
+   2. Reta Configuration(optional, if not set, will use default)::
 
-5). set hash function::  
-  testpmd>set_hash_global_config 0 toeplitz ipv4-tcp enable
+         testpmd> port config 0 rss reta (hash_index,queue_id)
 
-6). verbose configuration::
-  testpmd> set verbose 8
+   3. PMD fwd only receive the packets::
 
-7). start packet receive::
-  testpmd> start
-  
-2. using scapy to send packets with ipv4-tcp on tester,
-  
-  sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1025)], iface="%s")
-  
-then got hash value and queue value that output from the testpmd on DUT. 
+         testpmd> set fwd rxonly
 
-3. set hash input set to "none" by testpmd on dut,
+   4. rss received package type configuration::
 
-testpmd> set_hash_input_set 0 ipv4-tcp none select
+         testpmd> port config all rss tcp
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different from the values in step 2. 
+   5. set hash function::
 
-4. set hash input set by testpmd on dut, enable src-ipv4 & dst-ipv4,
+         testpmd>set_hash_global_config 0 toeplitz ipv4-tcp enable
 
-testpmd> set_hash_input_set 0 ipv4-tcp src-ipv4 add
-testpmd> set_hash_input_set 0 ipv4-tcp dst-ipv4 add
+   6. verbose configuration::
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different from the values in step 2. 
+          testpmd> set verbose 8
 
-5. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, tcp-src-port, tcp-dst-port
+   7. start packet receive::
 
-testpmd> set_hash_input_set 0 ipv4-tcp tcp-src-port add
-testpmd> set_hash_input_set 0 ipv4-tcp tcp-dst-port add
+         testpmd> start
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values
-should be different with the values from step 3 & step 4, should be same as step 2.
+2. using scapy to send packets with ipv4-tcp on tester::
 
-6. set hash input set by testpmd on dut, enable tcp-src-port, tcp-dst-port
+    sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1025)], iface="%s")
 
-testpmd> set_hash_input_set 0 ipv4-tcp none select
-testpmd> set_hash_input_set 0 ipv4-tcp tcp-src-port add
-testpmd> set_hash_input_set 0 ipv4-tcp tcp-dst-port add
+   then got hash value and queue value that output from the testpmd on DUT.
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-should be different with the values from step2 & step 3 & step 4 & step 5.
+3. set hash input set to "none" by testpmd on dut::
 
-So it can be approved that with flow type ipv4-tcp, rss hash can be calculated by only included IPv4 fields
-or only included TCP fields or both IPv4+TCP fields.
+       testpmd> set_hash_input_set 0 ipv4-tcp none select
+
+   send packet as step 2, got hash value and queue value that output from the
+   testpmd on DUT, the values should be different from the values in step 2.
+
+4. set hash input set by testpmd on dut, enable src-ipv4 & dst-ipv4::
+
+      testpmd> set_hash_input_set 0 ipv4-tcp src-ipv4 add
+      testpmd> set_hash_input_set 0 ipv4-tcp dst-ipv4 add
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   different from the values in step 2.
+
+5. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, tcp-src-port, tcp-dst-port::
+
+      testpmd> set_hash_input_set 0 ipv4-tcp tcp-src-port add
+      testpmd> set_hash_input_set 0 ipv4-tcp tcp-dst-port add
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values
+   should be different with the values from step 3 & step 4, should be same as step 2.
+
+6. set hash input set by testpmd on dut, enable tcp-src-port, tcp-dst-port::
+
+      testpmd> set_hash_input_set 0 ipv4-tcp none select
+      testpmd> set_hash_input_set 0 ipv4-tcp tcp-src-port add
+      testpmd> set_hash_input_set 0 ipv4-tcp tcp-dst-port add
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   should be different with the values from step2 & step 3 & step 4 & step 5.
+
+   So it can be approved that with flow type ipv4-tcp, rss hash can be calculated by only included IPv4 fields
+   or only included TCP fields or both IPv4+TCP fields.
 
 
 Test Case 2: test with flow type ipv4-udp
@@ -139,75 +150,83 @@ Test Case 2: test with flow type ipv4-udp
 
 1. config testpmd on DUT
 
-1). set up testpmd with fortville NICs::
-  ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+   1. set up testpmd with Fortville NICs::
 
-2). Reta Configuration(optional, if not set, will use default)::
-  testpmd> port config 0 rss reta (hash_index,queue_id)
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
 
-3). PMD fwd only receive the packets::
-  testpmd> set fwd rxonly
-  
-4). rss recived package type configuration::
-  testpmd> port config all rss udp  
+   2. Reta Configuration(optional, if not set, will use default)::
 
-5). set hash function::  
-  testpmd>set_hash_global_config 0 toeplitz ipv4-udp enable
+          testpmd> port config 0 rss reta (hash_index,queue_id)
 
-6). verbose configuration::
-  testpmd> set verbose 8
+   3. PMD fwd only receive the packets::
 
-7). start packet receive::
-  testpmd> start
-  
+         testpmd> set fwd rxonly
+
+   4. rss received package type configuration::
+
+         testpmd> port config all rss udp
+
+   5. set hash function::
+
+         testpmd>set_hash_global_config 0 toeplitz ipv4-udp enable
+
+   6. verbose configuration::
+
+          testpmd> set verbose 8
+
+   7. start packet receive::
+
+          testpmd> start
+
 2. using scapy to send packets with ipv4-udp on tester::
-  
-  sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1025)], iface="%s"))
-  
-then got hash value and queue value that output from the testpmd on DUT. 
 
-3. set hash input set to "none" by testpmd on dut, 
 
-testpmd> set_hash_input_set 0 ipv4-udp none select
+      sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1025)], iface="%s"))
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different from the values in step 2. 
+   then got hash value and queue value that output from the testpmd on DUT.
 
-4. set hash input set by testpmd on dut, enable src-ipv4 and dst-ipv4,
+3. set hash input set to "none" by testpmd on dut::
 
-testpmd> set_hash_input_set 0 ipv4-udp src-ipv4 add
-testpmd> set_hash_input_set 0 ipv4-udp dst-ipv4 add
+       testpmd> set_hash_input_set 0 ipv4-udp none select
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different from the values in step 2 & step 3. 
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   different from the values in step 2.
 
-5. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, udp-src-port, udp-dst-port
+4. set hash input set by testpmd on dut, enable src-ipv4 and dst-ipv4::
 
-testpmd> set_hash_input_set 0 ipv4-udp udp-src-port add
-testpmd> set_hash_input_set 0 ipv4-udp udp-dst-port add
+      testpmd> set_hash_input_set 0 ipv4-udp src-ipv4 add
+      testpmd> set_hash_input_set 0 ipv4-udp dst-ipv4 add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-should be different with the values from step 3 & step 4, should be same as step 2.
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   different from the values in step 2 & step 3.
 
-6. set hash input set by testpmd on dut, enable udp-src-port, udp-dst-port
+5. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, udp-src-port, udp-dst-port::
 
-testpmd> set_hash_input_set 0 ipv4-udp none select
-testpmd> set_hash_input_set 0 ipv4-udp udp-src-port add
-testpmd> set_hash_input_set 0 ipv4-udp udp-dst-port add
+      testpmd> set_hash_input_set 0 ipv4-udp udp-src-port add
+      testpmd> set_hash_input_set 0 ipv4-udp udp-dst-port add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-should be different with the values from step2 & step 3 & step 4 & step 5.
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   should be different with the values from step 3 & step 4, should be same as step 2.
 
-So it can be approved that with flow type ipv4-udp, rss hash can be calculated by only included IPv4 fields
-or only included UDP fields or both IPv4+UDP fields.
+6. set hash input set by testpmd on dut, enable udp-src-port, udp-dst-port::
+
+      testpmd> set_hash_input_set 0 ipv4-udp none select
+      testpmd> set_hash_input_set 0 ipv4-udp udp-src-port add
+      testpmd> set_hash_input_set 0 ipv4-udp udp-dst-port add
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   should be different with the values from step2 & step 3 & step 4 & step 5.
+
+   So it can be approved that with flow type ipv4-udp, rss hash can be calculated by only included IPv4 fields
+   or only included UDP fields or both IPv4+UDP fields.
 
 Test Case 3: test with flow type ipv6-tcp
 =========================================
 
-test mothed is same as Test Case 1, but it need change all ipv4 to ipv6,
-and using scapy to send packets with ipv6-tcp on tester,
+test method is same as Test Case 1, but it need change all ipv4 to ipv6,
+and using scapy to send packets with ipv6-tcp on tester::
 
-sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1025)], iface="%s")
+    sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1025)], iface="%s")
 
 and the test result should be same as Test Case 1.
 
@@ -215,126 +234,145 @@ and the test result should be same as Test Case 1.
 Test Case 4: test with flow type ipv6-udp
 =========================================
 
-test mothed is same as Test Case 2, but it need change all ipv4 to ipv6,
-and using scapy to send packets with ipv6-udp on tester,
+test method is same as Test Case 2, but it need change all ipv4 to ipv6,
+and using scapy to send packets with ipv6-udp on tester::
 
-sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1025)], iface="%s")
+   sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1025)], iface="%s")
 
 and the test result should be same as Test Case 2.
 
 Test Case 5: test dual vlan(QinQ)
-=====================================================
+=================================
+
 1. config testpmd on DUT
 
-1). set up testpmd with fortville NICs::
- ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+   1. set up testpmd with Fortville NICs::
 
-2). set qinq on::
-  testpmd> vlan set qinq on <port_id>
- 
-3). Reta Configuration(optional, if not set, will use default)::
-  testpmd> port config 0 rss reta (hash_index,queue_id)
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
 
-4). PMD fwd only receive the packets::
-  testpmd> set fwd rxonly
-  
-5). verbose configuration::
-  testpmd> set verbose 8
+   2. set qinq on::
 
-6). start packet receive::
-  testpmd> start
+         testpmd> vlan set qinq on <port_id>
 
-7). rss recived package type configuration::
-  testpmd> port config all rss ether    
+   3. Reta Configuration(optional, if not set, will use default)::
+
+         testpmd> port config 0 rss reta (hash_index,queue_id)
+
+   4. PMD fwd only receive the packets::
+
+         testpmd> set fwd rxonly
+
+   5. verbose configuration::
+
+         testpmd> set verbose 8
+
+   6. start packet receive::
+
+         testpmd> start
+
+   7. rss received package type configuration::
+
+         testpmd> port config all rss ether
 
 2. using scapy to send packets with dual vlan (QinQ) on tester::
-  
-  sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=%s)/Dot1Q(id=0x8100,vlan=%s)], iface="%s")
- 
-then got hash value and queue value that output from the testpmd on DUT.
+
+
+      sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=%s)/Dot1Q(id=0x8100,vlan=%s)], iface="%s")
+
+   then got hash value and queue value that output from the testpmd on DUT.
 
 3. set hash input set to "none" by testpmd on dut::
 
-testpmd> set_hash_input_set 0 l2_payload none select
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value shoud be
-same with the values in step 2. 
+      testpmd> set_hash_input_set 0 l2_payload none select
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   same with the values in step 2.
 
 4. set hash input set by testpmd on dut, enable ovlan field::
 
-testpmd> set_hash_input_set 0 l2_payload ovlan add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value shoud be
-different with the values in step 2.
+      testpmd> set_hash_input_set 0 l2_payload ovlan add
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2.
 
 5. set hash input set by testpmd on dut, enable ovlan, ivlan field::
 
-testpmd> set_hash_input_set 0 l2_payload ivlan add
+      testpmd> set_hash_input_set 0 l2_payload ivlan add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value shoud be
-different with the values in step 2.
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2.
 
 Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 =====================================================
 
 1. config testpmd on DUT
 
-1). set up testpmd with fortville NICs::
- ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+   1. set up testpmd with Fortville NICs::
 
-2). Reta Configuration(optional, if not set, will use default)::
-  testpmd> port config 0 rss reta (hash_index,queue_id)
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
 
-3). PMD fwd only receive the packets::
-  testpmd> set fwd rxonly
-  
-4). rss recived package type configuration::
-  testpmd> port config all rss all  
+   2. Reta Configuration(optional, if not set, will use default)::
 
-5). set hash function::  
-  testpmd>set_hash_global_config 0 toeplitz ipv4-other enable
+         testpmd> port config 0 rss reta (hash_index,queue_id)
 
-6). verbose configuration::
-  testpmd> set verbose 8
+   3. PMD fwd only receive the packets::
 
-7). start packet receive::
-  testpmd> start
+         testpmd> set fwd rxonly
+
+   4. rss received package type configuration::
+
+         testpmd> port config all rss all
+
+   5. set hash function::
+
+         testpmd>set_hash_global_config 0 toeplitz ipv4-other enable
+
+   6. verbose configuration::
+
+         testpmd> set verbose 8
+
+   7. start packet receive::
+
+         testpmd> start
 
 2. using scapy to send packets with GRE header on tester::
-  
-  sendp([Ether(dst="%s")/IP(src="192.168.0.1",dst="192.168.0.2",proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface="%s")
- 
-then got hash value and queue value that output from the testpmd on DUT.
 
-3. set hash input set to "none" by testpmd on dut,
 
-testpmd> set_hash_input_set 0 ipv4-other none select
+      sendp([Ether(dst="%s")/IP(src="192.168.0.1",dst="192.168.0.2",proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface="%s")
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value shoud be
-different with the values in step 2. 
+   then got hash value and queue value that output from the testpmd on DUT.
 
-4. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4
+3. set hash input set to "none" by testpmd on dut::
 
-testpmd> set_hash_input_set 0 ipv4-other src-ipv4 add
-testpmd> set_hash_input_set 0 ipv4-other dst-ipv4 add
+      testpmd> set_hash_input_set 0 ipv4-other none select
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value shoud be
-same with the values in step 2. 
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2.
 
-4. set hash input set and gre-key-len=3 by testpmd on dut, enable gre-key
+4. set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4::
 
-testpmd> global_config 0 gre-key-len 3
-testpmd> set_hash_input_set 0 ipv4-other gre-key add
+      testpmd> set_hash_input_set 0 ipv4-other src-ipv4 add
+      testpmd> set_hash_input_set 0 ipv4-other dst-ipv4 add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different with the values in step 2. 
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   same with the values in step 2.
 
-5. set gre-key-len=4 by testpmd on dut, enable gre-key
+5. set hash input set and gre-key-len=3 by testpmd on dut, enable gre-key::
 
-testpmd> global_config 0 gre-key-len 4
+      testpmd> global_config 0 gre-key-len 3
+      testpmd> set_hash_input_set 0 ipv4-other gre-key add
 
-send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values shoud be
-different with the values in step 4. 
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   different with the values in step 2.
 
-So with gre-key-len=3 (24bit gre key) or gre-key-len=4 (32bit gre key), different rss hash value and queue value
-can be got, it can be proved that 32bit & 24bit gre key are supported by fortville.
+5. set gre-key-len=4 by testpmd on dut, enable gre-key::
+
+      testpmd> global_config 0 gre-key-len 4
+
+   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
+   different with the values in step 4.
+
+   So with gre-key-len=3 (24bit gre key) or gre-key-len=4 (32bit gre key), different rss hash value and queue value
+   can be got, it can be proved that 32bit & 24bit gre key are supported by Fortville.

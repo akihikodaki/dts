@@ -1,5 +1,5 @@
-.. Copyright (c) <2015>, Intel Corporation
-      All rights reserved.
+.. Copyright (c) <2015-2017>, Intel Corporation
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -30,8 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-VF to VF Bridge testplan
-========================
+=====================
+VF to VF Bridge Tests
+=====================
+
 This test suite aims to validate the bridge function on physical functional
 for virtual functional to virtual functional communication. Cases of the
 suite based on the vm to vm test scenario, echo vm needs on vf, and both of
@@ -42,27 +44,29 @@ Prerequisites:
 
 On host:
 
-        Hugepages: at least 10 G hugepages, 6G(for vm on which run pktgen as stream source end) + 2G(for vm on which run testpmd as receive end) + 2G(for host used)
+* Hugepages: at least 10 G hugepages, 6G(for vm on which run pktgen as stream
+  source end) + 2G(for vm on which run testpmd as receive end) + 2G(for host
+  used)
 
-        Guset: two img with os for kvm qemu
+* Guest: two img with os for kvm qemu
 
-        NIC: one pf port
+* NIC: one pf port
 
-        pktgen-dpdk: copy $DTS/dep/tgen.tgz to guest from which send the stream
+* pktgen-dpdk: copy $DTS/dep/tgen.tgz to guest from which send the stream
 
 On Guest:
 
-        Stream Source end: scapy pcpay and essential tarballs for compile pktgen-dpdk tools
+* Stream Source end: scapy pcpay and essential tarballs for compile pktgen-dpdk tools
 
 
 Set up basic virtual scenario:
 ==============================
 
-step 1: generate two vfs on the target pf port (i.e. 0000:85:00.0):
+Step 1: generate two vfs on the target pf port (i.e. 0000:85:00.0)::
 
         echo 2 > /sys/bus/pci/devices/0000\:85\:00.0/sriov_numvfs
 
-step 2: bind the two vfs to pci-stub:
+Step 2: bind the two vfs to pci-stub::
 
         echo "8086 10ed" > /sys/bus/pci/drivers/pci-stub/new_id
         echo 0000:85:10.0 > /sys/bus/pci/devices/0000:85:10.0/driver/unbind
@@ -70,7 +74,7 @@ step 2: bind the two vfs to pci-stub:
         echo 0000:85:10.2 > /sys/bus/pci/devices/0000:85:10.2/driver/unbind
         echo 0000:85:10.2 > /sys/bus/pci/drivers/pci-stub/bind
 
-step 3: passthrough vf 0 to vm0 and start vm0:
+Step 3: passthrough vf 0 to vm0 and start vm0::
 
         taskset -c 20,21,22,23 /usr/local/qemu-2.4.0/x86_64-softmmu/qemu-system-x86_64 \
         -name vm0 -enable-kvm -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
@@ -82,7 +86,7 @@ step 3: passthrough vf 0 to vm0 and start vm0:
         -object memory-backend-file,id=mem,size=6144M,mem-path=/mnt/huge,share=on \
         -numa node,memdev=mem -mem-prealloc -drive file=/home/img/vm0.img -vnc :4
 
-step 4: passthrough vf 1 to vm1 and start vm1:
+Step 4: passthrough vf 1 to vm1 and start vm1::
 
         taskset -c 30,31,32,33 /usr/local/qemu-2.4.0/x86_64-softmmu/qemu-system-x86_64  \
         -name vm1 -enable-kvm -chardev socket,path=/tmp/vm1_qga0.sock,server,nowait,id=vm1_qga0 \
@@ -96,79 +100,82 @@ step 4: passthrough vf 1 to vm1 and start vm1:
 
 
 Test Case1: test_2vf_d2d_pktgen_stream
-===========================================
-both vfs in the two vms using the dpdk driver, send stream from vf1 in vm1 by dpdk pktgen
-to vf in vm0, and verify the vf on vm0 can receive stream.
+======================================
 
-step 1: run testpmd on vm0:
+both vfs in the two vms using the dpdk driver, send stream from vf1 in vm1 by
+dpdk pktgen to vf in vm0, and verify the vf on vm0 can receive stream.
+
+Step 1: run testpmd on vm0::
 
         ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --txqflags=0
 
-step 2: set rxonly and start on vm0:
+Step 2: set rxonly and start on vm0::
 
         set fwd rxonly
         start
 
-step 3: copy pktgen-dpdk tarball to vm1:
+Step 3: copy pktgen-dpdk tarball to vm1::
 
         scp tgen.tgz to vm1
         tar xvf tgen.tgz
 
-step 4: generate pcap file on vm1:
+Step 4: generate pcap file on vm1::
 
         Context: [Ether(dst="52:54:12:45:67:10", src="52:54:12:45:67:11")/IP()/Raw(load='X'\*46)]
 
-step 5: send stream by pkt-gen on vm1:
+Step 5: send stream by pkt-gen on vm1::
 
         ./app/app/x86_64-native-linuxapp-gcc/app/pktgen -c 0xf -n 2 --proc-type auto -- -P -T -m '1.0' -s P:flow.pcap
 
-step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100
+Step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100::
 
         show port stats 0
         ######################## NIC statistics for port 0  ########################
         RX-packets: 100  RX-missed: 0          RX-bytes:  6000
         RX-errors: 0
-        RX-nombuf:  0   
+        RX-nombuf:  0
         TX-packets: 0          TX-errors: 0          TX-bytes:  0
         ############################################################################
 
 Test Case2: test_2vf_d2k_pktgen_stream
 ======================================
-step 1: bind vf to kernel driver on vm0
 
-step 2: start up vf interface and using tcpdump to capature received packets
+Step 1: bind vf to kernel driver on vm0
 
-step 3: copy pktgen-dpdk tarball to vm1:
+Step 2: start up vf interface and using tcpdump to capture received packets
+
+Step 3: copy pktgen-dpdk tarball to vm1::
 
         scp tgen.tgz to vm1
         tar xvf tgen.tgz
 
-step 4: generate pcap file on vm1:
+Step 4: generate pcap file on vm1::
 
         Context: [Ether(dst="52:54:12:45:67:10", src="52:54:12:45:67:11")/IP()/Raw(load='X'\*46)]
 
-step 5: send stream by pkt-gen on vm1:
+Step 5: send stream by pkt-gen on vm1::
 
         ./app/app/x86_64-native-linuxapp-gcc/app/pktgen -c 0xf -n 2 --proc-type auto -- -P -T -m '1.0' -s P:flow.pcap
 
-step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100
+Step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100
 
 Test Case3: test_2vf_k2d_scapy_stream
-======================================
-step 1: run testpmd on vm0:
+=====================================
+
+Step 1: run testpmd on vm0::
 
         ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --txqflags=0
 
-step 2: set rxonly and start on vm0:
+Step 2: set rxonly and start on vm0::
 
         set fwd rxonly
         start
 
-step 3: bind vf to kernel driver on vm0
+Step 3: bind vf to kernel driver on vm0
 
-step 4: using scapy to send packets
+Step 4: using scapy to send packets
 
-step 5:verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100
+Step 5:verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100::
 
         show port stats 0
         ######################## NIC statistics for port 0  ########################

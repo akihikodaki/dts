@@ -1,4 +1,4 @@
-.. Copyright (c) <2011>, Intel Corporation
+.. Copyright (c) <2011-2017>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,11 +30,11 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==================
-Layer-3 Forwarding
-==================
+===================
+L3 Forwarding Tests
+===================
 
-The Layer-3 Forwarding results are produced using ``l3fwd`` application. 
+The Layer-3 Forwarding results are produced using ``l3fwd`` application.
 
 Prerequisites
 =============
@@ -45,15 +45,15 @@ Prerequisites
     - Board is populated with 4x 1GbE or 10GbE ports. Special PCIe restrictions may
       be required for performance. For example, the following requirements should be
       met for Intel 82599 (Niantic) NICs:
-      
-    	- NICs are plugged into PCIe Gen2 or Gen3 slots
-    	- For PCIe Gen2 slots, the number of lanes should be 8x or higher
-    	- A single port from each NIC should be used, so for 4x ports, 4x NICs should
-    	  be used
-    
-    - NIC ports connected to traffic generator. It is assumed that the NIC ports 
-      P0, P1, P2, P3 (as identified by the DPDK application) are connected to the 
-      traffic generator ports TG0, TG1, TG2, TG3. The application-side port mask of 
+
+        - NICs are plugged into PCIe Gen2 or Gen3 slots
+        - For PCIe Gen2 slots, the number of lanes should be 8x or higher
+        - A single port from each NIC should be used, so for 4x ports, 4x NICs should
+          be used
+
+    - NIC ports connected to traffic generator. It is assumed that the NIC ports
+      P0, P1, P2, P3 (as identified by the DPDK application) are connected to the
+      traffic generator ports TG0, TG1, TG2, TG3. The application-side port mask of
       NIC ports P0, P1, P2, P3 is noted as PORTMASK in this section.
 
 2. BIOS requirements:
@@ -62,30 +62,34 @@ Prerequisites
     - Hardware Prefetcher is DISABLED
     - Adjacent Cache Line Prefetch is DISABLED
     - Direct Cache Access is DISABLED
-  
+
 3. Linux kernel requirements:
 
     - Linux kernel has the following features enabled: huge page support, UIO, HPET
     - Appropriate number of huge pages are reserved at kernel boot time
     - The IDs of the hardware threads (logical cores) per each CPU socket can be
-      determined by parsing the file /proc/cpuinfo. The naming convention for the 
-      logical cores is: C{x.y.z} = hyper-thread z of physical core y of CPU socket x, 
-      with typical values of x = 0 .. 3, y = 0 .. 7, z = 0 .. 1. Logical cores 
+      determined by parsing the file /proc/cpuinfo. The naming convention for the
+      logical cores is: C{x.y.z} = hyper-thread z of physical core y of CPU socket x,
+      with typical values of x = 0 .. 3, y = 0 .. 7, z = 0 .. 1. Logical cores
       C{0.0.1} and C{0.0.1} should be avoided while executing the test, as they are
       used by the Linux kernel for running regular processes.
 
 4. Software application requirements
 
-5. Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+5. If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+   using vfio, use the following commands to to load the vfio driver and bind it
+   to the device under test::
+
+      modprobe vfio
+      modprobe vfio-pci
+      usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 - In LPM mode, the LPM table used for packet routing is:
 
 |
 
 +-------+----------------------+-----------+
-|Entry #|LPM prefix (IP/length)|Output port|
+|   #   |LPM prefix (IP/length)|Output port|
 +-------+----------------------+-----------+
 |   0   |    10.100.0.0/24     |     P1    |
 +-------+----------------------+-----------+
@@ -132,7 +136,7 @@ When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod drive
 |   7   | 13.101.0.1  | 1.2.3.4 |     13      |     1     |    UDP    |   P0   |
 +-------+-------------+---------+-------------+-----------+-----------+--------+
 
-| 
+|
 
 
 5. Traffic generator requirements
@@ -165,20 +169,20 @@ The flows need to be configured and started by the traffic generator:
 
 |
 
-The queue column represents the expected NIC port RX queue where the packet 
+The queue column represents the expected NIC port RX queue where the packet
 should be written by the NIC hardware when RSS is enabled for that port.
 
 Test Case: Layer-3 Forwarding (in Hash or LPM Mode)
 ===================================================
 
-The following items are configured through the command line interface of the 
+The following items are configured through the command line interface of the
 application:
 
   - The set of one or several RX queues to be enabled for each NIC port
   - The set of logical cores to execute the packet forwarding task
   - Mapping of the NIC RX queues to logical cores handling them.
-  
-The test report should provide the throughput rate measurements (in mpps 
+
+The test report should provide the throughput rate measurements (in mpps
 and % of the line rate for 4x NIC ports) as listed in the table below:
 
 |
@@ -230,9 +234,9 @@ and % of the line rate for 4x NIC ports) as listed in the table below:
 
 |
 
-The application command line associated with each of the above tests is 
+The application command line associated with each of the above tests is
 presented in the table below. The test report should present this table with
-the actual command line used, replacing the PORTMASK and C{x.y.z} with their 
+the actual command line used, replacing the PORTMASK and C{x.y.z} with their
 actual values used during test execution.
 
 |
@@ -291,4 +295,3 @@ actual values used during test execution.
 +-----+----------------------------------------------------------------------------------------------------------------------+
 
 |
-

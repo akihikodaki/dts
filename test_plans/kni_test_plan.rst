@@ -1,22 +1,22 @@
-.. Copyright (c) <2010,2011>, Intel Corporation
+.. Copyright (c) <2010-2017>, Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,22 +30,22 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-====================
-Kernel NIC Interface
-====================
+================================
+Kernel NIC Interface (KNI) Tests
+================================
 
 Description
------------
+===========
 
-This document provides the plan for testing the Kernel NIC Interface 
-application with support of rte_kni kernel module. 
-Kernel NIC Interface is a DPDK alternative solution to the existing linux 
-tun-tap interface for the exception path. Kernel NIC Interface allows the 
-standard Linux net tools(ethtool/ifconfig/tcpdump) to facilitate managing the 
+This document provides the plan for testing the Kernel NIC Interface
+application with support of rte_kni kernel module.
+Kernel NIC Interface is a DPDK alternative solution to the existing linux
+tun-tap interface for the exception path. Kernel NIC Interface allows the
+standard Linux net tools(ethtool/ifconfig/tcpdump) to facilitate managing the
 DPDK port. At the same time, it add an interface with the kernel net stack.
 The test supports Multi-Thread KNI.
 
-All kni model parameter deatil info on user guides:http://dpdk.org/doc/guides/sample_app_ug/kernel_nic_interface.html 
+All kni model parameter detail info on user guides:http://dpdk.org/doc/guides/sample_app_ug/kernel_nic_interface.html
 
 The ``rte_kni`` kernel module can be installed by a ``lo_mode`` parameter.
 
@@ -70,43 +70,46 @@ kthread single::
 
     insmod rte_kni.ko
     insmod rte_kni.ko "kthread_mode=single"
-    
+
 kthread multiple::
 
     insmod rte_kni.ko
     insmod rte_kni.ko "kthread_mode=multiple"
 
-   
-The ``kni`` application is run with EAL parameters and parameters for the 
-application itself. For details about the EAL parameters, see the relevant 
-DPDK **Getting Started Guide**. This application supports two parameters for 
+
+The ``kni`` application is run with EAL parameters and parameters for the
+application itself. For details about the EAL parameters, see the relevant
+DPDK **Getting Started Guide**. This application supports two parameters for
 itself.
 
-    - ``--config="(port id, rx lcore, tx lcore, kthread lcore, kthread lcore, ...)"``: 
-      Port and cores selection. Kernel threads are ignored if ``kthread_mode`` 
-      is not ``multiple``.
+- ``--config="(port id, rx lcore, tx lcore, kthread lcore, kthread lcore, ...)"``:
+  Port and cores selection. Kernel threads are ignored if ``kthread_mode``
+  is not ``multiple``.
 
 ports cores::
 
     e.g.:
-    
+
         --config="(0,1,2),(1,3,4)"              No kernel thread specified.
         --config="(0,1,2,21),(1,3,4,23)"        One kernel thread in use.
         --config="(0,1,2,21,22),(1,3,4,23,25)   Two kernel threads in use.
 
-    - ``-P``: Promiscuous mode. This is off by default.
+- ``-P``: Promiscuous mode. This is off by default.
 
 Prerequisites
 =============
 
-Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d in bios.
-When used vfio , used "modprobe vfio" and "modprobe vfio-pci" insmod vfiod driver, then used
-"./tools/dpdk_nic_bind.py --bind=vfio-pci device_bus_id" to bind vfio driver to test driver.
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+using vfio, use the following commands to to load the vfio driver and bind it
+to the device under test::
 
+   modprobe vfio
+   modprobe vfio-pci
+   usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
 The DUT has at least 2 DPDK supported IXGBE NIC ports.
 
-The DUT has to be able to install rte_kni kernel module and launch kni 
+The DUT has to be able to install rte_kni kernel module and launch kni
 application with a default configuration (This configuration may change form a
 system to another)::
 
@@ -120,11 +123,11 @@ system to another)::
 Test Case: ifconfig testing
 ===========================
 
-Launch the KNI application. Assume that ``port 2 and 3`` are used to this 
-application. Cores 1 and 2 are used to read from NIC, cores 2 and 4 are used 
+Launch the KNI application. Assume that ``port 2 and 3`` are used to this
+application. Cores 1 and 2 are used to read from NIC, cores 2 and 4 are used
 to write to NIC, threads 21 and 23 are used by the kernel.
 
-As the kernel module is installed using ``"kthread_mode=single"`` the core 
+As the kernel module is installed using ``"kthread_mode=single"`` the core
 affinity is set using ``taskset``::
 
     ./build/app/kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
@@ -135,10 +138,10 @@ Verify whether the interface has been added::
     ifconfig -a
 
 
-If the application is launched successfully, it will add two interfaces in 
+If the application is launched successfully, it will add two interfaces in
 kernel net stack named ``vEth2_0``, ``vEth3_0``.
 
-Interface name start with ``vEth`` followed by the port number and an 
+Interface name start with ``vEth`` followed by the port number and an
 additional incremental number depending on the number of kernel threads::
 
     vEth2_0: flags=4098<BROADCAST,MULTICAST>  mtu 1500
@@ -160,7 +163,7 @@ additional incremental number depending on the number of kernel threads::
 Verify whether ifconfig can set Kernel NIC Interface up::
 
     ifconfig vEth2_0 up
-    
+
 Now ``vEth2_0`` is up and has IPv6 address::
 
     vEth2_0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
@@ -173,7 +176,7 @@ Now ``vEth2_0`` is up and has IPv6 address::
 
 
 Verify whether ifconfig can add an ipv6 address::
-    
+
     ifconfig vEth2_0 add fe80::1
 
 ``vEth2_0`` has added ipv6 address::
@@ -183,8 +186,8 @@ Verify whether ifconfig can add an ipv6 address::
            valid_lft forever preferred_lft forever
         inet6 fe80::92e2:baff:fe37:92f8/64 scope link
            valid_lft forever preferred_lft forever
-           
-           
+
+
 Delete the IPv6 address::
 
     ifconfig vEth2_0 del fe80::1
@@ -203,7 +206,7 @@ Set MTU parameter::
 
     29: vEth2_0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1300 qdisc pfifo_fast state UNKNOWN mode DEFAULT qlen 1000
     link/ether 90:e2:ba:37:92:f8 brd ff:ff:ff:ff:ff:ff
-    
+
 Verify whether ifconfig can set ip address::
 
     ifconfig vEth2_0 192.168.2.1 netmask 255.255.255.192
@@ -230,16 +233,16 @@ Verify whether ifconfig can set ``vEth2_0`` down::
             TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
 
 
-Repeat all the steps for interface ``vEth3_0``         
- 
+Repeat all the steps for interface ``vEth3_0``
+
 Test Case: Ping and Ping6 testing
 =================================
 
-If the application is launched successfully, it will add two interfaces in 
+If the application is launched successfully, it will add two interfaces in
 kernel net stack named ``vEth2_0``, ``vEth3_0``.
 
 Assume the link status of ``vEth2_0`` is up and set ip address is ``192.168.2.1``
-and ``vEth3_0`` is up and set ip address is ``192.168.3.1``. Verify the 
+and ``vEth3_0`` is up and set ip address is ``192.168.3.1``. Verify the
 command ping::
 
     ping -w 1 -I vEth2_0 192.168.2.1
@@ -253,7 +256,7 @@ it can receive all packets and no packet loss::
     1 packets transmitted, 1 received, 0% packet loss, time 0ms
     rtt min/avg/max/mdev = 0.040/0.040/0.040/0.000 ms
 
-Assume ``port A`` on tester is linked with ``port 2`` on DUT. Verify the 
+Assume ``port A`` on tester is linked with ``port 2`` on DUT. Verify the
 command ping from tester::
 
     ping -w 1 -I "port A" 192.168.2.1
@@ -302,14 +305,14 @@ no packets is received::
     1 packets transmitted, 0 received, 100% packet loss, time 0ms
 
 Repeat all the steps for interface ``vEth3_0``
-    
+
 Test Case: Tcpdump testing
 ==========================
 
-Assume ``port A and B`` on packet generator connects to NIC ``port 2 and 3``. 
-Trigger the packet generator of bursting packets from ``port A and B`, then 
-check if tcpdump can capture all packets. The packets should include 
-``tcp`` packets, ``udp`` packets, ``icmp`` packets, ``ip`` packets, 
+Assume ``port A and B`` on packet generator connects to NIC ``port 2 and 3``.
+Trigger the packet generator of bursting packets from ``port A and B`, then
+check if tcpdump can capture all packets. The packets should include
+``tcp`` packets, ``udp`` packets, ``icmp`` packets, ``ip`` packets,
 ``ether+vlan tag+ip`` packets, ``ether`` packets.
 
 Verify whether tcpdump can capture packets::
@@ -322,7 +325,7 @@ Test Case: Ethtool testing
 ==========================
 
 In this time, KNI can only support ethtool commands which is to get information.
-So all belowing commands are to show information commands.
+So all below commands are to show information commands.
 
 Verify whether ethtool can show Kernel NIC Interface's standard information::
 
@@ -350,24 +353,24 @@ Verify whether ethtool can show Kernel NIC Interface's RX/TX ring parameters::
 
 Verify whether ethtool can show Kernel NIC Interface's Coalesce parameters.
 It is not currently supported::
-      
+
     ethtool -c vEth2_0
 
 Verify whether ethtool can show Kernel NIC Interface's MAC registers::
-      
+
     ethtool -d vEth2_0
 
 Verify whether ethtool can show Kernel NIC Interface's EEPROM dump::
-      
+
     ethtool -e vEth2_0
-    
+
 Repeat all the steps for interface ``vEth3_0``
 
 Test Case: Packets statistics testing
 =====================================
 
 Install the kernel module with loopback parameter ``lo_mode=lo_mode_ring_skb``
-and launch the KNI application. 
+and launch the KNI application.
 
 Assume that ``port 2 and 3`` are used by this application::
 
@@ -381,7 +384,7 @@ Get the RX packets count and TX packets count::
 
     ifconfig vEth2_0
 
-Send 5 packets from tester. And check whether both RX and TX packets of 
+Send 5 packets from tester. And check whether both RX and TX packets of
 ``vEth2_0`` have increased 5.
 
 Repeat for interface ``vEth3_0``
@@ -391,12 +394,12 @@ Test Case: Stress testing
 
 Insert the rte_kni kernel module 50 times while changing the parameters.
 Iterate through lo_mode and kthread_mode values sequentially, include wrong
-values. After each insertion check whether kni application can be launched 
+values. After each insertion check whether kni application can be launched
 successfully.
 
 Insert the kernel module 50 times while changing randomly the parameters.
 Iterate through lo_mode and kthread_mode values randomly, include wrong
-values. After each insertion check whether kni application can be launched 
+values. After each insertion check whether kni application can be launched
 successfully::
 
         rmmod rte_kni
@@ -404,8 +407,8 @@ successfully::
          ./build/app/kni -c 0xa0001e -n 4 -- -P -p 0xc --config="(2,1,2,21),(3,3,4,23)"
 
 
-Using ``dmesg`` to check whether kernel module is loaded with the specified 
-parameters. Some permutations, those with wrong values, must fail to 
+Using ``dmesg`` to check whether kernel module is loaded with the specified
+parameters. Some permutations, those with wrong values, must fail to
 success. For permutations with valid parameter values, verify the application can be
 successfully launched and then close the application using CTRL+C.
 
@@ -413,28 +416,28 @@ Test Case: loopback mode performance testing
 ============================================
 
 Compare performance results for loopback mode using:
-  
+
     - lo_mode: lo_mode_fifo and lo_mode_fifo_skb.
     - kthread_mode: single and multiple.
     - Number of ports: 1 and 2.
     - Number of virtual interfaces per port: 1 and 2
     - Frame sizes: 64 and 256.
     - Cores combinations:
-    
+
         - Different cores for Rx, Tx and Kernel.
         - Shared core between Rx and Kernel.
         - Shared cores between Rx and Tx.
         - Shared cores between Rx, Tx and Kernel.
         - Multiple cores for Kernel, implies multiple virtual interfaces per port.
 
-::        
+::
 
     insmod ./x86_64-default-linuxapp-gcc/kmod/igb_uio.ko
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko <lo_mode and kthread_mode parameters>
     ./examples/kni/build/app/kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
 
 
-At this point, the throughput is measured and recorded for the different 
+At this point, the throughput is measured and recorded for the different
 frame sizes. After this, the application is closed using CTRL+C.
 
 The measurements are presented in a table format.
@@ -444,13 +447,13 @@ The measurements are presented in a table format.
 +==================+==============+=======+=================+========+========+
 |                  |              |       |                 |        |        |
 +------------------+--------------+-------+-----------------+--------+--------+
-        
-        
+
+
 Test Case: bridge mode performance testing
 ==========================================
 
 Compare performance results for bridge mode using:
-  
+
     - kthread_mode: single and multiple.
     - Number of ports: 2
     - Number of ports: 1 and 2.
@@ -458,7 +461,7 @@ Compare performance results for bridge mode using:
     - Number of virtual interfaces per port: 1 and 2
     - Frame size: 64.
     - Cores combinations:
-    
+
         - Different cores for Rx, Tx and Kernel.
         - Shared core between Rx and Kernel.
         - Shared cores between Rx and Tx.
@@ -484,8 +487,8 @@ application is closed using CTRL+C and the bridge deleted::
     ifconfig br_kni down
     brctl delbr br_kni
 
-    
-The measurements are presented in a table format.   
+
+The measurements are presented in a table format.
 
 +--------------+-------+-----------------------------+-------+
 | kthread_mode | Flows | Config                      | 64    |
@@ -496,13 +499,13 @@ The measurements are presented in a table format.
 Test Case: bridge mode without KNI performance testing
 ======================================================
 
-Compare performance results for bridge mode using only Kernel bridge, no DPDK 
+Compare performance results for bridge mode using only Kernel bridge, no DPDK
 support. Use:
 
     - Number of ports: 2
     - Number of flows per port: 1 and 2
     - Frame size: 64.
-    
+
 Set up the interfaces and the bridge::
 
     rmmod rte_kni
@@ -513,7 +516,7 @@ Set up the interfaces and the bridge::
     brctl addif br1 vEth3_0
     ifconfig br1 up
 
-       
+
 At this point, the throughput is measured and recorded. After this, the
 application is closed using CTRL+C and the bridge deleted::
 
@@ -521,7 +524,7 @@ application is closed using CTRL+C and the bridge deleted::
     brctl delbr br1
 
 
-The measurements are presented in a table format.   
+The measurements are presented in a table format.
 
 +-------+-------+
 | Flows | 64    |
@@ -530,19 +533,19 @@ The measurements are presented in a table format.
 +-------+-------+
 | 2     |       |
 +-------+-------+
-    
+
 Test Case: routing mode performance testing
 ===========================================
 
 Compare performance results for routing mode using:
-  
+
     - kthread_mode: single and multiple.
     - Number of ports: 2
     - Number of ports: 1 and 2.
     - Number of virtual interfaces per port: 1 and 2
     - Frame size: 64 and 256.
     - Cores combinations:
-    
+
         - Different cores for Rx, Tx and Kernel.
         - Shared core between Rx and Kernel.
         - Shared cores between Rx and Tx.
@@ -565,8 +568,8 @@ The application is launched and the bridge is setup using the commands below::
 
 At this point, the throughput is measured and recorded. After this, the
 application is closed using CTRL+C.
-    
-The measurements are presented in a table format.   
+
+The measurements are presented in a table format.
 
 +--------------+-------+-----------------------------+-------+-------+
 | kthread_mode | Ports | Config                      | 64    | 256   |
@@ -578,12 +581,12 @@ The measurements are presented in a table format.
 Test Case: routing mode without KNI performance testing
 =======================================================
 
-Compare performance results for routing mode using only Kernel, no DPDK 
+Compare performance results for routing mode using only Kernel, no DPDK
 support. Use:
 
     - Number of ports: 2
     - Frame size: 64 and 256
-    
+
 Set up the interfaces and the bridge::
 
 
@@ -595,7 +598,7 @@ Set up the interfaces and the bridge::
     route add -net 192.170.3.0  netmask 255.255.255.0 gw 192.170.3.1
     arp -s 192.170.2.2 vEth2_0
     arp -s 192.170.3.2 vEth3_0
-       
+
 At this point, the throughput is measured and recorded. After this, the
 application is closed using CTRL+C.
 

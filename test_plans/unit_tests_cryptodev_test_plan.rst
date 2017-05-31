@@ -1,22 +1,22 @@
 .. Copyright (c) 2016-2017 Intel Corporation
    All rights reserved.
-   
+
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
    are met:
-   
+
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
-   
+
    - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
-   
+
    - Neither the name of Intel Corporation nor the names of its
      contributors may be used to endorse or promote products derived
      from this software without specific prior written permission.
-   
+
    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
    "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
    LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==============================================
-Testing of Cryptodev Unit tests
-==============================================
+=====================
+Unit Tests: Cryptodev
+=====================
 
 
 Description
@@ -41,7 +41,7 @@ Description
 This document provides the plan for testing Cryptodev API via Cryptodev unit tests.
 Unit tests include supported Hardware and Software PMD(polling mode device) and supported algorithms.
 Cryptodev API provides ability to do encryption/decryption by integrating QAT(Intel@ QuickAssist
-Technology) into DPDK. The QAT provides poll mode crypto driver support for 
+Technology) into DPDK. The QAT provides poll mode crypto driver support for
 Intel@ QuickAssist Adapter 8950 hardware accelerator.
 
 The testing of Crytpodev API should be tested under either Intel QuickAssist Technology DH895xxC hardware
@@ -73,13 +73,13 @@ Unit Test List
 Test Case Setup
 ===============
 
-1. Build DPDK and app/test app
-2. Bind cryptodev devices to igb_uio driver
-3. Manually verify the app/test by this command, as example, in your build folder
-* ./app/test -c 1 -n 1
-* RTE>> cryptodev_qat_autotest
+#. Build DPDK and app/test app
+#. Bind cryptodev devices to igb_uio driver
+#. Manually verify the app/test by this command, as example, in your build folder::
 
-All Unit Test Cases are listed above. 
+     ./app/test -c 1 -n 1
+     RTE>> cryptodev_qat_autotest
+
+All Unit Test Cases are listed above.
 
 Expected all tests could pass in testing.
-
