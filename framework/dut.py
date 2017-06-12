@@ -206,7 +206,7 @@ class Dut(Crb):
         for port_info in self.ports_info:
             self.logger.info(port_info)
         if self.ports_map is None or len(self.ports_map) == 0:
-            raise ValueError("ports_map should not be empty, please check all links")
+            self.logger.warning("ports_map should not be empty, please check all links")
 
         # initialize virtualization resource pool
         self.virt_pool = VirtResource(self)
