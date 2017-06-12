@@ -500,14 +500,14 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         dts_parse_param(config, section)
 
         # verify if the delimiter is good if the lists are vertical
-        dutIPs, targets, test_suites = dts_parse_config(config, section)
-        for dutIP in dutIPs:
-            log_handler.info("\nDUT " + dutIP)
+        duts, targets, test_suites = dts_parse_config(config, section)
+        for dut in duts:
+            log_handler.info("\nDUT " + dut)
 
         # look up in crbs - to find the matching IP
-        for dutIP in dutIPs:
+        for dut in duts:
             for crb in crbs:
-                if crb['IP'] == dutIP:
+                if crb['section'] == dut:
                     crbInsts.append(crb)
                     break
 
@@ -516,7 +516,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
             log_handler.error(" SKIP UNKNOWN CRB")
             continue
 
-        result.dut = dutIPs[0]
+        result.dut = duts[0]
 
         # init dut, tester crb
         duts, tester = dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype)

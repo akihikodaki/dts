@@ -208,6 +208,7 @@ class CrbsConf(UserConf):
 
         for name in sections:
             crb = self.DEF_CRB.copy()
+            crb['section'] = name
             crb_confs = self.crbs_conf.load_section(name)
             if not crb_confs:
                 continue
