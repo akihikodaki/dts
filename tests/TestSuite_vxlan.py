@@ -24,7 +24,7 @@ from scapy.config import conf
 from scapy.route import *
 
 from test_case import TestCase
-from settings import HEADER_SIZE
+from settings import HEADER_SIZE, FOLDERS
 from etgen import IxiaPacketGenerator
 
 #
@@ -236,6 +236,11 @@ class VxlanTestConfig(object):
         """
         Send vxlan pcap file by iface
         """
+        # load vxlan module to scapy
+        cwd = os.getcwd()
+        dir_vxlan_module = cwd + r'/' + FOLDERS['Depends']
+        self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
+        self.test_case.tester.scapy_append("from vxlan import Vxlan")
         self.test_case.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.pcap_file)
         self.test_case.tester.scapy_append(
