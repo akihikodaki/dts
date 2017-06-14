@@ -92,6 +92,7 @@ The following are the test plans for the DPDK DTS automated test system.
     veb_switch_test_plan
     vf_daemon_test_plan
     vf_jumboframe_test_plan
+    vf_interrupt_pmd_test_plan
     vf_macfilter_test_plan
     vf_offload_test_plan
     vf_packet_rxtx_test_plan
