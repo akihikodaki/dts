@@ -75,15 +75,6 @@ class TestVxlanSample(TestCase):
         """
         Run before each test suite.
         """
-        # Change the config file to support vhost and recompile the package.
-        self.dut.send_expect("sed -i -e 's/RTE_LIBRTE_VHOST=n$/"
-                             + "RTE_LIBRTE_VHOST=y/' config/"
-                             + "common_base", "# ", 30)
-        # temporary disable skip_setup
-        skip_setup = self.dut.skip_setup
-        self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
-        self.dut.skip_setup = skip_setup
 
         # this feature only enable in FVL now
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
@@ -105,15 +96,6 @@ class TestVxlanSample(TestCase):
         out = self.dut.send_expect("make -C examples/tep_termination", "# ")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
-
-        # build for vhost user environment
-        self.dut.send_expect("cd lib/librte_vhost/eventfd_link", "# ")
-        self.dut.send_expect("make", "# ")
-        self.dut.send_expect("insmod ./eventfd_link.ko", "# ")
-        self.dut.send_expect("cd ../../..", "# ")
-        out = self.dut.send_expect("lsmod |grep eventfd_link", "# ")
-        self.verify("eventfd_link" in out,
-                    "Failed to insmod eventfd_link driver")
 
         self.def_mac = "00:00:20:00:00:20"
         self.vm_dut = None
@@ -163,10 +145,11 @@ class TestVxlanSample(TestCase):
 
         encap = self.FEAT_ENABLE
         decap = self.FEAT_ENABLE
-        chksum = self.FEAT_DISABLE
+        chksum = self.FEAT_ENABLE
         if self.running_case == "test_vxlan_sample_encap":
             encap = self.FEAT_ENABLE
             decap = self.FEAT_DISABLE
+            chksum = self.FEAT_ENABLE
         elif self.running_case == "test_vxlan_sample_decap":
             encap = self.FEAT_DISABLE
             decap = self.FEAT_ENABLE
@@ -237,6 +220,8 @@ class TestVxlanSample(TestCase):
             self.vm.stop()
             self.vm = None
 
+        self.dut.virt_exit()
+
     def mac_address_add(self, number):
         if number > 15:
             return ''
@@ -302,6 +287,7 @@ class TestVxlanSample(TestCase):
         self.tester.session.copy_file_from(self.capture_file)
 
         if os.path.isfile('vxlan_cap.pcap'):
+            self.verify(os.path.getsize('vxlan_cap.pcap') != 0, "Packets receive error")
             pkts = rdpcap('vxlan_cap.pcap')
         else:
             pkts = []
@@ -312,12 +298,13 @@ class TestVxlanSample(TestCase):
         case_pass = True
         tester_recv_port = self.tester.get_local_port(self.pf)
         tester_iface = self.tester.get_interface(tester_recv_port)
+        tester_smac = self.tester.get_mac(tester_recv_port)
 
         if pkt_type == "normal_udp":
             self.start_capture(tester_iface, pkt_smac=self.pf_mac)
             self.tester.scapy_append(
-                'sendp([Ether(dst="%s")/IP()/UDP()/Raw("X"*18)], iface="%s")'
-                % (self.pf_mac, tester_iface))
+                'sendp([Ether(dst="%s",src="%s")/IP()/UDP()/Raw("X"*18)], iface="%s")'
+                % (self.pf_mac, tester_smac, tester_iface))
             self.tester.scapy_execute()
             time.sleep(5)
 
@@ -390,6 +377,7 @@ class TestVxlanSample(TestCase):
 
             # transfer capture pcap to server
             pkts = self.transfer_capture_file()
+
             # check packet number and payload
             self.verify(len(pkts) >= 1, "Failed to capture packets")
             self.verify(pkts[0].haslayer(Vxlan) == 1,
@@ -461,6 +449,7 @@ class TestVxlanSample(TestCase):
             mac_incr = 2 * vm_id + vf_id
             params['inner_mac_dst'] = self.mac_address_add(mac_incr)
             params['payload_size'] = 892  # 256 + 256 + 256 + 124
+
             # extract reference chksum value
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
@@ -474,6 +463,25 @@ class TestVxlanSample(TestCase):
             pkts = self.transfer_capture_file()
             # check packet number and payload
             self.verify(len(pkts) == 4, "Failed to capture tso packets")
+
+            # calculation  checksum, and checkt it
+            for pkt in pkts:
+                inner = pkt[Vxlan]
+                inner_ip_chksum = inner[IP].chksum
+                del inner.chksum
+                inner[IP] = inner[IP].__class__(str(inner[IP]))
+                inner_ip_chksum_ref = inner[IP].chksum
+                print utils.GREEN("inner ip checksum reference: %x" % inner_ip_chksum_ref)
+                print utils.GREEN("inner ip checksum: %x" % inner_ip_chksum)
+                self.verify(inner_ip_chksum == inner_ip_chksum_ref, "inner ip checksum error")
+                inner_l4_chksum = inner[params['inner_l4_type']].chksum
+                del inner[params['inner_l4_type']].chksum
+                inner[params['inner_l4_type']] = inner[params['inner_l4_type']].__class__(str(inner[params['inner_l4_type']]))
+                inner_l4_chksum_ref =  inner[params['inner_l4_type']].chksum
+                print utils.GREEN("inner l4 checksum reference: %x" % inner_l4_chksum_ref)
+                print utils.GREEN("inner l4 checksum: %x" % inner_l4_chksum)
+                self.verify(inner_l4_chksum == inner_l4_chksum_ref, "inner %s checksum error" % params['inner_l4_type'])
+
             length = 0
             for pkt in pkts:
                 self.verify(pkt.haslayer(Vxlan) == 1,
