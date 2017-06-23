@@ -1,5 +1,5 @@
 #   BSD LICENSE
-#   Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
+#   Copyright(c) 2010-2017 Intel Corporation. All rights reserved.
 #   All rights reserved.
 #
 #   Redistribution and use in source and binary forms, with or without
@@ -28,13 +28,14 @@
 #   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import subprocess
+try:
+    import sphinx_rtd_theme
+
+    html_theme = "sphinx_rtd_theme"
+    html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
+except:
+    pass
 
 project = 'DPDK Test Suite'
-
-copyright = '2015, dpdk.org'
-
-#version = subprocess.check_output(["make","-sRrC","../../", "showversion"])
-
+copyright = '2017, dpdk.org'
 master_doc = 'index'
-
