@@ -259,23 +259,23 @@ def config_execution():
         opt = Option(**suites_option)
         suites = opt.parse_input()
 
-        nics = ['cfg']
-        nics += NICS.keys()
-        nic_option = {'prompt': 'Choose one of nics',
-                      'type': 'choice',
-                      'help': 'Choose one of dpdk support NIC',
-                      'options': nics,
-                      'default': '0'}
-        opt = Option(**nic_option)
-        nic_type = opt.parse_input()
+    nics = ['cfg']
+    nics += NICS.keys()
+    nic_option = {'prompt': 'Choose one of nics',
+                  'type': 'choice',
+                  'help': 'Choose one of dpdk support NIC',
+                  'options': nics,
+                  'default': '0'}
+    opt = Option(**nic_option)
+    nic_type = opt.parse_input()
 
-        target_option = {'prompt': 'Choose target for execution',
-                         'type': 'choice',
-                         'help': 'Choose one of dpdk targets',
-                         'options': targets,
-                         'default': '0'}
-        opt = Option(**target_option)
-        target = opt.parse_input()
+    target_option = {'prompt': 'Choose target for execution',
+                     'type': 'choice',
+                     'help': 'Choose one of dpdk targets',
+                     'options': targets,
+                     'default': '0'}
+    opt = Option(**target_option)
+    target = opt.parse_input()
 
     driver_option = {'prompt': 'Choose one of them',
                      'type': 'choice',
