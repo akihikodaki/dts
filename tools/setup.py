@@ -402,7 +402,7 @@ def config_ports():
     global dut_ports
     dut_ports = []
     add_more = True
-    pci_regex = "([\da-f]{2}:[\da-f]{2}.\d{1})$"
+    pci_regex = "([\da-f]{4}:[\da-f]{2}:[\da-f]{2}.\d{1})$"
     ixia_regex = r'(\d).(\d)'
 
     print ('============================================================')
@@ -414,13 +414,13 @@ def config_ports():
     while add_more:
         pci_option = {'prompt': 'DUT port pci address',
                       'type': 'string',
-                      'help': 'Please input DUT pci address xx:xx.x',
+                      'help': 'Please input DUT pci address xxxx:xx:xx.x',
                       'default': ''}
         opt = Option(**pci_option)
         dut_addr = opt.parse_input()
         m = re.match(pci_regex, dut_addr)
         if not m:
-            print RED("Pci address should follow BDF format!!!")
+            print RED("Pci address should follow Domain+BDF format!!!")
             continue
 
         if ixia and ixia != '':
@@ -436,13 +436,13 @@ def config_ports():
         else:
             pci_option = {'prompt': 'Tester port pci address',
                           'type': 'string',
-                          'help': 'Please input tester pci address xx:xx.x',
+                          'help': 'Please input tester pci address xxxx:xx:xx.x',
                           'default': ''}
             opt = Option(**pci_option)
             test_addr = opt.parse_input()
             m = re.match(pci_regex, test_addr)
             if not m:
-                print RED("Pci address should follow BDF format!!!")
+                print RED("Pci address should follow Domain+BDF format!!!")
                 continue
 
         dut_port = {}
