@@ -225,7 +225,9 @@ def config_execution():
     target = 'x86_64-native-linuxapp-gcc'
     targets = ['x86_64-native-linuxapp-gcc', 'x86_64-native-linuxapp-icc',
                'i686-native-linuxapp-gcc', 'i686-native-linuxapp-icc',
-               'x86_64-native-bsdapp-gcc', 'x86_64-native-bsdapp-clang']
+               'x86_64-native-bsdapp-gcc', 'x86_64-native-bsdapp-clang',
+               'arm64-armv8a-linuxapp-gcc', 'arm64-dpaa2-linuxapp-gcc',
+               'arm64-thunderx-linuxapp-gcc', 'arm64-xgene1-linuxapp-gcc']
     nic_type = 'cfg'
 
     exec_option = {'prompt': 'Choose default or manually',
