@@ -36,6 +36,7 @@ import re
 import debugger
 import traceback
 import signal
+import time
 
 from exception import VerifyFailure, TimeoutException
 from settings import DRIVERS, NICS, get_nic_name, load_global_setting
@@ -43,7 +44,6 @@ from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING, DEBUG_CASE_SETTI
 from rst import RstReport
 from test_result import ResultTable, Result
 from logger import getLogger
-
 
 class TestCase(object):
 
@@ -244,20 +244,20 @@ class TestCase(object):
         self._suite_result.test_case = case_obj.__name__
 
         self._rst_obj.write_title("Test Case: " + case_name)
-
+        case_result = True
         if self._check_inst is not None:
             if self._check_inst.case_skip(case_name[len("test_"):]):
                 self.logger.info('Test Case %s Result SKIPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
-                return
+                return case_result
 
         if self._support_inst is not None:
             if not self._support_inst.case_support(case_name[len("test_"):]):
                 self.logger.info('Test Case %s Result SKIPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._support_inst.comments)
-                return
+                return case_result
 
         if self._enable_perf:
             self._rst_obj.write_annex_title("Annex: " + case_name)
@@ -287,6 +287,7 @@ class TestCase(object):
             self.logger.info('Test Case %s Result PASSED:' % case_name)
 
         except VerifyFailure as v:
+            case_result = False
             self._suite_result.test_case_failed(str(v))
             self._rst_obj.write_result("FAIL")
             self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(v))
@@ -296,25 +297,37 @@ class TestCase(object):
             self.tear_down()
             raise KeyboardInterrupt("Stop DTS")
         except TimeoutException as e:
+            case_result = False
             self._rst_obj.write_result("FAIL")
-            msg = str(e)
-            self._suite_result.test_case_failed(msg)
-            self.logger.error('Test Case %s Result FAILED: ' % (case_name) + msg)
+            self._suite_result.test_case_failed(str(e))
+            self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(e))
             self.logger.error('%s' % (e.get_output()))
         except Exception:
+            case_result = False
             trace = traceback.format_exc()
             self._suite_result.test_case_failed(trace)
             self.logger.error('Test Case %s Result ERROR: ' % (case_name) + trace)
         finally:
             self.tear_down()
+            return case_result
 
     def execute_test_cases(self):
         """
         Execute all test cases in one suite.
         """
+
         if load_global_setting(FUNC_SETTING) == 'yes':
             for case_obj in self._get_functional_cases():
-                self._execute_test_case(case_obj)
+                for i in range(self.tester.re_run_time + 1):
+                    if self._execute_test_case(case_obj):
+                        break
+                    else:
+                        for dutobj in self.duts:
+                            dutobj.get_session_output(timeout = 0.5 * (i + 1))
+                        self.tester.get_session_output(timeout = 0.5 * (i + 1))
+                        time.sleep(i + 1)
+                        self.logger.info(" Test case %s re-run %d time" % (case_obj.__name__, i + 1))
+
         if load_global_setting(PERF_SETTING) == 'yes':
             for case_obj in self._get_performance_cases():
                 self._execute_test_case(case_obj)
