@@ -142,9 +142,23 @@ class ExcelReporter(object):
 
         self.title_style = xlwt.XFStyle()
         self.title_style.font = title_font
+ 
+    def __get_case_result(self, dut, target, suite, case):
+        case_list = self.result.all_test_cases(dut, target, suite)
+        if case_list.count(case) > 1:
+            tmp_result = []
+            for case_name in case_list:
+                if case == case_name:
+                    test_result = self.result.result_for(dut, target, suite, case)
+                    if 'PASSED' in test_result:
+                        return ['PASSED', '']
+                    else:
+                        tmp_result.append(test_result)
+            return tmp_result[-1]
+        else:
+            return self.result.result_for(dut, target, suite, case)
 
-    def __write_result(self, dut, target, suite, case):
-        test_result = self.result.result_for(dut, target, suite, case)
+    def __write_result(self, dut, target, suite, case, test_result):
         if test_result is not None and len(test_result) > 0:
             result = test_result[0]
             if test_result[1] != '':
@@ -156,13 +170,14 @@ class ExcelReporter(object):
                     self.row, self.col + 1, result, self.failed_style)
 
     def __write_cases(self, dut, target, suite):
-        for case in self.result.all_test_cases(dut, target, suite):
+        for case in set(self.result.all_test_cases(dut, target, suite)):
+            result = self.__get_case_result(dut, target, suite, case)
             self.col += 1
             if case[:5] == "test_":
                 self.sheet.write(self.row, self.col, case[5:])
             else:
                 self.sheet.write(self.row, self.col, case)
-            self.__write_result(dut, target, suite, case)
+            self.__write_result(dut, target, suite, case, result)
             self.row += 1
             self.col -= 1
 
