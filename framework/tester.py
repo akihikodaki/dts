@@ -69,6 +69,7 @@ class Tester(Crb):
         self.scapyCmds = []
         self.bgCmds = []
         self.bgItf = ''
+        self.re_run_time = 0
 
     def init_ext_gen(self):
         """
@@ -77,6 +78,12 @@ class Tester(Crb):
         if self.it_uses_external_generator():
             self.ixia_packet_gen = IxiaPacketGenerator(self)
         self.packet_gen = SoftwarePacketGenerator(self)
+
+    def set_re_run(self, re_run_time):
+        """
+        set failed case re-run time
+        """
+        self.re_run_time = int(re_run_time)
 
     def get_ip_address(self):
         """
