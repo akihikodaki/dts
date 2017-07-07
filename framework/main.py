@@ -134,6 +134,9 @@ parser.add_argument('--debug',
 parser.add_argument('--debugcase',
                     action='store_true',
                     help='enable debug mode in the first case, user can further debug')
+parser.add_argument('--re_run',
+                    default=0,
+                    help='when case failed will re-run times, and this value must >= 0')
 
 parser.add_argument('--commands',
                     action='append',
@@ -156,4 +159,4 @@ dts.run_all(args.config_file, args.snapshot, args.git,
             args.patch, args.skip_setup, args.read_cache,
             args.project, args.suite_dir, args.test_cases,
             args.dir, args.output, args.verbose,args.virttype,
-            args.debug, args.debugcase, args.commands)
+            args.debug, args.debugcase, args.re_run, args.commands)

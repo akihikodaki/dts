@@ -424,7 +424,7 @@ def dts_run_suite(duts, tester, test_suites, target):
 def run_all(config_file, pkgName, git, patch, skip_setup,
             read_cache, project, suite_dir, test_cases,
             base_dir, output_dir, verbose, virttype, debug,
-            debugcase, commands):
+            debugcase, re_run, commands):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -464,6 +464,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     # init log_handler handler
     if verbose is True:
         logger.set_verbose()
+
+    if re_run < 0:
+        re_run = 0
 
     logger.log_dir = output_dir
     log_handler = getLogger('dts')
@@ -520,7 +523,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
 
         # init dut, tester crb
         duts, tester = dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype)
-
+        tester.set_re_run(re_run)
         # register exit action
         atexit.register(quit_execution, duts, tester)
 
