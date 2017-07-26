@@ -64,6 +64,7 @@ class TestCase(object):
         # check session and reconnect if possible
         for dutobj in self.duts:
             self._check_and_reconnect(crb=dutobj)
+            dutobj.send_expect("cd %s" % dutobj.base_dir, "#")
         self._check_and_reconnect(crb=self.tester)
 
         # covert netdevice to codename
