@@ -628,7 +628,7 @@ class IxiaPacketGenerator(SSHConnection):
         for port in rxPortlist:
             self.start_pktGroup(self.pci_to_port(self.tester.get_pci(port)))
 
-    def hook_transmissoin_func(self):
+    def hook_transmission_func(self):
         pass
 
     def get_transmission_results(self, rx_port_list, tx_port_list, delay=5):
@@ -653,7 +653,7 @@ class IxiaPacketGenerator(SSHConnection):
         self.logger.info("Rate: %f Mpps" % (rate * 1.0 / 1000000))
         self.logger.info("Mbps rate: %f Mbps" % (bpsRate * 1.0 / 1000000))
 
-        self.hook_transmissoin_func()
+        self.hook_transmission_func()
 
         self.send_expect("ixStopTransmit portList", "%", 30)
 
