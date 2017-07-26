@@ -40,7 +40,7 @@ from settings import NICS, load_global_setting, PERF_SETTING
 from crb import Crb
 from net_device import GetNicObj
 from etgen import IxiaPacketGenerator, SoftwarePacketGenerator
-from settings import IXIA
+from settings import IXIA, USERNAME
 import random
 from utils import GREEN, convert_int2ip, convert_ip2int
 from exception import ParameterInvalidException
@@ -90,6 +90,12 @@ class Tester(Crb):
         Get ip address of tester CRB.
         """
         return self.crb['tester IP']
+
+    def get_username(self):
+        """
+        Get login username of tester CRB.
+        """
+        return USERNAME
 
     def get_password(self):
         """

@@ -69,7 +69,7 @@ class Dut(Crb):
         self.tester = None
         self.cores = []
         self.architecture = None
-        self.ports_info = None
+        self.ports_info = []
         self.conf = PortConf()
         self.ports_map = []
         self.virt_pool = None
@@ -83,6 +83,7 @@ class Dut(Crb):
             self.host_session = SSHConnection(
                 self.get_ip_address(),
                 self.NAME + '_host',
+                self.get_username(),
                 self.get_password())
             self.host_session.init_log(self.logger)
             self.host_init_flag = True
@@ -170,6 +171,12 @@ class Dut(Crb):
         Get DUT's login password.
         """
         return self.crb['pass']
+
+    def get_username(self):
+        """
+        Get DUT's login username.
+        """
+        return self.crb['user']
 
     def dut_prerequisites(self):
         """
