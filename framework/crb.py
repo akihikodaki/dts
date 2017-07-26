@@ -61,11 +61,13 @@ class Crb(object):
 
         self.logger = getLogger(name)
         self.session = SSHConnection(self.get_ip_address(), name,
+                                     self.get_username(),
                                      self.get_password())
         self.session.init_log(self.logger)
         self.alt_session = SSHConnection(
             self.get_ip_address(),
             name + '_alt',
+            self.get_username(),
             self.get_password())
         self.alt_session.init_log(self.logger)
 
@@ -88,7 +90,9 @@ class Crb(object):
         Create new session for addtional useage. This session will not enable log.
         """
         logger = getLogger(name)
-        session = SSHConnection(self.get_ip_address(), name,
+        session = SSHConnection(self.get_ip_address(),
+                                name,
+                                self.get_username(),
                                 self.get_password())
         session.init_log(logger)
         self.sessions.append(session)
@@ -103,7 +107,8 @@ class Crb(object):
                 save_session.close()
                 logger = getLogger(save_session.name)
                 logger.logger_exit()
-            self.sessions.remove(save_session)
+                self.sessions.remove(save_session)
+                break
 
     def reconnect_session(self, alt_session=False):
         """
@@ -121,11 +126,12 @@ class Crb(object):
             session = SSHConnection(
                 self.get_ip_address(),
                 self.name + '_alt',
+                self.get_username(),
                 self.get_password())
             self.alt_session = session
         else:
             session = SSHConnection(self.get_ip_address(), self.name,
-                                    self.get_password())
+                                    self.get_username(), self.get_password())
             self.session = session
 
         session.init_log(self.logger)
