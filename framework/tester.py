@@ -539,7 +539,7 @@ class Tester(Crb):
         print GREEN("Transmitting and sniffing packets, please wait few minutes...")
         send_f(intf=intf, pkts=pkts, interval=interval)
 
-    def check_random_pkts(self, portList, pktnum=2000, interval=0.01, allow_miss=True, params=None):
+    def check_random_pkts(self, portList, pktnum=2000, interval=0.01, allow_miss=True, seq_check=False, params=None):
         """
         Send several random packets and check rx packets matched
         """
@@ -610,6 +610,7 @@ class Tester(Crb):
             transmit_proc.join()
 
         # Verify all packets
+        prev_id = -1
         for txport, rxport in portList:
             recv_pkts = load_f(rx_inst[rxport])
 
@@ -637,6 +638,13 @@ class Tester(Crb):
                     t_idx = convert_ip2int(sip, 6)
                 else:
                     continue
+
+                if seq_check:
+                    if t_idx <= prev_id:
+                        print "Packet %d sequence not correct" % t_idx
+                        return False
+                    else:
+                        prev_id = t_idx
 
                 if compare_f(tx_pkts[txport][t_idx], recv_pkts[idx], "L4") is False:
                     print "Pkt recevied index %d not match original " \
