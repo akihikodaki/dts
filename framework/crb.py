@@ -662,17 +662,13 @@ class Crb(object):
                 partial_cores = self.cores
                 sockList = set([int(n['socket']) for n in partial_cores])
 
-                sockList = list(sockList)[1:nr_sockets + 1]
+                sockList = list(sockList)[:nr_sockets]
                 partial_cores = [n for n in partial_cores if int(
                     n['socket']) in sockList]
-                core_list = set([int(n['core']) for n in partial_cores])
-                core_list = list(core_list)
-                thread_list = set([int(n['thread']) for n in partial_cores])
-                thread_list = list(thread_list)
 
                 temp = []
                 for sock in sockList:
-                    core_list = list([int(n['core']) for n in partial_cores if int(
+                    core_list = list([int(n['thread']) for n in partial_cores if int(
                         n['socket']) == sock])
                     core_list = core_list[:nr_cores]
                     temp.extend(core_list)
