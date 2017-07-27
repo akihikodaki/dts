@@ -44,6 +44,7 @@ from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING, DEBUG_CASE_SETTI
 from rst import RstReport
 from test_result import ResultTable, Result
 from logger import getLogger
+from config import SuiteConf
 
 class TestCase(object):
 
@@ -245,6 +246,12 @@ class TestCase(object):
         self._suite_result.test_case = case_obj.__name__
 
         self._rst_obj.write_title("Test Case: " + case_name)
+
+        # load suite configuration file here for rerun command
+        self._suite_conf = SuiteConf(self.suite_name)
+        self._case_cfg = self._suite_conf.load_case_config(case_name)
+        del(self._suite_conf)
+
         case_result = True
         if self._check_inst is not None:
             if self._check_inst.case_skip(case_name[len("test_"):]):
@@ -272,15 +279,8 @@ class TestCase(object):
             self.tester.get_session_output(timeout=0.1)
             # run set_up function for each case
             self.set_up()
-            # prepare debugger re-run case environment
-            if self._enable_debug or self._debug_case:
-                debugger.AliveSuite = self
-                debugger.AliveModule = __import__('TestSuite_' + self.suite_name)
-                debugger.AliveCase = case_name
-            if self._debug_case:
-                debugger.keyboard_handle(signal.SIGINT, None)
-            else:
-                case_obj()
+            # run test case
+            case_obj()
 
             self._suite_result.test_case_passed()
 
@@ -316,25 +316,52 @@ class TestCase(object):
         """
         Execute all test cases in one suite.
         """
+        # prepare debugger rerun case environment
+        if self._enable_debug or self._debug_case:
+            debugger.AliveSuite = self
+            debugger.AliveModule = __import__('TestSuite_' + self.suite_name)
 
         if load_global_setting(FUNC_SETTING) == 'yes':
             for case_obj in self._get_functional_cases():
                 for i in range(self.tester.re_run_time + 1):
-                    if self._execute_test_case(case_obj):
-                        break
-                    else:
+                    ret = self.execute_test_case(case_obj):
+
+                    if ret is False:
                         for dutobj in self.duts:
                             dutobj.get_session_output(timeout = 0.5 * (i + 1))
                         self.tester.get_session_output(timeout = 0.5 * (i + 1))
                         time.sleep(i + 1)
-                        self.logger.info(" Test case %s re-run %d time" % (case_obj.__name__, i + 1))
+                        self.logger.info(" Test case %s failed and re-run %d time" % (case_obj.__name__, i + 1))
+                    else:
+                        break
 
         if load_global_setting(PERF_SETTING) == 'yes':
             for case_obj in self._get_performance_cases():
-                self._execute_test_case(case_obj)
+                self.execute_test_case(case_obj)
+
+    def execute_test_case(self, case_obj):
+        """
+        Execute test case or enter into debug mode.
+        """
+        debugger.AliveCase = case_obj.__name__
+
+        if self._debug_case:
+            self.logger.info("Rerun Test Case %s Begin" % debugger.AliveCase)
+            debugger.keyboard_handle(signal.SIGINT, None)
+        else:
+            return self._execute_test_case(case_obj)
 
     def get_result(self):
+        """
+        Return suite test result
+        """
         return self._suite_result
+
+    def get_case_cfg(self):
+        """
+        Return case based configuration
+        """
+        return self._case_cfg
 
     def execute_tear_downall(self):
         """

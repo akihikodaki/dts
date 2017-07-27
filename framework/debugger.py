@@ -96,9 +96,10 @@ def rerun_command():
         # copy all element from previous suite to reloaded suite
         copy_instance_attr(AliveSuite, suite_obj)
         # re-run specified test case
-        for case in suite_obj._get_test_cases(r'%s' % AliveCase):
+        for case in suite_obj._get_test_cases(r'\A%s\Z' % AliveCase):
             if callable(case):
-                case()
+                suite_obj.logger.info("Rerun Test Case %s Begin" % case.__name__)
+                suite_obj._execute_test_case(case)
 
 
 def exit_command():
