@@ -32,17 +32,19 @@
 """
 Generic port and crbs configuration file load function
 """
-
+import os
 import re
 import ConfigParser  # config parse module
 import argparse      # prase arguments module
-from settings import IXIA
-from exception import ConfigParseException, VirtConfigParseException
+from settings import IXIA, CONFIG_ROOT_PATH, SUITE_SECTION_NAME
+from settings import load_global_setting, DTS_CFG_FOLDER
+from exception import ConfigParseException, VirtConfigParseException, PortConfigParseException
 
-PORTCONF = "conf/ports.cfg"
-CRBCONF = "conf/crbs.cfg"
-VIRTCONF = "conf/virt_global.cfg"
-IXIACONF = "conf/ixia.cfg"
+PORTCONF = "%s/ports.cfg" % CONFIG_ROOT_PATH
+CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
+VIRTCONF = "%s/virt_global.cfg" % CONFIG_ROOT_PATH
+IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
+SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
 
 
 class UserConf():
@@ -51,7 +53,6 @@ class UserConf():
         self.conf = ConfigParser.SafeConfigParser()
         load_files = self.conf.read(config)
         if load_files == []:
-            print "FAILED LOADING %s!!!" % config
             self.conf = None
             raise ConfigParseException(config)
 
@@ -85,6 +86,55 @@ class UserConf():
             (key, _, value) = param.partition('=')
             paramDict[key] = value
         return paramDict
+
+
+class SuiteConf(UserConf):
+    def __init__(self, suite_name=""):
+        self.config_file = CONFIG_ROOT_PATH + os.sep + suite_name + ".cfg"
+        self.suite_cfg = {}
+        try:
+            self.suite_conf = UserConf(self.config_file)
+        except ConfigParseException:
+            self.suite_conf = None
+
+        # load default suite configuration
+        self.suite_cfg = self.load_case_config(SUITE_SECTION_NAME)
+
+    def load_case_config(self, case_name=""):
+        case_cfg = self.suite_cfg.copy()
+        if self.suite_conf is None:
+            return case_cfg
+
+        try:
+            case_confs = self.suite_conf.load_section(case_name)
+        except:
+            print "FAILED FIND CASE[%s] CONFIG!!!" % case_name
+            return case_cfg
+
+        if case_confs is None:
+            return case_cfg
+
+        conf = dict(case_confs)
+        for key, data_string in conf.items():
+            if data_string.startswith("value_int:"):
+                value = data_string[len("value_int:"):]
+                case_cfg[key] = int(value)
+            elif data_string.startswith("value_hex:"):
+                value = data_string[len("value_hex:"):]
+                case_cfg[key] = int(value, 16)
+            elif data_string.startswith("list_int:"):
+                value = data_string[len("list_int:"):]
+                datas = value.split(',')
+                int_list = map(lambda x: int(x), datas)
+                case_cfg[key] = int_list
+            elif data_string.startswith("list_str:"):
+                value = data_string[len("list_str:"):]
+                str_list = value.split(',')
+                case_cfg[key] = str_list
+            else:
+                case_cfg[key] = data_string
+
+        return case_cfg
 
 
 class VirtConf(UserConf):
@@ -344,3 +394,8 @@ if __name__ == '__main__':
     # example for ixia configuration file
     ixiaconf = IxiaConf(IXIACONF)
     print ixiaconf.load_ixia_config()
+
+    # example for suite configure file
+    suiteconf = SuiteConf(SUITECONF_SAMPLE)
+    print suiteconf.load_case_config("case1")
+    print suiteconf.load_case_config("case2")
