@@ -55,10 +55,6 @@ class TestCase(object):
         self.tester = tester
         self.target = target
 
-        # get log handler
-        class_name = self.__class__.__name__
-        self.logger = getLogger(class_name)
-        self.logger.config_suite(class_name)
         # local variable
         self._requested_tests = None
 
@@ -113,6 +109,12 @@ class TestCase(object):
 
         # create rst format report for this suite
         self._rst_obj = RstReport('rst_report', target, self.nic, self.suite_name, self._enable_perf)
+
+    def init_log(self):
+        # get log handler
+        class_name = self.__class__.__name__
+        self.logger = getLogger(class_name)
+        self.logger.config_suite(class_name)
 
     def _check_and_reconnect(self, crb=None):
         try:
@@ -324,7 +326,7 @@ class TestCase(object):
         if load_global_setting(FUNC_SETTING) == 'yes':
             for case_obj in self._get_functional_cases():
                 for i in range(self.tester.re_run_time + 1):
-                    ret = self.execute_test_case(case_obj):
+                    ret = self.execute_test_case(case_obj)
 
                     if ret is False:
                         for dutobj in self.duts:

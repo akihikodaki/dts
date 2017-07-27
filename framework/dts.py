@@ -385,6 +385,7 @@ def dts_run_suite(duts, tester, test_suites, target):
             for test_classname, test_class in get_subclasses(suite_module, TestCase):
 
                 suite_obj = test_class(duts, tester, target, suite_name)
+                suite_obj.init_log()
                 suite_obj.set_requested_cases(requested_tests)
                 suite_obj.set_check_inst(check=check_case_inst, support=support_case_inst)
                 result.nic = suite_obj.nic

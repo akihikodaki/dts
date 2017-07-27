@@ -220,9 +220,9 @@ class DTSLOG(BaseLoggerAdapter):
         # add default log file
         fh = logging.FileHandler(self.log_path + "/" + self.dts_log)
         ch = ColorHandler()
-        self.__log_hander(fh, ch)
+        self.__log_handler(fh, ch)
 
-    def __log_hander(self, fh, ch):
+    def __log_handler(self, fh, ch):
         """
         Config stream handler and file handler.
         """
@@ -302,7 +302,7 @@ class DTSLOG(BaseLoggerAdapter):
         log_file = self.log_path + '/' + self.dts_log
         fh = logging.FileHandler(log_file)
         ch = ColorHandler()
-        self.__log_hander(fh, ch)
+        self.__log_handler(fh, ch)
 
         def set_salt(crb, start_flag):
             if LOG_NAME_SEP in crb:
@@ -345,7 +345,12 @@ class DTSLOG(BaseLoggerAdapter):
         log_file = self.log_path + '/' + suitename + '.log'
         fh = logging.FileHandler(log_file)
         ch = ColorHandler()
-        self.__log_hander(fh, ch)
+
+        # exit first
+        self.logger_exit()
+
+        # then add handler
+        self.__log_handler(fh, ch)
 
         if crb == 'dut':
             self.info_lvl = logging.SUITE_DUT_CMD
