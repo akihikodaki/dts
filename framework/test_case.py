@@ -328,7 +328,7 @@ class TestCase(object):
                 for i in range(self.tester.re_run_time + 1):
                     ret = self.execute_test_case(case_obj)
 
-                    if ret is False:
+                    if ret is False and self.tester.re_run_time:
                         for dutobj in self.duts:
                             dutobj.get_session_output(timeout = 0.5 * (i + 1))
                         self.tester.get_session_output(timeout = 0.5 * (i + 1))
