@@ -476,6 +476,10 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     requested_tests = test_cases
 
     # Read config file
+    dts_cfg_folder = settings.load_global_setting(settings.DTS_CFG_FOLDER)
+    if dts_cfg_folder != '':
+        config_file = dts_cfg_folder + os.sep +  config_file
+
     config = ConfigParser.SafeConfigParser()
     load_cfg = config.read(config_file)
     if len(load_cfg) == 0:

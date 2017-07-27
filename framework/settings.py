@@ -188,14 +188,14 @@ Global macro for dts.
 IXIA = "ixia"
 
 """
-The root path of framework configs.
-"""
-CONFIG_ROOT_PATH = "./conf/"
-
-"""
 The log name seperater.
 """
 LOG_NAME_SEP = '.'
+
+"""
+Section name for suite level configuration
+"""
+SUITE_SECTION_NAME = "suite"
 
 """
 DTS global environment variable
@@ -209,6 +209,8 @@ DEBUG_SETTING = "DTS_DEBUG_ENABLE"
 DEBUG_CASE_SETTING = "DTS_DEBUGCASE_ENABLE"
 DPDK_RXMODE_SETTING = "DTS_DPDK_RXMODE"
 DTS_ERROR_ENV = "DTS_RUNNING_ERROR"
+DTS_CFG_FOLDER = "DTS_CFG_FOLDER"
+
 
 """
 DTS global error table
@@ -335,3 +337,12 @@ def accepted_nic(pci_id):
             return True
 
     return False
+
+"""
+The root path of framework configs.
+"""
+dts_cfg_folder = load_global_setting(DTS_CFG_FOLDER)
+if dts_cfg_folder != '':
+    CONFIG_ROOT_PATH = dts_cfg_folder
+else:
+    CONFIG_ROOT_PATH = "./conf"
