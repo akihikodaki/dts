@@ -166,7 +166,7 @@ If enables patch option, DPDK Test Suite will also make patch the unzipped folde
 
 .. code-block:: console
 
-   [root@tester dcts]# ./dts --patch 1.patch --patch 2.patch 
+   [root@tester dts]# ./dts --patch 1.patch --patch 2.patch
 
 Create your own execution configuration
 ---------------------------------------

@@ -98,8 +98,8 @@ After configure environment, we need to install DPDK Test Suite into tester. Fir
 
    [root@tester ~]#  git clone http://dpdk.org/git/tools/dts
    [root@tester ~]#  cd dts
-   [root@tester dcts]#  ls
-   [root@tester dcts]# conf  dep  doc  dts  executions  framework  nics  output  test_plans  tests  tools
+   [root@tester dts]#  ls
+   [root@tester dts]# conf  dep  doc  dts  executions  framework  nics  output  test_plans  tests  tools
 
 High Precision Timer (HPET) must be enabled in the platform BIOS if the HPET is to be used. Otherwise, the Time Stamp Counter (TSC) is used by default. The user can then navigate to the HPET option. On the Crystal Forest platform BIOS, the path is:
 **Advanced -> PCH-IO Configuration -> High Precision Timer**

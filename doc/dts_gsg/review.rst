@@ -97,7 +97,7 @@ Since DPDK Test Suite stores test result as RST by default, you may be want to t
 
 .. code-block:: console
 
-   [root@tester dcts]# cd output/CrownPassCRB1/x86_64-native-linuxapp-gcc/Niantic
+   [root@tester dts]# cd output/CrownPassCRB1/x86_64-native-linuxapp-gcc/Niantic
    [root@tester niantic]# rst2pdf TestResult_hello_world.rst
    [root@tester niantic]# ls
     TestResult_hello_world.pdf  TestResult_hello_world.rst
