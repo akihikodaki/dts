@@ -55,7 +55,6 @@ Install Third Party python modules
 With third party module, DPDK Test Suite is able to export test result as MS Excel file or graphs. To support this feature, please install the following modules in the tester.
 Python Module “xlwt”: this module is used to generate spreadsheet files which compatible with MS Excel 97/2000/XP/2003 XLS files.
 Python Module “numpy”: this module provides method to deal with array-processing test results.
-Python Module “matplotlib”: this module is used to produce quality 2D test result summary as graphics
 Python Module “pexpect”: this module provides API to automate interactive SSH sessions.
 Python Module “docutils”: Docutils is a modular system for processing documentation into useful formats, such as HTML, XML, and LaTeX.
 Python Module “pcapy”: Pcapy is a Python extension module that interfaces with the libpcap packet capture library. Pcapy enables python scripts to capture packets on the network.
@@ -69,7 +68,6 @@ Please see installation instruction as the following:
    yum install python-xlwt
    yum install python-pexpect
    yum install numpy
-   yum install python-matplotlib
    yum install python-docutils
    yum install pcapy
    yum install python-xlrd
@@ -101,7 +99,7 @@ After configure environment, we need to install DPDK Test Suite into tester. Fir
    [root@tester ~]#  git clone http://dpdk.org/git/tools/dts
    [root@tester ~]#  cd dts
    [root@tester dcts]#  ls
-   [root@tester dcts]# conf  dep  doc  dts  executions  framework  output  test_plans  tests  tools
+   [root@tester dcts]# conf  dep  doc  dts  executions  framework  nics  output  test_plans  tests  tools
 
 High Precision Timer (HPET) must be enabled in the platform BIOS if the HPET is to be used. Otherwise, the Time Stamp Counter (TSC) is used by default. The user can then navigate to the HPET option. On the Crystal Forest platform BIOS, the path is:
 **Advanced -> PCH-IO Configuration -> High Precision Timer**
@@ -111,6 +109,7 @@ The DPDK Test Suite is composed of several file and directories:
 *   dts: Main module of DPDK Test Suite suite
 *   exectution.cfg: configuration file of DPDK Test Suite suite
 *   framework: folder with dts framework modules
+*   nics: folder with different network device modules
 *   output: folder which contain running log files and result files
 *   test_plans: folder with rst files which contain the description of test case
 *   tests: folder with test case scripts
@@ -120,11 +119,11 @@ Setup Target Environment
 
 This section describes how to deploy DPDK Test Suite packages into DUT target.So far, DPDK Test Suite supports the following OS on DUT:
 
-*   Fedora18/19/20
-*   Ubuntu12.04/14.04
-*   WindRiver 6.0
+*   Fedora18/19/20/23/24/25
+*   Ubuntu12.04/14.04/16.04
+*   WindRiver 6.0/7.0
 *   FreeBSD 10
-*   RedHat 6.5/7.0
+*   RedHat 6.5/7.0/7.3
 *   SUSE 11
 
 Before run DPDK Test Suite on target, we need to configure target environment, it includes BIOS setting, Network configure, compiler environment, etc.
@@ -171,7 +170,7 @@ For more detail information of system requirements, also refer to `Data Plane De
 
 Authorized login session
 ------------------------
-In DPDK Test Suite, communication was established based on authorized ssh session. All ssh connection to each other will skip password interactive phase for remote server has been authorized.
+In DPDK Test Suite, support communication be established based on authorized ssh session. All ssh connection to each other will skip password interactive phase if remote server has been authorized.
 
 In tester, you can use tool ssh-copy-id to save local available keys on DUT, thus create authorise login session between tester and DUT. By the same way, you can create authorise login session between tester and itself.
 
