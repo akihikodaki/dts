@@ -12,7 +12,8 @@ For Example, please see specific usage, you can get these information via DPDK T
    usage: main.py [-h] [--config-file CONFIG_FILE] [--git GIT] [--patch PATCH]
                   [--snapshot SNAPSHOT] [--output OUTPUT] [-s] [-r] [-p PROJECT]
                   [--suite-dir SUITE_DIR] [-t TEST_CASES] [-d DIR] [-v]
-                  [--virttype VIRTTYPE] [--debug] [--debugcase]
+                  [--virttype VIRTTYPE] [--debug] [--debugcase] [--re_run RE_RUN]
+                  [--commands COMMANDS]
 
 
 DPDK Test Suite supports the following parameters:
@@ -67,6 +68,13 @@ DPDK Test Suite supports the following parameters:
     +---------------------------+---------------------------------------------------+------------------+
     | --debugcase               | Enter into debug mode before running every test   |                  |
     |                           | case.                                             |                  |
+    +---------------------------+---------------------------------------------------+------------------+
+    | --re_run TIMES            | Rerun failed test cases for stable result         | 0                |
+    +---------------------------+---------------------------------------------------+------------------+
+    | --commands COMMANDS       | Run self assigned commands at different stages of |                  |
+    |                           | exection. Format is [commands]:dut|tester:pre-\   |                  |
+    |                           | init|post-init:check|ignore                       |                  |
+    |                           | E.g. [/root/setup.sh]:dut:pre-init:check          |                  |
     +---------------------------+---------------------------------------------------+------------------+
 
 Please see more information about some critical parameters as the following:
@@ -135,6 +143,14 @@ Debug interact support commands as below:
 
 Another approach to run into debug mode. With this option on, DTS will hang and wait for user command before execution of each test case.
 
+**--re_run**
+
+Some cases may failed due to miscellaneous packets, rerun those test cases can generate the stable result.
+
+**--commands**
+
+Allow user specify some commands which can be executed on DUT or Tester in the process of DPDK Test Suite preparation.
+
 DPDK Release Preparation
 ------------------------
 
@@ -143,7 +159,7 @@ Firstly, you need to download the latest code from dpdk.org, then archive and co
 .. code-block:: console
 
     [root@tester dts]#  ls
-    [root@tester dts]#  conf dep doc dts executions framework output test_plans tests tools
+    [root@tester dts]#  conf dep doc dts executions framework nics output test_plans tests tools
 
 
 If enables patch option, DPDK Test Suite will also make patch the unzipped folder and compile it.
@@ -176,6 +192,7 @@ First of all, you must create a file named execution.cfg as below.
 *   scenario: Senario of DPDK virtualization environment for this execution.
 
     – nic_type : is the type of the NIC to use. The types are defined in the file settings.py.
+                 There's one special type named as **cfg**, which mean network information will be loaded from file.
 
     – func=true run only functional test
 
@@ -219,6 +236,28 @@ Then please add the detail information about your CRB in **conf/crbs.conf** as f
     | channels        | number of memory channels for DPDK EAL             |
     +-----------------+----------------------------------------------------+
     | bypass_core0    | skip the first core when initialize DPDK           |
+    +-----------------+----------------------------------------------------+
+
+If you need to configure network topology, please add it in **conf/ports.cfg**, e.g.:
+
+.. code-block:: console
+
+   [192.168.1.1]
+   ports =
+       pci=0000:06:00.0,peer=0000:81:00.0;
+       pci=0000:06:00.1,peer=0000:81:00.1;
+       pci=0000:08:00.0,peer=IXIA:1.1;
+       pci=0000:08:00.1,peer=IXIA:1.2;
+
+.. table::
+
+    +-----------------+----------------------------------------------------+
+    | Item            | description                                        |
+    +-----------------+----------------------------------------------------+
+    | pci             | Device pci address of DUT                          |
+    +-----------------+----------------------------------------------------+
+    | peer            | Device pci address of Tester port which connected  |
+    |                 | to the DUT device                                  |
     +-----------------+----------------------------------------------------+
 
 Launch DPDK Test Suite
@@ -265,7 +304,7 @@ Build dpdk source code and then setup the running environment.
    DTS_DUT_CMD: rmmod -f igb_uio
    DTS_DUT_CMD: insmod ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
    DTS_DUT_CMD: lsmod | grep igb_uio
-   DTS_DUT_CMD: tools/dpdk_nic_bind.py --bind=igb_uio 08:00.0 08:00.1 0a:00.0 0a:00.1
+   DTS_DUT_CMD: usertools/dpdk_nic_bind.py --bind=igb_uio 08:00.0 08:00.1 0a:00.0 0a:00.1
 
 Begin the validation process of test suite.
 
