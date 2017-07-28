@@ -192,7 +192,7 @@ def dts_run_commands(crb, dts_commands):
     """
     for dts_command in dts_commands:
         command = dts_command['command']
-        if crb.NAME == dts_command['host']:
+        if dts_command['host'] in crb.NAME:
             if crb.stage == dts_command['stage']:
                 ret = crb.send_expect(command, expected="# ", verify=True)
                 if type(ret) is int:
@@ -324,6 +324,7 @@ def dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer
 
     try:
         for dutobj in duts:
+            dts_run_commands(dutobj, dts_commands)
             dutobj.set_package(pkgName, patch)
             dutobj.prerequisites()
             dts_run_commands(dutobj, dts_commands)
