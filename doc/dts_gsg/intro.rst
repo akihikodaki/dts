@@ -2,8 +2,8 @@ Introduction
 ============
 
 This document describes how to install and configure the Data Plane Development Kit Test Suite (DPDK Test Suite) in a Linux environment. Users can refer this document to enable this test infrastructure in their environment and don’t need go deeply with too much details about this framework.
-DPDK Test Suite is an automation test tool for DPDK software, a python-base library.  It can run on remote tester machine, and communicate/manage DUT by SSH connection. DTF supports different kind of traffic generators, including DPDK-based PacketGen, third-party professional tester equipment (IXIA®).
-Data Plane Development Kit Test Suite (DPDK Test Suite)  includes one set of test cases and DPDK generic test framework . DPDK Test Suite provides test example, references and framework for open source community. Based on DPDK Test Suite, everyone can develop their test plan, automation script and configuration for own features and platform. In addition, DPDK Test Suite provides a solution to allow that DPDK developers contribute their function test to certify their patch integration. It only requires limitation effort to maintain test cases once merged into DPDK Test Suite.  Everyone can utilize DPDK Test Suite to measure performance and functionality for features.
+DPDK Test Suite is an automation test tool for DPDK software, a python-base library.  It can run on the tester machine, and communicate/manage DUT by SSH connection. DTF supports different kind of traffic generators, including DPDK-based PacketGen, third-party professional tester equipment (IXIA®).
+Data Plane Development Kit Test Suite (DPDK Test Suite) includes one set of test cases and DPDK generic test framework. DPDK Test Suite provides test example, references and framework for open source community. Based on DPDK Test Suite, everyone can develop their test plan, automation script and configuration for own features and platform. In addition, DPDK Test Suite provides a solution to allow that DPDK developers contribute their function test to certify their patch integration. It only requires limitation effort to maintain test cases once merged into DPDK Test Suite.  Everyone can utilize DPDK Test Suite to measure performance and functionality for features.
 
 Please see DPDK Test Suite architecture in the following figures: 
 
@@ -11,15 +11,16 @@ Please see DPDK Test Suite architecture in the following figures:
 
 As generic test framework, DPDK Test Suite provides the following functions:
 
-*   Able to work with DUT (Device Under Test), which installed Fedora, Ubuntu, WindRiver, FreeBSD, RedHat and SUSE
+*   Able to work with DUT (Device Under Test), which installed Fedora, Ubuntu, WindRiver, FreeBSD, RedHat and SUSE.
+*   Support virtualization hypervisors like Xen and Qemu.
 *   Support both software and hardware traffic generators, including Scapy, DPDK-based PacketGen and IXIA traffic generator, even third party packet generator via TCL or Python library.
 *   Provide configure files to customize test suite and test cases to run under DUT.
+*   Provide debug and log functionalities for tracking test cases execution process.
 *   Support to output test result by excel, log text file, etc.
-*   In addition, Test Framework will manage communication with DUT by SSH, provides library to manage SSH connections.
 *   DPDK Test Suite provides one set of basic library to manage tester, DUT, test case, exception, generate report, and configure test plan by user configure files. It’s easy to develop user-defined test suite and test plan by self, and these test cases are able to integrate into DPDK Test Suite.
 *   With this test framework, user can automatically identify network topology, and easy to configure/deploy environment for DUT and tester, and provides flexibility to scale test capability by configuration.
 
-DPDK Test Suite environment includes DUT (Device under Test), Tester and packet generator. DPDK software will deployed and run on DUT.  DPDK Test Suite test Framework and test code will be stored into tester. 
+DPDK Test Suite environment includes DUT (Device under Test), Tester and packet generator. DPDK software will deployed and run on DUT. DPDK Test Suite should run on the Tester.
 
 Please see architecture in the following figures:
 
@@ -38,19 +39,23 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | main.py               | Test script to parse input parameter                                                                                                                         |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | dut.py                | Setup device under test including  tool chain, IP address                                                                                                    |
+    | dut.py                | Setup device under test including tool chain, IP address                                                                                                     |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | tester.py             | Provide API to setup tester environment including IP, port, etc.                                                                                             |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | Exception.py          | Manage User-defined exceptions used across the framework.                                                                                                    |
+    | project_dpdk.py       | Provide running environment for DPDK.                                                                                                                        |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | Test_cases.py         | Provides a base class for creating DPDK Test Suite test cases.                                                                                               |
+    | exception.py          | Manage User-defined exceptions used across the framework                                                                                                     |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | test_cases.py         | Provide a base class for creating DPDK Test Suite test cases                                                                                                 |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | logger.py             | Deal with different log files to record event or message                                                                                                     |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | serializer.py         | Provide wrapper class to manage temporary variables during  execution                                                                                        |
+    | serializer.py         | Provide wrapper class to manage temporary variables during execution                                                                                         |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | settings.py           | Setting for default network card and its identifiers supported by the framework                                                                              |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | utils.py              | Provide shared simple functions like IP address covertion and mask creation                                                                                  |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ssh_connection.py     | Create session to host, implement send_expect and copy function                                                                                              |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
@@ -74,8 +79,6 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ixia_buffer_parser.py | Helper class that parses a list of files containing IXIA captured frames extracting a sequential number on them                                              |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | ixiacfg.py            | IXIA Configuration file                                                                                                                                      |
-    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ixiaDCB.tcl           | Third party Library which provided by IXIA, used to configure IXIA tester                                                                                    |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ixiaPing6.tcl         | Third party Library which provided by IXIA, used to ping IXIA tester                                                                                         |
@@ -84,8 +87,20 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | texttable.py          | Third party Library , create simple ASCII tables                                                                                                             |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | qemu_kvm.py           | Provide functionality for management and monitoring QEMU hypervisor                                                                                          |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | qemu_libvirt.py       | Provide functionality for usage of libvirt library                                                                                                           |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | virt_base.py          | Base class for virtual machine, supply basic management functions                                                                                            |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | virt_dut.py           | Generate instance for virtual machine, usage model is like DUT                                                                                               |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | virt_resource.py      | Provide resource management for virtual machine                                                                                                              |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
+    | virt_scene.py         | Generate virtualization scenario based on configuration file                                                                                                 |
+    +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-Beside Framework tool, DPDK Test Suite also defines one set of test cases. It includes basic test suite to verify basic functionality of DPDK library.  These test script provides example and reference. Everyone can develop their test cases, verify their features functionality, and commit generic test report to maintainer.  However, user-defined test cases, plan and script must follow DPDK Test Suite standard including code standard, naming conventions, configure format, rst test plan, API. 
+Beside Framework tool, DPDK Test Suite also defines one set of test cases. It includes basic test suite to verify basic functionality of DPDK library. These test script provides example and reference. Everyone can develop their test cases, verify their features functionality, and commit generic test report to maintainer. However, user-defined test cases, plan and script must follow DPDK Test Suite standard including code standard, naming conventions, configure format, rst test plan, API. 
 
 Please see test cases, which included in the DPDK compliance test suites:
 
