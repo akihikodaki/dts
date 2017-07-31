@@ -94,7 +94,7 @@ class TestUnitTestsDump(TestCase):
         
         # Nic driver will create multiple rings.
         # Only check the last one to make sure ring_dump function work.
-        self.verify( 'MP_mbuf_pool_socket_0' in result[0][-1], "dump ring name failed")
+        self.verify( 'MP_mbuf_pool_socket_0' in result[0], "dump ring name failed")
 
     def test_mempool_dump(self):
         """
@@ -107,7 +107,7 @@ class TestUnitTestsDump(TestCase):
         m = re.compile(r"%s" % match_regex, re.S)
         result = m.findall(out)
 
-        self.verify(result[0][0] == 'mbuf_pool_socket_0', "dump mempool name failed")
+        self.verify(result[0][0] == 'MP_mbuf_pool_socket_0', "dump mempool name failed")
 
     def test_physmem_dump(self):
         """
@@ -178,7 +178,7 @@ class TestUnitTestsDump(TestCase):
                              % (self.target, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
-        black_str = "PCI blacklist %s" % pci_address
+        black_str = " %s" % pci_address
         self.verify(black_str in out, "Dump black list failed")
 
         self.dut.send_expect("./%s/app/test -n 1 -c f -w %s"
@@ -186,7 +186,7 @@ class TestUnitTestsDump(TestCase):
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
-        white_str = "PCI whitelist %s" % pci_address
+        white_str = "[pci]: %s" % pci_address
         self.verify(white_str in out, "Dump white list failed")
 
     def tear_down(self):
