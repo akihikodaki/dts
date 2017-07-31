@@ -153,16 +153,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_pci(self):
-        """
-        Run pci autotest.
-        """
-        # should re-compile test app, this is only a demo. will implementation after framework support
-        self.dut.send_expect("./%s/app/test_pci -n 1 -c f" % self.target, "R.*T.*E.*>.*>" , self.start_test_time)
-        out = self.dut.send_expect("pci_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
     def test_atomic(self):
         """
         Run atomic autotest.
