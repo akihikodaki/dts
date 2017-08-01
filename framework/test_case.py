@@ -110,6 +110,10 @@ class TestCase(object):
         # create rst format report for this suite
         self._rst_obj = RstReport('rst_report', target, self.nic, self.suite_name, self._enable_perf)
 
+        # load suite configuration
+        self._suite_conf = SuiteConf(self.suite_name)
+        self._suite_cfg = self._suite_conf.suite_cfg
+
     def init_log(self):
         # get log handler
         class_name = self.__class__.__name__
@@ -251,6 +255,7 @@ class TestCase(object):
 
         # load suite configuration file here for rerun command
         self._suite_conf = SuiteConf(self.suite_name)
+        self._suite_cfg = self._suite_conf.suite_cfg
         self._case_cfg = self._suite_conf.load_case_config(case_name)
         del(self._suite_conf)
 
@@ -364,6 +369,12 @@ class TestCase(object):
         Return case based configuration
         """
         return self._case_cfg
+
+    def get_suite_cfg(self):
+        """
+        Return suite based configuration
+        """
+        return self._suite_cfg
 
     def execute_tear_downall(self):
         """
