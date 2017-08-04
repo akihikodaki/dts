@@ -41,6 +41,8 @@ Test tx preparation feature
 import os
 import time
 import dut
+import re
+import subprocess
 from config import PortConf
 from test_case import TestCase
 from pmd_output import PmdOutput
@@ -97,9 +99,18 @@ class TestTX_preparation(TestCase):
 
     def start_tcpdump(self, rxItf):
 
+        param = ""
+        direct_param = r"(\s+)\[ -(\w) in\|out\|inout \]"
+        tcpdump_help = subprocess.check_output("tcpdump -h; echo 0",
+                                               stderr=subprocess.STDOUT,
+                                               shell=True)
+        for line in tcpdump_help.split('\n'):
+            m = re.match(direct_param, line)
+            if m:
+                param = "-" + m.group(2) + " in"
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
-        self.tester.send_expect("tcpdump -Q in -i %s -n -e -vv -w\
-            ./getPackageByTcpdump.cap 2> /dev/null& " % rxItf, "#")
+        self.tester.send_expect("tcpdump %s -i %s -n -e -vv -w\
+            ./getPackageByTcpdump.cap 2> /dev/null& " % (param,rxItf), "#")
 
     def get_tcpdump_package(self):
         self.tester.send_expect("killall tcpdump", "#")
