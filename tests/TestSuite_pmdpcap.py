@@ -126,7 +126,7 @@ class TestPmdPcap(TestCase):
 
         command = ("./{}/app/testpmd -c {} -n {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
-                   "-- -i --port-topology=chained")
+                   "-- -i --port-topology=chained --no-flush-rx")
         if "cavium" in self.dut.nic_type:
             command += " --disable-hw-vlan-filter"
 
@@ -162,7 +162,7 @@ class TestPmdPcap(TestCase):
         command = ("./{}/app/testpmd -c {} -n {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} " +
-                   "-- -i")
+                   "-- -i --no-flush-rx")
         if "cavium" in self.dut.nic_type:
             command += " --disable-hw-vlan-filter"
 
