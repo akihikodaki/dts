@@ -37,6 +37,7 @@ Test the dynamic driver configuration feature.
 """
 
 import utils
+import time
 
 from test_case import TestCase
 
@@ -122,6 +123,7 @@ class TestDynamicConfig(TestCase):
             cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
+        time.sleep(5)
         self.dut.send_expect("start", "testpmd> ", 120)
 
 

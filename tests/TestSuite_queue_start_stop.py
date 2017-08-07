@@ -131,6 +131,7 @@ class TestQueueStartStop(TestCase):
         #dpdk start
         try:
             self.dut.send_expect("./app/test-pmd/testpmd -c 0xf -n 4 -- -i --portmask=0x1 --port-topology=loop", "testpmd>", 120)
+            time.sleep(5)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
             self.check_forwarding([0, 0], self.nic)

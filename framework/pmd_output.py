@@ -31,6 +31,7 @@
 
 import os
 import re
+from time import sleep
 from settings import TIMEOUT, PROTOCOL_PACKET_SIZE, get_nic_driver
 from utils import create_mask
 
@@ -119,6 +120,8 @@ class PmdOutput():
             command += " --disable-hw-vlan-filter"
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.command = command
+        # wait 10s to ensure links getting up before test start.
+        sleep(10)
         return out
 
     def execute_cmd(self, pmd_cmd, expected='testpmd> ', timeout=TIMEOUT,
