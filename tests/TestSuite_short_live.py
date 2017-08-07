@@ -125,7 +125,8 @@ class TestShortLiveApp(TestCase):
         Basic rx/tx forwarding test
         """
         #dpdk start
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "LSC event", 120)
+        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "testpmd>", 120)
+        time.sleep(5)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
