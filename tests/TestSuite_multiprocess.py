@@ -85,10 +85,10 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
         # Send message from secondary to primary
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask), "Finished Process Init", 100)
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask), "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
 
         self.session_secondary.send_expect("send hello_primary", ">")
         out = self.dut.get_session_output()
@@ -98,10 +98,10 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
         # Send message from primary to secondary
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary " % (self.target, coremask), "Finished Process Init", 100)
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary " % (self.target, coremask), "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
         self.session_secondary.send_expect("send hello_secondary", ">")
         out = self.dut.get_session_output()
         self.session_secondary.send_expect("quit", "# ")
@@ -117,10 +117,10 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
 
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask), "Finished Process Init", 100)
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask), "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init", 100)
         stringsSent = 0
         for line in open('/usr/share/dict/words', 'r').readlines():
             line = line.split('\n')[0]
@@ -141,11 +141,11 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
         # Send message from secondary to primary (auto process type)
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto " % (self.target, coremask), "Finished Process Init", 100)
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto " % (self.target, coremask), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        out = self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
+        out = self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out,
                     "The type of process (SECONDARY) was not detected properly")
 
@@ -158,11 +158,11 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
         # Send message from primary to secondary (auto process type)
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        out = self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
+        out = self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out, "The type of process (SECONDARY) was not detected properly")
         self.session_secondary.send_expect("send hello_secondary", ">",100)
         out = self.dut.get_session_output()
@@ -179,9 +179,9 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
 
         cores = self.dut.get_core_list('1S/2C/1T')
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s -m 64" % (self.target, coremask), "Finished Process Init", 100)
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s -m 64" % (self.target, coremask), "Finished Process Init", 100)
         coremask = hex(int(coremask, 16) * 0x100).rstrip("L")
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/simple_mp/%s/simple_mp -n 1 -c %s" % (self.target, coremask), "# ", 100)
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s" % (self.target, coremask), "# ", 100)
 
         self.verify("Is another primary process running" in out,
                     "No other primary process detected")
@@ -218,14 +218,14 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
 
             coreMask = utils.create_mask(self.dut.get_core_list('1S/1C/1T'))
             portMask = utils.create_mask([dutPorts[0], dutPorts[1]])
-            self.dut.send_expect("./examples/multi_process/client_server_mp/mp_server/client_server_mp/mp_server/%s/mp_server -n %d -c %s -- -p %s -n %d" % (self.target, self.dut.get_memory_channels(), "0xA0", portMask, execution['nprocs']), "Finished Process Init", 20)
+            self.dut.send_expect("./examples/multi_process/client_server_mp/mp_server/%s/mp_server -n %d -c %s -- -p %s -n %d" % (self.target, self.dut.get_memory_channels(), "0xA0", portMask, execution['nprocs']), "Finished Process Init", 20)
             self.dut.send_expect("^Z", "\r\n")
             self.dut.send_expect("bg", "# ")
 
             for n in range(execution['nprocs']):
                 time.sleep(5)
                 coreMask = utils.create_mask([coreList[n]])
-                self.dut.send_expect("./examples/multi_process/client_server_mp/mp_client/client_server_mp/mp_client/%s/mp_client -n %d -c %s --proc-type=secondary -- -n %d" % (self.target, self.dut.get_memory_channels(), coreMask, n), "Finished Process Init")
+                self.dut.send_expect("./examples/multi_process/client_server_mp/mp_client/%s/mp_client -n %d -c %s --proc-type=secondary -- -n %d" % (self.target, self.dut.get_memory_channels(), coreMask, n), "Finished Process Init")
                 self.dut.send_expect("^Z", "\r\n")
                 self.dut.send_expect("bg", "# ")
 
