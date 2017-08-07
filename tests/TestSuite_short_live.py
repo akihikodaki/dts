@@ -103,7 +103,7 @@ class TestShortLiveApp(TestCase):
             count = 2
 
         self.tester.scapy_append('p=sniff(iface="%s",count=%d,timeout=5)' % (rxitf, count))
-        self.tester.scapy_append('RESULT=str(p)')
+        self.tester.scapy_append('RESULT=str(p[%d].show)' % (count-1))
 
         self.tester.scapy_foreground()
 
@@ -125,7 +125,7 @@ class TestShortLiveApp(TestCase):
         Basic rx/tx forwarding test
         """
         #dpdk start
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "testpmd>", 120)
+        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "LSC event", 120)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
@@ -150,7 +150,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print "clean_up_with_signal_testpmd round %d" % (i + 1)
-            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "testpmd>", 120)
+            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "LSC event", 120)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
@@ -174,8 +174,10 @@ class TestShortLiveApp(TestCase):
             # kill with differen Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l2fwd", "#", 60, True)
+                time.sleep(2)
             else:
                 self.dut.send_expect("pkill -15 l2fwd", "#", 60, True)
+                time.sleep(2)
 
     def test_clean_up_with_signal_l3fwd(self):
         repeat_time = 5
@@ -183,14 +185,16 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print "clean_up_with_signal_l3fwd round %d" % (i + 1)
-            self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD:", 120)
+            self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 
             # kill with differen Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l3fwd", "#", 60, True)
+                time.sleep(2)
             else:
                 self.dut.send_expect("pkill -15 l3fwd", "#", 60, True)
+                time.sleep(2)
 
     def tear_down(self):
         """
