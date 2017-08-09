@@ -280,7 +280,7 @@ def config_execution():
     driver_option = {'prompt': 'Choose one of them',
                      'type': 'choice',
                      'help': 'Choose one of dpdk support driver',
-                     'options': ['igb_uio', 'vfio-pci'],
+                     'options': ['igb_uio', 'vfio-pci', 'vfio-pci:noiommu'],
                      'default': '0'}
     opt = Option(**driver_option)
     driver_name = opt.parse_input()

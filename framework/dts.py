@@ -81,6 +81,14 @@ def dts_parse_param(config, section):
     parameters = config.get(section, 'parameters').split(':')
     drivername = config.get(section, 'drivername').split('=')[-1]
 
+    driver = drivername.split(':')
+    if len(driver) == 2:
+        drivername = driver[0]
+        drivermode = driver[1]
+        settings.save_global_setting(settings.HOST_DRIVER_MODE_SETTING, drivermode)
+    else:
+        drivername = driver[0]
+
     settings.save_global_setting(settings.HOST_DRIVER_SETTING, drivername)
 
     paramDict = dict()
@@ -373,6 +381,7 @@ def dts_run_target(duts, tester, targets, test_suites):
     for dutobj in duts:
         dutobj.stop_ports()
         dutobj.restore_interfaces()
+        dutobj.restore_modules()
 
 
 def dts_run_suite(duts, tester, test_suites, target):

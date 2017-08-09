@@ -33,7 +33,7 @@ import os
 import re
 
 from settings import NICS, load_global_setting, accepted_nic
-from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING
+from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING
 from ssh_connection import SSHConnection
 from crb import Crb
 from dut import Dut
@@ -104,6 +104,11 @@ class DPDKdut(Dut):
             self.send_expect("modprobe vfio-pci", "#", 70)
             out = self.send_expect("lsmod | grep vfio_iommu_type1", "#")
             assert ("vfio_iommu_type1" in out), "Failed to setup vfio-pci"
+
+            drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
+            if drivermode == "noiommu":
+                self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
+
         else:
             self.send_expect("modprobe uio", "#", 70)
             out = self.send_expect("lsmod | grep igb_uio", "#")
@@ -129,6 +134,29 @@ class DPDKdut(Dut):
         self.send_expect("kldload ./%s/kmod/nic_uio.ko" % target, "#", 20)
         out = self.send_expect("kldstat", "#")
         assert ("nic_uio" in out), "Failed to insmod nic_uio"
+
+    def restore_modules(self):
+        """
+        Restore DPDK kernel module on DUT.
+        """
+        restore_modules = getattr(self, 'restore_modules_%s' % self.get_os_type())
+        restore_modules()
+
+    def restore_modules_linux(self):
+        """
+        Restore DPDK Linux kernel module on DUT.
+        """
+        drivername = load_global_setting(HOST_DRIVER_SETTING)
+        if drivername == "vfio-pci":
+            drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
+            if drivermode == "noiommu":
+                self.send_expect("echo 0 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
+
+    def restore_modules_freebsd(self):
+        """
+        Restore DPDK Freebsd kernel module on DUT.
+        """
+        pass
 
     def set_rxtx_mode(self):
         """
