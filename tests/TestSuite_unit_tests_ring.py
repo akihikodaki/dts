@@ -71,10 +71,6 @@ class TestUnitTestsRing(TestCase):
         self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("ring_autotest", "RTE>>", 36000)
         self.verify("Test OK" in out, "Test failed")
-        self.dut.send_expect("set_watermark test 100", "RTE>>")
-        out = self.dut.send_expect("dump_ring test", "RTE>>")
-        self.dut.send_expect("quit", "# ")
-        self.verify("watermark=100" in out, "Test failed")
 
     def test_ring_performance(self):
         """
