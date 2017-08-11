@@ -128,16 +128,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_malloc(self):
-        """
-        Run malloc autotest.
-        """
-
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("malloc_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
     def test_func_reentrancy(self):
         """
         Run function reentrancy autotest.
