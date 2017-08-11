@@ -28,6 +28,7 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import os
 import sys
 import traceback
 from random import randint
@@ -128,7 +129,7 @@ class VirtBase(object):
         Load local configure in the path DTS_ROOT_PATH/conf.
         """
         # load local configuration by suite and vm name
-        conf = VirtConf(CONFIG_ROOT_PATH + suite_name + '.cfg')
+        conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + '.cfg')
         conf.load_virt_config(self.vm_name)
         local_conf = conf.get_virt_config()
         # replace global configurations with local configurations

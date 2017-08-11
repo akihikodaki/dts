@@ -77,7 +77,7 @@ class VirtScene(object):
     def load_config(self):
         try:
             self.vm_confs = {}
-            conf = VirtConf(CONFIG_ROOT_PATH + 'scene/' + self.name + '.cfg')
+            conf = VirtConf(CONFIG_ROOT_PATH + '/scene/' + self.name + '.cfg')
             self.sections = conf.virt_conf.get_sections()
             for vm in self.sections:
                 conf.load_virt_config(vm)
