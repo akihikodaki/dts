@@ -88,13 +88,13 @@ class TestUnitTestsDump(TestCase):
         self.dut.send_expect("./%s/app/testpmd -n 1 -c f -- -i" % (self.target), "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_ring", "testpmd>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
-        match_regex = "ring <(.*?)>@0x(.*)\r\n"
+        match_regex = "ring <(.*?)>"
         m = re.compile(r"%s" % match_regex, re.S)
         result = m.findall(out)
         
         # Nic driver will create multiple rings.
         # Only check the last one to make sure ring_dump function work.
-        self.verify( 'MP_mbuf_pool_socket_0' in result[0], "dump ring name failed")
+        self.verify( 'MP_mbuf_pool_socket_0' in result, "dump ring name failed")
 
     def test_mempool_dump(self):
         """
@@ -107,7 +107,7 @@ class TestUnitTestsDump(TestCase):
         m = re.compile(r"%s" % match_regex, re.S)
         result = m.findall(out)
 
-        self.verify(result[0][0] == 'MP_mbuf_pool_socket_0', "dump mempool name failed")
+        self.verify(result[0][0] == 'mbuf_pool_socket_0', "dump mempool name failed")
 
     def test_physmem_dump(self):
         """
