@@ -255,7 +255,7 @@ Test case: Multiple cloud filter rules
 
       ethtool -N $PF_INTF flow-type ether dst 00:00:00:00:00:00 m \
       ff:ff:ff:ff:ff:ff src 00:00:00:00:10:00 m 00:00:00:00:00:00 \
-      vlan 2 user-def 0xffffffff00000000 action 0 loc 2
+      vlan 2 user-def 0xffffffff00000000 action 3 loc 2
 
 3. Dump cloud filter rules::
 
