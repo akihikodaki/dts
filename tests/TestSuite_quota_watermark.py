@@ -122,7 +122,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
         Executes the main example app in the background.
         """
 
-        command = ('./examples/quota_watermark/qw/qw/%s/qw -c {core_mask}' % self.target +
+        command = ('./examples/quota_watermark/qw/%s/qw -c {core_mask}' % self.target +
                    ' -n {memory_channels} -- -p {port_mask} 2>&1 > output.log &')
         self.dut.send_expect(command.format(**locals()), '# ')
 
@@ -131,7 +131,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
         Executes the control app and returns waiting for commands.
         """
 
-        command = './examples/quota_watermark/qwctl/qwctl/%s/qwctl -c 1 -n %s --proc-type=secondary'
+        command = './examples/quota_watermark/qwctl/%s/qwctl -c 1 -n %s --proc-type=secondary'
         command = command % (self.target, str(memory_channels))
         result = self.dut.send_expect(command, 'qwctl> ')
         self.verify('Error' not in result, 'qwctl app failed to execute')
