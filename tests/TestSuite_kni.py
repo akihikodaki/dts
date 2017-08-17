@@ -52,8 +52,8 @@ packet_sizes_routing = [64, 256]
 
 ports_cores_template = '\(P([0123]),(C\{\d.\d.\d\}),(C\{\d.\d.\d\}),(C\{\d.\d.\d\}),?(C\{\d.\d.\d\})?\),?'
 
-default_1_port_cores_config = '(P0,C{1.0.0},C{1.1.0},C{1.0.1})'
-default_2_port_cores_config = '(P0,C{1.0.0},C{1.1.0},C{1.0.1}),(P1,C{1.2.0},C{1.3.0},C{1.2.1})'
+default_1_port_cores_config = '(P0,C{1.0.0},C{1.1.0},C{1.2.0})'
+default_2_port_cores_config = '(P0,C{1.0.0},C{1.1.0},C{1.2.0}),(P1,C{1.3.0},C{1.4.0},C{1.5.0})'
 
 stress_test_iterations = 50
 stress_test_random_iterations = 50
@@ -257,6 +257,9 @@ class TestKni(TestCase):
         out = self.dut.send_expect("which brctl", "# ")
         self.verify('no brctl' not in out,
                     "The linux tool brctl is needed to run this test suite")
+
+        self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=n$/KNI_KMOD_ETHTOOL=y/' config/common_base", "# ", 30)
+        self.dut.build_install_dpdk(self.target)
 
         out = self.dut.send_expect("make -C ./examples/kni/", "# ", 5)
         self.verify('Error' not in out, "Compilation failed")
@@ -1207,5 +1210,9 @@ class TestKni(TestCase):
         """
         Run after each test suite.
         """
+
+        self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=y$/KNI_KMOD_ETHTOOL=n/' config/common_base", "# ", 30)
+        self.dut.build_install_dpdk(self.target)
+
         self.dut.kill_all()
         self.dut.send_expect("rmmod rte_kni", "# ", 10)
