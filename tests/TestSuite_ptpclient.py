@@ -146,15 +146,10 @@ class TestPtpClient(TestCase):
 
         self.creat_table(Delta_us)
 
-        tester_out = self.tester.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
-        dut_out = self.dut.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
+        tester_out = self.tester.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
+        dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
 
-        if tester_out == dut_out:
-            self.verify(tester_out == dut_out, "the DUT time synchronous error")
-        else:
-            tester_out = self.tester.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
-            dut_out = self.dut.send_expect("date '+%Y-%m-%d %H:%M'", "# ")
-            self.verify(tester_out == dut_out, "the DUT time synchronous error")
+        self.verify(tester_out == dut_out, "the DUT time synchronous error")
 
     def tear_down(self):
         """
