@@ -46,7 +46,7 @@ etc of a collection of processes. Now, it's focus on the CPU usage.
 Prerequisites
 -------------
 Support igb_uio driver, kernel is 3.11+. 
-Use "modeprobe uio" "modprobe igb_uio" and then 
+Use "modprobe uio" "modprobe igb_uio" and then
 use "./tools/dpdk_nic_bind.py --bind=igb_uio device_bus_id" to bind the ports.
 
 Assuming that an Intel's DPDK build has been set up and the testpmd
@@ -78,7 +78,7 @@ which means start 9 EAL thread::
 Test Case 1: Basic operation
 ----------------------------
 
-To run the application, start the testpmd with the lcoress all running with 
+To run the application, start the testpmd with the lcores all running with
 threads and also the unique core assigned, command as follows::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd --lcores='0@8,(4-5)@9' -n 4 -- -i
