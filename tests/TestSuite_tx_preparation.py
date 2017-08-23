@@ -87,8 +87,9 @@ class TestTX_preparation(TestCase):
         Run before each test case.
         """
         self.dut_testpmd = PmdOutput(self.dut)
+        # use one port test the case
         self.dut_testpmd.start_testpmd(
-                "Default", "--port-topology=chained --max-pkt-len=%s" %Max_mtu)
+                "Default", " --portmask=1 --port-topology=chained --max-pkt-len=%s" %Max_mtu)
         self.dmac = self.dut_testpmd.get_port_mac(0)
         self.dut_testpmd.execute_cmd('set fwd csum')
         self.dut_testpmd.execute_cmd('set verbose 1')
@@ -98,16 +99,8 @@ class TestTX_preparation(TestCase):
         self.dut_testpmd.execute_cmd('csum set udp hw 0')
 
     def start_tcpdump(self, rxItf):
-
-        param = ""
-        direct_param = r"(\s+)\[ -(\w) in\|out\|inout \]"
-        tcpdump_help = subprocess.check_output("tcpdump -h; echo 0",
-                                               stderr=subprocess.STDOUT,
-                                               shell=True)
-        for line in tcpdump_help.split('\n'):
-            m = re.match(direct_param, line)
-            if m:
-                param = "-" + m.group(2) + " in"
+        # only sniff form dut packet and filter lldp packet
+        param = "ether[12:2]!=0x88cc and ether src %s" % self.dmac
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump %s -i %s -n -e -vv -w\
             ./getPackageByTcpdump.cap 2> /dev/null& " % (param,rxItf), "#")
