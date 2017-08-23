@@ -83,18 +83,18 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
+        if self.dut.get_os_type() == 'linux':
+            # Get dut system information
+            port_num = self.dut_ports[0]
+            pci_device_id = self.dut.ports_info[port_num]['pci']
+            ori_driver = self.dut.ports_info[port_num]['port'].get_nic_driver()
+            self.dut.ports_info[port_num]['port'].bind_driver()
 
-        # Get dut system information
-        port_num = self.dut_ports[0]
-        pci_device_id = self.dut.ports_info[port_num]['pci']
-        ori_driver = self.dut.ports_info[port_num]['port'].get_nic_driver()
-        self.dut.ports_info[port_num]['port'].bind_driver()
+            sut = SystemInfo(self.dut, pci_device_id)
+            self.system_info = sut.get_system_info()
+            self.nic_info = sut.get_nic_info()
 
-        sut = SystemInfo(self.dut, pci_device_id)
-        self.system_info = sut.get_system_info()
-        self.nic_info = sut.get_nic_info()
-
-        self.dut.ports_info[port_num]['port'].bind_driver(ori_driver)
+            self.dut.ports_info[port_num]['port'].bind_driver(ori_driver)
         ######
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
