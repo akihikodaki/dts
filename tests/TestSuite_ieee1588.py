@@ -39,6 +39,8 @@ import time
 import re
 from test_case import TestCase
 from pmd_output import PmdOutput
+from packet import Packet
+
 
 class TestIeee1588(TestCase):
 
@@ -51,7 +53,8 @@ class TestIeee1588(TestCase):
         self.verify(len(dutPorts) > 0, "No ports found for " + self.nic)
 
         # Change the config file to support IEEE1588 and recompile the package.
-        self.dut.send_expect("sed -i -e 's/IEEE1588=n$/IEEE1588=y/' config/common_base", "# ", 30)
+        self.dut.send_expect(
+            "sed -i -e 's/IEEE1588=n$/IEEE1588=y/' config/common_base", "# ", 30)
         self.dut.skip_setup = False
         self.dut.build_install_dpdk(self.target)
 
@@ -69,32 +72,32 @@ class TestIeee1588(TestCase):
         IEEE1588 Enable test case.
         """
         self.dut.send_expect("set fwd ieee1588", "testpmd> ", 10)
-        # Waiting for 'testpmd> ' Fails due to log messages, "Received non PTP packet", in the output
-        self.dut.send_expect("start", ">", 10)  
-        # Allow the output from the "start" command to finish before looking for a regexp in expect
+        # Waiting for 'testpmd> ' Fails due to log messages, "Received non PTP
+        # packet", in the output
+        self.dut.send_expect("start", ">", 10)
+        # Allow the output from the "start" command to finish before looking
+        # for a regexp in expect
         time.sleep(1)
 
         # use the first port on that self.nic
         dutPorts = self.dut.get_ports()
-        mac =  self.dut.get_mac_address(dutPorts[0])
+        mac = self.dut.get_mac_address(dutPorts[0])
         port = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(port)
 
-        self.tester.scapy_background()
-        self.tester.scapy_append('p = sniff(iface="%s", count=2)' % itf)
-        self.tester.scapy_append('RESULT = p[1].summary()')
+        self.tester.send_expect(
+            "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20)
 
-        # this is the output of sniff
-        # [<Ether  dst=01:1b:19:00:00:00 src=00:00:00:00:00:00 type=0x88f7 |<Raw  load='\x00\x02' |>>]
-        self.tester.scapy_foreground()
-        self.tester.scapy_append('nutmac="%s"' % mac)
-        self.tester.scapy_append('sendp([Ether(dst=nutmac,type=0x88f7)/"\\x00\\x02"], iface="%s")' % itf)
-        self.tester.scapy_append('time.sleep(1)')
+        pkt = Packet(pkt_type='TIMESYNC')
+        pkt.config_layer('ether', {'dst': mac, })
+        pkt.send_pkt(tx_port=itf)
 
-        self.tester.scapy_execute()
-        out = self.tester.scapy_get_result()
+        time.sleep(1)
+        out = self.tester.get_session_output(timeout=20)
+
+        self.tester.send_expect("^C", "# ", 20)
+
         self.verify("0x88f7" in out, "Ether type is not PTP")
-        # self.verify("\\x00\\x02" in out, "Payload wrong in PTP")
 
         time.sleep(1)
         out = self.dut.get_session_output()
@@ -102,7 +105,7 @@ class TestIeee1588(TestCase):
 
         text = utils.regexp(out, "(.*) by hardware")
         self.verify("IEEE1588 PTP V2 SYNC" in text, "Not filtered " + text)
-        
+
         pattern_rx = re.compile("RX timestamp value (\d+) s (\d+) ns")
         pattern_tx = re.compile("TX timestamp value (\d+) s (\d+) ns")
 
@@ -126,17 +129,19 @@ class TestIeee1588(TestCase):
 
         # use the first port on that self.nic
         dutPorts = self.dut.get_ports()
-        mac =  self.dut.get_mac_address(dutPorts[0])
+        mac = self.dut.get_mac_address(dutPorts[0])
         port = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(port)
 
         self.tester.scapy_background()
-        self.tester.scapy_append('p = sniff(iface="%s", count=2, timeout=1)' % itf)
+        self.tester.scapy_append(
+            'p = sniff(iface="%s", count=2, timeout=1)' % itf)
         self.tester.scapy_append('RESULT = p[1].summary()')
 
         self.tester.scapy_foreground()
         self.tester.scapy_append('nutmac="%s"' % mac)
-        self.tester.scapy_append('sendp([Ether(dst=nutmac,type=0x88f7)/"\\x00\\x02"], iface="%s")' % itf)
+        self.tester.scapy_append(
+            'sendp([Ether(dst=nutmac,type=0x88f7)/"\\x00\\x02"], iface="%s")' % itf)
 
         self.tester.scapy_execute()
         time.sleep(2)
@@ -157,5 +162,6 @@ class TestIeee1588(TestCase):
         self.dut.send_expect("quit", "# ", 30)
 
         # Restore the config file and recompile the package.
-        self.dut.send_expect("sed -i -e 's/IEEE1588=y$/IEEE1588=n/' config/common_base", "# ", 30)
+        self.dut.send_expect(
+            "sed -i -e 's/IEEE1588=y$/IEEE1588=n/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
