@@ -351,7 +351,21 @@ class scapy(object):
 
     def send_pkt(self, intf='', count=1):
         self.print_summary()
+
         if intf != '':
+            # wait few seconds for link ready
+            countdown = 600
+            while countdown:
+                link_st = subprocess.check_output("ip link show %s" % intf,
+                                                  stderr=subprocess.STDOUT,
+                                                  shell=True)
+                if "LOWER_UP" in link_st:
+                    break
+                else:
+                    time.sleep(0.01)
+                    countdown -= 1
+                    continue
+
             # fix fortville can't receive packets with 00:00:00:00:00:00
             if self.pkt.getlayer(0).src == "00:00:00:00:00:00":
                 self.pkt.getlayer(0).src = get_if_hwaddr(intf)
