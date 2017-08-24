@@ -75,7 +75,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 
 3. Bind the VFs to dpdk driver::
 
-     ./tools/dpdk-devbind.py -b vfio-pci 82:02.0 82:02.1
+     ./tools/dpdk-devbind.py -b vfio-pci 81:02.0 81:02.1
 
 4. Set the VLAN id of VF1 and VF2::
 
