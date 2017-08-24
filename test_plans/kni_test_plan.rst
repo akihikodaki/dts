@@ -560,7 +560,7 @@ The application is launched and the bridge is setup using the commands below::
     ./build/app/kni -c <Core mask> -n 4 -- -P -p <Port mask> --config="<Ports/Cores configuration>" &
 
     ifconfig vEth2_0 192.170.2.1
-    ifconfig vEth2_0 192.170.3.1
+    ifconfig vEth3_0 192.170.3.1
     route add -net 192.170.2.0  netmask 255.255.255.0 gw 192.170.2.1
     route add -net 192.170.3.0  netmask 255.255.255.0 gw 192.170.3.1
     arp -s 192.170.2.2 vEth2_0
@@ -593,7 +593,7 @@ Set up the interfaces and the bridge::
     echo 1 > /proc/sys/net/ipv4/ip_forward
     rmmod rte_kni
     ifconfig vEth2_0 192.170.2.1
-    ifconfig vEth2_0 192.170.3.1
+    ifconfig vEth3_0 192.170.3.1
     route add -net 192.170.2.0  netmask 255.255.255.0 gw 192.170.2.1
     route add -net 192.170.3.0  netmask 255.255.255.0 gw 192.170.3.1
     arp -s 192.170.2.2 vEth2_0
