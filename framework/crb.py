@@ -412,6 +412,15 @@ class Crb(object):
             self.send_expect("sysctl net.ipv6.conf.%s.disable_ipv6=0" %
                              intf, "# ", alt_session=True)
 
+            out = self.send_expect(
+                "ifconfig %s" % intf, "# ", alt_session=True)
+            if "inet6" not in out:
+                self.send_expect("ifconfig %s down" %
+                                 intf, "# ", alt_session=True)
+                self.send_expect(
+                    "ifconfig %s up" % intf, "# ", alt_session=True)
+
+
     def create_file(self, contents, fileName):
         """
         Create file with contents and copy it to CRB.
