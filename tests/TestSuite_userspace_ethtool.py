@@ -61,7 +61,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
-        path = "./examples/ethtool/ethtool-app/ethtool-app/%s/ethtool" % self.target
+        path = "./examples/ethtool/ethtool-app/%s/ethtool" % self.target
         self.cmd = "%s -c f -n %d" % (path, self.dut.get_memory_channels())
 
         # pause frame basic configuration
@@ -370,7 +370,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("ethtool --eeprom-dump %s raw on > %s" % (intf, ethtool_eeprom), "# ")
             # wait for file ready
             time.sleep(2)
-            portinfo['ethtool_eeprom'] = ethtool_eeprom
+            # dpdk userspcae tools dump eeprom file size different with kernel ethtool dump
+            dpdk_eeprom_size = int(self.dut.send_expect('stat -c %%s %s' % portinfo['eeprom_file'], '# '))
+            self.dut.send_expect('dd if=%s of=%s bs=%d count=1' % (ethtool_eeprom, "ethtool_eeprom_%d_cat.bin" % index, dpdk_eeprom_size), "#")
+            portinfo['ethtool_eeprom'] = "ethtool_eeprom_%d_cat.bin" % index
             # bind to original driver
             portinfo['net_dev'].bind_driver(portinfo['ori_driver'])
 
@@ -499,8 +502,11 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         for index in range(len(self.ports)):
             port = self.ports[index]
             ori_rx_pkts, _ = self.strip_portstats(index)
+            # add sleep time for update link status with fortville nic
+            time.sleep(10)
             # stop port
             self.dut.send_expect("stop %d" % index, "EthApp>")
+            time.sleep(10)
             # check packet not forwarded when port is stop
             pkt = Packet()
             tester_port = self.tester.get_local_port(port)
