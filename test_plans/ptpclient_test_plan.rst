@@ -48,9 +48,13 @@ The sample should be validated on Forville, Niantic and i350 Nics.
 Test case: ptp client
 ======================
 Start ptp server on tester with IEEE 802.3 network transport::
+
     ptp4l -i p785p1 -2 -m
+
 Start ptp client on DUT and wait few seconds::
+
     ./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 0 -p 0x1
+
 Check that output message contained T1,T2,T3,T4 clock and time difference
 between master and slave time is about 10us in niantic, 20us in Fortville,
 8us in i350.
@@ -58,16 +62,22 @@ between master and slave time is about 10us in niantic, 20us in Fortville,
 Test case: update system
 ========================
 Reset DUT clock to initial time and make sure system time has been changed::
+
     date -s "1970-01-01 00:00:00"    
+
 Strip DUT and tester board system time::
+
     date +"%s.%N"
+
 Start ptp server on tester with IEEE 802.3 network transport::
+
     ptp4l -i p785p1 -2 -m -S
+
 Start ptp client on DUT and wait few seconds::
+
     ./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 1 -p 0x1
+
 Make sure DUT system time has been changed to same as tester.
 Check that output message contained T1,T2,T3,T4 clock and time difference
 between master and slave time is about 10us in niantic, 20us in Fortville,
 8us in i350.
-
-

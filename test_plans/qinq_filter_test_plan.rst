@@ -57,6 +57,7 @@ Testpmd configuration - 4 RX/TX queues per port
 #. set up testpmd with fortville NICs::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --txqflags=0x0  --disable-rss
+
 #. enable qinq::
 
     testpmd command: vlan set qinq on 0
@@ -75,19 +76,21 @@ Testpmd configuration - 4 RX/TX queues per port
 
 tester Configuration
 -------------------- 
-      
+
 #. send dual vlan packet with scapy, verify it can be recognized as qinq packet::
+
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=3)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
 
 Test Case 2: qinq packet filter to PF queues
 ============================================
 
 Testpmd configuration - 4 RX/TX queues per port
-------------------------------------------------
+-----------------------------------------------
 
 #. set up testpmd with fortville NICs::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --txqflags=0x0  --disable-rss
+
 #. enable qinq::
 
     testpmd command: vlan set qinq on 0
@@ -105,6 +108,7 @@ Testpmd configuration - 4 RX/TX queues per port
     testpmd command: start
 
 #. create filter rules::
+
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 1 / vlan tci is 4093 / end actions pf / queue index 1 / end
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 4094 / end actions pf / queue index 2 / end
 
@@ -112,6 +116,7 @@ tester Configuration
 -------------------- 
 
 #. send dual vlan packet with scapy, verify packets can filter to queues::
+
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4093)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4093)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
 
@@ -145,15 +150,14 @@ Test Case 3: qinq packet filter to VF queues
 
     testpmd command: start
        
- #. create filter rules::
+#. create filter rules::
  
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 1 / vlan tci is 4093 / end actions vf id 0 / queue index 2 / end
-
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 4094 / end actions vf id 1 / queue index 3 / end
-
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 3 / vlan tci is 4094 / end actions pf / queue index 1 / end
 
 #. set up testpmd with fortville VF0 NICs::
+
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
 
 #. PMD fwd only receive the packets::
@@ -169,6 +173,7 @@ Test Case 3: qinq packet filter to VF queues
     testpmd command: start
 
 #. set up testpmd with fortville VF0 NICs::
+
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
 
 #. PMD fwd only receive the packets::
@@ -187,6 +192,7 @@ tester Configuration
 -------------------- 
 
 #. send dual vlan packet with scapy, verify packets can filter to the corresponding PF and VF queues::
+
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=3)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
@@ -228,12 +234,11 @@ Test Case 4: qinq packet filter with diffierent tpid
 #. create filter rules::
  
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 1 / vlan tci is 4093 / end actions vf id 0 / queue index 2 / end
-
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 4094 / end actions vf id 1 / queue index 3 / end
-
     testpmd command: flow create 0 ingress pattern eth / vlan tci is 3 / vlan tci is 4094 / end actions pf / queue index 1 / end
 
 #. set up testpmd with fortville VF0 NICs::
+
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
 
 #. PMD fwd only receive the packets::
@@ -249,6 +254,7 @@ Test Case 4: qinq packet filter with diffierent tpid
     testpmd command: start
 
 #. set up testpmd with fortville VF0 NICs::
+
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
 
 #. PMD fwd only receive the packets::
@@ -273,6 +279,7 @@ Note
 ====================================================
 
 #. How to send packet with specific TPID with scapy::
+
     1. wrpcap("qinq.pcap",[Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4092)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)]).
     2. hexedit qinq.pcap; change tpid field, "ctrl+w" to save, "ctrl+x" to exit.
     3. sendp(rdpcap("qinq.pcap"), iface="eth17").

@@ -30,13 +30,13 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-============================
+===========================
 VFD as SRIOV Policy Manager
-============================
+===========================
 
-VFD is SRIOV Policy Manager (daemon) running on the host allowing 
-configuration not supported by kernel NIC driver, supports ixgbe and 
-i40e NIC. Run on the host for policy decisions w.r.t. what a VF can and 
+VFD is SRIOV Policy Manager (daemon) running on the host allowing
+configuration not supported by kernel NIC driver, supports ixgbe and
+i40e NIC. Run on the host for policy decisions w.r.t. what a VF can and
 cannot do to the PF. Only the DPDK PF would provide a callback to implement 
 these features, the normal kernel drivers would not have the callback so 
 would not support the features. Allow passing information to application 
@@ -45,38 +45,43 @@ so action could be taken based on host policy. Stop VM1 from asking for
 something that compromises VM2. Use DPDK DPDK PF + kernel VF mode to verify 
 below features. 
 
-Case 1: Set up environment and load driver
-============================================
+Test Case 1: Set up environment and load driver
+===============================================
 1. Get the pci device id of DUT, load ixgbe driver to required version, 
    take Niantic for example::
-        rmmod ixgbe
-        insmod ixgbe.ko
+
+    rmmod ixgbe
+    insmod ixgbe.ko
 
 2. Host PF in DPDK driver. Create VFs from PF with dpdk driver::
+
 	./tools/dpdk-devbind.py -b igb_uio 05:00.0
 	echo 2 >/sys/bus/pci/devices/0000\:05\:00.0/max_vfs 
 	
-3. Check ixgbevf version and update ixgbevf to required version::
+3. Check ixgbevf version and update ixgbevf to required version
 	
 4. Detach VFs from the host::
-	rmmod ixgbevf
+
+    rmmod ixgbevf
 
 5. Pass through VF 05:10.0 and 05:10.2 to VM0,start and login VM0
 
 6. Check ixgbevf version in VM and update to required version
 
 
-Case 2 : Link
-==========================================
+Test Case 2: Link
+=================
 Pre-environment::
-  (1)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0, 
+
+  (1)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0,
      start VM0 
   (2)Load host DPDK driver and VM0 kernel driver
 
 Steps:  
 
 1. Enable multi-queues to start DPDK PF::
-        ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+
+    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
 
 2. Link up kernel VF and expect VF link up
 
@@ -85,13 +90,13 @@ Steps:
 4. Repeat above 2~3 for 100 times, expect no crash or core dump issues. 
 
 
-		   
 Test Case 3: ping 
-===========================================
+==================
 Pre-environment:: 
+
   (1)Establish link with link partner.
-  (2)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0, 
-     start VM0 
+  (2)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0,
+     start VM0
   (3)Load host DPDK driver and VM0 kernel driver
 
 Steps: 
@@ -109,10 +114,11 @@ Steps:
    
 
 Test Case 4: reset
-==========================================
+==================
 Pre-environment::
+
   (1)Establish link with link partner.
-  (2)Host one DPDK PF and create two VFs, pass through VF0 to VM0 and VF1 to 
+  (2)Host one DPDK PF and create two VFs, pass through VF0 to VM0 and VF1 to
      VM1, start VM0 and VM1
   (3)Load host DPDK driver and VM kernel driver
 
@@ -141,9 +147,10 @@ Steps:
 Test Case 5: add/delete IP/MAC address
 ==========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel drive
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel drive
 
 Steps: 
 
@@ -154,13 +161,16 @@ Steps:
 3. Kernel VF0 ping tester PF, tester PF ping kernel VF0
 
 4. Add IPv6 on kernel VF0(e.g: ens3)::
-        ifconfig ens3 add efdd::9fc8:6a6d:c232:f1c0
+
+    ifconfig ens3 add efdd::9fc8:6a6d:c232:f1c0
 
 5. Delete IPv6 on kernel VF::
-        ifconfig ens3 del efdd::9fc8:6a6d:c232:f1c0
+
+    ifconfig ens3 del efdd::9fc8:6a6d:c232:f1c0
 
 6. Modify MAC address on kernel VF::
-        ifconfig ens3 hw ether 00:AA:BB:CC:dd:EE
+
+    ifconfig ens3 hw ether 00:AA:BB:CC:dd:EE
 
 7. Send packet to modified MAC, expect VF can receive packet successfully
 
@@ -168,19 +178,22 @@ Steps:
 Test Case 6: add/delete vlan
 ==========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel driver
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel driver
 
 Steps: 
 
 1. Add random vlan id(0~4095) on kernel VF0(e.g: ens3), take vlan id 51 
    for example::
-        modprobe 8021q
-        vconfig add ens3 51
+
+    modprobe 8021q
+    vconfig add ens3 51
 
 2. Check add vlan id successfully, expect to have ens3.51 device::
-        ls /proc/net/vlan 
+
+    ls /proc/net/vlan
 
 3. Send packet from tester to VF MAC with not-matching vlan id, check the 
    packet can't be received at the vlan device
@@ -189,7 +202,8 @@ Steps:
    packet can be received at the vlan device.
 
 5. Delete configured vlan device::
-        vconfig rem ens3.51
+
+    vconfig rem ens3.51
 
 6. Check delete vlan id 51 successfully
 
@@ -200,24 +214,27 @@ Steps:
 Test Case 7: Get packet statistic
 ==========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel driver
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel driver
 
 Steps: 
 
 1. Send packet to kernel VF0 mac
 
 2. Check packet statistic could increase correctly::
-        ethtool -S ens3
+
+    ethtool -S ens3
 
 
 Test Case 8: MTU
 ==========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel driver
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel driver
 
 Steps: 
 
@@ -230,15 +247,17 @@ Steps:
    DST MAC, check that Kernel VF can't receive packet
 
 4. Change DPDK PF mtu as 3000,check no confusion/crash on kernel VF::
-        Testpmd > port stop all
-        Testpmd > port config mtu 0 3000
-        Testpmd > port start all
+
+    Testpmd > port stop all
+    Testpmd > port config mtu 0 3000
+    Testpmd > port start all
 
 5. Use scapy to send one packet with length as 2000 with DPDK PF MAC as 
    DST MAC, check that DPDK PF can receive packet
 
 6. Change kernel VF mtu as 3000, check no confusion/crash on DPDK PF::
-        ifconfig eth0 mtu 3000
+
+    ifconfig eth0 mtu 3000
 
 7. Use scapy to send one packet with length as 2000 with kernel VF MAC 
    as DST MAC, check Kernel VF can receive packet
@@ -252,9 +271,10 @@ effect.
 Test Case 9: Enable/disable promisc mode
 =========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel driver
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel driver
 
 Steps:
  
@@ -262,7 +282,8 @@ Steps:
 
 2. Set up kernel VF tcpdump without -p parameter, without/with -p parameter 
    could enable/disable promisc mode::
-        sudo tcpdump -i ens3 -n -e -vv
+
+    sudo tcpdump -i ens3 -n -e -vv
 
 3. Send packet from tester with random DST MAC, check the packet can be 
    received by DPDK PF and kernel VF
@@ -271,7 +292,8 @@ Steps:
 
 5. Set up kernel VF tcpdump with -p parameter, which means disable promisc 
    mode::
-        sudo tcpdump -i ens3 -n -e –vv -p
+
+    sudo tcpdump -i ens3 -n -e –vv -p
 
 6. Send packet from tester with random DST MAC, check the packet can't be 
    received by DPDK PF and kernel VF
@@ -289,9 +311,10 @@ Niantic NIC un-supports this case.
 Test Case 10: RSS
 =========================================
 Pre-environment::
-  (1)Establish link with link partner.
-  (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (3)Load host DPDK driver and VM0 kernel driver
+
+    (1)Establish link with link partner.
+    (2)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (3)Load host DPDK driver and VM0 kernel driver
 
 Steps: 
 
@@ -313,10 +336,11 @@ Niantic NIC un-supports this case.
 Test Case 11: DPDK PF + kernel VF + DPDK VF
 ============================================
 Pre-environment::
-  (1)Establish link with IXIA.
-  (2)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0, 
-     start VM0
-  (3)Load host DPDK driver, VM0 DPDK driver and kernel driver 
+
+    (1)Establish link with IXIA.
+    (2)Host one DPDK PF and create two VFs, pass through VF0 and VF1 to VM0,
+       start VM0
+    (3)Load host DPDK driver, VM0 DPDK driver and kernel driver 
 
 Steps:
  
@@ -343,10 +367,11 @@ Steps:
 Test Case 12: DPDK PF + 2kernel VFs + 2DPDK VFs + 2VMs
 ======================================================
 Pre-environment::
-  (1)Establish link with IXIA.
-  (2)Host one DPDK PF and create 6 VFs, pass through VF0, VF1, VF2 and VF3 
-     to VM0, pass through VF4, VF5 to VM1, start VM0 and VM1
-  (3)Load host DPDK driver, VM DPDK driver and kernel driver 
+
+    (1)Establish link with IXIA.
+    (2)Host one DPDK PF and create 6 VFs, pass through VF0, VF1, VF2 and VF3
+       to VM0, pass through VF4, VF5 to VM1, start VM0 and VM1
+    (3)Load host DPDK driver, VM DPDK driver and kernel driver
 
 Steps:
  
@@ -379,10 +404,11 @@ Steps:
 
 
 Test Case 13: Load kernel driver stress
-======================================================
+========================================
 Pre-environment::
-  (1)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0 
-  (2)Load host DPDK driver and VM0 kernel driver
+
+    (1)Host one DPDK PF and create one VF, pass through VF0 to VM0, start VM0
+    (2)Load host DPDK driver and VM0 kernel driver
 
 Steps:
  
