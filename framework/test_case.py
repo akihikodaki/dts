@@ -61,7 +61,6 @@ class TestCase(object):
         # check session and reconnect if possible
         for dutobj in self.duts:
             self._check_and_reconnect(crb=dutobj)
-            dutobj.send_expect("cd %s" % dutobj.base_dir, "#")
         self._check_and_reconnect(crb=self.tester)
 
         # covert netdevice to codename
@@ -128,6 +127,8 @@ class TestCase(object):
 
         if result is False:
             crb.reconnect_session()
+            if 'dut' in str(type(crb)):
+                crb.send_expect("cd %s" % crb.base_dir, "#")
 
         try:
             result = crb.alt_session.check_available()
