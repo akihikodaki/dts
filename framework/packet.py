@@ -823,7 +823,37 @@ def sniff_packets(intf, count=0, timeout=5, filters=[]):
     return index
 
 
+def load_sniff_pcap(index=''):
+    """
+    Stop sniffer and return pcap file
+    """
+    child_exit = False
+    if index in SNIFF_PIDS.keys():
+        pipe, intf, timeout = SNIFF_PIDS[index]
+        time_elapse = int(time.time() - float(index))
+        while time_elapse < timeout:
+            if pipe.poll() is not None:
+                child_exit = True
+                break
+
+            time.sleep(1)
+            time_elapse += 1
+
+        if not child_exit:
+            pipe.send_signal(signal.SIGINT)
+            pipe.wait()
+
+        # wait pcap file ready
+        time.sleep(1)
+        return "/tmp/sniff_%s.pcap" % intf
+
+    return ""
+
+
 def load_sniff_packets(index=''):
+    """
+    Stop sniffer and return packet objects
+    """
     pkts = []
     child_exit = False
     if index in SNIFF_PIDS.keys():
