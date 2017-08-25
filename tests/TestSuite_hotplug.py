@@ -69,15 +69,20 @@ class TestPortHotPlug(TestCase):
         """
         attach port
         """
-        self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'],"is attached",60)
-        self.dut.send_expect("port start %s" % port,"Link Up",60)
+        # dpdk hotplug discern NIC by pci bus not include domid
+        self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'][len("0000:"):],"is attached",60)
+        self.dut.send_expect("port start %s" % port,"Configuring Port",120)
+        # sleep 10 seconds for fortville update link stats
+        time.sleep(10)
         self.dut.send_expect("show port info %s" % port,"testpmd>",60)
 
     def detach(self, port):
         """
         detach port 
         """
-        self.dut.send_expect("port stop %s" % port,"Link Down",60)
+        self.dut.send_expect("port stop %s" % port,"Stopping ports",60)
+        # sleep 10 seconds for fortville update link stats
+        time.sleep(10)
         self.dut.send_expect("port close %s" % port,"Closing ports...",60)
         self.dut.send_expect("port detach %s" % port,"is detached",60)
 
@@ -88,7 +93,7 @@ class TestPortHotPlug(TestCase):
         cmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c %s -n %s -- -i" % (self.coremask,self.dut.get_memory_channels())
         self.dut.send_expect(cmd,"testpmd>",60)
         session_secondary = self.dut.new_session()
-        session_secondary.send_expect("./tools/dpdk-devbind.py --bind=igb_uio %s" % self.dut.ports_info[self.port]['pci'], "#", 60)
+        session_secondary.send_expect("./usertools/dpdk-devbind.py --bind=igb_uio %s" % self.dut.ports_info[self.port]['pci'], "#", 60)
         self.dut.close_session(session_secondary)
         self.attach(self.port)
         self.dut.send_expect("start","testpmd>",60)
@@ -103,15 +108,15 @@ class TestPortHotPlug(TestCase):
         out = self.dut.send_expect("show port stats %s" % self.port ,"testpmd>",60)
         packet = re.search("RX-packets:\s*(\d*)",out)
         sum_packet = packet.group(1)
-        self.verify(sum_packet = 1, "Insufficient the received package")
+        self.verify(int(sum_packet) == 1, "Insufficient the received package")
         self.dut.send_expect("quit","#",60)
      
     def send_packet(self, port):
         """
         Send a packet to port
         """
-        self.dmac = self.dut.get_mac_address(self.dut_ports[0])
-        txport = self.tester.get_local_port(self.dut_ports[0])
+        self.dmac = self.dut.get_mac_address(port)
+        txport = self.tester.get_local_port(port)
         self.txItf = self.tester.get_interface(txport)
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': self.dmac,})
@@ -134,7 +139,7 @@ class TestPortHotPlug(TestCase):
         out = self.dut.send_expect("show port stats %s" % self.port ,"testpmd>",60)
         packet = re.search("RX-packets:\s*(\d*)",out)
         sum_packet = packet.group(1)
-        self.verify(sum_packet = 1, "Insufficient the received package")
+        self.verify(int(sum_packet) == 1, "Insufficient the received package")
         self.dut.send_expect("quit","#",60)
 
 
