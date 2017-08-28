@@ -351,6 +351,8 @@ class TestSriovKvm(TestCase):
                                                        'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
                     "1S/2C/2T", "--rxq=4 --txq=4 --txqflags=0", eal_param=eal_param)
+                self.host_testpmd.execute_cmd('set fwd rxonly')
+                self.host_testpmd.execute_cmd('start')
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
