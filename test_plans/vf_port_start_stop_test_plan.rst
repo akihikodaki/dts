@@ -91,23 +91,21 @@ Create Two VF interfaces from two kernel PF interfaces, and then attach them to 
       -device pci-assign,bus=pci.0,addr=0x7,host=04:10.1 \
       -vnc :11 -daemonize
 
-   the /etc/qemu-ifup can be below script, need you to create first:
+   the /etc/qemu-ifup can be below script, need you to create first::
 
-      .. code-block:: shell
-
-         #!/bin/sh
-         set -x
-         switch=br0
-         if [ -n "$1" ];then
-             /usr/sbin/tunctl -u `whoami` -t $1
-             /sbin/ip link set $1 up
-             sleep 0.5s
-             /usr/sbin/brctl addif $switch $1
-             exit 0
-         else
-             echo "Error: no interface specified"
-         exit 1
-         fi
+      #!/bin/sh
+      set -x
+      switch=br0
+      if [ -n "$1" ];then
+          /usr/sbin/tunctl -u `whoami` -t $1
+          /sbin/ip link set $1 up
+          sleep 0.5s
+          /usr/sbin/brctl addif $switch $1
+          exit 0
+      else
+          echo "Error: no interface specified"
+      exit 1
+      fi
 
    Set up bridge br0 before create /etc/qemu-ifup, for example::
 

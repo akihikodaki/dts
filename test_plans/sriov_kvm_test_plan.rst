@@ -79,23 +79,21 @@ For VM0 start up command, you can refer to below command.::
         -net tap,script=/etc/qemu-ifup \
         -device pci-assign,host=08:10.0 -vnc :1 --daemonize
 
-The /etc/qemu-ifup can be below script, need you to create first:
+The /etc/qemu-ifup can be below script, need you to create first::
 
-   .. code-block:: shell
-
-       #!/bin/sh
-       set -x
-       switch=br0
-       if [ -n "$1" ];then
-           /usr/sbin/tunctl -u `whoami` -t $1
-           /sbin/ip link set $1 up
-           sleep 0.5s
-           /usr/sbin/brctl addif $switch $1
-           exit 0
-       else
-           echo "Error: no interface specified"
-       exit 1
-       fi
+    #!/bin/sh
+    set -x
+    switch=br0
+    if [ -n "$1" ];then
+        /usr/sbin/tunctl -u `whoami` -t $1
+        /sbin/ip link set $1 up
+        sleep 0.5s
+        /usr/sbin/brctl addif $switch $1
+        exit 0
+    else
+        echo "Error: no interface specified"
+    exit 1
+    fi
 
 Similar for VM0, please refer to below command for VM1::
 

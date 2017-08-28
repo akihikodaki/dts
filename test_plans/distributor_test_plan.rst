@@ -128,7 +128,7 @@ The number of workers are configured through the command line interface of the
 application:
 
 The test report should provide the measurements(mpps and % of the line rate)
-for each action in lcores as listed in the table below:
+for each action in lcores as listed in the table below::
 
 	+----+---------+------------------+------------------+------------------+------------------+------------------+------------------+
 	| #  |Number of| Throughput Rate  | Throughput Rate  | Throughput Rate  | Throughput Rate  | Throughput Rate  | Throughput Rate  |
