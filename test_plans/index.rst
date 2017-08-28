@@ -137,3 +137,10 @@ The following are the test plans for the DPDK DTS automated test system.
     skeleton_test_plan
     timer_test_plan
     vxlan_sample_test_plan
+
+    distributor_test_plan.rst
+    efd_test_plan.rst
+    multiple_pthread_test_plan.rst
+    ptpclient_test_plan.rst
+    qinq_filter_test_plan.rst
+    vf_kernel_test_plan.rst
