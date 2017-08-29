@@ -690,8 +690,9 @@ class TestGeneric_filter(TestCase):
 
     def test_128_queues(self):
         # testpmd can't support assign queue to received package, so can't test
-        self.verify(False, "testpmd not support assign queue 127 received package")
-        if self.nic == "niantic":
+        if self.kdriver == "ixgbe":
+	    self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+	    self.dut.build_install_dpdk(self.target)
             global valports
             total_mbufs = self.request_mbufs(128) * len(valports)
             self.pmdout.start_testpmd(
@@ -825,3 +826,5 @@ class TestGeneric_filter(TestCase):
         Run after each test case.
         """
         self.dut.kill_all()
+	self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+	self.dut.build_install_dpdk(self.target)
