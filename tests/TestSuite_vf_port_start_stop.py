@@ -219,7 +219,7 @@ class TestVfPortStartStop(TestCase):
 
         time.sleep(2)
 
-        dst_mac = self.vm_dut_0.get_mac_address(self.vm0_dut_ports[0])
+        dst_mac = self.vm0_testpmd.get_port_mac(self.vm0_dut_ports[0])
         self.send_and_verify(dst_mac, self.vm0_testpmd) 
 
     def tear_down(self):
