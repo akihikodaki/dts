@@ -27,6 +27,7 @@
 #   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 #   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 #   OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+import subprocess
 
 try:
     import sphinx_rtd_theme
@@ -38,4 +39,10 @@ except:
 
 project = 'DPDK Test Suite'
 copyright = '2017, dpdk.org'
+
+strip_version_cmd = 'import sys;sys.path.append(\'../..\');import version; print version.dts_version()'
+version = subprocess.check_output(['python', '-c', strip_version_cmd])
+version = version.decode('utf-8').rstrip()
+release = version
+
 master_doc = 'index'
