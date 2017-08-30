@@ -190,7 +190,6 @@ class Dut(Crb):
 
         if self.get_os_type() == 'freebsd':
             self.send_expect('alias make=gmake', '# ')
-            self.send_expect('alias sed=gsed', '# ')
 
         self.init_core_list()
         self.pci_devices_information()
