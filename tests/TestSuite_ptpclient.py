@@ -107,8 +107,8 @@ class TestPtpClient(TestCase):
         self.kill_ptpclient()
 
         self.verify("T1" and "T2" and "T3" and "T4" in out, "T1,T2,T3,T4 clock error")
-        utils.regexp(out, r'Delta between master and slave clocks\:(\d+)ns')
-        pat = re.compile(r'Delta between master and slave clocks\:(\d+)ns')
+        utils.regexp(out, r'Delta between master and slave clocks\:(-?\d+)ns')
+        pat = re.compile(r'Delta between master and slave clocks\:(-?\d+)ns')
         Delta_list = pat.findall(out)
         Delta = map(int, Delta_list) 
         Delta_ns = self.average(Delta)
@@ -135,8 +135,8 @@ class TestPtpClient(TestCase):
         self.kill_ptpclient()
 
         self.verify("T1" and "T2" and "T3" and "T4" in out, "T1,T2,T3,T4 clock error")
-        utils.regexp(out, r'Delta between master and slave clocks\:(\d+)ns')
-        pat = re.compile(r'Delta between master and slave clocks\:(\d+)ns')
+        utils.regexp(out, r'Delta between master and slave clocks\:(-?\d+)ns')
+        pat = re.compile(r'Delta between master and slave clocks\:(-?\d+)ns')
         Delta_list = pat.findall(out)
         Delta = map(int, Delta_list)
         Delta_ns = self.average(Delta)
