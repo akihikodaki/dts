@@ -76,10 +76,8 @@ class TestVfKernel(TestCase):
         """
         Run before each test case.
         """
-        self.start_pf_vf()
         self.verify(self.check_pf_vf_link_status(
             self.vm0_dut, self.vm0_intf0), "vf link down")
-
         pass
 
     def generate_pcap_pkt(self, macs, pktname='flow.pcap'):
@@ -116,6 +114,7 @@ class TestVfKernel(TestCase):
         # so finally the pool will be full, then no more packet will be
         # received by VF
         self.dut_testpmd.execute_cmd("start")
+        time.sleep(5)
 
         vf0_prop_1 = {'opt_host': self.sriov_vfs_port[0].pci}
         vf0_prop_2 = {'opt_host': self.sriov_vfs_port[1].pci}
@@ -180,8 +179,6 @@ class TestVfKernel(TestCase):
         self.vm0_dut.send_expect("systemctl stop NetworkManager", "# ", 60)
         self.vm1_dut.send_expect("systemctl stop NetworkManager", "# ", 60)
 
-        self.dut_testpmd.quit()
-
     def destroy_vm_env(self):
         """
         destroy vm environment
@@ -216,26 +213,13 @@ class TestVfKernel(TestCase):
             self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
             out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
             self.verify("Link detected: yes" in out, "Wrong link status")
+            time.sleep(3)
 
             # pf up + vf down -> vf down
             self.vm0_dut.send_expect("ifconfig %s down" % self.vm0_intf0, "#")
             out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
             self.verify("Link detected: no" in out, "Wrong link status")
-
-            self.dut_testpmd.quit()
-            # pf down + vf up -> vf down
-            self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
-            out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
-            self.verify("Link detected: no" in out, "Wrong link status")
-
-            # pf down + vf down -> vf down
-            self.vm0_dut.send_expect("ifconfig %s down" % self.vm0_intf0, "#")
-            out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
-            self.verify("Link detected: no" in out, "Wrong link status")
-
-            self.start_pf_vf()
-            self.verify(self.check_pf_vf_link_status(
-                self.vm0_dut, self.vm0_intf0), "vf link down")
+            time.sleep(3)
 
     def ping4(self, session, intf, ipv4):
         """
@@ -295,8 +279,6 @@ class TestVfKernel(TestCase):
                 "ifconfig %s 0.0.0.0" % self.vm0_intf1, "#")
             self.tester.send_expect("ifconfig %s 0.0.0.0" %
                                     self.tester_intf, "#")
-            self.dut_testpmd.quit()
-            self.start_pf_vf()
 
     def test_reset(self):
         """
@@ -320,8 +302,6 @@ class TestVfKernel(TestCase):
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac), "Unload VF1 kernel driver impact VF0")
 
-        self.dut_testpmd.quit()
-        self.start_pf_vf()
         self.verify(self.check_pf_vf_link_status(
             self.vm0_dut, self.vm0_intf0), "vm0_vf0 link down")
 
@@ -343,6 +323,7 @@ class TestVfKernel(TestCase):
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac), "Reset VF1 kernel driver impact VF0")
+        self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
 
     def test_address(self):
         """
@@ -356,6 +337,7 @@ class TestVfKernel(TestCase):
             "ifconfig %s %s netmask 255.255.255.0" % (self.vm0_intf0, vm0_ip0), "#")
         self.tester.send_expect(
             "ifconfig %s %s netmask 255.255.255.0" % (self.tester_intf, pf_ip), "#")
+
         # pf ping vm0_vf0
         self.verify(self.ping4(self.tester, self.tester_intf, vm0_ip0),
                     "%s ping %s failed" % (self.tester_intf, vm0_ip0))
@@ -434,6 +416,7 @@ class TestVfKernel(TestCase):
         # Send packet from tester to VF MAC with not-matching vlan id, check
         # the packet can't be received at the vlan device
         wrong_vlan = vlan_ids % 4095 + 1
+
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, vm0_vf0_mac,
                                            vlan_id='%d' % wrong_vlan) == False, "received wrong vlan packet")
 
@@ -462,7 +445,7 @@ class TestVfKernel(TestCase):
         """
         verify packet statistic
         """
-
+        time.sleep(10)
         out = self.vm0_dut.send_expect("ethtool -S %s" % self.vm0_intf0, "#")
         rx_packets_before = re.findall("\s*rx.*packets:\s*(\d*)", out)
         nb_rx_pkts_before = 0
@@ -482,21 +465,6 @@ class TestVfKernel(TestCase):
         self.verify(nb_rx_pkts_after == 10 + nb_rx_pkts_before,
                     "rx_packets calculate error")
 
-    def start_pf_vf(self):
-        """
-        know issue DPDK-2208. dpdk-2849
-        """
-        self.dut_testpmd.start_testpmd(
-            "Default", "--rxq=4 --txq=4 --port-topology=chained")
-        self.dut_testpmd.execute_cmd('set fwd rxonly')
-        self.dut_testpmd.execute_cmd('set verbose 1')
-        self.dut_testpmd.execute_cmd("start")
-        time.sleep(10)
-        self.vm0_dut.send_expect("rmmod %svf" % self.kdriver, "#")
-        self.vm1_dut.send_expect("rmmod %svf" % self.kdriver, "#")
-        self.vm0_dut.send_expect("modprobe %svf" % self.kdriver, "#")
-        self.vm1_dut.send_expect("modprobe %svf" % self.kdriver, "#")
-
     def check_pf_vf_link_status(self, session, intf):
         """
         sometimes pf/vf will up abnormal, retry 5 times
@@ -511,9 +479,7 @@ class TestVfKernel(TestCase):
             if "Network is down" in out:
                 print GREEN(out)
                 print GREEN("Try again")
-                self.dut_testpmd.quit()
                 self.vm0_dut.restore_interfaces_linux()
-                self.start_pf_vf()
             else:
                 out = session.send_expect("ethtool %s" % intf, "#")
                 if "Link detected: yes" in out:
@@ -553,17 +519,11 @@ class TestVfKernel(TestCase):
                                            vm0_vf0_mac, pkt_lens=2000) == False, "kernel VF receive error packet")
 
         # Change DPDK PF mtu as 3000,check no confusion/crash on kernel VF
-        if self.nic.startswith('niantic'):
-            self.dut_testpmd.quit()
-            self.dut_testpmd.start_testpmd(
-                "Default", "--rxq=4 --txq=4 --port-topology=chained --max-pkt-len=3000")
-        elif self.nic.startswith('fortville'):
-            self.dut_testpmd.execute_cmd('stop')
-            self.dut_testpmd.execute_cmd('port stop all')
-            self.dut_testpmd.execute_cmd('port config mtu 0 3000')
-            self.dut_testpmd.execute_cmd('port start all')
-
         self.dut_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('port stop all')
+        self.dut_testpmd.execute_cmd('port config mtu 0 3000')
+        self.dut_testpmd.execute_cmd('port start all')
+
         self.dut_testpmd.execute_cmd('set promisc all off')
         self.dut_testpmd.execute_cmd('set fwd rxonly')
         self.dut_testpmd.execute_cmd('set verbose 1')
@@ -593,15 +553,10 @@ class TestVfKernel(TestCase):
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac, pkt_lens=2000), "VF can't receive packet")
 
-        if self.nic.startswith('niantic'):
-            self.dut_testpmd.quit()
-            self.dut_testpmd.start_testpmd(
-                "Default", "--rxq=4 --txq=4 --port-topology=chained")
-        elif self.nic.startswith('fortville'):
-            self.dut_testpmd.execute_cmd('stop')
-            self.dut_testpmd.execute_cmd('port stop all')
-            self.dut_testpmd.execute_cmd('port config mtu 0 1500')
-            self.dut_testpmd.execute_cmd('port start all')
+        self.dut_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('port stop all')
+        self.dut_testpmd.execute_cmd('port config mtu 0 1500')
+        self.dut_testpmd.execute_cmd('port start all')
 
         self.dut_testpmd.execute_cmd('start')
 
@@ -767,6 +722,7 @@ class TestVfKernel(TestCase):
 
             if date_now >= date_new:
                 break
+        time.sleep(3)
 
     def send_packets(self):
         self.tester.scapy_foreground()
@@ -1088,7 +1044,6 @@ class TestVfKernel(TestCase):
             self.vm0_dut.close_session(vm0_vf2_newvmsession)
         if getattr(self, 'vm0_vf3_newvmsession', None):
             self.vm0_dut.close_session(vm0_vf3_newvmsession)
-        self.dut_testpmd.quit()
 
         # Sometime test failed ,we still need clear ip.
         self.vm0_dut.send_expect(
@@ -1097,12 +1052,14 @@ class TestVfKernel(TestCase):
             "ifconfig %s 0.0.0.0" % self.vm0_intf1, "#")
         self.tester.send_expect("ifconfig %s 0.0.0.0" %
                                 self.tester_intf, "#")
+        time.sleep(5)
 
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.dut_testpmd.quit()
         self.destroy_vm_env()
         self.dut.kill_all()
         time.sleep(2)
