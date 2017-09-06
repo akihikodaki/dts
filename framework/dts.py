@@ -51,6 +51,7 @@ from test_case import TestCase
 from test_result import Result
 from stats_reporter import StatsReporter
 from excel_reporter import ExcelReporter
+from json_reporter import JSONReporter
 from exception import TimeoutException, ConfigParseException, VerifyFailure
 from logger import getLogger
 import logger
@@ -66,6 +67,7 @@ sys.setdefaultencoding('UTF8')
 requested_tests = None
 result = None
 excel_report = None
+json_report = None
 stats_report = None
 log_handler = None
 
@@ -443,6 +445,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     global requested_tests
     global result
     global excel_report
+    global json_report
     global stats_report
     global log_handler
     global check_case_inst
@@ -506,6 +509,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
 
     # report objects
     excel_report = ExcelReporter(output_dir + '/test_results.xls')
+    json_report = JSONReporter(output_dir + '/test_results.json')
     stats_report = StatsReporter(output_dir + '/statistics.txt')
     result = Result()
 
@@ -574,6 +578,7 @@ def save_all_results():
     Save all result to files.
     """
     excel_report.save(result)
+    json_report.save(result)
     stats_report.save(result)
 
 
