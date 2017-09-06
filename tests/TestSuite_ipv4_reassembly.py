@@ -52,7 +52,8 @@ class IpReassemblyTestConfig(object):
         tester_port = self.test_case.tester.get_local_port(dut_port)
         self.tester_iface = self.test_case.tester.get_interface(tester_port)
         self.dut_port_mask = utils.create_mask([dut_port])
-        self.queue_config = '({},{},{})'.format(dut_port, '0', self.core_list[0])
+        self.queue_config = '({},{},{})'.format(
+            dut_port, '0', self.core_list[0])
 
     def example_app_config(self):
         self.maxflows = 1024
@@ -91,12 +92,8 @@ class TestIpReassembly(TestCase):
         """
         Changes the maximum number of frames by modifying the example app code.
         """
-
-        # sed_command = (r"sed -i 's/\(\s*MAX_FRAG_NUM\s*=\)\s*[[:digit:]]*/\1 %d/' " +
-        #               r"examples/ip_reassembly/ipv4_rsmbl.h")
-        # self.dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=.*$/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=%s/' ./config/common_linuxapp" %int(num_of_fragments), "# ")
-        # self.dut.send_expect(sed_command % int(num_of_fragments), '#', 60)
-        self.dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=.*$/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=%s/' ./config/common_base" % int(num_of_fragments), "# ")
+        self.dut.send_expect(
+            "sed -i -e 's/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=.*$/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=%s/' ./config/common_base" % int(num_of_fragments), "# ")
         self.dut.send_expect("export RTE_TARGET=" + self.target, "#")
         self.dut.send_expect("export RTE_SDK=`pwd`", "#")
         self.dut.send_expect("rm -rf %s" % self.target, "# ", 5)
@@ -117,8 +114,6 @@ class TestIpReassembly(TestCase):
 
         self.dut.send_expect('rm -rf examples/ip_reassembly/build', '#')
         out = self.dut.build_dpdk_apps('examples/ip_reassembly')
-#        self.verify('Error' not in out and 'No such file' not in out,
-#                    'Compilation error')
 
     def execute_example_app(self):
         """
@@ -128,7 +123,8 @@ class TestIpReassembly(TestCase):
         command = ('./examples/ip_reassembly/build/ip_reassembly -c {core_mask} ' +
                    '-n {memory_channels} --  -p {dut_port_mask} ' +
                    '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
-        self.dut.send_expect(command.format(**self.test_config.__dict__), 'Link Up')
+        self.dut.send_expect(
+            command.format(**self.test_config.__dict__), 'Link Up')
 
     def tcp_ipv4_fragments(self, src_ip, identifier):
         """
@@ -210,8 +206,10 @@ class TestIpReassembly(TestCase):
         the DUT
         """
 
-        self.tester.scapy_append('pcap = rdpcap("%s")' % self.test_config.pcap_file)
-        self.tester.scapy_append('sendp(pcap, iface="%s")' % self.test_config.tester_iface)
+        self.tester.scapy_append(
+            'pcap = rdpcap("%s")' % self.test_config.pcap_file)
+        self.tester.scapy_append(
+            'sendp(pcap, iface="%s")' % self.test_config.tester_iface)
         self.tester.scapy_execute()
         time.sleep(5)
 
@@ -305,16 +303,20 @@ class TestIpReassembly(TestCase):
         """
 
         sent_packets = self.number_of_sent_packets(self.test_config.mac_src)
-        self.logger.info('sent packets: %d - expected: %d' % (sent_packets, expected))
-        self.verify(sent_packets == expected, 'Not all fragments have been sent')
+        self.logger.info('sent packets: %d - expected: %d' %
+                         (sent_packets, expected))
+        self.verify(sent_packets == expected,
+                    'Not all fragments have been sent')
 
     def verify_received_packets(self, expected):
         """
         Verifies if the number of received packets is the expected.
         """
 
-        received_packets = self.number_of_received_packets(self.test_config.tcp_dst_port)
-        self.logger.info('received packets: %d - expected: %d' % (received_packets, expected))
+        received_packets = self.number_of_received_packets(
+            self.test_config.tcp_dst_port)
+        self.logger.info('received packets: %d - expected: %d' %
+                         (received_packets, expected))
         self.verify(received_packets == expected,
                     'Not all frames have been forwarded')
 
@@ -323,8 +325,10 @@ class TestIpReassembly(TestCase):
         Verifies if the number of packets with a valid TCP checksum is the expected.
         """
 
-        tcp_valid_checksum = self.number_of_tcp_valid_checksum(self.test_config.tcp_dst_port)
-        self.logger.info('tcp valid: %d - expected: %d' % (tcp_valid_checksum, expected))
+        tcp_valid_checksum = self.number_of_tcp_valid_checksum(
+            self.test_config.tcp_dst_port)
+        self.logger.info('tcp valid: %d - expected: %d' %
+                         (tcp_valid_checksum, expected))
         self.verify(tcp_valid_checksum == expected,
                     'Not all TCP packets have valid checksum')
 
