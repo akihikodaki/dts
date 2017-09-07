@@ -30,6 +30,20 @@ class Testvf_daemon(TestCase):
     def set_up(self):
         self.setup_vm_env()
 
+    def check_vf_link_status(self):
+        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        for i in range(10):
+            out = self.vm0_testpmd.execute_cmd('show port info 0')
+            print out
+            if 'Link status: down' in out:
+                self.dut_testpmd.execute_cmd('port stop all')
+                self.dut_testpmd.execute_cmd('port start all')
+                time.sleep(2)
+            else :
+                break
+        self.verify("Link status: up" in out, "VF link down!!!")
+
     def bind_nic_driver(self, ports, driver=""):
         if driver == "igb_uio":
             for port in ports:
@@ -66,8 +80,13 @@ class Testvf_daemon(TestCase):
         for port in self.sriov_vfs_port:
                 port.bind_driver('pci-stub')
         time.sleep(1)
+
         self.dut_testpmd = PmdOutput(self.dut)
-        time.sleep(1)
+        self.dut_testpmd.start_testpmd(
+            "Default", "--rxq=4 --txq=4 --port-topology=chained")
+        self.dut_testpmd.execute_cmd("start")
+        time.sleep(5)
+
         vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
         
         # set up VM0 ENV
@@ -98,7 +117,7 @@ class Testvf_daemon(TestCase):
         self.vm1_testpmd = PmdOutput(self.vm1_dut)
         
         self.env_done = True
-
+        self.dut_testpmd.quit()
     def destroy_vm_env(self):
         
         if getattr(self, 'vm0', None):
@@ -123,7 +142,6 @@ class Testvf_daemon(TestCase):
             self.used_dut_port = None
 
         self.env_done = False
-    
 
     def send_packet(self, dst_mac, vlan_id, pktsize, num):
         """
@@ -135,7 +153,8 @@ class Testvf_daemon(TestCase):
             pkt = Packet(pkt_type='VLAN_UDP', pkt_len = pktsize)
             pkt.config_layer('vlan', {'vlan': vlan_id})
         pkt.config_layer('ether', {'dst': dst_mac})
-        inst = sniff_packets(self.tester_intf, timeout=5)
+
+        inst = sniff_packets(self.tester_intf, timeout=30)
         pkt.send_pkt(tx_port=self.tester_intf, count=num)
         return inst
 
@@ -169,7 +188,7 @@ class Testvf_daemon(TestCase):
         Output: testpmd output message
         """
         inst = self.send_packet(dst_mac, vlan_id , pktsize, num)
-        out = self.vm0_dut.get_session_output(timeout=2)
+        out = self.vm0_dut.get_session_output(timeout=10)
         return out
 
     def send_and_vlanstrip(self, dst_mac, vlan_id = 0, pktsize = 64, num = 1):
@@ -200,9 +219,7 @@ class Testvf_daemon(TestCase):
         If insert vlan id as 1~4095, means enabling vlan id insertion and 
         vlan id as configured value
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd mac')
@@ -211,7 +228,7 @@ class Testvf_daemon(TestCase):
         #Disable vlan insert which means insert vlan id as 0
         rx_vlan = 0
         self.dut_testpmd.execute_cmd('set vf vlan insert 0 0 %s' % rx_vlan)
-        time.sleep(1)
+        time.sleep(3)
         vlans = self.send_and_vlanstrip(self.vf0_mac)
         self.verify(rx_vlan not in vlans, 
             "Failed to disable vlan insert!!!")
@@ -221,28 +238,24 @@ class Testvf_daemon(TestCase):
         rx_vlans = [1, random_vlan, MAX_VLAN]
         for rx_vlan in rx_vlans:
             self.dut_testpmd.execute_cmd('set vf vlan insert 0 0 %s'% rx_vlan)
-            time.sleep(1)
+            time.sleep(3)
             vlans = self.send_and_vlanstrip(self.vf0_mac)
             self.verify(rx_vlan in vlans,"Failed to enable vlan insert packet!!!")
 
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-        
+        self.vm0_testpmd.execute_cmd('stop')
 
     def test_multicast_mode(self):
         """
         Enable/disable multicast promiscuous mode for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
-        self.dut_testpmd.execute_cmd('set vf promisc 0 0 off')  
-        self.dut_testpmd.execute_cmd('set vf allmulti 0 0 off')  
+        self.dut_testpmd.execute_cmd('set vf promisc 0 0 off')
+        self.dut_testpmd.execute_cmd('set vf allmulti 0 0 off')
         multi_mac = 'F3:00:33:22:11:00'
         out = self.send_and_pmdout(multi_mac)
         self.verify("received" not in out, 
@@ -258,23 +271,19 @@ class Testvf_daemon(TestCase):
         self.verify("received" in out, "Failed to enable vf multicast mode!!!")
         self.verify("dst=%s" % multi_mac in out, 
             "Failed to enable vf multicast mode!!!")
-        
+
         out = self.send_and_pmdout(self.vf0_mac)
         self.verify("received" in out, "Failed to enable vf multicast mode!!!")
         self.verify("dst=%s" % self.vf0_mac in out, 
             "Failed to enable vf multicast mode!!!")
-        
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-    
+
+        self.vm0_testpmd.execute_cmd('stop')
         
     def test_promisc_mode(self):
         """
         Enable/disable promiscuous mode for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
@@ -283,6 +292,7 @@ class Testvf_daemon(TestCase):
         self.dut_testpmd.execute_cmd('set vf promisc 0 0 off')
 
         wrong_mac = '9E:AC:72:49:43:11'
+        time.sleep(10)
         out = self.send_and_pmdout(wrong_mac)
         self.verify("received" not in out, 
             "Failed to disable vf promisc mode!!!")
@@ -293,6 +303,7 @@ class Testvf_daemon(TestCase):
             "Failed to disable vf promisc mode!!!") 
         
         self.dut_testpmd.execute_cmd('set vf promisc 0 0 on')
+        time.sleep(5)
         out = self.send_and_pmdout(wrong_mac)
         self.verify("received" in out, "Failed to enable vf promisc mode!!!")
         self.verify("dst=%s" % wrong_mac in out, 
@@ -302,18 +313,14 @@ class Testvf_daemon(TestCase):
         self.verify("received" in out, "Failed to enable vf promisc mode!!!")
         self.verify("dst=%s" % self.vf0_mac in out, 
             "Failed to enable vf promisc mode!!!")
-        
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
        
-    
+        self.vm0_testpmd.execute_cmd('stop')
+
     def test_broadcast_mode(self):
         """
         Enable/disable broadcast mode for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
@@ -327,23 +334,22 @@ class Testvf_daemon(TestCase):
             "Failed to disable vf broadcast mode!!!")
         
         self.dut_testpmd.execute_cmd('set vf broadcast 0 0 on')
+        # the config not effective immediately.
+        time.sleep(10)
+
         out = self.send_and_pmdout(dst_mac)
         self.verify("received" in out, "Failed to enable vf broadcast mode!!!")
         self.verify("dst=%s" % dst_mac in out, 
             "Failed to enable vf broadcast mode!!!")
 
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-    
 
     def test_vf_mtu(self):
         """
         Enable VF MTU change        
         """
-        self.dut.send_expect("ifconfig %s mtu 9000" % self.tester_intf, "#")
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.tester.send_expect("ifconfig %s mtu 9000" % self.tester_intf, "#")
+        self.check_vf_link_status()
+        time.sleep(10)
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd mac')
@@ -366,15 +372,14 @@ class Testvf_daemon(TestCase):
         
         self.vm0_testpmd.quit()
         self.dut_testpmd.quit()
-        self.dut.send_expect("ifconfig %s mtu 1500" % self.tester_intf, "#")
+        self.tester.send_expect("ifconfig %s mtu 1500" % self.tester_intf, "#")
 
     
     def test_vlan_tag(self):
         """
         Enable/disable vlan tag for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.check_vf_link_status()
 
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
@@ -386,37 +391,34 @@ class Testvf_daemon(TestCase):
         for rx_vlan in rx_vlans:
             self.vm0_testpmd.execute_cmd('rx_vlan add %s 0' % rx_vlan)
             self.dut_testpmd.execute_cmd('set vf vlan tag 0 0 off')
-            time.sleep(1)
+            time.sleep(3)
             out = self.send_and_macstrip(self.vf0_mac, rx_vlan)
             self.verify(self.vf0_mac.lower() not in out,
                 "Failed to disable vlan tag!!!")
 
             self.dut_testpmd.execute_cmd('set vf vlan tag 0 0 on')
-            time.sleep(1)
+            time.sleep(3)
             out = self.send_and_macstrip(self.vf0_mac, rx_vlan)
             self.verify(self.vf0_mac.lower() in out,
                 "Failed to enable vlan tag!!!")
-
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
 
     
     def test_tx_loopback(self):
         """
         Enable/disable TX loopback from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
         self.vm1_testpmd.start_testpmd(VM_CORES_MASK, 
                 '--port-topology=chained --eth-peer=0,%s' % self.vf0_mac)
-
+        time.sleep(10)
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
         self.dut_testpmd.execute_cmd('set tx loopback 0 off')
+        time.sleep(5)
 
-        inst = sniff_packets(self.tester_intf, timeout=5)
+        inst = sniff_packets(self.tester_intf, timeout=10)
 
         self.vm1_testpmd.execute_cmd('set burst 5')
         self.vm1_testpmd.execute_cmd('start tx_first')
@@ -430,8 +432,9 @@ class Testvf_daemon(TestCase):
 
         self.vm0_testpmd.execute_cmd('start')
         self.dut_testpmd.execute_cmd('set tx loopback 0 on')
+        time.sleep(3)
 
-        inst = sniff_packets(self.tester_intf, timeout=5)
+        inst = sniff_packets(self.tester_intf, timeout=10)
 
         self.vm1_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('start tx_first')
@@ -441,17 +444,12 @@ class Testvf_daemon(TestCase):
             "Failed to enable tx loopback!!!")
         self.verify("RX-packets: 5" in out, "Failed to enable tx loopback!!!")
 
-        self.vm0_testpmd.quit()
-        self.vm1_testpmd.quit()
-        self.dut_testpmd.quit()
-
     
     def test_all_queues_drop(self):
         """
         Enable/disable drop enable bit for all queues from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.check_vf_link_status()
         self.vm1_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
 
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
@@ -476,10 +474,6 @@ class Testvf_daemon(TestCase):
         out = self.vm0_testpmd.execute_cmd('show port stats 0')
         self.verify("RX-packets: 40" in out, 
             "Failed to enable all queues drop!!!")
-
-        self.vm0_testpmd.quit()
-        self.vm1_testpmd.quit()
-        self.dut_testpmd.quit()
     
 
     def test_mac_antispoof(self):
@@ -487,6 +481,7 @@ class Testvf_daemon(TestCase):
         Enable/disable mac anti-spoof for a VF from PF
         """
         fake_mac = '00:11:22:33:44:55'
+        time.sleep(5)
         self.vm0_dut.send_expect("sed -i -e '/uint64_t ol_flags = 0;/a " +\
             "\struct ether_addr fake_mac = {.addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};'" +\
             " app/test-pmd/macswap.c", "# ", 30)
@@ -494,16 +489,22 @@ class Testvf_daemon(TestCase):
             " app/test-pmd/macswap.c", "# ", 30)
         self.vm0_dut.send_expect("sed -i -e '/ether_addr_copy(&eth_hdr->s_addr, &eth_hdr->d_addr);/a " +\
             "\ether_addr_copy(&fake_mac, &eth_hdr->s_addr);' app/test-pmd/macswap.c", "# ", 30)
+        time.sleep(3)
+
         self.vm0_dut.build_install_dpdk(self.target) 
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        time.sleep(5)
+
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         self.vm0_testpmd.execute_cmd('set fwd macswap')
         self.dut_testpmd.execute_cmd('set vf mac antispoof 0 0 off')
         self.vm0_testpmd.execute_cmd('start')
+        time.sleep(5)
+
         dumpout = self.send_and_macstrip(self.vf0_mac)
         out = self.vm0_testpmd.execute_cmd('stop')
+
         self.verify(fake_mac in dumpout, 
             "Failed to disable vf mac anspoof!!!")
         self.verify("RX-packets: 1" in out, "Failed to receive packet!!!")
@@ -511,7 +512,8 @@ class Testvf_daemon(TestCase):
             "Failed to disable mac antispoof!!!")
 
         self.dut_testpmd.execute_cmd('set vf mac antispoof 0 0 on')
-        out = self.vm0_testpmd.execute_cmd('start')
+        self.vm0_testpmd.execute_cmd('start')
+        time.sleep(3)
         dumpout = self.send_and_macstrip(self.vf0_mac)
         out = self.vm0_testpmd.execute_cmd('stop')
         self.verify(fake_mac not in dumpout, "Failed to enable vf mac anspoof!!!")
@@ -527,15 +529,18 @@ class Testvf_daemon(TestCase):
         self.vm0_dut.send_expect("sed -i '/ether_addr_copy(&eth_hdr->s_addr, &eth_hdr->d_addr);/a " +\
             "\ether_addr_copy(&addr, &eth_hdr->s_addr);' app/test-pmd/macswap.c", "# ", 30)
         self.vm0_dut.build_install_dpdk(self.target)
-    
-     
+
+
     def test_vf_mac_set(self):
         """
         Set MAC address for a VF from PF
         """
         expect_mac = 'A2:22:33:44:55:66'
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
+        self.check_vf_link_status()
+        self.vm0_testpmd.quit()
         self.dut_testpmd.execute_cmd('set vf mac addr 0 0 %s' % expect_mac)
+        time.sleep(5)
+
         out = self.vm0_testpmd.start_testpmd(
             VM_CORES_MASK, '--port-topology=chained')
         self.verify("%s" % expect_mac in out, "Failed to set vf mac!!!")
@@ -546,17 +551,13 @@ class Testvf_daemon(TestCase):
         out = self.send_and_macstrip(self.vf0_mac)
         self.verify(expect_mac.lower() in out, 
             "Failed to receive packet on setted vf mac!!!")
-        
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
- 
+
 
     def test_vlan_antispoof(self):
         """
         Enable/disable vlan antispoof for a VF from PF 
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.check_vf_link_status()
 
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
         vf0_mac_lower = self.vf0_mac.lower()
@@ -565,7 +566,8 @@ class Testvf_daemon(TestCase):
         unmatch_vlan = (random_vlan + 2) % 4096
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('start')
-        self.dut_testpmd.execute_cmd('rx_vlan add %d port 0 vf 1' % match_vlan)
+        #self.dut_testpmd.execute_cmd('rx_vlan add %d port 0 vf 1' % match_vlan)
+        self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % match_vlan)
         if self.kdriver == "i40e":
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 off')
         else:
@@ -574,7 +576,7 @@ class Testvf_daemon(TestCase):
             self.vm0_testpmd.execute_cmd('vlan set strip off 0')
  
         self.dut_testpmd.execute_cmd('set vf vlan antispoof 0 0 off')
-        time.sleep(1)
+        time.sleep(10)
         out = self.send_and_macstrip(self.vf0_mac,match_vlan)
         self.verify(vf0_mac_lower in out, 
             "Failed to disable vlan antispoof with match vlan!!!")
@@ -588,7 +590,7 @@ class Testvf_daemon(TestCase):
         if self.kdriver == "ixgbe":
             self.dut_testpmd.execute_cmd('set vf mac antispoof 0 0 on')
         self.dut_testpmd.execute_cmd('set vf vlan antispoof 0 0 on')
-        time.sleep(1)
+        time.sleep(3)
         
         out = self.send_and_macstrip(self.vf0_mac,match_vlan)
         self.verify(vf0_mac_lower in out, 
@@ -601,18 +603,13 @@ class Testvf_daemon(TestCase):
         out = self.send_and_macstrip(self.vf0_mac)
         self.verify(vf0_mac_lower not in out, 
             "Failed to enable vlan antispoof with no vlan!!!")
-
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
     
     
     def test_vlan_strip(self): 
         """
         Enable/disable the VLAN strip for all queues in a pool for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
 
         random_vlan = random.randint(1, MAX_VLAN - 1) 
@@ -623,32 +620,30 @@ class Testvf_daemon(TestCase):
         for rx_vlan in rx_vlans:  
             self.vm0_testpmd.execute_cmd('rx_vlan add %s 0' % rx_vlan)
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 off')
-            time.sleep(1)
+            time.sleep(3)
             out = self.send_and_vlanstrip(self.vf0_mac,rx_vlan)   
             self.verify(rx_vlan in out, "Failed to disable strip vlan!!!")
         
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 on')
-            time.sleep(1)
+            time.sleep(3)
             out = self.send_and_vlanstrip(self.vf0_mac,rx_vlan)
             self.verify(rx_vlan not in out, "Failed to disable strip vlan!!!")
 
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-    
     
     def test_vlan_filter(self):
         """
         Add/Remove vlan filter for a VF from PF
         """
-        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
-
+        self.check_vf_link_status()
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
+        self.vm0_testpmd.execute_cmd('show port info 0')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
 
         wrong_mac = '9E:AC:72:49:43:11'
+
         out = self.send_and_pmdout(wrong_mac)
+
         self.verify("dst=%s" % wrong_mac in out,
             "Failed to receive untagged packet!!!")
         random_vlan = random.randint(1, MAX_VLAN)
@@ -661,7 +656,8 @@ class Testvf_daemon(TestCase):
         rx_vlans = [1, random_vlan, MAX_VLAN]
         for rx_vlan in rx_vlans:
             self.dut_testpmd.execute_cmd('rx_vlan add %s port 0 vf 1'% rx_vlan)
-            time.sleep(1)
+            time.sleep(5)
+
             out = self.send_and_pmdout(wrong_mac, rx_vlan)
             self.verify("dst=%s" % wrong_mac in out,
                 "Failed to enable vlan filter!!!")
@@ -675,6 +671,7 @@ class Testvf_daemon(TestCase):
             self.verify("dst=%s" % wrong_mac not in out,
                 "Failed to enable vlan filter!!!")
             self.dut_testpmd.execute_cmd('rx_vlan rm %s port 0 vf 1'% rx_vlan)
+            time.sleep(3)
             out = self.send_and_pmdout(wrong_mac, rx_vlan)
             self.verify("dst=%s" % wrong_mac in out,
                 "Failed to disable vlan filter!!!")
@@ -689,11 +686,12 @@ class Testvf_daemon(TestCase):
         self.verify("dst=%s" % wrong_mac in out,
             "Failed to receive untagged packet!!!")
 
-        self.vm0_testpmd.quit()
-        self.dut_testpmd.quit()
-
 
     def tear_down(self):
+        self.vm0_testpmd.quit()
+        self.vm1_testpmd.quit()
+        self.dut_testpmd.quit()
+        time.sleep(3)
         self.vm0_dut.kill_all()
         self.vm1_dut.kill_all()
         pass
