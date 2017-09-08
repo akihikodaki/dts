@@ -61,6 +61,15 @@ class TestLinkStatusInterrupt(TestCase):
         out = self.dut.build_dpdk_apps("./examples/link_status_interrupt")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
+        # from kernel 4.8+, kernel will not support legacy intr mode.
+        # detaile info:https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux-stable.git/commit/drivers/pci/quirks.c?id=8bcf4525c5d43306c5fd07e132bc8650e3491aec
+        if self.nic in ["fortville_eagle", "fortville_spirit",
+                        "fortville_spirt_single", "fortville_25g"]:
+            self.basic_intr_mode = ["msix"]
+        else:
+            self.basic_intr_mode = ["msix", "legacy"]
+        if self.drivername == "vfio-pci":
+            self.basic_intr_mode.append("msi")
 
     def set_link_status_and_verify(self, dutPort, status):
         """
@@ -70,8 +79,9 @@ class TestLinkStatusInterrupt(TestCase):
             self.tester.get_local_port(dutPort))
         self.tester.send_expect("ifconfig %s %s" %
                                 (self.intf, status.lower()), "# ", 10)
-        verify_point = "Port %s Link %s" % (dutPort, status)
-        self.dut.send_expect("", verify_point, 60)
+        verify_point = "Port %s Link %s" % (dutPort, status) 
+        out = self.dut.get_session_output(timeout=60)
+        self.verify(verify_point in out, "link status update error")
 
     def set_up(self):
         """
@@ -83,23 +93,27 @@ class TestLinkStatusInterrupt(TestCase):
         """
         Verify Link status change  
         """
+
         if self.drivername == "igb_uio":
             cmdline = self.path + " -c %s -n %s -- -p %s " % (
                 self.coremask, self.dut.get_memory_channels(), self.portmask)
-            for mode in ["legacy", "msix"]:
+            for mode in self.basic_intr_mode:
                 self.dut.send_expect("rmmod -f igb_uio", "#", 20)
                 self.dut.send_expect(
                     'insmod %s/kmod/igb_uio.ko "intr_mode=%s"' % (self.target, mode), "# ")
                 self.dut.bind_interfaces_linux()
-                self.dut.send_expect(cmdline, "Aggregate statistics", 60)
+                self.dut.send_command(cmdline, 180)
+                out = self.dut.get_session_output(timeout=60)
+                self.verify("Port statistics" in out, "setup example error")
+                time.sleep(10)
                 self.set_link_status_and_verify(self.dut_ports[0], 'Down')
                 self.set_link_status_and_verify(self.dut_ports[0], 'Up')
                 self.dut.send_expect("^C", "#", 60)
         elif self.drivername == "vfio-pci":
-            for mode in ["legacy", "msi", "msix"]:
+            for mode in self.basic_intr_mode:
                 cmdline = self.path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
                     self.coremask, self.dut.get_memory_channels(), mode, self.portmask)
-                self.dut.send_expect(cmdline, "Aggregate statistics", 60)
+                self.dut.send_expect(cmdline, "statistics", 120)
                 self.set_link_status_and_verify(self.dut_ports[0], 'Down')
                 self.set_link_status_and_verify(self.dut_ports[0], 'Up')
                 self.dut.send_expect("^C", "#", 60)
@@ -112,7 +126,7 @@ class TestLinkStatusInterrupt(TestCase):
         if self.drivername == "igb_uio":
             cmdline = self.path + " -c %s -n %s -- -p %s " % (
                 self.coremask, self.dut.get_memory_channels(), self.portmask)
-            for mode in ["legacy", "msix"]:
+            for mode in self.basic_intr_mode:
                 self.dut.send_expect("rmmod -f igb_uio", "#", 20)
                 self.dut.send_expect(
                     'insmod %s/kmod/igb_uio.ko "intr_mode=%s"' % (self.target, mode), "# ")
@@ -129,11 +143,11 @@ class TestLinkStatusInterrupt(TestCase):
                 pkt_send = re.findall("Total packets sent:\s*(\d*)", out)
                 pkt_received = re.findall(
                     "Total packets received:\s*(\d*)", out)
-                self.verify(pkt_send == pkt_received == '1',
+                self.verify(pkt_send[-1] == pkt_received[-1] == '1',
                             "Error: sent packets != received packets")
                 self.dut.send_expect("^C", "#", 60)
         elif self.drivername == "vfio-pci":
-            for mode in ["legacy", "msi", "msix"]:
+            for mode in self.basic_intr_mode:
                 cmdline = self.path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
                     self.coremask, self.dut.get_memory_channels(), mode, self.portmask)
                 self.dut.send_expect(cmdline, "Aggregate statistics", 60)
@@ -148,7 +162,7 @@ class TestLinkStatusInterrupt(TestCase):
                 pkt_send = re.findall("Total packets sent:\s*(\d*)", out)
                 pkt_received = re.findall(
                     "Total packets received:\s*(\d*)", out)
-                self.verify(pkt_send == pkt_received == '1',
+                self.verify(pkt_send[-1] == pkt_received[-1] == '1',
                             "Error: sent packets != received packets")
                 self.dut.send_expect("^C", "#", 60)
 
