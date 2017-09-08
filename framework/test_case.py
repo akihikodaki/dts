@@ -422,5 +422,7 @@ class TestCase(object):
             bitrate *= 40
         elif driver == 'thunder-nicvf':
             bitrate *= 10
+        elif nic == 'fortville_25g':
+            bitrate *=25
 
         return bitrate * num_ports / 8 / (frame_size + 20)
