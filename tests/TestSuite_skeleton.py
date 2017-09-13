@@ -75,6 +75,8 @@ class TestSkeleton(TestCase):
         cmd = self.path + " -c %s -n %d " % (self.coremask,self.dut.get_memory_channels())
         self.dut.send_expect(cmd,"forwarding packets",60)
          
+        time.sleep(5)
+
         self.iface_port0 = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
         self.iface_port1 = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[1]))
 
