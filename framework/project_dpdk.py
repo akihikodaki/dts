@@ -210,7 +210,8 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
 
         # compile
-        out = self.send_expect("make -j install T=%s %s" % (target, extra_options), "# ", build_time)
+        out = self.send_expect("make -j %d install T=%s %s" % 
+            (self.number_of_cores, target, extra_options), "# ", build_time)
         #should not check test app compile status, because if test compile fail,
         #all unit test can't exec, but others case will exec sucessfull 
         self.build_install_dpdk_test_app(target, build_time)
@@ -253,9 +254,9 @@ class DPDKdut(Dut):
         assert ("No rule to make" not in out), "No rule to make error..."
 
     def build_install_dpdk_test_app(self, target, build_time, os_type="linux"):
-        cmd_build_test = "make -j -C test/"
+        cmd_build_test = "make -j %d -C test/" % (self.number_of_cores)
         if os_type == "freebsd":
-            cmd_build_test = "make -j -C test/ CC=gcc48"
+            cmd_build_test = "make -j %d -C test/ CC=gcc48" % (self.number_of_cores)
 
         self.send_expect(cmd_build_test, "# ", build_time)
         app_list = ['./test/test/test', './test/test-acl/testacl', './test/test-pipeline/testpipeline', './test/cmdline_test/cmdline_test']
@@ -380,7 +381,8 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        return self.send_expect("make -j -C %s %s" % (folder, extra_options),
+        return self.send_expect("make -j %d -C %s %s" % (self.number_of_cores,
+                                                         folder, extra_options),
                                 "# ", timeout)
 
     def build_dpdk_apps_freebsd(self, folder, extra_options):
@@ -390,7 +392,8 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        return self.send_expect("make -j -C %s %s CC=gcc48" % (folder, extra_options),
+        return self.send_expect("make -j %d -C %s %s CC=gcc48" % (self.number_of_cores,
+                                                                  folder, extra_options),
                                 "# ", 180)
 
     def get_blacklist_string(self, target, nic):
