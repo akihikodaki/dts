@@ -694,9 +694,11 @@ class Crb(object):
                 n['core']) in core_list]
             temp = []
             if len(core_list) < nr_cores:
-                return []
+                raise ValueError("Cannot get requested core configuration "
+                                 "requested {} have {}".format(config, self.cores))
             if len(sockList) < nr_sockets:
-                return []
+                raise ValueError("Cannot get requested core configuration "
+                                 "requested {} have {}".format(config, self.cores))
             # recheck the core_list and create the thread_list
             i = 0
             for sock in sockList:
