@@ -489,7 +489,7 @@ class Tester(Crb):
         out = self.send_expect("cat scapyResult.txt", "# ")
         self.logger.info('SCAPY Result:\n' + out + '\n\n\n')
 
-        return out.rpartition('[')[0]
+        return out
 
     def traffic_generator_throughput(self, portList, rate_percent=100, delay=5):
         """
