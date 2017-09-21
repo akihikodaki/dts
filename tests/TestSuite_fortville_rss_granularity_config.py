@@ -79,7 +79,7 @@ class TestFortvilleRssGranularityConfig(TestCase):
         """
 
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single"],
+                    "fortville_spirit_single", "fortville_25g"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
         if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single"]:
