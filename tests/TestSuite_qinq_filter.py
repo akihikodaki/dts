@@ -52,7 +52,7 @@ class TestQinqFilter(TestCase):
         global dutRxPortId
         global dutTxPortId
 
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25G"], 
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g"], 
                     "NIC %s not support this test" % self.nic)
         print 'this case only supports fortville with 6.0.0+ firmware and dpdk17.05+'
         ports = self.dut.get_ports()
