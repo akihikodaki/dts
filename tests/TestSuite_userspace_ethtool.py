@@ -419,6 +419,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.dut.send_expect(self.cmd, "EthApp>", 60)
         for index in range(len(self.ports)):
             port = self.ports[index]
+            dst_mac =  self.dut.get_mac_address(port)
             # generate random vlan
             vlan = random.randrange(0, 4095)
             # add vlan on port, record original statistic
@@ -427,6 +428,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
 
             # send correct vlan packet to port
             pkt = Packet(pkt_type='VLAN_UDP')
+            pkt.config_layer('ether', {'dst': dst_mac})
             pkt.config_layer('vlan', {'vlan': vlan})
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
