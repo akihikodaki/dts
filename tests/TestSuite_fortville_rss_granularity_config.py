@@ -82,10 +82,7 @@ class TestFortvilleRssGranularityConfig(TestCase):
                     "fortville_spirit_single", "fortville_25g"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single"]:
-            reta_num = 512
-        else:
-            self.verify(False, "NIC Unsupported:%s" % str(self.nic))
+        reta_num = 512
         ports = self.dut.get_ports(self.nic)
         self.verify(len(ports) >= 1, "Not enough ports available")
 
