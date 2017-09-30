@@ -160,9 +160,8 @@ class TestCase(object):
 
         return "Unknown"
 
-    def set_check_inst(self, check=None, support=None):
+    def set_check_inst(self, check=None):
         self._check_inst = check
-        self._support_inst = support
 
     def rst_report(self, *args, **kwargs):
         self._rst_obj.report(*args, **kwargs)
@@ -268,11 +267,10 @@ class TestCase(object):
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
 
-        if self._support_inst is not None:
-            if not self._support_inst.case_support(case_name[len("test_"):]):
+            if not self._check_inst.case_support(case_name[len("test_"):]):
                 self.logger.info('Test Case %s Result SKIPED:' % case_name)
                 self._rst_obj.write_result("N/A")
-                self._suite_result.test_case_skip(self._support_inst.comments)
+                self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
 
         if self._enable_perf:

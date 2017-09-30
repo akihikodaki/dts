@@ -57,7 +57,7 @@ from logger import getLogger
 import logger
 import debugger
 from config import CrbsConf
-from checkCase import parse_file, check_case_skip, check_case_support
+from checkCase import CheckCase
 from utils import get_subclasses, copy_instance_attr
 import sys
 reload(sys)
@@ -399,7 +399,7 @@ def dts_run_suite(duts, tester, test_suites, target):
                 suite_obj = test_class(duts, tester, target, suite_name)
                 suite_obj.init_log()
                 suite_obj.set_requested_cases(requested_tests)
-                suite_obj.set_check_inst(check=check_case_inst, support=support_case_inst)
+                suite_obj.set_check_inst(check=check_case_inst)
                 result.nic = suite_obj.nic
 
                 dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname)
@@ -449,15 +449,12 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     global stats_report
     global log_handler
     global check_case_inst
-    global support_case_inst
 
     # save global variable
     serializer = Serializer()
 
     # load check/support case lists
-    check_case = parse_file()
-    check_case.set_filter_case()
-    check_case.set_support_case()
+    check_case_inst = CheckCase()
 
     # prepare the output folder
     if output_dir == '':
@@ -546,8 +543,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         # register exit action
         atexit.register(quit_execution, duts, tester)
 
-        check_case_inst = check_case_skip(duts[0])
-        support_case_inst = check_case_support(duts[0])
+        check_case_inst.check_dut(duts[0])
 
         # Run DUT prerequisites
         if dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer) is False:
