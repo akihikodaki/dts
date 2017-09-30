@@ -868,3 +868,46 @@ class IxiaPacketGenerator(SSHConnection):
         retrieved capture buffer. Call packetGroupStats get before.
         """
         return self._packetgroup_cget_value('averageLatency')
+
+    def _transmission_pre_config(self, port_list, rate_percent, latency=False):
+        """
+        Prepare and configure IXIA ports for performance test. And remove the transmission step in this config sequence.
+        This function is set only for function send_number_packets for nic_single_core_perf test case use
+        """
+        rxPortlist, txPortlist = self.prepare_port_list(port_list, rate_percent, latency)
+        self.prepare_ixia_for_transmission(txPortlist, rxPortlist)
+        self.start_transmission()
+        self.clear_tcl_commands()
+        return rxPortlist, txPortlist
+
+    def send_number_packets(self, portList, ratePercent, packetNum):
+        """
+        Configure ixia to send fixed number of packets
+        Note that this function is only set for test_suite nic_single_core_perf,
+        Not for common use
+        """
+        rxPortlist, txPortlist = self._transmission_pre_config(portList, ratePercent)
+
+        self.send_expect("stream config -numFrames %s" % packetNum, "%", 5)
+        self.send_expect("stream config -dma stopStream", "%", 5)
+        for txPort in txPortlist:
+            port = self.pci_to_port(self.tester.get_pci(txPort))
+            self.send_expect("stream set %d %d %d 1" % (self.chasId, port['card'], port['port']), "%", 5)
+
+        self.send_expect("ixWritePortsToHardware portList", "%", 5)
+        self.send_expect("ixClearStats portList", "%", 5)
+        self.send_expect("ixStartTransmit portList", "%", 5)
+        time.sleep(10)
+
+        rxPackets = 0
+        for port in txPortlist:
+            self.stat_get_stat_all_stats(port)
+            txPackets = self.get_frames_sent()
+            while txPackets != packetNum:
+                time.sleep(10)
+                self.stat_get_stat_all_stats(port)
+                txPackets = self.get_frames_sent()
+            rxPackets += self.get_frames_received()
+        self.logger.info("Received packets :%s" % rxPackets)
+
+        return rxPackets
