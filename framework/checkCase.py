@@ -1,90 +1,45 @@
 import xlrd
+import collections
+import json
 
 from settings import get_nic_name
+from utils import RED
 
-filter_file = r'./conf/dpdk_test_case_checklist.xls'
-filter_case = []
-check_function_dict = {}
-support_file = r'./conf/dpdk_support_test_case.xls'
-support_case = []
-support_function_dict = {}
+filter_json_file = './conf/test_case_checklist.json'
+support_json_file = './conf/test_case_supportlist.json'
 
 
-class parse_file():
+class CheckCase(object):
+    """
+    Class for check test case running criteria. All information will be loaded
+    from conf/test_case_*list.json. Current two files are maintained. One is
+    for check whether test case should skip, another one is for check whether
+    current environment support test case execution.
+    """
 
     def __init__(self):
-        try:
-            self.book = xlrd.open_workbook(filter_file)
-            self.sheet = self.book.sheet_by_index(0)
-            self.support_book = xlrd.open_workbook(support_file)
-            self.support_sheet = self.support_book.sheet_by_index(0)
-            self.init_check_function_dict()
-            self.init_support_function_dict()
-        except:
-            pass
-
-    def init_check_function_dict(self):
-        '''
-        init check case functio, and skip case message.
-        '''
-        row_data = self.sheet.row_values(0)
-        for i in range(1, len(row_data)):
-            if row_data[i].lower() in ['wq number', 'comments']:
-                if 'message' not in check_function_dict:
-                    check_function_dict['message'] = [i]
-                else:
-                    check_function_dict['message'].append(i)
-            else:
-                check_function_dict[row_data[i].lower()] = i
-
-    def init_support_function_dict(self):
-        '''
-        init support case function, and skip case message.
-        '''
-        row_data = self.support_sheet.row_values(0)
-        for i in range(1, len(row_data)):
-            if row_data[i].lower() in ['wq number', 'comments']:
-                if 'message' not in support_function_dict:
-                    support_function_dict['message'] = [i]
-                else:
-                    support_function_dict['message'].append(i)
-            else:
-                support_function_dict[row_data[i].lower()] = i
-
-    def set_filter_case(self):
-        for row in range(self.sheet.nrows):
-            row_data = self.sheet.row_values(row)
-            # add case name
-            tmp_filter = [row_data[0]]
-            for i in range(1, len(row_data) - 2):
-                tmp_filter.append(row_data[i].split(','))
-
-            tmp_filter.append(row_data[-2])
-            tmp_filter.append(row_data[-1])
-
-            filter_case.append(tmp_filter)
-
-    def set_support_case(self):
-        for row in range(self.support_sheet.nrows):
-            row_data = self.support_sheet.row_values(row)
-            # add case name
-            tmp_filter = [row_data[0]]
-            for i in range(1, len(row_data) - 2):
-                tmp_filter.append(row_data[i].split(','))
-
-            tmp_filter.append(row_data[-2])
-            tmp_filter.append(row_data[-1])
-
-            support_case.append(tmp_filter)
-
-
-class check_case_skip():
-
-    def __init__(self, Dut):
-        self.dut = Dut
+        self.dut = None
         self.comments = ''
 
-    def check_os(self, os_type):
+        self.check_function_dict = {}
+        self.support_function_dict = {}
+        try:
+            self.check_function_dict = json.load(open(filter_json_file), object_pairs_hook=collections.OrderedDict)
+        except:
+            print RED("Can't load check list for test cases, all case will be taken as supported")
+
+        try:
+            self.support_function_dict = json.load(open(support_json_file), object_pairs_hook=collections.OrderedDict)
+        except:
+            print RED("Can't load support list for test cases, all case will be taken as supported")
+
+    def check_dut(self, dut):
+        """
+        Change DUT instance for environment check
+        """
+        self.dut = dut
+
+    def _check_os(self, os_type):
         if 'all' == os_type[0].lower():
             return True
         dut_os_type = self.dut.get_os_type()
@@ -93,7 +48,7 @@ class check_case_skip():
         else:
             return False
 
-    def check_nic(self, nic_type):
+    def _check_nic(self, nic_type):
         if 'all' == nic_type[0].lower():
             return True
         dut_nic_type = get_nic_name(self.dut.ports_info[0]['type'])
@@ -102,7 +57,7 @@ class check_case_skip():
         else:
             return False
 
-    def check_target(self, target):
+    def _check_target(self, target):
         if 'all' == target[0].lower():
             return True
         if self.dut.target in target:
@@ -111,64 +66,89 @@ class check_case_skip():
             return False
 
     def case_skip(self, case_name):
-        skip_flage = False
+        """
+        Check whether test case and DUT match skip criteria
+        Return True if skip should skip
+        """
+        skip_flag = False
         self.comments = ""
-        for rule in filter_case[1:]:
-            # check case name
-            if case_name == rule[0]:
-                for key in check_function_dict.keys():
+
+        if self.dut is None:
+            print RED("No Dut assigned before case skip check")
+            return skip_flag
+
+        if case_name in self.check_function_dict.keys():
+            case_checks = self.check_function_dict[case_name]
+            # each case may have several checks
+            for case_check in case_checks:
+                # init result for each check
+                skip_flag = False
+                for key in case_check.keys():
+                    # some items like "Bug ID" and "Comments" do not need check
                     try:
-                        if 'message' == key:
+                        if 'Comments' == key:
                             continue
-                        check_function = getattr(self, 'check_%s' % key)
+                        if 'Bug ID' == key:
+                            continue
+                        check_function = getattr(self, '_check_%s' % key.lower())
                     except:
-                        print "can't check %s type" % key
-                    if check_function(rule[check_function_dict[key]]):
-                        skip_flage = True
+                        print RED("can't check %s type" % key)
+
+                    # skip this check if any item not matched
+                    if check_function(case_check[key]):
+                        skip_flag = True
                     else:
-                        skip_flage = False
+                        skip_flag = False
                         break
 
-                if skip_flage:
-                    if 'message' in check_function_dict:
-                        for i in check_function_dict['message']:
-                            self.comments += '%s,' % rule[i]
-                    return skip_flage
+                # if all items matched, this case should skip
+                if skip_flag:
+                    if 'Comments' in case_check.keys():
+                        self.comments = case_check['Comments']
+                    return skip_flag
 
-        return skip_flage
-
-
-class check_case_support(check_case_skip):
-
-    def __init__(self, Dut):
-        self.dut = Dut
-        self.comments = ''
+        return skip_flag
 
     def case_support(self, case_name):
+        """
+        Check whether test case and DUT match support criteria
+        Return False if test case not supported
+        """
         support_flag = True
-        for rule in support_case[1:]:
-            # check case name
-            if case_name == rule[0]:
-                for key in support_function_dict.keys():
+        self.comments = ""
+
+        if self.dut is None:
+            print RED("No Dut assigned before case support check")
+            return support_flag
+
+        if case_name in self.support_function_dict.keys():
+            # each case may have several supports
+            case_supports = self.support_function_dict[case_name]
+            for case_support in case_supports:
+                # init result for each check
+                support_flag = True
+                for key in case_support.keys():
+                    # some items like "Bug ID" and "Comments" do not need check
                     try:
-                        if 'message' == key:
+                        if 'Comments' == key:
                             continue
-                        check_function = getattr(self, 'check_%s' % key)
+                        if 'Bug ID' == key:
+                            continue
+                        check_function = getattr(self, '_check_%s' % key.lower())
                     except:
-                        print "can't check %s type" % key
-                    if check_function(rule[support_function_dict[key]]):
+                        print RED("can't check %s type" % key)
+
+                    # skip this case if any item not matched
+                    if check_function(case_support[key]):
                         support_flag = True
                     else:
                         support_flag = False
                         break
 
-                if support_flag is False:
-                    # empty last skip case comments
-                    self.comments = ''
-                    if 'message' in support_function_dict:
-                        for i in support_function_dict['message']:
-                            self.comments += '%s,' % rule[i]
-                    return support_flag
+            if support_flag is False:
+                if 'Comments' in case_support.keys():
+                    self.comments = case_support['Comments']
+                return support_flag
 
         return support_flag
 
@@ -186,11 +166,23 @@ class simple_dut(object):
 
 if __name__ == "__main__":
     dut = simple_dut(
-        os="linux", target='x86_64-native-linuxapp-gcc', nic='8086:1572')
-    check_case = parse_file()
-    check_case.set_filter_case()
-    check_case.set_support_case()
-    check_case_inst = check_case_skip(dut)
-    support_case_inst = check_case_support(dut)
-    print support_case_inst.case_support("l2pkt_detect")
-    print support_case_inst.comments
+        os="linux", target='x86_64-native-linuxapp-gcc', nic='177d:a034')
+    dut1 = simple_dut(
+        os="freebsd", target='x86_64-native-linuxapp-gcc', nic='8086:158b')
+
+    # create instance for check/support case list
+    case_inst = CheckCase()
+
+    # check dut
+    case_inst.check_dut(dut)
+    print case_inst.case_skip("fdir_flexword_drop_ipv4")
+    print case_inst.comments
+    print case_inst.case_support("Vxlan_tunnel")
+    print case_inst.comments
+
+    # check other dut
+    case_inst.check_dut(dut1)
+    print case_inst.case_skip("fdir_flexword_drop_ipv4")
+    print case_inst.comments
+    print case_inst.case_support("Vxlan_tunnel")
+    print case_inst.comments
