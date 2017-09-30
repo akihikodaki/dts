@@ -1,0 +1,137 @@
+{
+    "l2pkt_detect": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "l2 packet detect only support on FVL"
+        }
+    ],
+    "IP_in_IPv4_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "IP_in_IPv4 tunnel packet detect only support on FVL"
+        }
+    ],
+    "IPv6_in_IPv4_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic and i350"
+        }
+    ],
+    "IP_in_IPv6_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "IP_in_IPv6 tunnel packet detect only support on FVL"
+        }
+    ],
+    "NVGRE_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NVGRE tunnel packet detect only support on FVL"
+        }
+    ],
+    "NVGRE_in_IPv6_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NVGRE in ipv6 tunnel packet detect only support on FVL"
+        }
+    ],
+    "GRE_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "GRE tunnel packet detect only support on FVL"
+        }
+    ],
+    "Vxlan_tunnel": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Vxlan  tunnel packet detect only support on FVL"
+        }
+    ]
+}

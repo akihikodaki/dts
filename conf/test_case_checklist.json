@@ -1,0 +1,1968 @@
+{
+    "128_queues": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "kawela_4"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support this test"
+        }
+    ],
+    "ethertype_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "five_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "flex_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "jumbo_frame_size": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "multiple_filters_10GB": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "kawela_4",
+                "bartonhills",
+                "powerville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "multiple_filters_1GB": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "priority_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "syn_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "twotuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "springville",
+                "fortville_25g",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_stripq_config": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "powerville",
+                "kawela_4",
+                "springville",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_tpid_config": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_QinQ_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "bartonhills",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "link_stats": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "stop_restart": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "ironpond",
+                "cavium_a034",
+                "cavium_0011",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "checksum_checking": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "cavium_a034",
+                "cavium_0011",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "flowctrl_off_pause_fwd_on": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "if set pasue, the packet type error when use kernel driver send packet"
+        }
+    ],
+    "flowctrl_on_pause_fwd_on": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "if set pasue, the packet type error when use kernel driver send packet"
+        }
+    ],
+    "flowctrl_off_pause_fwd_off": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "flowctrl_on_pause_fwd_off": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_random_test": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_synthetic_test": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_flexword_drop_ipv4": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_flexword_drop_ipv6": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_flexword_fwd_ipv4": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_flexword_fwd_ipv6": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_noflexword_drop_ipv4": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_noflexword_drop_ipv6": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_noflexword_fwd_ipv4": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_noflexword_fwd_ipv6": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the os not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "pmdrss_reta": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        }
+    ],
+    "rss_key_size": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        }
+    ],
+    "ifconfig": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "ping": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "ethtools": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "tcpdump": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "stress": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "statistics": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "multiprocess_simple_mpapplicationstartup": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit need manually run"
+        }
+    ],
+    "multiprocess_simple_mpbasicoperation": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit need manually run"
+        }
+    ],
+    "multiprocess_simple_mploadtest": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit need manually run"
+        }
+    ],
+    "multiprocess_simple_mpnoflag": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit need manually run"
+        }
+    ],
+    "ieee1588_enable": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "springville",
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "ethtool": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "springfountain",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case,confirmed with developer"
+        }
+    ],
+    "power_acpi": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "depend on os and hw support"
+        }
+    ],
+    "pmd_burst": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "pmd_continues": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "sched": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        }
+    ],
+    "send_4K_frames_split_in_7_and_4K_maxflows": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        }
+    ],
+    "simple": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        }
+    ],
+    "simple_symmetric": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "redrockcanyou",
+                "atwood",
+                "boulderrapid"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "toeplitz": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "redrockcanyou",
+                "atwood",
+                "boulderrapid"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "toeplitz_symmetric": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case/not enough queue"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "redrockcanyou",
+                "atwood",
+                "boulderrapid"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "all_cores_coremask": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "not enough cores for 32 bit"
+        }
+    ],
+    "alarm": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "interrupts": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "log_dump": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "kni": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "power": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
+    "vf_pmdrss": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vf_pmdrss_reta": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "rx_checksum_valid_flags": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dynamic_config_broadcast": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dynamic_config_disable_promiscuous": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dynamic_config_allmulticast": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "jumboframes_bigger_jumbo": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "jumboframes_jumbo_nojumbo": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "link_status_interrupt_port_available": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "arm64-thunderx-linuxapp-gcc"
+            ],
+            "Bug ID": "",
+            "Comments": "link_status_interrupt application assumes one certain CPU frequency, test fails on thunder boards"
+        }
+    ],
+    "add_remove_mac_address": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "invalid_addresses": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a034",
+                "cavium_0011"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": ""
+        }
+    ],
+    "multiprocess": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc",
+                "i686-native-linuxapp-clang"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "DPDK-3032"
+        }
+    ],
+    "fdir_ipv6_tc": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "fdir_ivlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "ipv4_tos_proto_ttl": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "port_mtu": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Know dpdk issue, DPDK-2513"
+        }
+    ],
+    "multicast_mode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "promisc_mode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "broadcast_mode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vf_mtu": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_tag": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "all_queues_drop": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vlan_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "rss": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "qinq_filter_with_diffierent_tpid": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "if update vlan tpid, kernel driver send packet with error packet type "
+        }
+    ],
+    "vlan_qinq_tpid": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "if update vlan tpid, kernel driver send packet with error packet type "
+        }
+    ]
+}
