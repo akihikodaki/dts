@@ -45,6 +45,7 @@ CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
 VIRTCONF = "%s/virt_global.cfg" % CONFIG_ROOT_PATH
 IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
 SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
+GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 
 
 class UserConf():
@@ -87,11 +88,36 @@ class UserConf():
             paramDict[key] = value
         return paramDict
 
+class GlobalConf(UserConf):
+    def __init__(self):
+        self.global_cfg = {}
+        try:
+            self.global_conf = UserConf(GLOBALCONF)
+        except ConfigParseException:
+            self.global_conf = None
+        
+        # load global configuration
+        self.global_cfg = self.load_global_config()
 
+    def load_global_config(self, section_name='global'):
+        global_cfg = self.global_cfg.copy()
+        try:
+            section_confs = self.global_conf.load_section(section_name)
+        except:
+            print "FAILED FIND SECTION[%s] CONFIG!!!" % section_name
+            return global_cfg
+
+        if section_confs is None:
+            return global_cfg
+
+        global_cfg = dict(section_confs)
+        
+        return global_cfg
+        
 class SuiteConf(UserConf):
     def __init__(self, suite_name=""):
+        self.suite_cfg = GlobalConf().load_global_config()
         self.config_file = CONFIG_ROOT_PATH + os.sep + suite_name + ".cfg"
-        self.suite_cfg = {}
         try:
             self.suite_conf = UserConf(self.config_file)
         except ConfigParseException:
