@@ -144,3 +144,5 @@ The following are the test plans for the DPDK DTS automated test system.
     ptpclient_test_plan.rst
     qinq_filter_test_plan.rst
     vf_kernel_test_plan.rst
+    ddp_gtp_test_plan.rst
+    generic_flow_api_test_plan.rst
