@@ -49,11 +49,24 @@ SEND_PACKET = 100
 
 class TestVF2VFBridge(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
         self.vm1 = None
+
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+
 
     def set_up(self):
         self.set_up_vf_to_vf_env()
@@ -71,7 +84,7 @@ class TestVF2VFBridge(TestCase):
                                  (self.host_port_intf, i, VF_TEMP_MAC % i), '#', 10)
         try:
             for port in self.sriov_vfs_ports:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
             time.sleep(1)
         except Exception as e:
             raise Exception(e)
@@ -80,7 +93,7 @@ class TestVF2VFBridge(TestCase):
         vf1_prop = {'opt_host': self.sriov_vfs_ports[1].pci}
         time.sleep(1)
         self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_to_vf_bridge')
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
         try:
             self.vm0_dut = self.vm0.start()
             if self.vm0_dut is None:
@@ -89,7 +102,7 @@ class TestVF2VFBridge(TestCase):
             print utils.RED(str(e))
 
         self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_to_vf_bridge')
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
         try:
             self.vm1_dut = self.vm1.start()
             if self.vm1_dut is None:

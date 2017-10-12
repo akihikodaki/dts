@@ -19,6 +19,8 @@ ETHER_JUMBO_FRAME_MTU = 9000
 
 class TestVfJumboFrame(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
 
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -30,6 +32,17 @@ class TestVfJumboFrame(TestCase):
         self.vm_port = 0
         cores = self.dut.get_core_list("1S/1C/1T")
         self.port_mask = utils.create_mask([self.port])
+
+        # set vf assign method and vf driver
+        self.dut.send_expect('modprobe vfio-pci', '#')
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
         
         # enable tester mtu
         tester_port = self.tester.get_local_port(self.port)
@@ -91,14 +104,14 @@ class TestVfJumboFrame(TestCase):
         try:
 
             for port in self.sriov_vfs_port:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
             vf_popt = {'opt_host': self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
             self.vm = QEMUKvm(self.dut, 'vm0', 'vf_jumboframe')
-            self.vm.set_vm_device(driver='pci-assign', **vf_popt)
+            self.vm.set_vm_device(driver=self.vf_assign_method, **vf_popt)
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed!")

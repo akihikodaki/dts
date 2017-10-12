@@ -16,16 +16,31 @@ VM_CORES_MASK = 'all'
 
 class TestVfOffload(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) > 1, "Insufficient ports")
         self.vm0 = None
+
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.tester.send_expect('modprobe vfio-pci', '#')
+
         self.setup_2pf_2vf_1vm_env_flag = 0
         self.setup_2pf_2vf_1vm_env(driver='')
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
+        
     def set_up(self):
         pass
 
@@ -41,10 +56,10 @@ class TestVfOffload(TestCase):
         try:
 
             for port in self.sriov_vfs_port_0:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             for port in self.sriov_vfs_port_1:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
             vf0_prop = {'opt_host': self.sriov_vfs_port_0[0].pci}
@@ -59,8 +74,8 @@ class TestVfOffload(TestCase):
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_offload')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
-            self.vm0.set_vm_device(driver='pci-assign', **vf1_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")

@@ -47,6 +47,9 @@ from pmd_output import PmdOutput
 from qemu_kvm import QEMUKvm
 
 class TestVfRss(TestCase):
+
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def send_packet(self, itf, tran_type):
         """
         Sends packets.
@@ -218,6 +221,16 @@ class TestVfRss(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Not enough ports available")
 
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+
         self.vm0 = None
         self.host_testpmd = None
         self.setup_1pf_1vf_1vm_env_flag = 0
@@ -237,7 +250,7 @@ class TestVfRss(TestCase):
         try:
 
             for port in self.sriov_vfs_port_0:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
             vf0_prot = {'opt_host': self.sriov_vfs_port_0[0].pci}
@@ -250,7 +263,7 @@ class TestVfRss(TestCase):
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_rss')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prot)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prot)
 
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:

@@ -14,12 +14,25 @@ VM_CORES_MASK = 'all'
 
 class TestVfPortStartStop(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
 
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
         self.filename = "/tmp/vf.pcap"
+
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.tester.send_expect('modprobe vfio-pci', '#')
 
     def set_up(self):
 
@@ -152,7 +165,7 @@ class TestVfPortStartStop(TestCase):
         try:
 
             for port in self.sriov_vfs_port:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
 
@@ -168,8 +181,8 @@ class TestVfPortStartStop(TestCase):
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_port_start_stop')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
-            self.vm0.set_vm_device(driver='pci-assign', **vf1_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
