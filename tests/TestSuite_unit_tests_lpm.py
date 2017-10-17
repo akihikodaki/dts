@@ -79,19 +79,8 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv6 autotest.
         """
-        [arch, machine, env, toolchain] = self.target.split('-')
-        self.verify(arch in ["x86_64", "arm64"], "lpm6 request huge memory")
-        hugepages_size = int(self.dut.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# "))
-	hugepage_ori = self.dut.get_total_huge_pages()
-	if env == 'bsdapp':
-            pass
-        else:
-	    hugepage_8G = 8 * 1024 * 1024
-            total_hugepage = hugepages_size * hugepage_ori
-            self.verify(total_hugepage >= hugepage_8G,"have no enough hugepage")
-
         self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
-        out = self.dut.send_expect("lpm6_autotest", "RTE>>", 3600)
+        out = self.dut.send_expect("lpm6_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
