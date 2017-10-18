@@ -109,6 +109,12 @@ class DPDKdut(Dut):
             if drivermode == "noiommu":
                 self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
 
+        elif drivername == "uio_pci_generic":
+            self.send_expect("modprobe uio", "#", 70)
+            self.send_expect("modprobe uio_pci_generic", "#", 70)
+            out = self.send_expect("lsmod | grep uio_pci_generic", "#")
+            assert ("uio_pci_generic" in out), "Failed to setup uio_pci_generic"
+ 
         else:
             self.send_expect("modprobe uio", "#", 70)
             out = self.send_expect("lsmod | grep igb_uio", "#")
