@@ -47,7 +47,7 @@ from packet import Packet, sniff_packets, load_sniff_packets
 
 class TestPortHotPlug(TestCase):
     """
-    This feature only supports igb_uio now and not support freebsd
+    This feature supports igb_uio, vfio-pci and vfio-pci:noiommu now and not support freebsd
     """
     def set_up_all(self):
         """
@@ -58,6 +58,10 @@ class TestPortHotPlug(TestCase):
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
         self.port = len(self.dut_ports) - 1
+        if self.drivername == "vfio-pci:noiommu":
+            self.driver_name = "vfio-pci"
+        else:
+            self.driver_name = self.drivername
 
     def set_up(self):
         """
@@ -69,8 +73,8 @@ class TestPortHotPlug(TestCase):
         """
         attach port
         """
-        # dpdk hotplug discern NIC by pci bus not include domid
-        self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'][len("0000:"):],"is attached",60)
+        # dpdk hotplug discern NIC by pci bus and include domid
+        self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'],"is attached",60)
         self.dut.send_expect("port start %s" % port,"Configuring Port",120)
         # sleep 10 seconds for fortville update link stats
         time.sleep(10)
@@ -90,10 +94,10 @@ class TestPortHotPlug(TestCase):
         """
         first run testpmd after attach port
         """
-        cmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c %s -n %s -- -i" % (self.coremask,self.dut.get_memory_channels())
+        cmd = "./%s/app/testpmd -c %s -n %s -- -i" % (self.target,self.coremask,self.dut.get_memory_channels())
         self.dut.send_expect(cmd,"testpmd>",60)
         session_secondary = self.dut.new_session()
-        session_secondary.send_expect("./usertools/dpdk-devbind.py --bind=igb_uio %s" % self.dut.ports_info[self.port]['pci'], "#", 60)
+        session_secondary.send_expect("./usertools/dpdk-devbind.py --bind=%s %s" % (self.driver_name, self.dut.ports_info[self.port]['pci']), "#", 60)
         self.dut.close_session(session_secondary)
         self.attach(self.port)
         self.dut.send_expect("start","testpmd>",60)
@@ -104,6 +108,7 @@ class TestPortHotPlug(TestCase):
    
         self.dut.send_expect("start","testpmd>",60)
         self.dut.send_expect("port detach %s" % self.port,"Please close port first",60)
+        self.dut.send_expect("clear port stats %s" % self.port ,"testpmd>",60)
         self.send_packet(self.port)
         out = self.dut.send_expect("show port stats %s" % self.port ,"testpmd>",60)
         packet = re.search("RX-packets:\s*(\d*)",out)
@@ -127,14 +132,16 @@ class TestPortHotPlug(TestCase):
         first attach port after run testpmd
         """
         session_secondary = self.dut.new_session()
-        session_secondary.send_expect("./usertools/dpdk-devbind.py --bind=igb_uio %s" % self.dut.ports_info[self.port]['pci'], "#", 60)
+        session_secondary.send_expect("./usertools/dpdk-devbind.py --bind=%s %s" % (self.driver_name, self.dut.ports_info[self.port]['pci']), "#", 60)
         self.dut.close_session(session_secondary)
-        cmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c %s -n %s -- -i" % (self.coremask,self.dut.get_memory_channels())
+        cmd = "./%s/app/testpmd -c %s -n %s -- -i" % (self.target,self.coremask,self.dut.get_memory_channels())
         self.dut.send_expect(cmd,"testpmd>",60)
         self.detach(self.port)
         self.attach(self.port)
+
         self.dut.send_expect("start","testpmd>",60)
         self.dut.send_expect("port detach %s" % self.port, "Please close port first",60)
+        self.dut.send_expect("clear port stats %s" % self.port ,"testpmd>",60)
         self.send_packet(self.port)
         out = self.dut.send_expect("show port stats %s" % self.port ,"testpmd>",60)
         packet = re.search("RX-packets:\s*(\d*)",out)
@@ -147,8 +154,8 @@ class TestPortHotPlug(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("./usertools/dpdk-devbind.py --bind=igb_uio %s" % self.dut.ports_info[self.port]['pci'],"#",60)
         self.dut.kill_all()
+        self.dut.send_expect("./usertools/dpdk-devbind.py --bind=%s %s" % (self.driver_name, self.dut.ports_info[self.port]['pci']), "#", 60)
         time.sleep(2)
         
 
