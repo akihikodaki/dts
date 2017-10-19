@@ -1053,7 +1053,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         else:
             eth = self.tester.get_interface(local_port)
             self.tester.admin_ports_linux(eth, status)
-        time.sleep(5)
+        time.sleep(10)
 
     def verify_round_robin_rx(self, unbound_port, bond_port, **slaves):
         """
