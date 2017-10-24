@@ -1263,8 +1263,7 @@ class TestSriovKvm(TestCase):
                         "set port 0 vf 34 rxmode ROPE on",
                         "mac_addr add port 0 vf 65 00:55:44:33:22:11",
                         "mac_addr add port 5 vf 0 00:55:44:88:22:11",
-                        "set port 0 mirror-rule 0xf uplink-mirror dst-pool 1 on",
-                        "set port 0 mirror-rule 2 vlan-mirror 9 dst-pool 1 on",
+                        "set port 0 mirror-rule 256 uplink-mirror dst-pool 1 on",
                         "set port 0 mirror-rule 0 downlink-mirror 0xf dst-pool 2 off",
                         "reset port 0 mirror-rule 4",
                         "reset port 0xff mirror-rule 0"]:
