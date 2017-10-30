@@ -1487,6 +1487,21 @@
             "Comments": "the OS not support this case"
         }
     ],
+    "link_bonding": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the OS not support this case"
+        }
+    ],
     "log_dump": [
         {
             "OS": [
@@ -1732,19 +1747,6 @@
             "Bug ID": "",
             "Comments": "32 bit not support this case"
         },
-        {
-            "OS": [
-                "freebsd"
-            ],
-            "NIC": [
-                "ALL"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "DPDK-3032"
-        }
     ],
     "fdir_ipv6_tc": [
         {
