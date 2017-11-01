@@ -32,7 +32,7 @@ class TestVfOffload(TestCase):
             self.vf_assign_method = 'pci-assign'
         else:
             self.vf_assign_method = 'vfio-pci'
-            self.tester.send_expect('modprobe vfio-pci', '#')
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
         self.setup_2pf_2vf_1vm_env_flag = 0
         self.setup_2pf_2vf_1vm_env(driver='')

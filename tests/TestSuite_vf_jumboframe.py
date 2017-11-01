@@ -43,6 +43,7 @@ class TestVfJumboFrame(TestCase):
             self.vf_assign_method = 'pci-assign'
         else:
             self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
         
         # enable tester mtu
         tester_port = self.tester.get_local_port(self.port)

@@ -34,6 +34,7 @@ class TestVfVlan(TestCase):
             self.vf_assign_method = 'pci-assign'
         else:
             self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
 
     def set_up(self):
