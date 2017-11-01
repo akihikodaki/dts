@@ -102,7 +102,7 @@ class TestShortLiveApp(TestCase):
         if (txPort == rxPort):
             count = 2
 
-        self.tester.scapy_append('p=sniff(iface="%s",count=%d,timeout=5)' % (rxitf, count))
+        self.tester.scapy_append('p=sniff(iface="%s", filter="ether[12:2]!=0x88cc", count=%d, timeout=5)' % (rxitf, count))
         self.tester.scapy_append('RESULT=str(p[%d].show)' % (count-1))
 
         self.tester.scapy_foreground()
