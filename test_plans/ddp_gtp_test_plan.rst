@@ -52,14 +52,9 @@ mapping to DPDK FlowType/PacketType.
 
 Below features have be enabled for GTP-C/GTP-U:
 
-1. RSS for GTP-C/GTP-U, includes::
+1. FDIR for GTP-C/GTP-U to direct different TEIDs to different queues
 
-    a. RSS input set should include GTP TEID and inner frame IP/Ports
-    b. RSS should separate GTP-C and GTP-U to different queues/queue regions
-
-2. FDIR for GTP-C/GTP-U to direct different TEIDs to different queues
-
-3. Tunnel filters for GTP-C/GTP-U to direct different TEIDs to different VFs
+2. Tunnel filters for GTP-C/GTP-U to direct different TEIDs to different VFs
 
 
 Prerequisites
@@ -81,7 +76,7 @@ Prerequisites
 
 5. Login vm0, then bind VF0 device to igb_uio driver.
 
-6. Start testpmd on host and vm0, host supports RSS, flow director and cloud
+6. Start testpmd on host and vm0, host supports flow director and cloud
    filter, VM supports cloud filter. If test PF flow director, need to add 
    --pkt-filter-mode=perfect on testpmd to enable flow director, set chained 
    port topology mode, add txq/rxq to enable multi-queues. In general, PF's 
@@ -126,56 +121,6 @@ Note:
     testpmd > write reg 0 0xb8190 2
 	  
 
-Test Case: GTP-C RSS packet for PF
-===================================
-
-1. Set fwd rxonly, enable output and start PF and VF testpmd.
-
-2. Send GTP-C packet with good checksum, dport is 2123, set TEID as random 
-   20 bits::
-   
-    p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header(teid=0x1456)/Raw('x'*20) 
-   
-3. Check PF could receive configured TEID GTP-C packet, checksum is good, RSS 
-   hash, queue and ptypes are correct, check PKT_RX_RSS_HASH print.
-
-4. Send GTP-C packet with bad checksum, dport is 2123, set TEID as 
-   random 20 bits::
-   
-    p=Ether()/IP()/UDP(chksum=0x1234,dport=2123)/GTP_U_Header(teid=0x1456)/Raw('x'*20) 
-      
-5. Check PF could receive configured TEID GTP packet, checksum is good, 
-   RSS hash, queue and ptypes are correct, check PKT_RX_RSS_HASH print.
-
-6. Change TEID, repeat steps 2~5, RSS and queue are correct and different 
-   from above.
-
-
-Test Case: GTP-U RSS packet for PF
-===================================
-
-1. Set fwd rxonly, enable output and start PF and VF testpmd.
-
-2. Send GTP-U packet with good checksum, dport is 2152, set TEID as 
-   random 20 bits::
-
-    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x146)/Raw('x'*20) 
-	 
-3. Check PF could receive configured TEID GTP-U packet, checksum is good, 
-   RSS hash, queue and ptypes are correct, check PKT_RX_RSS_HASH print.
-
-4. Send GTP-U packet with bad checksum, dport is 2152, set TEID as random 
-   20 bits::
-   
-    p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x146)/Raw('x'*20) 
-
-5. Check PF could receive configured TEID GTP packet, checksum is good, 
-   RSS hash, queue and ptypes are correct, check PKT_RX_RSS_HASH print.
-
-6. Change TEID, repeat steps 2~5, RSS and queue are correct and different 
-   from above.
-
-
 Test Case: GTP-C FDIR packet for PF
 ===================================
 
@@ -192,8 +137,7 @@ Test Case: GTP-C FDIR packet for PF
     p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header(teid=0x3456)/Raw('x'*20) 
 
 4. Check PF could receive configured TEID GTP-C packet, checksum is good,
-   queue is configured queue, ptypes are correct, check PKT_RX_RSS_HASH 
-   and PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
 
 5. Send GTP-C packet with bad checksum, dport is 2123, TEID is same
    as configured rule::
@@ -201,12 +145,11 @@ Test Case: GTP-C FDIR packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2123)/GTP_U_Header(teid=0x3456)/Raw('x'*20) 
    
 6. Check PF could receive configured TEID GTP packet, checksum is good, 
-   queue is configured queue, ptypes are correct, check PKT_RX_RSS_HASH 
-   and PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
    
 7. Send some TEIDs are not same as configured rule or other types packets, 
-   check checksum are good, queues are not configured queue, ptypes are 
-   correct, check PKT_RX_RSS_HASH print, but no PKT_RX_FDIR print.
+   check checksum are good, queue is 0, ptypes are correct, check no 
+   PKT_RX_FDIR print.
   
 
 Test Case: GTP-C Cloud filter packet for PF
@@ -225,8 +168,7 @@ Test Case: GTP-C Cloud filter packet for PF
     p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 4. Check PF could receive configured TEID GTP-C packet, checksum is good,
-   queue is configured queue, ptypes are correct, check no PKT_RX_RSS_HASH
-   or PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
 
 5. Send GTP-C packet with bad checksum, dport is 2123, TEID is same
    as configured rule::
@@ -234,12 +176,11 @@ Test Case: GTP-C Cloud filter packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2123)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, 
-   queue is configured queue, ptypes are correct, check no PKT_RX_RSS_HASH
-   or PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
 
 7. Send some TEIDs are not same as configured rule or other types packets, 
-   check checksum are good, queues are not configured queue, ptypes are 
-   correct, print PKT_RX_RSS_HASH.
+   check checksum are good, queue is 0, ptypes are correct, no 
+   PKT_RX_FDIR print.
 
 
 Test Case: GTP-U FDIR packet for PF
@@ -256,25 +197,27 @@ Test Case: GTP-U FDIR packet for PF
 
 3. Send GTP-U packet with good checksum, dport is 2152, TEID is same
    as configured rule::
-   
-    sendp([Ether()/IP()/UDP(dport=2152)/GTPHeader(teid=0x123456)/IP()/UDP()/Raw('x' * 20)],iface=txItf) 
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/Raw('x'*20)
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IP()/Raw('x'*20)
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IPv6()/Raw('x'*20)
 
 4. Check PF could receive configured TEID GTP-U packet, checksum is good,
-   queue is configured queue, ptypes are correct, check PKT_RX_RSS_HASH 
-   and PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check PKT_RX_FDIR print.
    
 5. Send GTP-U packet with bad checksum, dport is 2152, TEID is same
    as configured rule::
-   
-    sendp([Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTPHeader(teid=0x123456)/IP()/UDP()/Raw('x' * 20)],iface=txItf) 
+
+    p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x123456)/Raw('x'*20)
+    p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x123456)/IP()/Raw('x'*20)
+    p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x123456)/IPv6()/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, queue 
-   is configured queue, ptypes are corrcet, check PKT_RX_RSS_HASH and 
-   PKT_RX_FDIR print.
+   is configured queue, ptypes are corrcet, check PKT_RX_FDIR print.
    
 7. Send some TEIDs are not same as configured rule or other types packets, 
-   check checksum are good, queues are not configured queue, pytpes are 
-   correct, check PKT_RX_RSS_HASH print, but no PKT_RX_FDIR print.
+   check checksum are good, queue is 0, pytpes are correct, check no 
+   PKT_RX_FDIR print.
 
 
 Test Case: GTP-U Cloud filter packet for PF
@@ -293,8 +236,7 @@ Test Case: GTP-U Cloud filter packet for PF
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
    		
 4. Check PF could receive configured TEID GTP-U packet, checksum is good,
-   queue is configured queue, ptypes are correct, check no PKT_RX_RSS_HASH
-   or PKT_RX_FDIR print.
+   queue is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
 
 5. Send GTP-U packet with bad checksum, dport is 2152, TEID is same
    as configured rule::
@@ -302,12 +244,11 @@ Test Case: GTP-U Cloud filter packet for PF
     p=Ether()/IP()/UDP(chksum=0x1234,dport=2152)/GTP_U_Header(teid=0x12345678)/Raw('x'*20)
 
 6. Check PF could receive configured TEID GTP packet, checksum is good, queue
-   is configured queue, ptypes are correct, check no PKT_RX_RSS_HASH or 
-   PKT_RX_FDIR print.
+   is configured queue, ptypes are correct, check no PKT_RX_FDIR print.
 
 7. Send some TEIDs are not same as configured rule or other types packets, 
-   check checksum are good, queues are not configured queue, ptypes are 
-   correct, check PKT_RX_RSS_HASH print.
+   check checksum are good, queue is 0, ptypes are correct, no 
+   PKT_RX_FDIR print.
    
    
 Test Case: GTP-C Cloud filter packet for VF
@@ -458,7 +399,7 @@ GTP-U control packet types
 GTP-U data packet types, IPv4 transport, IPv6 payload
 =====================================================
 
-183: IPV4 GTPU IPV6 IPV6FRAG PAY3::
+183: IPV4 GTPU IPV6FRAG PAY3::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
 
@@ -489,7 +430,7 @@ GTP-U data packet types, IPv6 transport, IPv6 payload
 
     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
 
-190: IPV6 GTPU IPV6 IPV6FRAG PAY3::
+190: IPV6 GTPU IPV6FRAG PAY3::
 
     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
 
