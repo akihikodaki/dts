@@ -787,14 +787,20 @@ def sniff_packets(intf, count=0, timeout=5, filters=[]):
     sniff all packets for certain port in certain seconds
     """
     param = ""
-    direct_param = r"(\s+)\[ -(\w) in\|out\|inout \]"
+    direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
     tcpdump_help = subprocess.check_output("tcpdump -h; echo 0",
                                            stderr=subprocess.STDOUT,
                                            shell=True)
     for line in tcpdump_help.split('\n'):
         m = re.match(direct_param, line)
         if m:
-            param = "-" + m.group(2) + " in"
+            opt = re.search("-Q", m.group(2));
+            if opt:
+                param = "-Q" + " in"
+            else:
+                opt = re.search("-P", m.group(2));
+                if opt:
+                    param = "-P" + " in"
 
     if len(param) == 0:
         print "tcpdump not support direction chioce!!!"
