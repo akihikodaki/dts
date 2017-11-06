@@ -393,14 +393,8 @@ class TestVfVlan(TestCase):
             out = self.send_and_getout(vlan=rx_vlan, pkt_type="VLAN_UDP")
             self.verify(
                 "received 1 packets" in out, "Not received vlan packet as expected!!!")
-            nic_type = self.vm_dut_0.ports_info[0]['type']
-            nic_name = get_nic_name(nic_type)
-            if nic_name in ['fvl10g_vf', 'fortpark_TLV_vf']:
-                self.verify("VLAN tci=%s" %
-                            vlan_hex in out, "Failed to disable strip vlan!!!")
-            else:
-                self.verify(
-                    "PKT_RX_VLAN_STRIPPED" not in out, "Failed to disable strip vlan!!!")
+            self.verify(
+                "PKT_RX_VLAN_STRIPPED" not in out, "Failed to disable strip vlan!!!")
 
         self.vm0_testpmd.quit()
 
