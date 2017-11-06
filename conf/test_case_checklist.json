@@ -1746,7 +1746,7 @@
             ],
             "Bug ID": "",
             "Comments": "32 bit not support this case"
-        },
+        }
     ],
     "fdir_ipv6_tc": [
         {
