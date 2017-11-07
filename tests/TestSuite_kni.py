@@ -295,7 +295,7 @@ class TestKni(TestCase):
             self.dut.send_expect("rmmod igb_uio", "# ", 5)
             self.dut.send_expect(
                 'insmod ./%s/kmod/igb_uio.ko' % (self.target), "# ", 20)
-        self.dut.bind_interfaces_linux()
+        self.dut.bind_interfaces_linux(self.drivername)
         out = self.dut.send_expect(
             'insmod ./%s/kmod/rte_kni.ko %s' % (self.target, module_param), "# ", 10)
 
