@@ -116,7 +116,7 @@ class TestUnitTestsDump(TestCase):
         self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_physmem", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
-        elements = ['Segment', 'phys', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
+        elements = ['Segment', 'IOVA', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
         match_regex = "Segment (\d)+:"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
@@ -137,7 +137,7 @@ class TestUnitTestsDump(TestCase):
         out = self.dut.send_expect("dump_memzone", "testpmd>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
-        elements = ['Zone', 'name', 'phys', 'len', 'virt', 'socket_id', 'flags']
+        elements = ['Zone', 'name', 'IO', 'len', 'virt', 'socket_id', 'flags']
         match_regex = "Zone (\d):"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
