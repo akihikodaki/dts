@@ -160,7 +160,7 @@ class TestUnitTestsEal(TestCase):
 
         self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect('memory_autotest', "RTE>>", self.run_cmd_time * 5)
-        regexp = "phys:0x[0-9a-f]*, len:([0-9a-f]*), virt:0x[0-9a-f]*, socket_id:[0-9]*"
+        regexp = "IOVA:0x[0-9a-f]*, len:([0-9a-f]*), virt:0x[0-9a-f]*, socket_id:[0-9]*"
         match = utils.regexp(out, regexp)
         size = int(match, 16)
         self.verify(size > 0, "bad size")
