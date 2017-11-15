@@ -1966,5 +1966,20 @@
             "Bug ID": "",
             "Comments": "if update vlan tpid, kernel driver send packet with error packet type "
         }
+    ],
+    "two_vms_add_multi_exact_mac_on_vf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Niantic not support this case"
+        }
     ]
 }
