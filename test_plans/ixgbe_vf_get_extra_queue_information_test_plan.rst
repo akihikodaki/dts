@@ -66,7 +66,10 @@ Prerequisites
 5. Detach VF from the host, bind them to pci-stub driver::
 
     modprobe pci-stub
-    echo "8086 10fb" > /sys/bus/pci/drivers/pci-stub/new_id
+
+   using `lspci -nn|grep -i ethernet` got VF device id "8086 10ed", then::
+
+    echo "8086 10ed" > /sys/bus/pci/drivers/pci-stub/new_id
     echo "0000:05:10.0" > /sys/bus/pci/drivers/ixgbevf/unbind
     echo "0000:05:10.0" > /sys/bus/pci/drivers/pci-stub/bind
 
