@@ -283,9 +283,11 @@ class scapy(object):
         pkt_layer.src = src
         pkt_layer.dst = dst
 
-    def tcp(self, pkt_layer, src=53, dst=53, len=None, chksum=None):
+    def tcp(self, pkt_layer, src=53, dst=53, flags=None, len=None, chksum=None):
         pkt_layer.sport = src
         pkt_layer.dport = dst
+        if flags is not None:
+            pkt_layer.flags = flags
         if len is not None:
             pkt_layer.len = len
         if chksum is not None:
@@ -299,9 +301,11 @@ class scapy(object):
         if chksum is not None:
             pkt_layer.chksum = chksum
 
-    def sctp(self, pkt_layer, src=53, dst=53, len=None, chksum=None):
+    def sctp(self, pkt_layer, src=53, dst=53, tag=None, len=None, chksum=None):
         pkt_layer.sport = src
         pkt_layer.dport = dst
+        if tag is not None:
+            pkt_layer.tag = tag
         if len is not None:
             pkt_layer.len = len
         if chksum is not None:
