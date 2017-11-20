@@ -558,6 +558,29 @@ class IxiaPacketGenerator(SSHConnection):
         rxPortlist, txPortlist = self._configure_everything(port_list, rate_percent)
         return self.get_transmission_results(rxPortlist, txPortlist, delay)
 
+    """
+    This function could be used to check the packets' order whether same as the receive sequence.
+    Please notice that this function only support single-stream mode.
+    """
+    def is_packet_ordered(self, port_list, delay):
+        rxPortlist, txPortlist = self.prepare_port_list(port_list)
+        self.prepare_ixia_for_transmission(txPortlist, rxPortlist)
+        self.send_expect('port config -receiveMode [expr $::portCapture|$::portRxSequenceChecking|$::portRxModeWidePacketGroup]', '%')
+        self.send_expect('port config -autonegotiate true', '%')
+        self.send_expect('ixWritePortsToHardware portList', '%')
+        self.send_expect('set streamId 1', '%')
+        self.send_expect('stream setDefault', '%')
+        self.send_expect('ixStartPortPacketGroups %d %d %d' % (self.chasId, self.ports[0]['card'], self.ports[0]['port']), '%')
+        self.send_expect('ixStartTransmit portList', '%')
+        self.send_expect('after 1000 * %d' % delay, '%')
+        self.send_expect('ixStopTransmit portList', '%')
+        self.send_expect('ixStopPortPacketGroups %d %d %d' % (self.chasId, self.ports[0]['card'], self.ports[0]['port']), '%')
+        self.send_expect('packetGroupStats get %d %d %d 1 1' % (self.chasId, self.ports[0]['card'], self.ports[0]['port']), '%')
+        self.send_expect('packetroupStats getGroup 1', '%')
+        self.send_expect('set reverseSequenceError [packetGroupStats cget -reverseSequenceError]]', '%')
+        output = self.send_expect('puts $reverseSequenceError', '%')
+        return int(output[:-2])
+
     def _configure_everything(self, port_list, rate_percent, latency=False):
         """
         Prepare and configure IXIA ports for performance test.

@@ -502,6 +502,13 @@ class Tester(Crb):
             return None
         return self.packet_gen.throughput(portList, rate_percent)
 
+    def verify_packet_order(self, portList, delay):
+        if self.check_port_list(portList, 'ixia'):
+            return self.ixia_packet_gen.is_packet_ordered(portList, delay)
+        else:
+            self.logger.warning("Only ixia port support check verify packet order function")
+            return False
+
     def run_rfc2544(self, portlist, delay=120, permit_loss_rate=0):
         """
         test_rate: the line rate we are going to test.
