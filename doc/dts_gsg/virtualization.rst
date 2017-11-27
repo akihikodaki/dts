@@ -92,8 +92,9 @@ Add Configuration File
 
 Configuration file should be placed in conf/{suite_name}.cfg and in test suite this file will be loaded for VM configurations. Below is one sample for virtualization suite configuration file.
 
-The section name between [] is the VM name. Here we changed default cpu, mem, disk configurations. And add two local configurations login and vnc into configuration file. 
+The section name between [] is the VM name. Here we changed default cpu, mem, disk, UEFI configurations. And add two local configurations login and vnc into configuration file.
 For cpu parameter, we changed core number to 2 and pin these two cores to socket 1 cores for performance concern. For mem parameter, we changed guest using with hugepage backend memory. It also concerned about performance. For disk parameter, we should change it local disk image absolute path.
+For pflash parameter, we changed UEFI CODE and UEFI VARs file, which you specified when you created the VM.
 
 Login parameter should be added when guest login username and password not same as host. VNC parameter should be added when need debug guest with vnc display. 
 
@@ -106,7 +107,10 @@ Login parameter should be added when guest login username and password not same 
     mem =
         size=4096,hugepage=yes;
     disk =
-        file=/home/img/vm0.img;
+        file=/home/img/vm0.img,opt_format=raw,opt_if=virtio,opt_index=0,opt_media=disk;
+    pflash =
+        file=/home/img/flash_code.img;
+        file=/home/img/flash_vars.img;
     login =
         user=root,password=tester;
     vnc =
@@ -128,7 +132,9 @@ Below is the brief view of the qemu parameters of vxlan sample virtual machine. 
     {'device': [{'opt_mac': '00:00:20:00:00:20', 'opt_path': './vhost-net', 'driver': 'vhost-user'}, {'opt_mac': '00:00:20:00:00:21', 'opt_path': './vhost-net', 'driver': 'vhost-user'}]},
     {'cpu': [{'model': 'host', 'number': '4', 'cpupin': '24 25 26 27'}]},
     {'mem': [{'hugepage': 'yes', 'size': '4096'}]},
-    {'disk': [{'file': '/storage/vm-image/vm0.img'}]},
+    {'disk': [{'file': '/storage/vm-image/vm0.img', 'opt_format': 'raw', 'opt_if': 'virtio', 'opt_index': '0', 'opt_media': 'disk'}]},
+    {'pflash': [{'file': '/storage/vm-image/flash_code.img'}]},
+    {'pflash': [{'file': '/storage/vm-image/flash_vars.img'}]},
     {'login': [{'password': 'tester', 'user': 'root'}]},
     {'vnc': [{'displayNum': '1'}]}]
 
@@ -388,6 +394,11 @@ Connection to monitor socket on DUT.
 .. note::
 
     For More detail information about qemu monitor. https://en.wikibooks.org/wiki/QEMU/Monitor#info
+
+Qemu Machine
+""""""""""
+
+DTS set default qemu machine type as virt for Aarch64. This option is mandatory for qemu-system-aarch64.
 
 Configured Parameters
 ~~~~~~~~~~~~~~~~~~~~~

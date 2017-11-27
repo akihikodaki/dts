@@ -98,12 +98,17 @@ class QEMUKvm(VirtBase):
         # internal variable to track whether default nic has been added
         self.__default_nic = False
 
+        # arch info for multi-paltform init
+        self.arch = self.host_session.send_expect('uname -m', '# ')
+
         # set some default values for vm,
         # if there is not the values of the specified options
         self.set_vm_default()
 
     def set_vm_default(self):
         self.set_vm_name(self.vm_name)
+        if self.arch == 'aarch64':
+            self.set_vm_machine('virt')
         self.set_vm_enable_kvm()
         self.set_vm_pid_file()
         self.set_vm_qga()
@@ -249,6 +254,25 @@ class QEMUKvm(VirtBase):
             enable_kvm_boot_line = '-enable-kvm'
             self.__add_boot_line(enable_kvm_boot_line)
 
+    def set_vm_machine(self, machine):
+        """
+        Set VM boot option to specify the option 'machine'.
+        """
+        index = self.find_option_index('machine')
+        if index:
+            self.params[index] = {'machine': [{'machine': '%s' % machine}]}
+        else:
+            self.params.append({'machine': [{'machine': '%s' % machine}]})
+
+    def add_vm_machine(self, **options):
+        """
+        'machine': 'virt'
+        """
+        if 'machine' in options.keys() and \
+                options['machine']:
+            machine_boot_line = '-machine %s' % options['machine']
+            self.__add_boot_line(machine_boot_line)
+
     def set_vm_pid_file(self):
         """
         Set VM pidfile option for manage qemu process
@@ -329,10 +353,38 @@ class QEMUKvm(VirtBase):
     def add_vm_disk(self, **options):
         """
         file: /home/image/test.img
+        opt_format: raw
+        opt_if: virtio
+        opt_index: 0
+        opt_media: disk
+        """
+        separator = ','
+        if 'file' in options.keys() and \
+                options['file']:
+            disk_boot_line = '-drive file=%s' % options['file']
+        if 'opt_format' in options.keys() and \
+                options['opt_format']:
+            disk_boot_line += separator + 'format=%s' % options['opt_format']
+        if 'opt_if' in options.keys() and \
+                options['opt_if']:
+            disk_boot_line += separator + 'if=%s' % options['opt_if']
+        if 'opt_index' in options.keys() and \
+                options['opt_index']:
+            disk_boot_line += separator + 'index=%s' % options['opt_index']
+        if 'opt_media' in options.keys() and \
+                options['opt_media']:
+            disk_boot_line += separator + 'media=%s' % options['opt_media']
+
+        if self.__string_has_multi_fields(disk_boot_line, separator):
+            self.__add_boot_line(disk_boot_line)
+
+    def add_vm_pflash(self, **options):
+        """
+        file: /home/image/flash0.img
         """
         if 'file' in options.keys():
-            disk_boot_line = '-drive file=%s' % options['file']
-            self.__add_boot_line(disk_boot_line)
+            pflash_boot_line = '-pflash %s' % options['file']
+            self.__add_boot_line(pflash_boot_line)
 
     def add_vm_login(self, **options):
         """
@@ -411,7 +463,11 @@ class QEMUKvm(VirtBase):
 
         if 'opt_model' in options.keys() and \
                 options['opt_model']:
-            net_boot_line += separator + 'model=%s' % options['opt_model']
+            model = options['opt_model']
+        else:
+            model = 'e1000'
+        net_boot_line += separator + 'model=%s' % model
+
         if 'opt_name' in options.keys() and \
                 options['opt_name']:
             net_boot_line += separator + 'name=%s' % options['opt_name']
