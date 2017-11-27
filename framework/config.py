@@ -44,6 +44,7 @@ PORTCONF = "%s/ports.cfg" % CONFIG_ROOT_PATH
 CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
 VIRTCONF = "%s/virt_global.cfg" % CONFIG_ROOT_PATH
 IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
+PKTGENCONF = "%s/pktgen.cfg" % CONFIG_ROOT_PATH
 SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
 GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 
@@ -377,6 +378,57 @@ class IxiaConf(UserConf):
             self.ixia_cfg[group] = ixia_group
 
         return self.ixia_cfg
+
+class PktgenConf(UserConf):
+
+    def __init__(self, pktgen_type='dpdk', pktgen_conf=PKTGENCONF):
+        self.config_file = pktgen_conf
+        self.pktgen_type = pktgen_type
+        self.pktgen_cfg = {}
+        try:
+            self.pktgen_conf = UserConf(self.config_file)
+        except ConfigParseException:
+            self.pktgen_conf = None
+            raise ConfigParseException
+
+    def load_pktgen_config(self):
+        sections = self.pktgen_conf.get_sections()
+        if not sections:
+            return self.pktgen_cfg
+
+        for section in sections:
+            if self.pktgen_type=='dpdk':
+                if section == 'PKTGEN DPDK':
+                    pktgen_confs = self.pktgen_conf.load_section(section)
+                    if not pktgen_confs:
+                        continue
+
+                    # covert file configuration to dts pktgen cfg
+                    for conf in pktgen_confs:
+                        key, value = conf
+                        self.pktgen_cfg[key] = value
+            elif self.pktgen_type=='trex':
+                if section == 'TREX':
+                    pktgen_confs = self.pktgen_conf.load_section(section)
+                    if not pktgen_confs:
+                        continue
+
+                    # covert file configuration to dts pktgen cfg
+                    for conf in pktgen_confs:
+                        key, value = conf
+                        self.pktgen_cfg[key] = value
+            elif self.pktgen_type=='ixia':
+                if section == 'IXIA':
+                    pktgen_confs = self.pktgen_conf.load_section(section)
+                    if not pktgen_confs:
+                        continue
+
+                    # covert file configuration to dts pktgen cfg
+                    for conf in pktgen_confs:
+                        key, value = conf
+                        self.pktgen_cfg[key] = value
+
+        return self.pktgen_cfg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
