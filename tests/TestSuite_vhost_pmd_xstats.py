@@ -79,7 +79,8 @@ class TestVhostPmdXstats(TestCase):
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall vhost-switch", "#")
-        self.dut.send_expect("killall qemu-system-x86_64", "#")
+        dut_arch = self.dut.send_expect("uname -m", "#")
+        self.dut.send_expect("killall qemu-system-%s" % dut_arch, "#")
 
     def vm_testpmd_start(self):
         """
@@ -144,7 +145,7 @@ class TestVhostPmdXstats(TestCase):
         """
         prepare all of the conditions for start
         """
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %s --socket-mem 1024,0 --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1" %
+        self.dut.send_expect("./%s/app/testpmd -c %s -n %s --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1" %
                              (self.target, self.coremask, self.dut.get_memory_channels()), "testpmd>", 60)
         self.start_onevm()
         self.vm_testpmd_start()
