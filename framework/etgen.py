@@ -140,7 +140,7 @@ class IxiaPacketGenerator(SSHConnection):
         self.NAME = 'ixia'
         self.logger = getLogger(self.NAME)
         super(IxiaPacketGenerator, self).__init__(self.get_ip_address(),
-                                                  self.NAME,
+                                                  self.NAME, self.tester.get_username(),
                                                   self.get_password())
         super(IxiaPacketGenerator, self).init_log(self.logger)
 
