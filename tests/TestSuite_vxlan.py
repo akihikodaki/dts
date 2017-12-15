@@ -168,8 +168,8 @@ class VxlanTestConfig(object):
             outer[outer_l3.name].src = self.outer_ip_src
             outer[outer_l3.name].dst = self.outer_ip_dst
 
-        outer[UDP].src = self.outer_udp_src
-        outer[UDP].dst = self.outer_udp_dst
+        outer[UDP].sport = self.outer_udp_src
+        outer[UDP].dport = self.outer_udp_dst
 
         if self.outer_ip_invalid == 1:
             outer[outer_l3.name].chksum = 0
