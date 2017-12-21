@@ -606,7 +606,9 @@ class Tester(Crb):
 
             # send and sniff packets
             save_f(pkts=pkts, filename="/tmp/%s_tx.pcap" % txIntf)
-            inst = sniff_f(intf=rxIntf, count=pktnum, timeout=timeout)
+            inst = sniff_f(intf=rxIntf, count=pktnum, timeout=timeout, filters=
+                [{'layer': 'network', 'config': {'srcport': '65535'}},
+                 {'layer': 'network', 'config': {'dstport': '65535'}}])
             rx_inst[rxport] = inst
 
         # Transmit packet simultaneously

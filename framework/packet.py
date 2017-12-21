@@ -772,6 +772,16 @@ def get_filter_cmd(filters=[]):
                         filter_cmd = 'ether[12:2] = %s' % type_hex
                     elif m.group(1) == 'not':
                         filter_cmd = 'ether[12:2] != %s' % type_hex
+        elif pktfilter['layer'] == 'network':
+            if pktfilter['config'].keys()[0] == 'srcport':
+                sport = pktfilter['config']['srcport']
+                filter_cmd = "src port %s" % sport
+            elif pktfilter['config'].keys()[0] == 'dstport':
+                dport = pktfilter['config']['dstport']
+                filter_cmd = "dst port %s" % dport
+        elif pktfilter['layer'] == 'userdefined':
+            if pktfilter['config'].keys()[0] == 'pcap-filter':
+                filter_cmd = pktfilter['config']['pcap-filter']
 
         if len(filter_cmds):
             if len(filter_cmd):
