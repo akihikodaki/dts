@@ -207,21 +207,21 @@ class TestIpgre(TestCase):
             "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_UDP"],
             "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_TCP"],
             "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN_PKT"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN_PKT"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN_PKT"]
+            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
+            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"],
+            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
         }
 
         pkt_types_ipv6_ipv6 = {
             "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_UDP"],
             "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN_PKT"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN_PKT"]
+            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
+            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"]
         }
 
         pkt_types_ipv6_ipv6_SCTP = {
             "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN_PKT"]
+            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
         }
         
         # Start testpmd and enable rxonly forwarding mode
