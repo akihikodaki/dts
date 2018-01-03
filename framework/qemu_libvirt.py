@@ -57,6 +57,7 @@ class LibvirtKvm(VirtBase):
 
         # disk and pci device default index
         self.diskindex = 'a'
+        self.controllerindex = 0
         self.pciindex = 10
 
         # configure root element
@@ -79,6 +80,7 @@ class LibvirtKvm(VirtBase):
 
         # internal variable to track whether default nic has been added
         self.__default_nic = False
+        self.__default_nic_pci = ''
 
         # set some default values for vm,
         # if there is not the values of the specified options
@@ -98,6 +100,13 @@ class LibvirtKvm(VirtBase):
         """
         check and setup host virtual ability
         """
+        arch = self.host_session.send_expect('uname -m', '# ')
+        if arch == 'aarch64':
+            out = self.host_session.send_expect('service libvirtd status', "# ")
+            if 'active (running)' not in out:
+                return False
+            return True
+
         out = self.host_session.send_expect('cat /proc/cpuinfo | grep flags',
                                             '# ')
         rgx = re.search(' vmx ', out)
@@ -201,7 +210,31 @@ class LibvirtKvm(VirtBase):
                                 ',name=org.qemu.guest_agent.0'})
         self.qga_sock_path = '/tmp/%s_qga0.sock' % self.vm_name
 
-    def set_vm_default(self):
+    def add_vm_os(self, **options):
+        os = self.domain.find('os')
+        if 'loader' in options.keys():
+            loader = ET.SubElement(
+            os, 'loader', {'readonly': 'yes', 'type': 'pflash'})
+            loader.text = options['loader']
+        if 'nvram' in options.keys():
+            nvram = ET.SubElement(os, 'nvram')
+            nvram.text = options['nvram']
+
+
+    def set_vm_default_aarch64(self):
+        os = ET.SubElement(self.domain, 'os')
+        type = ET.SubElement(
+            os, 'type', {'arch': 'aarch64', 'machine': 'virt'})
+        type.text = 'hvm'
+        ET.SubElement(os, 'boot', {'dev': 'hd'})
+        features = ET.SubElement(self.domain, 'features')
+        ET.SubElement(features, 'acpi')
+        ET.SubElement(features, 'gic', {'version': '3'})
+
+        ET.SubElement(self.domain, 'cpu',
+            {'mode': 'host-passthrough', 'check': 'none'})
+
+    def set_vm_default_x86_64(self):
         os = ET.SubElement(self.domain, 'os')
         type = ET.SubElement(
             os, 'type', {'arch': 'x86_64', 'machine': 'pc-i440fx-1.6'})
@@ -213,6 +246,14 @@ class LibvirtKvm(VirtBase):
         ET.SubElement(features, 'pae')
 
         ET.SubElement(self.domain, 'cpu', {'mode': 'host-passthrough'})
+        self.__default_nic_pci = '00:1f.0'
+
+    def set_vm_default(self):
+        arch = self.host_session.send_expect('uname -m', '# ')
+        set_default_func = getattr(self, 'set_vm_default_' + arch)
+        if callable(set_default_func):
+            set_default_func()
+            
 
         # qemu-kvm for emulator
         device = ET.SubElement(self.domain, 'devices')
@@ -226,7 +267,11 @@ class LibvirtKvm(VirtBase):
 
         # add default control interface
         if not self.__default_nic:
-            def_nic = {'type': 'nic', 'opt_hostfwd': '', 'opt_addr': '00:1f.0'}
+            if len(self.__default_nic_pci) > 0:
+                def_nic = {'type': 'nic', 'opt_hostfwd': '',
+                           'opt_addr': self.__default_nic_pci}
+            else:
+                def_nic = {'type': 'nic', 'opt_hostfwd': ''}
             self.add_vm_net(**def_nic)
             self.__default_nic = True
 
@@ -273,17 +318,57 @@ class LibvirtKvm(VirtBase):
             return False
 
         ET.SubElement(disk, 'source', {'file': options['file']})
-        if 'type' not in options:
+        if 'opt_format' not in options:
             disk_type = 'raw'
         else:
-            disk_type = options['type']
+            disk_type = options['opt_format']
 
         ET.SubElement(disk, 'driver', {'name': 'qemu', 'type': disk_type})
 
+        if 'opt_bus' not in options:
+            bus = 'virtio'
+        else:
+            bus = options['opt_bus']
+        if 'opt_dev' not in options:
+            dev = 'vd%c' % self.diskindex
+            self.diskindex = chr(ord(self.diskindex) + 1)
+        else:
+            dev = options['opt_dev']
         ET.SubElement(
-            disk, 'target', {'dev': 'vd%c' % self.diskindex, 'bus': 'virtio'})
+            disk, 'target', {'dev': dev, 'bus': bus})
 
-        self.diskindex = chr(ord(self.diskindex) + 1)
+        if 'opt_controller' in options:
+            controller = ET.SubElement(devices, 'controller',
+                {'type': bus,
+                'index': hex(self.controllerindex)[2:],
+                'model': options['opt_controller']})
+            self.controllerindex += 1
+            ET.SubElement(controller, 'address',
+                {'type': 'pci', 'domain': '0x0000', 'bus': hex(self.pciindex),
+                'slot': '0x00', 'function': '0x00'})
+            self.pciindex += 1
+
+    def add_vm_serial_port(self, **options):
+        if 'enable' in options.keys():
+            if options['enable'].lower() == 'yes':
+                devices = self.domain.find('devices')
+                if 'opt_type' in options.keys():
+                    serial_type = options['opt_type']
+                else:
+                    serial_type = 'unix'
+                if serial_type == 'pty':
+                    serial = ET.SubElement(devices, 'serial', {'type': serial_type})
+                    ET.SubElement(serial, 'target', {'port': '0'})
+                elif serial_type == 'unix':
+                    serial = ET.SubElement(devices, 'serial', {'type': serial_type})
+                    self.serial_path = "/tmp/%s_serial.sock" % self.vm_name
+                    ET.SubElement(serial, 'source', {'mode': 'bind', 'path': self.serial_path})
+                    ET.SubElement(serial, 'target', {'port': '0'})
+                else:
+                    print utils.RED("Serial type %s is not supported!" % serial_type)
+                    return False
+                console = ET.SubElement(devices, 'console', {'type': serial_type})
+                ET.SubElement(console, 'target', {'type': 'serial', 'port': '0'})
 
     def add_vm_login(self, **options):
         """
@@ -305,14 +390,23 @@ class LibvirtKvm(VirtBase):
     def __parse_pci(self, pci_address):
         pci_regex = r"([0-9a-fA-F]{1,2}):([0-9a-fA-F]{1,2})" + \
             ".([0-9a-fA-F]{1,2})"
+        pci_regex_domain = r"([0-9a-fA-F]{1,4}):([0-9a-fA-F]{1,2}):" + \
+            "([0-9a-fA-F]{1,2}).([0-9a-fA-F]{1,2})"
         m = re.match(pci_regex, pci_address)
-        if m is None:
-            return None
-        bus = m.group(1)
-        slot = m.group(2)
-        func = m.group(3)
-
-        return (bus, slot, func)
+        if m is not None:
+            bus = m.group(1)
+            slot = m.group(2)
+            func = m.group(3)
+            dom  = '0'
+            return (bus, slot, func, dom)
+        m = re.match(pci_regex_domain, pci_address)
+        if m is not None:
+            bus = m.group(2)
+            slot = m.group(3)
+            func = m.group(4)
+            dom  = m.group(1)
+            return (bus, slot, func, dom)
+        return None
 
     def add_vm_device(self, **options):
         """
@@ -325,35 +419,31 @@ class LibvirtKvm(VirtBase):
                                    'mode': 'subsystem', 'type': 'pci',
                                    'managed': 'yes'})
 
-        if 'pf_idx' not in options.keys():
-            print utils.RED("Missing device index for device option!!!")
+        if 'opt_host' in options.keys():
+            pci_addr = options['opt_host']
+        else:
+            print utils.RED("Missing opt_host for device option!!!")
             return False
 
-        pf = int(options['pf_idx'])
-        if pf > len(self.host_dut.ports_info):
-            print utils.RED("PF device index over size!!!")
-            return False
-
-        pci_addr = self.host_dut.ports_info[pf]['pci']
 
         pci = self.__parse_pci(pci_addr)
         if pci is None:
             return False
-        bus, slot, func = pci
+        bus, slot, func, dom = pci
 
         source = ET.SubElement(hostdevice, 'source')
         ET.SubElement(source, 'address', {
-                      'domain': '0x0', 'bus': '0x%s' % bus,
+                      'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
                       'slot': '0x%s' % slot,
                       'function': '0x%s' % func})
         if 'guestpci' in options.keys():
             pci = self.__parse_pci(options['guestpci'])
             if pci is None:
                 return False
-            bus, slot, func = pci
+            bus, slot, func, dom = pci
             ET.SubElement(hostdevice, 'address', {
-                          'type': 'pci', 'domain': '0x0', 'bus': '0x%s' % bus,
-                          'slot': '0x%s' % slot, 'function': '0x%s' % func})
+                  'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
+                  'slot': '0x%s' % slot, 'function': '0x%s' % func})
             # save host and guest pci address mapping
             pci_map = {}
             pci_map['hostpci'] = pci_addr
@@ -397,7 +487,7 @@ class LibvirtKvm(VirtBase):
             pci = self.__parse_pci(options['opt_addr'])
             if pci is None:
                 return False
-            bus, slot, func = pci
+            bus, slot, func, dom = pci
             ET.SubElement(qemu, 'qemu:arg',
                           {'value': 'nic,model=e1000,addr=0x%s' % slot})
         else:
