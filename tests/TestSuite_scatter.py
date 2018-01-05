@@ -64,7 +64,7 @@ class TestScatter(TestCase):
 
         self.pmdout = PmdOutput(self.dut)
         if self.nic in ["magnolia_park", "niantic", "sageville", "fortpark", "fortville_eagle",
-                        "fortville_spirit", "fortville_spirit_single", "fortville_25g"
+                        "fortville_spirit", "fortville_spirit_single", "fortville_25g",
                         "redrockcanyou", "atwood", "boulderrapid",
                         "ironpond", "twinpond", "springfountain", "fortpark_TLV"]:
             self.mbsize = 2048
