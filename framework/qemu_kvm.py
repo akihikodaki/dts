@@ -362,6 +362,9 @@ class QEMUKvm(VirtBase):
         if 'file' in options.keys() and \
                 options['file']:
             disk_boot_line = '-drive file=%s' % options['file']
+        else:
+            return False
+
         if 'opt_format' in options.keys() and \
                 options['opt_format']:
             disk_boot_line += separator + 'format=%s' % options['opt_format']
@@ -375,8 +378,7 @@ class QEMUKvm(VirtBase):
                 options['opt_media']:
             disk_boot_line += separator + 'media=%s' % options['opt_media']
 
-        if self.__string_has_multi_fields(disk_boot_line, separator):
-            self.__add_boot_line(disk_boot_line)
+        self.__add_boot_line(disk_boot_line)
 
     def add_vm_pflash(self, **options):
         """
