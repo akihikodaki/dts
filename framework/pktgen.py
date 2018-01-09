@@ -40,7 +40,6 @@ import IPy
 import logging
 
 from abc import abstractmethod
-#from trex_stl_lib.api import STLClient, STLStream, STLPktBuilder, Ether, IP, STLTXCont
 from config import IxiaConf
 from ssh_connection import SSHConnection
 from settings import SCAPY2IXIA
@@ -49,7 +48,6 @@ from exception import VerifyFailure
 from utils import create_mask
 from uuid import uuid4
 from pickletools import optimize
-from tester import Tester
 #from serializer import Serializer
 
 FORMAT = '%(message)s'
@@ -62,14 +60,10 @@ sys.path.append(cwd + '/nics')
 sys.path.append(cwd + '/framework')
 sys.path.append(cwd + '/tests')
 sys.path.append(cwd + '/dep')
-#sys.path.append("/opt/trex-core-2.26/scripts/automation/trex_control_plane/stl/trex_stl_lib") 
-sys.path.insert(0, "/opt/trex-core-2.26/scripts/automation/"+\
-                   "trex_control_plane/stl") 
-#from api import STLClient, STLStream, STLPktBuilder, Ether, IP, STLTXCont
-from trex_stl_lib.api import * 
+
 from crb import Crb
-from config import PktgenConf, CrbsConf
-#from net_device import GetNicObj
+from config import PktgenConf, CrbsConf, PortConf
+
 
 class PacketGenerator(object):
 #class PacketGenerator(Crb):
@@ -79,15 +73,45 @@ class PacketGenerator(object):
     """
     def __init__(self, tester):
         self.__streams = []
+        self._ports_map = []
         self.tester = tester
 
     @abstractmethod
     def _check_options(self, opts={}):
         pass
 
-    @abstractmethod
     def prepare_generator(self):
-        pass
+        self._prepare_generator()
+
+        # extened tester port map and self port map
+        ports = self._get_ports()
+        print ports
+        tester_portnum = len(self.tester.ports_info)
+        for port_idx in range(len(ports)):
+            port_info = {'type': '%s' % self.pktgen_type, 'pci': '%s' % ports[port_idx]}
+            self._ports_map.append(tester_portnum + port_idx)
+            self.tester.ports_info.append(port_info)
+        print self._ports_map
+        # update dut port map
+        portconf = PortConf()
+        for dut in self.tester.duts:
+            dut.map_available_ports()
+
+    def _convert_pktgen_port(self, port_id):
+        try:
+            port = self._ports_map[port_id]
+        except:
+            port = -1
+
+        return port
+
+    def _convert_tester_port(self, port_id):
+        try:
+            port = self._ports_map.index(port_id)
+        except:
+            port = -1
+
+        return port
 
     @abstractmethod
     def _prepare_transmission(self, stream_ids=[]):
@@ -108,9 +132,12 @@ class PacketGenerator(object):
     def add_stream(self, tx_port, rx_port, pcap_file):
         stream_id = None
 
+        pktgen_tx_port  = self._convert_tester_port(tx_port)
+        pktgen_rx_port  = self._convert_tester_port(rx_port)
+
         stream_id = len(self.__streams)
-        stream = {'tx_port': tx_port,
-                  'rx_port': rx_port,
+        stream = {'tx_port': pktgen_tx_port,
+                  'rx_port': pktgen_rx_port,
                   'pcap_file': pcap_file}
         self.__streams.append(stream)
 
@@ -148,8 +175,6 @@ class PacketGenerator(object):
 
         return bps_rx_total, pps_rx_total
 
-
-
     def _summary_statistic(self, array=[]):
         """
         Summary all values in statistic array
@@ -158,14 +183,13 @@ class PacketGenerator(object):
         for value in array:
             summary += value
 
-
         return summary
-    
+
     def _get_stream(self, stream_id):
         return self.__streams[stream_id]
 
-    def _get_generator_conf_instance(self, pktgen_type):
-        conf_inst = PktgenConf(pktgen_type=pktgen_type)
+    def _get_generator_conf_instance(self):
+        conf_inst = PktgenConf(self.pktgen_type)
         return conf_inst
 
     @abstractmethod
@@ -178,27 +202,37 @@ class TrexPacketGenerator(PacketGenerator):
     https://trex-tgn.cisco.com/trex/doc/trex_manual.html
     """
     def __init__(self, tester):
+        self.pktgen_type = "trex"
         self._conn = None
         self._ports = []
         self._traffic_ports = []
         self._transmit_streams = {}
         self.trex_app = "scripts/t-rex-64"
     
-        self.conf_inst = self._get_generator_conf_instance("trex")
+        self.conf_inst = self._get_generator_conf_instance()
         self.conf = self.conf_inst.load_pktgen_config()
         self.options_keys = [ 'rate', 'ip', 'vlan']
         self.ip_keys = ['start', 'end','action', 'mask', 'step']
         self.vlan_keys = ['start', 'end', 'action', 'step', 'count']
         super(TrexPacketGenerator, self).__init__(tester)
-        
+
     def connect(self):
-        self._conn = STLClient(server=self.conf["server"])
+        self._conn = self.trex_client(server=self.conf["server"])
         time.sleep(30)
         self._conn.connect()
         for p in self._conn.get_all_ports():
             self._ports.append(p)
 
         logger.debug(self._ports)
+
+    def _get_ports(self):
+        """
+        Return self ports information
+        """
+        ports = []
+        for idx in range(len(self._ports)):
+            ports.append('TREX:%d' % idx)
+        return ports
 
     def disconnect(self):
         self._conn.disconnect()
@@ -238,21 +272,21 @@ class TrexPacketGenerator(PacketGenerator):
         vm = []
 
         if ip_src_range:
-            vm += [STLVmFlowVar(name="src", min_value = ip_src_range['start'], max_value = ip_src_range['end'], size = 4, op = action),
-                   STLVmWrFlowVar(fv_name="src",pkt_offset= "IP.src")
+            vm += [self.trex_vm_flow(name="src", min_value = ip_src_range['start'], max_value = ip_src_range['end'], size = 4, op = action),
+                   self.trex_vm_wr_flow(fv_name="src",pkt_offset= "IP.src")
                   ]
 
         if ip_dst_range:
-            vm += [STLVmFlowVar(name="dst", min_value = ip_dst_range['start'], max_value = ip_dst_range['end'], size = 4, op = action),
-                   STLVmWrFlowVar(fv_name="dst",pkt_offset = "IP.dst")
+            vm += [self.trex_vm_flow(name="dst", min_value = ip_dst_range['start'], max_value = ip_dst_range['end'], size = 4, op = action),
+                   self.trex_vm_wr_flow(fv_name="dst",pkt_offset = "IP.dst")
                    ]
 
-        vm += [STLVmFixIpv4(offset = "IP")
+        vm += [self.trex_vm_ipv4(offset = "IP")
               ]
 
         return vm
 
-    def prepare_generator(self):
+    def _prepare_generator(self):
         app_param_temp = "-i"
 
         for key in self.conf:
@@ -262,18 +296,25 @@ class TrexPacketGenerator(PacketGenerator):
             elif key == 'core_num':
                 app_param_temp = app_param_temp + " -c " + self.conf[key]
 
-        app = self.conf['trex_root_path'] + os.sep + self.trex_app
 
-        cmd = app + " " + app_param_temp
+        # Insert Trex api library
+        sys.path.insert(0, "{0}/scripts/automation/trex_control_plane/stl".format(self.conf['trex_root_path']))
+        #from trex_stl_lib.api import *
+        from trex_stl_lib.api import STLStream, STLPktBuilder, STLTXCont, STLVmFlowVar, STLVmWrFlowVar,\
+                                     STLVmFixIpv4
 
-        self.tester.send_expect("cd /opt/trex-core-2.26/scripts", "#", 70)
-        self.tester.send_expect(cmd, "", 40)
+	mod = __import__("trex_stl_lib.api")
+        client_mod = getattr(mod, "trex_stl_client", None)
+        self.trex_client = getattr(client_mod, "STLClient", None)
+        self.trex_vm_flow = getattr(client_mod, "STLVmFlowVar", None)
+        self.trex_vm_wr_flow = getattr(client_mod, "STLVmWrFlowVar", None)
+        self.trex_vm_ipv4 = getattr(client_mod, "STLVmFixIpv4", None)
+        self.trex_stream = getattr(client_mod, "STLStream", None)
+        self.trex_pkt_builder = getattr(client_mod, "STLPktBuilder", None)
+        self.trex_tx_count = getattr(client_mod, "STLTXCont", None)
 
-        time.sleep(15)
-        
         self.connect()
-        
-        self.tester.send_expect("cd " + cwd, "#", 70)
+        #self.control_session.send_expect("cd " + cwd, "", 70)
 
     def _prepare_transmission(self, stream_ids=[]):
         # Create base packet and pad it to size
@@ -290,9 +331,14 @@ class TrexPacketGenerator(PacketGenerator):
             rx_port = stream['rx_port']
             rx_port_name = "port%d" % rx_port
             option = stream['options']
-
+            pcap_file = stream["pcap_file"]
             #set rate
             rate = option['rate']
+            if "ip" not in option:
+                stl_stream = self.trex_stream(packet=self.trex_pkt_builder(pkt=pcap_file), mode=self.trex_tx_count(percentage=100))
+                self._transmit_streams[stream_id] = stl_stream
+                continue
+
             ip = option['ip']
             mask = ip['mask']
             step_temp = ip['step'].split('.')
@@ -304,7 +350,7 @@ class TrexPacketGenerator(PacketGenerator):
                 ip_src_range_temp = ip_src_range_string.split('-')
                 ip_src_range['start'] = ip_src_range_temp[0]
                 ip_src_range['end'] = ip_src_range_temp[1]
-            
+
             if self.conf.has_key("ip_dst"):
                 ip_dst = self.conf['ip_dst']
                 ip_dst_range_string = IPy.IP(IPy.IP(ip_dst).make_net(mask).strNormal()).strNormal(3)
@@ -312,11 +358,11 @@ class TrexPacketGenerator(PacketGenerator):
                 ip_dst_range['start'] = ip_dst_range_temp[0]
                 ip_dst_range['end'] = ip_dst_range_temp[1]
 
-            pcap_file = stream['pcap_file']
+            # pcap_file = stream['pcap_file']
 
             vm = self.create_vm(ip_src_range, ip_dst_range, action=ip['action'], step=step_temp[3])
-    
-            stl_stream = STLStream(packet = STLPktBuilder(pkt = pcap_file, vm=vm), mode = STLTXCont(percentage=100)) 
+
+            stl_stream = self.trex_streampacket(self.trex_pkt_builder(pkt=pcap_file, vm=vm), mode=self.trex_tx_count(percentage=100)) 
 
             self._transmit_streams[stream_id] = stl_stream
 
@@ -327,17 +373,20 @@ class TrexPacketGenerator(PacketGenerator):
         duration_int = int(self.conf["duration"])
         rate = "100%"
         warmup = 15
-        
+
         if self.conf.has_key("warmup"):
             warmup = int(self.conf["warmup"])
 
-        for p in self._ports:
-            for stream_id in stream_ids:
-                stream = self._get_stream(stream_id)
-                if stream["tx_port"] == p:
-                    self._conn.add_streams(self._transmit_streams[stream_id], ports=[p])
-                    rate = stream["options"]["rate"]
-                    self._traffic_ports.append(p)
+        for stream_id in stream_ids:
+            stream = self._get_stream(stream_id)
+            # tester port to Trex port
+            tx_port = stream["tx_port"]
+            p = self._ports[tx_port]
+            self._conn.add_streams(self._transmit_streams[stream_id], ports=[p])
+            rate = stream["options"]["rate"]
+            self._traffic_ports.append(p)
+
+        print self._traffic_ports
 
         if self.conf.has_key("core_mask"):
             self._conn.start(ports=self._traffic_ports, mult=rate, duration=warmup, core_mask=self.conf["core_mask"])
@@ -345,7 +394,7 @@ class TrexPacketGenerator(PacketGenerator):
         else:
             self._conn.start(ports=self._traffic_ports, mult=rate, duration=warmup)
             self._conn.wait_on_traffic(ports=self._traffic_ports, timeout=warmup+30)
-            
+
         self._conn.clear_stats()
 
         if self.conf.has_key("core_mask"):
@@ -378,6 +427,7 @@ def getPacketGenerator(tester, pktgen_type="trex"):
     """
     Get packet generator object
     """
+    pktgen_type = pktgen_type.lower()
 
     if pktgen_type == "dpdk":
         return DpdkPacketGenerator(tester)
@@ -389,6 +439,8 @@ def getPacketGenerator(tester, pktgen_type="trex"):
 
 if __name__ == "__main__":
     # init pktgen stream options
+
+    from tester import Tester
     options = {
     'rate' : '100%',
     'ip': {'action': 'inc', 'mask' : '255.255.255.0', 'step':'0.0.0.1'}
@@ -399,7 +451,6 @@ if __name__ == "__main__":
     # framework initial
     trex = getPacketGenerator(tester, pktgen_type="trex")
     
-    conf_inst = trex._get_generator_conf_instance("trex")
     conf = conf_inst.load_pktgen_config()
     # prepare running environment
     trex.prepare_generator()
