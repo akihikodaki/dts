@@ -32,11 +32,10 @@ class TestVhostUserLiveMigration(TestCase):
         self.backup_tport = self.tester.get_local_port_bydut(self.backup_port, self.backup_dutip)
         self.backup_tintf = self.tester.get_interface(self.backup_tport)
 
-        # Use testpmd as vhost-user application on host/backup server 
-        self.vhost = "./x86_64-native-linuxapp-gcc/app/testpmd"
+        # Use testpmd as vhost-user application on host/backup server
+        self.vhost = "./%s/app/testpmd" % self.target
         self.vm_testpmd = "./%s/app/testpmd -c 0x3 -n 4 -- -i" % self.target
         self.virio_mac = "52:54:00:00:00:01"
-        
 
         # flag for environment
         self.env_done = False
@@ -222,7 +221,17 @@ class TestVhostUserLiveMigration(TestCase):
         vm_intf = vm_dut.ports_info[0]['port'].get_interface_name()
         # start tcpdump the interface
         vm_dut.send_expect("ifconfig %s up" % vm_intf, "# ")
-        vm_dut.send_expect("tcpdump -i %s -P in -v" % vm_intf, "listening on")
+
+        direct_pat = re.compile(r"(\s+)\[ (\S+) in\|out\|inout \]")
+        vm_dut.send_expect("tcpdump -h", "# ")
+        out = vm_dut.get_session_output(timeout=1)
+        m = direct_pat.search(out)
+        if m:
+            direct_param = "-" + m.group(2)[1] + " in"
+        else:
+            direct_param = ""
+
+        vm_dut.send_expect("tcpdump -i %s %s -v" % (vm_intf, direct_param), "listening on", 120)
         # wait for promisc on
         time.sleep(3)
         # send packets from tester
@@ -277,17 +286,17 @@ class TestVhostUserLiveMigration(TestCase):
         # start testpmd on host vm
         base_dir = self.vm_host.base_dir.replace('~', '/root')
         self.host_serial.send_expect('cd %s' % base_dir, "# ")
-        self.host_serial.send_expect(self.vm_testpmd, "testpmd> ")
+        self.host_serial.send_expect(self.vm_testpmd, "testpmd> ", 120)
 
         # verify testpmd receive packets
         self.verify_dpdk(self.host_tport, self.host_serial)
 
         self.logger.info("Migrate host VM to backup host")
         # start live migration
-        
+
         ret = self.host_vm.start_migration(self.backup_dutip, self.backup_vm.migrate_port)
         self.verify(ret, "Failed to migration, please check VM and qemu version")
-       
+
         # make sure still can receive packets in migration process
         self.verify_dpdk(self.host_tport, self.host_serial)
 
