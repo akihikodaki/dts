@@ -44,7 +44,6 @@ PORTCONF = "%s/ports.cfg" % CONFIG_ROOT_PATH
 CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
 VIRTCONF = "%s/virt_global.cfg" % CONFIG_ROOT_PATH
 IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
-SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
 GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 
 
@@ -142,23 +141,7 @@ class SuiteConf(UserConf):
 
         conf = dict(case_confs)
         for key, data_string in conf.items():
-            if data_string.startswith("value_int:"):
-                value = data_string[len("value_int:"):]
-                case_cfg[key] = int(value)
-            elif data_string.startswith("value_hex:"):
-                value = data_string[len("value_hex:"):]
-                case_cfg[key] = int(value, 16)
-            elif data_string.startswith("list_int:"):
-                value = data_string[len("list_int:"):]
-                datas = value.split(',')
-                int_list = map(lambda x: int(x), datas)
-                case_cfg[key] = int_list
-            elif data_string.startswith("list_str:"):
-                value = data_string[len("list_str:"):]
-                str_list = value.split(',')
-                case_cfg[key] = str_list
-            else:
-                case_cfg[key] = data_string
+            case_cfg[key] = eval(data_string)
 
         return case_cfg
 
@@ -422,6 +405,6 @@ if __name__ == '__main__':
     print ixiaconf.load_ixia_config()
 
     # example for suite configure file
-    suiteconf = SuiteConf(SUITECONF_SAMPLE)
+    suiteconf = SuiteConf("suite_sample")
     print suiteconf.load_case_config("case1")
     print suiteconf.load_case_config("case2")
