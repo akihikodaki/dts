@@ -1,4 +1,111 @@
 {
+    "vf_vlan_tx": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
+    ],
+    "two_vms_prevent_rx_broadcast_on_vf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
+    "two_vms_enalbe_or_disable_one_uta_mac_on_vf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
+    "two_vms_pause_tx_queuse": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
+    "two_vms_pause_rx_queues": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
+    "two_vms_add_multi_uta_mac_on_vf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
+    "two_vms_add_or_remove_uta_mac_on_vf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on niantic"
+        }
+    ],
     "l2pkt_detect": [
         {
             "OS": [
