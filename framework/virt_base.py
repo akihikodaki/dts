@@ -42,7 +42,6 @@ from config import VIRTCONF
 from logger import getLogger
 from settings import CONFIG_ROOT_PATH
 from virt_dut import VirtDut
-from utils import remove_old_rsa_key
 
 ST_NOTSTART = "NOTSTART"
 ST_PAUSE = "PAUSE"
@@ -67,11 +66,9 @@ class VirtBase(object):
         self.vm_name = vm_name
         self.suite = suite_name
 
-        # init the host session and logger for VM
-        self.host_dut.init_host_session()
+        # create self used host session, need close it later
+        self.host_session = self.host_dut.new_session(self.vm_name)
 
-        # replace dut session
-        self.host_session = self.host_dut.host_session
         self.host_logger = self.host_dut.logger
         # base_dir existed for host dut has prepared it
         self.host_session.send_expect("cd %s" % self.host_dut.base_dir, "# ")
@@ -87,6 +84,7 @@ class VirtBase(object):
         self.virt_type = self.get_virt_type()
 
         self.params = []
+        self.local_conf = []
 
         # default call back function is None
         self.callback = None
@@ -124,22 +122,32 @@ class VirtBase(object):
                 if self.find_option_index(key) is None:
                     self.__save_local_config(key, param[key])
 
+    def set_local_config(self, local_conf):
+        """
+        Configure VM configuration from user input
+        """
+        self.local_conf = local_conf
+
     def load_local_config(self, suite_name):
         """
         Load local configure in the path DTS_ROOT_PATH/conf.
         """
         # load local configuration by suite and vm name
-        conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + '.cfg')
-        conf.load_virt_config(self.vm_name)
-        local_conf = conf.get_virt_config()
+        try:
+            conf = VirtConf(CONFIG_ROOT_PATH + os.sep + suite_name + '.cfg')
+            conf.load_virt_config(self.vm_name)
+            self.local_conf = conf.get_virt_config()
+        except:
+            # when met exception in load VM config
+            # just leave local conf untouched
+            pass
+
         # replace global configurations with local configurations
-        for param in local_conf:
+        for param in self.local_conf:
             if 'mem' in param.keys():
                 self.__save_local_config('mem', param['mem'])
-                continue
             if 'cpu' in param.keys():
                 self.__save_local_config('cpu', param['cpu'])
-                continue
             # save local configurations
             for key in param.keys():
                 self.__save_local_config(key, param[key])
@@ -165,13 +173,16 @@ class VirtBase(object):
             try:
                 param_func = getattr(self, 'add_vm_' + key)
                 if callable(param_func):
-                    for option in value:
-                        param_func(**option)
+                    if type(value) is list:
+                        for option in value:
+                            param_func(**option)
                 else:
                     print utils.RED("Virt %s function not callable!!!" % key)
             except AttributeError:
+                    self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                     print utils.RED("Virt %s function not implemented!!!" % key)
             except Exception:
+                self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                 raise exception.VirtConfigParamException(key)
 
     def find_option_index(self, option):
@@ -232,6 +243,21 @@ class VirtBase(object):
         self.load_global_config()
         self.load_local_config(self.suite)
 
+    def attach(self):
+        # load configuration
+        self.load_config()
+
+        # change login user/password
+        index = self.find_option_index("login")
+        if index:
+            value = self.params[index]["login"]
+            for option in value:
+                self.add_vm_login(**option)
+
+        # attach real vm
+        self._attach_vm()
+        return None
+
     def start(self, load_config=True, set_target=True, cpu_topo=''):
         """
         Start VM and instantiate the VM with VirtDut.
@@ -247,7 +273,7 @@ class VirtBase(object):
 
             if self.vm_status is ST_RUNNING:
                 # connect vm dut and init running environment
-                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo)
+                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, autodetect_topo=True)
             else:
                 vm_dut = None
 
@@ -263,6 +289,28 @@ class VirtBase(object):
             return None
         return vm_dut
 
+    def quick_start(self, load_config=True, set_target=True, cpu_topo=''):
+        """
+        Only Start VM and not do anything else, will be helpful in multiple VMs
+        """
+        try:
+            if load_config is True:
+                self.load_config()
+            # compose boot command for different hypervisors
+            self.compose_boot_param()
+
+            # start virutal machine
+            self._quick_start_vm()
+
+        except Exception as vm_except:
+            if self.handle_exception(vm_except):
+                print utils.RED("Handled expection " + str(type(vm_except)))
+            else:
+                print utils.RED("Unhandled expection " + str(type(vm_except)))
+
+            if callable(self.callback):
+                self.callback()
+
     def migrated_start(self, set_target=True, cpu_topo=''):
         """
         Instantiate the VM after migration done
@@ -271,7 +319,7 @@ class VirtBase(object):
         try:
             if self.vm_status is ST_PAUSE:
                 # connect backup vm dut and it just inherited from host
-                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False)
+                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
         except Exception as vm_except:
             if self.handle_exception(vm_except):
                 print utils.RED("Handled expection " + str(type(vm_except)))
@@ -324,7 +372,7 @@ class VirtBase(object):
         """
         NotImplemented
 
-    def instantiate_vm_dut(self, set_target=True, cpu_topo='', bind_dev=True):
+    def instantiate_vm_dut(self, set_target=True, cpu_topo='', bind_dev=True, autodetect_topo=True):
         """
         Instantiate the Dut class for VM.
         """
@@ -337,9 +385,6 @@ class VirtBase(object):
         crb['user'] = username
         crb['pass'] = password
 
-        # remove default key
-        remove_old_rsa_key(self.host_dut.tester, crb['IP'])
-
         serializer = self.host_dut.serializer
 
         try:
@@ -350,8 +395,10 @@ class VirtBase(object):
                 self.virt_type,
                 self.vm_name,
                 self.suite,
-                cpu_topo)
-        except:
+                cpu_topo,
+                dut_id=self.host_dut.dut_id)
+        except Exception as vm_except:
+            self.handle_exception(vm_except)
             raise exception.VirtDutConnectException
             return None
 
@@ -374,7 +421,7 @@ class VirtBase(object):
 
         try:
             # setting up dpdk in vm, must call at last
-            vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches)
+            vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches, autodetect_topo)
             if set_target:
                 target = self.host_dut.target
                 vm_dut.set_target(target, bind_dev)
@@ -389,6 +436,19 @@ class VirtBase(object):
         """
         Stop the VM.
         """
+        self._stop_vm()
+        self.quit()
+
+        self.virt_pool.free_all_resource(self.vm_name)
+
+    def quit(self):
+        """
+        Just quit connection to the VM
+        """
+        if getattr(self, 'host_session', None):
+            self.host_session.close()
+            self.host_session = None
+
         # vm_dut may not init in migration case
         if getattr(self, 'vm_dut', None):
             if self.vm_status is ST_RUNNING:
@@ -399,10 +459,6 @@ class VirtBase(object):
 
             self.vm_dut.logger.logger_exit()
             self.vm_dut = None
-
-        self._stop_vm()
-
-        self.virt_pool.free_all_resource(self.vm_name)
 
     def register_exit_callback(self, callback):
         """
