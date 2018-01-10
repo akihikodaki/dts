@@ -30,9 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-======================
-Inline IPsec Test Plan
-======================
+==========================
+Niantic Inline IPsec Tests
+==========================
+
 This test plan describe the method of validation inline hardware acceleration
 of symmetric crypto processing of IPsec flows on Intel® 82599 10 GbE
 Controller (IXGBE) within the cryptodev framework.
@@ -136,15 +137,17 @@ Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./enc.cfg
 
-Use scapy to listen on unprotected port
-sniff(iface='%s',count=1,timeout=10)
+Use scapy to listen on unprotected port::
+
+    sniff(iface='%s',count=1,timeout=10)
 	
 Use scapy send burst(32) normal packets with dst ip (192.168.105.0) to protected port.
 
-Check burst esp packets received from unprotected port.
-tcpdump -Xvvvi ens802f1
-tcpdump: listening on ens802f1, link-type EN10MB (Ethernet), capture size 262144 bytes
-06:10:25.674233 IP (tos 0x0, ttl 64, id 0, offset 0, flags [none], proto ESP (50), length 108)
+Check burst esp packets received from unprotected port::
+
+    tcpdump -Xvvvi ens802f1
+    tcpdump: listening on ens802f1, link-type EN10MB (Ethernet), capture size 262144 bytes
+    06:10:25.674233 IP (tos 0x0, ttl 64, id 0, offset 0, flags [none], proto ESP (50), length 108)
     172.16.1.5 > 172.16.2.5: ESP(spi=0x000003ed,seq=0x9), length 88
         0x0000:  4500 006c 0000 0000 4032 1f36 ac10 0105  E..l....@2.6....
         0x0010:  ac10 0205 0000 03ed 0000 0009 0000 0000  ................
@@ -156,7 +159,7 @@ tcpdump: listening on ens802f1, link-type EN10MB (Ethernet), capture size 262144
 
 Check esp packets' format is correct.
 
-See decrypted packets on scapy output
+See decrypted packets on scapy output::
 
     ###[ IP ]###
       version   = 4
@@ -179,6 +182,7 @@ See decrypted packets on scapy output
 Test Case: IPSec Encryption with Jumboframe
 ===========================================
 Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
+
 	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./enc.cfg
@@ -283,6 +287,7 @@ Start ipsec-secgw with two 82599 ports and assign port 1 to unprotected mode::
 	sudo ./build/ipsec-secgw -l 20,21 -w 83:00.0 -w 83:00.1 --vdev 
 	"crypto_null" --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 
 	0x2 --config="(0,0,20),(1,0,21)" -f ./dec.cfg
+
 Default frame size is 1518, Send two burst(1000) esp packets to unprotected port.
 
 First one will produce an error "IPSEC_ESP: failed crypto op" in the IPsec application, 

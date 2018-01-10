@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-================
-DDP GTP-C/GTP-U 
-================
+===============================
+Fortville DDP GTP-C/GTP-U Tests
+===============================
 
 FVL6 supports DDP (Dynamic Device Personalization) to program analyzer/parser
 via AdminQ. Profile can be used to update FVL configuration tables via MMIO

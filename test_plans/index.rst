@@ -110,6 +110,16 @@ The following are the test plans for the DPDK DTS automated test system.
     vmdq_test_plan
     vm_power_manager_test_plan
     vxlan_test_plan
+    ixgbe_vf_get_extra_queue_information_test_plan
+    queue_region_test_plan
+    inline_ipsec_test_plan
+    sw_eventdev_pipeline_sample_test_plan
+    dynamic_flowtype_test_plan
+    vf_kernel_test_plan
+    multiple_pthread_test_plan
+    qinq_filter_test_plan
+    ddp_gtp_test_plan
+    generic_flow_api_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
@@ -137,12 +147,6 @@ The following are the test plans for the DPDK DTS automated test system.
     skeleton_test_plan
     timer_test_plan
     vxlan_sample_test_plan
-
-    distributor_test_plan.rst
-    efd_test_plan.rst
-    multiple_pthread_test_plan.rst
-    ptpclient_test_plan.rst
-    qinq_filter_test_plan.rst
-    vf_kernel_test_plan.rst
-    ddp_gtp_test_plan.rst
-    generic_flow_api_test_plan.rst
+    ptpclient_test_plan
+    distributor_test_plan
+    efd_test_plan

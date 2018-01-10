@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================================
-Dynamic mapping of Flow Types to PCTYPEs
-========================================
+========================================================
+Fortville Dynamic Mapping of Flow Types to PCTYPEs Tests
+========================================================
 
 More protocols can be added dynamically using dynamic device personalization 
 profiles (DDP).

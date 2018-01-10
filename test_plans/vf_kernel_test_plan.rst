@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===========================
-VFD as SRIOV Policy Manager
-===========================
+=================================
+VFD as SRIOV Policy Manager Tests
+=================================
 
 VFD is SRIOV Policy Manager (daemon) running on the host allowing
 configuration not supported by kernel NIC driver, supports ixgbe and
