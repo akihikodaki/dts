@@ -1377,9 +1377,25 @@ class QEMUKvm(VirtBase):
         wait for 120 seconds for vm net ready
         10.0.2.* is the default ip address allocated by qemu
         """
-        ret = self.control_command("network")
-        # network has been ready, just return
-        if ret == "Success":
+        cur_time = time.time()
+        time_diff = cur_time - self.start_time
+        try_times = 0
+        network_ready = False
+        while (time_diff < self.START_TIMEOUT):
+            if self.control_command("network") == "Success":
+                network_ready = True
+                break
+
+            # update time consume
+            cur_time = time.time()
+            time_diff = cur_time - self.start_time
+
+            self.host_logger.warning("[%s] on [%s] network not ready, retry %d times!!!" % (self.vm_name, self.host_dut.crb['My IP'], try_times + 1))
+            time.sleep(self.OPERATION_TIMEOUT)
+            try_times += 1
+            continue
+
+        if network_ready:
             return True
         else:
             raise StartVMFailedException('Virtual machine control net not ready!!!')
