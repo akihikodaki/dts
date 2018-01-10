@@ -46,7 +46,7 @@ from utils import GREEN, convert_int2ip, convert_ip2int
 from exception import ParameterInvalidException
 from multiprocessing import Process
 
-
+from pktgen import getPacketGenerator, PktgenConf
 class Tester(Crb):
 
     """
@@ -139,6 +139,7 @@ class Tester(Crb):
         self.pci_devices_information()
         self.restore_interfaces()
         self.scan_ports()
+        self.pktgen_init()
 
     def get_local_port(self, remotePort):
         """
@@ -378,6 +379,16 @@ class Tester(Crb):
                                     'intf': intf,
                                     'mac': macaddr,
                                     'ipv6': ipv6})
+
+    def pktgen_init(self):
+        pktgen = PktgenConf()
+        pktgen_inst_type = pktgen.pktgen_conf.get_sections()
+        if len(pktgen_inst_type) == 1 and pktgen_inst_type[0] == "TREX":
+            pktgen_type = "TREX"
+            # init packet generator instance
+            self.pktgen = getPacketGenerator(self, pktgen_type)
+            # prepare running environment
+            self.pktgen.prepare_generator()
 
     def send_ping(self, localPort, ipv4, mac):
         """
