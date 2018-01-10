@@ -3,7 +3,7 @@ import pexpect
 from pexpect import pxssh
 from debugger import ignore_keyintr, aware_keyintr
 from exception import TimeoutException, SSHConnectionException, SSHSessionDeadException
-from utils import RED, GREEN
+from utils import RED, GREEN, parallel_lock
 
 """
 Module handle ssh sessions between tester and DUT.
@@ -14,31 +14,47 @@ Aslo support transfer files to tester or DUT.
 
 class SSHPexpect(object):
 
-    def __init__(self, host, username, password):
+    def __init__(self, host, username, password, dut_id):
         self.magic_prompt = "MAGIC PROMPT"
+        self.logger = None
+
+        self.host = host
+        self.username = username
+        self.password = password
+
+        self._connect_host(dut_id=dut_id)
+
+    @parallel_lock(num=8)
+    def _connect_host(self, dut_id=0):
+        """
+        Create connection to assigned crb, parameter dut_id will be used in
+        parallel_lock thus can assure isolated locks for each crb.
+        Parallel ssh connections are limited to MaxStartups option in SSHD
+        configuration file. By default concurrent number is 10, so default
+        threads number is limited to 8 which less than 10. Lock number can
+        be modified along with MaxStartups value.
+        """
         try:
             self.session = pxssh.pxssh()
-            self.host = host
-            self.username = username
-            self.password = password
-            if ':' in host:
-                self.ip = host.split(':')[0]
-                self.port = int(host.split(':')[1])
+            if ':' in self.host:
+                self.ip = self.host.split(':')[0]
+                self.port = int(self.host.split(':')[1])
                 self.session.login(self.ip, self.username,
                                    self.password, original_prompt='[$#>]',
                                    port=self.port, login_timeout=20)
             else:
                 self.session.login(self.host, self.username,
                                    self.password, original_prompt='[$#>]')
-            self.send_expect('stty -echo', '# ', timeout=2)
-        except Exception, e:
+            self.send_expect('stty -echo', '#')
+            self.send_expect('stty columns 1000', "#")
+        except Exception as e:
             print RED(e)
             if getattr(self, 'port', None):
                 suggestion = "\nSuggession: Check if the fireware on [ %s ] " % \
                     self.ip + "is stoped\n"
                 print GREEN(suggestion)
 
-            raise SSHConnectionException(host)
+            raise SSHConnectionException(self.host)
 
     def init_log(self, logger, name):
         self.logger = logger
@@ -56,24 +72,33 @@ class SSHPexpect(object):
         return before
 
     def send_expect(self, command, expected, timeout=15, verify=False):
-        ret = self.send_expect_base(command, expected, timeout)
-        if verify:
-            ret_status = self.send_expect_base("echo $?", expected, timeout)
-            if not int(ret_status):
-                return ret
+
+        try:
+            ret = self.send_expect_base(command, expected, timeout)
+            if verify:
+                ret_status = self.send_expect_base("echo $?", expected, timeout)
+                if not int(ret_status):
+                    return ret
+                else:
+                    self.logger.error("Command: %s failure!" % command)
+                    self.logger.error(ret)
+                    return int(ret_status)
             else:
-                self.logger.error("Command: %s failure!" % command)
-                self.logger.error(ret)
-                return int(ret_status)
-        else:
-            return ret
+                return ret
+        except Exception as e:
+            print RED("Exception happened in [%s] and output is [%s]" % (command, self.get_output_before()))
+            raise(e)
 
     def send_command(self, command, timeout=1):
-        ignore_keyintr()
-        self.clean_session()
-        self.__sendline(command)
-        aware_keyintr()
-        return self.get_session_before(timeout)
+        try:
+            ignore_keyintr()
+            self.clean_session()
+            self.__sendline(command)
+            aware_keyintr()
+        except Exception as e:
+            raise(e)
+
+        return self.get_session_before(timeout=timeout)
 
     def clean_session(self):
         self.get_session_before(timeout=0.01)
@@ -90,8 +115,9 @@ class SSHPexpect(object):
             pass
 
         aware_keyintr()
-        before = self.get_output_before()
+        before = self.get_output_all()
         self.__flush()
+
         return before
 
     def __flush(self):
@@ -116,7 +142,6 @@ class SSHPexpect(object):
     def get_output_before(self):
         if not self.isalive():
             raise SSHSessionDeadException(self.host)
-        self.session.flush()
         before = self.session.before.rsplit('\r\n', 1)
         if before[0] == "[PEXPECT]":
             before[0] = ""
@@ -124,7 +149,6 @@ class SSHPexpect(object):
         return before[0]
 
     def get_output_all(self):
-        self.session.flush()
         output = self.session.before
         output.replace("[PEXPECT]", "")
         return output
