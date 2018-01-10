@@ -28,8 +28,8 @@ import signal
 import code
 import time
 import imp
-from settings import load_global_setting, DEBUG_SETTING
-from utils import get_subclasses, copy_instance_attr
+from settings import load_global_setting, DEBUG_SETTING, DTS_PARALLEL_SETTING
+from utils import get_subclasses, copy_instance_attr, GREEN
 
 from test_case import TestCase
 
@@ -71,10 +71,16 @@ def connect_command(connect):
     Connect to ssh session and give control to user.
     """
     from ssh_connection import CONNECTIONS
-    for connection in CONNECTIONS:
-        for name, session in connection.items():
-            if name == connect:
-                session.session.interact()
+    if type(connect) == int:
+        name, session = CONNECTIONS[connect].items()[0]
+        print GREEN("Connecting to session[%s]" % name)
+        session.session.interact()
+    else:
+        for connection in CONNECTIONS:
+            for name, session in connection.items():
+                if name == connect:
+                    print GREEN("Connecting to session[%s]" % name)
+                    session.session.interact()
 
 
 def rerun_command():
@@ -164,7 +170,8 @@ def ignore_keyintr():
     """
     Temporary disable interrupt handler.
     """
-    if load_global_setting(DEBUG_SETTING) != 'yes':
+    # signal can't be used in thread
+    if load_global_setting(DEBUG_SETTING) != 'yes' or load_global_setting(DTS_PARALLEL_SETTING) == 'yes':
         return
 
     global debug_cmd
@@ -180,7 +187,8 @@ def aware_keyintr():
     """
     Reenable interrupt handler.
     """
-    if load_global_setting(DEBUG_SETTING) != 'yes':
+    # signal can't be used in thread
+    if load_global_setting(DEBUG_SETTING) != 'yes' or load_global_setting(DTS_PARALLEL_SETTING) == 'yes':
         return
 
     return signal.signal(signal.SIGINT, keyboard_handle)
