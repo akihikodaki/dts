@@ -37,14 +37,12 @@ import os
 from virt_base import VirtBase
 from virt_base import ST_NOTSTART, ST_PAUSE, ST_RUNNING, ST_UNKNOWN
 from exception import StartVMFailedException
-from settings import get_host_ip
+from settings import get_host_ip, load_global_setting, DTS_PARALLEL_SETTING
+from utils import parallel_lock, RED
 
 # This name is derictly defined in the qemu guest serivce
 # So you can not change it except it is changed by the service
 QGA_DEV_NAME = 'org.qemu.guest_agent.0'
-# This path defines an socket path on the host connected with
-# a specified VM
-QGA_SOCK_PATH_TEMPLATE = '/tmp/%(vm_name)s_qga0.sock'
 
 
 class QEMUKvm(VirtBase):
@@ -65,6 +63,17 @@ class QEMUKvm(VirtBase):
                 "fi"
 
     QEMU_IFUP_PATH = '/etc/qemu-ifup'
+    # Default login session timeout value
+    LOGIN_TIMEOUT = 60
+    # By default will wait 120 seconds for VM start
+    # If VM not ready in this period, will try restart it once
+    START_TIMEOUT = 120
+    # Default timeout value for operation when VM starting
+    OPERATION_TIMEOUT = 20
+    # Default login prompt
+    LOGIN_PROMPT = "login:"
+    # Default password prompt
+    PASSWORD_PROMPT = "Password:"
 
     def __init__(self, dut, vm_name, suite_name):
         super(QEMUKvm, self).__init__(dut, vm_name, suite_name)
@@ -78,9 +87,6 @@ class QEMUKvm(VirtBase):
 
         # initialize some resource used by guest.
         self.init_vm_request_resource()
-
-        QGA_CLI_PATH = '-r dep/QMP/'
-        self.host_session.copy_file_to(QGA_CLI_PATH)
 
         # charater and network device default index
         self.char_idx = 0
@@ -105,13 +111,38 @@ class QEMUKvm(VirtBase):
         # if there is not the values of the specified options
         self.set_vm_default()
 
+        self.am_attached = False
+
+        # allow restart VM when can't login
+        self.restarted = False
+
+    def check_alive(self):
+        """
+        Check whether VM is alive for has been start up
+        """
+        pid_regx = r'p(\d+)'
+        out = self.host_session.send_expect("lsof -Fp /tmp/.%s.pid" % self.vm_name, "#", timeout=30)
+        for line in out.splitlines():
+            m = re.match(pid_regx, line)
+            if m:
+                self.host_logger.info("Found VM %s already running..." % m.group(0))
+                return True
+        return False
+
+    def kill_alive(self):
+        pid_regx = r'p(\d+)'
+        out = self.host_session.send_expect("lsof -Fp /tmp/.%s.pid" % self.vm_name, "# ")
+        for line in out.splitlines():
+            m = re.match(pid_regx, line)
+            if m:
+                self.host_session.send_expect("kill -9 %s" % m.group(0)[1:], "# ")
+
     def set_vm_default(self):
         self.set_vm_name(self.vm_name)
         if self.arch == 'aarch64':
             self.set_vm_machine('virt')
         self.set_vm_enable_kvm()
         self.set_vm_pid_file()
-        self.set_vm_qga()
         self.set_vm_daemon()
         self.set_vm_monitor()
 
@@ -388,6 +419,19 @@ class QEMUKvm(VirtBase):
             pflash_boot_line = '-pflash %s' % options['file']
             self.__add_boot_line(pflash_boot_line)
 
+    def add_vm_start(self, **options):
+        """
+        Update VM start and login related settings
+        """
+        if 'wait_seconds' in options.keys():
+            self.START_TIMEOUT = int(options['wait_seconds'])
+        if 'login_timeout' in options.keys():
+            self.LOGIN_TIMEOUT = int(options['login_timeout'])
+        if 'login_prompt' in options.keys():
+            self.LOGIN_PROMPT = options['login_prompt']
+        if 'password_prompt' in options.keys():
+            self.PASSWORD_PROMPT = options['password_prompt']
+
     def add_vm_login(self, **options):
         """
         user: login username of virtual machine
@@ -540,8 +584,11 @@ class QEMUKvm(VirtBase):
 
         # get the host port in the option
         host_port = field(opt_hostfwd, 2).split('-')[0]
+
+        # if no host assigned, just allocate it
         if not host_port:
-            host_port = str(self.virt_pool.alloc_port(self.vm_name))
+            host_port = str(self.virt_pool.alloc_port(self.vm_name, port_type='connect'))
+
         self.redir_port = host_port
 
         # get the guest addr
@@ -639,6 +686,9 @@ class QEMUKvm(VirtBase):
         else:
             self.params.append({'device': [opts]})
 
+        # start up time may increase after add device
+        self.START_TIMEOUT += 8
+
     def add_vm_device(self, **options):
         """
         driver: [pci-assign | virtio-net-pci | ...]
@@ -655,8 +705,8 @@ class QEMUKvm(VirtBase):
                 self.__add_vm_virtio_user_pci(**options)
             elif options['driver'] == 'vhost-cuse':
                 self.__add_vm_virtio_cuse_pci(**options)
-            if options['driver'] == 'vfio-pci':
-                self.__add_vm_pci_vfio(**options)
+            elif options['driver'] == 'vfio-pci':
+                 self.__add_vm_pci_vfio(**options)
 
     def __add_vm_pci_vfio(self, **options):
         """
@@ -710,7 +760,17 @@ class QEMUKvm(VirtBase):
         """
         separator = ','
         # chardev parameter
-        if 'opt_path' in options.keys() and options['opt_path']:
+        netdev_id = 'netdev%d' % self.netdev_idx
+        if 'opt_script' in options.keys() and options['opt_script']:
+            if 'opt_br' in options.keys() and \
+                    options['opt_br']:
+                bridge = options['opt_br']
+            else:
+                bridge = self.DEFAULT_BRIDGE
+            self.__generate_net_config_script(str(bridge))
+            dev_boot_line = '-netdev tap,id=%s,script=%s' % (netdev_id, options['opt_script'])
+            self.netdev_idx += 1
+        elif 'opt_path' in options.keys() and options['opt_path']:
             dev_boot_line = '-chardev socket'
             char_id = 'char%d' % self.char_idx
             if 'opt_server' in options.keys() and options['opt_server']:
@@ -736,12 +796,16 @@ class QEMUKvm(VirtBase):
                     netdev_id, char_id)
             self.__add_boot_line(dev_boot_line)
             # device parameter
-            opts = {'opt_netdev': '%s' % netdev_id}
-            if 'opt_mac' in options.keys() and \
-                    options['opt_mac']:
-                opts['opt_mac'] = options['opt_mac']
-            if 'opt_settings' in options.keys() and options['opt_settings']:
-                opts['opt_settings'] = options['opt_settings']
+        opts = {'opt_netdev': '%s' % netdev_id}
+        if 'opt_mac' in options.keys() and \
+                options['opt_mac']:
+            opts['opt_mac'] = options['opt_mac']
+        if 'opt_settings' in options.keys() and options['opt_settings']:
+            opts['opt_settings'] = options['opt_settings']
+        if 'opt_legacy' in options.keys() and options['opt_legacy']:
+            opts['opt_legacy'] = options['opt_legacy']
+        if 'opt_settings' in options.keys() and options['opt_settings']:
+            opts['opt_settings'] = options['opt_settings']
         self.__add_vm_virtio_net_pci(**opts)
 
     def __add_vm_virtio_cuse_pci(self, **options):
@@ -797,6 +861,9 @@ class QEMUKvm(VirtBase):
         if 'opt_addr' in options.keys() and \
                 options['opt_addr']:
             dev_boot_line += separator + 'addr=%s' % options['opt_addr']
+        if 'opt_legacy' in options.keys() and \
+                options['opt_legacy']:
+            dev_boot_line += separator + 'disable-modern=%s' % options['opt_legacy']
         if 'opt_settings' in options.keys() and \
                 options['opt_settings']:
             dev_boot_line += separator + '%s' % options['opt_settings']
@@ -843,41 +910,6 @@ class QEMUKvm(VirtBase):
         else:
             self.monitor_sock_path = None
 
-    def set_vm_qga(self, enable='yes'):
-        """
-        Set VM qemu-guest-agent.
-        """
-        index = self.find_option_index('qga')
-        if index:
-            self.params[index] = {'qga': [{'enable': '%s' % enable}]}
-        else:
-            self.params.append({'qga': [{'enable': '%s' % enable}]})
-        QGA_SOCK_PATH = QGA_SOCK_PATH_TEMPLATE % {'vm_name': self.vm_name}
-        self.qga_sock_path = QGA_SOCK_PATH
-
-    def add_vm_qga(self, **options):
-        """
-        enable: 'yes'
-        Make sure qemu-guest-agent servie up in vm
-        """
-        QGA_DEV_ID = '%(vm_name)s_qga0' % {'vm_name': self.vm_name}
-        QGA_SOCK_PATH = QGA_SOCK_PATH_TEMPLATE % {'vm_name': self.vm_name}
-
-        separator = ' '
-
-        if 'enable' in options.keys():
-            if options['enable'] == 'yes':
-                qga_boot_block = '-chardev socket,path=%(SOCK_PATH)s,server,nowait,id=%(ID)s' + \
-                                 separator + '-device virtio-serial' + separator + \
-                                 '-device virtserialport,chardev=%(ID)s,name=%(DEV_NAME)s'
-                qga_boot_line = qga_boot_block % {'SOCK_PATH': QGA_SOCK_PATH,
-                                                  'DEV_NAME': QGA_DEV_NAME,
-                                                  'ID': QGA_DEV_ID}
-                self.__add_boot_line(qga_boot_line)
-                self.qga_sock_path = QGA_SOCK_PATH
-            else:
-                self.qga_sock_path = ''
-
     def add_vm_migration(self, **options):
         """
         enable: yes
@@ -891,62 +923,208 @@ class QEMUKvm(VirtBase):
                     self.migrate_port = options['port']
                 else:
                     self.migrate_port = str(
-                        self.virt_pool.alloc_port(self.vm_name))
+                        self.virt_pool.alloc_port(self.vm_name), port_type="migrate")
                 migrate_boot_line = migrate_cmd % {
                     'migrate_port': self.migrate_port}
                 self.__add_boot_line(migrate_boot_line)
 
-    def add_vm_serial_port(self, **options):
-        """
-        enable: 'yes'
-        """
-        if 'enable' in options.keys():
-            if options['enable'] == 'yes':
-                self.serial_path = "/tmp/%s_serial.sock" % self.vm_name
-                serial_boot_line = '-serial unix:%s,server,nowait' % self.serial_path
-                self.__add_boot_line(serial_boot_line)
-            else:
-                pass
 
-    def connect_serial_port(self, name="", first=True):
+    def set_vm_control(self, **options):
+        """
+        Set control session options
+        """
+        if 'type' in  options.keys():
+            self.control_type = options['type']
+        else:
+            self.control_type = 'telnet'
+
+        index = self.find_option_index('control')
+        if index:
+            self.params[index] = {'control': [{'type': self.control_type}]}
+        else:
+            self.params.append({'control': [{'type': self.control_type}]})
+
+    def add_vm_control(self, **options):
+        """
+        Add control method for VM management
+        type : 'telnet' | 'socket' | 'qga'
+        """
+        separator = ' '
+
+        self.control_type = options['type']
+        if self.control_type == 'telnet':
+            if 'port' in options:
+                self.serial_port = int(options['port'])
+            else:
+                self.serial_port = self.virt_pool.alloc_port(self.vm_name, port_type="serial")
+            control_boot_line = '-serial telnet::%d,server,nowait' % self.serial_port
+        elif self.control_type == 'socket':
+            self.serial_path = "/tmp/%s_serial.sock" % self.vm_name
+            control_boot_line = '-serial unix:%s,server,nowait' % self.serial_path
+        elif self.control_type == 'qga':
+            qga_dev_id = '%(vm_name)s_qga0' % {'vm_name': self.vm_name}
+            self.qga_socket_path = '/tmp/%(vm_name)s_qga0.sock' % {'vm_name': self.vm_name}
+            self.qga_cmd_head = '~/QMP/qemu-ga-client --address=%s ' % self.qga_socket_path
+            qga_boot_block = '-chardev socket,path=%(SOCK_PATH)s,server,nowait,id=%(ID)s' + \
+                  separator + '-device virtio-serial' + separator + \
+                  '-device virtserialport,chardev=%(ID)s,name=%(DEV_NAME)s'
+            control_boot_line = qga_boot_block % {'SOCK_PATH': self.qga_socket_path,
+                                              'DEV_NAME': QGA_DEV_NAME,
+                                              'ID': qga_dev_id}
+
+        self.__add_boot_line(control_boot_line)
+
+    def connect_serial_port(self, name=""):
         """
         Connect to serial port and return connected session for usage
         if connected failed will return None
         """
-        if getattr(self, 'serial_path', None):
-            self.serial_session = self.host_dut.new_session(suite=name)
-            self.serial_session.send_command("nc -U %s" % self.serial_path)
-            if first:
-                # login into Fedora os, not sure can work on all distributions
-                self.serial_session.send_expect("", "login:")
-                self.serial_session.send_expect(
-                    "%s" % self.username, "Password:")
-                self.serial_session.send_expect("%s" % self.password, "# ")
-            return self.serial_session
+        shell_reg = r"(\s*)\[(.*)\]# "
+        try:
+            if getattr(self, 'control_session', None) is None:
+                self.control_session = self.host_session
 
-        return None
+                self.control_session.send_command("nc -U %s" % self.serial_path)
 
-    def close_serial_port(self):
+            # login message not ouput if timeout too small
+            out = self.control_session.send_command("", timeout=5).replace('\r', '').replace('\n', '')
+
+            if len(out) == 0:
+                raise StartVMFailedException("Can't get output from [%s:%s]" % (self.host_dut.crb['My IP'], self.vm_name))
+
+            m = re.match(shell_reg, out)
+            if m:
+                # dmidecode output contain #, so use other matched string
+                out = self.control_session.send_expect("dmidecode -t system", "Product Name", timeout=self.OPERATION_TIMEOUT)
+                # cleanup previous output
+                self.control_session.get_session_before(timeout=0.1)
+
+                # if still on host, need reconnect
+                if 'QEMU' not in out:
+                    raise StartVMFailedException("Not real login [%s]" % self.vm_name)
+                else:
+                    # has enter into VM shell
+                    return True
+
+            # login into Redhat os, not sure can work on all distributions
+            if self.LOGIN_PROMPT not in out:
+                raise StartVMFailedException("Can't login [%s] now!!!" % self.vm_name)
+            else:
+                self.control_session.send_expect("%s" % self.username, self.PASSWORD_PROMPT, timeout=self.LOGIN_TIMEOUT)
+                # system maybe busy here, enlarge timeout equal to login timeout
+                self.control_session.send_expect("%s" % self.password, "#", timeout=self.LOGIN_TIMEOUT)
+                return self.control_session
+        except Exception as e:
+            # when exception happened, force close serial connection and reconnect
+            print RED("[%s:%s] exception [%s] happened" % (self.host_dut.crb['My IP'], self.vm_name, str(e)))
+            self.close_control_session(dut_id=self.host_dut.dut_id)
+            return False
+
+    def connect_telnet_port(self, name=""):
         """
-        Close serial session if it existed
+        Connect to serial port and return connected session for usage
+        if connected failed will return None
         """
-        if getattr(self, 'serial_session', None):
-            # exit from nc first
-            self.serial_session.send_expect("^C", "# ")
-            self.host_dut.close_session(self.serial_session)
+        shell_reg = r"(\s*)\[(.*)\]# "
+        scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
+
+        try:
+            # assume serial is not connect
+            if getattr(self, 'control_session', None) is None:
+                self.control_session = self.host_session
+
+                self.control_session.send_expect("telnet localhost %d" % self.serial_port, "Connected to localhost", timeout=self.OPERATION_TIMEOUT)
+
+            # output will be empty if timeout too small
+            out = self.control_session.send_command("", timeout=5).replace('\r', '').replace('\n', '')
+
+            # if no output from serial port, either connection close or system hang
+            if len(out) == 0:
+                raise StartVMFailedException("Can't get output from [%s]" % self.vm_name)
+
+            # if enter into shell
+            m = re.match(shell_reg, out)
+            if m:
+                # dmidecode output contain #, so use other matched string
+                out = self.control_session.send_expect("dmidecode -t system", "Product Name", timeout=self.OPERATION_TIMEOUT)
+                # cleanup previous output
+                self.control_session.get_session_before(timeout=0.1)
+
+                # if still on host, need reconnect
+                if 'QEMU' not in out:
+                    raise StartVMFailedException("Not real login [%s]" % self.vm_name)
+                else:
+                    # has enter into VM shell
+                    return True
+
+            # login into Redhat os, not sure can work on all distributions
+            if "x86_64 on an x86_64" not in out:
+                print RED("[%s:%s] not ready for login" % (self.host_dut.crb['My IP'], self.vm_name))
+                return False
+            else:
+                self.control_session.send_expect("%s" % self.username, "Password:", timeout=self.LOGIN_TIMEOUT)
+                self.control_session.send_expect("%s" % self.password, "#", timeout=self.LOGIN_TIMEOUT)
+                return True
+        except Exception as e:
+            # when exception happened, force close serial connection and reconnect
+            print RED("[%s:%s] exception [%s] happened" % (self.host_dut.crb['My IP'], self.vm_name, str(e)))
+            self.close_control_session(dut_id=self.host_dut.dut_id)
+            return False
+
+    def connect_qga_port(self, name=""):
+        """
+        QGA control session just share with host session
+        """
+        try:
+            # assume serial is not connect
+            if getattr(self, 'control_session', None) is None:
+                self.control_session = self.host_session
+
+            self.control_session.send_expect("%s ping %d" %(self.qga_cmd_head, self.START_TIMEOUT), "#", timeout=self.START_TIMEOUT)
+
+            # here VM has been start and qga also ready
+            return True
+        except Exception as e:
+            # when exception happened, force close qga process and reconnect
+            print RED("[%s:%s] QGA not ready" % (self.host_dut.crb['My IP'], self.vm_name))
+            self.close_control_session(dut_id=self.host_dut.dut_id)
+            return False
 
     def add_vm_vnc(self, **options):
         """
-        displayNum: 1
+        Add VM display option
         """
-        if 'displayNum' in options.keys() and \
-                options['displayNum']:
-            display_num = options['displayNum']
+        if 'disable' in options.keys() and options['disable'] == 'True':
+            vnc_boot_line = '-display none'
         else:
-            display_num = self.virt_pool.alloc_vnc_num(self.vm_name)
+            if 'displayNum' in options.keys() and \
+                    options['displayNum']:
+                display_num = options['displayNum']
+            else:
+                display_num = self.virt_pool.alloc_port(self.vm_name, port_type="display")
 
-        vnc_boot_line = '-vnc :%d' % int(display_num)
+            vnc_boot_line = '-vnc :%d' % int(display_num)
+
         self.__add_boot_line(vnc_boot_line)
+
+    def set_vm_vnc(self, **options):
+        """
+        Set VM display options
+        """
+        if 'disable' in options.keys():
+            vnc_option = [{'disable': 'True'}]
+        else:
+            if 'displayNum' in options.keys():
+                vnc_option = [{'displayNum': options['displayNum']}]
+            else:
+                # will allocate vnc display later
+                vnc_option = [{'disable': 'False'}]
+
+        index = self.find_option_index('vnc')
+        if index:
+            self.params[index] = {'vnc': vnc_option}
+        else:
+            self.params.append({'vnc': vnc_option})
 
     def set_vm_daemon(self, enable='yes'):
         """
@@ -981,6 +1159,79 @@ class QEMUKvm(VirtBase):
             cmd = options['cmd']
         self.__add_boot_line(cmd)
 
+    def _check_vm_status(self):
+        """
+        Check and restart QGA if not ready, wait for network ready
+        """
+        self.__wait_vm_ready()
+
+        self.__wait_vmnet_ready()
+
+    def _attach_vm(self):
+        """
+        Attach VM
+        Collected information : serial/monitor/qga sock file
+                              : hostfwd address
+        """
+        self.am_attached = True
+
+        if not self._query_pid():
+            raise StartVMFailedException("Can't strip process pid!!!")
+
+        cmdline = self.host_session.send_expect('cat /proc/%d/cmdline' % self.pid, '# ')
+        qemu_boot_line = cmdline.replace('\x00', ' ')
+        self.qemu_boot_line = qemu_boot_line.split(' ', 1)[1]
+        self.qemu_emulator = qemu_boot_line.split(' ', 1)[0]
+
+        serial_reg = ".*serial\x00unix:(.*?),"
+        telnet_reg = ".*serial\x00telnet::(\d+),"
+        monitor_reg = ".*monitor\x00unix:(.*?),"
+        hostfwd_reg = ".*hostfwd=tcp:(.*):(\d+)-:"
+        migrate_reg = ".*incoming\x00tcp::(\d+)"
+
+        # support both telnet and unix domain socket serial device
+        m = re.match(serial_reg, cmdline)
+        if not m:
+            m1 = re.match(telnet_reg, cmdline)
+            if not m1:
+                raise StartVMFailedException("No serial sock available!!!")
+            else:
+                self.serial_port = int(m1.group(1))
+                self.control_type = "telnet"
+        else:
+            self.serial_path = m.group(1)
+            self.control_type = "socket"
+
+        m = re.match(monitor_reg, cmdline)
+        if not m:
+            raise StartVMFailedException("No monitor sock available!!!")
+        self.monitor_sock_path = m.group(1)
+
+        m = re.match(hostfwd_reg, cmdline)
+        if not m:
+            raise StartVMFailedException("No host fwd config available!!!")
+
+        self.net_type = 'hostfwd'
+        self.host_port = m.group(2)
+        self.hostfwd_addr = m.group(1) + ':' + self.host_port
+
+        # record start time, need call before check_vm_status
+        self.start_time = time.time()
+
+        try:
+            self.update_status()
+        except:
+            self.host_logger.error("Can't query vm status!!!")
+
+        if self.vm_status is not ST_PAUSE:
+            self._check_vm_status()
+        else:
+            m = re.match(migrate_reg, cmdline)
+            if not m:
+                raise StartVMFailedException("No migrate port available!!!")
+
+            self.migrate_port = int(m.group(1))
+
     def _start_vm(self):
         """
         Start VM.
@@ -989,24 +1240,85 @@ class QEMUKvm(VirtBase):
 
         qemu_boot_line = self.generate_qemu_boot_line()
 
-        # Start VM using the qemu command
-        ret = self.host_session.send_expect(qemu_boot_line, '# ', verify=True)
-        if type(ret) is int and ret != 0:
-            raise StartVMFailedException('Start VM failed!!!')
+        self.__send_qemu_cmd(qemu_boot_line, dut_id=self.host_dut.dut_id)
 
         self.__get_pci_mapping()
 
         # query status
         self.update_status()
 
+        # sleep few seconds for bios/grub
+        time.sleep(10)
+
         # when vm is waiting for migration, can't ping
         if self.vm_status is not ST_PAUSE:
-            # if VM waiting for migration, can't return ping
-            out = self.__control_session('ping', '120')
-            if "Not responded" in out:
-                raise StartVMFailedException('Not response in 120 seconds!!!')
+            self.__wait_vm_ready()
 
             self.__wait_vmnet_ready()
+
+    # Start VM using the qemu command
+    # lock critical action like start qemu
+    @parallel_lock(num=4)
+    def __send_qemu_cmd(self, qemu_boot_line, dut_id):
+        # add more time for qemu start will be slow when system is busy
+        ret = self.host_session.send_expect(qemu_boot_line, '# ', verify=True, timeout=30)
+
+        # record start time
+        self.start_time = time.time()
+
+        # wait for qemu process ready
+        time.sleep(2)
+        if type(ret) is int and ret != 0:
+            raise StartVMFailedException('Start VM failed!!!')
+
+    def _quick_start_vm(self):
+        self.__alloc_assigned_pcis()
+
+        qemu_boot_line = self.generate_qemu_boot_line()
+
+        self.__send_qemu_cmd(qemu_boot_line, dut_id=self.host_dut.dut_id)
+
+        self.__get_pci_mapping()
+
+        # query status
+        self.update_status()
+
+        # sleep few seconds for bios and grub
+        time.sleep(10)
+
+    def __ping_vm(self):
+        logged_in = False
+        cur_time = time.time()
+        time_diff = cur_time - self.start_time
+        try_times = 0
+        while (time_diff < self.START_TIMEOUT):
+            if self.control_command('ping') == "Success":
+                logged_in = True
+                break
+
+            # update time consume
+            cur_time = time.time()
+            time_diff = cur_time - self.start_time
+
+            self.host_logger.warning("Can't login [%s] on [%s], retry %d times!!!" % (self.vm_name, self.host_dut.crb['My IP'], try_times + 1))
+            time.sleep(self.OPERATION_TIMEOUT)
+            try_times += 1
+            continue
+
+        return logged_in
+
+    def __wait_vm_ready(self):
+        logged_in = self.__ping_vm()
+        if not logged_in:
+            if not self.restarted:
+                # make sure serial session has been quit
+                self.close_control_session(dut_id=self.host_dut.dut_id)
+                self.vm_status = ST_NOTSTART
+                self._stop_vm()
+                self.restarted = True
+                self._start_vm()
+            else:
+                raise StartVMFailedException('Not response in %d seconds!!!' % self.START_TIMEOUT)
 
     def start_migration(self, remote_ip, remote_port):
         """
@@ -1049,18 +1361,14 @@ class QEMUKvm(VirtBase):
         """
         Generate the whole QEMU boot line.
         """
-        qemu_emulator = self.qemu_emulator
-
-        if self.vcpus_pinned_to_vm.strip():
-            vcpus = self.__alloc_vcpus()
-
-            if vcpus.strip():
-                qemu_boot_line = 'taskset -c %s ' % vcpus + \
-                    qemu_emulator + ' ' + \
-                    self.qemu_boot_line
+        if self.vcpus_pinned_to_vm:
+            vcpus = self.vcpus_pinned_to_vm.replace(' ', ',')
+            qemu_boot_line = 'taskset -c %s ' % vcpus + \
+                             self.qemu_emulator + ' ' + \
+                             self.qemu_boot_line
         else:
-            qemu_boot_line = qemu_emulator + ' ' + \
-                self.qemu_boot_line
+            qemu_boot_line = self.qemu_emulator + ' ' + \
+                             self.qemu_boot_line
 
         return qemu_boot_line
 
@@ -1069,16 +1377,12 @@ class QEMUKvm(VirtBase):
         wait for 120 seconds for vm net ready
         10.0.2.* is the default ip address allocated by qemu
         """
-        count = 40
-        while count:
-            out = self.__control_session('ifconfig')
-            if "10.0.2" in out:
-                return True
-            time.sleep(6)
-            count -= 1
-
-        raise StartVMFailedException(
-            'Virtual machine control net not ready in 120 seconds!!!')
+        ret = self.control_command("network")
+        # network has been ready, just return
+        if ret == "Success":
+            return True
+        else:
+            raise StartVMFailedException('Virtual machine control net not ready!!!')
 
     def __alloc_vcpus(self):
         """
@@ -1203,10 +1507,10 @@ class QEMUKvm(VirtBase):
         """
         Get IP which VM is connected by bridge.
         """
-        out = self.__control_session('ping', '60')
+        out = self.control_command('ping', '60')
         if not out:
             time.sleep(10)
-            out = self.__control_session('ifconfig')
+            out = self.control_command('ifconfig')
             ips = re.findall(r'inet (\d+\.\d+\.\d+\.\d+)', out)
 
             if '127.0.0.1' in ips:
@@ -1269,7 +1573,7 @@ class QEMUKvm(VirtBase):
         Query and update VM status
         """
         out = self.__monitor_session('info', 'status')
-        self.host_logger.info("Virtual machine status: %s" % out)
+        self.host_logger.warning("Virtual machine status: %s" % out)
 
         if 'paused' in out:
             self.vm_status = ST_PAUSE
@@ -1280,11 +1584,22 @@ class QEMUKvm(VirtBase):
 
         info = self.host_session.send_expect('cat %s' % self.__pid_file, "# ")
         try:
-            pid = int(info)
+            pid = int(info.split()[0])
             # save pid into dut structure
             self.host_dut.virt_pids.append(pid)
         except:
             self.host_logger.info("Failed to capture pid!!!")
+
+    def _query_pid(self):
+        info = self.host_session.send_expect('cat %s' % self.__pid_file, "# ")
+        try:
+            # sometimes saw to lines in pid file
+            pid = int(info.splitlines()[0])
+            # save pid into dut structure
+            self.pid = pid
+            return True
+        except:
+            return False
 
     def __strip_guest_pci(self):
         """
@@ -1317,43 +1632,183 @@ class QEMUKvm(VirtBase):
 
         return pcis
 
-    def __control_session(self, command, *args):
+    def __strip_guest_core(self):
         """
-        Use the qemu guest agent service to control VM.
+        Strip all lcore-thread binding information
+        Return array will be [thread0, thread1, ...]
+        """
+        cores = []
+        # CPU #0: pc=0xffffffff8104c416 (halted) thread_id=40677
+        core_reg = r'^.*CPU #(\d+): (.*) thread_id=(\d+)'
+        out = self.__monitor_session('info', 'cpus')
+
+        if out is None:
+            return cores
+
+        lines = out.split("\r\n")
+        for line in lines:
+            m = re.match(core_reg, line)
+            if m:
+                cores.append(int(m.group(3)))
+
+        return cores
+
+    def handle_control_session(func):
+        """
+        Wrapper function to handle serial port, must return serial to host session
+        """
+        def _handle_control_session(self, command):
+            # just raise error if connect failed, for func can't all any more
+            try:
+                if self.control_type == 'socket':
+                    assert (self.connect_serial_port(name=self.vm_name)), "Can't connect to serial socket"
+                elif self.control_type == 'telnet':
+                    assert (self.connect_telnet_port(name=self.vm_name)), "Can't connect to serial port"
+                else:
+                    assert (self.connect_qga_port(name=self.vm_name)), "Can't connect to qga port"
+            except:
+                return 'Failed'
+
+            try:
+                out = func(self, command)
+                self.quit_control_session()
+                return out
+            except Exception as e:
+                print RED("Exception happend on [%s] serial with cmd [%s]" % (self.vm_name, command))
+                print RED(e)
+                self.close_control_session(dut_id=self.host_dut.dut_id)
+                return 'Failed'
+
+        return _handle_control_session
+
+    def quit_control_session(self):
+        """
+        Quit from serial session gracefully
+        """
+        if self.control_type == 'socket':
+            self.control_session.send_expect("^C", "# ")
+        elif self.control_type == 'telnet':
+            self.control_session.send_command("^]")
+            self.control_session.send_command("quit")
+        # nothing need to do for qga session
+        self.control_session = None
+
+    @parallel_lock()
+    def close_control_session(self, dut_id):
+        """
+        Force kill serial connection from DUT when exception happened
+        """
+        # return control_session to host_session
+        if self.control_type == 'socket':
+            scan_cmd = "ps -e -o pid,cmd  |grep 'nc -U %s' |grep -v grep" % self.serial_path
+            out = self.host_dut.send_expect(scan_cmd, "#")
+            proc_info = out.strip().split()
+            try:
+                pid = int(proc_info[0])
+                self.host_dut.send_expect('kill %d' % pid, "#")
+            except:
+                pass
+            self.host_dut.send_expect("", "# ")
+        elif self.control_type == 'telnet':
+            scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
+            proc_info = self.host_dut.send_expect(scan_cmd, "#")
+            try:
+                pid = int(proc_info)
+                self.host_dut.send_expect('kill %d' % pid, "#")
+            except:
+                pass
+        elif self.control_type == 'qga':
+            scan_cmd = "ps -e -o pid,cmd  |grep 'address=%s' |grep -v grep" % self.qga_socket_path
+            out = self.host_dut.send_expect(scan_cmd, "#")
+            proc_info = out.strip().split()
+            try:
+                pid = int(proc_info[0])
+                self.host_dut.send_expect('kill %d' % pid, "#")
+            except:
+                pass
+
+        self.control_session = None
+        return
+
+    @handle_control_session
+    def control_command(self, command):
+        """
+        Use the serial port to control VM.
         Note:
             :command: there are these commands as below:
-                       cat, fsfreeze, fstrim, halt, ifconfig, info,\
-                       ping, powerdown, reboot, shutdown, suspend
+                    ping, network, powerdown
             :args: give different args by the different commands.
         """
-        if not self.qga_sock_path:
-            self.host_logger.info(
-                "No QGA service between host [ %s ] and guest [ %s ]" %
-                (self.host_dut.NAME, self.vm_name))
-            return None
 
-        cmd_head = '~/QMP/' + \
-            "qemu-ga-client " + \
-            "--address=%s %s" % \
-            (self.qga_sock_path, command)
+        if command == "ping":
+            if self.control_type == "qga":
+                return "Success"
+            else:
+                # disable stty input characters for send_expect function
+                self.control_session.send_expect("stty -echo", "#", timeout=self.OPERATION_TIMEOUT)
+                return "Success"
+        elif command == "network":
+            if self.control_type == "qga":
+                # wait few seconds for network ready
+                time.sleep(5)
+                out = self.control_session.send_expect(self.qga_cmd_head + "ifconfig" , "#", timeout=self.OPERATION_TIMEOUT)
+            else:
+                intf = self.control_session.send_expect("ls -1 /sys/bus/pci/devices/0000:00:1f.0/net", "#", timeout=self.OPERATION_TIMEOUT)
+                out = self.control_session.send_expect("ifconfig %s" % intf, "#", timeout=self.OPERATION_TIMEOUT)
+                if "10.0.2" not in out:
+                    self.control_session.send_expect("dhclient %s -timeout 10" % intf, "#", timeout=30)
+                else:
+                    return "Success"
 
-        cmd = cmd_head
-        for arg in args:
-            cmd = cmd_head + ' ' + str(arg)
+                out = self.control_session.send_expect("ifconfig", "#", timeout=self.OPERATION_TIMEOUT)
 
-        if command is "ping":
-            out = self.host_session.send_expect(cmd, '# ', int(args[0]))
+            if "10.0.2" not in out:
+                return "Failed"
+            else:
+                return "Success"
+        elif command == "powerdown":
+            if self.control_type == "qga":
+                self.control_session.send_expect(self.qga_cmd_head + "powerdown", "#", timeout=self.OPERATION_TIMEOUT)
+            else:
+                self.control_session.send_command("init 0")
+
+            if self.control_type == "socket":
+                self.control_session.send_expect("^C", "# ")
+            elif self.control_type == "telnet":
+                self.control_session.send_command("^]")
+                self.control_session.send_command("quit")
+
+            time.sleep(10)
+            self.kill_alive()
+            return "Success"
         else:
-            out = self.host_session.send_expect(cmd, '# ')
-
-        return out
+            if self.control_type == "qga":
+                self.host_logger.warning("QGA not support [%s] command" % command)
+                out = "Failed"
+            else:
+                out = self.control_session.send_command(command)
+            return out
 
     def _stop_vm(self):
         """
         Stop VM.
         """
         if self.vm_status is ST_RUNNING:
-            self.__control_session('powerdown')
+            self.control_command('powerdown')
         else:
             self.__monitor_session('quit')
         time.sleep(5)
+        # remove temporary file
+        self.host_session.send_expect("rm -f %s" % self.__pid_file, "#")
+
+    def pin_threads(self, lcores):
+        """
+        Pin thread to assigned cores
+        """
+        thread_reg = r'CPU #(\d+): .* thread_id=(\d+)'
+        output = self.__monitor_session('info', 'cpus')
+        thread_cores = re.findall(thread_reg, output)
+        cores_map = zip(thread_cores, lcores)
+        for thread_info, core_id in cores_map:
+            cpu_id, thread_id = thread_info
+            self.host_session.send_expect("taskset -pc %d %s" % (core_id, thread_id), "#")
