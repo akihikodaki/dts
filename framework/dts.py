@@ -58,7 +58,7 @@ import logger
 import debugger
 from config import CrbsConf
 from checkCase import CheckCase
-from utils import get_subclasses, copy_instance_attr
+from utils import get_subclasses, copy_instance_attr, create_parallel_locks
 import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
@@ -211,7 +211,7 @@ def dts_run_commands(crb, dts_commands):
                         raise VerifyFailure("Command execution failed")
 
 
-def get_project_obj(project_name, super_class, crbInst, serializer):
+def get_project_obj(project_name, super_class, crbInst, serializer, dut_id):
     """
     Load project module and return crb instance.
     """
@@ -221,12 +221,12 @@ def get_project_obj(project_name, super_class, crbInst, serializer):
         project_module = __import__(PROJECT_MODULE_PREFIX + project_name)
 
         for project_subclassname, project_subclass in get_subclasses(project_module, super_class):
-            project_obj = project_subclass(crbInst, serializer)
+            project_obj = project_subclass(crbInst, serializer, dut_id)
         if project_obj is None:
-            project_obj = super_class(crbInst, serializer)
+            project_obj = super_class(crbInst, serializer, dut_id)
     except Exception as e:
         log_handler.info("LOAD PROJECT MODULE INFO: " + str(e))
-        project_obj = super_class(crbInst, serializer)
+        project_obj = super_class(crbInst, serializer, dut_id)
 
     return project_obj
 
@@ -280,13 +280,15 @@ def dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serialize
 
     testInst = copy.copy(crbInsts[0])
     testInst['My IP'] = crbInsts[0]['tester IP']
-    tester = get_project_obj(project, Tester, testInst, serializer)
+    tester = get_project_obj(project, Tester, testInst, serializer, dut_id=0)
 
+    dut_id = 0
     for crbInst in crbInsts:
         dutInst = copy.copy(crbInst)
         dutInst['My IP'] = crbInst['IP']
-        dutobj = get_project_obj(project, Dut, dutInst, serializer)
+        dutobj = get_project_obj(project, Dut, dutInst, serializer, dut_id=dut_id)
         duts.append(dutobj)
+        dut_id += 1
 
     dts_log_execution(duts, tester, log_handler)
 
@@ -298,7 +300,7 @@ def dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serialize
     nic = settings.load_global_setting(settings.HOST_NIC_SETTING)
     for dutobj in duts:
         dutobj.tester = tester
-        dutobj.set_virttype(virttype)
+        dutobj.setup_virtenv(virttype)
         dutobj.set_speedup_options(read_cache, skip_setup)
         dutobj.set_directory(base_dir)
         # save execution nic setting
@@ -463,6 +465,11 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
+    # add external library
+    exec_file = os.path.realpath(__file__)
+    extra_libs_path = exec_file.replace('framework/dts.py', '') + 'extra_libs'
+    sys.path.insert(1, extra_libs_path)
+
     # add python module search path
     sys.path.append(suite_dir)
 
@@ -536,6 +543,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
             continue
 
         result.dut = duts[0]
+
+        # init global lock
+        create_parallel_locks(len(duts))
 
         # init dut, tester crb
         duts, tester = dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serializer, virttype)
