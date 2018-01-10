@@ -49,8 +49,8 @@ class DPDKdut(Dut):
     build, memory and kernel module.
     """
 
-    def __init__(self, crb, serializer):
-        super(DPDKdut, self).__init__(crb, serializer)
+    def __init__(self, crb, serializer, dut_id):
+        super(DPDKdut, self).__init__(crb, serializer, dut_id)
         self.testpmd = None
 
     def set_target(self, target, bind_dev=True):
@@ -447,7 +447,7 @@ class DPDKtester(Tester):
     interface and generate port map.
     """
 
-    def __init__(self, crb, serializer):
+    def __init__(self, crb, serializer, dut_id):
         self.NAME = "tester"
         super(DPDKtester, self).__init__(crb, serializer)
 

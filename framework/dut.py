@@ -39,7 +39,7 @@ from ssh_connection import SSHConnection
 from crb import Crb
 from net_device import GetNicObj
 from virt_resource import VirtResource
-from utils import RED
+from utils import RED, remove_old_rsa_key
 from uuid import uuid4
 
 
@@ -60,9 +60,9 @@ class Dut(Crb):
     CORE_LIST_CACHE_KEY = 'dut_core_list'
     PCI_DEV_CACHE_KEY = 'dut_pci_dev_info'
 
-    def __init__(self, crb, serializer):
+    def __init__(self, crb, serializer, dut_id):
         self.NAME = 'dut' + LOG_NAME_SEP + '%s' % crb['My IP']
-        super(Dut, self).__init__(crb, serializer, self.NAME)
+        super(Dut, self).__init__(crb, serializer, self.NAME, alt_session=True, dut_id=dut_id)
 
         self.host_init_flag = False
         self.number_of_cores = 0
@@ -76,29 +76,35 @@ class Dut(Crb):
         # hypervisor pid list, used for cleanup
         self.virt_pids = []
 
-    def init_host_session(self):
-        if self.host_init_flag:
-            pass
-        else:
-            self.host_session = SSHConnection(
-                self.get_ip_address(),
-                self.NAME + '_host',
-                self.get_username(),
-                self.get_password())
-            self.host_session.init_log(self.logger)
-            self.host_init_flag = True
+    def init_host_session(self, vm_name):
+        """
+        Create session for each VM, session will be handled by VM instance
+        """
+        self.host_session = SSHConnection(
+            self.get_ip_address(),
+            vm_name + '_host',
+            self.get_username(),
+            self.get_password())
+        self.host_session.init_log(self.logger)
+        self.logger.info("[%s] create new session for VM" % (threading.current_thread().name))
 
     def new_session(self, suite=""):
         """
         Create new session for dut instance. Session name will be unique.
         """
-        session_name = self.NAME + '_' + str(uuid4())
+        if len(suite):
+            session_name = self.NAME + '_' + suite
+        else:
+            session_name = self.NAME + '_' + str(uuid4())
         session = self.create_session(name=session_name)
         if suite != "":
             session.logger.config_suite(suite, self.NAME)
         else:
             session.logger.config_execution(self.NAME)
-        session.send_expect("cd %s" % self.base_dir, "# ")
+
+        if getattr(self, "base_dir", None):
+            session.send_expect("cd %s" % self.base_dir, "# ")
+
         return session
 
     def close_session(self, session):
@@ -366,11 +372,11 @@ class Dut(Crb):
             return False
 
     def get_dpdk_bind_script(self):
-        op = self.send_command("ls")
+        op = self.send_expect("ls", "#")
         if "usertools" in op:
             res = 'usertools/dpdk-devbind.py'
         else:
-            op = self.send_command("ls tools")
+            op = self.send_expect("ls tools", "#")
             if "dpdk_nic_bind.py" in op:
                 res = 'tools/dpdk_nic_bind.py'
             else:
@@ -787,6 +793,14 @@ class Dut(Crb):
             # store the port info to port mapping
             self.ports_info.append({'port': port, 'pci': pci_str, 'type': pci_id, 'intf':
                                     intf, 'mac': macaddr, 'ipv6': ipv6, 'numa': -1})
+
+    def setup_virtenv(self, virttype):
+        """
+        Setup current virtualization hypervisor type and remove elder VM ssh keys
+        """
+        self.virttype = virttype
+        # remove VM ras keys from tester
+        remove_old_rsa_key(self.tester, self.crb['My IP'])
 
     def generate_sriov_vfs_by_port(self, port_id, vf_num, driver='default'):
         """

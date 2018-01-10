@@ -49,7 +49,8 @@ class Crb(object):
     CPU/PCI/NIC on the board and setup running environment for DPDK.
     """
 
-    def __init__(self, crb, serializer, name):
+    def __init__(self, crb, serializer, name, alt_session=True, dut_id=0):
+        self.dut_id = dut_id
         self.crb = crb
         self.read_cache = False
         self.skip_setup = False
@@ -62,14 +63,18 @@ class Crb(object):
         self.logger = getLogger(name)
         self.session = SSHConnection(self.get_ip_address(), name,
                                      self.get_username(),
-                                     self.get_password())
+                                     self.get_password(), dut_id)
         self.session.init_log(self.logger)
-        self.alt_session = SSHConnection(
-            self.get_ip_address(),
-            name + '_alt',
-            self.get_username(),
-            self.get_password())
-        self.alt_session.init_log(self.logger)
+        if alt_session:
+            self.alt_session = SSHConnection(
+                self.get_ip_address(),
+                name + '_alt',
+                self.get_username(),
+                self.get_password(),
+                dut_id)
+            self.alt_session.init_log(self.logger)
+        else:
+            self.alt_session = None
 
     def send_expect(self, cmds, expected, timeout=TIMEOUT,
                     alt_session=False, verify=False):
@@ -78,8 +83,8 @@ class Crb(object):
         there's no expected string found before timeout, TimeoutException will
         be raised.
         """
-
-        if alt_session:
+        # sometimes there will be no alt_session like VM dut
+        if alt_session and self.alt_session:
             return self.alt_session.session.send_expect(cmds, expected,
                                                         timeout, verify)
 
@@ -93,7 +98,8 @@ class Crb(object):
         session = SSHConnection(self.get_ip_address(),
                                 name,
                                 self.get_username(),
-                                self.get_password())
+                                self.get_password(),
+                                dut_id = self.dut_id)
         session.init_log(logger)
         self.sessions.append(session)
         return session
@@ -104,7 +110,7 @@ class Crb(object):
         """
         for save_session in self.sessions:
             if save_session == session:
-                save_session.close()
+                save_session.close(force=True)
                 logger = getLogger(save_session.name)
                 logger.logger_exit()
                 self.sessions.remove(save_session)
@@ -141,7 +147,7 @@ class Crb(object):
         Send commands to crb and return string before timeout.
         """
 
-        if alt_session:
+        if alt_session and self.alt_session:
             return self.alt_session.session.send_command(cmds, timeout)
 
         return self.session.send_command(cmds, timeout)
@@ -167,7 +173,7 @@ class Crb(object):
             "awk '/HugePages_Total/ { print $2 }' /proc/meminfo",
             "# ", alt_session=True)
         if huge_pages != "":
-            return int(huge_pages)
+            return int(huge_pages.split()[0])
         return 0
 
     def mount_huge_pages(self):
@@ -219,9 +225,6 @@ class Crb(object):
         Set DPDK package folder name.
         """
         self.base_dir = base_dir
-
-    def set_virttype(self, virttype):
-        self.virttype = virttype
 
     def admin_ports(self, port, status):
         """
