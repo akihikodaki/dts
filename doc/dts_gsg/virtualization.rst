@@ -72,17 +72,29 @@ Enable dhcp on default host_connect interface.
 
     chkconfig --level 2345 network on
 
-Install qemu guest agent for DTS monitor guest os.
-
-.. code-block:: console
-
-    yum install qemu-guest-agent.x86_64
-
 For network access, should disable guest firewall service.
 
 .. code-block:: console
 
     systemctl disable firewalld.service
+
+QGA connection
+""""""""""""""
+
+Install qemu guest agent, DTS will manage virtual machine through QGA if control type is 'qga'.
+
+.. code-block:: console
+
+    yum install qemu-guest-agent.x86_64
+
+Console connection
+""""""""""""""""""
+
+Enable virtual machine serial console in kernel command line, DTS will manage virtual machine through serial port if control type is 'telnet' or 'socket'.
+
+.. code-block:: console
+
+   console=ttyS0,115200
 
 Suite Programing
 ----------------
@@ -125,7 +137,7 @@ Below is the brief view of the qemu parameters of vxlan sample virtual machine. 
 
     [{'name': [{'name': 'vm0'}]}, 
     {'enable_kvm': [{'enable': 'yes'}]}, 
-    {'qga': [{'enable': 'yes'}]}, 
+    {'control': [{'type': 'telnet'}]},
     {'daemon': [{'enable': 'yes'}]}, 
     {'monitor': [{'path': '/tmp/vm0_monitor.sock'}]},
     {'net': [{'opt_addr': '1f', 'type': 'nic', 'opt_vlan': '0'}, {'type': 'user', 'opt_vlan': '0'}]},
@@ -310,34 +322,76 @@ Enable KVM
 
 DTS enable KVM full virtualization support as default. This option will significant improve the speed of virtual machine.
 
-Qemu Guest Agent
-""""""""""""""""
+Control (Qemu Guest Agent)
+"""""""""""""""""""""""""""
 
-Qemu monitor supply one method to interact with qemu process. DTS can monitor guest status by command supplied by qemu guest agent. Qemu guest agent is based on virtio-serial devices. 
+Qemu monitor supply one method to interact with qemu process. DTS can monitor guest status by command supplied by qemu guest agent. Qemu guest agent is based on virtio-serial devices.
 
 .. code-block:: console
 
-	-device virtio-serial -device virtserialport,chardev=vm_qga0,name=org.qemu.guest_agent.0 
-	-daemonize -monitor unix:/tmp/vm_monitor.sock,server,nowait
+    -device virtio-serial -device virtserialport,chardev=vm_qga0,name=org.qemu.guest_agent.0
+    -daemonize -monitor unix:/tmp/vm_monitor.sock,server,nowait
 
 Check whether guest os has been started up.
 
 .. code-block:: console
 
-	qemu-ga-client address=/tmp/{vm_name}_qga0.sock ping 120
+    qemu-ga-client address=/tmp/{vm_name}_qga0.sock ping 120
 
-.. note::	
+.. note::
 
-	We only wait two minutes for guest os start up. For guest os only has few hardware and we has disabled most services, so 2 minutes is enough.
-	This command will be return when guest os is ready, so DTS will not wait 2 minutes for each time. 
+    We only wait two minutes for guest os start up. For guest os only has few hardware and we has disabled most services, so 2 minutes is enough.
+    This command will be return when guest os is ready, so DTS will not wait 2 minutes for each time.
 
 Check whether guest os default interface has been up.
 
 .. code-block:: console
 
-	qemu-ga-client address=/tmp/{vm_name}_qga0.sock ifconfig
-	
-DTS will wait for guest os default interface upped and get auto dhcp address. After that DTS can connect to guest by ssh connections. 
+    qemu-ga-client address=/tmp/{vm_name}_qga0.sock ifconfig
+
+DTS will wait for guest os default interface upped and get auto dhcp address. After that DTS can connect to guest by ssh connections.
+
+.. code-block:: console
+
+    lo:
+         inet 127.0.0.1  netmask 255.0.0.0
+            inet6 ::1  prefixlen 128
+    host_connect:
+            inet 10.0.2.15  netmask 255.255.255.0
+            inet6 fe80::200:ff:feb9:fed7  prefixlen 64
+            ether 00:00:00:b9:fe:d7
+
+Power down  guest os.
+
+.. code-block:: console
+
+    qemu-ga-client address=/tmp/{vm_name}_qga0.sock powerdown
+
+.. note::
+
+    For more information about qemu guest agent, please reference to http://wiki.qemu.org/Features/QAPI/GuestAgent.
+
+Control (Qemu Serial Port)
+""""""""""""""""""""""""""
+
+Qemu serial port is the default method to interact with guest OS. DTS can monitor guest status/manage guest network by serial port.
+
+.. code-block:: console
+
+    -serial telnet::7000,server,nowait
+
+DTS will check the output from serial port and determine whether guest os has been started up. The prompt string for guest login session can be configured by parameter "start".
+
+.. code-block:: console
+
+    start =
+        wait_seconds=120,login_timeout=60,login_prompt=login:,password_prompt=Password:;
+
+.. note::	
+
+	Default timeout for guest OS start up is 2 minutes. For guest os only has few hardware and we has disabled most services, so 2 minutes is enough. If guest OS can't start up in 2 minutes, DTS will try to restart it once.
+
+DTS will check default interface upped and utilize dhcp to retrieve address. After that DTS can connect to guest by ssh connections.
 
 .. code-block:: console
 
@@ -349,15 +403,15 @@ DTS will wait for guest os default interface upped and get auto dhcp address. Af
 			inet6 fe80::200:ff:feb9:fed7  prefixlen 64
 			ether 00:00:00:b9:fe:d7
 
-Power down  guest os.
+Power down guest os by serial port.
 
 .. code-block:: console
 
-	qemu-ga-client address=/tmp/{vm_name}_qga0.sock powerdown
+    init 0
 	
 .. note::
 
-	For more information about qemu guest agent, please reference to http://wiki.qemu.org/Features/QAPI/GuestAgent.
+	For more information about qemu serial port, please reference to https://qemu.weilnetz.de/doc/qemu-doc.html.
 	
 Qemu Monitor
 """"""""""""
@@ -395,10 +449,10 @@ Connection to monitor socket on DUT.
 
     For More detail information about qemu monitor. https://en.wikibooks.org/wiki/QEMU/Monitor#info
 
-Qemu Machine
-""""""""""
+Qemu Machine (Aarch64)
+""""""""""""""""""""""
 
-DTS set default qemu machine type as virt for Aarch64. This option is mandatory for qemu-system-aarch64.
+DTS need set default qemu machine type as virt for Aarch64. This option is mandatory for qemu-system-aarch64.
 
 Configured Parameters
 ~~~~~~~~~~~~~~~~~~~~~

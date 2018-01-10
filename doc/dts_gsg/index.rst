@@ -41,3 +41,4 @@ Getting Started Guide
     review
     virtualization
     scenario
+    multiple_vm
