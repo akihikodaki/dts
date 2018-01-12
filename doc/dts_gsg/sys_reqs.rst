@@ -160,9 +160,6 @@ DPDK running Prerequisite
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Compilation of DPDK need GNU maker, gcc, libc-header, kernel header installed. For 32-bit compilation on 64-bit systems, there’re some additional packages required. For Intel® C++ Compiler (icc) additional libraries may be required. For more detail information of required packets, please refer to Data Plane Development Kit Getting Started Guide.
 
-The  DPDK igb_uio kernel module depends on traditional Linux kernel uio support to operate. Linux traditional uio support may be compiled as a module, so this module should be loaded using the modprobe program.
-Kernel must support the allocation of hugepages. Hugepage support is required for the large memory pool allocation used for packet buffers. By using hugepage allocations, performance will be improved  since only fewer pages are needed, and therefore less Translation Lookaside Buffers (TLBs, high speed translation caches), which reduce the time it takes to translate a virtual page address to a physical page address. Without hugepages, high TLB miss rates would occur, slowing performance.
-
 The  DPDK igb_uio kernel module depends on traditional Linux kernel ``uio`` support to operate. Linux traditional ``uio`` support may be compiled as a module, so this module should be loaded using the ``modprobe`` program.
 Kernel must support the allocation of hugepages. Hugepage support is required for the large memory pool allocation used for packet buffers. By using hugepage allocations, performance will be improved  since only fewer pages are needed, and therefore less Translation Lookaside Buffers (TLBs, high speed translation caches), which reduce the time it takes to translate a virtual page address to a physical page address. Without hugepages, high TLB miss rates would occur, slowing performance.
 
