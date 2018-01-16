@@ -135,6 +135,8 @@ class TestQueue_region(TestCase):
         elif (pkt_type == "ipv6_tcp"):
             pkt = Packet(pkt_type='IPv6_TCP')
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
+            if (self.nic in ["fortpark_TLV"]):
+                pkt.config_layer('tcp', {'flags': flags})
         elif (pkt_type == "ipv6_sctp"):
             pkt = Packet(pkt_type='IPv6_SCTP')
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
@@ -179,7 +181,6 @@ class TestQueue_region(TestCase):
         dump all queue region rules that have been created in memory and compare that total rules number with the given expected number
         to see if they are equal, as to get your conclusion after you have deleted any queue region rule entry.
         """
-        print out
         self.verify("error" not in out, "the queue region settings has error.")
         actual_QRnum = re.findall("region_id.*", out)
         actual_FTnum = re.findall("flowtype_num\D*(\d*).*", out)
@@ -195,6 +196,9 @@ class TestQueue_region(TestCase):
         self.verify(actual_UserPrioritynum == UP_num, "the UP number count error")
 
     def test_pctype_map_queue_region(self):
+        # clear the environment
+        self.dut.send_expect("set port 0 queue-region flush off", "testpmd> ")
+
         # set queue region on a port
         self.dut.send_expect("set port 0 queue-region region_id 0 queue_start_index 1 queue_num 1", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 1 queue_start_index 3 queue_num 2", "testpmd> ")
@@ -212,7 +216,12 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region region_id 3 flowtype 34", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 35", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 flowtype 36", "testpmd> ")
-        self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
+
+        # the default UDP packet configuration of fortpark is not consistent with fortville
+        if(self.nic in ["fortpark_TLV"]):
+            self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 39", "testpmd> ")
+        else:
+            self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 3 flowtype 43", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 44", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 5 flowtype 45", "testpmd> ")
@@ -250,7 +259,7 @@ class TestQueue_region(TestCase):
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv4", frag=1)
 
         queue_region = ["8", "9"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
+        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp", flags="PA")
 
         queue_region = ["11", "12", "13", "14"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_sctp", tag=2)
@@ -276,6 +285,9 @@ class TestQueue_region(TestCase):
         self.get_and_compare_rules(out, 0, 0, 0)
 
     def test_up_map_queue_region(self):
+        # clear the environment
+        self.dut.send_expect("set port 0 queue-region flush off", "testpmd> ")
+
         # set queue region on a port
         self.dut.send_expect("set port 0 queue-region region_id 0 queue_start_index 0 queue_num 1", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 queue_start_index 1 queue_num 8", "testpmd> ")
@@ -289,9 +301,6 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region flush on", "testpmd> ")
 
         # send the packets and verify the results
-        queue_region = ["0"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=4)
-
         queue_region = ["0"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=3)
 
@@ -325,6 +334,9 @@ class TestQueue_region(TestCase):
 
     def test_boundary_values(self):
         # boundary value testing of "Set a queue region on a port"
+        # clear the environment
+        self.dut.send_expect("set port 0 queue-region flush off", "testpmd> ")
+
         # the following parameters can be set successfully
         outstring = self.dut.send_expect("set port 0 queue-region region_id 0 queue_start_index 0 queue_num 16", "testpmd> ")
         self.verify("error" not in outstring, "boundary value check failed")
