@@ -86,7 +86,7 @@ class TestVhostPmdXstats(TestCase):
         """
         Start testpmd in vm
         """
-        self.vm_testpmd = "./%s/app/testpmd -c 0x3 -n 4 -- -i --txqflags=0xf01" % self.target
+        self.vm_testpmd = "./%s/app/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0" % self.target
         if self.vm_dut is not None:
             self.vm_dut.send_expect(self.vm_testpmd, "testpmd>", 60)
 

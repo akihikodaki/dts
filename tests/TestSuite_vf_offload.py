@@ -206,7 +206,7 @@ class TestVfOffload(TestCase):
         verify forwarded packets have correct checksum
         """
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
-                                      (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " + "--txqflags=0 " +
+                                      (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " + "--tx-offloads=0x8fff " +
                                       "--port-topology=loop")
         self.vm0_testpmd.execute_cmd('set fwd csum')
 
@@ -348,7 +348,7 @@ class TestVfOffload(TestCase):
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
                                       (self.portMask) + "--enable-rx-cksum " +
-                                      "--txqflags=0 " + 
+                                      "--tx-offloads=0x8fff " + 
                                       "--port-topology=loop")
 
         mac = self.vm0_testpmd.get_port_mac(0)

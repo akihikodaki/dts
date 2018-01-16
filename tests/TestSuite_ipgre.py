@@ -263,7 +263,7 @@ class TestIpgre(TestCase):
         inner_mac = "10:00:00:00:00:00"
         
         # Start testpmd with multi queues
-        #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4 --txqflags=0x0" % self.target
+        #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4 --tx-offloads=0x8fff" % self.target
         testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum  --rxq=4 --txq=4" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
@@ -307,7 +307,7 @@ class TestIpgre(TestCase):
         Send packet with wrong IP/TCP/UDP/SCTP checksum and check forwarded packet checksum 
         """
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum --txqflags=0x0 --port-topology=loop" % self.target
+        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum --tx-offloads=0x8fff --port-topology=loop" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")

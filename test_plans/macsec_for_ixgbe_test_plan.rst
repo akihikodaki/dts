@@ -135,7 +135,7 @@ Test Case 1: MACsec packets send and receive
    1. Start the testpmd of tx port::
 
          ./testpmd -c 0x30 --socket-mem 1024,1024 --file-prefix=tx -w 0000:07:00.0 \
-         -- --port-topology=chained -i --crc-strip --txqflags=0x0
+         -- --port-topology=chained -i --crc-strip --tx-offloads=0x8fff
 
    2. Set MACsec offload on::
 
@@ -294,7 +294,7 @@ Test Case 4: normal packet send and MACsec receive
 Test Case 5: MACsec send and receive with wrong parameters
 ==========================================================
 
-1. Don't add "--txqflags=0x0" in the tx_port command line.
+1. Don't add "--tx-offloads=0x8fff" in the tx_port command line.
    the MACsec offload can't work. The tx packets are normal packets.
 
 2. Set different pn on rx and tx port, then start the data transfer.
@@ -347,7 +347,7 @@ Test Case 6: performance test of MACsec offload packets
    MACsec offload on, set fwd mac::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -- -i \
-     --port-topology=chained --crc-strip --txqflags=0x0
+     --port-topology=chained --crc-strip --tx-offloads=0x8fff
 
    on IXIA side, start IXIA port6 transmit, start the IXIA capture.
    view the IXIA port5 captured packet, the protocol is MACsec, the EtherType
@@ -363,7 +363,7 @@ Test Case 6: performance test of MACsec offload packets
    start two testpmd::
 
          ./testpmd -c 0x3 --socket-mem 1024,1024 --file-prefix=rx -w 0000:07:00.1 \
-         -- --port-topology=chained -i --crc-strip --txqflags=0x0
+         -- --port-topology=chained -i --crc-strip --tx-offloads=0x8fff
 
          testpmd>set macsec offload 0 on encrypt on replay-protect on
          testpmd>set macsec sc rx 0 00:00:00:00:00:01 0
@@ -373,7 +373,7 @@ Test Case 6: performance test of MACsec offload packets
          testpmd>set fwd rxonly
 
          ./testpmd -c 0xc --socket-mem 1024,1024 --file-prefix=tx -b 0000:07:00.1 \
-         -- --port-topology=chained -i --crc-strip --txqflags=0x0
+         -- --port-topology=chained -i --crc-strip --tx-offloads=0x8fff
 
          testpmd>set macsec offload 1 on encrypt on replay-protect on
          testpmd>set macsec sc rx 1 00:00:00:00:00:02 0

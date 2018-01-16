@@ -93,7 +93,7 @@ Start virtual machine with hugepage based memory and two vhost-user devices::
 
 Login into virtual machine and start testpmd with additional arguments::
 
-    testpmd -c f -n 3 -- -i --txqflags=0xf00 --disable-hw-vlan
+    testpmd -c f -n 3 -- -i --tx-offloads=0x8000 --disable-hw-vlan
 
 Start packet forward of testpmd and transit several packets for mac learning::
 

@@ -87,7 +87,7 @@ Prerequisites
 
 6. Start guest testpmd, set it in mac forward mode::
 
-      testpmd -c 0x3 -n 1  -- -i  --txqflags=0x0
+      testpmd -c 0x3 -n 1  -- -i  --tx-offloads=0x8fff
       testpmd> set fwd mac
       testpmd> start
 

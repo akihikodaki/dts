@@ -450,7 +450,7 @@ Test case: Fortville tunnel vxlan
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -w 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --txqflags=0x0 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -w 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff --disable-rss
     testpmd> rx_vxlan_port add 4789 0
     testpmd> set fwd rxonly
     testpmd> set verbose 1
@@ -458,7 +458,7 @@ Test case: Fortville tunnel vxlan
     testpmd> start
     the pf's mac address is 00:00:00:00:01:00
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -w 05:02.0 --file-prefix=vf --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --txqflags=0x0 --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -w 05:02.0 --file-prefix=vf --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff --disable-rss
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
@@ -553,19 +553,19 @@ Test case: Fortville tunnel nvgre
 
 1. Launch the app ``testpmd`` with the following arguments::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -w 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -w 05:00.0 --file-prefix=pf --socket-mem=1024,1024 -- -i --rxq=16 --txq=16 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -w 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e0000 -n 4 -w 05:02.0 --file-prefix=vf0 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off
     testpmd> start
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -w 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1e00000 -n 4 -w 05:02.1 --file-prefix=vf1 --socket-mem=1024,1024 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> set promisc all off

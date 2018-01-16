@@ -350,7 +350,7 @@ class TestSriovKvm(TestCase):
                 eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
                                                        'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", "--rxq=4 --txq=4 --txqflags=0", eal_param=eal_param)
+                    "1S/2C/2T", "--rxq=4 --txq=4 --tx-offloads=0x8fff", eal_param=eal_param)
                 self.host_testpmd.execute_cmd('set fwd rxonly')
                 self.host_testpmd.execute_cmd('start')
 

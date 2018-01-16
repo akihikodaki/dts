@@ -147,7 +147,7 @@ class TestQinqFilter(TestCase):
         
         self.dut.send_expect(r'./%s/app/testpmd -c %s -n 4 -- -i \
                                --portmask=%s --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' % (self.target, self.coreMask, self.portMask),
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' % (self.target, self.coreMask, self.portMask),
                                "testpmd> ")
         self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -167,7 +167,7 @@ class TestQinqFilter(TestCase):
         """
         self.dut.send_expect(r'./%s/app/testpmd -c %s -n 4 -- -i \
                                --portmask=%s --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' % (self.target, self.coreMask, self.portMask),
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' % (self.target, self.coreMask, self.portMask),
                                "testpmd> ")
         self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -203,7 +203,7 @@ class TestQinqFilter(TestCase):
 
         self.dut.send_expect(r'./%s/app/testpmd -c %s -n 4  \
                                --socket-mem=1024,1024 --file-prefix=pf -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
                                "testpmd> ")
         self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
@@ -220,13 +220,13 @@ class TestQinqFilter(TestCase):
 
         vf0_session.send_expect(r'./%s/app/testpmd -c %s -n 4  \
                                --socket-mem=1024,1024 --file-prefix=vf0 -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, vf_list[0]),
                                "testpmd> ")
                                                               
         vf1_session.send_expect(r'./%s/app/testpmd -c %s -n 4 \
                                --socket-mem=1024,1024 --file-prefix=vf1 -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, vf_list[1]),
                                "testpmd>") 
         for session_name in [vf0_session, vf1_session]:
@@ -272,7 +272,7 @@ class TestQinqFilter(TestCase):
 
         self.dut.send_expect(r'./%s/app/testpmd -c %s -n 4 \
                                --socket-mem=1024,1024 --file-prefix=pf -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
                                "testpmd> ")
         self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
@@ -292,13 +292,13 @@ class TestQinqFilter(TestCase):
         
         vf0_session.send_expect(r'./%s/app/testpmd -c %s -n 4 \
                                --socket-mem=1024,1024 --file-prefix=vf0 -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, vf_list[0]),
                                "testpmd> ")
                                                               
         vf1_session.send_expect(r'./%s/app/testpmd -c %s -n 4 \
                                --socket-mem=1024,1024 --file-prefix=vf1 -w %s -- -i --port-topology=loop \
-                               --rxq=4 --txq=4 --txqflags=0x0  --disable-rss' 
+                               --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss' 
                                % (self.target, self.coreMask, vf_list[1]),
                                "testpmd>") 
         for session_name in [vf0_session, vf1_session]:

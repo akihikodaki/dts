@@ -121,13 +121,13 @@ class TestVhostUserOneCopyOneVm(TestCase, IxiaPacketGenerator):
             self.jumbo = 1
             self.frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518, 2048, 5000, 9000]
             self.vm_testpmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 3" \
-                + " -- -i --txqflags=0xf00 " \
+                + " -- -i --tx-offloads=0x8000 " \
                 + "--disable-hw-vlan-filter --max-pkt-len 9600"
         else:
             self.jumbo = 0
             self.frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518]
             self.vm_testpmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 3" \
-                + " -- -i --txqflags=0xf00 --disable-hw-vlan-filter"
+                + " -- -i --tx-offloads=0x8000 --disable-hw-vlan-filter"
         self.dut.send_expect("rm -rf ./vhost.out", "#")
 
         self.launch_vhost_sample()

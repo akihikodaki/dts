@@ -812,7 +812,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         """
         if self._enable_perf:
             pmd_param = "--burst=32 --rxfreet=32 --mbcache=250 --txpt=32 \
---rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --txqflags=0xf01"
+--rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --tx-offloads=0"
             self.launch_app(pmd_param)
         else:
             self.launch_app()

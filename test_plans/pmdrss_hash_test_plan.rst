@@ -156,7 +156,7 @@ This case test bond slaves will auto sync rss hash config, it only support by fo
 
 #. set up testpmd with fortville NICs::
 
-      ./testpmd -c f -n 4 -- -i --portmask 0x3 --txqflags=0
+      ./testpmd -c f -n 4 -- -i --portmask 0x3 --tx-offloads=0x8fff
 
 #. create bond device with mode 3::
 
