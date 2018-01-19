@@ -107,7 +107,7 @@ dpdk pktgen to vf in vm0, and verify the vf on vm0 can receive stream.
 
 Step 1: run testpmd on vm0::
 
-        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --txqflags=0
+        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --tx-offloads=0x8fff
 
 Step 2: set rxonly and start on vm0::
 
@@ -164,7 +164,7 @@ Test Case3: test_2vf_k2d_scapy_stream
 
 Step 1: run testpmd on vm0::
 
-        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --txqflags=0
+        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i  --tx-offloads=0x8fff
 
 Step 2: set rxonly and start on vm0::
 

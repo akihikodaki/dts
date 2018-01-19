@@ -168,8 +168,8 @@ class VxlanTestConfig(object):
             outer[outer_l3.name].src = self.outer_ip_src
             outer[outer_l3.name].dst = self.outer_ip_dst
 
-        outer[UDP].src = self.outer_udp_src
-        outer[UDP].dst = self.outer_udp_dst
+        outer[UDP].sport = self.outer_udp_src
+        outer[UDP].dport = self.outer_udp_dst
 
         if self.outer_ip_invalid == 1:
             outer[outer_l3.name].chksum = 0
@@ -547,7 +547,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -597,7 +597,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -644,7 +644,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # start testpmd with 2queue/1port
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--txqflags=0x0 --enable-rx-cksum"
+            "--tx-offloads=0x8fff --enable-rx-cksum"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -717,7 +717,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # start testpmd with 2queue/1port
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--txqflags=0x0 --enable-rx-cksum"
+            "--tx-offloads=0x8fff --enable-rx-cksum"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -792,7 +792,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -833,7 +833,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -962,7 +962,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-            " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
 
         for perf_config in self.tunnel_perf:
             tun_filter = perf_config['tunnel_filter']
@@ -973,7 +973,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             if tun_filter == "None" and recv_queue == "Multi":
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --rss-udp --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+                    " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
 
             pmd_cmd = pmd_temp % {'TARGET': self.target,
                                   'COREMASK': core_mask,
@@ -1074,11 +1074,11 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             if recv_queue == 'Multi':
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s --txqflags=0x0"
+                    " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
             else:
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --nb-cores=2 --portmask=%(PORT)s" + \
-                    " --txqflags=0x0"
+                    " --tx-offloads=0x8fff"
 
             pmd_cmd = pmd_temp % {'TARGET': self.target,
                                   'COREMASK': core_mask,

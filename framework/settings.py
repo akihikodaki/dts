@@ -87,8 +87,11 @@ NICS = {
     'fortpark_TLV_vf': '8086:37cd',
     'fvl10g_vf': '8086:154c',
     'atwood': '8086:15d5',
-    'ConnectX3': '15b3:1003',
-    'ConnectX4': '15b3:1013',
+    'ConnectX3_MT4103': '15b3:1007',
+    'ConnectX4_MT4115': '15b3:1013',
+    'ConnectX4_LX_MT4117': '15b3:1015',
+    'ConnectX5_MT4119': '15b3:1017',
+    'ConnectX5_MT4121': '15b3:1019',
     'boulderrapid': '8086:15d0',
     'fortville_25g': '8086:158b',
     'cavium_a034': '177d:a034',
@@ -134,8 +137,11 @@ DRIVERS = {
     'fortpark_TLV_vf': 'i40evf',
     'fvl10g_vf': 'i40evf',
     'atwood': 'fm10k',
-    'ConnectX3': 'mlx4_core',
-    'ConnectX4': 'mlx5_core',
+    'ConnectX3_MT4103': 'mlx4_core',
+    'ConnectX4_MT4115': 'mlx5_core',
+    'ConnectX4_LX_MT4117': 'mlx5_core',
+    'ConnectX5_MT4119': 'mlx5_core',
+    'ConnectX5_MT4121': 'mlx5_core',
     'boulderrapid': 'fm10k',
     'fortville_25g': 'i40e',
     'cavium_a034': 'thunder-nicvf',
@@ -211,6 +217,7 @@ DEBUG_CASE_SETTING = "DTS_DEBUGCASE_ENABLE"
 DPDK_RXMODE_SETTING = "DTS_DPDK_RXMODE"
 DTS_ERROR_ENV = "DTS_RUNNING_ERROR"
 DTS_CFG_FOLDER = "DTS_CFG_FOLDER"
+DTS_PARALLEL_SETTING = "DTS_PARALLEL_ENABLE"
 
 
 """
@@ -223,6 +230,7 @@ DTS_ERR_TBL = {
     "TESTER_SETUP_ERR" : 4,
     "SUITE_SETUP_ERR": 5,
     "SUITE_EXECUTE_ERR": 6,
+    "PARALLEL_EXECUTE_ERR": 7
 }
 
 def get_nic_name(type):

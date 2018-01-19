@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=======================================================
-Improve ixgbe_get_vf_queue to include extra information
-=======================================================
+==========================================================
+Niantic ixgbe_get_vf_queue Include Extra Information Tests
+==========================================================
 
 Description
 ===========

@@ -30,9 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==================
-Packet distributor
-==================
+============================================
+Sample Application Tests: Packet distributor
+============================================
+
 Packet Distributor library is a library designed to be used for dynamic
 load balancing of traffic while supporting single packet at a time operation.
 When using this library, the logical cores in use are to be considered in

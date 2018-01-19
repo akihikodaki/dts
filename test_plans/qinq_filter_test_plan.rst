@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============================   
-Cloud filters for QinQ steering
-===============================
+===============================================
+Fortville Cloud filters for QinQ steering Tests
+===============================================
 This document provides test plan for testing the function of Fortville:
 QinQ filter function
 
@@ -56,7 +56,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 #. set up testpmd with fortville NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --txqflags=0x0  --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss
 
 #. enable qinq::
 
@@ -89,7 +89,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 #. set up testpmd with fortville NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --txqflags=0x0  --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss
 
 #. enable qinq::
 
@@ -132,7 +132,7 @@ Test Case 3: qinq packet filter to VF queues
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
 
 #. enable qinq::
 
@@ -209,7 +209,7 @@ Test Case 4: qinq packet filter with diffierent tpid
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
 
 #. enable qinq::
 

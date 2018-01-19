@@ -58,7 +58,7 @@ Test Case: Vxlan ipv4 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -91,7 +91,7 @@ Test Case: Vxlan ipv6 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -124,7 +124,7 @@ Test Case: Vxlan ipv4 checksum offload
 
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
 
 Set csum packet forwarding mode and enable verbose log::
 
@@ -290,7 +290,7 @@ Test Case: Cloud Filter
 Start testpmd with tunneling packet type to vxlan and disable receive side
 scale for hardware limitation::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --txqflags=0x0
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
 
 Set rxonly packet forwarding mode and enable verbose log::
 

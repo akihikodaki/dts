@@ -88,7 +88,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 ::
 
-  testpmd -c 1f -n 3  -- -i --rxq=4 --txq=4 --txqflags=0
+  testpmd -c 1f -n 3  -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
 
 Testpmd Configuration Options
 -----------------------------

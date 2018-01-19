@@ -60,7 +60,7 @@ Test Case 1: change VLAN TPID
 
 1. Start testpmd, start in rxonly mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> set fwd rxonly
       testpmd> set verbose 1
       testpmd> start
@@ -76,7 +76,7 @@ Test Case 2: test VLAN filtering on/off
 
 1. Start testpmd, setup vlan filter on, start in mac forwarding mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> set fwd mac
       testpmd> vlan set filter on 0
       testpmd> start
@@ -96,7 +96,7 @@ Test Case 3: test adding VLAN Tag Identifier with changing VLAN TPID
 
 1. start testpmd, setup vlan filter on, start in mac forwarding mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> set fwd mac
       testpmd> vlan set filter on 0
       testpmd> vlan set strip off 0
@@ -128,7 +128,7 @@ Test Case 4: test VLAN header striping with changing VLAN TPID
 
 1. start testpmd, setup vlan filter off, vlan strip on, start in mac forwarding mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> set fwd mac
       testpmd> vlan set filter off 0
       testpmd> vlan set strip on 0
@@ -157,7 +157,7 @@ Test Case 5: test VLAN header inserting with changing VLAN TPID
 
 1. start testpmd, enable vlan packet forwarding, start in mac forwarding mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> set fwd mac
       testpmd> vlan set filter off 0
       testpmd> vlan set strip off 0
@@ -192,7 +192,7 @@ Test Case 6: Change S-Tag and C-Tag within QinQ
 
 1. Start testpmd, enable QinQ, start in rxonly mode::
 
-      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --txqflags=0
+      ./testpmd -c 0xff -n 4 -- -i --portmask=0x3 --tx-offloads=0x8fff
       testpmd> vlan set qinq on 0
       testpmd> set fwd rxonly
       testpmd> set verbose 1

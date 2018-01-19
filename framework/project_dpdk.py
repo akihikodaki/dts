@@ -49,8 +49,8 @@ class DPDKdut(Dut):
     build, memory and kernel module.
     """
 
-    def __init__(self, crb, serializer):
-        super(DPDKdut, self).__init__(crb, serializer)
+    def __init__(self, crb, serializer, dut_id):
+        super(DPDKdut, self).__init__(crb, serializer, dut_id)
         self.testpmd = None
 
     def set_target(self, target, bind_dev=True):
@@ -71,11 +71,9 @@ class DPDKdut(Dut):
 
         self.set_rxtx_mode()
 
-        # Enable MLNX driver before installing dpdk
         drivername = load_global_setting(HOST_DRIVER_SETTING)
-        if drivername == DRIVERS['ConnectX4']:
-            self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX5_PMD=n/"
-                             + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
+
+        self.set_driver_specific_configurations(drivername)
 
         if not self.skip_setup:
             self.build_install_dpdk(target)
@@ -431,6 +429,16 @@ class DPDKdut(Dut):
         # No blacklist option in FreeBSD
         return blacklist
 
+    def set_driver_specific_configurations(self, drivername):
+        """
+        Set configurations required for specific drivers before compilation.
+        """
+        # Enable Mellanox drivers
+        if drivername == "mlx5_core" or drivername == "mlx4_core":
+            self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX5_PMD=n/"
+                             + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
+            self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX4_PMD=n/"
+                             + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
 
 class DPDKtester(Tester):
 
@@ -439,7 +447,7 @@ class DPDKtester(Tester):
     interface and generate port map.
     """
 
-    def __init__(self, crb, serializer):
+    def __init__(self, crb, serializer, dut_id):
         self.NAME = "tester"
         super(DPDKtester, self).__init__(crb, serializer)
 

@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===============
-EEE1588 Sample 
-===============
+==================================
+Sample Application Tests: IEEE1588
+==================================
 
 The PTP (Precision Time Protocol) client sample application is a simple 
 example of using the DPDK IEEE1588 API to communicate with a PTP master 

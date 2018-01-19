@@ -107,9 +107,9 @@ class TestVhostUserOneCopyOneVm(TestCase):
 
         self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         self.vm_testpmd_vector = self.target + "/app/testpmd -c 0x3 -n 3" \
-                                 + " -- -i --txqflags=0xf01 --disable-hw-vlan-filter"
+                                 + " -- -i --tx-offloads=0 --disable-hw-vlan-filter"
         self.vm_testpmd_normal = self.target + "/app/testpmd -c 0x3 -n 3" \
-                                 + " -- -i --txqflags=0xf00 --disable-hw-vlan-filter"
+                                 + " -- -i --tx-offloads=0x8000 --disable-hw-vlan-filter"
 
     def launch_vhost_sample(self):
         #

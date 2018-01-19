@@ -64,7 +64,7 @@ class TestUniPacket(TestCase):
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
         self.dut.send_expect(
-            "./%s/app/testpmd -c f -n 4 -- -i --txqflags=0x0" % self.target, "testpmd>", 20)
+            "./%s/app/testpmd -c f -n 4 -- -i --tx-offloads=0x8fff" % self.target, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")

@@ -85,7 +85,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 5. Run testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --txqflags=0 --crc-strip
+     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
      testpmd> set fwd mac
      testpmd> start
      testpmd> set allmulti all on
@@ -203,7 +203,7 @@ Test Case 3: vf reset -- create one vf on each pf
 3. Start one testpmd on two vf ports::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --txqflags=0 --crc-strip
+     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
 
 4. Start forwarding::
 
@@ -230,7 +230,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --txqflags=0 --crc-strip
+     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
      testpmd> set fwd mac
 
 2. Add vlan on both ports::
@@ -283,7 +283,7 @@ test Case 5: vlan rx restore -- vf reset one port
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i  \
-     --portmask=0x3 --txqflags=0 --crc-strip
+     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
      testpmd> set fwd mac
 
 2. Add vlan on both ports::
@@ -413,7 +413,7 @@ Test Case 7: vlan tx restore
 2. Run testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --txqflags=0 --crc-strip
+     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
 
 2. Add tx vlan offload on VF1 port, take care the first param is port,
    start forwarding::
@@ -457,7 +457,7 @@ test Case 8: MAC address restore
 3. Start testpmd on two vf ports::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4  \
-     -- -i --portmask=0x3 --txqflags=0 --crc-strip
+     -- -i --portmask=0x3 --tx-offloads=0x8fff --crc-strip
 
 4. Add MAC address to the vf0 ports::
 
@@ -527,7 +527,7 @@ test Case 9: vf reset (two vfs passed through to one VM)
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:05.0 00:05.1
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 \
-     -w 00:05.0 -w 00:05.1 -- -i --portmask=0x3 --txqflags=0
+     -w 00:05.0 -w 00:05.1 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
 5. Add MAC address to the vf0 ports, set it in mac forward mode::
 

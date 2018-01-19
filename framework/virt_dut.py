@@ -32,8 +32,8 @@
 import os
 import re
 import time
-import utils
 import settings
+from utils import RED, parallel_lock
 from config import PortConf
 from settings import NICS, LOG_NAME_SEP, get_netdev
 from project_dpdk import DPDKdut
@@ -53,14 +53,16 @@ class VirtDut(DPDKdut):
     or CRBBareMetal.
     """
 
-    def __init__(self, hyper, crb, serializer, virttype, vm_name, suite, cpu_topo):
+    def __init__(self, hyper, crb, serializer, virttype, vm_name, suite, cpu_topo, dut_id):
         self.vm_name = vm_name
         self.hyper = hyper
         self.cpu_topo = cpu_topo
+        self.dut_id = dut_id
 
         self.vm_ip = crb['IP']
         self.NAME = 'virtdut' + LOG_NAME_SEP + '%s' % self.vm_ip
-        super(Dut, self).__init__(crb, serializer, self.NAME)
+        # do not create addition alt_session
+        super(Dut, self).__init__(crb, serializer, self.NAME, alt_session=False, dut_id=self.dut_id)
         # load port config from suite cfg
         self.suite = suite
 
@@ -73,15 +75,13 @@ class VirtDut(DPDKdut):
         self.virttype = virttype
 
     def init_log(self):
-        self.logger.config_suite(self.host_dut.test_classname, 'virtdut')
+        if hasattr(self.host_dut, "test_classname"):
+            self.logger.config_suite(self.host_dut.test_classname, 'virtdut')
 
     def close(self, force=False):
         if self.session:
             self.session.close(force)
             self.session = None
-        if self.alt_session:
-            self.alt_session.close(force)
-            self.alt_session = None
         RemoveNicObj(self)
 
     def set_nic_type(self, nic_type):
@@ -91,6 +91,7 @@ class VirtDut(DPDKdut):
         self.nic_type = nic_type
         # vm_dut config will load from vm configuration file
 
+    @parallel_lock()
     def load_portconf(self):
         """
         Load port config for this virtual machine
@@ -99,18 +100,30 @@ class VirtDut(DPDKdut):
         self.conf.load_ports_config(self.vm_name)
         self.ports_cfg = self.conf.get_ports_config()
 
-        return
+    @parallel_lock()
+    def detect_portmap(self, dut_id):
+        """
+        Detect port mapping with ping6 message, should be locked for protect
+        tester operations.
+        """
+        # enable tester port ipv6
+        self.host_dut.enable_tester_ipv6()
 
-    def create_portmap(self):
-        # if not config ports in vm port config file, used ping6 get portmap
-        if not self.ports_cfg:
-            self.map_available_ports()
+        self.map_available_ports()
+
+        # disable tester port ipv6
+        self.host_dut.disable_tester_ipv6()
+
+    def load_portmap(self):
+        """
+        Generate port mapping base on loaded port configuration
+        """
         port_num = len(self.ports_info)
         self.ports_map = [-1] * port_num
         for key in self.ports_cfg.keys():
             index = int(key)
             if index >= port_num:
-                print utils.RED("Can not found [%d ]port info" % index)
+                print RED("Can not found [%d ]port info" % index)
                 continue
 
             if 'peer' in self.ports_cfg[key].keys():
@@ -142,7 +155,7 @@ class VirtDut(DPDKdut):
         if bind_dev:
             self.bind_interfaces_linux('igb_uio')
 
-    def prerequisites(self, pkgName, patch):
+    def prerequisites(self, pkgName, patch, autodetect_topo):
         """
         Prerequest function should be called before execute any test case.
         Will call function to scan all lcore's information which on DUT.
@@ -152,7 +165,10 @@ class VirtDut(DPDKdut):
         if not self.skip_setup:
             self.prepare_package()
 
-        self.send_expect("cd %s" % self.base_dir, "# ")
+        out = self.send_expect("cd %s" % self.base_dir, "# ")
+        if 'No such file or directory' in out:
+            self.logger.error("Can't switch to dpdk folder!!!")
+
         self.send_expect("alias ls='ls --color=none'", "#")
 
         if self.get_os_type() == 'freebsd':
@@ -180,14 +196,14 @@ class VirtDut(DPDKdut):
         # load port infor from config file
         self.load_portconf()
 
-        # enable tester port ipv6
-        self.host_dut.enable_tester_ipv6()
         self.mount_procfs()
 
-        self.create_portmap()
-
-        # disable tester port ipv6
-        self.host_dut.disable_tester_ipv6()
+        if self.ports_cfg:
+            self.load_portmap()
+        else:
+            # if no config ports in port config file, will auto-detect portmap
+            if autodetect_topo:
+                self.detect_portmap(dut_id=self.dut_id)
 
         # print latest ports_info
         for port_info in self.ports_info:
@@ -196,7 +212,7 @@ class VirtDut(DPDKdut):
     def init_core_list(self):
         self.cores = []
         cpuinfo = self.send_expect("grep --color=never \"processor\""
-                                   " /proc/cpuinfo", "#", alt_session=False)
+                                   " /proc/cpuinfo", "#")
         cpuinfo = cpuinfo.split('\r\n')
         if self.cpu_topo != '':
             topo_reg = r"(\d)S/(\d)C/(\d)T"
@@ -210,7 +226,7 @@ class VirtDut(DPDKdut):
                 total_phycores = socks * cores
                 # cores should match cpu_topo
                 if total != len(cpuinfo):
-                    print utils.RED("Core number not matched!!!")
+                    print RED("Core number not matched!!!")
                 else:
                     for core in range(total):
                         thread = core / total_phycores
@@ -378,7 +394,7 @@ class VirtDut(DPDKdut):
                         vfs = remoteport.get_sriov_vfs_pci()
                         # if hostpci is vf of tester port
                         if hostpci == remotepci or hostpci in vfs:
-                            print utils.RED("Skip ping from same PF device")
+                            print RED("Skip ping from same PF device")
                             continue
 
                 ipv6 = self.get_ipv6_address(vmPort)
@@ -394,3 +410,21 @@ class VirtDut(DPDKdut):
                     self.ports_map[vmPort] = remotePort
                     hits[remotePort] = True
                     continue
+
+    def kill_all(self, alt_session=False):
+        """
+        Kill all dpdk applications on VM
+        """
+        control = getattr(self.hyper, 'control_session', None)
+        if callable(control):
+            out = control("lsof -Fp /var/run/.rte_config")
+            pids = []
+            pid_reg = r'p(\d+)'
+            if len(out):
+                lines = out.split('\r\n')
+                for line in lines:
+                    m = re.match(pid_reg, line)
+                    if m:
+                        pids.append(m.group(1))
+            for pid in pids:
+                control('kill -9 %s' % pid)

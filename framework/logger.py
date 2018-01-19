@@ -35,7 +35,7 @@ import sys
 import inspect
 import re
 
-from settings import LOG_NAME_SEP, FOLDERS
+from settings import LOG_NAME_SEP, FOLDERS, load_global_setting, DTS_PARALLEL_SETTING
 from utils import RED
 
 """
@@ -87,23 +87,15 @@ logging.addLevelName(logging.SUITE_TESTER_OUTPUT, 'SUITE_TESTER_OUTPUT')
 logging.addLevelName(logging.DTS_IXIA_CMD, 'DTS_IXIA_CMD')
 logging.addLevelName(logging.DTS_IXIA_OUTPUT, 'DTS_IXIA_OUTPUT')
 
-message_fmt = '%(asctime)s %(levelname)20s: %(message)s'
 date_fmt = '%d/%m/%Y %H:%M:%S'
 RESET_COLOR = '\033[0m'
-stream_fmt = '%(color)s%(levelname)20s: %(message)s' + RESET_COLOR
+stream_fmt = '%(color)s%(name)30s: %(message)s' + RESET_COLOR
 log_dir = None
 
 
 def set_verbose():
     global verbose
     verbose = True
-
-
-def add_salt(salt, msg):
-    if not salt:
-        return msg
-    else:
-        return '[%s] ' % salt + str(msg)
 
 
 class BaseLoggerAdapter(logging.LoggerAdapter):
@@ -212,8 +204,6 @@ class DTSLOG(BaseLoggerAdapter):
         self.crb = crb
         super(DTSLOG, self).__init__(self.logger, dict(crb=self.crb))
 
-        self.salt = ''
-
         self.fh = None
         self.ch = None
 
@@ -226,6 +216,11 @@ class DTSLOG(BaseLoggerAdapter):
         """
         Config stream handler and file handler.
         """
+        if load_global_setting(DTS_PARALLEL_SETTING) == 'yes':
+            message_fmt = '%(asctime)s %(name)30s %(threadName)s: %(message)s'
+        else:
+            message_fmt = '%(asctime)s %(name)30s: %(message)s'
+
         fh.setFormatter(logging.Formatter(message_fmt, date_fmt))
         ch.setFormatter(logging.Formatter(stream_fmt, date_fmt))
 
@@ -251,28 +246,24 @@ class DTSLOG(BaseLoggerAdapter):
         """
         DTS warnning level log function.
         """
-        message = add_salt(self.salt, message)
         self.logger.log(self.warn_lvl, message)
 
     def info(self, message):
         """
         DTS information level log function.
         """
-        message = add_salt(self.salt, message)
         self.logger.log(self.info_lvl, message)
 
     def error(self, message):
         """
         DTS error level log function.
         """
-        message = add_salt(self.salt, message)
         self.logger.log(self.error_lvl, message)
 
     def debug(self, message):
         """
         DTS debug level log function.
         """
-        message = add_salt(self.salt, message)
         self.logger.log(self.debug_lvl, message)
 
     def set_logfile_path(self, path):
@@ -304,34 +295,20 @@ class DTSLOG(BaseLoggerAdapter):
         ch = ColorHandler()
         self.__log_handler(fh, ch)
 
-        def set_salt(crb, start_flag):
-            if LOG_NAME_SEP in crb:
-                old = '%s%s' % (start_flag, LOG_NAME_SEP)
-                if not self.salt:
-                    self.salt = crb.replace(old, '', 1)
-
         if crb.startswith('dut'):
             self.info_lvl = logging.DTS_DUT_CMD
             self.debug_lvl = logging.DTS_DUT_OUTPUT
             self.warn_lvl = logging.DTS_DUT_RESULT
-
-            set_salt(crb, 'dut')
         elif crb.startswith('tester'):
             self.info_lvl = logging.DTS_TESTER_CMD
             self.debug_lvl = logging.DTS_TESTER_OUTPUT
             self.warn_lvl = logging.DTS_TESTER_RESULT
-
-            set_salt(crb, 'tester')
         elif crb.startswith('ixia'):
             self.info_lvl = logging.DTS_IXIA_CMD
             self.debug_lvl = logging.DTS_IXIA_OUTPUT
-
-            set_salt(crb, 'ixia')
         elif crb.startswith('virtdut'):
             self.info_lvl = logging.DTS_VIRTDUT_CMD
             self.debug_lvl = logging.DTS_VIRTDUT_OUTPUT
-
-            set_salt(crb, 'virtdut')
         else:
             self.error_lvl = logging.ERROR
             self.warn_lvl = logging.WARNING

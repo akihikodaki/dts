@@ -183,7 +183,7 @@ class TestPmd(TestCase,IxiaPacketGenerator):
             core_mask = utils.create_mask(core_list)
             port_mask = utils.create_mask(self.dut.get_ports())
 
-            self.pmdout.start_testpmd(core_config, " --rxq=%d --txq=%d --portmask=%s --rss-ip --txrst=32 --txfreet=32 --txd=128 --txqflags=0xf01" % (queues, queues, port_mask), socket=self.ports_socket)
+            self.pmdout.start_testpmd(core_config, " --rxq=%d --txq=%d --portmask=%s --rss-ip --txrst=32 --txfreet=32 --txd=128 --tx-offloads=0" % (queues, queues, port_mask), socket=self.ports_socket)
 	    command_line = self.pmdout.get_pmd_cmd()
 
             info = "Executing PMD using %s\n" % test_cycle['cores']

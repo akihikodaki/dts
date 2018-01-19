@@ -447,7 +447,7 @@ class TestVfKernel(TestCase):
         """
         time.sleep(10)
         out = self.vm0_dut.send_expect("ethtool -S %s" % self.vm0_intf0, "#")
-        rx_packets_before = re.findall("\s*rx.*packets:\s*(\d*)", out)
+        rx_packets_before = re.findall("\s*rx.*\d+.*packets:\s*(\d*)", out)
         nb_rx_pkts_before = 0
         for i in range(len(rx_packets_before)):
             nb_rx_pkts_before += int(rx_packets_before[i])
@@ -457,7 +457,7 @@ class TestVfKernel(TestCase):
                                            vm0_vf0_mac, num=10), "VM reveive packet failed")
 
         out = self.vm0_dut.send_expect("ethtool -S %s" % self.vm0_intf0, "#")
-        rx_packets_after = re.findall("\s*rx.*packets:\s*(\d*)", out)
+        rx_packets_after = re.findall("\s*rx.*\d+.*packets:\s*(\d*)", out)
         nb_rx_pkts_after = 0
         for i in range(len(rx_packets_after)):
             nb_rx_pkts_after += int(rx_packets_after[i])
@@ -689,13 +689,15 @@ class TestVfKernel(TestCase):
         self.vm0_dut.send_expect("ifconfig %s up " % self.vm0_intf1, "#")
         self.vm0_dut.ports_info[1]['port'].bind_driver('igb_uio')
 
+        # because of alt_session is false, host cmd need to execute before testpmd start
+        vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
+
         self.vm0_testpmd.start_testpmd("Default")
         self.vm0_testpmd.execute_cmd('set promisc all on')
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
 
-        vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
         vm0_vf1_mac = self.vm0_testpmd.get_port_mac(0)
 
         macs = [vm0_vf0_mac, vm0_vf1_mac]
@@ -775,6 +777,11 @@ class TestVfKernel(TestCase):
         self.vm0_dut.ports_info[1]['port'].bind_driver('igb_uio')
         self.vm1_dut.ports_info[0]['port'].bind_driver('igb_uio')
 
+        # because of alt_session is false, host cmd need to execute before testpmd start
+        vm0_vf2_mac = self.vm0_dut.ports_info[2]['port'].get_mac_addr()
+        vm0_vf3_mac = self.vm0_dut.ports_info[3]['port'].get_mac_addr()
+        vm1_vf1_mac = self.vm1_dut.ports_info[1]['port'].get_mac_addr()
+
         # Start DPDK VF0, VF1 in VM0 and VF4 in VM1, enable promisc mode
         self.vm0_testpmd.start_testpmd("Default")
         self.vm0_testpmd.execute_cmd('set promisc all on')
@@ -790,10 +797,7 @@ class TestVfKernel(TestCase):
 
         vm0_vf0_mac = self.vm0_testpmd.get_port_mac(0)
         vm0_vf1_mac = self.vm0_testpmd.get_port_mac(1)
-        vm0_vf2_mac = self.vm0_dut.ports_info[2]['port'].get_mac_addr()
-        vm0_vf3_mac = self.vm0_dut.ports_info[3]['port'].get_mac_addr()
         vm1_vf0_mac = self.vm1_testpmd.get_port_mac(0)
-        vm1_vf1_mac = self.vm1_dut.ports_info[1]['port'].get_mac_addr()
         pf0_mac = self.dut_testpmd.get_port_mac(0)
         pf1_mac = self.dut_testpmd.get_port_mac(1)
 

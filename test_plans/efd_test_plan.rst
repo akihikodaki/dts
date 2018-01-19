@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================
-Elastic Flow Distributor
-========================
+==================================================
+Sample Application Tests: Elastic Flow Distributor
+==================================================
 
 Description
 -----------

@@ -447,7 +447,7 @@ Bi-directional flow: Use IXIA to generate traffic to non bonded eth dev(port3) a
 
 Try to check that if port0 is link down, port1 can be backup quickly and re-check the performance at port1 and port3's mapped IXIA ports' RX::
 
-    ./app/testpmd -c f -n 4 -- -i --burst=32 --rxfreet=32 --mbcache=250 --txpt=32 --rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --txqflags=0xf01
+    ./app/testpmd -c f -n 4 -- -i --burst=32 --rxfreet=32 --mbcache=250 --txpt=32 --rxht=8 --rxwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x0
     testpmd> create bonded device 1 0
     testpmd> add bonding slave 0 4
     testpmd> add bonding slave 1 4

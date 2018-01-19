@@ -44,8 +44,8 @@ class SSHConnection(object):
     Implement send_expect/copy function upper SSHPexpet module.
     """
 
-    def __init__(self, host, session_name, username, password=''):
-        self.session = SSHPexpect(host, username, password)
+    def __init__(self, host, session_name, username, password='', dut_id=0):
+        self.session = SSHPexpect(host, username, password, dut_id)
         self.name = session_name
         connection = {}
         connection[self.name] = self.session
@@ -63,7 +63,7 @@ class SSHConnection(object):
 
     def send_command(self, cmds, timeout=1):
         self.logger.info(cmds)
-        out = self.session.send_command(cmds)
+        out = self.session.send_command(cmds, timeout)
         self.logger.debug(out)
         return out
 
@@ -73,6 +73,9 @@ class SSHConnection(object):
         return out
 
     def close(self, force=False):
+        if getattr(self, "logger", None):
+            self.logger.logger_exit()
+
         self.session.close(force)
         connection = {}
         connection[self.name] = self.session

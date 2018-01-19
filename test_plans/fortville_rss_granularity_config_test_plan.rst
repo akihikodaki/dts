@@ -77,7 +77,7 @@ Test Case 1: test with flow type ipv4-tcp
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 
@@ -152,7 +152,7 @@ Test Case 2: test with flow type ipv4-udp
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 
@@ -248,7 +248,7 @@ Test Case 5: test dual vlan(QinQ)
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. set qinq on::
 
@@ -311,7 +311,7 @@ Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --txqflags=0
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 

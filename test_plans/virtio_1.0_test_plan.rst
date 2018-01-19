@@ -38,12 +38,12 @@ Virtio 1.0 is a new version of virtio. And the virtio 1.0 spec link is at
 http://docs.oasis-open.org/virtio/virtio/v1.0/virtio-v1.0.pdf.
 
 The major difference is at PCI layout. For testing virtio 1.0 pmd, we need
-test the basic RX/TX, different path(txqflags), mergeable on/off, and also
+test the basic RX/TX, different path(tx-offloads), mergeable on/off, and also
 test with virtio0.95 to ensure they can co-exist. Besides, we need test virtio
 1.0's performance to ensure it has similar performance as virtio0.95.
 
 
-Test Case 1: test_func_vhost_user_virtio1.0-pmd with different txqflags
+Test Case 1: test_func_vhost_user_virtio1.0-pmd with different tx-offloads
 =======================================================================
 
 Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0.
@@ -67,7 +67,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan
 
      $ >set fwd mac
 
@@ -91,11 +91,11 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
 
 4. Send traffic to virtio1(MAC1=52:54:00:00:00:01) with VLAN ID=1000. Check if virtio packet can be RX/TX and also check the TX packet size is same as the RX packet size.
 
-5. Also run the dpdk testpmd in VM with txqflags=0xf01 for the virtio pmd optimization usage::
+5. Also run the dpdk testpmd in VM with tx-offloads=0 for the virtio pmd optimization usage::
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags=0x0f01 --disable-hw-vlan
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0 --disable-hw-vlan
 
      $ >set fwd mac
 
@@ -127,7 +127,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan
 
      $ >set fwd mac
 
@@ -174,7 +174,7 @@ Test Case 3: test_func_vhost_user_virtio1.0-pmd with mergeable enabled
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan --max-pkt-len=9000
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan --max-pkt-len=9000
 
      $ >set fwd mac
 
@@ -216,7 +216,7 @@ Test Case 4: test_func_vhost_user_one-vm-virtio1.0-one-vm-virtio0.95
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan --eth-peer=0,52:54:00:00:00:02
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan --eth-peer=0,52:54:00:00:00:02
 
      $ >set fwd mac
 
@@ -226,7 +226,7 @@ Test Case 4: test_func_vhost_user_one-vm-virtio1.0-one-vm-virtio0.95
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan
 
      $ >set fwd mac
 
@@ -258,7 +258,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
-     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --txqflags 0x0f00 --disable-hw-vlan
+     ./<dpdk_folder>/x86_64-native-linuxapp-gcc/app/test-pmd/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x8000 --disable-hw-vlan
 
      $ >set fwd mac
 

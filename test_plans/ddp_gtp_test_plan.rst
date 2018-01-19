@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-================
-DDP GTP-C/GTP-U 
-================
+===============================
+Fortville DDP GTP-C/GTP-U Tests
+===============================
 
 FVL6 supports DDP (Dynamic Device Personalization) to program analyzer/parser
 via AdminQ. Profile can be used to update FVL configuration tables via MMIO
@@ -82,7 +82,7 @@ Prerequisites
    port topology mode, add txq/rxq to enable multi-queues. In general, PF's 
    max queue is 64, VF's max queue is 4::
 
-    ./testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect --port-topology=chained --txqflags=0 --txq=64 --rxq=64  
+    ./testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect --port-topology=chained --tx-offloads=0x8fff --txq=64 --rxq=64  
 
 
 Test Case: Load dynamic device personalization 

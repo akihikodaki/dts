@@ -55,7 +55,7 @@ Plug in three different types of nic on the board.
 
 Start testpmd and then enable rxonly and verbose mode::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c f -n 4 -- -i --txqflags=0x0
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c f -n 4 -- -i --tx-offloads=0x8fff
     set fwd rxonly
     set verbose 1
     start

@@ -97,7 +97,7 @@ class TestVhostLoopback(TestCase):
             command_line_user = self.target + "/app/testpmd -n 4 -c 0x0c " + \
                                 " -m 2048 --no-pci --file-prefix=virtio " + \
                                 " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net" + \
-                                " -- -i --txqflags=0xf01 --disable-hw-vlan-filter"
+                                " -- -i --tx-offloads=0 --disable-hw-vlan-filter"
 
             vhost_user.send_expect(command_line_user, "testpmd>", 120)
 
@@ -156,7 +156,7 @@ class TestVhostLoopback(TestCase):
             command_line_user = self.target + "/app/testpmd -n 4 -c 0x0c " + \
                                 " -m 2048 --no-pci --file-prefix=virtio " + \
                                 " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net " + \
-                                " -- -i --txqflags=0xf01 --disable-hw-vlan-filter"
+                                " -- -i --tx-offloads=0 --disable-hw-vlan-filter"
 
             vhost_user.send_expect(command_line_user, "testpmd>", 120)
 
@@ -215,7 +215,7 @@ class TestVhostLoopback(TestCase):
             command_line_user = self.target + "/app/testpmd -n 4 -c 0x0c " + \
                                 " -m 2048 --no-pci --file-prefix=virtio " + \
                                 " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net" + \
-                                " -- -i --txqflags=0xf00 --disable-hw-vlan-filter"
+                                " -- -i --tx-offloads=0x8000 --disable-hw-vlan-filter"
 
             vhost_user.send_expect(command_line_user, "testpmd>", 120)
 

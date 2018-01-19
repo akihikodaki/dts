@@ -101,9 +101,9 @@ class PmdOutput():
         return self.command
 
     def start_testpmd(self, cores, param='', eal_param='', socket=0):
-        # in dpdk2.0 need used --txqflags param to open hardware features
-        if "--txqflags" not in param:
-            param += " --txqflags=0"
+        # in dpdk18.02 need used --tx-offloads param to open hardware features
+        if "--tx-offloads" not in param:
+            param += " --tx-offloads=0x8fff"
 
         if type(cores) == list:
             core_list = cores
