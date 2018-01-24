@@ -17,7 +17,7 @@ from test_case import TestCase
 # Test class.
 #
 
-command_line = """./%s/app/test -c %s -n %d --log-level 8"""
+command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" """
 
 
 class TestCoremask(TestCase):
@@ -39,11 +39,6 @@ class TestCoremask(TestCase):
         self.mem_channel = self.dut.get_memory_channels()
 
         self.all_cores = self.dut.get_core_list("all")
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LOG_LEVEL=.*$/"
-                          + "CONFIG_RTE_LOG_LEVEL=RTE_LOG_DEBUG/' config/common_base", "# ", 30)
-
-        self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
 
     def set_up(self):
         """
@@ -64,7 +59,6 @@ class TestCoremask(TestCase):
                                       self.mem_channel)
 
             out = self.dut.send_expect(command, "RTE>>", 10)
-
             self.verify("EAL: Detected lcore %s as core" % core in out,
                         "Core %s not detected" % core)
 
@@ -83,7 +77,6 @@ class TestCoremask(TestCase):
         command = command_line % (self.target, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
-
         self.verify("EAL: Master lcore 1 is ready" in out,
                     "Core 1 not ready")
 
@@ -104,7 +97,7 @@ class TestCoremask(TestCase):
         Check coremask parsing for more cores than available.
         """
 
-        command_line = """./%s/app/test -c %s -n %d --log-level 8 2>&1 |tee out"""
+        command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" 2>&1 |tee out"""
 
         # Default big coremask value 128
         big_coremask_size = 128
@@ -131,7 +124,6 @@ class TestCoremask(TestCase):
             self.dut.send_expect(command, "RTE>>", 10)
         except:
             out = self.dut.send_expect("cat out", "# ")
-
             self.verify("EAL: invalid coremask" in out,
                     "Small core mask set")
 
@@ -178,8 +170,4 @@ class TestCoremask(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LOG_LEVEL=.*$/"
-                          + "CONFIG_RTE_LOG_LEVEL=RTE_LOG_INFO/' config/common_base", "# ", 30)
-
-        #self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
+        pass
