@@ -26,10 +26,12 @@ class TestDdpGtp(TestCase):
         profile_file = 'dep/gtp.pkgo'
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
-        PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
-        VF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
-        self.PF_QUEUE = self.search_queue_number(PF_Q_strip)
-        self.VF_QUEUE = self.search_queue_number(VF_Q_strip)
+        self.PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        # commit ee653bd8, queue number of per vf default value is defined
+        # in drivers/net/i40e/i40e_ethdev.c, named as RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF
+        self.VF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
+        self.PF_QUEUE = self.search_queue_number(self.PF_Q_strip)
+        self.VF_QUEUE = self.search_queue_number(self.VF_Q_strip)
 
     def set_up(self):
         self.setup_vm_env()
@@ -39,15 +41,22 @@ class TestDdpGtp(TestCase):
         """
         Search max queue number from configuration.
         """
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        pattern = "(%s=)(\d*)" % Q_strip
+        if Q_strip is self.PF_Q_strip:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            pattern = "(%s=)(\d*)" % Q_strip
+        else :
+            out = self.dut.send_expect("cat drivers/net/i40e/i40e_ethdev.c", "]# ", 10)
+            pattern = "#define %s\s*(\d*)" % Q_strip
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
             print utils.RED('Search no queue number.')
             return None
         else:
-            queue = res.group(2)
+            if Q_strip is self.VF_Q_strip:
+                queue = res.group(1)
+            else :
+                queue = res.group(2)
             return int(queue)
 
     def bind_nic_driver(self, ports, driver=""):
