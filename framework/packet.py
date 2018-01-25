@@ -73,6 +73,10 @@ from nvgre import NVGRE, IPPROTO_NVGRE
 from lldp import LLDP, LLDPManagementAddress
 from Dot1BR import Dot1BR
 
+# get tester logger
+from logger import getLogger
+logger = getLogger('tester')
+
 # packet generator type should be configured later
 PACKETGEN = "scapy"
 
@@ -351,7 +355,7 @@ class scapy(object):
         crb.send_expect("scapy -c scapy_%s.cmd &" % intf, "# ")
 
     def print_summary(self):
-        print "Send out pkt %s" % self.pkt.summary()
+        logger.info("%s" % self.pkt.command())
 
     def send_pkt(self, intf='', count=1):
         self.print_summary()
