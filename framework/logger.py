@@ -92,6 +92,10 @@ RESET_COLOR = '\033[0m'
 stream_fmt = '%(color)s%(name)30s: %(message)s' + RESET_COLOR
 log_dir = None
 
+# List for saving all using loggers
+global Loggers
+Loggers = []
+
 
 def set_verbose():
     global verbose
@@ -356,7 +360,15 @@ def getLogger(name, crb="suite"):
     """
     Get logger handler and if there's no handler for specified CRB will create one.
     """
+    global Loggers
+    # return saved logger
+    for logger in Loggers:
+        if logger['name'] == name and logger['crb'] == crb:
+            return logger['logger']
+
+    # return new logger
     logger = DTSLOG(logging.getLogger(name), crb)
+    Loggers.append({'logger': logger, 'name': name, 'crb': crb})
     return logger
 
 
