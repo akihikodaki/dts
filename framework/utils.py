@@ -233,3 +233,22 @@ def convert_ip2int(ip_str, ip_type):
         ip_val = (h << 64) | l
 
     return ip_val
+
+def get_backtrace_object(file_name, obj_name):
+    import inspect
+    frame = inspect.currentframe()
+    obj = None
+    found = False
+    while frame:
+        file_path = inspect.getsourcefile(frame)
+        call_file = file_path.split(os.sep)[-1]
+        if file_name == call_file:
+            found = True
+            break
+
+        frame = frame.f_back
+
+    if found:
+        obj = getattr(frame.f_locals['self'], obj_name, None)
+
+    return obj
