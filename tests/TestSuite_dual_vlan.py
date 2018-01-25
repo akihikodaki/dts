@@ -195,7 +195,11 @@ class TestDualVlan(TestCase):
         self.mode_config(strip=temp[0], filter=temp[1], qinq=temp[2])
 
         if (caseDef & txCase) != 0:
+            self.dut.send_expect('stop', "testpmd> ")
+            self.dut.send_expect('port stop all', "testpmd> ")
             self.dut.send_expect('tx_vlan set %s %s' % (dutTxPortId, txvlan), "testpmd> ")
+            self.dut.send_expect('port start all', "testpmd> ")
+            self.dut.send_expect('start', "testpmd> ")
 
         configMode = "Strip %s, filter %s 0x1, extend %s, insert %s" % (temp[0], temp[1], temp[2], "on" if (caseDef & txCase) != 0 else "off")
 
@@ -209,14 +213,23 @@ class TestDualVlan(TestCase):
             self.check_result(vlanCase[caseIndex][1], configMode + " result Error")
             self.dut.send_expect('rx_vlan rm %s %s' % (invlan, dutRxPortId), "testpmd> ")
             if (caseDef & txCase) != 0:
+                self.dut.send_expect('stop', "testpmd> ")
+                self.dut.send_expect('port stop all', "testpmd> ")
                 self.dut.send_expect('tx_vlan reset %s' % dutTxPortId, "testpmd> ")
+                self.dut.send_expect('port start all', "testpmd> ")
+                self.dut.send_expect('start', "testpmd> ")
+
         else:
             self.dut.send_expect('rx_vlan add %s %s' % (invlan, dutRxPortId), "testpmd> ")
             self.dut.send_expect('rx_vlan add %s %s' % (outvlan, dutRxPortId), "testpmd> ")
             self.vlan_send_packet(outvlan, invlan)
             self.check_result(vlanCase[caseIndex], configMode + " result Error")
             if (caseDef & txCase) != 0:
+                self.dut.send_expect('stop', "testpmd> ")
+                self.dut.send_expect('port stop all', "testpmd> ")
                 self.dut.send_expect('tx_vlan reset %s' % dutTxPortId, "testpmd> ")
+                self.dut.send_expect('port start all', "testpmd> ")
+                self.dut.send_expect('start', "testpmd> ")
             self.dut.send_expect('rx_vlan rm %s %s' % (invlan, dutRxPortId), "testpmd> ")
             self.dut.send_expect('rx_vlan rm %s %s' % (outvlan, dutRxPortId), "testpmd> ")
 
@@ -346,13 +359,22 @@ class TestDualVlan(TestCase):
         if(self.nic == "hartwell"):
             self.dut.send_expect("vlan set strip on %s" % dutTxPortId, "testpmd> ")
 
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan set %s %s" % (dutTxPortId, txvlan), "testpmd> ")
+        self.dut.send_expect("port start all", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % txvlan in out, "vlan inset enalber error: " + out)
 
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ")
+        self.dut.send_expect("port start all", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % txvlan not in out, "vlan inset disable error: " + out)

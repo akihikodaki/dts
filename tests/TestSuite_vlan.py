@@ -205,7 +205,10 @@ class TestVlan(TestCase):
         intf = self.tester.get_interface(port)
 
         self.dut.send_expect("set nbport 2", "testpmd> ")
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> ")
+        self.dut.send_expect("port start all", "testpmd> ")
 
         self.dut.send_expect("start", "testpmd> ")
         self.vlan_send_packet(-1)
