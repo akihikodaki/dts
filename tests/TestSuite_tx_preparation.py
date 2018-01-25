@@ -89,11 +89,12 @@ class TestTX_preparation(TestCase):
         self.dut_testpmd = PmdOutput(self.dut)
         # use one port test the case
         self.dut_testpmd.start_testpmd(
-                "Default", " --portmask=1 --port-topology=chained --max-pkt-len=%s" %Max_mtu)
+                "Default", " --portmask=1 --port-topology=chained --max-pkt-len=%s --tx-offloads=0x8000" %Max_mtu)
         self.dmac = self.dut_testpmd.get_port_mac(0)
         self.dut_testpmd.execute_cmd('set fwd csum')
         self.dut_testpmd.execute_cmd('set verbose 1')
         #enable ip/udp/tcp hardware checksum
+        self.dut_testpmd.execute_cmd('port stop all')
         self.dut_testpmd.execute_cmd('csum set ip hw 0')
         self.dut_testpmd.execute_cmd('csum set tcp hw 0')
         self.dut_testpmd.execute_cmd('csum set udp hw 0')
@@ -168,6 +169,7 @@ class TestTX_preparation(TestCase):
         ftag functional test
         """
         self.dut_testpmd.execute_cmd('tso set 0 0')
+        self.dut_testpmd.execute_cmd('port start all')
         self.dut_testpmd.execute_cmd('start')
 
         self.send_packet_verify()
@@ -179,6 +181,7 @@ class TestTX_preparation(TestCase):
         ftag functional test
         """
         self.dut_testpmd.execute_cmd('tso set %s 0' %TSO_value)
+        self.dut_testpmd.execute_cmd('port start all')
         self.dut_testpmd.execute_cmd('start')
 
         self.send_packet_verify(1)
