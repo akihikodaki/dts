@@ -655,7 +655,7 @@ class TestPmdrssHash(TestCase):
     def test_dynamic_rss_bond_config(self):
         
         # setup testpmd and finish bond config
-        self.dut.send_expect("./%s/app/testpmd -c f -n 4 -- -i --tx-offloads=0x8fff" % self.target, "testpmd> ", 120)
+        self.dut.send_expect("./%s/app/testpmd -c f -n 4 -- -i" % self.target, "testpmd> ", 120)
         out = self.dut.send_expect("create bonded device 3 0", "testpmd> ", 30)
         bond_device_id = int(re.search("port \d+", out).group().split(" ")[-1].strip())
 
