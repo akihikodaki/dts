@@ -114,7 +114,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -131,7 +132,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -147,7 +149,8 @@
             ],
             "NIC": [
                 "powerville",
-                "niantic"
+                "niantic",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -164,7 +167,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -181,7 +185,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -198,7 +203,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -215,7 +221,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -232,7 +239,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
