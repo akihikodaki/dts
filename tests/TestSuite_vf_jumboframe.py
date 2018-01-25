@@ -209,7 +209,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_STANDARD_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -229,7 +229,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -249,7 +249,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8fff" )
+        self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8000" )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -277,7 +277,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -298,7 +298,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")

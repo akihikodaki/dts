@@ -144,7 +144,7 @@ class TestJumboframes(TestCase):
         This case aims to test transmitting normal size packet without jumbo
         f=rame on testpmd app.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop" % (ETHER_STANDARD_MTU))
+        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -163,7 +163,7 @@ class TestJumboframes(TestCase):
         if self.kdriver == "fm10k":
             print utils.RED("fm10k not support this case\n")
             return
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop" % (ETHER_STANDARD_MTU))
+        self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -177,7 +177,7 @@ class TestJumboframes(TestCase):
         When jumbo frame supported, this case is to verify that the normal size
         packet forwrding should be support correct.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -192,7 +192,7 @@ class TestJumboframes(TestCase):
         When jumbo frame supported, this case is to verify that jumbo frame
         packet can be forwarded correct.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
@@ -208,7 +208,7 @@ class TestJumboframes(TestCase):
         When the jubmo frame MTU set as 9000, this case is to verify that the
         packet which the length bigger than MTU can not be forwarded.
         """
-        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop" % (ETHER_JUMBO_FRAME_MTU))
+        self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
         
