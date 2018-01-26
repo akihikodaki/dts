@@ -118,10 +118,12 @@ class TestVfOffload(TestCase):
         self.setup_2pf_2vf_1vm_env_flag = 0
 
     def checksum_enablehw(self, port, dut):
+        dut.send_expect("port stop all", "testpmd>")
         dut.send_expect("csum set ip hw %d" % port, "testpmd>")
         dut.send_expect("csum set udp hw %d" % port, "testpmd>")
         dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
         dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        dut.send_expect("port start all", "testpmd>")
 
     def checksum_enablesw(self, port, dut):
         dut.send_expect("csum set ip sw %d" % port, "testpmd>")
