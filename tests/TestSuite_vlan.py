@@ -215,7 +215,10 @@ class TestVlan(TestCase):
 
         out = self.get_tcpdump_package()
         self.verify(self.vlan in out, "Vlan not found:" + str(out))
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
+        self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ", 30)
 
         if self.kdriver == "fm10k":
