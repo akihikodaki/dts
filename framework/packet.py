@@ -77,6 +77,9 @@ from Dot1BR import Dot1BR
 from logger import getLogger
 logger = getLogger('tester')
 
+# for saving command history
+from utils import get_backtrace_object
+
 # packet generator type should be configured later
 PACKETGEN = "scapy"
 
@@ -355,6 +358,11 @@ class scapy(object):
         crb.send_expect("scapy -c scapy_%s.cmd &" % intf, "# ")
 
     def print_summary(self):
+        # save command into test case history
+        history_list = get_backtrace_object('test_case.py', 'test_history')
+        if type(history_list) is list:
+            history_list.append({"command": "p=%s" % self.pkt.command(), "name": "Scapy", "output": ""})
+
         logger.info("%s" % self.pkt.command())
 
     def send_pkt(self, intf='', count=1):
@@ -379,6 +387,10 @@ class scapy(object):
                 self.pkt.getlayer(0).src = get_if_hwaddr(intf)
             sendp(self.pkt, iface=intf, count=count)
 
+            # save command into test case history
+            history_list = get_backtrace_object('test_case.py', 'test_history')
+            if type(history_list) is list:
+                history_list.append({"command": "sendp(p, iface=\"%s\")" % intf, "name": "Scapy", "output": ""})
 
 class Packet(object):
 

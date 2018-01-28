@@ -45,6 +45,7 @@ from rst import RstReport
 from test_result import ResultTable, Result
 from logger import getLogger
 from config import SuiteConf
+from utils import BLUE, RED
 
 class TestCase(object):
 
@@ -113,6 +114,10 @@ class TestCase(object):
         self._suite_conf = SuiteConf(self.suite_name)
         self._suite_cfg = self._suite_conf.suite_cfg
 
+        # command history
+        self.setup_history = list()
+        self.test_history = list()
+
     def init_log(self):
         # get log handler
         class_name = self.__class__.__name__
@@ -152,6 +157,11 @@ class TestCase(object):
 
     def verify(self, passed, description):
         if not passed:
+            if self._enable_debug:
+                print RED("Error happened, dump command history...")
+                self.dump_history()
+                print "Error \"%s\" happened" % RED(description)
+                print RED("History dump finished.")
             raise VerifyFailure(description)
 
     def _get_nic_driver(self, nic_name):
@@ -227,6 +237,9 @@ class TestCase(object):
             dutobj.get_session_output(timeout=0.1)
         self.tester.get_session_output(timeout=0.1)
 
+        # save into setup history list
+        self.enable_history(self.setup_history)
+
         try:
             self.set_up_all()
             return True
@@ -252,6 +265,10 @@ class TestCase(object):
         self._suite_result.test_case = case_obj.__name__
 
         self._rst_obj.write_title("Test Case: " + case_name)
+
+        # save into test command history
+        self.test_history = list()
+        self.enable_history(self.test_history)
 
         # load suite configuration file here for rerun command
         self._suite_conf = SuiteConf(self.suite_name)
@@ -393,6 +410,23 @@ class TestCase(object):
             # destroy all vfs
             dutobj.destroy_all_sriov_vfs()
 
+    def enable_history(self, history):
+        """
+        Enable history for all CRB's default session
+        """
+        for dutobj in self.duts:
+            dutobj.session.set_history(history)
+
+        self.tester.session.set_history(history)
+
+    def dump_history(self):
+        """
+        Dump recorded command history
+        """
+        for cmd_history in self.setup_history:
+            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
+        for cmd_history in self.test_history:
+            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
 
     def wirespeed(self, nic, frame_size, num_ports):
         """

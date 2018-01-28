@@ -50,21 +50,29 @@ class SSHConnection(object):
         connection = {}
         connection[self.name] = self.session
         CONNECTIONS.append(connection)
+        self.history = None
 
     def init_log(self, logger):
         self.logger = logger
         self.session.init_log(logger, self.name)
 
+    def set_history(self, history):
+        self.history = history
+
     def send_expect(self, cmds, expected, timeout=15, verify=False):
         self.logger.info(cmds)
         out = self.session.send_expect(cmds, expected, timeout, verify)
         self.logger.debug(out)
+        if type(self.history) is list:
+            self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
 
     def send_command(self, cmds, timeout=1):
         self.logger.info(cmds)
         out = self.session.send_command(cmds, timeout)
         self.logger.debug(out)
+        if type(self.history) is list:
+            self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
 
     def get_session_before(self, timeout=15):
