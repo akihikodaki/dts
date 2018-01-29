@@ -72,16 +72,21 @@ class TestChecksumOffload(TestCase):
         self.dut.send_expect("set fwd csum", "testpmd>")
 
     def checksum_enablehw(self, port):
+            self.dut.send_expect("port stop all", "testpmd>")
             self.dut.send_expect("csum set ip hw %d" % port, "testpmd>")
             self.dut.send_expect("csum set udp hw %d" % port, "testpmd>")
             self.dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
             self.dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+            self.dut.send_expect("port start all", "testpmd>")
 
     def checksum_enablesw(self, port):
+            self.dut.send_expect("port stop all", "testpmd>")
             self.dut.send_expect("csum set ip sw %d" % port, "testpmd>")
             self.dut.send_expect("csum set udp sw %d" % port, "testpmd>")
             self.dut.send_expect("csum set tcp sw %d" % port, "testpmd>")
             self.dut.send_expect("csum set sctp sw %d" % port, "testpmd>")
+            self.dut.send_expect("port start all", "testpmd>")
+
 
     def get_chksum_values(self, packets_expected):
         """
