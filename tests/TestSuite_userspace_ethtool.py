@@ -411,7 +411,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         """
         main_file = "examples/ethtool/ethtool-app/main.c"
         # enable vlan filter
-        self.dut.send_expect("sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.hw_vlan_filter=1;' %s" % main_file, "# ")
+        self.dut.send_expect("sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;' %s" % main_file, "# ")
 
         # build sample app
         self.build_ethtool()
