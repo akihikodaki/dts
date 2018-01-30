@@ -144,10 +144,9 @@ class VirtBase(object):
 
         # replace global configurations with local configurations
         for param in self.local_conf:
-            if 'mem' in param.keys():
-                self.__save_local_config('mem', param['mem'])
-            if 'cpu' in param.keys():
-                self.__save_local_config('cpu', param['cpu'])
+            if 'virt_type' in param.keys():
+                # param 'virt_type' is for virt_base only
+                continue
             # save local configurations
             for key in param.keys():
                 self.__save_local_config(key, param[key])

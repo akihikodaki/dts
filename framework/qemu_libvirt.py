@@ -229,7 +229,6 @@ class LibvirtKvm(VirtBase):
         ET.SubElement(os, 'boot', {'dev': 'hd'})
         features = ET.SubElement(self.domain, 'features')
         ET.SubElement(features, 'acpi')
-        ET.SubElement(features, 'gic', {'version': '3'})
 
         ET.SubElement(self.domain, 'cpu',
             {'mode': 'host-passthrough', 'check': 'none'})
@@ -408,6 +407,9 @@ class LibvirtKvm(VirtBase):
             return (bus, slot, func, dom)
         return None
 
+    def set_vm_device(self, driver='pci-assign', **opts):
+        self.add_vm_device(**opts)
+
     def add_vm_device(self, **options):
         """
         options:
@@ -437,20 +439,23 @@ class LibvirtKvm(VirtBase):
                       'slot': '0x%s' % slot,
                       'function': '0x%s' % func})
         if 'guestpci' in options.keys():
-            pci = self.__parse_pci(options['guestpci'])
-            if pci is None:
-                return False
-            bus, slot, func, dom = pci
-            ET.SubElement(hostdevice, 'address', {
-                  'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
-                  'slot': '0x%s' % slot, 'function': '0x%s' % func})
-            # save host and guest pci address mapping
-            pci_map = {}
-            pci_map['hostpci'] = pci_addr
-            pci_map['guestpci'] = options['guestpci']
-            self.pci_maps.append(pci_map)
+            guest_pci_addr = options['guestpci']
         else:
-            print utils.RED('Host device pass-through need guestpci option!!!')
+            guest_pci_addr = '0000:%s:00.0' % hex(self.pciindex)[2:]
+            self.pciindex += 1
+        pci = self.__parse_pci(guest_pci_addr)
+        if pci is None:
+            print utils.RED('Invalid guestpci for host device pass-through!!!')
+            return False
+        bus, slot, func, dom = pci
+        ET.SubElement(hostdevice, 'address', {
+              'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
+              'slot': '0x%s' % slot, 'function': '0x%s' % func})
+        # save host and guest pci address mapping
+        pci_map = {}
+        pci_map['hostpci'] = pci_addr
+        pci_map['guestpci'] = guest_pci_addr
+        self.pci_maps.append(pci_map)
 
     def add_vm_net(self, **options):
         """
