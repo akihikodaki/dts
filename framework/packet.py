@@ -855,7 +855,7 @@ def sniff_packets(intf, count=0, timeout=5, filters=[]):
     pipe = subprocess.Popen(args)
     index = str(time.time())
     SNIFF_PIDS[index] = (pipe, intf, timeout)
-    time.sleep(0.5)
+    time.sleep(1)
     return index
 
 
