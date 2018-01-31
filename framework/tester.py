@@ -381,7 +381,7 @@ class Tester(Crb):
 
     def send_ping(self, localPort, ipv4, mac):
         """
-        Send ping6 packet from local port with destination ipv4 address.
+        Send ping4 packet from local port with destination ipv4 address.
         """
         if self.ports_info[localPort]['type'] == 'ixia':
             return "Not implemented yet"
