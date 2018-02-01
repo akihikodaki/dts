@@ -151,6 +151,7 @@ class TestVlan(TestCase):
         """
         Disable receipt of VLAN packets
         """
+        self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
 
         self.dut.send_expect("rx_vlan rm %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
