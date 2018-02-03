@@ -68,7 +68,7 @@ class SoftwarePacketGenerator():
 
         self.tester.send_expect("./dpdk-devbind.py --bind=igb_uio %s" % bind_cmd, "#")
 
-        # assgin core for ports
+        # assign core for ports
         map_cmd = ""
         port_index = range(len(ports))
         port_map = dict(zip(ports, port_index))
