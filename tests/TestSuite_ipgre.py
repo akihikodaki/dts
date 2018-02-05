@@ -225,7 +225,7 @@ class TestIpgre(TestCase):
         }
         
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
+        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-hw-vlan" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
