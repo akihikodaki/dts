@@ -320,7 +320,7 @@ class Dut(Crb):
             elif self.architecture == "ppc_64":
                 arch_huge_pages = hugepages if hugepages > 0 else 512
             elif self.architecture == "arm64":
-                if hugepages_size == "524288":
+                if int(hugepages_size) >= (512 * 1024):
                     arch_huge_pages = hugepages if hugepages > 0 else 8
                 else:
                     arch_huge_pages = hugepages if hugepages > 0 else 2048
