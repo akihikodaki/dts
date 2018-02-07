@@ -133,7 +133,7 @@ class TestPmdrssHash(TestCase):
                 time.sleep(.5)
         elif tran_type == "ipv6-sctp":
             for i in range(10):
-                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/SCTP(sport=1024,dport=1024,tag=1)], iface="%s")' % (
+                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1024,dport=1024,tag=1)], iface="%s")' % (
                     mac, itf, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
                 self.tester.scapy_execute()
@@ -326,12 +326,12 @@ class TestPmdrssHash(TestCase):
                 time.sleep(.5)
         elif tran_type == "ipv6-sctp":
             for i in range(4):
-                packet = r'sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/SCTP(sport=1024,dport=1025,tag=1)], iface="%s")' % (
+                packet = r'sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1024,dport=1025,tag=1)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
                 self.tester.scapy_execute()
                 time.sleep(.5)
-                packet = r'sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/SCTP(sport=1025,dport=1024,tag=1)], iface="%s")' % (
+                packet = r'sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1025,dport=1024,tag=1)], iface="%s")' % (
                     mac, i + 2, i + 1, itf)
                 self.tester.scapy_append(packet)
                 self.tester.scapy_execute()
@@ -451,7 +451,7 @@ class TestPmdrssHash(TestCase):
                    # this hash not support in dpdk2.0
                    # 'l2_payload':'ether',
                    'ipv6-other': 'ip',
-                   'ipv6-sctp': 'ip',
+                   'ipv6-sctp': 'sctp',
                    'ipv6-udp': 'udp',
                    'ipv6-tcp': 'tcp',
                    'ipv6-frag': 'ip'
@@ -502,7 +502,7 @@ class TestPmdrssHash(TestCase):
                    # this hash not support in dpdk2.0
                    # 'l2_payload':'ether',
                    'ipv6-other': 'ip',
-                   'ipv6-sctp': 'ip',
+                   'ipv6-sctp': 'sctp',
                    'ipv6-udp': 'udp',
                    'ipv6-tcp': 'tcp',
                    'ipv6-frag': 'ip'
@@ -555,7 +555,7 @@ class TestPmdrssHash(TestCase):
                    # this hass not support in dpdk 2.0
                    # 'l2_payload':'ether',
                    'ipv6-other': 'ip',
-                   'ipv6-sctp': 'ip',
+                   'ipv6-sctp': 'sctp',
                    'ipv6-udp': 'udp',
                    'ipv6-tcp': 'tcp',
                    'ipv6-frag': 'ip'
@@ -612,7 +612,7 @@ class TestPmdrssHash(TestCase):
                    # this hash not support in dpdk2.0
                    # 'l2_payload':'ether',
                    'ipv6-other': 'ip',
-                   'ipv6-sctp': 'ip',
+                   'ipv6-sctp': 'sctp',
                    'ipv6-udp': 'udp',
                    'ipv6-tcp': 'tcp',
                    'ipv6-frag': 'ip'
