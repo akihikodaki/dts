@@ -189,7 +189,7 @@ class TestVlanEthertypeConfig(TestCase):
                 self.vlan_send_packet(rx_vlan, tpid)
                 out = self.dut.get_session_output()
                 self.verify(
-                    "PKT_RX_VLAN_PKT" in out, "Vlan recognized error:" + str(out))
+                    "PKT_RX_VLAN" in out, "Vlan recognized error:" + str(out))
 
     def test_vlan_filter_on_off(self):
         """
