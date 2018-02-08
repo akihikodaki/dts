@@ -286,8 +286,12 @@ class TestVlanEthertypeConfig(TestCase):
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutTxPortId), "testpmd> ")
             for tx_vlan in tx_vlans:
+                self.dut.send_expect("stop", "testpmd>")
+                self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect(
                     "tx_vlan set %s 0x%x" % (dutTxPortId, tx_vlan), "testpmd> ")
+                self.dut.send_expect("port start all", "testpmd> ")
+                self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
                 self.vlan_send_packet(-1)
                 out = self.get_tcpdump_packet(self.rxItf)
@@ -296,8 +300,12 @@ class TestVlanEthertypeConfig(TestCase):
                 self.verify(str("%x" % tpid) in out, "Wrong vlan:" + str(out))
                 self.verify(
                     str("%x" % tx_vlan) in out, "Vlan not found:" + str(out))
+                self.dut.send_expect("stop", "testpmd>")
+                self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect(
                     "tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
+                self.dut.send_expect("port start all", "testpmd> ")
+                self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
                 self.vlan_send_packet(-1)
                 out = self.get_tcpdump_packet(self.rxItf)
