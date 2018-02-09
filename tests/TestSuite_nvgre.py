@@ -551,12 +551,14 @@ class TestNvgre(TestCase):
         # enable tx checksum offload
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.dut.send_expect("set fwd csum", "testpmd>", 10)
+        self.dut.send_expect("port stop all", "testpmd>")
         self.dut.send_expect("csum set ip hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set udp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set tcp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set sctp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set outer-ip hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum parse_tunnel on %d" % (self.dut_tx_port), "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
 
         # log the nvgre format
         arg_str = ""

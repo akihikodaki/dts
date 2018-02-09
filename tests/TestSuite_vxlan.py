@@ -1142,14 +1142,18 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                              "testpmd>", 10)
 
     def csum_set_type(self, proto, port):
+        self.dut.send_expect("port stop all", "testpmd>")
         out = self.dut.send_expect("csum set %s hw %d" % (proto, port),
                                    "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
 
     def csum_set_sw(self, proto, port):
+        self.dut.send_expect("port stop all", "testpmd>")
         out = self.dut.send_expect("csum set %s sw %d" % (proto, port),
                                    "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
 
