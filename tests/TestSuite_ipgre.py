@@ -311,12 +311,15 @@ class TestIpgre(TestCase):
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
+        self.dut.send_expect("stop", "testpmd>")
+        self.dut.send_expect("port stop all", "testpmd>")
         self.dut.send_expect("csum set ip hw 0", "testpmd>")
         self.dut.send_expect("csum set udp hw 0", "testpmd>")
         self.dut.send_expect("csum set sctp hw 0", "testpmd>")
         self.dut.send_expect("csum set outer-ip hw 0", "testpmd>")
         self.dut.send_expect("csum set tcp hw 0", "testpmd>")
         self.dut.send_expect("csum parse_tunnel on 0", "testpmd>")
+        self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
         # Send packet with wrong outer IP checksum and check forwarded packet IP checksum is correct
