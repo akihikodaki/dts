@@ -3,7 +3,7 @@
 import re
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 
@@ -73,7 +73,7 @@ class TestVfPacketRxtx(TestCase):
                     self.host_testpmd.start_testpmd("1S/5C/1T", "", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_packet_rxtx')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -195,14 +195,14 @@ class TestVfPacketRxtx(TestCase):
                 self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_packet_rxtx')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
             # set up VM1 ENV
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_packet_rxtx')
+            self.vm1 = VM(self.dut, 'vm1', 'vf_packet_rxtx')
             self.vm1.set_vm_device(driver=self.vf_assign_method, **vf2_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
