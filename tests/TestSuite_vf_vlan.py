@@ -3,7 +3,7 @@
 import re
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 from packet import Packet, sniff_packets, load_sniff_packets
@@ -114,7 +114,7 @@ class TestVfVlan(TestCase):
             vf1_prop = {'opt_host': self.sriov_vfs_port_1[0].pci}
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_vlan')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_vlan')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
