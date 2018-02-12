@@ -4,7 +4,7 @@ import re
 import time
 
 import utils
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE
@@ -111,7 +111,7 @@ class TestVfJumboFrame(TestCase):
             vf_popt = {'opt_host': self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
-            self.vm = QEMUKvm(self.dut, 'vm0', 'vf_jumboframe')
+            self.vm = VM(self.dut, 'vm0', 'vf_jumboframe')
             self.vm.set_vm_device(driver=self.vf_assign_method, **vf_popt)
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
