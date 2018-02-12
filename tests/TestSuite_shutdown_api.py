@@ -83,14 +83,14 @@ class TestShutdownApi(TestCase):
         stats = output.get_pmd_stats(portid)
         return stats
 
-    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False):
+    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
         if ports is None:
             ports = self.ports
         if len(ports) == 1:
-            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc)
+            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc, vlan_strip)
             return
 
-    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False):
+    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
         """
         Send packages according to parameters.
         """
@@ -138,7 +138,7 @@ class TestShutdownApi(TestCase):
             # RRC will always strip rx/tx crc
             rx_bytes_exp -= 4
             tx_bytes_exp -= 4
-            if vlan is True:
+            if vlan_strip is True:
                 # RRC will always strip rx/tx vlan
                 rx_bytes_exp -= 4
                 tx_bytes_exp -= 4
@@ -146,8 +146,8 @@ class TestShutdownApi(TestCase):
             # some NIC will always include tx crc
             rx_bytes_exp -= 4
             tx_bytes_exp -= 4
-            if vlan is True:
-                # vlan strip default is on
+            if vlan_strip is True:
+                # vlan strip default is off
                 tx_bytes_exp -= 4
          
         # fortville nic enable send lldp packet function when port setup
@@ -337,6 +337,7 @@ class TestShutdownApi(TestCase):
         out = self.dut.send_expect("vlan set strip off all", "testpmd> ")
         if "fail" not in out:
             for port in self.ports:
+                self.dut.send_expect("vlan set filter on %d" % port, "testpmd> ")
                 self.dut.send_expect("rx_vlan add 1 %d" % port, "testpmd> ")
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("port start all", "testpmd> ", 100)
@@ -347,10 +348,15 @@ class TestShutdownApi(TestCase):
                 vlan_jumbo_size = jumbo_size + 4
             else:
                 vlan_jumbo_size = jumbo_size
-
-            self.check_forwarding(pktSize=vlan_jumbo_size - 1, vlan=True)
-            self.check_forwarding(pktSize=vlan_jumbo_size, vlan=True)
-            self.check_forwarding(pktSize=vlan_jumbo_size + 1, received=False, vlan=True)
+            out = self.dut.send_expect("show port cap %d" % port, "testpmd> ")
+            state = re.findall("VLAN stripped:\s*([a-z]*)", out)
+            if state[0] == 'on':
+                vlan_strip = True
+            else:
+                vlan_strip = False
+            self.check_forwarding(pktSize=vlan_jumbo_size - 1, vlan=True, vlan_strip=vlan_strip)
+            self.check_forwarding(pktSize=vlan_jumbo_size, vlan=True, vlan_strip=vlan_strip)
+            self.check_forwarding(pktSize=vlan_jumbo_size + 1, received=False, vlan=True, vlan_strip=vlan_strip)
 
             self.dut.send_expect("stop", "testpmd> ")
 
