@@ -12,7 +12,7 @@ import re
 import pdb
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 
 from pmd_output import PmdOutput
@@ -296,12 +296,12 @@ class TestSriovKvm(TestCase):
         vf1_prop = {'opt_host': self.port1_pci}
 
         # set up VM0 ENV
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
+        self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
         self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
         self.vm_dut_0 = self.vm0.start()
 
         # set up VM1 ENV
-        self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
+        self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
         self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
         self.vm_dut_1 = self.vm1.start()
 
@@ -355,14 +355,14 @@ class TestSriovKvm(TestCase):
                 self.host_testpmd.execute_cmd('start')
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
+            self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
             self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
 
             # set up VM1 ENV
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
+            self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
             self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
@@ -435,25 +435,25 @@ class TestSriovKvm(TestCase):
                 self.host_testpmd.start_testpmd(
                     "1S/2C/2T", eal_param=eal_param)
 
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
+            self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
             self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
 
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
+            self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
             self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
                 raise Exception("Set up VM1 ENV failed!")
 
-            self.vm2 = QEMUKvm(self.dut, 'vm2', 'sriov_kvm')
+            self.vm2 = VM(self.dut, 'vm2', 'sriov_kvm')
             self.vm2.set_vm_device(driver='pci-assign', **vf2_prop)
             self.vm_dut_2 = self.vm2.start()
             if self.vm_dut_2 is None:
                 raise Exception("Set up VM2 ENV failed!")
 
-            self.vm3 = QEMUKvm(self.dut, 'vm3', 'sriov_kvm')
+            self.vm3 = VM(self.dut, 'vm3', 'sriov_kvm')
             self.vm3.set_vm_device(driver='pci-assign', **vf3_prop)
             self.vm_dut_3 = self.vm3.start()
             if self.vm_dut_3 is None:
