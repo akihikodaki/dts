@@ -39,7 +39,7 @@ import time
 import pdb
 
 from test_case import TestCase
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from pmd_output import PmdOutput
 
 VF_NUMS_ON_ONE_PF = 2
@@ -93,7 +93,7 @@ class TestVF2VFBridge(TestCase):
         vf0_prop = {'opt_host': self.sriov_vfs_ports[0].pci}
         vf1_prop = {'opt_host': self.sriov_vfs_ports[1].pci}
         time.sleep(1)
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_to_vf_bridge')
+        self.vm0 = VM(self.dut, 'vm0', 'vf_to_vf_bridge')
         self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
         try:
             self.vm0_dut = self.vm0.start()
@@ -102,7 +102,7 @@ class TestVF2VFBridge(TestCase):
         except Exception as e:
             print utils.RED(str(e))
 
-        self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_to_vf_bridge')
+        self.vm1 = VM(self.dut, 'vm1', 'vf_to_vf_bridge')
         self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
         try:
             self.vm1_dut = self.vm1.start()
