@@ -102,7 +102,7 @@ class TestVxlanSample(TestCase):
         self.tep_app = "./examples/tep_termination/build/tep_termination"
         self.vxlan_port = 4789
         self.vm_testpmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c f -n 3" \
-                          + " -- -i --tx-offloads=0x8000 --disable-hw-vlan"
+                          + " -- -i --tx-offloads=0x8000"
 
         # params for tep_termination
         self.cores = self.dut.get_core_list("1S/4C/1T", socket=self.socket)
