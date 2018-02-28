@@ -458,9 +458,9 @@ class Testvf_daemon(TestCase):
         self.dut_testpmd.execute_cmd('set all queues drop 0 off')
         self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
         self.vf1_mac = self.vm1_testpmd.get_port_mac(0)
-        out = self.send_and_pmdout(self.vf1_mac, 0, 64, 200)
+        out = self.send_and_pmdout(self.vf1_mac, 0, 64, 2000)
         out = self.vm1_testpmd.execute_cmd('show port stats 0')
-        self.verify("RX-packets: 127" in out, 
+        self.verify("RX-packets: 1023" in out, 
             "Failed to let vf1 full of queues!!!")
         out = self.send_and_pmdout(self.vf0_mac, 0, 64, 20)
         out = self.vm0_testpmd.execute_cmd('show port stats 0')
