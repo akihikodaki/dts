@@ -43,7 +43,6 @@ import utils
 
 testQueues = [16]
 reta_entries = []
-reta_lines = []
 reta_num = 128
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
@@ -61,7 +60,7 @@ class TestPmdrssHash(TestCase):
         """
         Sends packets.
         """
-        global reta_lines
+        received_pkts = []
         self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
@@ -172,18 +171,18 @@ class TestPmdrssHash(TestCase):
                         name, value = item.split("=", 1)
 
                 reta_line[name.strip()] = value.strip()
-                reta_lines.append(reta_line)
+                received_pkts.append(reta_line)
 
-        self.verifyResult()
+        self.verifyResult(received_pkts)
 
-    def verifyResult(self):
+    def verifyResult(self, reta_lines):
         """
         Verify whether or not the result passes.
         """
 
-        global reta_lines
         global reta_num
         result = []
+        self.verify(len(reta_lines) > 0, 'No packet received!')
         self.result_table_create(
             ['packet index', 'hash value', 'hash index', 'queue id', 'actual queue id', 'pass '])
 
@@ -205,14 +204,13 @@ class TestPmdrssHash(TestCase):
             i = i + 1
 
         self.result_table_print()
-        reta_lines = []
         self.verify(sum(result) == 0, "the reta update function failed!")
 
     def send_packet_symmetric(self, itf, tran_type):
         """
         Sends packets.
         """
-        global reta_lines
+        received_pkts = []
         self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
@@ -370,20 +368,22 @@ class TestPmdrssHash(TestCase):
                     item = item.strip()
                     if(item.startswith("RSS hash")):
                         name, value = item.split("=", 1)
+                    else:
+                        continue
 
                 reta_line[name.strip()] = value.strip()
-                reta_lines.append(reta_line)
+                received_pkts.append(reta_line)
 
-        self.verifyResult_symmetric()
+        self.verifyResult_symmetric(received_pkts)
 
-    def verifyResult_symmetric(self):
+    def verifyResult_symmetric(self, reta_lines):
         """
         Verify whether or not the result passes.
         """
 
-        global reta_lines
         global reta_num
         result = []
+        self.verify(len(reta_lines) > 0, 'No packet received!')
         self.result_table_create(
             ['packet index', 'RSS hash', 'hash index', 'queue id', 'actual queue id', 'pass '])
 
@@ -407,7 +407,6 @@ class TestPmdrssHash(TestCase):
             i = i + 1
 
         self.result_table_print()
-        reta_lines = []
         self.verify(
             sum(result) == 0, "the symmetric RSS hash function failed!")
 
