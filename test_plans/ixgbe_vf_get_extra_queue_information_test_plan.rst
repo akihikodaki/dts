@@ -136,7 +136,7 @@ Test case 2: DPDK PF, kernel VF, disable DCB mode
 
 1. start the testpmd on PF::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --nb-cores=16
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=2 --txq=2
 
 2. check if VF port is linked. if vf port is down, reload the ixgbevf driver::
 
