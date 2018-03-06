@@ -279,6 +279,7 @@ class TestVfPacketRxtx(TestCase):
         rx_port = tx_port
 
         dst_mac = pmd0_vf0_mac
+        self.vm0_testpmd.execute_cmd('clear port stats all')
         self.tester.sendpkt_bg(tx_port, dst_mac)
 
         #vf port stop/start can trigger reset action
