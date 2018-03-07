@@ -92,6 +92,10 @@ class VirtBase(object):
         # vm status is running by default, only be changed in internal module
         self.vm_status = ST_RUNNING
 
+        # by default no special kernel module is required
+        self.def_driver = ''
+        self.driver_mode = ''
+
     def get_virt_type(self):
         """
         Get the virtual type, such as KVM, XEN or LIBVIRT.
@@ -183,6 +187,15 @@ class VirtBase(object):
             except Exception:
                 self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                 raise exception.VirtConfigParamException(key)
+
+    def add_vm_def_driver(self, **options):
+        """
+        Set default driver which may required when setup VM
+        """
+        if 'driver_name' in options.keys():
+            self.def_driver = options['driver_name']
+        if 'driver_mode' in options.keys():
+            self.driver_mode = options['driver_mode']
 
     def find_option_index(self, option):
         """
@@ -423,7 +436,7 @@ class VirtBase(object):
             vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches, autodetect_topo)
             if set_target:
                 target = self.host_dut.target
-                vm_dut.set_target(target, bind_dev)
+                vm_dut.set_target(target, bind_dev, self.def_driver, self.driver_mode)
         except:
             raise exception.VirtDutInitException(vm_dut)
             return None
