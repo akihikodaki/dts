@@ -79,21 +79,23 @@ class DPDKdut(Dut):
             self.build_install_dpdk(target)
 
         self.setup_memory()
-        self.setup_modules(target)
+
+        drivername = load_global_setting(HOST_DRIVER_SETTING)
+        drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
+        self.setup_modules(target, drivername, drivermode)
 
         if bind_dev and self.get_os_type() == 'linux':
             self.bind_interfaces_linux(drivername)
         self.extra_nic_setup()
 
-    def setup_modules(self, target):
+    def setup_modules(self, target, drivername, drivermode):
         """
         Install DPDK required kernel module on DUT.
         """
         setup_modules = getattr(self, 'setup_modules_%s' % self.get_os_type())
-        setup_modules(target)
+        setup_modules(target, drivername, drivermode)
 
-    def setup_modules_linux(self, target):
-        drivername = load_global_setting(HOST_DRIVER_SETTING)
+    def setup_modules_linux(self, target, drivername, drivermode):
         if drivername == "vfio-pci":
             self.send_expect("rmmod vfio_pci", "#", 70)
             self.send_expect("rmmod vfio_iommu_type1", "#", 70)
@@ -103,7 +105,6 @@ class DPDKdut(Dut):
             out = self.send_expect("lsmod | grep vfio_iommu_type1", "#")
             assert ("vfio_iommu_type1" in out), "Failed to setup vfio-pci"
 
-            drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
             if drivermode == "noiommu":
                 self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
 
@@ -113,7 +114,7 @@ class DPDKdut(Dut):
             out = self.send_expect("lsmod | grep uio_pci_generic", "#")
             assert ("uio_pci_generic" in out), "Failed to setup uio_pci_generic"
  
-        else:
+        elif drivername == "igb_uio":
             self.send_expect("modprobe uio", "#", 70)
             out = self.send_expect("lsmod | grep igb_uio", "#")
             if "igb_uio" in out:
@@ -123,7 +124,7 @@ class DPDKdut(Dut):
             out = self.send_expect("lsmod | grep igb_uio", "#")
             assert ("igb_uio" in out), "Failed to insmod igb_uio"
 
-    def setup_modules_freebsd(self, target):
+    def setup_modules_freebsd(self, target, drivername, drivermode):
         """
         Install DPDK required Freebsd kernel module on DUT.
         """
