@@ -385,6 +385,8 @@ class Testvf_daemon(TestCase):
 
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm0_testpmd.execute_cmd('vlan set filter on 0')
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('set verbose 1')
         self.vm0_testpmd.execute_cmd('start')
@@ -401,6 +403,8 @@ class Testvf_daemon(TestCase):
             out = self.send_and_macstrip(self.vf0_mac, rx_vlan)
             self.verify(self.vf0_mac.lower() in out,
                 "Failed to enable vlan tag!!!")
+        self.vm0_testpmd.execute_cmd('vlan set strip off 0')
+        self.vm0_testpmd.execute_cmd('vlan set filter off 0')
 
     
     def test_tx_loopback(self):
@@ -635,6 +639,8 @@ class Testvf_daemon(TestCase):
         Add/Remove vlan filter for a VF from PF
         """
         self.check_vf_link_status()
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm0_testpmd.execute_cmd('vlan set filter on 0')
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('show port info 0')
         self.vm0_testpmd.execute_cmd('set verbose 1')
@@ -685,6 +691,8 @@ class Testvf_daemon(TestCase):
         out = self.send_and_pmdout(wrong_mac)
         self.verify("dst=%s" % wrong_mac in out,
             "Failed to receive untagged packet!!!")
+        self.vm0_testpmd.execute_cmd('vlan set strip off 0')
+        self.vm0_testpmd.execute_cmd('vlan set filter off 0')
 
 
     def tear_down(self):
