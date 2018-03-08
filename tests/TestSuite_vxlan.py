@@ -657,11 +657,13 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect('vlan set filter off %d' %self.dut_port, "testpmd")
         # enable tx checksum offload
         self.dut.send_expect("set fwd csum", "testpmd>", 10)
+        self.dut.send_expect("port stop all", "testpmd>")
         self.csum_set_type('ip', self.recv_port)
         self.csum_set_type('outer-ip', self.recv_port)
         self.csum_set_type('udp', self.recv_port)
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
+        self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("csum parse_tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
 
