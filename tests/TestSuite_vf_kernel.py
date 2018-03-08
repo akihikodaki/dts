@@ -399,6 +399,8 @@ class TestVfKernel(TestCase):
         verify add/delete vlan
         """
         vlan_ids = random.randint(1, 4095)
+        self.dut_testpmd.execute_cmd("vlan set filter on 0")
+        self.dut_testpmd.execute_cmd("vlan set strip on 0")
         self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
 
@@ -440,6 +442,7 @@ class TestVfKernel(TestCase):
         else:
             self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                                vm0_vf0_mac, vlan_id='%d' % vlan_ids) == False, "delete vlan error")
+        self.dut_testpmd.execute_cmd("vlan set filter off 0")
 
     def test_packet_statistic(self):
         """
