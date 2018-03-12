@@ -248,5 +248,221 @@
             "Bug ID": "",
             "Comments": "Vxlan  tunnel packet detect only support on FVL"
         }
+    ],
+    "outer_dst_contrl_gtpcq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpcq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "sport_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "dport_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_src_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_dst_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "sport_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "dport_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_src_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_dst_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
     ]
 }
