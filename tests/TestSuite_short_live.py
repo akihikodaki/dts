@@ -162,6 +162,7 @@ class TestShortLiveApp(TestCase):
                 self.dut.send_expect("pkill -2 testpmd", "#", 60, True)
             else:
                 self.dut.send_expect("pkill -15 testpmd", "#", 60, True)
+            time.sleep(2)
 
     def test_clean_up_with_signal_l2fwd(self):
         repeat_time = 5
