@@ -150,6 +150,7 @@ class TestQinqFilter(TestCase):
                                --rxq=4 --txq=4  --disable-rss' % (self.target, self.coreMask, self.portMask),
                                "testpmd> ")
         self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
