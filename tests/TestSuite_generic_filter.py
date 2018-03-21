@@ -75,7 +75,7 @@ class TestGeneric_filter(TestCase):
         """
         default txq/rxq descriptor is 64
         """
-        return 128 * queue_num + 512
+        return 1024 * queue_num + 512
 
     def port_config(self):
         """
