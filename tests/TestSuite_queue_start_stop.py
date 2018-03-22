@@ -177,7 +177,7 @@ class TestQueueStartStop(TestCase):
 
         try:
             self.dut.send_expect("stop", "testpmd>")
-            self.dut.send_expect("quit", "testpmd>")
+            self.dut.send_expect("quit", "#")
         except:
             print "Failed to quit testpmd"
 
