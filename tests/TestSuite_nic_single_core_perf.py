@@ -33,6 +33,7 @@ DPDK Test suite.
 """
 
 import utils
+import os
 import re
 import time
 from test_case import TestCase
@@ -41,6 +42,7 @@ from settings import HEADER_SIZE
 from pmd_output import PmdOutput
 from copy import deepcopy
 from prettytable import PrettyTable
+import rst
 
 class TestNicSingleCorePerf(TestCase):
 
@@ -244,7 +246,8 @@ class TestNicSingleCorePerf(TestCase):
                 table_row.append(self.test_result[frame_size][descriptor][header[3]])
                 table_row.append(self.test_result[frame_size][descriptor][header[4]])
                 table.add_row(table_row)
-        file_to_save = open("output/%s_single_core_perf.txt" % self.nic, 'w')
+        file_to_save = open(os.path.join(
+            rst.path2Result, "%s_single_core_perf.txt" % self.nic), 'w')
         file_to_save.write(str(table))
         file_to_save.close()
 
