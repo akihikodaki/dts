@@ -743,5 +743,6 @@ class Tester(Crb):
         """
         Close all resource before crb exit
         """
+        self.pktgen.quit_generator()
         self.logger.logger_exit()
         self.close()

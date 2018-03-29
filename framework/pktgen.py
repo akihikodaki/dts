@@ -204,6 +204,7 @@ class TrexPacketGenerator(PacketGenerator):
     def __init__(self, tester):
         self.pktgen_type = "trex"
         self._conn = None
+        self.control_session = None
         self._ports = []
         self._traffic_ports = []
         self._transmit_streams = {}
@@ -218,7 +219,6 @@ class TrexPacketGenerator(PacketGenerator):
 
     def connect(self):
         self._conn = self.trex_client(server=self.conf["server"])
-        time.sleep(30)
         self._conn.connect()
         for p in self._conn.get_all_ports():
             self._ports.append(p)
@@ -287,15 +287,20 @@ class TrexPacketGenerator(PacketGenerator):
         return vm
 
     def _prepare_generator(self):
-        app_param_temp = "-i"
+        if self.conf.has_key('start_trex') and self.conf['start_trex']:
+            app_param_temp = "-i"
 
-        for key in self.conf:
-            #key, value = pktgen_conf
-            if key == 'config_file':
-                app_param_temp = app_param_temp + " --cfg " + self.conf[key]
-            elif key == 'core_num':
-                app_param_temp = app_param_temp + " -c " + self.conf[key]
-
+            for key in self.conf:
+                #key, value = pktgen_conf
+                if key == 'config_file':
+                    app_param_temp = app_param_temp + " --cfg " + self.conf[key]
+                elif key == 'core_num':
+                    app_param_temp = app_param_temp + " -c " + self.conf[key]
+            app = self.conf['trex_root_path'] + os.sep + self.trex_app
+            cmd = app + " " + app_param_temp
+            self.control_session = self.tester.create_session('trex_control_session')
+            self.control_session.send_expect('cd ' + self.conf['trex_root_path'] + os.sep + 'scripts', '# ')
+            self.control_session.send_expect(app + " " + app_param_temp, '-Per port stats table', 30)
 
         # Insert Trex api library
         sys.path.insert(0, "{0}/scripts/automation/trex_control_plane/stl".format(self.conf['trex_root_path']))
@@ -377,6 +382,7 @@ class TrexPacketGenerator(PacketGenerator):
         if self.conf.has_key("warmup"):
             warmup = int(self.conf["warmup"])
 
+        self._traffic_ports = []
         for stream_id in stream_ids:
             stream = self._get_stream(stream_id)
             # tester port to Trex port
@@ -421,7 +427,13 @@ class TrexPacketGenerator(PacketGenerator):
         return rate_rx_bits, rate_rx_pkts
 
     def quit_generator(self):
-        self.disconnect()
+        if self._conn is not None:
+            self.disconnect()
+        if self.control_session is not None:
+            self.tester.send_expect('pkill -f _t-rex-64', '# ')
+            time.sleep(5)
+            self.tester.destroy_session(self.control_session)
+            self.control_session = None
 
 def getPacketGenerator(tester, pktgen_type="trex"):
     """
