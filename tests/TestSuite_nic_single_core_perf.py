@@ -59,8 +59,8 @@ class TestNicSingleCorePerf(TestCase):
         self.trafficDuration = 60
 
         #load the expected throughput for required nic
-        self.expected_throughput_nnt = self.parse_string(self.get_suite_cfg()["throughput_nnt"])
-        self.expected_throughput_fvl25g = self.parse_string(self.get_suite_cfg()["throughput_fvl25g"])
+        self.expected_throughput_nnt = self.get_suite_cfg()["throughput_nnt"]
+        self.expected_throughput_fvl25g = self.get_suite_cfg()["throughput_fvl25g"]
 
         # The acdepted gap between expected throughput and actual throughput, 1 Mpps
         self.gap = 1
@@ -169,9 +169,9 @@ class TestNicSingleCorePerf(TestCase):
                 ret_data[header[2]] = str(float("%.3f" % throughput)) + " Mpps"
                 ret_data[header[3]] = str(float("%.3f" % (throughput * 100 / wirespeed))) + "%"
                 if self.nic == "niantic":
-                    ret_data[header[4]] = self.expected_throughput_nnt[str(frame_size)][str(descriptor)] + " Mpps"
+                    ret_data[header[4]] = str(self.expected_throughput_nnt[frame_size][descriptor]) + " Mpps"
                 elif self.nic == "fortville_25g":
-                    ret_data[header[4]] = self.expected_throughput_fvl25g[str(frame_size)][str(descriptor)] + " Mpps"
+                    ret_data[header[4]] = str(self.expected_throughput_fvl25g[frame_size][descriptor]) + " Mpps"
                 ret_datas[descriptor] = deepcopy(ret_data)
                 self.test_result[frame_size] = deepcopy(ret_datas)
         
@@ -247,25 +247,6 @@ class TestNicSingleCorePerf(TestCase):
         file_to_save = open("output/%s_single_core_perf.txt" % self.nic, 'w')
         file_to_save.write(str(table))
         file_to_save.close()
-
-    def parse_string(self, string):
-        '''
-        Parse a string in the formate of a dictionary and convert it into a real dictionary. 
-        '''
-        element_pattern = re.compile(".\d+:.*?}")
-        string_elements = element_pattern.findall(string)
-        ret = {}
-        for element in string_elements:
-            ex_pattern = re.compile("(\d+): *{(.*)}")
-            ex_ret = ex_pattern.search(element)
-            ret[ex_ret.groups()[0]] = ex_ret.groups()[1]
-            inner_datas = ex_ret.groups()[1].split(",")
-            ret_inner = {}
-            for data in inner_datas:
-                match_inner = data.split(":")
-                ret_inner[match_inner[0].strip()] = match_inner[1].strip()
-            ret[ex_ret.groups()[0]] = deepcopy(ret_inner)
-        return ret
 
     def tear_down(self):
         """
