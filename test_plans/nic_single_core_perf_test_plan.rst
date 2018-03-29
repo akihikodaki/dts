@@ -49,6 +49,8 @@ Prerequisites
     dts (next branch): git clone http://dpdk.org/git/tools/dts, 
                        then "git checkout next" 
     Trex code: http://trex-tgn.cisco.com/trex/release/v2.26.tar.gz 
+               (to be run in stateless Layer 2 mode, see section in
+                Getting Started Guide for more details)
     python-prettytable: 
         apt install python-prettytable (for ubuntu os) 
         or dnf install python-prettytable (for fedora os). 
