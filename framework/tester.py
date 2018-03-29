@@ -200,7 +200,7 @@ class Tester(Crb):
         if localPort == -1:
             raise ParameterInvalidException("local port should not be -1")
 
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.ports_info[localPort]['type'] in ('ixia', 'trex'):
             return "00:00:00:00:00:01"
         else:
             return self.ports_info[localPort]['mac']
@@ -305,7 +305,7 @@ class Tester(Crb):
             return
 
         for port_info in self.ports_info:
-            if port_info['type'] == 'ixia':
+            if port_info['type'].lower() in ('ixia', 'trex'):
                 continue
 
             addr_array = port_info['pci'].split(':')
@@ -394,7 +394,7 @@ class Tester(Crb):
         """
         Send ping6 packet from local port with destination ipv4 address.
         """
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.ports_info[localPort]['type'].lower() in ('ixia', 'trex'):
             return "Not implemented yet"
         else:
             return self.send_expect("ping -w 5 -c 5 -A -I %s %s" % (self.ports_info[localPort]['intf'], ipv4), "# ", 10)
@@ -403,8 +403,10 @@ class Tester(Crb):
         """
         Send ping6 packet from local port with destination ipv6 address.
         """
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.ports_info[localPort]['type'].lower() == 'ixia':
             return self.ixia_packet_gen.send_ping6(self.ports_info[localPort]['pci'], mac, ipv6)
+        elif self.ports_info[localPort]['type'].lower() == 'trex':
+            return "Not implemented yet"
         else:
             return self.send_expect("ping6 -w 5 -c 5 -A %s%%%s" % (ipv6, self.ports_info[localPort]['intf']), "# ", 10)
 

@@ -980,13 +980,13 @@ class Dut(Crb):
 
     def disable_tester_ipv6(self):
         for tester_port in self.ports_map:
-            if self.tester.ports_info[tester_port]['type'] != 'ixia':
+            if self.tester.ports_info[tester_port]['type'].lower() not in ('ixia', 'trex'):
                 port = self.tester.ports_info[tester_port]['port']
                 port.disable_ipv6()
 
     def enable_tester_ipv6(self):
         for tester_port in range(len(self.tester.ports_info)):
-            if self.tester.ports_info[tester_port]['type'] != 'ixia':
+            if self.tester.ports_info[tester_port]['type'].lower() not in ('ixia', 'trex'):
                 port = self.tester.ports_info[tester_port]['port']
                 port.enable_ipv6()
 
