@@ -33,6 +33,7 @@ DPDK Test suite.
 """
 
 import utils
+import json
 import os
 import re
 import time
@@ -250,6 +251,28 @@ class TestNicSingleCorePerf(TestCase):
             rst.path2Result, "%s_single_core_perf.txt" % self.nic), 'w')
         file_to_save.write(str(table))
         file_to_save.close()
+
+        json_obj = dict()
+        json_obj['nic_type'] = self.nic
+        json_obj['results'] = list()
+        for frame_size in self.frame_sizes:
+            for descriptor in self.descriptors:
+                row_in = self.test_result[frame_size][descriptor]
+                row_dict = dict()
+                row_dict['parameters'] = dict()
+                row_dict['parameters']['frame_size'] = dict(
+                    value=row_in['Frame Size'], unit='bytes')
+                row_dict['parameters']['txd/rxd'] = dict(
+                    value=row_in['TXD/RXD'], unit='descriptors')
+                delta = (float(row_in['Throughput'].split()[0]) -
+                         float(row_in['Expected Throughput'].split()[0]))
+                row_dict['throughput'] = dict(
+                    delta=delta, unit=row_in['Throughput'].split()[1])
+                json_obj['results'].append(row_dict)
+        with open(os.path.join(rst.path2Result,
+                               '{0:s}_single_core_perf.json'.format(
+                                   self.nic)), 'w') as fp:
+            json.dump(json_obj, fp)
 
     def tear_down(self):
         """
