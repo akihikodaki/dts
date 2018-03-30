@@ -57,6 +57,9 @@ class TestNicSingleCorePerf(TestCase):
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['tcp']
         self.ixgbe_descriptors = [128, 512, 2048]
         self.i40e_descriptors = [512, 2048]
+        self.cx5_descriptors = [128, 256, 512, 2048]
+        self.cx4lx25g_descriptors = [128, 256, 512, 2048]
+        self.cx4lx40g_descriptors = [128, 256, 512, 2048]
 
         # traffic duraion in second
         self.trafficDuration = 60
@@ -64,6 +67,9 @@ class TestNicSingleCorePerf(TestCase):
         #load the expected throughput for required nic
         self.expected_throughput_nnt = self.get_suite_cfg()["throughput_nnt"]
         self.expected_throughput_fvl25g = self.get_suite_cfg()["throughput_fvl25g"]
+        self.expected_throughput_cx5 = self.get_suite_cfg()["throughput_cx5"]
+        self.expected_throughput_cx4lx25g = self.get_suite_cfg()["throughput_cx4lx25g"]
+        self.expected_throughput_cx4lx40g = self.get_suite_cfg()["throughput_cx4lx40g"]
 
         # The acdepted gap between expected throughput and actual throughput, 1 Mpps
         self.gap = 1
@@ -96,6 +102,14 @@ class TestNicSingleCorePerf(TestCase):
             self.descriptors = self.ixgbe_descriptors
         elif self.nic in ["fortville_25g"]:
             self.descriptors = self.i40e_descriptors
+        elif self.nic in ["ConnectX5_MT4121"]:
+            self.descriptors = self.cx5_descriptors
+        elif self.nic in ["ConnectX4_LX_MT4117"]:
+            nic_speed = self.dut.ports_info[0]['port'].get_nic_speed()
+            if nic_speed == "25000":
+                self.descriptors = self.cx4lx25g_descriptors
+            else:
+                self.descriptors = self.cx4lx40g_descriptors
         else:
             raise Exception("Not required NIC")
 
@@ -104,7 +118,8 @@ class TestNicSingleCorePerf(TestCase):
         Run nic single core performance 
         """
         self.verify(len(self.dut_ports) == 2 or len(self.dut_ports) == 4, "Require 2 or 4 ports to test")
-        self.verify(self.nic in ['niantic','fortville_25g'], "Not required NIC ")
+        self.verify(self.nic in ['niantic', 'fortville_25g', \
+                'ConnectX5_MT4121', 'ConnectX4_LX_MT4117'], "Not required NIC ")
         if len(self.dut_ports) == 2:
             self.perf_test(2)   
         elif len(self.dut_ports) == 4:
@@ -175,6 +190,14 @@ class TestNicSingleCorePerf(TestCase):
                     ret_data[header[4]] = str(self.expected_throughput_nnt[frame_size][descriptor]) + " Mpps"
                 elif self.nic == "fortville_25g":
                     ret_data[header[4]] = str(self.expected_throughput_fvl25g[frame_size][descriptor]) + " Mpps"
+                elif self.nic == "ConnectX5_MT4121":
+                    ret_data[header[4]] = str(self.expected_throughput_cx5[frame_size][descriptor]) + " Mpps"
+                elif self.nic == "ConnectX4_LX_MT4117":
+                    nic_speed = self.dut.ports_info[0]['port'].get_nic_speed()
+                    if nic_speed == "25000":
+                        ret_data[header[4]] = str(self.expected_throughput_cx4lx25g[frame_size][descriptor]) + " Mpps"
+                    else:
+                        ret_data[header[4]] = str(self.expected_throughput_cx4lx40g[frame_size][descriptor]) + " Mpps"
                 ret_datas[descriptor] = deepcopy(ret_data)
                 self.test_result[frame_size] = deepcopy(ret_datas)
         
