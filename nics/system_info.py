@@ -77,7 +77,7 @@ class SystemInfo(object):
         Size: 8192 MB Locator: DIMM_A1 Speed: 2133 MHz
         """
         s_regex = r"(\s+)Size: (\d+) MB"
-        l_regex= r"(\s+)Locator: DIMM_(\w+)"
+        l_regex= r"(\s+)Locator: .*_(\w+)"
         speed_regex = r"(\s+)Speed: (.*)"
         size = ""
         locate = ""
