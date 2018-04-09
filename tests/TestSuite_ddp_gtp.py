@@ -141,7 +141,7 @@ class TestDdpGtp(TestCase):
         self.dut_testpmd.execute_cmd('port stop all')
         time.sleep(1)
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
-        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo')
+        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo,/tmp/gtp.bak')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         self.verify("Profile number is: 1" in out,
                     "Failed to load ddp profile!!!")
@@ -385,11 +385,19 @@ class TestDdpGtp(TestCase):
             type='clfter', port='vf id 0', tunnel_pkt='gtpu', inner_L3='ipv6')
 
     def tear_down(self):
-        if self.vm0_testpmd:
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 1')
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 2')
-            self.vm0_testpmd.quit()
-            self.dut_testpmd.quit()
+        self.vm0_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('stop')
+        out = self.dut_testpmd.execute_cmd('ddp get list 0')
+        if "Profile number is: 0" not in out:
+            self.dut_testpmd.execute_cmd('port stop all')
+            time.sleep(1)
+            self.dut_testpmd.execute_cmd('ddp del 0 /tmp/gtp.bak')
+            out = self.dut_testpmd.execute_cmd('ddp get list 0')
+            self.verify("Profile number is: 0" in out,
+                        "Failed to delete ddp profile!!!")
+            self.dut_testpmd.execute_cmd('port start all')
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
 
     def tear_down_all(self):
         self.destroy_vm_env()
