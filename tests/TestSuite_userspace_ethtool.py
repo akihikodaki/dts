@@ -442,8 +442,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': wrong_vlan})
             pkt.send_pkt(tx_port=intf)
             time.sleep(2)
-            rx_pkts_wrong, _ = self.strip_portstats(port)
-            self.verify(rx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
+            rx_pkts_wrong, tx_pkts_wrong = self.strip_portstats(port)
+            self.verify(tx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
 
             # remove vlan
             self.dut.send_expect("vlan %d del %d" % (index, vlan), "EthApp>")
@@ -451,8 +451,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': vlan})
             pkt.send_pkt(tx_port=intf)
             time.sleep(2)
-            rx_pkts_del, _ = self.strip_portstats(port)
-            self.verify(rx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
+            rx_pkts_del, tx_pkts_del = self.strip_portstats(port)
+            self.verify(tx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
 
         self.dut.send_expect("quit", "# ")
         self.dut.send_expect("sed -i -e '/hw_vlan_filter=1;$/d' %s" % main_file, "# ")
