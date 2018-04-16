@@ -481,7 +481,7 @@ class Dut(Crb):
 
         while len(available_ports) > 0:
             accepted_ports = []
-            # first avaiable port is the reference port
+            # first available port is the reference port
             accepted_ports.append(available_ports[0])
 
             # check from second port according to parameter
