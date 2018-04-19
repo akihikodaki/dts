@@ -54,6 +54,7 @@ class SoftwarePacketGenerator():
         self.tester.send_expect("insmod igb_uio.ko", "#")
 
         bind_cmd = ""
+        white_list = ""
         ports = []
         tx_ports = []
         for (tx_port, rx_port, pcap_file) in portList:
@@ -65,6 +66,7 @@ class SoftwarePacketGenerator():
 
         for port in ports:
             bind_cmd += " %s" % self.tester.ports_info[port]['pci']
+            white_list += " -w %s"  % self.tester.ports_info[port]['pci']
 
         self.tester.send_expect("./dpdk-devbind.py --bind=igb_uio %s" % bind_cmd, "#")
 
@@ -73,6 +75,17 @@ class SoftwarePacketGenerator():
         port_index = range(len(ports))
         port_map = dict(zip(ports, port_index))
         self.tester.init_reserved_core()
+
+        # reserve one core for master process
+        used_cores = list()
+        master_core = self.tester.get_reserved_core("1C", socket=0)
+
+        if len(master_core) < 1:
+            raise VerifyFailure("Not enough core for performance!!!")
+
+        used_cores.append(int(master_core[0]))
+
+        # allocate cores for each port
         for port in ports:
             numa = self.tester.get_port_numa(port)
             cores = self.tester.get_reserved_core("2C", socket=numa)
@@ -81,39 +94,58 @@ class SoftwarePacketGenerator():
                 raise VerifyFailure("Not enough cores for performance!!!")
 
             map_cmd += "[%s:%s].%d, " % (cores[0], cores[1], port_map[port])
+            used_cores.append(int(cores[0]))
+            used_cores.append(int(cores[1]))
 
-        # create pcap for every port
+        # prepare pcap for every port
         pcap_cmd = ""
         for (tx_port, rx_port, pcap_file) in portList:
             pcap_cmd += " -s %d:%s" % (port_map[tx_port], pcap_file)
 
         # Selected 2 for -n to optimize results on Burage
-        cores_mask = create_mask(self.tester.get_core_list("all"))
+        cores_mask = create_mask(used_cores)
 
-        self.tester.send_expect("./pktgen -n 2 -c %s --proc-type auto --socket-mem 256,256 -- -P -m \"%s\" %s"
-                                % (cores_mask, map_cmd, pcap_cmd), "Pktgen >", 100)
+        # allocate enough memory for 4 ports
+        socket_mem = "--socket-mem 1024,1024"
+
+        # current support version is dpdk v18.02 + pktgen v3.5.0
+        pkt_cmd = "./pktgen -n 2 -c {CORE} --file-prefix=pktgen {WHITE} " \
+                  "{MEM} -- -P -m \"{CORE_MAP}\" {PCAP}".format(CORE=cores_mask,
+                  WHITE=white_list, MEM=socket_mem, CORE_MAP=map_cmd, PCAP=pcap_cmd)
+
+        self.tester.send_expect(pkt_cmd, "Pktgen:/>", 100)
+        self.tester.send_expect("disable screen", "Pktgen:/>")
 
         if rate_percent != 100:
-            self.tester.send_expect("set all rate %s" % rate_percent, "Pktgen>")
+            self.tester.send_expect("set all rate %s" % rate_percent, "Pktgen:/>")
         else:
-            self.tester.send_expect("set all rate 100", "Pktgen>")
+            self.tester.send_expect("set all rate 100", "Pktgen:/>")
 
-        self.tester.send_expect("start all", "Pktgen>")
+        self.tester.send_expect("start all", "Pktgen:/>")
         time.sleep(10)
-        out = self.tester.send_expect("clr", "Pktgen>")
+        out = self.tester.send_expect("lua \"prints('portRates', pktgen.portStats('all', 'rate'))\"", "Pktgen:/>")
+        rx_bps = 0
+        rx_pps = 0
+        tx_bps = 0
+        rx_match = r"\[\"mbits_rx\"\] = (\d+),"
+        port_stats = re.findall(rx_match, out)
+        for port_stat in port_stats:
+            rx_bps += int(port_stat)
 
-        match = r"Bits per second: (\d+)+/(\d+)"
-        m = re.search(match, out)
+        tx_match = r"\[\"mbits_tx\"\] = (\d+),"
+        port_stats = re.findall(tx_match, out)
+        for port_stat in port_stats:
+            tx_bps += int(port_stat)
 
-        match = r"Packets per second: (\d+)+/(\d+)"
-        n = re.search(match, out)
+        pps_match = r"\[\"pkts_rx\"\] = (\d+),"
+        port_stats = re.findall(pps_match, out)
+        for port_stat in port_stats:
+            rx_pps += int(port_stat)
 
-        rx_bps = int(m.group(1))
-        rx_pps = int(n.group(1))
-        tx_bps = int(m.group(2))
-
-        self.tester.send_expect("stop all", "Pktgen>")
-        self.tester.send_expect("quit", "# ")
+        self.tester.send_expect("stop all", "Pktgen:/>")
+        self.tester.send_expect("quit", "#")
+        # restore stty setting
+        self.tester.send_expect('stty -echo', '#')
         self.tester.kill_all(killall=True)
         self.tester.restore_interfaces()
 

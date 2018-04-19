@@ -288,6 +288,9 @@ class CrbsConf(UserConf):
                 elif key == 'tester_passwd':
                     crb['tester pass'] = value
                 elif key == 'ixia_group':
+                    # None type will be check later
+                    if value.lower() == 'none':
+                        value = None
                     crb[IXIA] = value
                 elif key == 'channels':
                     crb['memory channels'] = int(value)
