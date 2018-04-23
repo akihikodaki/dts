@@ -39,6 +39,7 @@ Getting Started Guide
     sys_reqs
     config
     review
+    tutorial
     virtualization
     scenario
     multiple_vm
