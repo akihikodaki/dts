@@ -120,6 +120,10 @@ The following are the test plans for the DPDK DTS automated test system.
     qinq_filter_test_plan
     ddp_gtp_test_plan
     generic_flow_api_test_plan
+    ddp_gtp_qregion_test_plan
+    runtime_queue_number_test_plan
+    vhost_multi_queue_qemu_test_plan
+    vhost_qemu_mtu_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan

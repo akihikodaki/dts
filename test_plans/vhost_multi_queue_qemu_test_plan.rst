@@ -85,7 +85,8 @@ flow:
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 1. Bind one port to igb_uio, then launch testpmd by below command, 
-   ensure the vhost using 2 queues: 
+   ensure the vhost using 2 queues::
+
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
@@ -106,7 +107,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     -vnc :2 -daemonize
 
 3. On VM, bind virtio net to igb_uio and run testpmd,
-   using one queue for testing at first  ::
+   using one queue for testing at first::
  
     ./testpmd -c 0x7 -n 3 -- -i --rxq=1 --txq=1 --tx-offloads=0x0 \
     --rss-ip --nb-cores=1
@@ -114,6 +115,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     testpmd>start
 
 4. Use scapy send packet::
+
     #scapy
     >>>pk1= [Ether(dst="52:54:00:00:00:01")/IP(dst="1.1.1.1")/UDP()/("X"*64)]
     >>>pk2= [Ether(dst="52:54:00:00:00:01")/IP(dst="1.1.1.7")/UDP()/("X"*64)]
@@ -159,7 +161,8 @@ flow:
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 1. Bind one port to igb_uio, then launch testpmd by below command, 
-   ensure the vhost using 2 queues: 
+   ensure the vhost using 2 queues::
+
     rm -rf vhost-net*
     ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
@@ -180,7 +183,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     -vnc :2 -daemonize
 
 3. On VM, bind virtio net to igb_uio and run testpmd,
-   using one queue for testing at first  ::
+   using one queue for testing at first::
  
     ./testpmd -c 0x7 -n 4 -- -i --rxq=2 --txq=2 \
     --tx-offloads=0x0 --rss-ip --nb-cores=2
@@ -188,6 +191,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     testpmd>start
  
 4. Use scapy send packet::
+
     #scapy
     >>>pk1= [Ether(dst="52:54:00:00:00:01")/IP(dst="1.1.1.1")/UDP()/("X"*64)]
     >>>pk2= [Ether(dst="52:54:00:00:00:01")/IP(dst="1.1.1.7")/UDP()/("X"*64)]

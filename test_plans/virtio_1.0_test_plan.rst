@@ -44,8 +44,7 @@ test with virtio0.95 to ensure they can co-exist. Besides, we need test virtio
 
 
 Test Case 1: test_func_vhost_user_virtio1.0-pmd with different tx-offloads
-=======================================================================
-
+==========================================================================
 Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0.
 
 1. Launch the Vhost sample by below commands, socket-mem is set for the vhost sample to use, need ensure that the PCI port located socket has the memory. In our case, the PCI BDF is 81:00.0, so we need assign memory for socket1.::

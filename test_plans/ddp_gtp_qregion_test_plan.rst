@@ -193,7 +193,9 @@ Test Case: Outer IPv6 dst controls GTP-C queue in queue region
     GTP_U_Header()/Raw('x'*20)
 	
 10. Send different outer src GTP-C packet, check pmd receives packet from 
-    same queue::
+    same queue
+
+.. code-block:: console
 
     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
@@ -405,7 +407,9 @@ Test Case: Inner IP src controls GTP-U IPv4 queue in queue region
     IP(src="1.1.1.2",dst="2.2.2.2")/UDP()/Raw('x'*20)
 
 10. Send different dst GTP-U IPv4 packet, check pmd receives packet from same
-    queue::
+    queue
+
+.. code-block:: console
     
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.1",dst="2.2.2.3")/UDP()/Raw('x'*20)
@@ -452,7 +456,9 @@ Test Case: Inner IP dst controls GTP-U IPv4 queue in queue region
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.1",dst="2.2.2.3")/UDP()/Raw('x'*20)
 
-10. Send different src address, check pmd receives packet from same queue::
+10. Send different src address, check pmd receives packet from same queue
+
+.. code-block:: console
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.2",dst="2.2.2.2")/UDP()/Raw('x'*20)
@@ -635,14 +641,14 @@ Test Case: Inner IPv6 src controls GTP-U IPv6 queue in queue region
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
 		
 10. Send different inner dst GTP-U IPv6 packet, check pmd receives packet 
-    from same queue::
+    from same queue
+
+.. code-block:: console
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002)/UDP()/Raw('x'*20)
-	
 
-	
 Test Case: Inner IPv6 dst controls GTP-U IPv6 queue in queue region
 =========================================================================
 1. Check flow type to pctype mapping::
@@ -693,7 +699,9 @@ Test Case: Inner IPv6 dst controls GTP-U IPv6 queue in queue region
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/UDP()/Raw('x'*20)
 
 10. Send different inner src GTP-U IPv6 packets, check pmd receives packet 
-    from same queue::
+    from same queue
+
+.. code-block:: console
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",

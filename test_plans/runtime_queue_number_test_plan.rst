@@ -425,7 +425,9 @@ Test case: pass through VF to VM
  
 5. Bind VF to kernel driver i40evf, check the rxq and txq number.
    if set VF Max possible RX queues and TX queues to 2 by PF,
-   the VF rxq and txq number is 2::
+   the VF rxq and txq number is 2
+
+.. code-block:: console
 
     #ethtool -S eth0
     NIC statistics:
