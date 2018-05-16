@@ -297,11 +297,17 @@ class QEMUKvm(VirtBase):
 
     def add_vm_machine(self, **options):
         """
-        'machine': 'virt'
+        'machine': 'virt','opt_gic_version'
         """
+        machine_boot_line='-machine'
+        separator = ','
         if 'machine' in options.keys() and \
                 options['machine']:
-            machine_boot_line = '-machine %s' % options['machine']
+            machine_boot_line += '%s' % options['machine']
+            if 'opt_gic_version' in options.keys() and \
+                    options['opt_gic_version']:
+                machine_boot_line += separator + 'gic_version=%s' % options['opt_gic_version']
+
             self.__add_boot_line(machine_boot_line)
 
     def set_vm_pid_file(self):
