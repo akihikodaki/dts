@@ -985,7 +985,7 @@ class QEMUKvm(VirtBase):
         Connect to serial port and return connected session for usage
         if connected failed will return None
         """
-        shell_reg = r"(\s*)\[(.*)\]# "
+        shell_reg = r"(.*)# "
         try:
             if getattr(self, 'control_session', None) is None:
                 self.control_session = self.host_session
@@ -1031,7 +1031,7 @@ class QEMUKvm(VirtBase):
         Connect to serial port and return connected session for usage
         if connected failed will return None
         """
-        shell_reg = r"(\s*)\[(.*)\]# "
+        shell_reg = r"(.*)# "
         scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
 
         try:
@@ -1064,7 +1064,7 @@ class QEMUKvm(VirtBase):
                     return True
 
             # login into Redhat os, not sure can work on all distributions
-            if "x86_64 on an x86_64" not in out:
+            if ("x86_64 on an x86_64" not in out) and (self.LOGIN_PROMPT not in out):
                 print RED("[%s:%s] not ready for login" % (self.host_dut.crb['My IP'], self.vm_name))
                 return False
             else:
