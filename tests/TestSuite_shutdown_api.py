@@ -253,8 +253,8 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
-        self.verify("RX queues=2" in out, "RX queues not reconfigured properly")
-        self.verify("TX queues=2" in out, "TX queues not reconfigured properly")
+        self.verify("RX queue number: 2" in out, "RX queues not reconfigured properly")
+        self.verify("Tx queue number: 2" in out, "TX queues not reconfigured properly")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
         self.dut.send_expect("quit", "# ", 30)
@@ -263,7 +263,10 @@ class TestShutdownApi(TestCase):
         """
         Reconfigure All Ports With The Same Configurations (CRC)
         """
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
+        out = self.dut.send_expect("show config rxtx", "testpmd> ")
+        self.verify(
+            "Rx offloads=0x0" in out, "CRC stripping not disabled properly")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all crc-strip on", "testpmd> ")
@@ -271,7 +274,7 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         self.verify(
-            "CRC stripping enabled" in out, "CRC stripping not enabled properly")
+            "Rx offloads=0x1000" in out, "CRC stripping not enabled properly")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
