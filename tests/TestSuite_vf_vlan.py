@@ -383,6 +383,7 @@ class TestVfVlan(TestCase):
 
         for rx_vlan in rx_vlans:
             self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+            self.vm0_testpmd.execute_cmd('vlan set filter on 0')
             self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % rx_vlan)
             time.sleep(1)
             out = self.send_and_getout(vlan=rx_vlan, pkt_type="VLAN_UDP")
