@@ -622,6 +622,7 @@ class Testvf_daemon(TestCase):
         self.vm0_testpmd.execute_cmd('set verbose 1')  
         self.vm0_testpmd.execute_cmd('start')
         for rx_vlan in rx_vlans:  
+            self.vm0_testpmd.execute_cmd('vlan set filter on 0')
             self.vm0_testpmd.execute_cmd('rx_vlan add %s 0' % rx_vlan)
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 off')
             time.sleep(3)
@@ -632,7 +633,7 @@ class Testvf_daemon(TestCase):
             time.sleep(3)
             out = self.send_and_vlanstrip(self.vf0_mac,rx_vlan)
             self.verify(rx_vlan not in out, "Failed to disable strip vlan!!!")
-
+        self.vm0_testpmd.execute_cmd('vlan set filter off 0')
     
     def test_vlan_filter(self):
         """
