@@ -990,7 +990,7 @@ class QEMUKvm(VirtBase):
             if getattr(self, 'control_session', None) is None:
                 self.control_session = self.host_session
 
-                self.control_session.send_command("nc -U %s" % self.serial_path)
+                self.control_session.send_command("socat %s STDIO" % self.serial_path)
 
             # login message not ouput if timeout too small
             out = self.control_session.send_command("", timeout=5).replace('\r', '').replace('\n', '')
@@ -1722,7 +1722,7 @@ class QEMUKvm(VirtBase):
         """
         # return control_session to host_session
         if self.control_type == 'socket':
-            scan_cmd = "ps -e -o pid,cmd  |grep 'nc -U %s' |grep -v grep" % self.serial_path
+            scan_cmd = "ps -e -o pid,cmd  |grep 'socat %s STDIO' |grep -v grep" % self.serial_path
             out = self.host_dut.send_expect(scan_cmd, "#")
             proc_info = out.strip().split()
             try:
