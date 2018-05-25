@@ -339,16 +339,6 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_devargs(self):
-        """
-        Run devargs autotest.
-        """
-
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("devargs_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
     def test_kvargs(self):
         """
         Run kvargs autotest.
