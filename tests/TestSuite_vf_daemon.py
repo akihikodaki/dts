@@ -571,6 +571,7 @@ class Testvf_daemon(TestCase):
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('start')
         #self.dut_testpmd.execute_cmd('rx_vlan add %d port 0 vf 1' % match_vlan)
+        self.vm0_testpmd.execute_cmd('vlan set filter on 0')
         self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % match_vlan)
         if self.kdriver == "i40e":
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 off')
