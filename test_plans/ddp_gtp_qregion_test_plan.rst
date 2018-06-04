@@ -49,6 +49,8 @@ Requirements
    input set. 
 4. GTP-U distributed to data plane queues region using TEID and inner 
    packet 5-tuple as hash input set.
+5. Requirements 1 and 2 should be possible for IPv6 addresses to use 64,
+   48 or 32-bit prefixes instead of full address.
 
 FVL supports queue regions configuration for RSS, so different traffic 
 classes or different packet classification types can be separated to 
@@ -80,9 +82,13 @@ Prerequisites
     ./tools/dpdk-devbind.py -b igb_uio 81:00.0
 
 2. Start testpmd on host, set chained port topology mode, add txq/rxq to 
-   enable multi-queues. In general, PF's max queue is 64::
+   enable multi-queues. If test PF flow director, need to add 
+   --pkt-filter-mode=perfect on testpmd to enable flow director. In general, 
+   PF's max queue is 64::
 
-    ./testpmd -c f -n 4 -- -i --port-topology=chained --txq=64 --rxq=64
+    ./testpmd -c f -n 4 -- -i --pkt-filter-mode=perfect 
+    --port-topology=chained --txq=64 --rxq=64
+
 
 Load/delete dynamic device personalization 
 ==========================================
@@ -113,13 +119,7 @@ Note:
 
 2. Loading DDP is the prerequisite for below GTP relative cases. Load
    profile again once restarting testpmd to let software detect this
-   event, although has “profile has already existed” reminder. Operate
-   global reset or lanconf tool to recover original setting. Global reset
-   trigger reg is 0xb8190, first cmd is core reset, second cmd is global
-   reset::
-
-    testpmd > write reg 0 0xb8190 1
-    testpmd > write reg 0 0xb8190 2
+   event, although has “profile has already existed” reminder.
 
 
 Flow type and queue region mapping setting
@@ -151,7 +151,7 @@ Test Case: Outer IPv6 dst controls GTP-C queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-C flow type id 25 to pcytpe id 25 mapping item::
+2. Update GTP-C flow type id 25 to pctype id 25 mapping item::
 
     testpmd> port config 0 pctype mapping update 25 25
 	
@@ -193,13 +193,11 @@ Test Case: Outer IPv6 dst controls GTP-C queue in queue region
     GTP_U_Header()/Raw('x'*20)
 	
 10. Send different outer src GTP-C packet, check pmd receives packet from 
-    same queue
+    same queue::
 
-.. code-block:: console
-
-    p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
-    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
-    UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
+     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
 
 	 
 Test Case: TEID controls GTP-C queue in queue region
@@ -209,7 +207,7 @@ Test Case: TEID controls GTP-C queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-C flow type id 25 to pcytpe id 25 mapping item::
+2. Update GTP-C flow type id 25 to pctype id 25 mapping item::
 
     testpmd> port config 0 pctype mapping update 25 25
 	
@@ -247,7 +245,7 @@ Test Case: TEID controls GTP-U IPv4 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv4 flow type id 26 to pcytpe id 22 mapping item::
+2. Update GTP-U IPv4 flow type id 26 to pctype id 22 mapping item::
 
     testpmd> port config 0 pctype mapping update 22 26
 	
@@ -287,7 +285,7 @@ Test Case: Sport controls GTP-U IPv4 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv4 flow type id 26 to pcytpe id 22 mapping item::
+2. Update GTP-U IPv4 flow type id 26 to pctype id 22 mapping item::
 
     testpmd> port config 0 pctype mapping update 22 26
 	
@@ -329,7 +327,7 @@ Test Case: Dport controls GTP-U IPv4 queue in queue region
 
     testpmd> show port 0 pctype mapping
 
-2. Update GTP-U IPv4 flow type id 26 to pcytpe id 22 mapping item::
+2. Update GTP-U IPv4 flow type id 26 to pctype id 22 mapping item::
 
     testpmd> port config 0 pctype mapping update 22 26
 
@@ -371,7 +369,7 @@ Test Case: Inner IP src controls GTP-U IPv4 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv4 flow type id 26 to pcytpe id 22 mapping item::
+2. Update GTP-U IPv4 flow type id 26 to pctype id 22 mapping item::
 
     testpmd> port config 0 pctype mapping update 22 26
 	
@@ -407,12 +405,10 @@ Test Case: Inner IP src controls GTP-U IPv4 queue in queue region
     IP(src="1.1.1.2",dst="2.2.2.2")/UDP()/Raw('x'*20)
 
 10. Send different dst GTP-U IPv4 packet, check pmd receives packet from same
-    queue
+    queue::
 
-.. code-block:: console
-    
-    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
-    IP(src="1.1.1.1",dst="2.2.2.3")/UDP()/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IP(src="1.1.1.1",dst="2.2.2.3")/UDP()/Raw('x'*20)
 	 
 
 Test Case: Inner IP dst controls GTP-U IPv4 queue in queue region
@@ -421,7 +417,7 @@ Test Case: Inner IP dst controls GTP-U IPv4 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv4 flow type id 26 to pcytpe id 22 mapping item::
+2. Update GTP-U IPv4 flow type id 26 to pctype id 22 mapping item::
 
     testpmd> port config 0 pctype mapping update 22 26
 	
@@ -456,12 +452,10 @@ Test Case: Inner IP dst controls GTP-U IPv4 queue in queue region
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IP(src="1.1.1.1",dst="2.2.2.3")/UDP()/Raw('x'*20)
 
-10. Send different src address, check pmd receives packet from same queue
+10. Send different src address, check pmd receives packet from same queue::
 
-.. code-block:: console
-
-    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
-    IP(src="1.1.1.2",dst="2.2.2.2")/UDP()/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IP(src="1.1.1.2",dst="2.2.2.2")/UDP()/Raw('x'*20)
 	 
 
 Test Case: TEID controls GTP-U IPv6 queue in queue region
@@ -470,7 +464,7 @@ Test Case: TEID controls GTP-U IPv6 queue in queue region
 
     testpmd> show port 0 pctype mapping
 
-2. Update GTP-U IPv6 flow type id 23 to pcytpe id 23 mapping item::
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
 
     testpmd> port config 0 pctype mapping update 23 23
 
@@ -512,7 +506,7 @@ Test Case: Sport controls GTP-U IPv6 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv6 flow type id 23 to pcytpe id 23 mapping item::
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
 
     testpmd> port config 0 pctype mapping update 23 23
 	
@@ -554,7 +548,7 @@ Test Case: Dport controls GTP-U IPv6 queue in queue region
 
     testpmd> show port 0 pctype mapping
 
-2. Update GTP-U IPv6 flow type id 23 to pcytpe id 23 mapping item::
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
 
     testpmd> port config 0 pctype mapping update 23 23
 
@@ -597,7 +591,7 @@ Test Case: Inner IPv6 src controls GTP-U IPv6 queue in queue region
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv6 flow type id 23 to pcytpe id 23 mapping item::
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
 
     testpmd> port config 0 pctype mapping update 23 23
 	
@@ -634,28 +628,26 @@ Test Case: Inner IPv6 src controls GTP-U IPv6 queue in queue region
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
 
 9. Send different inner src GTP-U IPv6 packet, check pmd receives packet 
-   from different queue but dbetween 10 and 25::
+   from different queue but between 10 and 25::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
 		
 10. Send different inner dst GTP-U IPv6 packet, check pmd receives packet 
-    from same queue
+    from same queue::
 
-.. code-block:: console
-
-    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
-    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
-    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002)/UDP()/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002)/UDP()/Raw('x'*20)
 
 Test Case: Inner IPv6 dst controls GTP-U IPv6 queue in queue region
-=========================================================================
+===================================================================
 1. Check flow type to pctype mapping::
 
     testpmd> show port 0 pctype mapping
 	
-2. Update GTP-U IPv6 flow type id 23 to pcytpe id 23 mapping item::
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
 
     testpmd> port config 0 pctype mapping update 23 23
 	
@@ -699,10 +691,599 @@ Test Case: Inner IPv6 dst controls GTP-U IPv6 queue in queue region
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/UDP()/Raw('x'*20)
 
 10. Send different inner src GTP-U IPv6 packets, check pmd receives packet 
-    from same queue
+    from same queue::
 
-.. code-block:: console
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv4 with default fd input set
+===============================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv4 flow type id 26 to pctype id 22 mapping item::
+
+    testpmd> port config 0 pctype mapping update 22 26
+
+3. Default flow director input set is teid, start testpmd, set fwd rxonly,
+   enable output print
+
+4. Send GTP IPv4 packets, check to receive packet from queue 0::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+5. Use scapy to generate GTP IPv4 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(dst="1.1.1.1",
+    src="2.2.2.2")/UDP(dport=40, sport=50)/Raw('x'*20)
+
+6. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 26 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+7. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+10. Send non-matched inner src IPv4/dst IPv4/sport/dport packets, check to 
+    receive packets from queue 36::
+
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.2",
+     dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.1",
+     dst="2.2.2.3")/UDP(sport=40, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=41, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=40, dport=51)/Raw('x'*20)
+
+11. Send non-matched teid GTP IPv4 packets, check to receive packet from
+    queue 0::
+
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xff)/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv4 according to inner dst IPv4
+=================================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv4 flow type id 26 to pctype id 22 mapping item::
+
+    testpmd> port config 0 pctype mapping update 22 26
+
+3. Reset GTP IPv4 flow director configure::
+
+    testpmd> port config 0 pctype 22 fdir_inset clear all
+
+4. Inner dst IPv4 words are 27 and 28, enable flow director input set for
+   them::
+
+    testpmd> port config 0 pctype 22 fdir_inset set field 27
+    testpmd> port config 0 pctype 22 fdir_inset set field 28
+
+5. Start testpmd, set fwd rxonly, enable output print
+
+6. Send GTP IPv4 packets, check to receive packet from queue 0::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+7. Use scapy to generate GTP IPv4 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(dst="1.1.1.1",
+    src="2.2.2.2")/UDP(dport=40, sport=50)/Raw('x'*20)
+
+8. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 26 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+9. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+10. Send non-matched inner src IPv4/sport/dport packets, check to receive
+    packets from queue 36::
+ 
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.2",
+     dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=41, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=40, dport=51)/Raw('x'*20)
+
+11. Send non-matched inner dst IPv4 packets, check to receive packet from
+    queue 0::
+
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.3")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv4 according to inner src IPv4
+=================================================================
+1. Check flow ptype to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv4 flow type id 26 to pctype id 22 mapping item::
+
+    testpmd> port config 0 pctype mapping update 22 26
+
+3. Reset GTP IPv4 flow director configure::
+
+    testpmd> port config 0 pctype 22 fdir_inset clear all
+
+4. Inner src IPv4 words are 15 and 16, enable flow director input set for
+   them::
+
+    testpmd> port config 0 pctype 22 fdir_inset set field 15
+    testpmd> port config 0 pctype 22 fdir_inset set field 16
+
+5. Start testpmd, set fwd rxonly, enable output print
+
+6. Send GTP IPv4 packets, check to receive packet from queue 0::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+7. Use scapy to generate GTP IPv4 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(dst="1.1.1.1",
+    src="2.2.2.2")/UDP(dport=40, sport=50)/Raw('x'*20)
+
+8. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 26 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+9. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+
+    p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+    dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+10. Send non-matched inner dst IPv4/sport/dport packets, check to receive
+    packets from queue 36::
+
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.3")/UDP(sport=40, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=41, dport=50)/Raw('x'*20)
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.1",
+     dst="2.2.2.2")/UDP(sport=40, dport=51)/Raw('x'*20)
+
+11. Send non-matched inner src IPv4 packets, check to receive packet
+    from queue 0::
+
+     p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP(src="1.1.1.2",
+     dst="2.2.2.2")/UDP(sport=40, dport=50)/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv6 with default fd input set
+===============================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv6 flow type id 23 to pctype id 23 mapping item::
+
+    testpmd> port config 0 pctype mapping update 23 23
+
+3. Default flow director input set is teid, start testpmd, set fwd rxonly,
+   enable output print
+
+4. Send GTP IPv6 packets, check to receive packet from queue 0::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+5. Use scapy to generate GTP IPv6 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(dport=40,sport=50)/Raw('x'*20)
+
+6. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 23 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+7. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+    
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+8. Send non-matched inner src IPv6/dst IPv6/sport/dport packets, check to 
+   receive packets from queue 36::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=41,dport=50)/Raw('x'*20)
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=51)/Raw('x'*20)
+
+11. Send non-matched teid packets, check to receive packet
+    from queue 0::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xff)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=40,dport=50)/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv6 according to inner dst IPv6
+=================================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv6 flow type id 23 to pctype id 23 mapping item::
+
+    testpmd> port config 0 pctype mapping update 23 23
+
+3. Reset GTP IPv6 flow director configure::
+
+    testpmd> port config 0 pctype 23 fdir_inset clear all
+
+4. Inner dst IPv6 words are 21~28 , enable flow director input set for them::
+
+    testpmd> port config 0 pctype 23 fdir_inset set field 21
+    testpmd> port config 0 pctype 23 fdir_inset set field 22
+    testpmd> port config 0 pctype 23 fdir_inset set field 23
+    testpmd> port config 0 pctype 23 fdir_inset set field 24
+    testpmd> port config 0 pctype 23 fdir_inset set field 25
+    testpmd> port config 0 pctype 23 fdir_inset set field 26
+    testpmd> port config 0 pctype 23 fdir_inset set field 27
+    testpmd> port config 0 pctype 23 fdir_inset set field 28
+
+5. Start testpmd, set fwd rxonly, enable output print
+
+6. Send GTP IPv6 packets, check to receive packet from queue 0::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+7. Use scapy to generate GTP IPv6 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(dport=40,sport=50)/Raw('x'*20)
+
+8. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 23 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+9. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+    
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+10. Send non-matched inner src IPv6/sport/dport packets, check to receive
+    packets from queue 36::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=40,dport=50)/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=41,dport=50)/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=40,dport=51)/Raw('x'*20)
+
+11. Send non-matched inner dst IPv6 packets, check to receive packet
+    from queue 0::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/
+     UDP(sport=40,dport=50)/Raw('x'*20)
+
+
+Test Case: Flow director for GTP IPv6 according to inner src IPv6
+=================================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP IPv6 flow type id 23 to pctype id 23 mapping item::
+
+    testpmd> port config 0 pctype mapping update 23 23
+
+3. Reset GTP IPv6 flow director configure::
+
+    testpmd> port config 0 pctype 23 fdir_inset clear all
+
+4. Inner src IPv6 words are 13~20, enable flow director input set for them::
+
+    testpmd> port config 0 pctype 23 fdir_inset set field 13
+    testpmd> port config 0 pctype 23 fdir_inset set field 14
+    testpmd> port config 0 pctype 23 fdir_inset set field 15
+    testpmd> port config 0 pctype 23 fdir_inset set field 16
+    testpmd> port config 0 pctype 23 fdir_inset set field 17
+    testpmd> port config 0 pctype 23 fdir_inset set field 18
+    testpmd> port config 0 pctype 23 fdir_inset set field 19
+    testpmd> port config 0 pctype 23 fdir_inset set field 20
+
+5. Start testpmd, set fwd rxonly, enable output print
+
+6. Send GTP IPv6 packets, check to receive packet from queue 0::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+7. Use scapy to generate GTP IPv6 raw packet test_gtp.raw, source/destination
+   address and port should be swapped in the template and traffic packets::
+
+    a=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(dport=40,sport=50)/Raw('x'*20)
+
+8. Setup raw flow type filter for flow director, configured queue is random 
+   queue between 1~63, such as 36::
+
+    testpmd> flow_director_filter 0 mode raw add flow 23 fwd queue 36
+             fd_id 1 packet test_gtp.raw
+
+9. Send matched swapped traffic packet, check to receive packet from
+   configured queue 36::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+    UDP(sport=40,dport=50)/Raw('x'*20)
+
+10. Send non-matched inner dst IPv6/sport/dport packets, check to receive
+    packets from queue 36::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/
+     UDP(sport=40,dport=50)/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=41,dport=50)/Raw('x'*20)
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=40,dport=51)/Raw('x'*20)
+
+11. Send non-matched inner src IPv6 packets, check to receive packet from
+    queue 0::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(sport=40,dport=50)/Raw('x'*20)
+
+
+Test Case: Outer 64 bit prefix dst controls GTP-C queue
+=======================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP-C flow type id 25 to pctype id 25 mapping item::
+
+    testpmd> port config 0 pctype mapping update 25 25
+
+3. Check flow type to pctype mapping adds 25 this mapping
+
+4. Reset GTP-C hash configure::
+
+    testpmd> port config 0 pctype 25 hash_inset clear all
+
+5. Outer dst address words are 50~57, only setting 50~53 words means 64 bits
+   prefixes, enable hash input set for outer dst::
+
+    testpmd> port config 0 pctype 25 hash_inset set field 50
+    testpmd> port config 0 pctype 25 hash_inset set field 51
+    testpmd> port config 0 pctype 25 hash_inset set field 52
+    testpmd> port config 0 pctype 25 hash_inset set field 53
+
+6. Enable flow type id 25's RSS::
+
+    testpmd> port config all rss 25
+
+7. Start testpmd, set fwd rxonly, enable output print
+
+8. Send outer dst GTP-C packet, check RSS could work, verify the queue is
+   between 40 and 55, print PKT_RX_RSS_HASH::
+
+    p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=2123)/
+    GTP_U_Header()/Raw('x'*20)
+
+9. Send different outer dst 64 bit prefixes GTP-C packet, check pmd receives
+   packet from different queue but between 40 and 55::
+
+    p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0001:0000:8a2e:0370:0001")/UDP(dport=2123)/
+    GTP_U_Header()/Raw('x'*20)
+
+10. Send different outer dst 64 bit suffixal GTP-C packet, check pmd receives
+    packet from same queue::
+
+     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/UDP(dport=2123)/
+     GTP_U_Header()/Raw('x'*20)
+
+11. Send different outer src GTP-C packet, check pmd receives packet from
+    same queue::
+
+     p=Ether()/IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/
+     UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
+
+
+Test Case: Inner 48 bit prefix src controls GTP-U IPv6 queue
+============================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
+
+    testpmd> port config 0 pctype mapping update 23 23
+
+3. Check flow type to pctype mapping adds 23 this mapping::
+
+    testpmd> show port 0 pctype mapping
+
+4. Reset GTP-U IPv6 hash configure::
+
+    testpmd> port config 0 pctype 23 hash_inset clear all
+
+5. Inner IPv6 src words are 13~20, only setting 13~15 words means 48 bit prefixes,
+   enable hash input set for inner src::
+
+    testpmd> port config 0 pctype 23 hash_inset set field 13
+    testpmd> port config 0 pctype 23 hash_inset set field 14
+    testpmd> port config 0 pctype 23 hash_inset set field 15
+
+6. Enable flow type id 23's RSS::
+
+    testpmd> port config all rss 23
+
+7. Start testpmd, set fwd rxonly, enable output print
+
+8. Send inner src address GTP-U IPv6 packets, check RSS could work, verify
+   the queue is between 10 and 25, print PKT_RX_RSS_HASH::
 
     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
-    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+9. Send different inner src 48 bit prefixes GTP-U IPv6 packet, check pmd
+   receives packet from different queue but between 10 and 25::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+    IPv6(src="1001:0db8:85a4:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+10. Send different inner src 48 bit suffixal GTP-C packet, check pmd receives
+    packet from same queue::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+11. Send different inner dst GTP-U IPv6 packet, check pmd receives packet
+    from same queue::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/UDP()/Raw('x'*20)
+
+
+Test Case: Inner 32 bit prefix dst controls GTP-U IPv6 queue
+============================================================
+1. Check flow type to pctype mapping::
+
+    testpmd> show port 0 pctype mapping
+
+2. Update GTP-U IPv6 flow type id 23 to pctype id 23 mapping item::
+
+    testpmd> port config 0 pctype mapping update 23 23
+
+3. Check flow ptype to pctype mapping adds 23 this mapping::
+
+    testpmd> show port 0 pctype mapping
+
+4. Reset GTP-U IPv6 hash configure::
+
+    testpmd> port config 0 pctype 23 hash_inset clear all
+
+5. Inner IPv6 dst words are 21~28, only setting 21~22 words means 32 bit prefixes,
+   enable hash input set for inner dst::
+
+    testpmd> port config 0 pctype 23 hash_inset set field 21
+    testpmd> port config 0 pctype 23 hash_inset set field 22
+
+6. Enable flow type id 23's RSS::
+
+    testpmd> port config all rss 23
+
+7. Start testpmd, set fwd rxonly, enable output print
+
+8. Send inner dst GTP-U IPv6 packets, check RSS could work, verify the
+   queue is between 10 and 25, print PKT_RX_RSS_HASH::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+9. Send different inner dst 32 bit prefixes GTP-U IPv6 packets, check pmd
+   receives packet from different queue but between 10 and 25::
+
+    p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+    IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+    dst="2001:0db9:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
+10. Send different inner dst 32 bit suffixal GTP-U packet, check pmd receives
+    packet from same queue::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0001",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0002")/UDP()/Raw('x'*20)
+
+11. Send different inner src GTP-U IPv6 packets, check pmd receives packet
+    from same queue::
+
+     p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header(teid=30)/
+     IPv6(src="1001:0db8:85a3:0000:0000:8a2e:0370:0002",
+     dst="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP()/Raw('x'*20)
+
