@@ -127,7 +127,7 @@ class TestUnitTestsDump(TestCase):
         out = self.dut.send_expect("dump_physmem", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         elements = ['Segment', 'IOVA', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
-        match_regex = "Segment (\d)+:"
+        match_regex = "Segment (.*?):"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
         match_regex += " %s:(.*?)" % elements[-1]
@@ -152,14 +152,13 @@ class TestUnitTestsDump(TestCase):
         out = self.dut.send_expect("dump_memzone", "testpmd>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
-        elements = ['Zone', 'name', 'IO', 'len', 'virt', 'socket_id', 'flags']
+        elements = ['Zone', 'name', 'len', 'virt', 'socket_id', 'flags']
         match_regex = "Zone (\d):"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
         match_regex += " %s:(.*?)\n" % elements[-1]
         m = re.compile(r"%s" % match_regex, re.DOTALL)
         results = m.findall(out)
-
         memzone_info = []
         for result in results:
             memzone_info.append(dict(zip(elements, result)))
@@ -180,6 +179,7 @@ class TestUnitTestsDump(TestCase):
             match_regex += "sizeof\(%s\) = (\d+)\r\n" % element
         match_regex += "sizeof\(%s\) = (\d+)" % elements[-1]
         m = re.compile(r"%s" % match_regex, re.S)
+
         result = m.search(out)
         struct_info = dict(zip(elements, result.groups()))
 
