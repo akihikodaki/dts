@@ -173,7 +173,7 @@ class TestPmdPcap(TestCase):
                                             out_pcap1,
                                             TestPmdPcap.dut_pcap_files_path +
                                             in_pcap2,
-                                            out_pcap2), 'testpmd> ', 10)
+                                            out_pcap2), 'testpmd> ', 15)
 
         self.dut.send_expect('start', 'testpmd> ')
         sleep(2)
