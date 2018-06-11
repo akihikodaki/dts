@@ -454,7 +454,7 @@ class Testvf_daemon(TestCase):
         Enable/disable drop enable bit for all queues from PF
         """
         self.check_vf_link_status()
-        self.vm1_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.vm1_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained --rxd=1024')
 
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
