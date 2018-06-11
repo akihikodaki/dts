@@ -162,14 +162,16 @@ class PacketGenerator(object):
         self._start_transmission(stream_ids)
 
         time.sleep(delay)
+        used_rx_port = []
         for stream_id in stream_ids:
-            rxbps_rates, rxpps_rates = self._retrieve_port_statistic(stream_id)
-
-            bps_rx.append(rxbps_rates)
-            pps_rx.append(rxpps_rates)
-            self._stop_transmission(stream_id)
-            bps_rx_total = self._summary_statistic(bps_rx)
-            pps_rx_total = self._summary_statistic(pps_rx)
+            if self.__streams[stream_id]['rx_port'] not in used_rx_port:
+                rxbps_rates, rxpps_rates = self._retrieve_port_statistic(stream_id)
+                used_rx_port.append(self.__streams[stream_id]['rx_port'])
+                bps_rx.append(rxbps_rates)
+                pps_rx.append(rxpps_rates)
+                self._stop_transmission(stream_id)
+        bps_rx_total = self._summary_statistic(bps_rx)
+        pps_rx_total = self._summary_statistic(pps_rx)
 
         print "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total)
 
@@ -367,7 +369,9 @@ class TrexPacketGenerator(PacketGenerator):
 
             vm = self.create_vm(ip_src_range, ip_dst_range, action=ip['action'], step=step_temp[3])
 
-            stl_stream = self.trex_streampacket(self.trex_pkt_builder(pkt=pcap_file, vm=vm), mode=self.trex_tx_count(percentage=100)) 
+            stl_stream = self.trex_stream(
+                                          packet=self.trex_pkt_builder(pkt=pcap_file, vm=vm),
+                                           mode=self.trex_tx_count(percentage=100))
 
             self._transmit_streams[stream_id] = stl_stream
 
