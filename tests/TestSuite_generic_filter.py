@@ -102,8 +102,14 @@ class TestGeneric_filter(TestCase):
                 "vlan set strip off %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set strip off %s" % valports[1], "testpmd> ")
+            #reson dpdk-5315
+            self.dut.send_expect(
+                "vlan set filter on %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[0], "testpmd> ")
+            #reson dpdk-5315
+            self.dut.send_expect(
+                "vlan set filter on %s" % valports[1], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[1], "testpmd> ")
 
