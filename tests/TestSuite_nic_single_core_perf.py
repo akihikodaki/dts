@@ -54,7 +54,7 @@ class TestNicSingleCorePerf(TestCase):
         """
 
         self.frame_sizes = [64]
-        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['tcp']
+        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
         self.ixgbe_descriptors = [128, 512, 2048]
         self.i40e_descriptors = [512, 2048]
         self.cx5_descriptors = [128, 256, 512, 2048]
@@ -67,6 +67,7 @@ class TestNicSingleCorePerf(TestCase):
         #load the expected throughput for required nic
         self.expected_throughput_nnt = self.get_suite_cfg()["throughput_nnt"]
         self.expected_throughput_fvl25g = self.get_suite_cfg()["throughput_fvl25g"]
+        self.expected_throughput_fvl40g = self.get_suite_cfg()["throughput_fvl40g"]
         self.expected_throughput_cx5 = self.get_suite_cfg()["throughput_cx5"]
         self.expected_throughput_cx4lx25g = self.get_suite_cfg()["throughput_cx4lx25g"]
         self.expected_throughput_cx4lx40g = self.get_suite_cfg()["throughput_cx4lx40g"]
@@ -78,7 +79,7 @@ class TestNicSingleCorePerf(TestCase):
         self.table_header = ['Frame Size', 'TXD/RXD', 'Throughput', 'Rate', 'Expected Throughput']
 
         # Update config file and rebuild to get best perf on FVL
-        if self.nic in ["fortville_25g"]:
+        if self.nic in ["fortville_25g", "fortville_spirit"]:
             self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
             self.dut.build_install_dpdk(self.target)
 
@@ -100,7 +101,7 @@ class TestNicSingleCorePerf(TestCase):
         """
         if self.nic == "niantic":
             self.descriptors = self.ixgbe_descriptors
-        elif self.nic in ["fortville_25g"]:
+        elif self.nic in ["fortville_25g", "fortville_spirit"]:
             self.descriptors = self.i40e_descriptors
         elif self.nic in ["ConnectX5_MT4121"]:
             self.descriptors = self.cx5_descriptors
@@ -118,7 +119,7 @@ class TestNicSingleCorePerf(TestCase):
         Run nic single core performance 
         """
         self.verify(len(self.dut_ports) == 2 or len(self.dut_ports) == 4, "Require 2 or 4 ports to test")
-        self.verify(self.nic in ['niantic', 'fortville_25g', \
+        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit',
                 'ConnectX5_MT4121', 'ConnectX4_LX_MT4117'], "Not required NIC ")
         if len(self.dut_ports) == 2:
             self.perf_test(2)   
@@ -156,7 +157,10 @@ class TestNicSingleCorePerf(TestCase):
             ret_datas = {}
             for descriptor in self.descriptors:
                 self.logger.info("Executing Test Using cores: %s" % core_list)
-                self.pmdout.start_testpmd(core_config, "--portmask=%s --txd=%d --rxd=%d" % (port_mask, descriptor, descriptor),eal, socket=self.socket)
+                if self.nic in ["fortville_25g", "fortville_spirit"]:
+                    self.pmdout.start_testpmd(core_config, "--portmask=%s --txd=%d --rxd=%d --rxq=2 --txq=2" % (port_mask, descriptor, descriptor),eal, socket=self.socket)
+                else:
+                    self.pmdout.start_testpmd(core_config, "--portmask=%s --txd=%d --rxd=%d" % (port_mask, descriptor, descriptor),eal, socket=self.socket)
                 self.dut.send_expect("start", "testpmd> ", 15)
 
                 self.logger.info("Running with frame size %d " % frame_size)
@@ -164,7 +168,10 @@ class TestNicSingleCorePerf(TestCase):
                 # create pcap file
                 payload_size = frame_size - self.headers_size
                 self.tester.scapy_append(
-                        'wrpcap("test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % payload_size)
+                        'wrpcap("test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
+                self.tester.scapy_execute()
+                self.tester.scapy_append(
+                        'wrpcap("test1.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="2.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
                 self.tester.scapy_execute()
 
                 # send the traffic
@@ -190,6 +197,8 @@ class TestNicSingleCorePerf(TestCase):
                     ret_data[header[4]] = str(self.expected_throughput_nnt[frame_size][descriptor]) + " Mpps"
                 elif self.nic == "fortville_25g":
                     ret_data[header[4]] = str(self.expected_throughput_fvl25g[frame_size][descriptor]) + " Mpps"
+                elif self.nic == "fortville_spirit":
+                    ret_data[header[4]] = str(self.expected_throughput_fvl40g[frame_size][descriptor]) + " Mpps"
                 elif self.nic == "ConnectX5_MT4121":
                     ret_data[header[4]] = str(self.expected_throughput_cx5[frame_size][descriptor]) + " Mpps"
                 elif self.nic == "ConnectX4_LX_MT4117":
@@ -232,14 +241,20 @@ class TestNicSingleCorePerf(TestCase):
         '''
         create streams for ports, one port one stream
         '''
+        # configure 2 streams for each tx port
         if port_num == 2:
             txport0 = self.tester.get_local_port(self.dut.get_ports()[0])
             txport1 = self.tester.get_local_port(self.dut.get_ports()[1])
             stream_id0 = self.tester.pktgen.add_stream(txport0, txport1, r'/root/test.pcap')
-            stream_id1 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test.pcap')
+            stream_id1 = self.tester.pktgen.add_stream(txport0, txport1, r'/root/test1.pcap')
+            stream_id2 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test.pcap')
+            stream_id3 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test1.pcap')
             self.tester.pktgen.config_stream(stream_id0, options)
             self.tester.pktgen.config_stream(stream_id1, options)
-            return [stream_id0, stream_id1]
+            self.tester.pktgen.config_stream(stream_id2, options)
+            self.tester.pktgen.config_stream(stream_id3, options)
+            return [stream_id0, stream_id1, stream_id2, stream_id3]
+        # configure 1 stream for each tx port
         elif port_num == 4:
             txport0 = self.tester.get_local_port(self.dut.get_ports()[0])
             txport1 = self.tester.get_local_port(self.dut.get_ports()[1])
