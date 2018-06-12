@@ -85,12 +85,27 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         pass
 
+    def get_core_from_socket(self):
+       """
+       select  the port and lcores from same socket.
+       """
+    
+       out = self.dut.send_expect("./usertools/cpu_layout.py", "#", 10)
+       k = re.search("Core 0 (.*)", out)
+       result = re.findall("(\d+),", k.group())
+       socket_id = self.dut.ports_info[0]['port'].socket
+       if socket_id == 0 or socket_id == -1:
+          return  int(result[0])
+       else:
+          return  int(result[1])
+
     def test_pmd_burst(self):
         """
         Run pmd stream control mode burst test case.
         """
 
-        self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+        self.core = self.get_core_from_socket()
+        self.dut.send_expect("./test/test/test -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -105,7 +120,8 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         Run pmd stream control mode continues test case.
         """
-
+        
+        self.core = self.get_core_from_socket()
         self.table_header = ['Mode']
         self.table_header += self.anchors
         self.result_table_create(self.table_header)
@@ -113,9 +129,9 @@ class TestUnitTestsPmdPerf(TestCase):
 
         for mode in self.rxtx_modes:
             if mode is "scalar":
-                self.dut.send_expect("./test/test/test_scalar -n 1 -c f", "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./test/test/test_scalar -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
             else:
-                self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./test/test/test -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
 
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
