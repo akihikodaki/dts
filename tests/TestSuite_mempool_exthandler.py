@@ -114,6 +114,7 @@ class TestMemExthandler(TestCase):
 
         # strip rx/tx statistic from l2fwd output
         out = self.dut.get_session_output()
+        self.dut.send_expect("^C", "#", 30)
         sent_list = utils.regexp(out, r"Total packets sent:(\s+)(\d+)", allString=True)
         total_sent = int(sent_list[-1][1])
         rcv_list = utils.regexp(out, r"Total packets received:(\s+)(\d+)", allString=True)
