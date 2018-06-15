@@ -45,6 +45,7 @@ from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
 from settings import SCAPY2IXIA
 from utils import RED
+from exception import VerifyFailure
 
 
 class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
@@ -256,6 +257,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.dut.send_expect(self.cmd, "EthApp>", 60)
         # ethtool doesn't support port disconnect by tools of linux 
         # only detect physical link disconnect status
+        verify_pass = True
+        verify_msg = ''
         if self.nic.startswith("fortville") == False:  
             # check link status dump function
             for port in self.ports:
@@ -273,8 +276,14 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 if m:
                     port = m.group(1)
                     status = m.group(2)
-                    self.verify(status == "Down", "Userspace tool failed to detect link down")
-    
+                    # record link down verification result
+                    # then continue the test to restore ports link
+                    try:
+                        self.verify(status == "Down", "Userspace tool failed to detect port %s link down" % port)
+                    except VerifyFailure as v:
+                        verify_msg += str(v)
+                        verify_pass = False
+
             for port in self.ports:
                 tester_port = self.tester.get_local_port(port)
                 intf = self.tester.get_interface(tester_port)
@@ -294,6 +303,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.verify((rx_pkts == (ori_rx_pkts + 1)), "Failed to record Rx/Tx packets")
 
         self.dut.send_expect("quit", "# ")
+        # Check port link down verification result
+        if verify_pass == False:
+            raise VerifyFailure(verify_msg)
 
     def test_retrieve_reg(self):
         """
