@@ -430,6 +430,19 @@ class DPDKdut(Dut):
         # No blacklist option in FreeBSD
         return blacklist
 
+    def get_def_rte_config(self, config):
+        """
+        Get RTE configuration from config/defconfig_*.
+        """
+        out = self.session.send_command("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
+                                        % self.target, 1)
+
+        def_rte_config = re.findall(config+'=(\S+)', out)
+        if def_rte_config:
+            return def_rte_config[0]
+        else:
+            return None
+
     def set_driver_specific_configurations(self, drivername):
         """
         Set configurations required for specific drivers before compilation.
