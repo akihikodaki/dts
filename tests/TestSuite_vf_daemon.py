@@ -576,6 +576,9 @@ class Testvf_daemon(TestCase):
         if self.kdriver == "i40e":
             self.dut_testpmd.execute_cmd('set vf vlan stripq 0 0 off')
         else:
+            # Since dpdk18.02 commit 8b9bd0, testpmd vlan filter was disabled by default
+            # But some pmds still enabled it, so enable and disable vlan filter again
+            self.dut_testpmd.execute_cmd('vlan set filter on 0')
             self.dut_testpmd.execute_cmd('vlan set filter off 0')
             self.dut_testpmd.execute_cmd('vlan set strip off 0')
             self.vm0_testpmd.execute_cmd('vlan set strip off 0')
