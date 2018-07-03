@@ -772,7 +772,7 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_mirror(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
         vlan_id = 0
         vf_mask = '0x1'
@@ -804,7 +804,8 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_and_pool_mirror(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
         vlan_id = 3
         vf_mask = '0x2'
@@ -899,7 +900,8 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_and_pool_and_uplink_and_downlink(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         self.vm0_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('stop')
 
