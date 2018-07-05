@@ -377,6 +377,50 @@ class TestUniPacket(TestCase):
         }
         self.run_test(pktType)
 
+    def test_nsh(self):
+        """
+        check if NSH packets can be norally detected by Fortpark and Fortville
+        """
+        self.verify(self.kdriver == 'i40e', "NSH packet detection only supported by i40e driver nic")
+
+        nsh_packets = {'ether+nsh': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x0,NSP=0x000002,NSI=0xff)', \
+                       'ether+nsh+ip': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()', \
+                       'ether+nsh+ip+icmp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/ICMP()', \
+                       'ether+nsh+ip_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP(frag=1,flags="MF")', \
+                       'ether+nsh+ip+tcp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/TCP()', \
+                       'ether+nsh+ip+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/UDP()', \
+                       'ether+nsh+ip+sctp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/SCTP(tag=1)/SCTPChunkData(data=\'X\' * 16)', \
+                       'ether+nsh+ipv6': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()', \
+                       'ether+nsh+ipv6+icmp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(src="2001::1",dst="2003::2",nh=0x3A)/ICMP()',
+                       'ether+nsh+ipv6_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/IPv6ExtHdrFragment()', \
+                       'ether+nsh+ipv6+tcp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/TCP()', \
+                       'ether+nsh+ipv6+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/UDP()', \
+                       'ether+nsh+ipv6+sctp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(nh=0x84)/SCTP(tag=1)/SCTPChunkData("x" * 16)'
+                       }
+
+        nsh_detect_message = {"ether+nsh": "L2_ETHER_NSH", \
+                              "ether+nsh+ip": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_NONFRAG", \
+                              "ether+nsh+ip+icmp": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_ICMP", \
+                              "ether+nsh+ip_frag": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_FRAG", \
+                              "ether+nsh+ip+tcp": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_TCP", \
+                              "ether+nsh+ip+udp": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_UDP", \
+                              "ether+nsh+ip+sctp": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_SCTP", \
+                              "ether+nsh+ipv6": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_NONFRAG", \
+                              "ether+nsh+ipv6+icmp": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_ICMP", \
+                              "ether+nsh+ipv6_frag": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_FRAG", \
+                              "ether+nsh+ipv6+tcp": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_TCP", \
+                              "ether+nsh+ipv6+udp": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_UDP", \
+                              "ether+nsh+ipv6+sctp": "L2_ETHER_NSH L3_IPV6_EXT_UNKNOWN L4_SCTP"
+                             }
+
+        for packet in nsh_packets:
+            self.tester.scapy_foreground()
+            self.tester.scapy_append("sendp([%s],iface='%s')" % (nsh_packets[packet], self.tester_iface))
+            self.tester.scapy_execute()
+            out = self.dut.get_session_output(timeout=2)
+            self.verify(nsh_detect_message[packet] in out, "Packet Detection Error for : %s" % packet)
+            print utils.GREEN("Detected packet %s Successfully" % packet)
+
     def tear_down(self):
         """
         Run after each test case.
