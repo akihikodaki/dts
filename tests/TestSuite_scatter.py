@@ -105,7 +105,7 @@ class TestScatter(TestCase):
         """
         out = self.pmdout.start_testpmd(
             "1S/2C/1T", "--mbcache=200 --mbuf-size=%d --portmask=0x1 "
-            "--max-pkt-len=9000 --port-topology=loop" % (self.mbsize))
+            "--max-pkt-len=9000 --port-topology=loop --tx-offloads=0x00008000" % (self.mbsize))
 
         self.verify("Error" not in out, "launch error 1")
 
