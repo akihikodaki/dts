@@ -289,16 +289,21 @@ Test case: VF max queue number when VF bound to kernel driver
 3. Repeat step1-2 with "queue-num-per-vf=1/4/8/16", check the rxq and txq
    number is 1/4/8/16.
 
-Test case: set VF max queue number with 32 VFs on one PF port
+Test case: set VF max queue number with max VFs on one PF port
 =============================================================
 
-1. Set up 32 VFs from one PF with DPDK driver::
+1. Set up max VFs from one PF with DPDK driver
+   Create 32 vfs on four ports fortville NIC::
 
     echo 32 > /sys/bus/pci/devices/0000\:05\:00.0/max_vfs
 
+   Create 64 vfs on two ports fortville NIC::
+
+    echo 64 > /sys/bus/pci/devices/0000\:05\:00.0/max_vfs
+
    Bind the two of the VFs to DPDK driver::
 
-    ./usertools/dpdk-devbind.py -b vfio-pci 05:02.0 05:05.7 
+    ./usertools/dpdk-devbind.py -b vfio-pci 05:02.0 05:05.7
 
 2. Set VF max queue number to 16::
 
@@ -307,6 +312,7 @@ Test case: set VF max queue number with 32 VFs on one PF port
 
    PF port failed to started with "i40e_pf_parameter_init():
    Failed to allocate 577 queues, which exceeds the hardware maximum 384"
+   If create 64 vfs, the maximum is 768.
 
 3. Set VF max queue number to 8::
 
@@ -353,6 +359,9 @@ Test case: set VF max queue number with 32 VFs on one PF port
     testpmd> start
     RX queues=8 - RX desc=128 - RX free threshold=32
     TX queues=7 - TX desc=512 - TX free threshold=32
+
+5. Send 256 packets to VF0 and VF1, make sure packets can be distributed
+   to all the queues.
 
 Test case: pass through VF to VM
 ================================
