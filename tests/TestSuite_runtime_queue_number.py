@@ -125,7 +125,7 @@ class TestRuntime_Queue_Number(TestCase):
         """
         self.tester.scapy_foreground()
         time.sleep(2)
-        for i in range(32):
+        for i in range(256):
             packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
                 self.vf_mac, itf, i + 1, i + 2, itf)
             self.tester.scapy_append(packet)
@@ -160,7 +160,7 @@ class TestRuntime_Queue_Number(TestCase):
                 m = scanner.search(line)
                 packet_rec = m.group(1)
             
-        self.verify(packet_sumnum == int(packet_rec) == 32, "There are some packets lost.")
+        self.verify(packet_sumnum == int(packet_rec) == 256, "There are some packets lost.")
 
     def test_set_valid_vf_max_qn(self):
         """
@@ -234,22 +234,28 @@ class TestRuntime_Queue_Number(TestCase):
         outstring = self.session_secondary.send_expect("show port info all", "testpmd> ", 120)
         self.verify_result(outstring, max_rxqn=8, max_txqn=8, cur_rxqn=8, cur_txqn=8)
 
-    def test_set_32vfs_1pf(self):
+    def test_set_maxvfs_1pf(self):
         """
-        set max queue number when setting 32 VFs on 1 PF port.
+        set max queue number when setting max VFs on 1 PF port.
         """
-        self.setup_env(32)
-        # failed to set VF max queue num to 16.
-        out = self.pmdout.start_testpmd("%s" % self.cores, eal_param="-w %s,queue-num-per-vf=16 --file-prefix=test1 --socket-mem 1024,1024" % self.pf_pci)
-        self.verify("exceeds the hardware maximum 384" in out, "the queue num exceeds the hardware maximum 384")
+        if (self.nic in ["fortville_eagle", "fortpark_TLV"]):
+            self.setup_env(32)
+            # failed to set VF max queue num to 16.
+            out = self.pmdout.start_testpmd("%s" % self.cores, eal_param="-w %s,queue-num-per-vf=16 --file-prefix=test1 --socket-mem 1024,1024" % self.pf_pci)
+            self.verify("exceeds the hardware maximum 384" in out, "the queue num exceeds the hardware maximum 384")
+        elif (self.nic in ["fortville_spirit", "fortville_spirit_single"]):
+            self.setup_env(64)
+            # failed to set VF max queue num to 16.
+            out = self.pmdout.start_testpmd("%s" % self.cores, eal_param="-w %s,queue-num-per-vf=16 --file-prefix=test1 --socket-mem 1024,1024" % self.pf_pci)
+            self.verify("exceeds the hardware maximum 768" in out, "the queue num exceeds the hardware maximum 768")
         self.dut.send_expect("quit", "# ")
         time.sleep(5)
         # succeed in setting VF max queue num to 8
         self.pmdout.start_testpmd("%s" % self.cores, eal_param="-w %s,queue-num-per-vf=8 --file-prefix=test1 --socket-mem 1024,1024" % self.pf_pci)
         # start testpmd on vf0
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 -w %s --file-prefix=test2 --socket-mem 1024,1024 -- -i --rxq=%d --txq=%d" % (self.target, self.sriov_vfs_port[0].pci, 8, 8), "testpmd>", 120)
+        self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0 -n 4 -w %s --file-prefix=test2 --socket-mem 1024,1024 -- -i --rxq=%d --txq=%d" % (self.target, self.sriov_vfs_port[0].pci, 8, 8), "testpmd>", 120)
         # start testpmd on vf31 with different rxq/txq number
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 -w %s --file-prefix=test3 --socket-mem 1024,1024 -- -i" % (self.target, self.sriov_vfs_port[31].pci), "testpmd>", 120)
+        self.session_third.send_expect("./%s/app/testpmd -c 0x1e00 -n 4 -w %s --file-prefix=test3 --socket-mem 1024,1024 -- -i" % (self.target, self.sriov_vfs_port[31].pci), "testpmd>", 120)
         # check the max queue number and current queue number
         outstring = self.session_secondary.send_expect("show port info all", "testpmd> ", 120)
         self.verify_result(outstring, max_rxqn=8, max_txqn=8, cur_rxqn=8, cur_txqn=8)
