@@ -438,7 +438,7 @@ class Crb(object):
         """
         pids = []
         pid_reg = r'p(\d+)'
-        cmd = 'lsof -Fp /var/run/.rte_config'
+        cmd = 'lsof -Fp /var/run/dpdk/rte/config'
         out = self.send_expect(cmd, "# ", 20, alt_session)
         if len(out):
             lines = out.split('\r\n')
@@ -450,7 +450,7 @@ class Crb(object):
             self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
             self.get_session_output(timeout=2)
 
-        cmd = 'lsof -Fp /var/run/.rte_hugepage_info'
+        cmd = 'lsof -Fp /var/run/dpdk/rte/hugepage_info'
         out = self.send_expect(cmd, "# ", 20, alt_session)
         if len(out) and "No such file or directory" not in out:
             self.logger.warning("There are some dpdk process not free hugepage")
