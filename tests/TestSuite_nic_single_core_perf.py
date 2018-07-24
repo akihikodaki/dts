@@ -39,11 +39,13 @@ import re
 import time
 from test_case import TestCase
 from time import sleep
-from settings import HEADER_SIZE
+from exception import VerifyFailure
+from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from pmd_output import PmdOutput
 from copy import deepcopy
 from prettytable import PrettyTable
 import rst
+
 
 class TestNicSingleCorePerf(TestCase):
 
@@ -52,260 +54,257 @@ class TestNicSingleCorePerf(TestCase):
         Run at the start of each test suite.
         PMD prerequisites.
         """
+        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit',
+                                 'ConnectX5_MT4121', 'ConnectX4_LX_MT4117'],
+                                 "Not required NIC ")
 
-        self.frame_sizes = [64]
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
-        self.ixgbe_descriptors = [128, 512, 2048]
-        self.i40e_descriptors = [512, 2048]
-        self.cx5_descriptors = [128, 256, 512, 2048]
-        self.cx4lx25g_descriptors = [128, 256, 512, 2048]
-        self.cx4lx40g_descriptors = [128, 256, 512, 2048]
 
-        # traffic duraion in second
-        self.trafficDuration = 60
-
-        #load the expected throughput for required nic
-        self.expected_throughput_nnt = self.get_suite_cfg()["throughput_nnt"]
-        self.expected_throughput_fvl25g = self.get_suite_cfg()["throughput_fvl25g"]
-        self.expected_throughput_fvl40g = self.get_suite_cfg()["throughput_fvl40g"]
-        self.expected_throughput_cx5 = self.get_suite_cfg()["throughput_cx5"]
-        self.expected_throughput_cx4lx25g = self.get_suite_cfg()["throughput_cx4lx25g"]
-        self.expected_throughput_cx4lx40g = self.get_suite_cfg()["throughput_cx4lx40g"]
-
-        # The acdepted gap between expected throughput and actual throughput, 1 Mpps
-        self.gap = 1
-
-        # header to print test result table
-        self.table_header = ['Frame Size', 'TXD/RXD', 'Throughput', 'Rate', 'Expected Throughput']
-
-        # Update config file and rebuild to get best perf on FVL
+        # Update DPDK config file and rebuild to get best perf on fortville
         if self.nic in ["fortville_25g", "fortville_spirit"]:
-            self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
+            self.dut.send_expect(
+                "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
             self.dut.build_install_dpdk(self.target)
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
-
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
-
         self.pmdout = PmdOutput(self.dut)
 
-        self.test_result = {}
-
         # determine if to save test result as a separated file
-        self.save_result_flag =  True
+        self.save_result_flag = True
 
     def set_up(self):
         """
         Run before each test case.
+        It's more convenient to load suite configuration here than
+        set_up_all in debug mode.
         """
-        if self.nic == "niantic":
-            self.descriptors = self.ixgbe_descriptors
-        elif self.nic in ["fortville_25g", "fortville_spirit"]:
-            self.descriptors = self.i40e_descriptors
-        elif self.nic in ["ConnectX5_MT4121"]:
-            self.descriptors = self.cx5_descriptors
-        elif self.nic in ["ConnectX4_LX_MT4117"]:
+
+        # test parameters include: frames size, descriptor numbers
+        self.test_parameters = self.get_suite_cfg()['test_parameters']
+
+        # traffic duraion in second
+        self.test_duration = self.get_suite_cfg()['test_duration']
+
+        # load the expected throughput for required nic
+        if self.nic in ["ConnectX4_LX_MT4117"]:
             nic_speed = self.dut.ports_info[0]['port'].get_nic_speed()
             if nic_speed == "25000":
-                self.descriptors = self.cx4lx25g_descriptors
+                self.expected_throughput = self.get_suite_cfg(
+                )['expected_throughput'][self.nic]['25G']
             else:
-                self.descriptors = self.cx4lx40g_descriptors
+                self.expected_throughput = self.get_suite_cfg(
+                )['expected_throughput'][self.nic]['40G']
         else:
-            raise Exception("Not required NIC")
+            self.expected_throughput = self.get_suite_cfg()[
+                'expected_throughput'][self.nic]
+
+        # initilize throughput attribution
+        # {'$framesize':{"$nb_desc": 'throughput'}
+        self.throughput = {}
+
+        # Accepted tolerance in Mpps
+        self.gap = self.get_suite_cfg()['accepted_tolerance']
+
+        # header to print test result table
+        self.table_header = ['Frame Size', 'TXD/RXD', 'Throughput', 'Rate',
+                             'Expected Throughput', 'Throughput Difference']
+        self.test_result = {}
 
     def test_nic_single_core_perf(self):
         """
         Run nic single core performance 
         """
-        self.verify(len(self.dut_ports) == 2 or len(self.dut_ports) == 4, "Require 2 or 4 ports to test")
-        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit',
-                'ConnectX5_MT4121', 'ConnectX4_LX_MT4117'], "Not required NIC ")
-        if len(self.dut_ports) == 2:
-            self.perf_test(2)   
-        elif len(self.dut_ports) == 4:
-            self.perf_test(4)
+        self.nb_ports = len(self.dut_ports)
+        self.verify(self.nb_ports == 2 or self.nb_ports == 4,
+                    "Require 2 or 4 ports to test")
+        self.perf_test(self.nb_ports)
+        self.handle_results()
+
+        # check the gap between expected throughput and actual throughput
+        try:
+            for frame_size in self.test_parameters.keys():
+                for nb_desc in self.test_parameters[frame_size]:
+                    cur_gap = (self.expected_throughput[frame_size][nb_desc] -
+                                self.throughput[frame_size][nb_desc])
+                    self.verify(cur_gap < self.gap,
+                                 "Beyond Gap, Possible regression")
+        except Exception as e:
+            self.logger.error(e)
+            self.handle_expected()
+            raise VerifyFailure(
+                "Possible regression, Check your configuration please")
+        else:
+            self.handle_expected()
+
+    def handle_expected(self):
+        """
+        Update expected numbers to configurate file: conf/$suite_name.cfg
+        """
+        if load_global_setting(UPDATE_EXPECTED) == "yes":
+            for frame_size in self.test_parameters.keys():
+                for nb_desc in self.test_parameters[frame_size]:
+                    self.expected_throughput[frame_size][nb_desc] = \
+                        round(self.throughput[frame_size][nb_desc],3)
 
     def perf_test(self, port_num):
         """
         Single core Performance Benchmarking test
         """
-        # traffic option
-        options = {
-             'rate' : '100%',
-             #'ip': {'action': 'inc', 'mask' : '255.255.255.0', 'step': '0.0.0.1'}
-            }
+        # ports whitelist
+        eal_para = ""
+        for i in range(self.nb_ports):
+            eal_para += " -w " + self.dut.ports_info[i]['pci']
 
-        header = self.table_header
-        if port_num == 2:
-            pci0 = self.dut.ports_info[0]['pci']
-            pci1 = self.dut.ports_info[1]['pci']
-            eal = "-w %s -w %s" % (pci0, pci1)
-        elif port_num == 4:
-            pci0 = self.dut.ports_info[0]['pci']
-            pci1 = self.dut.ports_info[1]['pci']
-            pci2 = self.dut.ports_info[2]['pci']
-            pci3 = self.dut.ports_info[3]['pci']
-            eal = "-w %s -w %s -w %s -w %s" % (pci0, pci1, pci2, pci3)
-
-        # run testpmd with 2 cores
+        # run testpmd with 2 cores, one for interaction ,and one for forwarding
         core_config = "1S/2C/1T"
-        core_list = self.dut.get_core_list(core_config, socket=self.socket)
+        core_list = self.dut.get_core_list(core_config, socket = self.socket)
+        self.logger.info("Executing Test Using cores: %s" % core_list)
         port_mask = utils.create_mask(self.dut_ports)
 
-        for frame_size in self.frame_sizes:
-            ret_datas = {}
-            for descriptor in self.descriptors:
-                self.logger.info("Executing Test Using cores: %s" % core_list)
-                if self.nic in ["fortville_25g", "fortville_spirit"]:
-                    self.pmdout.start_testpmd(core_config, "--portmask=%s --txd=%d --rxd=%d --rxq=2 --txq=2" % (port_mask, descriptor, descriptor),eal, socket=self.socket)
-                else:
-                    self.pmdout.start_testpmd(core_config, "--portmask=%s --txd=%d --rxd=%d" % (port_mask, descriptor, descriptor),eal, socket=self.socket)
+        # parameters for application/testpmd
+        param = " --portmask=%s" % (port_mask)
+        # fortville has to use 2 queues at least to get the best performance
+        if self.nic in ["fortville_25g", "fortville_spirit"]:
+            param += " --rxq=2 --txq=2"
+
+        for frame_size in self.test_parameters.keys():
+            self.throughput[frame_size] = dict()
+            for nb_desc in self.test_parameters[frame_size]:
+                self.logger.info("Test running at parameters: " +
+                    "framesize: {}, rxd/txd: {}".format(frame_size, nb_desc))
+                parameter = param + " --txd=%d --rxd=%d" % (nb_desc, nb_desc)
+                self.pmdout.start_testpmd(
+                    core_config, parameter, eal_para, socket = self.socket)
                 self.dut.send_expect("start", "testpmd> ", 15)
 
-                self.logger.info("Running with frame size %d " % frame_size)
-
-                # create pcap file
-                payload_size = frame_size - self.headers_size
-                self.tester.scapy_append(
-                        'wrpcap("test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
-                self.tester.scapy_execute()
-                self.tester.scapy_append(
-                        'wrpcap("test1.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="2.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
-                self.tester.scapy_execute()
-
-                # send the traffic
-                streams = self.prepare_stream(port_num, options)      
-                _, packets_received = self.tester.pktgen.measure_throughput(stream_ids=streams, delay=self.trafficDuration)
-
+                # measure throughput
+                stream_ids = self.prepare_stream(frame_size)
+                _, packets_received = self.tester.pktgen.measure_throughput(
+                    stream_ids = stream_ids, delay = self.test_duration)
                 throughput = packets_received / 1000000.0
+                self.throughput[frame_size][nb_desc] = throughput
 
                 self.dut.send_expect("stop", "testpmd> ")
                 self.dut.send_expect("quit", "# ", 30)
 
-                self.logger.info("Throughput result for Descriptor :%s is :%s Mpps" % (descriptor, throughput))
+                self.verify(throughput,
+                    "No traffic detected, please check your configuration")
+                self.logger.info("Trouthput of " +
+                    "framesize: {}, rxd/txd: {} is :{} Mpps".format(
+                        frame_size, nb_desc, throughput))
 
-                wirespeed = self.wirespeed(self.nic, frame_size, port_num)
+        return self.throughput
 
-                # one entry for test result record
+    def handle_results(self):
+        """
+        results handled process:
+        1, save to self.test_results
+        2, create test results table
+        3, save to json file for Open Lab
+        """
+
+        # save test results to self.test_result
+        header = self.table_header
+        for frame_size in self.test_parameters.keys():
+            wirespeed = self.wirespeed(self.nic, frame_size, self.nb_ports)
+            ret_datas = {}
+            for nb_desc in self.test_parameters[frame_size]:
                 ret_data = {}
                 ret_data[header[0]] = frame_size
-                ret_data[header[1]] = descriptor
-                ret_data[header[2]] = str(float("%.3f" % throughput)) + " Mpps"
-                ret_data[header[3]] = str(float("%.3f" % (throughput * 100 / wirespeed))) + "%"
-                if self.nic == "niantic":
-                    ret_data[header[4]] = str(self.expected_throughput_nnt[frame_size][descriptor]) + " Mpps"
-                elif self.nic == "fortville_25g":
-                    ret_data[header[4]] = str(self.expected_throughput_fvl25g[frame_size][descriptor]) + " Mpps"
-                elif self.nic == "fortville_spirit":
-                    ret_data[header[4]] = str(self.expected_throughput_fvl40g[frame_size][descriptor]) + " Mpps"
-                elif self.nic == "ConnectX5_MT4121":
-                    ret_data[header[4]] = str(self.expected_throughput_cx5[frame_size][descriptor]) + " Mpps"
-                elif self.nic == "ConnectX4_LX_MT4117":
-                    nic_speed = self.dut.ports_info[0]['port'].get_nic_speed()
-                    if nic_speed == "25000":
-                        ret_data[header[4]] = str(self.expected_throughput_cx4lx25g[frame_size][descriptor]) + " Mpps"
-                    else:
-                        ret_data[header[4]] = str(self.expected_throughput_cx4lx40g[frame_size][descriptor]) + " Mpps"
-                ret_datas[descriptor] = deepcopy(ret_data)
-                self.test_result[frame_size] = deepcopy(ret_datas)
-        
-        for frame_size in self.frame_sizes:
-            for descriptor in self.descriptors:
-                self.verify(self.test_result[frame_size][descriptor][header[2]] > 0, "No traffic detected")
+                ret_data[header[1]] = nb_desc
+                ret_data[header[2]] = "{:.3f} Mpps".format(
+                    self.throughput[frame_size][nb_desc])
+                ret_data[header[3]] = "{:.3f}%".format(
+                    self.throughput[frame_size][nb_desc] * 100 / wirespeed)
+                ret_data[header[4]] = "{:.3f} Mpps".format(
+                    self.expected_throughput[frame_size][nb_desc])
+                ret_data[header[5]] = "{:.3f} Mpps".format(
+                    self.throughput[frame_size][nb_desc] -
+                        self.expected_throughput[frame_size][nb_desc])
 
-        # Print results
+                ret_datas[nb_desc] = deepcopy(ret_data)
+            self.test_result[frame_size] = deepcopy(ret_datas)
+
+        # Create test results table
         self.result_table_create(header)
-        for frame_size in self.frame_sizes:
-            for descriptor in self.descriptors:
-                table_row = [self.test_result[frame_size][descriptor][header[0]]]
-                table_row.append(self.test_result[frame_size][descriptor][header[1]])
-                table_row.append(self.test_result[frame_size][descriptor][header[2]])
-                table_row.append(self.test_result[frame_size][descriptor][header[3]])
-                table_row.append(self.test_result[frame_size][descriptor][header[4]])
+        for frame_size in self.test_parameters.keys():
+            for nb_desc in self.test_parameters[frame_size]:
+                table_row = list()
+                for i in range(len(header)):
+                    table_row.append(
+                        self.test_result[frame_size][nb_desc][header[i]])
                 self.result_table_add(table_row)
-
+        # present test results to screen
         self.result_table_print()
 
         # save test results as a file
         if self.save_result_flag:
             self.save_result(self.test_result)
 
-        # check if the gap between expected throughput and actual throughput exceed accepted gap 
-        for frame_size in self.frame_sizes:
-            for descriptor in self.descriptors:
-                self.verify(float(self.test_result[frame_size][descriptor][header[4]].split()[0]) -
-                    float(self.test_result[frame_size][descriptor][header[2]].split()[0]) < self.gap, "Exceeded Gap")
+    def prepare_stream(self, frame_size):
+        '''
+        create streams for ports, one port two streams, and configure them.
+        '''
+        # traffic option
+        options = {
+            'rate': '100%',
+        }
 
-    def prepare_stream(self, port_num, options):
-        '''
-        create streams for ports, one port one stream
-        '''
-        # configure 2 streams for each tx port
-        if port_num == 2:
-            txport0 = self.tester.get_local_port(self.dut.get_ports()[0])
-            txport1 = self.tester.get_local_port(self.dut.get_ports()[1])
-            stream_id0 = self.tester.pktgen.add_stream(txport0, txport1, r'/root/test.pcap')
-            stream_id1 = self.tester.pktgen.add_stream(txport0, txport1, r'/root/test1.pcap')
-            stream_id2 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test.pcap')
-            stream_id3 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test1.pcap')
-            self.tester.pktgen.config_stream(stream_id0, options)
-            self.tester.pktgen.config_stream(stream_id1, options)
-            self.tester.pktgen.config_stream(stream_id2, options)
-            self.tester.pktgen.config_stream(stream_id3, options)
-            return [stream_id0, stream_id1, stream_id2, stream_id3]
-        # configure 1 stream for each tx port
-        elif port_num == 4:
-            txport0 = self.tester.get_local_port(self.dut.get_ports()[0])
-            txport1 = self.tester.get_local_port(self.dut.get_ports()[1])
-            txport2 = self.tester.get_local_port(self.dut.get_ports()[2])
-            txport3 = self.tester.get_local_port(self.dut.get_ports()[3])
-            stream_id0 = self.tester.pktgen.add_stream(txport0, txport1, r'/root/test.pcap')
-            stream_id1 = self.tester.pktgen.add_stream(txport1, txport0, r'/root/test.pcap')
-            stream_id2 = self.tester.pktgen.add_stream(txport2, txport3, r'/root/test.pcap')
-            stream_id3 = self.tester.pktgen.add_stream(txport3, txport2, r'/root/test.pcap')
-            self.tester.pktgen.config_stream(stream_id0, options)
-            self.tester.pktgen.config_stream(stream_id1, options)
-            self.tester.pktgen.config_stream(stream_id2, options)
-            self.tester.pktgen.config_stream(stream_id3, options)
-            return [stream_id0, stream_id1, stream_id2, stream_id3]
+        # create pcap file
+        payload_size = frame_size - self.headers_size
+        self.tester.scapy_append(
+            'wrpcap("/tmp/test0.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
+        self.tester.scapy_append(
+            'wrpcap("/tmp/test1.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="2.2.3.4",dst="1.1.1.1")/("X"*%d)])' % payload_size)
+        self.tester.scapy_execute()
+
+        stream_ids = []
+        for i in range(self.nb_ports):
+            if i % 2 == 0:
+                txport = self.tester.get_local_port(self.dut.get_ports()[i])
+                rxport = self.tester.get_local_port(
+                    self.dut.get_ports()[i + 1])
+
+                # fortville requires 2 streams for 2 queues at least, and
+                # this's fine for other NIC too.
+                for k in range(2):
+                    # txport -> rxport
+                    stream_id = self.tester.pktgen.add_stream(
+                        txport, rxport, '/tmp/test{}.pcap'.format(k))
+                    self.tester.pktgen.config_stream(stream_id, options)
+                    stream_ids.append(stream_id)
+                    # rxport -> txport
+                    stream_id = self.tester.pktgen.add_stream(
+                        rxport, txport, '/tmp/test{}.pcap'.format(k))
+                    self.tester.pktgen.config_stream(stream_id, options)
+                    stream_ids.append(stream_id)
+
+        return stream_ids
 
     def save_result(self, data):
         '''
-        Saves the test results as a separated file named with self.nic+_single_core_perf.txt
-        in output folder if self.save_result_flag is True
+        Saves the test results as a separated file named with
+        self.nic+_single_core_perf.json in output folder
+        if self.save_result_flag is True
         '''
-        header = self.table_header
-        table = PrettyTable(header)
-        for frame_size in self.frame_sizes:
-            for descriptor in self.descriptors:
-                table_row = [self.test_result[frame_size][descriptor][header[0]]]
-                table_row.append(self.test_result[frame_size][descriptor][header[1]])
-                table_row.append(self.test_result[frame_size][descriptor][header[2]])
-                table_row.append(self.test_result[frame_size][descriptor][header[3]])
-                table_row.append(self.test_result[frame_size][descriptor][header[4]])
-                table.add_row(table_row)
-        file_to_save = open(os.path.join(
-            rst.path2Result, "%s_single_core_perf.txt" % self.nic), 'w')
-        file_to_save.write(str(table))
-        file_to_save.close()
-
         json_obj = dict()
         json_obj['nic_type'] = self.nic
         json_obj['results'] = list()
-        for frame_size in self.frame_sizes:
-            for descriptor in self.descriptors:
-                row_in = self.test_result[frame_size][descriptor]
+        for frame_size in self.test_parameters.keys():
+            for nb_desc in self.test_parameters[frame_size]:
+                row_in = self.test_result[frame_size][nb_desc]
                 row_dict = dict()
                 row_dict['parameters'] = dict()
                 row_dict['parameters']['frame_size'] = dict(
-                    value=row_in['Frame Size'], unit='bytes')
+                    value = row_in['Frame Size'], unit = 'bytes')
                 row_dict['parameters']['txd/rxd'] = dict(
-                    value=row_in['TXD/RXD'], unit='descriptors')
+                    value = row_in['TXD/RXD'], unit = 'descriptors')
                 delta = (float(row_in['Throughput'].split()[0]) -
                          float(row_in['Expected Throughput'].split()[0]))
                 row_dict['throughput'] = dict(
-                    delta=delta, unit=row_in['Throughput'].split()[1])
+                    delta = delta, unit = row_in['Throughput'].split()[1])
                 json_obj['results'].append(row_dict)
         with open(os.path.join(rst.path2Result,
                                '{0:s}_single_core_perf.json'.format(
@@ -316,11 +315,16 @@ class TestNicSingleCorePerf(TestCase):
         """
         Run after each test case.
         """
-        if self.nic in ["fortville_25g"]:
-            self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)    
+        pass
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        # resume setting
+        if self.nic in ["fortville_25g", "fortville_spirit"]:
+            self.dut.send_expect(
+                "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
+            self.dut.build_install_dpdk(self.target)
+
         self.dut.kill_all()
