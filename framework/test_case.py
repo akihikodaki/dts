@@ -40,7 +40,9 @@ import time
 
 from exception import VerifyFailure, TimeoutException
 from settings import DRIVERS, NICS, get_nic_name, load_global_setting
-from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING, DEBUG_CASE_SETTING, HOST_DRIVER_SETTING
+from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING
+from settings import DEBUG_CASE_SETTING, HOST_DRIVER_SETTING
+from settings import UPDATE_EXPECTED, SUITE_SECTION_NAME
 from rst import RstReport
 from test_result import ResultTable, Result
 from logger import getLogger
@@ -257,7 +259,6 @@ class TestCase(object):
         self._suite_conf = SuiteConf(self.suite_name)
         self._suite_cfg = self._suite_conf.suite_cfg
         self._case_cfg = self._suite_conf.load_case_config(case_name)
-        del(self._suite_conf)
 
         case_result = True
         if self._check_inst is not None:
@@ -315,6 +316,11 @@ class TestCase(object):
             self._suite_result.test_case_failed(trace)
             self.logger.error('Test Case %s Result ERROR: ' % (case_name) + trace)
         finally:
+            # update expected
+            if load_global_setting(UPDATE_EXPECTED) == "yes" and \
+                self.get_suite_cfg().has_key('update_expected') and \
+                self.get_suite_cfg()['update_expected'] == True:
+                self._suite_conf.update_case_config(SUITE_SECTION_NAME)
             self.tear_down()
             return case_result
 
@@ -374,6 +380,18 @@ class TestCase(object):
         Return suite based configuration
         """
         return self._suite_cfg
+
+    def update_suite_cfg(self, suite_cfg):
+        """
+        Update suite based configuration
+        """
+        self._suite_cfg = suite_cfg
+
+    def update_suite_cfg_ele(self, key, value):
+        """
+        update one element of suite configuration
+        """
+        self._suite_cfg[key]=value
 
     def execute_tear_downall(self):
         """

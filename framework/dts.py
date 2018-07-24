@@ -439,7 +439,7 @@ def dts_run_suite(duts, tester, test_suites, target):
 def run_all(config_file, pkgName, git, patch, skip_setup,
             read_cache, project, suite_dir, test_cases,
             base_dir, output_dir, verbose, virttype, debug,
-            debugcase, re_run, commands):
+            debugcase, re_run, commands, update_expected):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -478,6 +478,10 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         settings.save_global_setting(settings.DEBUG_SETTING, 'yes')
     if debugcase is True:
         settings.save_global_setting(settings.DEBUG_CASE_SETTING, 'yes')
+
+    # enable update-expected
+    if update_expected is True:
+        settings.save_global_setting(settings.UPDATE_EXPECTED, 'yes')
 
     # init log_handler handler
     if verbose is True:

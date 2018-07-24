@@ -147,6 +147,17 @@ class SuiteConf(UserConf):
 
         return case_cfg
 
+    def update_case_config(self, case_name=""):
+        """
+        update section (case_name) of the configure file
+        """
+        update_suite_cfg_obj = UserConf(self.config_file)
+        update_suite_cfg = update_suite_cfg_obj.load_section(case_name)
+        for key in update_suite_cfg_obj.conf.options(case_name):
+            update_suite_cfg_obj.conf.set(
+                case_name, key, str(self.suite_cfg[key]))
+        update_suite_cfg_obj.conf.write(open(self.config_file, 'w'))
+
 
 class VirtConf(UserConf):
 

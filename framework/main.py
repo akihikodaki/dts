@@ -143,6 +143,10 @@ parser.add_argument('--commands',
                     help='run command on tester or dut. The command format is ' +
                     '[commands]:dut|tester:pre-init|post-init:check|ignore')
 
+parser.add_argument('--update-expected',
+                    action='store_true',
+                    help='update expected values based on test results')
+
 args = parser.parse_args()
 
 
@@ -159,4 +163,4 @@ dts.run_all(args.config_file, args.snapshot, args.git,
             args.patch, args.skip_setup, args.read_cache,
             args.project, args.suite_dir, args.test_cases,
             args.dir, args.output, args.verbose,args.virttype,
-            args.debug, args.debugcase, args.re_run, args.commands)
+            args.debug, args.debugcase, args.re_run, args.commands, args.update_expected)
