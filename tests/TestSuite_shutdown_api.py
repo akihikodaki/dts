@@ -346,7 +346,7 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("port start all", "testpmd> ", 100)
             self.dut.send_expect("start", "testpmd> ")
 
-            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'springville', 'powerville']:
+            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'springville', 'powerville', 'sageville', 'sagepond']:
                 # nantic vlan length will not be calculated
                 vlan_jumbo_size = jumbo_size + 4
             else:
