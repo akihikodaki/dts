@@ -266,7 +266,7 @@ class TestShutdownApi(TestCase):
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         self.verify(
-            "Rx offloads=0x0" in out, "CRC stripping not disabled properly")
+            "Rx offloads=0x10000" in out, "CRC keeping not enabled properly")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all crc-strip on", "testpmd> ")
