@@ -518,5 +518,27 @@
             "Bug ID": "",
             "Comments": "This case only support on FVL"
         }
+    ],
+    "nsh": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf",
+                "fvl10g_vf"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e driver nic"
+        }
     ]
 }
