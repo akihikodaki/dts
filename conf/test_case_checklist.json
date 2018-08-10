@@ -475,7 +475,10 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV",
+                "sagepond",
+                "sageville"
             ],
             "Target": [
                 "ALL"
@@ -493,7 +496,10 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV",
+                "sagepond",
+                "sageville"
             ],
             "Target": [
                 "ALL"
