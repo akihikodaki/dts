@@ -303,8 +303,13 @@ class TestNicSingleCorePerf(TestCase):
                     value = row_in['TXD/RXD'], unit = 'descriptors')
                 delta = (float(row_in['Throughput'].split()[0]) -
                          float(row_in['Expected Throughput'].split()[0]))
+                if delta >= -self.gap:
+                    result = 'PASS'
+                else:
+                    result = 'FAIL'
                 row_dict['throughput'] = dict(
-                    delta = delta, unit = row_in['Throughput'].split()[1])
+                    delta = delta, unit = row_in['Throughput'].split()[1],
+                    result = result)
                 json_obj['results'].append(row_dict)
         with open(os.path.join(rst.path2Result,
                                '{0:s}_single_core_perf.json'.format(
