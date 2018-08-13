@@ -301,6 +301,8 @@ class CrbsConf(UserConf):
                         crb['bypass core0'] = False
                 elif key == 'board':
                     crb['board'] = value
+                elif key == 'dut_arch':
+                    crb['dut arch'] = value
 
             self.crbs_cfg.append(crb)
         return self.crbs_cfg

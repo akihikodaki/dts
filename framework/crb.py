@@ -545,7 +545,7 @@ class Crb(object):
 
         cpuinfo = \
             self.send_expect(
-                "lscpu -p|grep -v \#",
+                "lscpu -p=CPU,CORE,SOCKET,NODE|grep -v \#",
                 "#", alt_session=True)
 
         cpuinfo = cpuinfo.split()
@@ -554,7 +554,7 @@ class Crb(object):
         core_id = 0
         coremap = {}
         for line in cpuinfo:
-            (thread, core, socket, unused) = line.split(',')[0:4]
+            (thread, core, socket, node) = line.split(',')[0:4]
 
             if core not in coremap.keys():
                 coremap[core] = core_id
@@ -563,8 +563,12 @@ class Crb(object):
             if self.crb['bypass core0'] and core == '0' and socket == '0':
                 self.logger.info("Core0 bypassed")
                 continue
-            self.cores.append(
-                    {'thread': thread, 'socket': socket, 'core': coremap[core]})
+            if self.crb['dut arch'] == "arm64":
+                self.cores.append(
+                        {'thread': thread, 'socket': node, 'core': coremap[core]})
+            else:
+                self.cores.append(
+                        {'thread': thread, 'socket': socket, 'core': coremap[core]})
 
         self.number_of_cores = len(self.cores)
 
