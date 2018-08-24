@@ -74,7 +74,7 @@ Prerequisites
 =============
 1. Host PF in DPDK driver::
 
-    ./tools/dpdk-devbind.py -b igb_uio 81:00.0
+    ./usertools/dpdk-devbind.py -b igb_uio 81:00.0
 
 2. Start testpmd on host, set chained port topology mode, add txq/rxq to 
    enable multi-queues::
