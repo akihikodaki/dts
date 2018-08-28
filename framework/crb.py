@@ -204,8 +204,10 @@ class Crb(object):
         if numa == -1:
             self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, page_size), '# ', 5)
         else:
-            # sometimes we set hugepage on kernel cmdline, so we need clear default hugepage
-            self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+            # sometimes we set hugepage on kernel cmdline, so we clear all nodes' default hugepages at the first time.
+            if numa == 0:
+                self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+
             # some platform not support numa, example vm dut
             try:
                 self.send_expect('echo %d > /sys/devices/system/node/node%d/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, numa, page_size), '# ', 5)

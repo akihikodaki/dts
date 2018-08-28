@@ -305,6 +305,12 @@ class Dut(Crb):
             return
         hugepages_size = self.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
         total_huge_pages = self.get_total_huge_pages()
+        total_numa_nodes = self.send_expect("ls /sys/devices/system/node | grep node* | wc -l", "# ")
+        numa_service_num = self.get_def_rte_config('CONFIG_RTE_MAX_NUMA_NODES')
+        if numa_service_num is not None:
+            numa = min(int(total_numa_nodes), int(numa_service_num))
+        else:
+            numa = total_numa_nodes
         force_socket = False
 
         if int(hugepages_size) < (1024 * 1024):
@@ -332,7 +338,8 @@ class Dut(Crb):
                 if force_socket:
                     self.set_huge_pages(arch_huge_pages, 0)
                 else:
-                    self.set_huge_pages(arch_huge_pages)
+                    for numa_id in range(0, int(numa)):
+                        self.set_huge_pages(arch_huge_pages, numa_id)
 
         self.mount_huge_pages()
         self.hugepage_path = self.strip_hugepage_path()
