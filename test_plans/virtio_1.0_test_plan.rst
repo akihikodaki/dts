@@ -62,7 +62,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
      -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 -nographic
 
 
-3. In the VM, change the config file--common_linuxapp, "CONFIG_RTE_LIBRTE_VIRTIO_DEBUG_INIT=y"; Run dpdk testpmd in VM::
+3. In the VM, run dpdk testpmd:
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
@@ -122,7 +122,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
      -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 -nographic
 
 
-3. In the VM, change the config file--common_linuxapp, "CONFIG_RTE_LIBRTE_VIRTIO_DEBUG_INIT=y"; Run dpdk testpmd in VM::
+3. In the VM, run dpdk testpmd:
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
