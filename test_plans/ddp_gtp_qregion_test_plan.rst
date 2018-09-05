@@ -113,9 +113,9 @@ Load/delete dynamic device personalization
 
 Note:
 
-1. Gtp.pkgo profile is not released by ND yet, only have engineer version for
-   internal use so far. Plan to keep public reference profiles at Intel
-   Developer Zone, release versions of profiles and supply link later.
+1. Gtp.pkgo profile has been released publicly. You could download below
+   version to do relative test.
+   https://downloadcenter.intel.com/download/27587
 
 2. Loading DDP is the prerequisite for below GTP relative cases. Load
    profile again once restarting testpmd to let software detect this
