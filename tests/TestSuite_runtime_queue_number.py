@@ -50,6 +50,8 @@ from packet import Packet
 
 class TestRuntime_Queue_Number(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -76,6 +78,17 @@ class TestRuntime_Queue_Number(TestCase):
         self.session_third = self.dut.new_session()
         self.vf_mac = "00:11:22:33:44:55"
 
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
+
     def set_up(self):
         """
         Run before each test case.
@@ -93,7 +106,7 @@ class TestRuntime_Queue_Number(TestCase):
 
         try:
             for port in self.sriov_vfs_port:
-                port.bind_driver(driver="vfio-pci")
+                port.bind_driver(self.vf_driver)
         except Exception as e:
             self.destroy_env()
             raise Exception(e)
@@ -125,7 +138,7 @@ class TestRuntime_Queue_Number(TestCase):
         """
         self.tester.scapy_foreground()
         time.sleep(2)
-        for i in range(256):
+        for i in range(254):
             packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
                 self.vf_mac, itf, i + 1, i + 2, itf)
             self.tester.scapy_append(packet)
@@ -160,7 +173,7 @@ class TestRuntime_Queue_Number(TestCase):
                 m = scanner.search(line)
                 packet_rec = m.group(1)
             
-        self.verify(packet_sumnum == int(packet_rec) == 256, "There are some packets lost.")
+        self.verify(packet_sumnum == int(packet_rec) == 254, "There are some packets lost.")
 
     def test_set_valid_vf_max_qn(self):
         """
