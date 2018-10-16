@@ -46,7 +46,7 @@ from exception import VerifyFailure
 from settings import HEADER_SIZE
 from etgen import IxiaPacketGenerator
 from qemu_kvm import QEMUKvm
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 
 class TestVhostPmdXstats(TestCase):
