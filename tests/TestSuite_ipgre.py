@@ -44,7 +44,7 @@ import re
 import time
 import os
 
-from packet import Packet, sniff_packets, load_sniff_packets, NVGRE, IPPROTO_NVGRE
+from packet import Packet, NVGRE, IPPROTO_NVGRE
 
 from scapy.utils import wrpcap, rdpcap
 from scapy.packet import split_layers,bind_layers
@@ -98,11 +98,11 @@ class TestIpgre(TestCase):
             if layer_configs:
                 for layer in layer_configs.keys():
                     pkt.config_layer(layer, layer_configs[layer])
-            inst = sniff_packets(self.tester_iface, count=1, timeout=8)
+            inst = self.tester.tcpdump_sniff_packets(self.tester_iface, count=1, timeout=8)
             pkt.send_pkt(tx_port=self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             time.sleep(1)
-            load_sniff_packets(inst)
+            self.tester.load_tcpdump_sniff_packets(inst)
             if self.printFlag: # debug output
                 print out
             for pkt_layer_name in pkt_names:
