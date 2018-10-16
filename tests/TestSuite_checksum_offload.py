@@ -43,7 +43,6 @@ import utils
 
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets, strip_pktload
 from test_capabilities import DRIVER_TEST_LACK_CAPA
 
 class TestChecksumOffload(TestCase):
@@ -175,13 +174,14 @@ class TestChecksumOffload(TestCase):
 
         self.tester.send_expect("exit()", "#")
 
-        inst = sniff_packets(intf=rx_interface, count=len(packets_sent), filters=[{'layer':'ether', 'config':{'src': sniff_src}}])
+        inst = self.tester.tcpdump_sniff_packets(intf=rx_interface, count=len(packets_sent),
+                filters=[{'layer':'ether', 'config':{'src': sniff_src}}])
 
         for packet_type in packets_sent.keys():
             self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface))
 
         self.tester.scapy_execute()
-	p = load_sniff_packets(inst)
+	p = self.tester.load_tcpdump_sniff_packets(inst)
 	nr_packets=len(p)
 	reslist = [p[i].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
 	out = string.join(reslist, ",")
