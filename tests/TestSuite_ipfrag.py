@@ -39,7 +39,7 @@ import string
 import re
 import time
 from settings import HEADER_SIZE
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 lpm_table_ipv4 = [
     "{IPv4(100,10,0,0), 16, P1}",
@@ -159,7 +159,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 expPkts = 1
                 val = 2
 
-            inst = sniff_packets(intf=self.rxItf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf, timeout=5)
             # send packet
             for times in range(burst):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
@@ -169,7 +169,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 pkt.send_pkt(tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
-            pkts = load_sniff_packets(inst)
+            pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == expPkts, "Failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
@@ -209,7 +209,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 expPkts = 1
                 val = 2
 
-            inst = sniff_packets(intf=self.rxItf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf, timeout=5)
             # send packet
             for times in range(burst):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
@@ -219,7 +219,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 pkt.send_pkt(tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
-            pkts = load_sniff_packets(inst)
+            pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == expPkts, "Failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
