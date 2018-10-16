@@ -39,7 +39,7 @@ import utils
 import time
 import re
 from test_case import TestCase
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 import random
 from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
@@ -490,9 +490,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
             # send and sniff packet
-            inst = sniff_packets(intf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf, timeout=5)
             pkt.send_pkt(tx_port=intf)
-            pkts = load_sniff_packets(inst)
+            pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == 1, "Packet not forwarded as expected")
             src_mac = pkts[0].strip_layer_element("layer2", "src")
             self.verify(src_mac == valid_mac, "Forwarded packet not match default mac")
