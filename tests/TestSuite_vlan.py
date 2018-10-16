@@ -43,7 +43,7 @@ import time
 
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 
 class TestVlan(TestCase):
@@ -88,7 +88,7 @@ class TestVlan(TestCase):
             netobj.add_vlan(vlan_id = self.vlan)
 
     def get_tcpdump_package(self):
-        pkts = load_sniff_packets(self.inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
         vlans = []
         for packet in pkts:
             vlan = packet.strip_element_vlan("vlan")
@@ -110,7 +110,7 @@ class TestVlan(TestCase):
         # the package dect mac must is dut tx port id when the port promisc is off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
-        self.inst = sniff_packets(self.rxItf)
+        self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
         # FIXME  send a burst with only num packet
         if vid == -1:
             pkt = Packet(pkt_type='UDP')
