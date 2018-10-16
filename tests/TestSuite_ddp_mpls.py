@@ -8,7 +8,6 @@ from scapy.utils import rdpcap
 from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
 from settings import get_nic_name
 import random
 
