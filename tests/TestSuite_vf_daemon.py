@@ -8,7 +8,7 @@ from scapy.utils import rdpcap
 from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 from settings import get_nic_name
 import random
 
@@ -154,7 +154,7 @@ class Testvf_daemon(TestCase):
             pkt.config_layer('vlan', {'vlan': vlan_id})
         pkt.config_layer('ether', {'dst': dst_mac})
 
-        inst = sniff_packets(self.tester_intf, timeout=30)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=30)
         pkt.send_pkt(tx_port=self.tester_intf, count=num)
         return inst
 
@@ -162,7 +162,7 @@ class Testvf_daemon(TestCase):
         """
         Load sniff packets, strip and return mac address from dump message
         """
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         macs = []
         for pkt in pkts:
             mac = pkt.strip_element_layer2(element)
@@ -173,7 +173,7 @@ class Testvf_daemon(TestCase):
         """
         Load sniff packets, strip and return vlan id from dump message
         """
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         vlans = []
         for pkt in pkts:
             vlan = pkt.strip_element_vlan("vlan")
@@ -422,7 +422,7 @@ class Testvf_daemon(TestCase):
         self.dut_testpmd.execute_cmd('set tx loopback 0 off')
         time.sleep(5)
 
-        inst = sniff_packets(self.tester_intf, timeout=10)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=10)
 
         self.vm1_testpmd.execute_cmd('set burst 5')
         self.vm1_testpmd.execute_cmd('start tx_first')
@@ -438,7 +438,7 @@ class Testvf_daemon(TestCase):
         self.dut_testpmd.execute_cmd('set tx loopback 0 on')
         time.sleep(3)
 
-        inst = sniff_packets(self.tester_intf, timeout=10)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=10)
 
         self.vm1_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('start tx_first')
