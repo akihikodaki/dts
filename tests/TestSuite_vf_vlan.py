@@ -6,7 +6,7 @@ import time
 from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 from settings import get_nic_name
 import random
 
@@ -173,9 +173,9 @@ class TestVfVlan(TestCase):
 
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': self.vf1_mac})
-        inst = sniff_packets(self.tester_intf0, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
         pkt.send_pkt(tx_port=self.tester_intf1)
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         self.verify(len(pkts), "Not receive expected packet")
         self.vm0_testpmd.quit()
@@ -258,13 +258,13 @@ class TestVfVlan(TestCase):
             "ip link set %s vf 0 vlan 0" % (self.host_intf0), "# ")
 
     def tx_and_check(self, tx_vlan=1):
-        inst = sniff_packets(self.tester_intf0, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
         self.vm0_testpmd.execute_cmd('set burst 1')
         self.vm0_testpmd.execute_cmd('start tx_first')
         self.vm0_testpmd.execute_cmd('stop')
 
         # strip sniffered vlans
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         vlans = []
         for pkt in pkts:
             vlan = pkt.strip_element_vlan("vlan")
