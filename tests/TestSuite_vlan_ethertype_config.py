@@ -43,7 +43,6 @@ import utils
 
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
 from scapy.utils import struct, socket, wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
 from scapy.layers.l2 import Dot1Q, ARP, GRE
@@ -125,7 +124,6 @@ class TestVlanEthertypeConfig(TestCase):
         # off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
-        self.inst = sniff_packets(self.rxItf)
         pkt = []
         if outer_vid < 0 or outer_tpid <= 0:
             pkt = [
