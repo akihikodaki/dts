@@ -40,7 +40,7 @@ import string
 import time
 import re
 from test_case import TestCase
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 
 class TestLinkStatusInterrupt(TestCase):
