@@ -35,7 +35,7 @@ Test Scattered Packets.
 """
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets, strip_pktload
+from packet import Packet, strip_pktload
 import time
 #
 #
@@ -82,11 +82,11 @@ class TestScatter(TestCase):
         """
         dmac = self.dut.get_mac_address(self.port)
 
-        inst = sniff_packets(self.intf)
+        inst = self.tester.tcpdump_sniff_packets(self.intf)
         pkt = Packet(pkt_type="IP_RAW", pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': dmac})
         pkt.send_pkt(tx_port=self.intf)
-        sniff_pkts = load_sniff_packets(inst)
+        sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         res = ""
         if len(sniff_pkts):
