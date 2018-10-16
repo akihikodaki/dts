@@ -46,7 +46,7 @@ from exception import VerifyFailure
 
 from scapy.utils import rdpcap
 
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 VM_CORES_MASK = 'all'
 
@@ -325,11 +325,11 @@ class TestEtag(TestCase):
         pkt_types = {'IP_RAW': {'layer_configs': config_layers}}
 
         intf = self.src_intf
-        inst = sniff_packets(intf)
+        inst = self.tester.tcpdump_sniff_packets(intf)
 
         self.check_packet_transmission(pkt_types)
         time.sleep(1)
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         self.host_testpmd.execute_cmd('E-tag set insertion off port-tag-id 1000 port 0 vf 0')
 
         # load sniff pcap file, check received packet's content
