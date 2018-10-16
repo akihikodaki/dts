@@ -38,7 +38,7 @@ import sys
 import utils
 import commands
 from test_case import TestCase
-from packet import Packet, sniff_packets, load_sniff_packets, save_packets
+from packet import Packet, save_packets
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.backends import default_backend
@@ -501,7 +501,7 @@ class TestL2fwdCrypto(TestCase):
 
             payload = self.__format_hex_to_list(test_vector["input"])
 
-            inst = sniff_packets(self.rx_interface, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(self.rx_interface, timeout=5)
 
             PACKET_COUNT = 65
             pkt = Packet()
@@ -512,7 +512,7 @@ class TestL2fwdCrypto(TestCase):
             pkt.send_pkt(tx_port=self.tx_interface, count=PACKET_COUNT)
             pkt.pktgen.pkt.show()
 
-            pkt_rec = load_sniff_packets(inst)
+            pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
 
             for pkt_r in pkt_rec:
                 packet_hex = pkt_r.strip_element_layer4("load")
