@@ -557,7 +557,7 @@ class TestNvgre(TestCase):
         self.dut.send_expect("csum set tcp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set sctp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set outer-ip hw %d" % (self.dut_tx_port), "testpmd>", 10)
-        self.dut.send_expect("csum parse_tunnel on %d" % (self.dut_tx_port), "testpmd>", 10)
+        self.dut.send_expect("csum parse-tunnel on %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("port start all", "testpmd>")
 
         # log the nvgre format
