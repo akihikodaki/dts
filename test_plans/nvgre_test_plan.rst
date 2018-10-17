@@ -273,7 +273,7 @@ Set csum packet forwarding mode and enable verbose log::
     csum set tcp hw <dut tx_port>
     csum set sctp hw <dut tx_port>
     csum set nvgre hw <dut tx_port>
-    csum parse_tunnel on <dut tx_port>
+    csum parse-tunnel on <dut tx_port>
     set verbose 1
 
 Send packet with invalid checksum first. Then check forwarded packet checksum
@@ -316,7 +316,7 @@ Set csum packet forwarding mode and enable verbose log::
     csum set tcp hw <dut tx_port>
     csum set sctp hw <dut tx_port>
     csum set nvgre hw <dut tx_port>
-    csum parse_tunnel on <dut tx_port>
+    csum parse-tunnel on <dut tx_port>
     set verbose 1
 
 Send packet with invalid checksum first. Then check forwarded packet checksum
