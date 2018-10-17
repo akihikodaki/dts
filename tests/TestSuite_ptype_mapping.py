@@ -53,8 +53,9 @@ class TestPtype_Mapping(TestCase):
         self.dut_port = valports[0]
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
-        self.dut.send_expect("sed -i -e '/mb->vlan_tci, mb->vlan_tci_outer);" +\
-            "/a\printf(\" - pktype: 0x%x\", mb->packet_type);'" +\
+        self.dut.send_expect("sed -i -e '" +\
+            "/rte_get_ptype_name(mb->packet_type, buf, sizeof(buf));" +\
+            "/a\\\\t\\t\\tprintf(\" - pktype: 0x%x\", mb->packet_type);'" +\
             " app/test-pmd/rxonly.c", "# ", 30, verify = True)
         self.dut.build_install_dpdk(self.dut.target)
         
