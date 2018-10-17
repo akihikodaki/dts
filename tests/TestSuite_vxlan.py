@@ -664,7 +664,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
         self.dut.send_expect("port start all", "testpmd>")
-        self.dut.send_expect("csum parse_tunnel on %d" %
+        self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
 
         self.enable_vxlan(self.dut_port)
@@ -736,7 +736,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.csum_set_type('udp', self.recv_port)
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
-        self.dut.send_expect("csum parse_tunnel on %d" %
+        self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
 
         self.enable_vxlan(self.dut_port)
@@ -1089,9 +1089,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
             self.dut.send_expect(pmd_cmd, "testpmd> ", 100)
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
-            self.dut.send_expect("csum parse_tunnel on %d" %
+            self.dut.send_expect("csum parse-tunnel on %d" %
                                  self.dut_port, "testpmd>", 10)
-            self.dut.send_expect("csum parse_tunnel on %d" %
+            self.dut.send_expect("csum parse-tunnel on %d" %
                                  self.recv_port, "testpmd>", 10)
             self.enable_vxlan(self.dut_port)
             self.enable_vxlan(self.recv_port)
