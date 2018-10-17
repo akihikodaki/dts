@@ -169,7 +169,7 @@ Start testpmd with hardware checksum offload enabled::
     testpmd> csum set sctp hw 0
     testpmd> csum set outer-ip hw 0
     testpmd> csum set tcp hw 0
-    testpmd> csum parse_tunnel on 0
+    testpmd> csum parse-tunnel on 0
     testpmd> start
 
 Send packet with wrong outer IP checksum and check forwarded packet IP
