@@ -47,7 +47,7 @@ class TestSriovKvm(TestCase):
             self.vf_driver = 'pci-stub'
         self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
         if self.vf_driver == 'pci-stub':
-            self.vf_assign_method = self.vf_assign_method
+            self.vf_assign_method = 'pci-assign'
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
