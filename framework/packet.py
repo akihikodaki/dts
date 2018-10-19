@@ -33,7 +33,6 @@
 Generic packet create, transmit and analyze module
 Base on scapy(python program for packet manipulation)
 """
-
 import os
 import time
 import sys
@@ -61,6 +60,7 @@ from scapy.route import *
 from scapy.packet import bind_layers, Raw
 from scapy.sendrecv import sendp
 from scapy.arch import get_if_hwaddr
+from pexpect import pxssh
 
 # load extension layers
 exec_file = os.path.realpath(__file__)
@@ -812,15 +812,26 @@ def get_filter_cmd(filters=[]):
         return ""
 
 
-def sniff_packets(intf, count=0, timeout=5, filters=[]):
+def sniff_packets(intf, count=0, timeout=5, filters=[], target=[]):
     """
     sniff all packets for certain port in certain seconds
     """
     param = ""
     direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
-    tcpdump_help = subprocess.check_output("tcpdump -h; echo 0",
-                                           stderr=subprocess.STDOUT,
-                                           shell=True)
+
+    try:
+        tcpdump_help_session=pxssh.pxssh()
+        tcpdump_help_session.login(server=target[0], username=target[1],
+                                   password=target[2], original_prompt='[$#>]',
+                                   login_timeout=20)
+        tcpdump_help_session.sendline('tcpdump -h')
+        tcpdump_help_session.prompt()
+        tcpdump_help=tcpdump_help_session.before
+        tcpdump_help_session.logout()
+    except pxssh.ExceptionPxssh as e:
+        print ('pxssh failed on login.')
+        print (e)
+
     for line in tcpdump_help.split('\n'):
         m = re.match(direct_param, line)
         if m:
@@ -850,16 +861,24 @@ def sniff_packets(intf, count=0, timeout=5, filters=[]):
     else:
         cmd = sniff_cmd % options
 
-    args = shlex.split(cmd)
+    try:
+        tcpdump_session=pxssh.pxssh()
+        tcpdump_session.login(server=target[0], username=target[1],
+                              password=target[2], original_prompt='[$#>]',
+                              login_timeout=20)
+        tcpdump_session.sendline(cmd)
+        pipe = tcpdump_session
+    except pxssh.ExceptionPxssh as e:
+        print ('pxssh failed on login.')
+        print (e)
 
-    pipe = subprocess.Popen(args)
     index = str(time.time())
     SNIFF_PIDS[index] = (pipe, intf, timeout)
     time.sleep(1)
     return index
 
 
-def load_sniff_pcap(index=''):
+def load_sniff_pcap(index='', target=[]):
     """
     Stop sniffer and return pcap file
     """
@@ -868,58 +887,36 @@ def load_sniff_pcap(index=''):
         pipe, intf, timeout = SNIFF_PIDS[index]
         time_elapse = int(time.time() - float(index))
         while time_elapse < timeout:
-            if pipe.poll() is not None:
+            if pipe.prompt(timeout=1):
                 child_exit = True
                 break
 
-            time.sleep(1)
             time_elapse += 1
 
         if not child_exit:
-            pipe.send_signal(signal.SIGINT)
-            pipe.wait()
+            try:
+                # Stop Tcpdump on the target server
+                tcpdump_quit_session=pxssh.pxssh()
+                tcpdump_quit_session.login(server=target[0], username=target[1],
+                                           password=target[2], original_prompt='[$#>]',
+                                           login_timeout=20)
+                tcpdump_quit_session.sendline('kill -2 $(pidof tcpdump)')
+                tcpdump_quit_session.prompt()
+                tcpdump_quit_session.logout()
+                child_exit = True
+            except pxssh.ExceptionPxssh as e:
+                print ('pxssh failed on login.')
+                print (e)
+
+        # Close the Tcpdump_session
+        pipe.prompt()
+        pipe.logout()
 
         # wait pcap file ready
         time.sleep(1)
         return "/tmp/sniff_%s.pcap" % intf
 
     return ""
-
-
-def load_sniff_packets(index=''):
-    """
-    Stop sniffer and return packet objects
-    """
-    pkts = []
-    child_exit = False
-    if index in SNIFF_PIDS.keys():
-        pipe, intf, timeout = SNIFF_PIDS[index]
-        time_elapse = int(time.time() - float(index))
-        while time_elapse < timeout:
-            if pipe.poll() is not None:
-                child_exit = True
-                break
-
-            time.sleep(1)
-            time_elapse += 1
-
-        if not child_exit:
-            pipe.send_signal(signal.SIGINT)
-            pipe.wait()
-
-        # wait pcap file ready
-        time.sleep(1)
-        try:
-            cap_pkts = rdpcap("/tmp/sniff_%s.pcap" % intf)
-            for pkt in cap_pkts:
-                # packet gen should be scapy
-                packet = Packet(tx_port=intf)
-                packet.pktgen.assign_pkt(pkt)
-                pkts.append(packet)
-        except:
-            pass
-
-    return pkts
 
 
 def load_pcapfile(filename=""):
@@ -978,12 +975,8 @@ def strip_pktload(pkt=None, layer="L2"):
 ###############################################################################
 ###############################################################################
 if __name__ == "__main__":
-    inst = sniff_packets("lo", timeout=5, filters=[{'layer': 'ether',
-                         'config': {'dst': 'FF:FF:FF:FF:FF:FF'}}])
-    inst = sniff_packets("lo", timeout=5)
     pkt = Packet(pkt_type='UDP')
     pkt.send_pkt(tx_port='lo')
-    pkts = load_sniff_packets(inst)
 
     pkt = Packet(pkt_type='UDP', pkt_len=1500, ran_payload=True)
     pkt.send_pkt(tx_port='lo')
