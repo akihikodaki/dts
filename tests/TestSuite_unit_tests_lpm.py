@@ -37,6 +37,7 @@ This TestSuite runs the unit tests included in DPDK for LPM methods in l3fwd.
 
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -59,7 +60,9 @@ class TestUnitTestsLpmIpv6(TestCase):
 
         Qos Prerequisites
         """
-        pass
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
+
     def set_up(self):
         """
         Run before each test case.
@@ -70,7 +73,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv6 autotest.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -79,7 +82,7 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv6 autotest.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm6_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
