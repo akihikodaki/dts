@@ -37,6 +37,7 @@ Run all Mempool autotests
 
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -56,7 +57,9 @@ class TestUnitTestsMempool(TestCase):
         """
         Run at the start of each test suite.
         """
-        pass
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
+
     def set_up(self):
         """
         Run before each test case.
@@ -68,7 +71,7 @@ class TestUnitTestsMempool(TestCase):
         Run memory pool autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mempool_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -77,7 +80,7 @@ class TestUnitTestsMempool(TestCase):
         """
         Run memory pool performance autotest.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c e" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mempool_perf_autotest", "RTE>>", 1200)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
