@@ -39,6 +39,7 @@ Run Inter-VM share memory autotests
 
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -60,6 +61,8 @@ class TestUnitTestsDump(TestCase):
         Nothing to do here.
         """
         # Based on h/w type, choose how many ports to use
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.start_test_time = 60
@@ -76,7 +79,7 @@ class TestUnitTestsDump(TestCase):
         """
         Run history log dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_log_history", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         self.verify("EAL" in out, "Test failed")
@@ -123,7 +126,7 @@ class TestUnitTestsDump(TestCase):
         """
         Run physical memory dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_physmem", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         elements = ['Segment', 'IOVA', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
@@ -169,7 +172,7 @@ class TestUnitTestsDump(TestCase):
         """
         Run struct size dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_struct_sizes", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
@@ -189,15 +192,15 @@ class TestUnitTestsDump(TestCase):
         """
         test_port = self.dut_ports[0]
         pci_address = self.dut.ports_info[test_port]['pci'];
-        self.dut.send_expect("./%s/app/test -n 1 -c f -b %s"
-                             % (self.target, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s -b %s"
+                             % (self.target, self.coremask, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         black_str = " %s" % pci_address
         self.verify(black_str in out, "Dump black list failed")
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f -w %s"
-                             % (self.target, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s -w %s"
+                             % (self.target, self.coremask, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
