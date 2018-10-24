@@ -6,7 +6,7 @@ import utils
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import get_nic_name
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 import random
 
 test_loop = 3
