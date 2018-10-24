@@ -37,6 +37,7 @@ Run Inter-VM share memory autotests
 
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -57,7 +58,9 @@ class TestUnitTestsRingPmd(TestCase):
         Run at the start of each test suite.
         Nothing to do here.
         """
-        pass
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
+
     def set_up(self):
         """
         Run before each test case.
@@ -71,12 +74,12 @@ class TestUnitTestsRingPmd(TestCase):
         """
         dev_str = "--vdev=net_ring0 --vdev=net_ring1"
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 10)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 10)
         out = self.dut.send_expect("ring_pmd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Default no eth_ring devices Test failed")
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f %s" % (self.target, dev_str), "R.*T.*E.*>.*>", 10)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s %s" % (self.target, self.coremask, dev_str), "R.*T.*E.*>.*>", 10)
         out = self.dut.send_expect("ring_pmd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Two eth_ring devices test failed")
