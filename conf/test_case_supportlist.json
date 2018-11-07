@@ -540,5 +540,80 @@
             "Bug ID": "",
             "Comments": "This case only support i40e driver nic"
         }
+    ],
+    "set_key_keylen": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_rss_rule_api": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_rss_rule_combination": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_invalid_parameter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
     ]
 }
