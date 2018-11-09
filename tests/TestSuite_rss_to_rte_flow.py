@@ -184,7 +184,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         # Show port default RSS fuctions
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other ip")
         else:
@@ -210,7 +210,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types all end / end", "created")
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "all ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ipv6-frag ipv6-tcp ipv6-udp ipv6-sctp ipv6-other l2-payload ip udp tcp sctp")
         else:
@@ -233,7 +233,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         # Show port default RSS fuctions
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other ip")
         else:
@@ -247,7 +247,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.send_packet("ipv4-udp", self.tester_itf)
         out = self.dut.send_expect("stop", "testpmd> ", 120)
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.check_packet_queue("0", out)
         else:
             self.check_packet_queue("all", out)
@@ -396,7 +396,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         # Only supported by i40e
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g"], "NIC Unsupported: " + str(self.nic))
         pkt1 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=200)/('X'*48)" % self.pf_mac
         pkt2 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=201)/('X'*48)" % self.pf_mac
         pkt3 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=101, dport=201)/('X'*48)" % self.pf_mac
