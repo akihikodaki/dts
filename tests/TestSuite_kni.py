@@ -677,12 +677,17 @@ class TestKni(TestCase):
                         "'ethtool -i' not supported")
 
             # Request pause parameters
-            out = self.dut.send_expect("ethtool -a %s" % virtual_interface,
-                                       "# ")
-            self.verify("Pause parameters for %s" % virtual_interface in out,
-                        "'ethtool -a' not supported")
-            self.verify("Operation not supported" not in out,
-                        "ethtool '-a' not supported")
+            with open("/usr/include/linux/ethtool.h","r") as ethtool_h:
+                ethtool_contents = ethtool_h.read()
+                GSET = "ETHTOOL_GLINKSETTINGS"
+                SSET = "ETHTOOL_SLINKSETTINGS"
+                if (GSET in ethtool_contents) and (SSET in ethtool_contents):
+                    out = self.dut.send_expect("ethtool -a %s" % virtual_interface,
+                                               "# ")
+                    self.verify("Pause parameters for %s" % virtual_interface in out,
+                                "'ethtool -a' not supported")
+                    self.verify("Operation not supported" not in out,
+                                "ethtool '-a' not supported")
 
             # Request statistics
             out = self.dut.send_expect("ethtool -S %s" % virtual_interface,
