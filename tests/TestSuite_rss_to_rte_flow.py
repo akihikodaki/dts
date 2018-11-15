@@ -413,16 +413,13 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types ipv4-udp end / end", "created")
         out1 = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ", 120)
-        rss_queue = ["1"]
-        self.send_and_check(pkt1, rss_queue)
-        rss_queue = ["3"]
-        self.send_and_check(pkt2, rss_queue)
-        rss_queue = ["3"]
-        self.send_and_check(pkt3, rss_queue)
-        rss_queue = ["1"]
-        self.send_and_check(pkt4, rss_queue)
-        rss_queue = ["2"]
-        self.send_and_check(pkt5, rss_queue)
+        rss_queue = ["0", "1", "2", "3"]
+        queue1 = self.send_and_check(pkt1, rss_queue)
+        queue2 = self.send_and_check(pkt2, rss_queue)
+        queue3 = self.send_and_check(pkt3, rss_queue)
+        queue4 = self.send_and_check(pkt4, rss_queue)
+        queue5 = self.send_and_check(pkt5, rss_queue)
+        list1 = [queue1, queue2, queue3, queue4, queue5]
 
         # Create a rss key rule
         self.dut.send_expect(
@@ -430,18 +427,14 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types ipv4-udp end key 67108863 / end", "created")
         out2 = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ", 120)
-        rss_queue = ["3"]
-        self.send_and_check(pkt1, rss_queue)
-        rss_queue = ["3"]
-        self.send_and_check(pkt2, rss_queue)
-        rss_queue = ["0"]
-        self.send_and_check(pkt3, rss_queue)
-        rss_queue = ["1"]
-        self.send_and_check(pkt4, rss_queue)
-        rss_queue = ["0"]
-        self.send_and_check(pkt5, rss_queue)
+        key_queue1 = self.send_and_check(pkt1, rss_queue)
+        key_queue2 = self.send_and_check(pkt2, rss_queue)
+        key_queue3 = self.send_and_check(pkt3, rss_queue)
+        key_queue4 = self.send_and_check(pkt4, rss_queue)
+        key_queue5 = self.send_and_check(pkt5, rss_queue)
+        list2 = [key_queue1, key_queue2, key_queue3, key_queue4, key_queue5]
 
-        self.verify(out1 != out2, "the key setting doesn't take effect.")
+        self.verify((out1 != out2) and (list1 != list2), "the key setting doesn't take effect.")
 
         # Create a rss key_len rule
         self.dut.send_expect(
