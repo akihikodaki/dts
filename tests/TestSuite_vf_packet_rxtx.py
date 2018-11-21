@@ -61,7 +61,6 @@ class TestVfPacketRxtx(TestCase):
             vf0_prop = {'opt_host': self.sriov_vfs_port_0[0].pci}
             vf1_prop = {'opt_host': self.sriov_vfs_port_1[0].pci}
 
-
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
@@ -252,10 +251,16 @@ class TestVfPacketRxtx(TestCase):
 
         self.setup_3vf_2vm_env_flag = 0
 
-    def test_vf_reset(self):
+    def test_kernel_pf_vf_reset(self):
 
         self.setup_3vf_2vm_env(driver='')
+        self.vf_reset()
 
+    def test_dpdk_pf_vf_reset(self):
+        self.setup_3vf_2vm_env(driver='igb_uio')
+        self.vf_reset()
+
+    def vf_reset(self):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
 
