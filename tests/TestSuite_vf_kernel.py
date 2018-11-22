@@ -482,7 +482,7 @@ class TestVfKernel(TestCase):
             if "Network is down" in out:
                 print GREEN(out)
                 print GREEN("Try again")
-                self.vm0_dut.restore_interfaces_linux()
+                session.restore_interfaces_linux()
             else:
                 out = session.send_expect("ethtool %s" % intf, "#")
                 if "Link detected: yes" in out:
