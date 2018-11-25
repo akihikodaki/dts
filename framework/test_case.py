@@ -279,13 +279,13 @@ class TestCase(object):
         case_result = True
         if self._check_inst is not None:
             if self._check_inst.case_skip(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPED:' % case_name)
+                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
 
             if not self._check_inst.case_support(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPED:' % case_name)
+                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
@@ -317,7 +317,7 @@ class TestCase(object):
             self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(v))
         except KeyboardInterrupt:
             self._suite_result.test_case_blocked("Skipped")
-            self.logger.error('Test Case %s SKIPED: ' % (case_name))
+            self.logger.error('Test Case %s SKIPPED: ' % (case_name))
             self.tear_down()
             raise KeyboardInterrupt("Stop DTS")
         except TimeoutException as e:
