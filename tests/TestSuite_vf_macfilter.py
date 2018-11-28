@@ -13,13 +13,14 @@ VM_CORES_MASK = 'all'
 class TestVfMacFilter(TestCase):
 
     supported_vf_driver = ['pci-stub', 'vfio-pci']
+    vf0_wrongmac = "00:11:22:33:48:55"
+    vf0_setmac = "00:11:22:33:44:55"
 
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) > 1, "Insufficient ports")
         self.vm0 = None
         self.pf0_vf0_mac = "00:12:34:56:78:01"
-        self.iplinkset = True
 
         # set vf assign method and vf driver
         self.vf_driver = self.get_suite_cfg()['vf_driver']
@@ -36,14 +37,14 @@ class TestVfMacFilter(TestCase):
 
         self.setup_2pf_2vf_1vm_env_flag = 0
 
-    def setup_2pf_2vf_1vm_env(self, driver='default'):
+    def setup_2pf_2vf_1vm_env(self, driver='default',set_mac):
 
         self.used_dut_port_0 = self.dut_ports[0]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
         pf_intf0 = self.dut.ports_info[0]['port'].get_interface_name()
         
-        if self.iplinkset: 
+        if set_mac:
             self.dut.send_expect("ip link set %s vf 0 mac %s" %(pf_intf0, self.pf0_vf0_mac), "#")
        
         self.used_dut_port_1 = self.dut_ports[1]
@@ -124,15 +125,17 @@ class TestVfMacFilter(TestCase):
 ###### send the packets with wrong MAC address to VF, check if the VF will not RX the packets.
  
     def test_kernel_2pf_2vf_1vm_iplink_macfilter(self):
+        self.setup_2pf_2vf_1vm_env(driver='',True)
+        self.result_verify_iplink(True)
 
-        self.setup_2pf_2vf_1vm_env(driver='')
-
+    def result_verify_iplink(self,set_mac):
+        if set_mac == False:
+            self.host_testpmd.execute_cmd('set vf mac addr 0 0 %s' % self.pf0_vf0_mac)
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         # Get VF's MAC
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)
-        vf0_wrongmac = "00:11:22:33:48:55"
         self.vm0_testpmd.execute_cmd('set promisc all off')
         self.vm0_testpmd.execute_cmd('set fwd mac')
         self.vm0_testpmd.execute_cmd('start')
@@ -147,17 +150,18 @@ class TestVfMacFilter(TestCase):
         src_mac = self.tester.get_mac(tx_port)
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
         
-        print "\nfirst send packets to the kernel PF set MAC, expected result is RX packets=TX packets\n"
+        print "\nfirst send packets to the PF set MAC, expected result is RX packets=TX packets\n"
         result1 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
 	print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')   
         self.verify(result1 != False, "VF0 failed to forward packets to VF1")
         
         print "\nSecondly, negative test, send packets to a wrong MAC, expected result is RX packets=0\n"
-        dst_mac = vf0_wrongmac
+        dst_mac = self.vf0_wrongmac
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
         result2 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
         print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')
         self.verify(result2 != True, "VF0 failed to forward packets to VF1")
+
 
 #######2. test case for kernel pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.
 ####### kernel pf will not set MAC address and the VF will get a random generated MAC
@@ -168,19 +172,36 @@ class TestVfMacFilter(TestCase):
 
     def test_kernel_2pf_2vf_1vm_mac_add_filter(self):
 
-        self.iplinkset = False
-        self.setup_2pf_2vf_1vm_env(driver='')
+        self.setup_2pf_2vf_1vm_env(driver='',False)
+        self.send_packet_and_verify()
 
+#######3. test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.
+####### kernel pf will not set MAC address and the VF will get a random generated MAC
+####### in the testpmd in VM, and then add VF mac address in the testpmd,for example, VF_MAC1
+####### then send packets to the VF with the random generated MAC and the new added VF_MAC1
+####### and the expected result is that all packets can be RXed and TXed. What's more, send
+####### packets with a wrong MAC address to the VF will not received by the VF.
+    def test_dpdk_2pf_2vf_1vm_mac_add_filter(self):
+        self.setup_2pf_2vf_1vm_env(driver='igb_uio',False)
+        self.send_packet_and_verify()
+
+######4. test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario
+###### dpdk pf will first run 'set vf mac addr 0 0 xx:xx:xx:xx:xx:xx, then
+###### in the vm, send packets with this MAC to VF, check if the MAC filter works. Also
+###### send the packets with wrong MAC address to VF, check if the VF will not RX the packets.
+    def test_dpdk_2pf_2vf_1vm_iplink_macfilter(self):
+        self.setup_2pf_2vf_1vm_env(driver='igb_uio',False)
+        self.result_verify_iplink(False)
+
+    def send_packet_and_verify(self):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         
         # Get VF0 port MAC address
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(0)
-        vf0_setmac = "00:11:22:33:44:55"
-        vf0_wrongmac = "00:11:22:33:48:55"
         self.vm0_testpmd.execute_cmd('set promisc all off')
-        ret = self.vm0_testpmd.execute_cmd('mac_addr add 0 %s' %vf0_setmac)
+        ret = self.vm0_testpmd.execute_cmd('mac_addr add 0 %s' %self.vf0_setmac)
         # check the operation is supported or not.
         print ret 
  
@@ -203,14 +224,14 @@ class TestVfMacFilter(TestCase):
         self.verify(result1 != False, "VF0 failed to forward packets to VF1")
         
         print "\nsecondly, send packets to the new added MAC, expected result is RX packets=TX packets\n"
-        dst_mac = vf0_setmac
+        dst_mac = self.vf0_setmac
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
         result2 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
         print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')
         self.verify(result2 != False, "VF0 failed to forward packets to VF1")
 
         print "\nThirdly, negative test, send packets to a wrong MAC, expected result is RX packets=0\n"
-        dst_mac = vf0_wrongmac
+        dst_mac = self.vf0_wrongmac
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
         result3 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
         print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')
