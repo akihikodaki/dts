@@ -37,7 +37,7 @@ class TestVfMacFilter(TestCase):
 
         self.setup_2pf_2vf_1vm_env_flag = 0
 
-    def setup_2pf_2vf_1vm_env(self, driver='default',set_mac):
+    def setup_2pf_2vf_1vm_env(self,set_mac,driver='default'):
 
         self.used_dut_port_0 = self.dut_ports[0]
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
@@ -128,7 +128,7 @@ class TestVfMacFilter(TestCase):
         if the MAC filter works. Also send the packets with wrong MAC
         address to VF, check if the VF will not RX the packets.
         """
-        self.setup_2pf_2vf_1vm_env(driver='',True)
+        self.setup_2pf_2vf_1vm_env(True,driver='')
         self.result_verify_iplink(True)
 
     def result_verify_iplink(self,set_mac):
@@ -177,7 +177,7 @@ class TestVfMacFilter(TestCase):
         What's more, send packets with a wrong MAC address to the VF will
         not received by the VF.
         """
-        self.setup_2pf_2vf_1vm_env(driver='',False)
+        self.setup_2pf_2vf_1vm_env(False,driver='')
         self.send_packet_and_verify()
 
     def test_dpdk_2pf_2vf_1vm_mac_add_filter(self):
@@ -191,7 +191,7 @@ class TestVfMacFilter(TestCase):
         What's more, send packets with a wrong MAC address to the VF will
         not received by the VF.
         """
-        self.setup_2pf_2vf_1vm_env(driver='igb_uio',False)
+        self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
         self.send_packet_and_verify()
 
     def test_dpdk_2pf_2vf_1vm_iplink_macfilter(self):
@@ -203,7 +203,7 @@ class TestVfMacFilter(TestCase):
         not RX the packets works. Also send the packets with wrong MAC
         address to VF, check if the VF will not RX the packets.
         """
-        self.setup_2pf_2vf_1vm_env(driver='igb_uio',False)
+        self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
         self.result_verify_iplink(False)
 
     def send_packet_and_verify(self):
