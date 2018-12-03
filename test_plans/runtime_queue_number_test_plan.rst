@@ -290,7 +290,7 @@ Test case: VF max queue number when VF bound to kernel driver
    number is 1/4/8/16.
 
 Test case: set VF max queue number with max VFs on one PF port
-=============================================================
+==============================================================
 
 1. Set up max VFs from one PF with DPDK driver
    Create 32 vfs on four ports fortville NIC::

@@ -43,7 +43,6 @@ The following are the test plans for the DPDK DTS automated test system.
     cloud_filter_test_plan
     coremask_test_plan
     crypto_perf_test_plan
-    ddp_mpls_test_plan
     dual_vlan_test_plan
     dynamic_config_test_plan
     etag_test_plan
@@ -54,6 +53,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ftag_test_plan
     generic_filter_test_plan
     hotplug_test_plan
+    hotplug_mp_test_plan
     ieee1588_test_plan
     interrupt_pmd_test_plan
     ipfrag_test_plan
@@ -118,10 +118,14 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_kernel_test_plan
     multiple_pthread_test_plan
     qinq_filter_test_plan
-    ddp_gtp_test_plan
     generic_flow_api_test_plan
+    rss_to_rte_flow_test_plan
+    ddp_gtp_test_plan
     ddp_gtp_qregion_test_plan
+    ddp_ppp_l2tp_test_plan
+    ddp_mpls_test_plan
     runtime_queue_number_test_plan
+    dynamic_queue_test_plan
     vhost_multi_queue_qemu_test_plan
     vhost_qemu_mtu_test_plan
 
@@ -135,6 +139,7 @@ The following are the test plans for the DPDK DTS automated test system.
     unit_tests_mbuf_test_plan
     unit_tests_mempool_test_plan
     unit_tests_pmd_perf_test_plan
+    unit_tests_loopback_test_plan
     unit_tests_power_test_plan
     unit_tests_qos_test_plan
     unit_tests_ringpmd_test_plan

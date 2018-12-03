@@ -36,12 +36,15 @@ Move RSS to rte_flow
 Description
 ===========
 
-rte_flow has been actually defined to include RSS, but till now,
-RSS is out of rte_flow. It was suggested to move existing RSS to rte_flow.
-This can be better for users, and may save effort for CPK development.
-RSS enabling: now, rte_flow API enabling RSS is support on igb/ixgbe/i40e.
-RSS input set changing: now, rte flow API RSS input set is support on i40e.
-Notes:non-default RSS hash functions are not supported -- Operation not supported.
+Generic flow API (rte_flow) has been actually defined to include RSS, but
+till now, RSS is out of rte_flow. It was suggested to move existing RSS to
+rte_flow. This can be better for users, and may save effort for CPK
+development. RSS enabling: now, rte_flow API enabling RSS is support on
+igb/ixgbe/i40e. RSS input set changing: now, rte flow API RSS input set is
+support on i40e.
+
+Notes: non-default RSS hash functions are not supported -- Operation not
+supported.
 
 Prerequisites
 =============
@@ -111,7 +114,7 @@ Test case: disable and enable rss
    All the packets are distributed to all the four queues.
 
 Notes: the default RSS functions are different among several NICs.
-here shows the printing of NIC with i40e driver.
+Here shows the printing of NIC with i40e driver.
 
 Test case: enable ipv4-udp rss
 ==============================
@@ -267,6 +270,7 @@ Test case: set key and key_len
 ==============================
 
 Only i40e support key and key_len setting.
+
 1. Start the testpmd::
 
     ./testpmd -c 1ffff -n 4 -- -i --nb-cores=8 --rxq=4 --txq=4 --port-topology=chained
@@ -349,7 +353,7 @@ Only i40e support key and key_len setting.
    pkt5 is distributed to queue 0.
 
 Test case: Flow directory rule and RSS rule combination
-======================================================
+=======================================================
 
 1. Start the testpmd::
 
