@@ -22,7 +22,7 @@ class TestHotplugMp(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.intf0 = self.dut.ports_info[0]['intf']
         self.pci0 = self.dut.ports_info[0]['pci']
-        out = self.dut.build_dpdk_apps("./examples/multi_process/hotplug_mp")
+        out = self.dut.build_dpdk_apps("./examples/multi_process/")
         self.verify('Error' not in out, "Compilation failed")
         # Start one new session to run primary process
         self.session_pri = self.dut.new_session()
