@@ -447,16 +447,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         config.create_pcap()
 
         # remove tempory files
+        config.capture_file = "/tmp/sniff_%s.pcap" % self.recv_iface
         self.tester.send_expect("rm -rf %s" % config.capture_file, "# ")
         # save the capture packet into pcap format
         self.tester.scapy_background()
-        self.tester.scapy_append(
-            'p=sniff(iface="%s",filter="ether[12:2]!=0x88cc",count=1,timeout=5)' % self.recv_iface)
-        self.tester.scapy_append(
-            'wrpcap(\"%s\", p)' % config.capture_file)
-        self.tester.scapy_foreground()
 
+        inst = self.tester.tcpdump_sniff_packets(self.recv_iface, timeout=5)
         config.send_pcap(self.tester_iface)
+        self.tester.load_tcpdump_sniff_packets(inst)
         time.sleep(5)
 
         # extract the checksum offload from saved pcap file
