@@ -16,6 +16,23 @@
             "Comments": "this case only support on fortville"
         }
     ],
+    "dpdk_2pf_2vf_1vm_mac_add_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+		"fortville_spirit",
+		"fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
+    ],
     "two_vms_prevent_rx_broadcast_on_vf": [
         {
             "OS": [
