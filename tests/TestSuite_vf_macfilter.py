@@ -191,6 +191,7 @@ class TestVfMacFilter(TestCase):
         What's more, send packets with a wrong MAC address to the VF will
         not received by the VF.
         """
+        self.verify(self.nic.startswith('fortville') == True, "NIC is [%s], skip this case" %self.nic)
         self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
         self.send_packet_and_verify()
 
