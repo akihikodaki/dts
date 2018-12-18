@@ -105,7 +105,7 @@ Linux network configuration tool only set pvid on VF devices.
 
 3. Send packet without vlan and check VF can't receive
 
-4. Send packet with wrong and check Vf can't receive
+4. Send packet with wrong vlan id and check Vf can't receive
 
 5. Check pf device show correct pvid setting::
 
