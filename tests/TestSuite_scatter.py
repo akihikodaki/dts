@@ -53,7 +53,7 @@ class TestScatter(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Scatter Prerequistites
+        Scatter Prerequisites
         """
         dutPorts = self.dut.get_ports(self.nic)
         # Verify that enough ports are available

@@ -55,7 +55,7 @@ class TestQueue_region(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Queue region Prerequistites
+        Queue region Prerequisites
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))

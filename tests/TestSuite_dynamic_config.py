@@ -60,7 +60,7 @@ class TestDynamicConfig(TestCase):
         Run at the start of each test suite.
 
 
-        Dynamic config Prerequistites
+        Dynamic config Prerequisites
         """
 
         # Based on h/w type, choose how many ports to use

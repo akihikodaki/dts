@@ -53,7 +53,7 @@ class TestVlan(TestCase):
         Run at the start of each test suite.
 
 
-        Vlan Prerequistites
+        Vlan Prerequisites
         """
         global dutRxPortId
         global dutTxPortId

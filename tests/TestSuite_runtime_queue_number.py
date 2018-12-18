@@ -55,7 +55,7 @@ class TestRuntime_Queue_Number(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Run time Queue Number Prerequistites
+        Run time Queue Number Prerequisites
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))

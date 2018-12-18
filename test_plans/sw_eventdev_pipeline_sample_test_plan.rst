@@ -34,7 +34,7 @@
 Eventdev Pipeline SW PMD Tests
 ===============================
 
-Prerequistites
+Prerequisites
 ==============
 
 Test Case 1: Keep the packets order with one ordered stage in single-flow and multi-flow

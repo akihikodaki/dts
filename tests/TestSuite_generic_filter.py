@@ -53,7 +53,7 @@ class TestGeneric_filter(TestCase):
         Run at the start of each test suite.
 
 
-        Generic filter Prerequistites
+        Generic filter Prerequisites
         """
 
         # Based on h/w type, choose how many ports to use

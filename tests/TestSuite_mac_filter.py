@@ -45,7 +45,7 @@ class TestWhitelist(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Whitelist Prerequistites:
+        Whitelist Prerequisites:
             Two Ports
             testpmd can normally started
         """

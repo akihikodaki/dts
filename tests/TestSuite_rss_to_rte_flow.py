@@ -55,7 +55,7 @@ class TestRSS_to_Rteflow(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Move RSS to rte_flow Prerequistites
+        Move RSS to rte_flow Prerequisites
         """
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)

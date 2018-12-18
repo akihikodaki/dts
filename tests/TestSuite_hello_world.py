@@ -42,7 +42,7 @@ class TestHelloWorld(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        hello_world Prerequistites:
+        hello_world Prerequisites:
             helloworld build pass
         """
         out = self.dut.build_dpdk_apps('examples/helloworld')
