@@ -81,7 +81,7 @@ Prerequisites
      -device pci-assign,host=87:02.0,id=pt_0 \
      -device pci-assign,host=87:0a.0,id=pt_1
 
-4. Login vm0 and them bind VF devices to igb_uio driver.::
+4. Login vm0 and then bind VF devices to igb_uio driver.::
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:04.0 00:05.0
 
