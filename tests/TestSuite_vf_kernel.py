@@ -572,6 +572,8 @@ class TestVfKernel(TestCase):
         # Start DPDK PF, enable promisc mode, set rxonly forwarding
         self.dut_testpmd.execute_cmd('stop')
         self.dut_testpmd.execute_cmd('set promisc all on')
+        self.dut_testpmd.execute_cmd('set fwd rxonly')
+        self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
         self.verify(self.check_pf_vf_link_status(
             self.vm0_dut, self.vm0_intf0), "VM0_VF0 link down")
