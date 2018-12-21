@@ -417,15 +417,14 @@ class TestVfKernel(TestCase):
 
         # Send packet from tester to VF MAC with not-matching vlan id, check
         # the packet can't be received at the vlan device
+        # fortville nic need add -p parameter to disable promisc mode
         wrong_vlan = vlan_ids % 4095 + 1
-
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, vm0_vf0_mac,
-                                           vlan_id='%d' % wrong_vlan) == False, "received wrong vlan packet")
-
+                                           vlan_id='%d' % wrong_vlan, param='-p') == False, "received wrong vlan packet")
         # Send packet from tester to VF MAC with matching vlan id, check the packet can be received at the vlan device.
         # check_result = self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, self.vm0_vf0_mac, vlan_id='%d' %vlan_ids)
         check_result = self.verify_vm_tcpdump(
-            self.vm0_dut, self.vm0_intf0, vm0_vf0_mac, vlan_id='%d' % vlan_ids)
+            self.vm0_dut, self.vm0_intf0, vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p')
         self.verify(check_result, "can't received vlan_id=%d packet" % vlan_ids)
 
         # Delete configured vlan device
@@ -436,12 +435,8 @@ class TestVfKernel(TestCase):
                     not in out, "vlan error")
         # behavior is diffrent bettwn niantic and fortville ,because of kernel
         # driver
-        if self.nic.startswith('fortville'):
-            self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
-                                               vm0_vf0_mac, vlan_id='%d' % vlan_ids) == True, "delete vlan error")
-        else:
-            self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
-                                               vm0_vf0_mac, vlan_id='%d' % vlan_ids) == False, "delete vlan error")
+        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
+                                           vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p') == False, "delete vlan error")
         self.dut_testpmd.execute_cmd("vlan set filter off 0")
 
     def test_packet_statistic(self):
