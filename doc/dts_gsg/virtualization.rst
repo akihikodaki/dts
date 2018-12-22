@@ -369,7 +369,7 @@ Power down  guest os.
 
 .. note::
 
-    For more information about qemu guest agent, please reference to http://wiki.qemu.org/Features/QAPI/GuestAgent.
+    For more information about qemu guest agent, please refer to https://wiki.qemu.org/Features/GuestAgent.
 
 Control (Qemu Serial Port)
 """"""""""""""""""""""""""
