@@ -74,7 +74,7 @@ Prerequisites
      echo 0000:87:0a.0 > /sys/bus/pci/devices/0000:87:0a.0/driver/unbind
      echo 0000:87:0a.0 > /sys/bus/pci/drivers/pci-stub/bind
 
-3. Passthrough VFs 87:02.0 & 87:02.1 to vm0 and start vm0::
+3. Passthrough VFs 87:02.0 & 87:0a.0 to vm0 and start vm0::
 
      /usr/bin/qemu-system-x86_64  -name vm0 -enable-kvm \
      -cpu host -smp 4 -m 2048 -drive file=/home/image/sriov-fc20-1.img -vnc :1 \
