@@ -268,8 +268,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         # check host core has correct mapped
         cpu_idx = 0
         for cpu in cpus:
-            mask = utils.create_mask([cpu])
-            cpu_map = '[%d]: Physical CPU Mask %s' % (cpu_idx, mask)
+            cpu_map = '[%d]: Physical CPU %s' % (cpu_idx, cpu)
             self.verify(cpu_map in vm_info, "Faile to map host cpu %s" % cpu)
             cpu_idx += 1
 
