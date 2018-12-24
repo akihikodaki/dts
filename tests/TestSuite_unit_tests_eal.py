@@ -267,7 +267,7 @@ class TestUnitTestsEal(TestCase):
         out = self.dut.send_expect("eal_flags_autotest", "RTE>>", 600)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
-        self.dut.bind_interfaces_linux()
+        self.dut.bind_interfaces_linux(driver=self.drivername)
 
     def test_alarm(self):
         """
