@@ -423,8 +423,8 @@ When assign host pci device into guest, we also add "id" string for this device.
 
 	-device pci-assign,host=07:10.0,id=pt_0
 	
-With this command, we assign host VF device 07:10.0 into guest and it named as "pt_0". "pt_0" mean it's the first device pass through into guest os.
-After guest os started, we use dump pci command and generate guest and host pci mapping by "id".
+With this command, we assign host VF device 07:10.0 into guest and it is named as "pt_0". "pt_0" means it's the first device pass through into guest os.
+After guest os started, we use the QEMU/Monitor "info pci" command to dump PCI information and generate guest and host pci mapping by "id".
 
 .. code-block:: console
 
