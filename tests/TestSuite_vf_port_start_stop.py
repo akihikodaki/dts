@@ -247,6 +247,8 @@ class TestVfPortStartStop(TestCase):
            getattr(self, 'tester_tx_pci', None):
             self.tester.send_expect("./dpdk_nic_bind.py --bind=%s %s" \
                 %(self.tester_port_driver, self.tester_tx_pci), "#")
+            tx_interface = self.tester.get_interface(self.tester_tx_port)
+            self.tester.send_expect("ifconfig %s up" % tx_interface, "#")
 
         if getattr(self, 'vm0', None):
             self.vm0.stop()
