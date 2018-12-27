@@ -313,3 +313,87 @@ To Be Filled
 Link_bonding
 ============
 To Be Filled
+
+Hash
+====
+This does unit function test for hash features:
+
+- Average table utilization when disable extendable table function
+- Average table utilization when enable extendable table function,
+  check could reach 100% utilization
+
+
+Hash_perf
+=========
+This does the performance test with a single thread, including the cases
+with and without extendable table:
+
+- Measure cycles for add, lookup, lookup_bulk, delete
+- With/without pre-computed hash values
+- For different key lengths
+
+
+Hash_functions
+==============
+This does unit test for hash functions:
+
+- Measure cycles for hashing
+- Jhash vs rte_hash_crc
+- For different key lenthgs, seeds
+
+
+Hash_multiwriter
+================
+This does the performance and function test of multi-threads case
+– multiple writers.
+
+Introduce scalable multi-writer Cuckoo Hash insertion based on a split
+cuckoo search and move operation using Intel TSX. It can do scalable
+hash insertion with 22 cores with little performance loss and negligible
+TSX abortion rate.
+
+
+Hash_readwrite
+==============
+This does the performance and function test of multi-threads
+case – multiple reader/writer.
+
+Read-write concurrency support in rte_hash. A new flag value is added to
+indicate if read-write concurrency is needed during creation time.
+The new concurrency model is based on rte_rwlock. When Intel TSX is
+available and the users indicate to use it, the TM version of the
+rte_rwlock will be called. Both multi-writer and read-write concurrency
+are protected by the rte_rwlock instead of the x86 specific RTM
+instructions, so the x86 specific header rte_cuckoo_hash_x86.h is removed
+and the code is infused into the main .c file.
+A new rte_hash_count API is proposed to count how many keys are inserted
+into the hash table.
+
+
+Hash_hash_readwrite_lf
+======================
+This does the unit tests to check for hash lookup and bulk-lookup perf
+with lock-free enabled and with lock-free disabled. Unit tests performed
+with readers running in parallel with writers.
+Tests include:
+
+- Hash lookup on existing keys
+
+  - Hash add causing NO key-shifts of existing keys in the table
+
+- Hash lookup on existing keys likely to be on shift-path
+
+  - Hash add causing key-shifts of existing keys in the table
+
+- Hash lookup on existing keys NOT likely to be on shift-path
+
+  - Hash add causing key-shifts of existing keys in the table
+
+- Hash lookup on non-existing keys
+
+  - Hash add causing NO key-shifts of existing keys in the table
+  - Hash add causing key-shifts of existing keys in the table
+
+- Hash lookup on keys likely to be on shift-path
+
+  - Multiple writers causing key-shifts of existing keys in the table
