@@ -1619,6 +1619,21 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "dpdk_2pf_2vf_1vm_iplink_macfilter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "kernel_2pf_2vf_1vm_mac_add_filter": [
         {
             "OS": [
