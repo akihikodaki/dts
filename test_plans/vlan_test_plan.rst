@@ -54,7 +54,7 @@ In the same way, the insertion of a VLAN header with the VLAN tag identifier
 ``vlan_id`` in packets sent on the port ``port_id`` can be enabled with the
 following command of the ``testpmd`` application::
 
-  tx_vlan set vlan_id port_id
+  tx_vlan set port_id vlan_id
 
 
 The transmission of VLAN packets is done with the ``start tx_first`` command
