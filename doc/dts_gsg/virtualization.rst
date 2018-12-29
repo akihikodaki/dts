@@ -247,7 +247,7 @@ Before VM operations, vxlan sample feature request to start tep_termination appl
 .. code-block:: console
 
     def prepare_vxlan_sample_env(self, tep_cmd):
-        # remove unexpected socke
+        # remove unexpected socket
         self.dut.send_expect("rm -rf vhost-net", "# ")
     
         # start tep_termination first
@@ -479,10 +479,10 @@ Options for nic:
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_vlan        | vlan of virtual nic	             | 0              | No        |
 	+-----------------+----------------------------------+----------------+-----------+
-	| opt_macaddr     | If not assgin, nic will generate | N/A            | No        |         
+	| opt_macaddr     | If not assign, nic will generate | N/A            | No	|
 	|                 | random mac	                     | 	              |           |
 	+-----------------+----------------------------------+----------------+-----------+
-	| opt_model       | model of virutal nic             | e1000	      | No        |
+	| opt_model       | model of virtual nic             | e1000	      | No        |
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_name        | name be assigned for use in      | N/A            | No        | 
 	|                 | monitor command                  |                |           |
