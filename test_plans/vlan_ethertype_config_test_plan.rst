@@ -123,7 +123,7 @@ Test Case 3: test adding VLAN Tag Identifier with changing VLAN TPID
 7. Send 1 packet with VLAN TPID 0xA100 and VLAN Tag 16 on port ``A``,
    Verify that the VLAN packet cannot be received in port ``B``.
 
-Test Case 4: test VLAN header striping with changing VLAN TPID
+Test Case 4: test VLAN header stripping with changing VLAN TPID
 ==============================================================
 
 1. start testpmd, setup vlan filter off, vlan strip on, start in mac forwarding mode::
@@ -144,7 +144,7 @@ Test Case 4: test VLAN header striping with changing VLAN TPID
 4. Send 1 packet with VLAN TPID 0xA100 and VLAN Tag 16 on port ``A``.
 Verify that packet received in port ``B`` without VLAN Tag Identifier
 
-5. Disable vlan header striping on port ``0``::
+5. Disable vlan header stripping on port ``0``::
 
       testpmd> vlan set strip off 0
 
