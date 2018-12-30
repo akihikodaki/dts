@@ -154,7 +154,7 @@ Test Case 3: VF tagged vlan tx
 
 2. Add tx vlan offload on VF0, take care the first param is port::
 
-     testpmd> tx_vlan 0 1
+     testpmd> tx_vlan set 0 1
 
 3. Send packet from tester port1 and check packet received by tester port0::
 
