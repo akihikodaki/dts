@@ -40,7 +40,7 @@ from exception import StartVMFailedException
 from settings import get_host_ip, load_global_setting, DTS_PARALLEL_SETTING
 from utils import parallel_lock, RED
 
-# This name is derictly defined in the qemu guest serivce
+# This name is directly defined in the qemu guest service
 # So you can not change it except it is changed by the service
 QGA_DEV_NAME = 'org.qemu.guest_agent.0'
 
