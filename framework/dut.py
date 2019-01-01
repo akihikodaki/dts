@@ -806,7 +806,7 @@ class Dut(Crb):
         Setup current virtualization hypervisor type and remove elder VM ssh keys
         """
         self.virttype = virttype
-        # remove VM ras keys from tester
+        # remove VM rsa keys from tester
         remove_old_rsa_key(self.tester, self.crb['My IP'])
 
     def generate_sriov_vfs_by_port(self, port_id, vf_num, driver='default'):
