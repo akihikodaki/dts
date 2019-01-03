@@ -50,8 +50,8 @@ class SSHPexpect(object):
         except Exception as e:
             print RED(e)
             if getattr(self, 'port', None):
-                suggestion = "\nSuggession: Check if the fireware on [ %s ] " % \
-                    self.ip + "is stoped\n"
+                suggestion = "\nSuggession: Check if the firewall on [ %s ] " % \
+                    self.ip + "is stopped\n"
                 print GREEN(suggestion)
 
             raise SSHConnectionException(self.host)
