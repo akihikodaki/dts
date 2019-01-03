@@ -307,6 +307,10 @@ class Dut(Crb):
         total_huge_pages = self.get_total_huge_pages()
         total_numa_nodes = self.send_expect("ls /sys/devices/system/node | grep node* | wc -l", "# ")
         numa_service_num = self.get_def_rte_config('CONFIG_RTE_MAX_NUMA_NODES')
+        try:
+            int(total_numa_nodes)
+        except ValueError:
+            total_numa_nodes = -1
         if numa_service_num is not None:
             numa = min(int(total_numa_nodes), int(numa_service_num))
         else:
@@ -340,6 +344,8 @@ class Dut(Crb):
                 else:
                     for numa_id in range(0, int(numa)):
                         self.set_huge_pages(arch_huge_pages, numa_id)
+                    if numa == -1:
+                        self.set_huge_pages(arch_huge_pages)
 
         self.mount_huge_pages()
         self.hugepage_path = self.strip_hugepage_path()
