@@ -78,9 +78,6 @@ class TestDynamicConfig(TestCase):
         cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
         --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
 
-	if "cavium" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
-
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
 
         # get dest address from self.target port
@@ -118,9 +115,6 @@ class TestDynamicConfig(TestCase):
         """
         cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
         --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
-
-	if "cavium" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
         time.sleep(5)

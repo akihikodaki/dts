@@ -90,9 +90,6 @@ class TestUnitTestsDump(TestCase):
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
 
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
-
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_ring", "testpmd>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
@@ -109,9 +106,6 @@ class TestUnitTestsDump(TestCase):
         Run mempool dump test case.
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
-
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_mempool", "testpmd>", self.run_cmd_time * 2)
@@ -147,9 +141,6 @@ class TestUnitTestsDump(TestCase):
         Run memzone dump test case.
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
-
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_memzone", "testpmd>", self.run_cmd_time * 2)

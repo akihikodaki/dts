@@ -111,10 +111,6 @@ class PmdOutput():
         self.coremask = create_mask(core_list)
         command = "./%s/app/testpmd -c %s -n %d %s -- -i %s" \
             % (self.dut.target, self.coremask, self.dut.get_memory_channels(), eal_param, param)
-        if "cavium" in self.dut.nic_type:
-            # thunder nicvf does not support hw vlan filter, the application crashes
-            # without this option added
-            command += " --disable-hw-vlan-filter"
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
