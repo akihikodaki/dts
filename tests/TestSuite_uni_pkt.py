@@ -118,7 +118,7 @@ class TestUniPacket(TestCase):
         if "fortville" in self.nic or "fortpark_TLV" in self.nic:
             outerL4Type = "L4_NONFRAG"
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN"]
-        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower() or "cavium" in self.nic.lower():
             outerL4Type = ""
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4"]
         pktType = {
@@ -136,7 +136,7 @@ class TestUniPacket(TestCase):
         if "fortville" in self.nic or "fortpark_TLV" in self.nic:
             pktType.pop("MAC_IPihl_PKT")
             pktType.pop("MAC_IPihl_SCTP_PKT")
-        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower() or "cavium" in self.nic.lower():
             pktType.pop("MAC_IP_ICMP_PKT")
             pktType.pop("MAC_IPFRAG_TCP_PKT")
 
@@ -149,7 +149,7 @@ class TestUniPacket(TestCase):
         if "fortville" in self.nic or "fortpark_TLV" in self.nic:
             outerL4Type = "L4_NONFRAG"
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN"]
-        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower() or "cavium" in self.nic.lower():
             outerL4Type = ""
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6"]
 
@@ -164,7 +164,7 @@ class TestUniPacket(TestCase):
         # delete the unsupported packet based on nic type
         if "fortville" in self.nic or "fortpark_TLV" in self.nic:
             pktType.pop("MAC_IPv6FRAG_PKT_N")
-        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "i350" in self.nic.lower() or "cavium" in self.nic.lower():
             pktType.pop("MAC_IPv6FRAG_PKT_F")
 
         self.run_test(pktType)
