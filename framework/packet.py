@@ -607,7 +607,7 @@ class Packet(object):
 
     def config_layer(self, layer, config={}):
         """
-        Configure packet assgined layer
+        Configure packet assigned layer
         return the status of configure result
         """
         try:
