@@ -59,7 +59,7 @@ class VirtBase(object):
         """
         Initialize the VirtBase.
         dut: the instance of Dut
-        vm_name: the name of VM which you have confiured in the configure
+        vm_name: the name of VM which you have configured in the configure
         suite_name: the name of test suite
         """
         self.host_dut = dut
