@@ -906,7 +906,7 @@ class QEMUKvm(VirtBase):
 
     def add_vm_monitor(self, **options):
         """
-        path: if adding monitor to vm, need to specify unix socket patch
+        path: if adding monitor to vm, need to specify unix socket path
         """
         if 'path' in options.keys():
             monitor_boot_line = '-monitor unix:%s,server,nowait' % options[
