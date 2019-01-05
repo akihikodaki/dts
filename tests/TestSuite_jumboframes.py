@@ -142,7 +142,7 @@ class TestJumboframes(TestCase):
     def test_jumboframes_normal_nojumbo(self):
         """
         This case aims to test transmitting normal size packet without jumbo
-        f=rame on testpmd app.
+        frame on testpmd app.
         """
         self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
