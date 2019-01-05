@@ -936,7 +936,7 @@ class Dut(Crb):
                         self.ports_map[dutPort] = remotePort
                         break
                 if self.ports_map[dutPort] == -1:
-                    self.logger.error("CONFIGURED TESTER PORT CANNOT FOUND!!!")
+                    self.logger.error("CONFIGURED TESTER PORT CANNOT BE FOUND!!!")
                 else:
                     continue  # skip ping6 map
 
