@@ -68,7 +68,7 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         Run EFD unit test
         """
         self.dut.send_expect("./test/test/test -n 1 -c f", "RTE>>", 60)
-        out = self.dut.send_expect("efd_autotest", "RTE>>", 60)
+        out = self.dut.send_expect("efd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
