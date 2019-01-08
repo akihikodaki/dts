@@ -16,9 +16,8 @@ VM_CORES_MASK = 'all'
 class TestDdpGtp(TestCase):
 
     def set_up_all(self):
-        self.verify(
-            self.nic in ['fortville_25g'], 'ddp gtp can not support %s nic'
-            % self.nic)
+        self.verify('fortville' in self.nic,
+                    'ddp gtp can not support %s nic' % self.nic)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
