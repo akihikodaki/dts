@@ -16,6 +16,8 @@
                 "springfountain",
                 "twinpond",
                 "kawela_4",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -34,6 +36,8 @@
                 "springville",
                 "ironpond",
                 "springfountain",
+                "cavium_a034",
+                "cavium_a011",
                 "twinpond"
             ],
             "Target": [
@@ -59,6 +63,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -84,6 +90,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -130,6 +138,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -154,6 +164,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -177,6 +189,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ], 
             "Target": [
@@ -200,6 +214,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -225,6 +241,8 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+                "cavium_a034",
+                "cavium_a011",
                 "fortpark_TLV"
             ],
             "Target": [
@@ -534,7 +552,7 @@
                 "springfountain",
                 "twinpond",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_a011"
             ],
             "Target": [
                 "ALL"
@@ -833,6 +851,8 @@
                 "springville",
                 "ironpond",
                 "springfountain",
+                "cavium_a034",
+                "cavium_a011",
                 "twinpond"
             ],
             "Target": [
@@ -2050,6 +2070,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
+                "cavium_a034",
+                "cavium_a011",
                 "fortville_25g"
             ],
             "Target": [
