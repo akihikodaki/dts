@@ -225,7 +225,6 @@ class TestPtype_Mapping(TestCase):
         Run after each test case.
         """
         self.dut_testpmd.quit()
-        pass
 
     def tear_down_all(self):
         """
@@ -235,4 +234,3 @@ class TestPtype_Mapping(TestCase):
             "mb->packet_type);/d' app/test-pmd/util.c", "# ", 30, verify = True)
         self.dut.build_install_dpdk(self.dut.target)
         self.dut.kill_all()
-        pass
