@@ -6,7 +6,6 @@ DPDK Test suite.
 Tests for vmdq.
 
 """
-
 import utils
 import re
 from etgen import IxiaPacketGenerator
@@ -30,7 +29,6 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         """
         Run at the start of each test suite.
         """
-
         self.tester.extend_external_packet_generator(TestVmdq, self)
         
         self.dut.send_expect("sed -i 's/CONFIG_RTE_MAX_QUEUES_PER_PORT=256/CONFIG_RTE_MAX_QUEUES_PER_PORT=1024/' ./config/common_base", "# ", 5)
@@ -53,12 +51,10 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         out = self.dut.send_expect("make -C examples/vmdq", "#", 10)
         self.verify("Error" not in out, "Compilation error")
 
-
     def validateApproxEqual(self, lines):
         """
         Check that all the rx queue stats are within a 30% range.
         """
-
         minimum = 1000000
         maximun = 0
 
@@ -85,7 +81,6 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         MAX queues is 128
         queues/pools = 128/npools
         """
-
         self.current_frame_size = self.default_framesize
 
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -130,8 +125,8 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
 
     def test_perf_vmdq_64pools_queues(self):
         """
-        This function call " Npools_128queues" with differen number
-        of pools. Details see below. if not sure, set it as 8 pools.
+        This function call "Npools_128queues" with different number
+        of pools. Details see below. If not sure, set it as 8 pools.
         """
         if self.nic in ("niantic", "springfountain"):
             self.Npools_128queues(64)
@@ -144,9 +139,8 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
 
     def test_perf_vmdq_performance(self):
         """
-        Try  different configuration and different packe size
+        Try different configuration and different packet size
         """
-
         self.tester.get_interface(
             self.tester.get_local_port(self.dut_ports[0]))
 
@@ -240,7 +234,6 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         """
         Change Ixia configuration
         """
-
         self.add_tcl_cmd("vlan config -mode vIncrement")
         self.add_tcl_cmd("vlan config -step 1")
         self.add_tcl_cmd("vlan config -repeat %d" % self.vlan_repeat)
@@ -250,7 +243,7 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
 
     def ether(self, port, src, dst, type):
         """
-        Configure Ether protocal.
+        Configure Ether protocol.
         """
         self.add_tcl_cmd("protocol config -ethernetType ethernetII")
         self.add_tcl_cmd('stream config -sa "%s"' % self.macToTclFormat(src))
@@ -258,5 +251,3 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         self.add_tcl_cmd('stream config -daRepeatCounter increment')
         self.add_tcl_cmd('stream config -daStep 1')
         self.add_tcl_cmd('stream config -numDA %d' % self.da_repeat)
-
-
