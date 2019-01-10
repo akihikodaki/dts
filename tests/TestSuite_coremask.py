@@ -54,7 +54,7 @@ class TestCoremask(TestCase):
         config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
 
         if config_max_lcore:
-            available_max_lcore = int(config_max_lcore)
+            available_max_lcore = min(int(config_max_lcore), len(self.all_cores) + 1)
         else:
             available_max_lcore = len(self.all_cores) + 1
 
