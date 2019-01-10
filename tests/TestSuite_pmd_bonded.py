@@ -1031,6 +1031,9 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                         pkt_now[bond_port][0] == pkt_count,
                         "RX or TX packet number not correct when promiscuous disabled")
 
+        # Stop fwd threads first before removing slaves from bond to avoid
+        # races and crashes
+        self.dut.send_expect("stop", "testpmd> ")
         self.remove_all_slaves(bond_port)
         self.dut.send_expect("quit", "# ")
         self.launch_app()
