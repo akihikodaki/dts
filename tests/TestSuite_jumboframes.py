@@ -84,7 +84,6 @@ class TestJumboframes(TestCase):
         sleep(5)
 
         tx_pkts, _, tx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.rx_port, "tx")]
-        # p0tx_pkts, p0tx_err, p0tx_bytes
         rx_pkts, rx_err, rx_bytes = [int(_) for _ in self.jumboframes_get_stat(self.tx_port, "rx")]
 
         tx_pkts -= tx_pkts_ori
@@ -99,7 +98,6 @@ class TestJumboframes(TestCase):
                          and ((rx_bytes + 4) == pktsize),
                         "packet pass assert error")
         else:
-            #self.verify(p0tx_pkts == p1rx_pkts and (p1rx_err == 1 or p1rx_pkts == 0),
             self.verify(rx_err == 1 or tx_pkts == 0, "packet drop assert error")
         return out
 
@@ -129,7 +127,6 @@ class TestJumboframes(TestCase):
             netobj.enable_jumbo(framesize = ETHER_JUMBO_FRAME_MTU)
 
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.rx_port)), ETHER_JUMBO_FRAME_MTU + 200), "# ")
-#        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.tx_port)), ETHER_JUMBO_FRAME_MTU + 200), "# ")
 
         self.pmdout = PmdOutput(self.dut)
 
@@ -181,8 +178,8 @@ class TestJumboframes(TestCase):
         self.dut.send_expect("set fwd mac", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
 
-        self.jumboframes_send_packet(1517)
-        self.jumboframes_send_packet(1518)
+        self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1)
+        self.jumboframes_send_packet(ETHER_STANDARD_MTU)
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)
@@ -234,4 +231,3 @@ class TestJumboframes(TestCase):
         clear up.
         """
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.rx_port)), ETHER_STANDARD_MTU), "# ")
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.tx_port)), ETHER_STANDARD_MTU), "# ")
