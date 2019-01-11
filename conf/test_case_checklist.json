@@ -1911,7 +1911,13 @@
                 "ALL"
             ],
             "NIC": [
-                "ALL"
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf"
             ],
             "Target": [
                 "ALL"
@@ -2142,6 +2148,27 @@
                 "powerville",
                 "sagepond",
                 "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "retrieve_reg": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf"
             ],
             "Target": [
                 "ALL"
