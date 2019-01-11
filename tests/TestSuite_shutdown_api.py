@@ -268,7 +268,11 @@ class TestShutdownApi(TestCase):
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
-        crc_keep = int(Rx_offloads[0],16) & RX_OFFLOAD_KEEP_CRC and int(Rx_offloads[1],16) & RX_OFFLOAD_KEEP_CRC
+        crc_keep_temp = []
+        for i in range(len(self.dut.get_ports())):
+            crc_keep_temp.append(int(Rx_offloads[i],16) & RX_OFFLOAD_KEEP_CRC)
+            crc_keep = crc_keep_temp[0]
+            crc_keep = crc_keep and crc_keep_temp[i]
         self.verify(
             crc_keep == RX_OFFLOAD_KEEP_CRC, "CRC keeping not enabled properly")
 
@@ -278,7 +282,11 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
-        crc_strip = int(Rx_offloads[0],16) | ~RX_OFFLOAD_KEEP_CRC and int(Rx_offloads[1],16) | ~RX_OFFLOAD_KEEP_CRC
+        crc_strip_temp = []
+        for i in range(len(self.dut.get_ports())):
+            crc_strip_temp.append(int(Rx_offloads[i],16) | ~RX_OFFLOAD_KEEP_CRC)
+            crc_strip = crc_strip_temp[0]
+            crc_strip = crc_strip and crc_strip_temp[i]
         self.verify(
             crc_strip == ~RX_OFFLOAD_KEEP_CRC, "CRC stripping not enabled properly")
         self.dut.send_expect("start", "testpmd> ")
