@@ -280,7 +280,7 @@ class VirtBase(object):
             # compose boot command for different hypervisors
             self.compose_boot_param()
 
-            # start virutal machine
+            # start virtual machine
             self._start_vm()
 
             if self.vm_status is ST_RUNNING:
@@ -311,7 +311,7 @@ class VirtBase(object):
             # compose boot command for different hypervisors
             self.compose_boot_param()
 
-            # start virutal machine
+            # start virtual machine
             self._quick_start_vm()
 
         except Exception as vm_except:
