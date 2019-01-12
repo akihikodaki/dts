@@ -7,8 +7,8 @@ from utils import RED, GREEN, parallel_lock
 
 """
 Module handle ssh sessions between tester and DUT.
-Implement send_expect function to send command and get output data.
-Aslo support transfer files to tester or DUT.
+Implements send_expect function to send command and get output data.
+Also supports transfer files to tester or DUT.
 """
 
 
