@@ -64,7 +64,7 @@ class TestCase(object):
             self._check_and_reconnect(crb=dutobj)
         self._check_and_reconnect(crb=self.tester)
 
-        # covert netdevice to codename
+        # convert netdevice to codename
         self.nics = []
         for portid in range(len(self.dut.ports_info)):
             nic_type = self.dut.ports_info[portid]['type']
