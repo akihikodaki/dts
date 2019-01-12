@@ -59,7 +59,7 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ssh_connection.py     | Create session to host, implement send_expect and copy function                                                                                              |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | ssh_pexpect.py        | Handle ssh sessions between tester and DUT, Implement send_expect function to send command and get output data, Aslo support transfer files to tester or DUT |
+    | ssh_pexpect.py        | Handle ssh sessions between tester and DUT, Implement send_expect function to send command and get output data, Also support transfer files to tester or DUT |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | pmd_output.py         | Module for get all statics value by port in testpmd                                                                                                          |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
