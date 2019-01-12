@@ -272,7 +272,7 @@ class CrbsConf(UserConf):
             if not crb_confs:
                 continue
 
-            # covert file configuration to dts crbs
+            # convert file configuration to dts crbs
             for conf in crb_confs:
                 key, value = conf
                 if key == 'dut_ip':
