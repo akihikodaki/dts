@@ -47,7 +47,7 @@ Since some third party tools required TCL (Tool Command Language) supports, plea
 
 .. code-block:: console
 
-   yum install tcl                 # download / install ssh software
+   yum install tcl                 # download / install tcl software
 
 Install Third Party python modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
