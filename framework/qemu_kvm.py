@@ -88,7 +88,7 @@ class QEMUKvm(VirtBase):
         # initialize some resource used by guest.
         self.init_vm_request_resource()
 
-        # charater and network device default index
+        # character and network device default index
         self.char_idx = 0
         self.netdev_idx = 0
         self.pt_idx = 0
