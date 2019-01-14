@@ -467,7 +467,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.verify(tx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
 
         self.dut.send_expect("quit", "# ")
-        self.dut.send_expect("sed -i -e '/hw_vlan_filter=1;$/d' %s" % main_file, "# ")
+        self.dut.send_expect("sed -i -e '/cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;$/d' %s" % main_file, "# ")
         # build sample app
         self.build_ethtool()
 
