@@ -94,10 +94,9 @@ Test case 1: DPDK PF, kernel VF, enable DCB mode with TC=4
     testpmd> port config 0 dcb vt on 4 pfc off
     testpmd> port start 0
 
-2. check if VF port is linked. if vf port is down, reload the ixgbevf driver::
+2. check if VF port is linked. if vf port is down, up the port::
 
-    rmmod ixgbevf
-    modprobe ixgbevf
+    ifconfig eth0 up
 
    then you can see VF information in PF side::
 
@@ -106,7 +105,7 @@ Test case 1: DPDK PF, kernel VF, enable DCB mode with TC=4
 
 3. check VF's queue number::
 
-    ethtool -S ens3
+    ethtool -S eth0
 
    there is 1 tx queue and 4 rx queues which equals TC number.
 
@@ -125,7 +124,7 @@ Test case 1: DPDK PF, kernel VF, enable DCB mode with TC=4
 
 5. check the packets with different User Priority mapping to TC::
 
-    ethtool -S ens3
+    ethtool -S eth0
 
    check the NIC statistics to check the packets increasing of different rx queue.
    pkt1 to queue 0, pkt2 to queue 1, pkt3 to queue 2, pkt4 to queue 3,
@@ -136,9 +135,13 @@ Test case 2: DPDK PF, kernel VF, disable DCB mode
 
 1. start the testpmd on PF::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --nb-cores=16 --rxq=2 --txq=2
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 1ffff -n 4 -- -i --rxq=2 --txq=2 --nb-cores=16
 
-2. check if VF port is linked. if vf port is down, reload the ixgbevf driver::
+2. check if VF port is linked. if vf port is down, up the port::
+
+    ifconfig eth0 up
+
+   if vf port is still down, reload the ixgbevf driver::
 
     rmmod ixgbevf
     modprobe ixgbevf
@@ -154,7 +157,7 @@ Test case 2: DPDK PF, kernel VF, disable DCB mode
 
 4. check VF's queue number::
 
-    ethtool -S ens3
+    ethtool -S eth0
 
    there is 2 tx queues and 2 rx queues as default number.
 
@@ -166,7 +169,7 @@ Test case 2: DPDK PF, kernel VF, disable DCB mode
 5. check the NIC statistics to verify the different packets mapping to
    different queues according RSS rule::
 
-    ethtool -S ens3
+    ethtool -S eth0
 
    send 100 pkt1 to VF, all the packets received by queue 0,
    then, send 100 pkt2 to VF, all the packets received by queue 1.
