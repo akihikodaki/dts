@@ -37,7 +37,7 @@ import time
 import random
 import re
 import utils
-testQueues = [16]
+testQueues = [2, 9, 16]
 reta_entries = []
 reta_lines = []
 
@@ -173,9 +173,6 @@ class TestPmdrssreta(TestCase):
         Run at the start of each test suite.
         """
 
-        #self.verify(
-        #    self.nic in ["niantic", "fortville_eagle", "fortville_spirit", "fortville_spirit_single"],
-        #    "NIC Unsupported: " + str(self.nic))
         ports = self.dut.get_ports(self.nic)
         self.ports_socket = self.dut.get_numa_id(ports[0])
         self.verify(len(ports) >= 1, "Not enough ports available")
@@ -192,7 +189,13 @@ class TestPmdrssreta(TestCase):
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
-        iptypes = ['IPV4']
+        iptypes = {'IPV4': 'ip',
+                   'IPV4&UDP': 'udp',
+                   'IPV4&TCP': 'tcp',
+                   'IPV6': 'ip',
+                   'IPV6&UDP': 'udp',
+                   'IPV6&TCP': 'tcp'
+                   }
 
         self.dut.kill_all()
 
@@ -205,11 +208,15 @@ class TestPmdrssreta(TestCase):
                 self.pmdout.start_testpmd(
                     "all", "--mbcache=128 --rxq=%d --txq=%d" % (queue, queue), socket=self.ports_socket)
 
-            for iptype in iptypes:
+            for iptype, rsstype in iptypes.items():
                 self.dut.send_expect("set verbose 8", "testpmd> ")
                 self.dut.send_expect("set fwd rxonly", "testpmd> ")
                 self.dut.send_expect(
                     "set nbcore %d" % (queue + 1), "testpmd> ")
+
+                out = self.dut.send_expect(
+                    "port config all rss %s" % rsstype, "testpmd> ")
+                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
 
                 # configure the reta with specific mappings.
                 if(self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid"]):
