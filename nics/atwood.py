@@ -108,7 +108,7 @@ class Atwood(NetDevice):
         if 'tp_path' in port_cfg.keys():
             self.tp_path = port_cfg['tp_path']
 
-        # create addtional session
+        # create additional session
         self.ctrl_crb = CtrlCrb(crb)
 
     def setup(self):

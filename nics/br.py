@@ -125,7 +125,7 @@ class BoulderRapid(NetDevice):
             port_info = self.host.get_port_info(first_addr)
             if port_info is None:
                 raise PortConfigParseException("BoulderRapid first port not found")
-            # get addtional session
+            # get additional session
             netdev = port_info['port']
             self.ctrl_crb = netdev.get_control()
             self.sec_port = True
@@ -144,7 +144,7 @@ class BoulderRapid(NetDevice):
         if 'tp_path' in port_cfg.keys():
             self.tp_path = port_cfg['tp_path']
 
-        # create addtional session
+        # create additional session
         self.ctrl_crb = CtrlCrb(crb)
 
     def setup(self):
