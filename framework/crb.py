@@ -92,7 +92,7 @@ class Crb(object):
 
     def create_session(self, name=""):
         """
-        Create new session for addtional useage. This session will not enable log.
+        Create new session for additional usage. This session will not enable log.
         """
         logger = getLogger(name)
         session = SSHConnection(self.get_ip_address(),
@@ -106,7 +106,7 @@ class Crb(object):
 
     def destroy_session(self, session=None):
         """
-        Destroy addtional session.
+        Destroy additional session.
         """
         for save_session in self.sessions:
             if save_session == session:
@@ -552,7 +552,7 @@ class Crb(object):
 
         cpuinfo = cpuinfo.split()
         # haswell cpu on cottonwood core id not correct
-        # need addtional coremap for haswell cpu
+        # need additional coremap for haswell cpu
         core_id = 0
         coremap = {}
         for line in cpuinfo:
