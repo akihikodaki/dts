@@ -46,7 +46,7 @@ from test_case import TestCase
 #
 
 
-class TestUnitTestsPmdPerf(TestCase):
+class TestUnitTestsLoopback(TestCase):
 
     #
     #
