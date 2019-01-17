@@ -200,9 +200,9 @@ l3fwd_ipv4_route_array[] = {\\\n"
         for size in pkt_sizes[::burst]:
             # simulate to set TG properties
             if flag == 'frag':
-                # each packet max len: 1518 - 18 (eth) - 40 (ipv6) - 8 (ipv6 ext hdr) = 1452
-                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1452
-                if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) % 1452:
+                # each packet max len: 1522 - 18 (eth) - 40 (ipv6) - 8 (ipv6 ext hdr) = 1456
+                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1456
+                if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) % 1456:
                     expPkts += 1
                 val = 0
             else:
@@ -240,7 +240,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
                     # fragment offset should be correct
                     frag = pkt.strip_element_layer4("offset")
-                    self.verify((frag == int((idx - 1) * 181.5)), "Fragment packet frag not match")
+                    self.verify((frag == int((idx - 1) * 182)), "Fragment packet frag not match")
                     idx += 1
 
     def set_up(self):
