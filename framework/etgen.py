@@ -158,7 +158,7 @@ class SoftwarePacketGenerator():
     def loss(self, portList, ratePercent):
         (bps_rx, bps_tx, _) = self.packet_generator(portList, ratePercent)
         assert bps_tx != 0
-        return (float(bps_tx) - float(bps_rx)) / float(bps_tx)
+        return (float(bps_tx) - float(bps_rx)) / float(bps_tx), float(bps_tx), float(bps_rx)
 
 
 class IxiaPacketGenerator(SSHConnection):

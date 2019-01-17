@@ -535,7 +535,7 @@ class Tester(Crb):
         elif not self.check_port_list(portList):
             self.logger.warning("exception by mixed port types")
             return None
-        return self.packet_gen.loss(portList, ratePercent, delay)
+        return self.packet_gen.loss(portList, ratePercent)
 
     def traffic_generator_latency(self, portList, ratePercent=100, delay=5):
         """
