@@ -104,7 +104,7 @@ class QEMUKvm(VirtBase):
         # internal variable to track whether default nic has been added
         self.__default_nic = False
 
-        # arch info for multi-paltform init
+        # arch info for multi-platform init
         self.arch = self.host_session.send_expect('uname -m', '# ')
 
         # set some default values for vm,
@@ -234,7 +234,7 @@ class QEMUKvm(VirtBase):
 
     def enable_virtual_ability(self):
         """
-        Load the virutal module of kernel to enable the virutal ability.
+        Load the virtual module of kernel to enable the virtual ability.
         """
         self.host_session.send_expect('modprobe kvm', '# ')
         self.host_session.send_expect('modprobe kvm_intel', '# ')
@@ -577,7 +577,7 @@ class QEMUKvm(VirtBase):
         field = lambda option, index, separator=':': \
             option.split(separator)[index]
 
-        # get the forword type
+        # get the forward type
         fwd_type = field(opt_hostfwd, 0)
         if not fwd_type:
             fwd_type = 'tcp'
@@ -699,7 +699,7 @@ class QEMUKvm(VirtBase):
         """
         driver: [pci-assign | virtio-net-pci | ...]
         opt_[host | addr | ...]: value
-            note:the sub-opterty will be decided according to the driver.
+            note:the sub-option will be decided according to the driver.
         """
         if 'driver' in options.keys() and \
                 options['driver']:
@@ -879,7 +879,7 @@ class QEMUKvm(VirtBase):
 
     def __string_has_multi_fields(self, string, separator, field_num=2):
         """
-        Check if string has multiple fields which is splited with
+        Check if string has multiple fields which are splitted with
         specified separator.
         """
         fields = string.split(separator)
@@ -992,7 +992,7 @@ class QEMUKvm(VirtBase):
 
                 self.control_session.send_command("socat %s STDIO" % self.serial_path)
 
-            # login message not ouput if timeout too small
+            # login message not output if timeout is too small
             out = self.control_session.send_command("", timeout=5).replace('\r', '').replace('\n', '')
 
             if len(out) == 0:
@@ -1566,7 +1566,7 @@ class QEMUKvm(VirtBase):
 
     def __monitor_session(self, command, *args):
         """
-        Connect the qemu montior session, send command and return output message.
+        Connect the qemu monitor session, send command and return output message.
         """
         if not self.monitor_sock_path:
             self.host_logger.info(
@@ -1696,7 +1696,7 @@ class QEMUKvm(VirtBase):
                 self.quit_control_session()
                 return out
             except Exception as e:
-                print RED("Exception happend on [%s] serial with cmd [%s]" % (self.vm_name, command))
+                print RED("Exception happened on [%s] serial with cmd [%s]" % (self.vm_name, command))
                 print RED(e)
                 self.close_control_session(dut_id=self.host_dut.dut_id)
                 return 'Failed'
