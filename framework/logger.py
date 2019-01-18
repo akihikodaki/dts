@@ -39,7 +39,7 @@ from settings import LOG_NAME_SEP, FOLDERS, load_global_setting, DTS_PARALLEL_SE
 from utils import RED
 
 """
-DTS logger module with several log level. DTS framwork and TestSuite log
+DTS logger module with several log level. DTS framework and TestSuite log
 will saved into different log files.
 """
 verbose = False
