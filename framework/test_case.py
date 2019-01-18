@@ -84,7 +84,7 @@ class TestCase(object):
         if self._suite_result is None:
             raise ValueError("Result object should not None")
 
-        # load running enviornment
+        # load running environment
         if load_global_setting(PERF_SETTING) == "yes":
             self._enable_perf = True
         else:
@@ -258,7 +258,7 @@ class TestCase(object):
 
     def _execute_test_case(self, case_obj):
         """
-        Execute specified test case in specified suite. If any exception occured in
+        Execute specified test case in specified suite. If any exception occurred in
         validation process, save the result and tear down this case.
         """
         case_name = case_obj.__name__
