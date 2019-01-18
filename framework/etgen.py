@@ -293,7 +293,7 @@ class IxiaPacketGenerator(SSHConnection):
 
     def macToTclFormat(self, macAddr):
         """
-        Convert normal mac adress format into IXIA's format.
+        Convert normal mac address format into IXIA's format.
         """
         macAddr = macAddr.upper()
         return "%s %s %s %s %s %s" % (macAddr[:2], macAddr[3:5], macAddr[6:8], macAddr[9:11], macAddr[12:14], macAddr[15:17])
@@ -362,7 +362,7 @@ class IxiaPacketGenerator(SSHConnection):
 
     def config_stream(self, fpcap, txport, rate_percent, stream_id=1, latency=False):
         """
-        Configure IXIA stream and enable mutliple flows.
+        Configure IXIA stream and enable multiple flows.
         """
         flows = self.parse_pcap(fpcap)
 
@@ -640,7 +640,7 @@ class IxiaPacketGenerator(SSHConnection):
 
     def configure_transmission(self, latency=False):
         """
-        Start IXIA ports transmition.
+        Start IXIA ports transmission.
         """
         self.add_tcl_cmd("ixStartTransmit portList")
 
@@ -673,7 +673,7 @@ class IxiaPacketGenerator(SSHConnection):
 
     def prepare_ixia_for_transmission(self, txPortlist, rxPortlist):
         """
-        Clear all statistics and implement configuration to IXIA hareware.
+        Clear all statistics and implement configuration to IXIA hardware.
         """
         self.add_tcl_cmd("ixClearStats portList")
         self.set_ixia_port_list([self.pci_to_port(self.tester.get_pci(port)) for port in txPortlist])
@@ -786,7 +786,7 @@ class IxiaPacketGenerator(SSHConnection):
 
     def close(self):
         """
-        We first close the tclsh session opened at the beggining,
+        We first close the tclsh session opened at the beginning,
         then the SSH session.
         """
         if self.isalive():
