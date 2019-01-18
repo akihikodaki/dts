@@ -51,7 +51,7 @@ ST_UNKNOWN = "UNKNOWN"
 class VirtBase(object):
     """
     Basic module for customer special virtual type. This module implement
-    functions configurated and composed the VM boot command. With these
+    functions configured and composed in the VM boot command. With these
     function, we can get and set the VM boot command, and instantiate the VM.
     """
 
@@ -73,7 +73,7 @@ class VirtBase(object):
         # base_dir existed for host dut has prepared it
         self.host_session.send_expect("cd %s" % self.host_dut.base_dir, "# ")
 
-        # init the host resouce pool for VM
+        # init the host resource pool for VM
         self.virt_pool = self.host_dut.virt_pool
 
         if not self.has_virtual_ability():
@@ -110,13 +110,13 @@ class VirtBase(object):
 
     def enable_virtual_ability(self):
         """
-        Enalbe the virtual ability on the DUT.
+        Enable the virtual ability on the DUT.
         """
         NotImplemented
 
     def load_global_config(self):
         """
-        Load global configure in the path DTS_ROOT_PAHT/conf.
+        Load global configure in the path DTS_ROOT_PATH/conf.
         """
         conf = VirtConf(VIRTCONF)
         conf.load_virt_config(self.virt_type)
@@ -291,9 +291,9 @@ class VirtBase(object):
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             if callable(self.callback):
                 self.callback()
@@ -316,9 +316,9 @@ class VirtBase(object):
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             if callable(self.callback):
                 self.callback()
@@ -334,9 +334,9 @@ class VirtBase(object):
                 vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             return None
 
