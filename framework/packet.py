@@ -96,7 +96,7 @@ LayersTypes = {
     "PAYLOAD": ['raw']
 }
 
-# Saved back groud sniff process id
+# Saved background sniff process id
 SNIFF_PIDS = {}
 
 # Saved packet generator process id
@@ -278,7 +278,7 @@ class scapy(object):
 
     def ipv6(self, pkt_layer, version=6, tc=0, fl=0, plen=0, nh=0, hlim=64, src="::1", dst="::1"):
         """
-        Configure IPv6 protocal.
+        Configure IPv6 protocol.
         """
         pkt_layer.version = version
         pkt_layer.tc = tc
@@ -763,7 +763,7 @@ def get_ether_type(eth_type=""):
 
 def get_filter_cmd(filters=[]):
     """
-    Return bpd formated filter string, only support ether layer now
+    Return bpf formated filter string, only support ether layer now
     """
     filter_sep = " and "
     filter_cmds = ""
@@ -844,7 +844,7 @@ def sniff_packets(intf, count=0, timeout=5, filters=[], target=[]):
                     param = "-P" + " in"
 
     if len(param) == 0:
-        print "tcpdump not support direction chioce!!!"
+        print "tcpdump not support direction choice!!!"
 
     if LLDP_FILTER not in filters:
         filters.append(LLDP_FILTER)
