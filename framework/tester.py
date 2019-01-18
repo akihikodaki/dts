@@ -456,14 +456,14 @@ class Tester(Crb):
 
     def scapy_background(self):
         """
-        Configure scapy running in backgroud mode which mainly purpose is
+        Configure scapy running in background mode which mainly purpose is
         that save RESULT into scapyResult.txt.
         """
         self.inBg = True
 
     def scapy_foreground(self):
         """
-        Running backgroup scapy and convert to foregroup mode.
+        Running background scapy and convert to foreground mode.
         """
         self.send_expect("echo -n '' >  scapyResult.txt", "# ")
         if self.inBg:
@@ -587,7 +587,7 @@ class Tester(Crb):
                     for param in params:
                         layer, config = param
                         pkt.config_layer(layer, config)
-                # hardcode src/dst port for some protocal may cause issue
+                # hardcode src/dst port for some protocol may cause issue
                 if "TCP" in pkt_type:
                     pkt.config_layer('tcp', {'src': 65535, 'dst': 65535})
                 else:
@@ -628,7 +628,7 @@ class Tester(Crb):
         for txport, rxport in portList:
             recv_pkts = self.load_tcpdump_sniff_packets(rx_inst[rxport])
 
-            # only report when recevied number not matched
+            # only report when received number not matched
             if len(tx_pkts[txport]) > len(recv_pkts):
                 print ("Pkt number not matched,%d sent and %d received\n" \
                        % (len(tx_pkts[txport]), len(recv_pkts)))
@@ -661,7 +661,7 @@ class Tester(Crb):
                         prev_id = t_idx
 
                 if compare_f(tx_pkts[txport][t_idx], recv_pkts[idx], "L4") is False:
-                    print "Pkt recevied index %d not match original " \
+                    print "Pkt received index %d not match original " \
                           "index %d" % (idx, t_idx)
                     print "Sent: %s" % strip_f(tx_pkts[txport][t_idx], "L4")
                     print "Recv: %s" % strip_f(recv_pkts[idx], "L4")
