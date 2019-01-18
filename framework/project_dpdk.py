@@ -218,7 +218,7 @@ class DPDKdut(Dut):
         out = self.send_expect("make -j %d install T=%s %s" % 
             (self.number_of_cores, target, extra_options), "# ", build_time)
         #should not check test app compile status, because if test compile fail,
-        #all unit test can't exec, but others case will exec sucessfull 
+        #all unit test can't exec, but others case will exec successfully
         self.build_install_dpdk_test_app(target, build_time)
 
         if("Error" in out or "No rule to make" in out):
@@ -279,7 +279,7 @@ class DPDKdut(Dut):
             out = self.send_expect("ls %s && cd %s" % (dst_dir, p_dir),
                                    "#", verify=True)
             if out == -1:
-                raise ValueError("Directiry %s or %s does not exist,"
+                raise ValueError("Directory %s or %s does not exist,"
                                  "please check params -d"
                                  % (p_dir, dst_dir))
             self.session.copy_file_to(self.package, dst_dir)
