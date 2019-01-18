@@ -41,7 +41,7 @@ class SSHConnection(object):
 
     """
     Module for create session to host.
-    Implement send_expect/copy function upper SSHPexpet module.
+    Implement send_expect/copy function upper SSHPexpect module.
     """
 
     def __init__(self, host, session_name, username, password='', dut_id=0):
