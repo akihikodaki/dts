@@ -601,7 +601,7 @@ class Dut(Crb):
 
     def rescan_ports_uncached(self):
         """
-        rescan ports and update port's mac adress, intf, ipv6 address.
+        rescan ports and update port's mac address, intf, ipv6 address.
         """
         rescan_ports_uncached = getattr(self, 'rescan_ports_uncached_%s' % self.get_os_type())
         return rescan_ports_uncached()
@@ -709,14 +709,14 @@ class Dut(Crb):
 
     def scan_ports_uncached(self):
         """
-        Scan ports and collect port's pci id, mac adress, ipv6 address.
+        Scan ports and collect port's pci id, mac address, ipv6 address.
         """
         scan_ports_uncached = getattr(self, 'scan_ports_uncached_%s' % self.get_os_type())
         return scan_ports_uncached()
 
     def scan_ports_uncached_linux(self):
         """
-        Scan Linux ports and collect port's pci id, mac adress, ipv6 address.
+        Scan Linux ports and collect port's pci id, mac address, ipv6 address.
         """
         self.ports_info = []
 
@@ -764,7 +764,7 @@ class Dut(Crb):
 
     def scan_ports_uncached_freebsd(self):
         """
-        Scan Freebsd ports and collect port's pci id, mac adress, ipv6 address.
+        Scan Freebsd ports and collect port's pci id, mac address, ipv6 address.
         """
         self.ports_info = []
 
@@ -817,7 +817,7 @@ class Dut(Crb):
 
     def generate_sriov_vfs_by_port(self, port_id, vf_num, driver='default'):
         """
-        Generate SRIOV VFs with default driver it is bound now or specifid driver.
+        Generate SRIOV VFs with default driver it is bound now or specified driver.
         """
         port = self.ports_info[port_id]['port']
         port_driver = port.get_nic_driver()
