@@ -298,7 +298,7 @@ class VirtDut(DPDKdut):
             return False
         return True
         # load vm port conf need another function
-        # need add vitrual function device into NICS
+        # need add virtual function device into NICS
 
     def scan_ports(self):
         """
@@ -308,7 +308,7 @@ class VirtDut(DPDKdut):
 
     def scan_ports_uncached(self):
         """
-        Scan ports and collect port's pci id, mac adress, ipv6 address.
+        Scan ports and collect port's pci id, mac address, ipv6 address.
         """
         scan_ports_uncached = getattr(
             self, 'scan_ports_uncached_%s' % self.get_os_type())
@@ -321,7 +321,7 @@ class VirtDut(DPDKdut):
         for port in self.ports_info:
             vmpci = port['pci']
             for pci_map in self.hyper.pci_maps:
-                # search pci mapping strucutre
+                # search pci mapping structure
                 if vmpci == pci_map['guestpci']:
                     hostpci = pci_map['hostpci']
                     # search host port info structure
