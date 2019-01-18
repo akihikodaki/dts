@@ -11,7 +11,7 @@ from logger import getLogger
 
 class MultipleVM(object):
     """
-    Module for handle VM related actions in parallel on mulitple DUTs
+    Module for handle VM related actions in parallel on multiple DUTs
     Supported actions: [start|command|migration]
     Param max_vm: maximum number of threads
     Param duts: list of DUT objects
@@ -172,7 +172,7 @@ class MultipleVM(object):
 
     def parallel_vm_migration(self, args):
         """
-        Do vm migartion action in parallel.
+        Do vm migration action in parallel.
         Args format:
         {
             'name': 'vm1',
@@ -216,7 +216,7 @@ class MultipleVM(object):
 
         # print traceback info for exception
         name = request.args[0]['name']
-        self.logger.error(("**** Exception occured DUT%d:%s" % (request.args[0]['dut_id'], name)))
+        self.logger.error(("**** Exception occurred DUT%d:%s" % (request.args[0]['dut_id'], name)))
         exc_type, exc_value, exc_traceback = exc_info
         self.logger.error(repr(traceback.format_tb(exc_traceback)))
 
