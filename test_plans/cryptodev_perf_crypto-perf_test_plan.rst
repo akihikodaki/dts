@@ -44,8 +44,8 @@ DPDK app folder.
 
 Crypto perf application supports most of Cryptodev PMDs (polling mode driver)
 Intel QuickAssist Technology DH895xxC/DH_C62xx hardware
-accelerator (QAT PMD), AESNI MB PMD, AESNI GCM PMD, NULL PMD, KASUMI PMD,
-SNOW3G PMD,ZUC PMD or OPENSSL library PMD.
+accelerator (QAT PMD), AESNI MB PMD, AESNI GCM PMD, KASUMI PMD,
+SNOW3G PMD or ZUC PMD.
 
 AESNI MB PMD algorithm table
 The table below contains AESNI MB algorithms which supported in crypto perf.
@@ -57,8 +57,6 @@ Part of the algorithms are not supported currently.
 | aes       | cbc               | Encrypt/Decrypt;Key size: 128, 192, 256 bits                              |
 +-----------+-------------------+---------------------------------------------------------------------------+
 | aes       | ctr               | Encrypt/Decrypt;Key size: 128, 192, 256 bits                              |
-+-----------+-------------------+---------------------------------------------------------------------------+
-| md        |                   | md5                                                                       |
 +-----------+-------------------+---------------------------------------------------------------------------+
 | sha       |                   | sha1, sha2-224, sha2-384, sha2-256, sha2-512                              |
 +-----------+-------------------+---------------------------------------------------------------------------+
@@ -91,8 +89,6 @@ Part of the algorithms are not supported currently.
 | 3des    | cbc               |  Encrypt/Decrypt;Key size: 128, 192 bits                                  |
 +---------+-------------------+---------------------------------------------------------------------------+
 | 3des    | ctr               |  Encrypt/Decrypt;Key size: 128, 192 bits                                  |
-+---------+-------------------+---------------------------------------------------------------------------+
-| md      |                   |  md5                                                                      |
 +---------+-------------------+---------------------------------------------------------------------------+
 | sha     |                   |  sha1, sha2-224, sha2-256, sha2-384, sha2-512                             |
 +---------+-------------------+---------------------------------------------------------------------------+
@@ -239,61 +235,6 @@ The table below contains ZUC algorithms which are supported in crypto perf.
 |         |                   |  Tag Lengths: 4 bytes;                                                    |
 +---------+-------------------+---------------------------------------------------------------------------+
 
-OPENSSL algorithm table:
-The table below contains OPENSSL algorithms which are supported in crypto perf.
-
-+---------+-------------------+---------------------------------------------------------------------------+
-|Algorithm|  Mode             | Detail                                                                    |
-+---------+-------------------+---------------------------------------------------------------------------+
-| aes     | cbc               |  Encrypt/Decrypt;Key size: 128, 192, 256 bits                             |
-+---------+-------------------+---------------------------------------------------------------------------+
-| aes     | ctr               |  Encrypt/Decrypt;Key size: 128, 192, 256 bits                             |
-+---------+-------------------+---------------------------------------------------------------------------+
-| 3des    | cbc               |  Encrypt/Decrypt;Key size: 128, 192 bits                                  |
-+---------+-------------------+---------------------------------------------------------------------------+
-| 3des    | ctr               |  Encrypt/Decrypt;Key size: 128, 192 bits                                  |
-+---------+-------------------+---------------------------------------------------------------------------+
-| md      |                   |  md5                                                                      |
-+---------+-------------------+---------------------------------------------------------------------------+
-| sha     |                   |  sha1, sha2-224, sha2-256, sha2-384, sha2-512                             |
-+---------+-------------------+---------------------------------------------------------------------------+
-| hmac    |                   |  Support md5 and sha implementations sha1, sha2-224, sha2-256,            |
-|         |                   |                                                                           |
-|         |                   |  sha2-384, sha2-512                                                       |
-|         |                   |                                                                           |
-|         |                   |  Key Size versus Block size support: Key Size must be <= block size;      |
-|         |                   |                                                                           |
-|         |                   |  Mac Len Supported sha1 10, 12, 16, 20 bytes;                             |
-|         |                   |                                                                           |
-|         |                   |  Mac Len Supported sha2-256 16, 24, 32 bytes;                             |
-|         |                   |                                                                           |
-|         |                   |  Mac Len Supported sha2-384 24,32, 40, 48 bytes;                          |
-|         |                   |                                                                           |
-|         |                   |  Mac Len Supported sha2-512 32, 40, 48, 56, 64 bytes;                     |
-+---------+-------------------+---------------------------------------------------------------------------+
-| aes     |  gcm              |  Encrypt/Decrypt;Key Sizes:128 bits;                                      |
-|         |                   |                                                                           |
-|         |                   |  IV source: external;                                                     |
-|         |                   |                                                                           |
-|         |                   |  IV Lengths: 96 bits;                                                     |
-|         |                   |                                                                           |
-|         |                   |  Associated Data Length: 0 ~ 240 bytes;                                   |
-|         |                   |                                                                           |
-|         |                   |  Generate/Verify; 128, 192,256 bytes;                                     |
-|         |                   |                                                                           |
-|         |                   |  Payload Length: 64,128 bytes;                                            |
-|         |                   |                                                                           |
-|         |                   |  Tag Lengths: 16 bytes;                                                   |
-+---------+-------------------+---------------------------------------------------------------------------+
-| aes     | gmac              |  Generate/Verify;Key Sizes:128,192,256 bits;                              |
-|         |                   |                                                                           |
-|         |                   |  Associated Data Length: 0 ~ 240 bytes;                                   |
-|         |                   |                                                                           |
-|         |                   |  Payload Length: 8 ~ (2^32 -4) bytes;                                     |
-|         |                   |                                                                           |
-|         |                   |  Tag Lengths:16 bytes;                                                    |
-+---------+-------------------+---------------------------------------------------------------------------+
-
 
 Prerequisites
 =============
@@ -310,16 +251,6 @@ The test commands of test_crypto_perf is below::
 Test case: Cryptodev performance test
 =====================================
 
-::
-
-   +----------+                 +----------+
-   |          |                 |          |
-   |          | --------------> |          |
-   |  Tester  |                 |   DUT    |
-   |          |                 |          |
-   |          | <-------------> |          |
-   +----------+                 +----------+
-
 common::
 
    --vdev (AESNI_MB|QAT|AESNI_GCM|OPENSSL|SNOW3G|KASUMI|ZUC|NULL) this value can be set as : crypto_aesni_mb_pmd, crypto_aes_gcm_pmd, crypto_openssl_pmd, crypto_snow3g_pmd, crypto_kasumi_pmd, crypto_zuc_pmd or  crypto_null_pmd . if pmd is QAT this parameter should not be set
@@ -332,32 +263,24 @@ other parameters please reference above table's parameter .
 
 QAT PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_qat --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf -w 0000:1a:01.0 -- --ptest throughput --devtype crypto_qat --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
 AESNI_MB PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
 AESNI_GCM PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_gcm_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_aesni_gcm  --optype aead  --cipher-algo aes-gcm --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 12 --auth-algo aes-gcm --auth-op generate --auth-key-sz 16 --auth-aad-sz 4 --auth-digest-sz 12 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
-
-OPENSSL PMD Command line Eg::
-
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_openssl_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_openssl --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 64
-
-NULL PMD Command line Eg::
-
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_null_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_null  --optype cipher-only  --cipher-algo null --cipher-op encrypt --cipher-key-sz 0 --cipher-iv-sz 0  --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_gcm_pmd  -- --ptest throughput --devtype crypto_aesni_gcm  --optype aead  --cipher-algo aes-gcm --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 12 --auth-algo aes-gcm --auth-op generate --auth-key-sz 16 --auth-aad-sz 4 --auth-digest-sz 12 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
 KASUMI PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_kasumi_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_kasumi --optype cipher-then-auth  --cipher-algo kasumi-f8 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 8 --auth-algo kasumi-f9 --auth-op generate --auth-key-sz 16 --auth-aad-sz 8 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf --vdev crypto_kasumi_pmd  -- --ptest throughput --devtype crypto_kasumi --optype cipher-then-auth  --cipher-algo kasumi-f8 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 8 --auth-algo kasumi-f9 --auth-op generate --auth-key-sz 16 --auth-aad-sz 8 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
 SNOW3G PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_snow3g_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_snow3g --optype cipher-then-auth  --cipher-algo snow3g-uea2 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo snow3g-uia2 --auth-op generate --auth-key-sz 16 --auth-aad-sz 16 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf --vdev crypto_snow3g_pmd  -- --ptest throughput --devtype crypto_snow3g --optype cipher-then-auth  --cipher-algo snow3g-uea2 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo snow3g-uia2 --auth-op generate --auth-key-sz 16 --auth-aad-sz 16 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
 ZUC PMD Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_zuc_pmd  -w 0000:01:00.0 -w 0000:03:3d.0 -- --ptest throughput --devtype crypto_zuc_mb --optype cipher-then-auth  --cipher-algo zuc-eea3 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo zuc-eia3  --auth-op generate --auth-key-sz 16 --auth-aad-sz 16 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+    ./build/app/test-crypto-perf/dpdk-test-crypto-perf -c 0xf --vdev crypto_zuc_pmd  -- --ptest throughput --devtype crypto_zuc_mb --optype cipher-then-auth  --cipher-algo zuc-eea3 --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo zuc-eia3  --auth-op generate --auth-key-sz 16 --auth-aad-sz 16 --auth-digest-sz 4 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
