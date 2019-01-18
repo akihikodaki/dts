@@ -55,7 +55,7 @@ def create_parallel_locks(num_duts):
 
 def parallel_lock(num=1):
     """
-    Wrapper function for protect parallel threads, allow mulitple threads
+    Wrapper function for protect parallel threads, allow multiple threads
     share one lock. Locks are created based on function name. Thread locks are
     separated between duts according to argument 'dut_id'.
     Parameter:
