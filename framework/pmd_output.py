@@ -153,7 +153,7 @@ class PmdOutput():
 
     def get_port_connect_socket(self, port_id):
         """
-        Get the socket id which the specified port is connectting with.
+        Get the socket id which the specified port is connecting with.
         """
         return self.get_detail_from_port_info("Connect to socket: ", "\d+", port_id)
 
@@ -177,7 +177,7 @@ class PmdOutput():
 
     def get_port_link_duplex(self, port_id):
         """
-        Get the specified port link mode, duplex or siplex.
+        Get the specified port link mode, duplex or simplex.
         """
         return self.get_detail_from_port_info("Link duplex: ", "\S+", port_id)
 
@@ -199,16 +199,16 @@ class PmdOutput():
         so should used (tx_bytes - exp_bytes) % PROTOCOL_PACKET_SIZE['lldp']
         for check tx_bytes count right
         """
-        # error_flage is true means tx_bytes different with expect bytes
-        error_flage = 1
+        # error_flag is true means tx_bytes different with expect bytes
+        error_flag = 1
         for size in  PROTOCOL_PACKET_SIZE['lldp']:
-            error_flage = error_flage and  (tx_bytes - exp_bytes) % size
+            error_flag = error_flag and  (tx_bytes - exp_bytes) % size
 
-        return not error_flage
+        return not error_flag
 
     def get_port_vlan_offload(self, port_id):
         """
-        Function: get the port vlan settting info.
+        Function: get the port vlan setting info.
         return value:
             'strip':'on'
             'filter':'on'
