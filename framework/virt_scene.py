@@ -48,7 +48,7 @@ from utils import create_mask
 #   pf_idx=0,vf_num=2,driver=default;
 #   PF0 igb_uio, create 2VFs by default driver
 # 3. create scenario
-#   allocate hareware resource for this vm
+#   allocate hardware resource for this vm
 #   cpu, memory, pf devices, vf devices
 #   configuration vm
 #   run pre_vm commands
@@ -171,7 +171,7 @@ class VirtScene(object):
             for cpu in cpus:
                 if int(cpu) not in self.host_dut.virt_pool.cores:
                     cpus.remove(cpu)
-            # create core mask for reserver cores
+            # create core mask for reserved cores
             core_mask = create_mask(cpus)
             # reserve those skipped cores
             self.host_dut.virt_pool.reserve_cpu(core_mask)
@@ -336,7 +336,7 @@ class VirtScene(object):
                     expected output for command
                   'timeout': 60,
                   'verify': True or False
-                    check whether command sucessfully
+                    check whether command successfully
                  }
         """
         self.pre_cmds.append(command)
@@ -383,7 +383,7 @@ class VirtScene(object):
                   'expect':'XXX',
                     expected output for command
                   'verify':'yes or no'
-                    check whether command sucessfully
+                    check whether command successfully
         """
         self.post_cmds.append(command)
         pass
