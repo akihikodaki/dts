@@ -582,7 +582,7 @@ class Crb(object):
 
     def remove_hyper_core(self, core_list, key=None):
         """
-        Remove hyperthread locre for core list.
+        Remove hyperthread lcore for core list.
         """
         found = set()
         for core in core_list:
@@ -633,7 +633,7 @@ class Crb(object):
     def get_core_list(self, config, socket=-1):
         """
         Get lcore array according to the core config like "all", "1S/1C/1T".
-        We can specify the physical CPU socket by paramter "socket".
+        We can specify the physical CPU socket by the "socket" parameter.
         """
         if config == 'all':
             cores = []
