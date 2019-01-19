@@ -67,7 +67,7 @@ class TestUnitTestsCrc(TestCase):
 
     def test_cmdline(self):
         """
-        Run cmdline autotests in RTE comand line.
+        Run cmdline autotests in RTE command line.
         """
 
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
