@@ -171,8 +171,8 @@ class TestJumboframes(TestCase):
 
     def test_jumboframes_normal_jumbo(self):
         """
-        When jumbo frame supported, this case is to verify that the normal size
-        packet forwrding should be support correct.
+        When jumbo frame is supported, this case is to verify that the normal size
+        packet forwarding should be supported correctly.
         """
         self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
@@ -227,7 +227,7 @@ class TestJumboframes(TestCase):
 
     def tear_down_all(self):
         """
-        When the case of this test suite finished, the enviroment should
+        When the case of this test suite finished, the environment should
         clear up.
         """
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.rx_port)), ETHER_STANDARD_MTU), "# ")
