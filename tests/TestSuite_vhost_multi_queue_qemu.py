@@ -129,7 +129,7 @@ class TestVhostUserOneCopyOneVm(TestCase):
 
     def vhost_performance(self):
         """
-        Verify the testpmd can recive and forward the data
+        Verify the testpmd can receive and forward the data
         """
         self.result_table_create(self.header_row)
         for frame_size in self.frame_sizes:
@@ -239,7 +239,7 @@ class TestVhostUserOneCopyOneVm(TestCase):
 
     def test_dynamic_change_virtio_queue_size(self):
         """
-        Test the performance for change vritio queue size
+        Test the performance for change virtio queue size
         """
         self.launch_testpmd()
         self.start_onevm()
