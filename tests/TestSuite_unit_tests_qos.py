@@ -57,7 +57,7 @@ class TestUnitTestsQos(TestCase):
         """
         Run at the start of each test suite.
 
-        Qos Prerequisites
+        QoS Prerequisites
         """
         cores = self.dut.get_core_list("all")
         self.coremask = utils.create_mask(cores)
