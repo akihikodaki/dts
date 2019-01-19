@@ -218,7 +218,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
         elif mode == "scatter_vector":
             # disable ip checksum
             self.dut.send_expect("sed -i -e 's/.hw_ip_checksum = .*$/.hw_ip_checksum = 0,/g' %s" % self.main_file, "# ")
-            # eanble scatter mode
+            # enable scatter mode
             self.dut.send_expect("sed -i -e 's/.enable_scatter = .*$/.enable_scatter = 1,/g' %s" % self.main_file, "# ")
         elif mode == "vector":
             # disable ip checksum
