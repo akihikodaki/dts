@@ -573,7 +573,7 @@ class TestNvgre(TestCase):
         config.outer_mac_dst = self.dut_rx_port_mac
         config.create_pcap()
 
-        # remove tempory files
+        # remove temporary files
         self.tester.send_expect("rm -rf %s" % config.capture_file, "# ")
         # save the capture packet into pcap format
         self.tester.scapy_background()
