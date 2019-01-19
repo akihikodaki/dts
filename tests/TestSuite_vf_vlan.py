@@ -242,7 +242,7 @@ class TestVfVlan(TestCase):
             self.verify(
                 "received" not in out, "Received vlan packet without pvid!!!")
 
-        # send packe with vlan 0
+        # send packet with vlan 0
         out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
         self.verify(
             "received" in out, "Not recevied packet with vlan 0!!!")
