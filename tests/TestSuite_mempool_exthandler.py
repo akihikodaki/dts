@@ -44,7 +44,7 @@ class TestMemExthandler(TestCase):
         """
         Run at the start of each test suite.
         """
-        # only one port is enought for this case
+        # only one port is enough for this case
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1,
                     "Not enough ports for " + self.nic)
@@ -91,7 +91,7 @@ class TestMemExthandler(TestCase):
 
     def verify_mempool_hander(self):
         """
-        Verify all packets recevied and transmitted normally.
+        Verify that all packets are received and transmitted normally.
         """
         # start l2fwd
         command_line = "%s -n %d -c %s -- -q 4 -p %s" % \
