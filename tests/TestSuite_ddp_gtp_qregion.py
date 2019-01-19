@@ -321,7 +321,7 @@ class TestDdpGtpQregion(TestCase):
         Use dynamic flowtype/pctype mapping, queue region, dynamic change
         control words to set hash input configuration for new protocol
         GTP RSS enabling, check keyword could control queue number in
-        configured queue regon.
+        configured queue region.
         crlwords: control words of keyword
         flowtype: define flow type 26, 23, 24, 25 for GTP types as below
                   table, check each layer type, tunnel packet includes
