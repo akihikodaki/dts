@@ -148,8 +148,8 @@ class TestPtpClient(TestCase):
 
         tester_out = self.tester.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
         dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
-        # some times, when use data cmdline get dut systerm time, after kill ptpclent example.
-        # the output will include kill process info, at that time need get systerm time again.
+        # some times, when using data cmdline get dut system time, after kill ptpclient example.
+        # the output will include kill process info, at that time need get system time again.
         if len(dut_out) != len(tester_out):
             dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
 
