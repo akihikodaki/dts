@@ -155,7 +155,7 @@ class TestVhostPmdXstats(TestCase):
 
     def test_based_size(self):
         """
-        Verify receiving and transmitting packets correctly in the Vhsot PMD xstats
+        Verify receiving and transmitting packets correctly in the Vhost PMD xstats
         """
         self.prepare_start()
         sizes = [64, 65, 128, 256, 513, 1025]
@@ -189,7 +189,7 @@ class TestVhostPmdXstats(TestCase):
 
     def test_based_types(self):
         """
-        Verify different type of packets receiving and transmitting packets correctly in the Vhsot PMD xstats
+        Verify different type of packets receiving and transmitting packets correctly in the Vhost PMD xstats
         """
         self.prepare_start()
         types = ['ff:ff:ff:ff:ff:ff', '01:00:00:33:00:01']
@@ -207,8 +207,8 @@ class TestVhostPmdXstats(TestCase):
 
     def test_stability(self):
         """
-        Verify stability case with multiple queues for Vhsot PMD xstats 
-        Send packets for 30 minutes, check the Xstatsa still can work correctly
+        Verify stability case with multiple queues for Vhost PMD xstats
+        Send packets for 30 minutes, check the Xstats still can work correctly
         """
         self.scapy_num = 0
         self.prepare_start()
