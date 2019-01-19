@@ -180,7 +180,7 @@ class TestVxlanSample(TestCase):
         pass
 
     def prepare_vxlan_sample_env(self, tep_cmd, vm_num=1):
-        # remove unexpected socke
+        # remove unexpected socket
         self.dut.send_expect("rm -rf vhost-net", "# ")
 
         # start tep_termination first
@@ -331,7 +331,7 @@ class TestVxlanSample(TestCase):
             mac_incr = 2 * vm_id + vf_id
             params['inner_mac_dst'] = self.mac_address_add(mac_incr)
 
-            # create vxlan pcap file and tranfer it to tester
+            # create vxlan pcap file and transfer it to tester
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
 
@@ -366,7 +366,7 @@ class TestVxlanSample(TestCase):
             mac_incr = 2 * vm_id + vf_id
             params['inner_mac_dst'] = self.mac_address_add(mac_incr)
 
-            # create vxlan pcap file and tranfer it to tester
+            # create vxlan pcap file and transfer it to tester
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
 
@@ -416,7 +416,7 @@ class TestVxlanSample(TestCase):
             params['inner_ip_invalid'] = 1
             params['inner_l4_invalid'] = 1
 
-            # create vxlan pcap file and tranfer it to tester
+            # create vxlan pcap file and transfer it to tester
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
 
@@ -464,7 +464,7 @@ class TestVxlanSample(TestCase):
             # check packet number and payload
             self.verify(len(pkts) == 4, "Failed to capture tso packets")
 
-            # calculation  checksum, and checkt it
+            # calculation  checksum, and check it
             for pkt in pkts:
                 inner = pkt[Vxlan]
                 inner_ip_chksum = inner[IP].chksum
@@ -559,7 +559,7 @@ class TestVxlanSample(TestCase):
             params['payload_size'] = vxlan_payload
             params['pcap_file'] = 'vxlan_sample.pcap'
 
-            # create vxlan pcap file and tranfer it to tester
+            # create vxlan pcap file and transfer it to tester
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
 
@@ -572,7 +572,7 @@ class TestVxlanSample(TestCase):
                 params['inner_mac_dst'] = self.mac_address_add(mac_incr)
                 params['pcap_file'] = 'vxlan_sample_1.pcap'
 
-                # create vxlan pcap file and tranfer it to tester
+                # create vxlan pcap file and transfer it to tester
                 vxlan_pkt = VxlanTestConfig(self, **params)
                 vxlan_pkt.create_pcap(scp=False)
 
