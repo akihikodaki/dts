@@ -363,7 +363,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
 
     def config_ixia_stream(self, rate_percent, flows):
         """
-        Work around that overrides the etgen.confStream function in order to
+        Work around that overrides the etgen.config_stream function in order to
         change the way that IXIA gets called.
         In this case IXIA sends a fixed number of packets and then stops.
         """
