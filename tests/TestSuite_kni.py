@@ -714,7 +714,7 @@ class TestKni(TestCase):
             self.verify("Operation not supported" not in out,
                         "'ethtool -g' not supported")
 
-            # Request coalesce parameters. NOT SUPORTED
+            # Request coalesce parameters. NOT SUPPORTED
             out = self.dut.send_expect("ethtool -c %s" % virtual_interface,
                                        "# ")
             self.verify("Operation not supported" in out,
@@ -808,7 +808,7 @@ class TestKni(TestCase):
             try:
                 out = self.start_kni(step['lo_mode'], step['kthread_mode'])
                 self.verify("Error" not in out, "Error found during kni start")
-                # kni setup out info by kernel debug function. so should re-build kenel.
+                # kni setup out info by kernel debug function. so should re-build kernel.
                 # now not check kni setup out info, only check kni setup ok and setup no error output
                 out = self.dut.send_expect('ps -aux', "]# ")
                 self.verify("kni" not in out, "kni process setup failed")
