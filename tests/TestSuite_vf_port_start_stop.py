@@ -120,7 +120,7 @@ class TestVfPortStartStop(TestCase):
 
     def testpmd_reset_status(self, testpmd):
         """
-        Reset testpmd :stop forword & stop port
+        Reset testpmd :stop forward & stop port
         """
         testpmd.execute_cmd('stop')
         testpmd.execute_cmd('port stop all')
