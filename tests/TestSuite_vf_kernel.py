@@ -223,7 +223,7 @@ class TestVfKernel(TestCase):
 
     def ping4(self, session, intf, ipv4):
         """
-        using seesion , ping -I $intf $ip
+        using session , ping -I $intf $ip
         sometimes it failed, so we try 5 times.
         """
         for i in range(5):
@@ -433,7 +433,7 @@ class TestVfKernel(TestCase):
         out = self.vm0_dut.send_expect("ls /proc/net/vlan/ ", "#")
         self.verify("%s.%s" % (self.vm0_intf0, vlan_ids)
                     not in out, "vlan error")
-        # behavior is diffrent bettwn niantic and fortville ,because of kernel
+        # behavior is different between niantic and fortville ,because of kernel
         # driver
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
                                            vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p') == False, "delete vlan error")
