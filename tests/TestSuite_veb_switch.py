@@ -323,7 +323,7 @@ class TestVEBSwitching(TestCase):
         """
         DPDK PF, then create 2VFs, PF in the host running dpdk testpmd, VFs
         running dpdk testpmd, VF1 send traffic to VF2, check if VF2 can receive
-        the packets. send tracfic from PF to VF1, ensure PF->VF1; send traffic
+        the packets. send traffic from PF to VF1, ensure PF->VF1; send traffic
         from VF1 to PF, ensure VF1->PF can work.
         """
         # VF->PF
