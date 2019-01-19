@@ -402,7 +402,7 @@ class TestUniPacket(TestCase):
 
     def test_nsh(self):
         """
-        check if NSH packets can be norally detected by Fortpark and Fortville
+        check if NSH packets can be normally detected by Fortpark and Fortville
         """
         self.verify(self.kdriver == 'i40e', "NSH packet detection only supported by i40e driver nic")
 
