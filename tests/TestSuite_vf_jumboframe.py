@@ -223,7 +223,7 @@ class TestVfJumboFrame(TestCase):
     def test_vf_normal_withjumbo(self):
         """
         When jumbo frame supported, this case is to verify that the normal size
-        packet forwrding should be support correct.
+        packet forwarding should be support correct.
         """
         # should enable jumbo on host
         self.dutobj = self.dut.ports_info[self.port]['port']
@@ -257,7 +257,7 @@ class TestVfJumboFrame(TestCase):
         # On igb, for example i350, refer to :DPDK-1117
         # For PF, the max-pkt-len = mtu + 18 + 4(VLAN header len).
         # For VF, the real max-pkt-len = the given max-pkt-len + 4(VLAN header len).
-        # This behavior is levelraged from kernel driver.
+        # This behavior is leveraged from kernel driver.
         # And it means max-pkt-len is always 4 bytes longer than assumed.
 
         if self.kdriver == "igb":
@@ -320,7 +320,7 @@ class TestVfJumboFrame(TestCase):
 
     def tear_down_all(self):
         """
-        When the case of this test suite finished, the enviroment should
+        When the case of this test suite finished, the environment should
         clear up.
         """
         self.destroy_vm_env()
