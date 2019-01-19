@@ -67,7 +67,7 @@ class TestUnitTestsPmdPerf(TestCase):
         self.rxtx_modes = ['vector', 'scalar', 'full', 'hybrid']
         self.anchors = ['rxtx', 'rxonly', 'txonly']
 
-        # for better scalar performance data, need disble CONFIG_RTE_IXGBE_INC_VECTOR
+        # for better scalar performance data, need disable CONFIG_RTE_IXGBE_INC_VECTOR
         [arch, machine, env, toolchain] = self.target.split('-')
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=y/CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_%s" % env, "# ", 30)
         self.dut.build_install_dpdk(self.target)
