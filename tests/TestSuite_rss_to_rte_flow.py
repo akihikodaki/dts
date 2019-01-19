@@ -182,7 +182,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
-        # Show port default RSS fuctions
+        # Show port default RSS functions
         if (self.nic in ["fortville_eagle", "fortville_spirit",
                          "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.dut.send_expect(
@@ -231,7 +231,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
-        # Show port default RSS fuctions
+        # Show port default RSS fucntions
         if (self.nic in ["fortville_eagle", "fortville_spirit",
                          "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]):
             self.dut.send_expect(
