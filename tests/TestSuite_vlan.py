@@ -107,7 +107,7 @@ class TestVlan(TestCase):
         port = self.tester.get_local_port(dutTxPortId)
         self.rxItf = self.tester.get_interface(port)
 
-        # the package dect mac must is dut tx port id when the port promisc is off
+        # the packet dest mac must is dut tx port id when the port promisc is off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
         self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
