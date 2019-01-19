@@ -326,7 +326,7 @@ class TestCloudFilter(TestCase):
                 self.verify("Inner L2 type: ETHER_VLAN" in out,
                             "Vxlan inner vlan not detected")
         else:
-            # packet recevied on dut VF device
+            # packet received on dut VF device
             tmp_file = '/tmp/cloud_filter_%s.pcap' % self.vf_intf
             sniff_cmd = ('tcpdump -w ' + tmp_file +
                          ' -i {0} 2>tcpdump_{0}.out &').format(self.vf_intf)
