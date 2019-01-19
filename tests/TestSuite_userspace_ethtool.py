@@ -237,7 +237,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             portinfo = portsinfo[index]
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -330,7 +330,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
             portinfo = portsinfo[index]
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -359,7 +359,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         ori_drivers = []
 
         for portid in range(len(self.ports)):
-            # dump eemprom by userspace ethtool
+            # dump eeprom by userspace ethtool
             self.dut.send_expect("eeprom %d eeprom_%d.bin" % (portid, portid), "EthApp>")
             portinfo = {'portid': portid, 'eeprom_file': 'eeprom_%d.bin' % portid}
             portsinfo.append(portinfo)
@@ -370,7 +370,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
             portinfo = portsinfo[index]
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -378,7 +378,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # get linux interface
             intf = netdev.get_interface_name()
             ethtool_eeprom = "ethtool_eeprom_%d.bin" % index
-            # dump eemprom by linux ethtool
+            # dump eeprom by linux ethtool
             self.dut.send_expect("ethtool --eeprom-dump %s raw on > %s" % (intf, ethtool_eeprom), "# ")
             # wait for file ready
             time.sleep(2)
@@ -497,7 +497,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             src_mac = pkts[0].strip_layer_element("layer2", "src")
             self.verify(src_mac == valid_mac, "Forwarded packet not match default mac")
 
-        # check multicase will not be valid mac
+        # check multicast will not be valid mac
         invalid_mac = "01:00:00:00:00:00"
         out = self.dut.send_expect("validate %s" % invalid_mac, "EthApp>")
         self.verify("not unicast" in out, "Failed to detect incorrect unicast mac")
