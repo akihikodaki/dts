@@ -76,7 +76,7 @@ class TestHelloWorld(TestCase):
         Received hello message from all lcores
         """
 
-        # get the maximun logical core number
+        # get the maximum logical core number
         cores = self.dut.get_core_list('all')
 
         config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
