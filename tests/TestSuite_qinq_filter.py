@@ -66,7 +66,7 @@ class TestQinqFilter(TestCase):
         port = self.tester.get_local_port(dutRxPortId)
         self.txItf = self.tester.get_interface(port)
         self.smac = self.tester.get_mac(port)
-        # the package dect mac must is dut tx port id when the port promisc is off
+        # the packet dest mac must is dut tx port id when the port promisc is off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
         self.portMask = utils.create_mask(valports[:1])
@@ -94,7 +94,7 @@ class TestQinqFilter(TestCase):
 
     def creat_pcap(self, vlans_list):
         """
-        creat pcap and changed out vlan tpid to 0x88a8
+        create pcap and changed out vlan tpid to 0x88a8
         """
         packets = []
         for vlan in vlans_list:
@@ -263,7 +263,7 @@ class TestQinqFilter(TestCase):
         
     def test_qinq_filter_with_diffierent_tpid(self):
         """
-        qinq filter packet with diffferent tpid  received by assign VF queues
+        qinq filter packet with different tpid  received by assign VF queues
         """
         self.config_vfs(dutRxPortId, 2)
         vf_list = self.dut.ports_info[dutRxPortId]['sriov_vfs_pci']
