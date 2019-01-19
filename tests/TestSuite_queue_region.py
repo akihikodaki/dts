@@ -288,7 +288,7 @@ class TestQueue_region(TestCase):
         out = self.dut.send_expect("show port 0 queue-region", "testpmd> ")
         self.get_and_compare_rules(out, 0, 0, 0)
 
-        # confirm packet not to the same queue after flush all the queue regions rull.
+        # confirm packet not to the same queue after flush all the queue regions rules.
         self.send_packet_pctype(mac=self.pf_mac, pkt_type="udp")
         queue = self.get_queue_number()
         self.verify(queue != queue_udp, "the queue regions have not been flushed clearly.")
