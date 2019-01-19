@@ -156,7 +156,7 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("start", "testpmd>")
             self.check_forwarding([0, 1], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 testpmd", "#", 60, True)
             else:
@@ -172,7 +172,7 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("./examples/l2fwd/build/app/l2fwd -n 4 -c 0xf -- -p 0x3 &", "L2FWD: entering main loop", 60)
             self.check_forwarding([0, 1], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l2fwd", "#", 60, True)
                 time.sleep(2)
@@ -189,7 +189,7 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l3fwd", "#", 60, True)
                 time.sleep(2)
