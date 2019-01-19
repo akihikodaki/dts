@@ -32,7 +32,7 @@
 """
 DPDK Test suite.
 
-This TestSuite runs the unit tests included in DPDK for X710/XL710/XXV710 lookback mode.
+This TestSuite runs the unit tests included in DPDK for X710/XL710/XXV710 loopback mode.
 """
 
 import utils
