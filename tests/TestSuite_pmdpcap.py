@@ -60,7 +60,7 @@ class TestPmdPcap(TestCase):
 
         # make sure there is no interface to bind
         # because if there is any interface bonded to igb_uio,
-        # it will result in packet transmiting failed
+        # it will result in packet transmitting failed
         self.dut.restore_interfaces()
 
     def get_pcap_compile_config(self):
