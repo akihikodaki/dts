@@ -190,7 +190,7 @@ class TestDynamicFlowtype(TestCase):
     def dynamic_flowtype_test(self, pctype=22, flowtype=26, reset=False):
         """
         Dynamic modify, return or reset the contents of flow type to pctype
-        dynamic mapping, enable rss hash for new protocal.
+        dynamic mapping, enable rss hash for new protocol.
         reset: If reset is true, reset the contents of flow type to pctype
                mapping. If reset is false, enable rss hash for new protocal.
         """
