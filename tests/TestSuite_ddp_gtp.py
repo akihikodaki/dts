@@ -320,7 +320,7 @@ class TestDdpGtp(TestCase):
     def test_fdir_gtpc_pf(self):
         """
         GTP is supported by NVM with profile updated. Select flow director to
-        do classfication, send gtpc packet to PF, check PF could receive
+        do classification, send gtpc packet to PF, check PF could receive
         packet using configured queue, checksum is good.
         """
         self.gtp_test(
@@ -329,7 +329,7 @@ class TestDdpGtp(TestCase):
     def test_fdir_gtpu_pf(self):
         """
         GTP is supported by NVM with profile updated. Select flow director to
-        do classfication, send gtpu packet to PF, check PF could receive
+        do classification, send gtpu packet to PF, check PF could receive
         packet using configured queue, checksum is good.
         """
         self.gtp_test(
