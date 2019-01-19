@@ -62,7 +62,7 @@ class TestIeee1588(TestCase):
         self.pmdout = PmdOutput(self.dut)
         # For IEEE1588, the full-feature tx path needs to be enabled.
         # Enabling any tx offload will force DPDK utilize full tx path.
-        # Enabling multiple segement offload is more reasonable for user cases.
+        # Enabling multiple segment offload is more reasonable for user cases.
         self.pmdout.start_testpmd("Default", " --tx-offloads=%s" % DEV_TX_OFFLOAD_MULTI_SEGS)
 
     def set_up(self):
