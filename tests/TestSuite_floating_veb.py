@@ -340,8 +340,8 @@ class TestVEBSwitching(TestCase):
         
     def test_floating_VEB_VF_and_legacy_VEB_VF(self):
         """
-        DPDK PF, then create 4VF, VF0,VF2,VF3 are floating VEB; VF1 is lagecy
-        VEB. Make PF link down(the cable can be pluged out), VFs are running
+        DPDK PF, then create 4VF, VF0,VF2,VF3 are floating VEB; VF1 is legacy
+        VEB. Make PF link down(the cable can be plugged out), VFs are running
         dpdk testpmd.
         1. VF0 send traffic, and set the packet's DEST MAC to VF1, 
            check VF1 can not receive the packets. 
