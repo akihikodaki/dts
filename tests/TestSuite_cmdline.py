@@ -75,7 +75,7 @@ class TestCmdline(TestCase):
         out = self.dut.send_expect("add object 192.168.0.1", "example> ")
         self.verify("Object object added, ip=192.168.0.1" in out, "add command error")
 
-        # verify the object existance
+        # verify the object existence
         out = self.dut.send_expect("add object 192.168.0.1", "example> ")
         self.verify("Object object already exist" in out, "double add command error")
 
