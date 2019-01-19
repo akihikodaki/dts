@@ -79,7 +79,7 @@ class TestVhostLoopback(TestCase):
         Benchmark performance for frame_sizes.
         """
         self.result_table_create(self.header_row)
-        # Modify the driver file to disbale the Mergeable, then re-compile the DPDK and back up the original driver file
+        # Modify the driver file to disable the Mergeable, then re-compile the DPDK and back up the original driver file
         for frame_size in self.frame_sizes:
             # Back up the original driver file
             self.dut.send_expect("cp ./drivers/net/virtio/virtio_ethdev.h ./", "#", 30)
@@ -140,7 +140,7 @@ class TestVhostLoopback(TestCase):
         """
         self.result_table_create(self.header_row)
         for frame_size in self.frame_sizes:
-            # Modify the driver file to disbale the Mergeable, then re-compile the DPDK and back up the original driver file
+            # Modify the driver file to disable the Mergeable, then re-compile the DPDK and back up the original driver file
             self.dut.send_expect("cp ./drivers/net/virtio/virtio_ethdev.h ./", "#", 30)
             self.dut.send_expect("sed -i '/VIRTIO_NET_F_MRG_RXBUF/d' ./drivers/net/virtio/virtio_ethdev.h", "#", 30)
             self.change_testpmd_size = "sed -i -e 's/#define TXONLY_DEF_PACKET_LEN .*$/#define TXONLY_DEF_PACKET_LEN %d/' ./app/test-pmd/testpmd.h" % frame_size
@@ -199,7 +199,7 @@ class TestVhostLoopback(TestCase):
 
         self.result_table_create(self.header_row)
         for frame_size in self.frame_sizes:
-            # Modify the driver file to disbale the Mergeable, then re-compile the DPDK and back up the original driver file
+            # Modify the driver file to disable the Mergeable, then re-compile the DPDK and back up the original driver file
             self.dut.send_expect("cp ./drivers/net/virtio/virtio_ethdev.h ./", "#", 30)
             self.dut.send_expect("sed -i '/VIRTIO_NET_F_MRG_RXBUF/d' ./drivers/net/virtio/virtio_ethdev.h", "#", 30)
             self.change_testpmd_size = "sed -i -e 's/#define TXONLY_DEF_PACKET_LEN .*$/#define TXONLY_DEF_PACKET_LEN %d/' ./app/test-pmd/testpmd.h" % frame_size
