@@ -27,9 +27,16 @@ class TestDynamicQueue(TestCase):
         self.dut_testpmd = PmdOutput(self.dut)
 
     def set_up(self):
-        self.dut_testpmd.start_testpmd(
-            "Default", "--port-topology=chained --txq=%s --rxq=%s"
-            % (self.PF_QUEUE, self.PF_QUEUE))
+        # Because of forville spirit limitation,can't use 2 ports for testing
+        if (self.nic in ["fortville_spirit"]):
+            self.dut_testpmd.start_testpmd(
+                "Default", "--port-topology=chained --txq=%s --rxq=%s"
+                % (self.PF_QUEUE, self.PF_QUEUE), eal_param="-w %s"
+                % (self.dut.get_port_pci(self.dut_ports[0])))
+        else:
+            self.dut_testpmd.start_testpmd(
+                "Default", "--port-topology=chained --txq=%s --rxq=%s"
+                % (self.PF_QUEUE, self.PF_QUEUE))
 
     def element_strip(self, out, pattern):
         """
