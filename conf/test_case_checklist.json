@@ -806,6 +806,28 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "dynamic_rss_bond_config": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "niantic",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "pmdrss_reta": [
         {
             "OS": [
