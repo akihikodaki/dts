@@ -486,13 +486,12 @@ class Testvf_daemon(TestCase):
         """
         fake_mac = '00:11:22:33:44:55'
         time.sleep(5)
-        self.vm0_dut.send_expect("sed -i -e '/uint64_t ol_flags = 0;/a " +\
-            "\struct ether_addr fake_mac = {.addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};'" +\
-            " app/test-pmd/macswap.c", "# ", 30)
-        self.vm0_dut.send_expect("sed -i -e '/ether_addr_copy(&addr, &eth_hdr->s_addr);/d' " +\
-            " app/test-pmd/macswap.c", "# ", 30)
-        self.vm0_dut.send_expect("sed -i -e '/ether_addr_copy(&eth_hdr->s_addr, &eth_hdr->d_addr);/a " +\
-            "\ether_addr_copy(&fake_mac, &eth_hdr->s_addr);' app/test-pmd/macswap.c", "# ", 30)
+        self.vm0_dut.send_expect("sed -i -e '/int r;/a " +\
+            "\        struct ether_addr fake_mac = {.addr_bytes = {0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};'" +\
+            " app/test-pmd/macswap_sse.h", "# ", 30)
+        line_num = self.vm0_dut.send_expect("sed -n '/_mm_storeu_si128/=' app/test-pmd/macswap_sse.h |sed -n 5p", "# ",30)
+        self.vm0_dut.send_expect("sed -i -e '%sa\ether_addr_copy(&fake_mac, &eth_hdr[0]->s_addr);'" % str(line_num)+\
+                    " app/test-pmd/macswap_sse.h", "# ", 30)
         time.sleep(3)
 
         self.vm0_dut.build_install_dpdk(self.target) 
@@ -527,11 +526,9 @@ class Testvf_daemon(TestCase):
         self.vm0_testpmd.quit()
         self.dut_testpmd.quit()
         self.vm0_dut.send_expect("sed -i '/struct ether_addr fake_mac = {.addr_bytes = " +\
-            "{0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};/d' app/test-pmd/macswap.c", "# ", 30)
-        self.vm0_dut.send_expect("sed -i '/ether_addr_copy(&fake_mac, &eth_hdr->s_addr);/d' " +\
-            "app/test-pmd/macswap.c", "# ", 30)
-        self.vm0_dut.send_expect("sed -i '/ether_addr_copy(&eth_hdr->s_addr, &eth_hdr->d_addr);/a " +\
-            "\ether_addr_copy(&addr, &eth_hdr->s_addr);' app/test-pmd/macswap.c", "# ", 30)
+            "{0x00, 0x11, 0x22, 0x33, 0x44, 0x55},};/d' app/test-pmd/macswap_sse.h", "# ", 30)
+        self.vm0_dut.send_expect("sed -i '%sd'" % line_num +\
+            " app/test-pmd/macswap_sse.h", "# ", 30)
         self.vm0_dut.build_install_dpdk(self.target)
 
 
