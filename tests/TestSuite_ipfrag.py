@@ -92,7 +92,7 @@ class TestIpfrag(TestCase):
         self.ports_socket = self.dut.get_numa_id(ports[0])
 
         # Verify that enough threads are available
-        cores = self.dut.get_core_list("2S/2C/2T")
+        cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
         global P0, P1
