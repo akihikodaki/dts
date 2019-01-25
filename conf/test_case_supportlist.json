@@ -167,13 +167,17 @@
             "NIC": [
                 "powerville",
                 "niantic",
-                "fortville_25g"
+                "fortville_25g",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+		"fortpark_TLV"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic and i350"
+            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic/FVL/powerville/fortpark_TLV"
         }
     ],
     "IP_in_IPv6_tunnel": [
