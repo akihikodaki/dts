@@ -47,4 +47,4 @@ Coding Guidelines
 Maintainer
 ----------
 
-The DTS maintainer is: Marvin Liu <yong.liu@intel.com>
+The DTS maintainer is: Lijuan Tu <lijuan.tu@intel.com>
