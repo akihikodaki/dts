@@ -40,6 +40,7 @@ The generic API for the Quality of Service (QoS) Traffic Management of Ethernet
 devices, which includes the following main features: hierarchical scheduling,
 traffic shaping, congestion management, packet marking.
 The TM setting commands are as following:
+
 1. Add the port traffic management private shaper profile::
 
     testpmd> add port tm node shaper profile (port_id) (shaper_profile_id) \
@@ -82,7 +83,7 @@ Bind two ports to dpdk driver::
 
     ./usertools/dpdk-devbind.py -b igb_uio 05:00.0 05:00.1
 
-Test Cases for I40e：
+Test Cases for I40e:
 ====================
 
 Test Case: dcb 4 tc queue mapping
@@ -266,7 +267,7 @@ Test Case: shaping for port
    verify shaping the traffic to 200Mbps(25MBps).
 
 Test Cases for ixgbe:
-====================
+=====================
 
 Test Case: dcb 4 tc queue mapping
 =================================
