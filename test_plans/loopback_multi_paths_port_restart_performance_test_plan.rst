@@ -81,7 +81,7 @@ Test Case 1: vhost/virtio-user loopback test with Virtio 1.1 mergeable path
 
 
 Test Case 2: vhost/virtio-user loopback test with Virtio 1.1 no-mergeable path
-===========================================================================
+==============================================================================
 
 1. Not bind nic port to igb_uio, launch vhost testpmd by below command::
 
