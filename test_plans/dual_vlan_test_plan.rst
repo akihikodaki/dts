@@ -153,7 +153,7 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
  received in port ``B``.
 
 Test Case: Enable/Disable VLAN header stripping
-==============================================
+===============================================
 
 Enable vlan packet forwarding on port ``0`` first::
 
@@ -210,7 +210,7 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 Identifier ``1`` can been received in port ``B``.
 
 Test Case: Enable/Disable VLAN header stripping in queue
-=======================================================
+========================================================
 
 Enable vlan packet forwarding on port ``0`` first::
 
