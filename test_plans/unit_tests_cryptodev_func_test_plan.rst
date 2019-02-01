@@ -54,13 +54,6 @@ Unit Test List
 ==============
 
 - cryptodev_qat_autotest
-- cryptodev_qat_perftest
-- cryptodev_aesni_mb_perftest
-- cryptodev_sw_snow3g_perftest
-- cryptodev_qat_snow3g_perftest
-- cryptodev_aesni_gcm_perftest
-- cryptodev_openssl_perftest
-- cryptodev_qat_continual_perftest
 - cryptodev_aesni_mb_autotest
 - cryptodev_openssl_autotest
 - cryptodev_aesni_gcm_autotest
@@ -68,6 +61,7 @@ Unit Test List
 - cryptodev_sw_snow3g_autotest
 - cryptodev_sw_kasumi_autotest
 - cryptodev_sw_zuc_autotest
+- cryptodev_scheduler_autotest
 
 
 Test Case Setup
