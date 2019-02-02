@@ -192,7 +192,7 @@ class TestDualVlan(TestCase):
                 time.sleep(1)
                 out = self.dut.send_expect("show port info %s" % port_id, "testpmd> ")
                 port_time_up += 1
-                self.verify("Link status: down" not in out, "Port %s Link down, please check your link" % port_id)
+            self.verify("Link status: down" not in out, "Port %s Link down, please check your link" % port_id)
 
     def multimode_test(self, caseIndex):
         """
