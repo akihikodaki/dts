@@ -286,7 +286,7 @@ Interrupts
 Multiprocess
 ============
 
-Validates that a secondary Intel DPDK instance can be run alongside a primary when the appropriate EAL command-line flags are passed. Also validates that secondary processes cannot interfere with primary processes by creating memory objects, such as mempools or rings.
+Validates that a secondary DPDK instance can be run alongside a primary when the appropriate EAL command-line flags are passed. Also validates that secondary processes cannot interfere with primary processes by creating memory objects, such as mempools or rings.
 
 String
 ======

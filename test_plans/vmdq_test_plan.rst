@@ -48,7 +48,7 @@ The feature itself works by:
   user priority field within the VLAN tag and MAC address.
 
 The VMDQ features are enabled in the ``vmdq`` example application
-contained in the Intel DPDK, and this application should be used to validate
+contained in the DPDK, and this application should be used to validate
 the feature.
 
 Prerequisites
@@ -56,7 +56,7 @@ Prerequisites
 - All tests assume a linuxapp setup.
 - The port ids of the two 10G or 40G ports to be used for the testing are specified
   in the commandline. it use a portmask.
-- The Intel DPDK is compiled for the appropriate target type in each case, and
+- The DPDK is compiled for the appropriate target type in each case, and
   the VMDQ  example application is compiled and linked with that DPDK
   instance
 - Two ports are connected to the test system, one to be used for packet
