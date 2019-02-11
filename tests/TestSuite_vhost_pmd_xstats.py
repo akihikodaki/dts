@@ -208,7 +208,7 @@ class TestVhostPmdXstats(TestCase):
     def test_stability(self):
         """
         Verify stability case with multiple queues for Vhost PMD xstats
-        Send packets for 30 minutes, check the Xstats still can work correctly
+        Send packets for 2 minutes, check the xstats still can work correctly
         """
         self.scapy_num = 0
         self.prepare_start()
