@@ -1188,7 +1188,7 @@ class TestKni(TestCase):
                 self.tester.scapy_append(
                     'flows.append(Ether(dst="%s")/IP(src="192.170.%d.2",dst="192.170.%d.2")/("X"*%d))' %
                     (rx_mac, 100 + port, 100 + (port + 1) % ports_without_kni, payload_size))
-                tgen_input.append((tx_port, tx_port, "routePerf.pcap"))
+                tgen_input.append((tx_port, tx_port, "routePerf_%d.pcap" % ports_without_kni))
 
             self.tester.scapy_append(
                 'wrpcap("routePerf_%d.pcap",flows)' % ports_without_kni)
