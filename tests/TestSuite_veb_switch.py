@@ -127,7 +127,30 @@ class TestVEBSwitching(TestCase):
             pkt.config_layer('ether', {'dst': vf_mac})
             pkt.send_pkt(tx_port=itf)
             time.sleep(.5)
- 
+
+    def count_packet(self, out, mac):
+        """
+        Count packet sum number.
+        """
+        lines = out.split("\r\n")
+        cnt = 0
+        count_pkt = 0
+        # count the packet received from specified mac address.
+        for line in lines:
+            line = line.strip()
+            if len(line) != 0 and line.startswith(("src=",)):
+                for item in line.split(" "):
+                    item = item.strip()
+                    if(item == ("src=%s" % mac)):
+                        cnt = cnt + 1
+                    elif(item == "L4_UDP"):
+                        cnt = cnt + 1
+                if (cnt == 2):
+                    count_pkt = count_pkt + 1
+                cnt = 0
+        print utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt)
+        return count_pkt
+
     # Test cases.
     def set_up_all(self):
         """
@@ -207,8 +230,8 @@ class TestVEBSwitching(TestCase):
 
     def test_VEB_switching_inter_vfs(self):
         """
-        Kernel PF, then create 2VFs. VFs running dpdk testpmd, send traffic to
-        VF1, and set the packet's DEST MAC to VF2, check if VF2 can receive
+        Kernel PF, then create 2VFs. VFs running dpdk testpmd,
+        send traffic from VF1 to VF2, check if VF2 can receive
         the packets. Check Inter VF-VF MAC switch.
         """
         self.setup_env(driver='default')
@@ -234,8 +257,8 @@ class TestVEBSwitching(TestCase):
     def test_VEB_switching_inter_vfs_mac_fwd(self):
         """
         Kernel PF, then create 2VFs. VFs running dpdk testpmd, send traffic to
-        VF1, and set the packet's DEST MAC to VF2, check if VF2 can receive
-        the packets. Check Inter VF-VF MAC switch.
+        VF1 with VF1's MAC as packet's DEST MAC, set ether peer address to VF2's MAC.
+        Check if VF2 can receive the packets. Check Inter VF-VF MAC switch.
         """
         self.setup_env(driver='default')
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.vf1_mac), "testpmd>", 120)
@@ -344,27 +367,12 @@ class TestVEBSwitching(TestCase):
         out = self.dut.get_session_output(timeout=1)
         self.session_secondary.send_expect("stop", "testpmd>", 2)
         self.dut.send_expect("stop", "testpmd>", 2)
-        lines = out.split("\r\n")
-        cnt = 0
-        count_pkt = 0
-        # count the packet received by pf from vf.
-        for line in lines:
-            line = line.strip()
-            if len(line) != 0 and line.startswith(("src=",)):
-                for item in line.split(" "):
-                    item = item.strip()
-                    if(item == ("src=%s" % self.vf0_mac)):
-                        cnt = cnt + 1
-                    elif(item == "L4_UDP"):
-                        cnt = cnt + 1
-                if (cnt == 2):
-                    count_pkt = count_pkt + 1
-                cnt = 0
-        print utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt)
+
+        count_pkt = self.count_packet(out, self.vf0_mac)
         vf0_tx_stats = self.veb_get_pmd_stats("second", 0, "tx")
         pf_rx_stats = self.veb_get_pmd_stats("first", 0, "rx")
-        self.verify(vf0_tx_stats[0] > 0, "no packet was sent by VF0")
-        self.verify(count_pkt > 0, "no packet was received by PF")
+        self.verify(vf0_tx_stats[0] > 1000, "no packet was sent by VF0")
+        self.verify(count_pkt > 100, "no packet was received by PF")
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
         self.dut.send_expect("quit", "# ")
@@ -388,7 +396,7 @@ class TestVEBSwitching(TestCase):
 
         vf0_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         print utils.GREEN("The number of UDP packets received by vf is %d." % vf0_rx_stats[0])
-        self.verify(vf0_rx_stats[0] > 0, "no packet was received by VF0")
+        self.verify(vf0_rx_stats[0] > 100, "no packet was received by VF0")
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
         self.dut.send_expect("quit", "# ")
