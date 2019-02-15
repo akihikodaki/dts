@@ -637,5 +637,40 @@
             "Bug ID": "",
             "Comments": "This case only support on FVL"
         }
+    ],
+    "rxoffload_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic"
+        }
+    ],
+    "txoffload_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
     ]
 }
