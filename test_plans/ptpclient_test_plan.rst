@@ -41,8 +41,9 @@ system.
 
 Prerequisites
 =============
-Assume one port are connected to the tester and tester has been installed
-"linuxptp.x86_64".
+Assume one port is connected to the tester and "linuxptp.x86_64"
+has been installed on the tester.
+
 The sample should be validated on Forville, Niantic and i350 Nics. 
 
 Test case: ptp client
