@@ -172,7 +172,7 @@ class TestVhostUserOneCopyOneVm(TestCase):
 
     def send_and_verify(self, verify_type):
         """
-        Verify the virtio-pmd can recive the data before/after change queue size
+        Verify the virtio-pmd can receive the data before/after change queue size
         While verify_type is "vhost queue = virtio queue", the vhost should forward all set of data
         While verify_type is "vhost queue < virtio queue", the vhost should forward all set of data
         While verify_type is "vhost queue > virtio queue", the vhost should forward at least one set of data
