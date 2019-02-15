@@ -256,12 +256,15 @@ class TestVEBSwitching(TestCase):
         pf_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         self.verify(pf_tx_stats[0] != 0, "no packet was sent by PF")
         self.verify(vf0_rx_stats[0] == 0, "VF0 can receive packet from PF, the floating VEB doesn't work")
-        self.session_secondary.send_expect("quit", "# ")
-        time.sleep(2)
-        self.dut.send_expect("quit", "# ")
-        time.sleep(2)
 
+    def test_floating_VEB_inter_tester_vf(self):
+        """
+        DPDK PF, then create 1VF, PF in the host running dpdk testpmd,
+        send traffic from tester to VF0.
+        In floating modeVF0 can't receive any packets;
+        """
         #outside world ->VF
+        self.setup_env(driver=self.drivername, vf_num=1)
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.pf_pci, self.vf0_mac), "testpmd>", 120)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all on", "testpmd>")
@@ -532,7 +535,7 @@ class TestVEBSwitching(TestCase):
 
         self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
-        self.session_secondary.send_expect("set fwd mac", "testpmd>")
+        self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
@@ -550,7 +553,7 @@ class TestVEBSwitching(TestCase):
         # tester->VF1
         self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
-        self.session_secondary.send_expect("set fwd mac", "testpmd>")
+        self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
@@ -642,4 +645,3 @@ class TestVEBSwitching(TestCase):
         for port_id in self.dut_ports:
             port = self.dut.ports_info[port_id]['port']
             port.bind_driver(driver=self.drivername)
-
