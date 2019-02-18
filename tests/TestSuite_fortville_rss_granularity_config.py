@@ -56,7 +56,6 @@ import dut
 testQueues = [16]
 reta_entries = []
 reta_lines = []
-reta_num = 128
 
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
@@ -81,62 +80,62 @@ class TestFortvilleRssGranularityConfig(TestCase):
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                     "fortville_spirit_single", "fortville_25g"],
                     "NIC Unsupported: " + str(self.nic))
-        global reta_num
-        reta_num = 512
         ports = self.dut.get_ports(self.nic)
         self.verify(len(ports) >= 1, "Not enough ports available")
+        dutPorts = self.dut.get_ports(self.nic)
+        localPort = self.tester.get_local_port(dutPorts[0])
+        self.itf = self.tester.get_interface(localPort)
 
     def set_up(self):
         """
         Run before each test case.
         """
-        pass
+        global reta_lines
+        reta_lines = []
 
     def send_packet(self, itf, tran_type):
         """
         Sends packets.
         """
         global reta_lines
-        global reta_num
         self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
 
         # send packet with different source and dest ip
-        i = 0
         if tran_type == "ipv4-other":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d", proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.1", dst="192.168.0.2", proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv4-tcp":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=1024,dport=1025)], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv4-udp":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1025)], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "l2_payload":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/Dot1Q(id=0x8100,vlan=%s)/Dot1Q(id=0x8100,vlan=%s)], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=2)], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv6-tcp":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::1", dst="3ffe:2501:200:3::2")/TCP(sport=1024,dport=1025)], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv6-udp":
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
-                mac, itf, i + 1, i + 2, itf)
+            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="3ffe:2501:200:1fff::1", dst="3ffe:2501:200:3::2")/UDP(sport=1024,dport=1025)], iface="%s")' % (
+                mac, itf, itf)
             self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
@@ -175,7 +174,6 @@ class TestFortvilleRssGranularityConfig(TestCase):
         """
 
         global reta_lines
-        global reta_num
 
         # append the the hash value and queue id into table
         self.result_table_create(
@@ -185,24 +183,21 @@ class TestFortvilleRssGranularityConfig(TestCase):
         for tmp_reta_line in reta_lines:
 
             # compute the hash result of five tuple into the 7 LSBs value.
-            hash_index = int(tmp_reta_line["RSS hash"], 16) % reta_num
+            hash_index = int(tmp_reta_line["RSS hash"], 16)
             self.result_table_add(
                 [i, tmp_reta_line["RSS hash"], hash_index, tmp_reta_line["queue"]])
             i = i + 1
 
     def test_ipv4_tcp(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with flow type ipv4-tcp.
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -214,27 +209,27 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss tcp", "testpmd> ")
-            self.send_packet(itf, "ipv4-tcp")
+            self.send_packet(self.itf, "ipv4-tcp")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp none select", "testpmd> ")
-            self.send_packet(itf, "ipv4-tcp")
+            self.send_packet(self.itf, "ipv4-tcp")
 
             # set hash input set by testpmd on dut, enable src-ipv4 & dst-ipv4
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp src-ipv4 add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp dst-ipv4 add", "testpmd> ")
-            self.send_packet(itf, "ipv4-tcp")
+            self.send_packet(self.itf, "ipv4-tcp")
 
             # set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, tcp-src-port, tcp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp tcp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp tcp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv4-tcp")
+            self.send_packet(self.itf, "ipv4-tcp")
 
             # set hash input set by testpmd on dut, enable tcp-src-port, tcp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp none select", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp tcp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-tcp tcp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv4-tcp")
+            self.send_packet(self.itf, "ipv4-tcp")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -264,21 +259,16 @@ class TestFortvilleRssGranularityConfig(TestCase):
             flag = 0
             self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def test_ipv4_udp(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with flow type ipv4-udp.
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -290,27 +280,27 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss udp", "testpmd> ")
-            self.send_packet(itf, "ipv4-udp")
+            self.send_packet(self.itf, "ipv4-udp")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp none select", "testpmd> ")
-            self.send_packet(itf, "ipv4-udp")
+            self.send_packet(self.itf, "ipv4-udp")
 
             # set hash input set by testpmd on dut, enable src-ipv4 & dst-ipv4
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp src-ipv4 add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp dst-ipv4 add", "testpmd> ")
-            self.send_packet(itf, "ipv4-udp")
+            self.send_packet(self.itf, "ipv4-udp")
 
             # set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, udp-src-port, udp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp udp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp udp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv4-udp")
+            self.send_packet(self.itf, "ipv4-udp")
 
             # set hash input set by testpmd on dut, enable udp-src-port, udp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp none select", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp udp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-udp udp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv4-udp")
+            self.send_packet(self.itf, "ipv4-udp")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -341,21 +331,16 @@ class TestFortvilleRssGranularityConfig(TestCase):
             flag = 0
             self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def test_ipv6_tcp(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with flow type ipv6-tcp.
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -367,27 +352,27 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss tcp", "testpmd> ")
-            self.send_packet(itf, "ipv6-tcp")
+            self.send_packet(self.itf, "ipv6-tcp")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp none select", "testpmd> ")
-            self.send_packet(itf, "ipv6-tcp")
+            self.send_packet(self.itf, "ipv6-tcp")
 
             # set hash input set by testpmd on dut, enable src-ipv6 & dst-ipv6
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp src-ipv6 add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp dst-ipv6 add", "testpmd> ")
-            self.send_packet(itf, "ipv6-tcp")
+            self.send_packet(self.itf, "ipv6-tcp")
 
             # set hash input set by testpmd on dut, enable src-ipv6, dst-ipv6, tcp-src-port, tcp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp tcp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp tcp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv6-tcp")
+            self.send_packet(self.itf, "ipv6-tcp")
 
             # set hash input set by testpmd on dut, enable tcp-src-port, tcp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp none select", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp tcp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-tcp tcp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv6-tcp")
+            self.send_packet(self.itf, "ipv6-tcp")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -411,28 +396,23 @@ class TestFortvilleRssGranularityConfig(TestCase):
         elif ((result_rows[2][1] == result_rows[5][1])or(result_rows[2][3] == result_rows[5][3])):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
-        elif ((result_rows[3][1] == result_rows[5][1])or(result_rows[3][3] == result_rows[5][3])):
+        elif ((result_rows[3][1] == result_rows[5][1])and(result_rows[3][3] == result_rows[5][3])):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
         elif ((result_rows[1][1] != result_rows[4][1])or(result_rows[1][3] != result_rows[4][3])):
             flag = 0
             self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def test_ipv6_udp(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with flow type ipv6-udp.
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -444,27 +424,27 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss udp", "testpmd> ")
-            self.send_packet(itf, "ipv6-udp")
+            self.send_packet(self.itf, "ipv6-udp")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp none select", "testpmd> ")
-            self.send_packet(itf, "ipv6-udp")
+            self.send_packet(self.itf, "ipv6-udp")
 
             # set hash input set by testpmd on dut, enable src-ipv6 & dst-ipv6
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp src-ipv6 add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp dst-ipv6 add", "testpmd> ")
-            self.send_packet(itf, "ipv6-udp")
+            self.send_packet(self.itf, "ipv6-udp")
 
             # set hash input set by testpmd on dut, enable src-ipv6, dst-ipv6, udp-src-port, udp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp udp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp udp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv6-udp")
+            self.send_packet(self.itf, "ipv6-udp")
 
             # set hash input set by testpmd on dut, enable udp-src-port, udp-dst-port
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp none select", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp udp-src-port add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv6-udp udp-dst-port add", "testpmd> ")
-            self.send_packet(itf, "ipv6-udp")
+            self.send_packet(self.itf, "ipv6-udp")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -488,28 +468,23 @@ class TestFortvilleRssGranularityConfig(TestCase):
         elif ((result_rows[2][1] == result_rows[5][1])or(result_rows[2][3] == result_rows[5][3])):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
-        elif ((result_rows[3][1] == result_rows[5][1])or(result_rows[3][3] == result_rows[5][3])):
+        elif ((result_rows[3][1] == result_rows[5][1])and(result_rows[3][3] == result_rows[5][3])):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
         elif ((result_rows[1][1] != result_rows[4][1])or(result_rows[1][3] != result_rows[4][3])):
             flag = 0
             self.verify(flag, "The two hash values are different, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def test_dual_vlan(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with flow type dual vlan(QinQ).
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -522,19 +497,19 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss ether", "testpmd> ")
-            self.send_packet(itf, "l2_payload")
+            self.send_packet(self.itf, "l2_payload")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 l2_payload none select", "testpmd> ")
-            self.send_packet(itf, "l2_payload")
+            self.send_packet(self.itf, "l2_payload")
 
             # set hash input set by testpmd on dut, enable ovlan
             self.dut.send_expect("set_hash_input_set 0 l2_payload ovlan add", "testpmd> ")
-            self.send_packet(itf, "l2_payload")
+            self.send_packet(self.itf, "l2_payload")
 
             # set hash input set by testpmd on dut, enable ovlan & ivlan
             self.dut.send_expect("set_hash_input_set 0 l2_payload ivlan add", "testpmd> ")
-            self.send_packet(itf, "l2_payload")
+            self.send_packet(self.itf, "l2_payload")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -556,21 +531,16 @@ class TestFortvilleRssGranularityConfig(TestCase):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def test_GRE_keys(self):
-        dutPorts = self.dut.get_ports(self.nic)
-        localPort = self.tester.get_local_port(dutPorts[0])
-        itf = self.tester.get_interface(localPort)
-        global reta_num
-        global reta_lines
+        """
+        Test with 32-bit GRE keys and 24-bit GRE keys.
+        """
         flag = 1
-        self.dut.kill_all()
 
         # test with different rss queues
         for queue in testQueues:
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x3 --rxq=%d --txq=%d" %
+                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
                 (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -582,25 +552,25 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("port start all", "testpmd> ")
             self.dut.send_expect(
                 "port config all rss all", "testpmd> ")
-            self.send_packet(itf, "ipv4-other")
+            self.send_packet(self.itf, "ipv4-other")
 
             # set hash input set to "none" by testpmd on dut
             self.dut.send_expect("set_hash_input_set 0 ipv4-other none select", "testpmd> ")
-            self.send_packet(itf, "ipv4-other")
+            self.send_packet(self.itf, "ipv4-other")
 
             # set hash input set by testpmd on dut, enable src-ipv4 & dst-ipv4
             self.dut.send_expect("set_hash_input_set 0 ipv4-other src-ipv4 add", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-other dst-ipv4 add", "testpmd> ")
-            self.send_packet(itf, "ipv4-other")
+            self.send_packet(self.itf, "ipv4-other")
 
             # set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, gre-key-len 3
             self.dut.send_expect("global_config 0 gre-key-len 3", "testpmd> ")
             self.dut.send_expect("set_hash_input_set 0 ipv4-other gre-key add", "testpmd> ")
-            self.send_packet(itf, "ipv4-other")
+            self.send_packet(self.itf, "ipv4-other")
 
             # set hash input set by testpmd on dut, enable src-ipv4, dst-ipv4, gre-key-len 4
             self.dut.send_expect("global_config 0 gre-key-len 4", "testpmd> ")
-            self.send_packet(itf, "ipv4-other")
+            self.send_packet(self.itf, "ipv4-other")
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -622,13 +592,11 @@ class TestFortvilleRssGranularityConfig(TestCase):
             flag = 0
             self.verify(flag, "The two hash values are the same, rss_granularity_config failed!")
 
-        reta_lines = []
-
     def tear_down(self):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
