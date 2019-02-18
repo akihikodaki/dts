@@ -77,13 +77,23 @@ class TestUnitTestsPower(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
-    def test_power_acpi(self):
+    def test_power_acpi_cpufreq(self):
         """
         Run power acpi cpu frequency autotest.
         """
 
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_acpi_cpufreq_autotest", "RTE>>", 60)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_power_acpi_caps(self):
+        """
+        Run power acpi cpu caps autotest.
+        """
+
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        out = self.dut.send_expect("power_acpi_caps_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
