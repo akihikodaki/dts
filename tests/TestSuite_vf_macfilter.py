@@ -69,7 +69,10 @@ class TestVfMacFilter(TestCase):
                 self.host_testpmd = PmdOutput(self.dut)
                 eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
                                                        'vf1': self.sriov_vfs_port_1[0].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                if (self.nic in ["niantic", "sageville", "sagepond"]):
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                else:
+                    self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_macfilter')
