@@ -191,7 +191,10 @@ class TestVfPacketRxtx(TestCase):
                 eal_param = '-b %(vf0)s -b %(vf1)s -b %(vf2)s' % {'vf0': self.sriov_vfs_port[0].pci,
                                                                   'vf1': self.sriov_vfs_port[1].pci,
                                                                   'vf2': self.sriov_vfs_port[2].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                if (self.nic in ["niantic", "sageville", "sagepond"]):
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                else:
+                    self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
