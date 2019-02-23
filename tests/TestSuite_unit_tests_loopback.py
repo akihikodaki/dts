@@ -64,6 +64,8 @@ class TestUnitTestsLoopback(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.tester_itf = self.tester.get_interface(localPort)
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
 
         [self.arch, machine, env, toolchain] = self.target.split('-')
         self.verify(self.arch in ["x86_64", "arm64"], "pmd perf request running in x86_64 or arm64")
@@ -95,7 +97,7 @@ class TestUnitTestsLoopback(TestCase):
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
-        self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./test/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
         print out
         self.dut.send_expect("quit", "# ")
@@ -116,14 +118,14 @@ class TestUnitTestsLoopback(TestCase):
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
-        self.dut.send_expect("./test/test/test -n 1 -c f", "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./test/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
         self.dut.send_command("pmd_perf_autotest", 30)
         # There is no packet loopback, so the test is hung.
         # It needs to kill the process manually.
         self.dut.kill_all()
         self.tester.send_expect("killall tcpdump", "#")
         tester_out = self.tester.send_expect("tcpdump -nn -e -v -r ./getPackageByTcpdump.cap", "#")
-        self.verify("ethertype" in tester_out, "Test failed")
+        self.verify("ethertype IPv4" in tester_out, "Test failed")
 
     def tear_down(self):
         """
