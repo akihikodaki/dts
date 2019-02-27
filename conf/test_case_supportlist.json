@@ -672,5 +672,286 @@
             "Bug ID": "",
             "Comments": "This case only support on FVL"
         }
+    ],
+    "tunnel_filter_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "2_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on bartonhills and powerville"
+        }
+    ],
+    "fdir_for_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville, sagepond and sageville"
+        }
+    ],
+    "fdir_for_mac_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,sagepond and sageville"
+        }
+    ],
+    "n_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "kawela",
+                "twinville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,niantic,kawela_4 and kawela"
+        }
+    ],
+    "fdir_for_ipv4": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "fdir_for_L2_payload": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "fdir_for_ipv6": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "fdir_for_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,sagepond and sageville"
+        }
+    ],
+    "fdir_for_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "ethertype_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "kawela",
+                "bartonhills",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "powerville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,kawela_4,kawela,bartonhills,twinville,sagepond,sageville,powerville and FVL"
+        }
+    ],
+    "flexbytes_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on bartonhills and powerville"
+        }
+    ],
+    "L2_tunnel_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on sagepond and sageville"
+        }
+    ],
+    "fdir_for_flexbytes": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "tunnel_filter_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
     ]
 }
