@@ -126,23 +126,25 @@ Prerequisites
 
 To test CryptoDev API, an example ipsec-secgw is added into DPDK.
 
-The test commands of ipsec-secgw is below:
+The test commands of ipsec-secgw is below::
 
 
-   ./build/ipsec-secgw [EAL options] --
-                        -p PORTMASK -P -u PORTMASK -j FRAMESIZE
-                        -l -w REPLAY_WINOW_SIZE -e -a
-                        --config (port,queue,lcore)[,(port,queue,lcore]
-                        --single-sa SAIDX
-                        --rxoffload MASK
-                        --txoffload MASK
-                        -f CONFIG_FILE_PATH
-compile the applications :
+    ./build/ipsec-secgw [EAL options] --
+        -p PORTMASK -P -u PORTMASK -j FRAMESIZE
+        -l -w REPLAY_WINOW_SIZE -e -a
+        --config (port,queue,lcore)[,(port,queue,lcore]
+        --single-sa SAIDX
+        --rxoffload MASK
+        --txoffload MASK
+        -f CONFIG_FILE_PATH
+
+compile the applications::
 
     make -C ./examples/ipsec-secgw
 
 
-Configuration File Syntax
+Configuration File Syntax:
+
     The ``-f CONFIG_FILE_PATH`` option enables the application read and
     parse the configuration file specified, and configures the application
     with a given set of SP, SA and Routing entries accordingly. The syntax of
@@ -196,10 +198,11 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 | CIPHER_HASH | 3DES_CBC    | ENCRYPT     | 128         |  SHA1_HMAC  | GENERATE    |
 +-------------+-------------+-------------+-------------+-------------+-------------+
 
-example:
+example::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
- --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
--u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
+    --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
+    -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
 Sub-case: QAT test case
 ---------------------------
@@ -226,10 +229,11 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 | AEAD        | AES_GCM     | ENCRYPT     | 128         |
 +-------------+-------------+-------------+-------------+
 
-example:
+example::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
--w 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
--f /root/dts/local_conf/ipsec_test.cfg
+    -w 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
+    -f /root/dts/local_conf/ipsec_test.cfg
 
 Sub-case: AES-GCM test case
 ------------------------------
@@ -242,10 +246,11 @@ Cryptodev AES-GCM algorithm validation matrix is showed in table below.
 | AEAD        | AES_GCM     | ENCRYPT     | 128         |
 +-------------+-------------+-------------+-------------+
 
-example:
-     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
---vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
--u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
+example::
+
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
+    --vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
+    -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
 Sub-case: NULL test case
 ------------------------------
@@ -258,7 +263,8 @@ Cryptodev NULL algorithm validation matrix is showed in table below.
 | CIPHER_HASH | NULL        | ENCRYPT     | 0           |  NULL       | GENERATE    |
 +-------------+-------------+-------------+-------------+-------------+-------------+
 
-example:
+example::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
---vdev crypto_null_pmd_1 --vdev=crypto_null_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
--u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
+    --vdev crypto_null_pmd_1 --vdev=crypto_null_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
+    -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg

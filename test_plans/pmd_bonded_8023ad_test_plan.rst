@@ -138,11 +138,9 @@ steps
 
 Test Case : basic behavior mac
 ==============================
-#. bonded device's default mac is one of each slave's mac after one slave has
-   been added.
+#. bonded device's default mac is one of each slave's mac after one slave has been added.
 #. when no slave attached, mac should be 00:00:00:00:00:00
-#. slave's mac restore the MAC addresses that the slave has before they were
-enslaved.
+#. slave's mac restore the MAC addresses that the slave has before they were enslaved.
 
 steps
 -----
