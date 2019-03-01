@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-========================================
+==========================================
 Loopback virtio-user server mode test plan
-========================================
+==========================================
 
 Description
 ===========
@@ -157,13 +157,13 @@ Test Case5: Port start/stop at virtio-user side with server mode multi queues
 
 3. Stop/start virtio-user port,check Link status is down/up after stop/start virtio-user port::
 
-   Virtio-user side: testpmd>stop
-   Virtio-user side: testpmd>port stop 0
-   Virtio-user side: testpmd>show port info all
-   Virtio-user side: testpmd>port start 0
-   Virtio-user side: testpmd>show port info all
+    Virtio-user side: testpmd>stop
+    Virtio-user side: testpmd>port stop 0
+    Virtio-user side: testpmd>show port info all
+    Virtio-user side: testpmd>port start 0
+    Virtio-user side: testpmd>show port info all
 
 4. Run below command to get throughput,verify the loopback throughput is not zero::
 
-    testpmd>show port stats all
+     testpmd>show port stats all
 

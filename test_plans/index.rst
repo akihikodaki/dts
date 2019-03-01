@@ -83,6 +83,7 @@ The following are the test plans for the DPDK DTS automated test system.
     link_status_interrupt_test_plan
     loopback_multi_paths_port_restart_performance_test_plan
     loopback_multi_paths_port_restart_test_plan
+    loopback_virtio_user_server_mode_test_plan
     mac_filter_test_plan
     macsec_for_ixgbe_test_plan
     metering_and_policing_test_plan
