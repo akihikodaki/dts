@@ -479,7 +479,7 @@ Options for nic:
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_vlan        | vlan of virtual nic	             | 0              | No        |
 	+-----------------+----------------------------------+----------------+-----------+
-	| opt_macaddr     | If not assign, nic will generate | N/A            | No	|
+	| opt_macaddr     | If not assign, nic will generate | N/A            | No        |
 	|                 | random mac	                     | 	              |           |
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_model       | model of virtual nic             | e1000	      | No        |

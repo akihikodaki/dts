@@ -72,7 +72,7 @@ DPDK Test Suite supports the following parameters:
     | --re_run TIMES            | Rerun failed test cases for stable result         | 0                |
     +---------------------------+---------------------------------------------------+------------------+
     | --commands COMMANDS       | Run self assigned commands at different stages of |                  |
-    |                           | execution. Format is [commands]:dut|tester:pre-\   |                  |
+    |                           | execution. Format is [commands]:dut|tester:pre-   |                  |
     |                           | init|post-init:check|ignore                       |                  |
     |                           | E.g. [/root/setup.sh]:dut:pre-init:check          |                  |
     +---------------------------+---------------------------------------------------+------------------+
