@@ -158,6 +158,33 @@ in crypto perf
 |         |                   |  Tag Lengths: 8, 12, 16 bytes;                                            |
 +---------+-------------------+---------------------------------------------------------------------------+
 
+OPENSSL algorithm table
+The table below contains OPENSSL algorithms which are supported in crypto perf.
+
++-----------+-------------------+---------------------------------------------------------------------------+
+| Algorithm |  Mode             | Detail                                                                    |
++-----------+-------------------+---------------------------------------------------------------------------+
+| aes       | cbc               | Encrypt/Decrypt;Key size: 128, 192, 256 bits                              |
++-----------+-------------------+---------------------------------------------------------------------------+
+| aes       | ctr               | Encrypt/Decrypt;Key size: 128, 192, 256 bits                              |
++-----------+-------------------+---------------------------------------------------------------------------+
+| sha       |                   | sha1, sha2-224, sha2-384, sha2-256, sha2-512                              |
++-----------+-------------------+---------------------------------------------------------------------------+
+| hmac      |                   | Support md5 and sha implementations sha1, sha2-224, sha2-256,             |
+|           |                   |                                                                           |
+|           |                   | sha2-384, sha2-512                                                        |
+|           |                   |                                                                           |
+|           |                   | Key Size versus Block size support: Key Size must be <= block size;       |
+|           |                   |                                                                           |
+|           |                   | Mac Len Supported sha1 10, 12, 16, 20 bytes;                              |
+|           |                   |                                                                           |
+|           |                   | Mac Len Supported sha2-256 16, 24, 32 bytes;                              |
+|           |                   |                                                                           |
+|           |                   | Mac Len Supported sha2-384 24,32, 40, 48 bytes;                           |
+|           |                   |                                                                           |
+|           |                   | Mac Len Supported sha2-512 32, 40, 48, 56, 64 bytes;                      |
++-----------+-------------------+---------------------------------------------------------------------------+
+
 NULL algorithm table
 The table below contains NULL algorithms which are supported in crypto perf.
 Part of the algorithms are not supported currently.
