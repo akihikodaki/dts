@@ -447,16 +447,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         config.create_pcap()
 
         # remove tempory files
+        config.capture_file = "/tmp/sniff_%s.pcap" % self.recv_iface
         self.tester.send_expect("rm -rf %s" % config.capture_file, "# ")
         # save the capture packet into pcap format
         self.tester.scapy_background()
-        self.tester.scapy_append(
-            'p=sniff(iface="%s",filter="ether[12:2]!=0x88cc",count=1,timeout=5)' % self.recv_iface)
-        self.tester.scapy_append(
-            'wrpcap(\"%s\", p)' % config.capture_file)
-        self.tester.scapy_foreground()
 
+        inst = self.tester.tcpdump_sniff_packets(self.recv_iface, timeout=5)
         config.send_pcap(self.tester_iface)
+        self.tester.load_tcpdump_sniff_packets(inst)
         time.sleep(5)
 
         # extract the checksum offload from saved pcap file
@@ -547,7 +545,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+            " --nb-cores=4 --portmask=%(PORT)s"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -597,7 +595,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+            " --nb-cores=4 --portmask=%(PORT)s"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -644,7 +642,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # start testpmd with 2queue/1port
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--tx-offloads=0x8fff --enable-rx-cksum"
+            "--enable-rx-cksum"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -657,12 +655,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect('vlan set filter off %d' %self.dut_port, "testpmd")
         # enable tx checksum offload
         self.dut.send_expect("set fwd csum", "testpmd>", 10)
+        self.dut.send_expect("port stop all", "testpmd>")
         self.csum_set_type('ip', self.recv_port)
         self.csum_set_type('outer-ip', self.recv_port)
         self.csum_set_type('udp', self.recv_port)
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
-        self.dut.send_expect("csum parse_tunnel on %d" %
+        self.dut.send_expect("port start all", "testpmd>")
+        self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
 
         self.enable_vxlan(self.dut_port)
@@ -717,7 +717,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # start testpmd with 2queue/1port
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--tx-offloads=0x8fff --enable-rx-cksum"
+            "--enable-rx-cksum"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -734,7 +734,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.csum_set_type('udp', self.recv_port)
         self.csum_set_type('tcp', self.recv_port)
         self.csum_set_type('sctp', self.recv_port)
-        self.dut.send_expect("csum parse_tunnel on %d" %
+        self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
 
         self.enable_vxlan(self.dut_port)
@@ -792,7 +792,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+            " --nb-cores=4 --portmask=%(PORT)s"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -833,7 +833,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+            " --nb-cores=4 --portmask=%(PORT)s"
         pmd_cmd = pmd_temp % {'TARGET': self.target,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
@@ -962,7 +962,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-            " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+            " --nb-cores=4 --portmask=%(PORT)s"
 
         for perf_config in self.tunnel_perf:
             tun_filter = perf_config['tunnel_filter']
@@ -973,7 +973,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             if tun_filter == "None" and recv_queue == "Multi":
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --rss-udp --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+                    " --nb-cores=4 --portmask=%(PORT)s"
 
             pmd_cmd = pmd_temp % {'TARGET': self.target,
                                   'COREMASK': core_mask,
@@ -1074,11 +1074,11 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             if recv_queue == 'Multi':
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s --tx-offloads=0x8fff"
+                    " --nb-cores=4 --portmask=%(PORT)s"
             else:
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --nb-cores=2 --portmask=%(PORT)s" + \
-                    " --tx-offloads=0x8fff"
+                    ""
 
             pmd_cmd = pmd_temp % {'TARGET': self.target,
                                   'COREMASK': core_mask,
@@ -1087,9 +1087,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
             self.dut.send_expect(pmd_cmd, "testpmd> ", 100)
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
-            self.dut.send_expect("csum parse_tunnel on %d" %
+            self.dut.send_expect("csum parse-tunnel on %d" %
                                  self.dut_port, "testpmd>", 10)
-            self.dut.send_expect("csum parse_tunnel on %d" %
+            self.dut.send_expect("csum parse-tunnel on %d" %
                                  self.recv_port, "testpmd>", 10)
             self.enable_vxlan(self.dut_port)
             self.enable_vxlan(self.recv_port)
@@ -1142,14 +1142,18 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                              "testpmd>", 10)
 
     def csum_set_type(self, proto, port):
+        self.dut.send_expect("port stop all", "testpmd>")
         out = self.dut.send_expect("csum set %s hw %d" % (proto, port),
                                    "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
 
     def csum_set_sw(self, proto, port):
+        self.dut.send_expect("port stop all", "testpmd>")
         out = self.dut.send_expect("csum set %s sw %d" % (proto, port),
                                    "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
 

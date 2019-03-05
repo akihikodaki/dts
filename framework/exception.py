@@ -102,7 +102,7 @@ class PortConfigParseException(Exception):
 class VirtConfigParamException(Exception):
 
     """
-    Virtualizatoin param execution exception.
+    Virtualization param execution exception.
     """
     def __init__(self, param):
         self.param = param

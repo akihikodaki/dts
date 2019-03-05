@@ -132,7 +132,7 @@ class VirtDut(DPDKdut):
                 pci_idx = self.tester.get_local_index(tester_pci)
                 self.ports_map[index] = pci_idx
 
-    def set_target(self, target, bind_dev=True):
+    def set_target(self, target, bind_dev=True, driver_name="", driver_mode=""):
         """
         Set env variable, these have to be setup all the time. Some tests
         need to compile example apps by themselves and will fail otherwise.
@@ -150,10 +150,11 @@ class VirtDut(DPDKdut):
             self.build_install_dpdk(target)
 
         self.setup_memory(hugepages=1024)
-        self.setup_modules(target)
+
+        self.setup_modules(target, driver_name, driver_mode)
 
         if bind_dev:
-            self.bind_interfaces_linux('igb_uio')
+            self.bind_interfaces_linux(driver_name)
 
     def prerequisites(self, pkgName, patch, autodetect_topo):
         """
@@ -297,7 +298,7 @@ class VirtDut(DPDKdut):
             return False
         return True
         # load vm port conf need another function
-        # need add vitrual function device into NICS
+        # need add virtual function device into NICS
 
     def scan_ports(self):
         """
@@ -307,7 +308,7 @@ class VirtDut(DPDKdut):
 
     def scan_ports_uncached(self):
         """
-        Scan ports and collect port's pci id, mac adress, ipv6 address.
+        Scan ports and collect port's pci id, mac address, ipv6 address.
         """
         scan_ports_uncached = getattr(
             self, 'scan_ports_uncached_%s' % self.get_os_type())
@@ -320,7 +321,7 @@ class VirtDut(DPDKdut):
         for port in self.ports_info:
             vmpci = port['pci']
             for pci_map in self.hyper.pci_maps:
-                # search pci mapping strucutre
+                # search pci mapping structure
                 if vmpci == pci_map['guestpci']:
                     hostpci = pci_map['hostpci']
                     # search host port info structure

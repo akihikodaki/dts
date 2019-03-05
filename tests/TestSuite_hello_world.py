@@ -42,7 +42,7 @@ class TestHelloWorld(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        hello_world Prerequistites:
+        hello_world Prerequisites:
             helloworld build pass
         """
         out = self.dut.build_dpdk_apps('examples/helloworld')
@@ -76,13 +76,20 @@ class TestHelloWorld(TestCase):
         Received hello message from all lcores
         """
 
-        # get the maximun logical core number
+        # get the maximum logical core number
         cores = self.dut.get_core_list('all')
-        coreMask = utils.create_mask(cores)
+
+        config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
+        if config_max_lcore:
+            available_max_lcore = min(int(config_max_lcore), len(cores) + 1)
+        else:
+            available_max_lcore = len(cores) + 1
+
+        coreMask = utils.create_mask(cores[:available_max_lcore - 1])
 
         cmdline = "./examples/helloworld/build/app/helloworld -n 1 -c " + coreMask
         out = self.dut.send_expect(cmdline, "# ", 50)
-        for i in range(len(cores)):
+        for i in range(available_max_lcore - 1):
             self.verify("hello from core %s" % cores[i] in out, "EAL not started on core%s" % cores[i])
 
     def tear_down(self):

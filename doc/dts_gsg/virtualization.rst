@@ -247,7 +247,7 @@ Before VM operations, vxlan sample feature request to start tep_termination appl
 .. code-block:: console
 
     def prepare_vxlan_sample_env(self, tep_cmd):
-        # remove unexpected socke
+        # remove unexpected socket
         self.dut.send_expect("rm -rf vhost-net", "# ")
     
         # start tep_termination first
@@ -369,7 +369,7 @@ Power down  guest os.
 
 .. note::
 
-    For more information about qemu guest agent, please reference to http://wiki.qemu.org/Features/QAPI/GuestAgent.
+    For more information about qemu guest agent, please refer to https://wiki.qemu.org/Features/GuestAgent.
 
 Control (Qemu Serial Port)
 """"""""""""""""""""""""""
@@ -423,8 +423,8 @@ When assign host pci device into guest, we also add "id" string for this device.
 
 	-device pci-assign,host=07:10.0,id=pt_0
 	
-With this command, we assign host VF device 07:10.0 into guest and it named as "pt_0". "pt_0" mean it's the first device pass through into guest os.
-After guest os started, we use dump pci command and generate guest and host pci mapping by "id".
+With this command, we assign host VF device 07:10.0 into guest and it is named as "pt_0". "pt_0" means it's the first device pass through into guest os.
+After guest os started, we use the QEMU/Monitor "info pci" command to dump PCI information and generate guest and host pci mapping by "id".
 
 .. code-block:: console
 
@@ -479,10 +479,10 @@ Options for nic:
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_vlan        | vlan of virtual nic	             | 0              | No        |
 	+-----------------+----------------------------------+----------------+-----------+
-	| opt_macaddr     | If not assgin, nic will generate | N/A            | No        |         
+	| opt_macaddr     | If not assign, nic will generate | N/A            | No        |
 	|                 | random mac	                     | 	              |           |
 	+-----------------+----------------------------------+----------------+-----------+
-	| opt_model       | model of virutal nic             | e1000	      | No        |
+	| opt_model       | model of virtual nic             | e1000	      | No        |
 	+-----------------+----------------------------------+----------------+-----------+
 	| opt_name        | name be assigned for use in      | N/A            | No        | 
 	|                 | monitor command                  |                |           |

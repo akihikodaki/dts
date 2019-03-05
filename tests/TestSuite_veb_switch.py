@@ -37,6 +37,7 @@ Test VEB Switch and floating VEB Features by Poll Mode Drivers.
 
 import re
 import time
+import utils
 
 from virt_dut import VirtDut
 from project_dpdk import DPDKdut
@@ -67,7 +68,7 @@ class TestVEBSwitching(TestCase):
             return [stats['TX-packets'], stats['TX-errors'], stats['TX-bytes']]
         else:
             return None
-    
+ 
     def veb_get_pmd_stats(self, dev, portid, rx_tx):
         stats = {}
         rx_pkts_prefix = "RX-packets:"
@@ -100,7 +101,6 @@ class TestVEBSwitching(TestCase):
         else:
             return None
 
-
     def veb_get_pmd_value(self, prefix, out):
         pattern = re.compile(prefix + "(\s+)([0-9]+)")
         m = pattern.search(out)
@@ -127,9 +127,31 @@ class TestVEBSwitching(TestCase):
             pkt.config_layer('ether', {'dst': vf_mac})
             pkt.send_pkt(tx_port=itf)
             time.sleep(.5)
-   
+
+    def count_packet(self, out, mac):
+        """
+        Count packet sum number.
+        """
+        lines = out.split("\r\n")
+        cnt = 0
+        count_pkt = 0
+        # count the packet received from specified mac address.
+        for line in lines:
+            line = line.strip()
+            if len(line) != 0 and line.startswith(("src=",)):
+                for item in line.split(" "):
+                    item = item.strip()
+                    if(item == ("src=%s" % mac)):
+                        cnt = cnt + 1
+                    elif(item == "L4_UDP"):
+                        cnt = cnt + 1
+                if (cnt == 2):
+                    count_pkt = count_pkt + 1
+                cnt = 0
+        print utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt)
+        return count_pkt
+
     # Test cases.
-    
     def set_up_all(self):
         """
         Prerequisite steps for each test suite.
@@ -141,14 +163,14 @@ class TestVEBSwitching(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
-        
+
         self.pf_kdriver_flag = 0
         self.pf_ddriver_flag = 0
         self.vf0_mac = "00:11:22:33:44:11"
         self.vf1_mac = "00:11:22:33:44:12"
         self.vf2_mac = "00:11:22:33:44:13"
         self.vf3_mac = "00:11:22:33:44:14"
-        
+ 
         self.used_dut_port = self.dut_ports[0]
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.tester_itf = self.tester.get_interface(localPort)
@@ -208,10 +230,10 @@ class TestVEBSwitching(TestCase):
 
     def test_VEB_switching_inter_vfs(self):
         """
-        Kernel PF, then create 2VFs. VFs running dpdk testpmd, send traffic to
-        VF1, and set the packet's DEST MAC to VF2, check if VF2 can receive 
+        Kernel PF, then create 2VFs. VFs running dpdk testpmd,
+        send traffic from VF1 to VF2, check if VF2 can receive
         the packets. Check Inter VF-VF MAC switch.
-    """
+        """
         self.setup_env(driver='default')
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.vf1_mac), "testpmd>", 120)
         self.dut.send_expect("set fwd txonly", "testpmd>")
@@ -224,19 +246,19 @@ class TestVEBSwitching(TestCase):
         self.dut.send_expect("start", "testpmd>", 5)
         time.sleep(2)
     
-        self.dut.send_expect("stop", "testpmd>", 5)    
+        self.dut.send_expect("stop", "testpmd>", 5)
         self.session_secondary.send_expect("stop", "testpmd>", 5)
 
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify(vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0], "VF1 failed to receive packets from VF0")    
+        self.verify(vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0], "VF1 failed to receive packets from VF0")
 
     def test_VEB_switching_inter_vfs_mac_fwd(self):
         """
         Kernel PF, then create 2VFs. VFs running dpdk testpmd, send traffic to
-        VF1, and set the packet's DEST MAC to VF2, check if VF2 can receive 
-        the packets. Check Inter VF-VF MAC switch.
+        VF1 with VF1's MAC as packet's DEST MAC, set ether peer address to VF2's MAC.
+        Check if VF2 can receive the packets. Check Inter VF-VF MAC switch.
         """
         self.setup_env(driver='default')
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.vf1_mac), "testpmd>", 120)
@@ -262,7 +284,7 @@ class TestVEBSwitching(TestCase):
     
     def test_VEB_switching_inter_vfs_vlan(self):
         """
-        Kernel PF, then create 2VFs, assign VF1 with VLAN=1 in, VF2 with 
+        Kernel PF, then create 2VFs, assign VF1 with VLAN=1 in, VF2 with
         VLAN=2. VFs are running dpdk testpmd, send traffic to VF1 with VLAN=1,
         then let it forwards to VF2, it should not work since they are not in
         the same VLAN; set VF2 with VLAN=1, then send traffic to VF1 with
@@ -324,36 +346,39 @@ class TestVEBSwitching(TestCase):
         """
         DPDK PF, then create 2VFs, PF in the host running dpdk testpmd, VFs
         running dpdk testpmd, VF1 send traffic to VF2, check if VF2 can receive
-        the packets. send tracfic from PF to VF1, ensure PF->VF1; send traffic
+        the packets. send traffic from PF to VF1, ensure PF->VF1; send traffic
         from VF1 to PF, ensure VF1->PF can work.
         """
         # VF->PF
         self.setup_env(driver=self.drivername)
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
+        self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
         self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.pf_mac_address), "testpmd>", 120)
+        self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-
+        # print the packets which received by pf, this caused most packets missed.
+        out = self.dut.get_session_output(timeout=1)
         self.session_secondary.send_expect("stop", "testpmd>", 2)
         self.dut.send_expect("stop", "testpmd>", 2)
 
+        count_pkt = self.count_packet(out, self.vf0_mac)
         vf0_tx_stats = self.veb_get_pmd_stats("second", 0, "tx")
         pf_rx_stats = self.veb_get_pmd_stats("first", 0, "rx")
-        self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
-        self.verify(pf_rx_stats[0] != 0, "no packet was received by PF")
-        self.verify(vf0_tx_stats[0]*0.5 < pf_rx_stats[0], "PF failed to receive most packets from VF0")
+        self.verify(vf0_tx_stats[0] > 1000, "no packet was sent by VF0")
+        self.verify(count_pkt > 100, "no packet was received by PF")
         self.session_secondary.send_expect("quit", "# ")
-        time.sleep(2)       
+        time.sleep(2)
         self.dut.send_expect("quit", "# ")
         time.sleep(2)
  
-        #PF->VF
+        # PF->VF
         self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.pf_pci, self.vf0_mac), "testpmd>", 120)
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
@@ -366,15 +391,12 @@ class TestVEBSwitching(TestCase):
         time.sleep(2)
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-
         self.dut.send_expect("stop", "testpmd>", 2)
         self.session_secondary.send_expect("stop", "testpmd>", 2)
 
         vf0_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
-        pf_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
-        self.verify(pf_tx_stats[0] != 0, "no packet was sent by PF")
-        self.verify(vf0_rx_stats[0] != 0, "no packet was received by VF0")
-        self.verify(vf0_rx_stats[0] > pf_tx_stats[0]*0.5, "VF0 failed to receive most packets from PF")
+        print utils.GREEN("The number of UDP packets received by vf is %d." % vf0_rx_stats[0])
+        self.verify(vf0_rx_stats[0] > 100, "no packet was received by VF0")
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)
         self.dut.send_expect("quit", "# ")
@@ -438,7 +460,7 @@ class TestVEBSwitching(TestCase):
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
-        self.session_secondary.send_expect("start", "testpmd>")        
+        self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
 
         self.session_secondary.send_expect("stop", "testpmd>", 5)
@@ -449,7 +471,6 @@ class TestVEBSwitching(TestCase):
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
         self.verify(vf0_tx_stats[0] * 0.5 < vf1_rx_stats[0], "VF1 failed to receive packets from VF0")
 
-         
     def tear_down(self):
         """
         Run after each test case.
@@ -461,7 +482,6 @@ class TestVEBSwitching(TestCase):
 
         self.dut.kill_all()
     
-
     def tear_down_all(self):
         """
         Run after each test suite.
@@ -473,4 +493,3 @@ class TestVEBSwitching(TestCase):
         for port_id in self.dut_ports:
             port = self.dut.ports_info[port_id]['port']
             port.bind_driver(driver=self.drivername)
-

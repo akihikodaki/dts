@@ -35,7 +35,7 @@ Whitelisting Tests
 ==================
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio

@@ -41,10 +41,23 @@ import random
 import re
 import utils
 
-testQueues = [16]
+queue = 16
 reta_entries = []
-reta_lines = []
 reta_num = 128
+iptypes = {'ipv4-sctp': 'sctp',
+           'ipv4-other': 'ip',
+           'ipv4-frag': 'ip',
+           'ipv4-udp': 'udp',
+           'ipv4-tcp': 'tcp',
+           # this hash not support in dpdk2.0
+           # 'l2_payload':'ether',
+           'ipv6-other': 'ip',
+           'ipv6-sctp': 'sctp',
+           'ipv6-udp': 'udp',
+           'ipv6-tcp': 'tcp',
+           'ipv6-frag': 'ip'
+           }
+
 # Use scapy to send packets with different source and dest ip.
 # and collect the hash result of five tuple and the queue id.
 from test_case import TestCase
@@ -61,7 +74,7 @@ class TestPmdrssHash(TestCase):
         """
         Sends packets.
         """
-        global reta_lines
+        received_pkts = []
         self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
@@ -172,18 +185,18 @@ class TestPmdrssHash(TestCase):
                         name, value = item.split("=", 1)
 
                 reta_line[name.strip()] = value.strip()
-                reta_lines.append(reta_line)
+                received_pkts.append(reta_line)
 
-        self.verifyResult()
+        self.verifyResult(received_pkts)
 
-    def verifyResult(self):
+    def verifyResult(self, reta_lines):
         """
         Verify whether or not the result passes.
         """
 
-        global reta_lines
         global reta_num
         result = []
+        self.verify(len(reta_lines) > 0, 'No packet received!')
         self.result_table_create(
             ['packet index', 'hash value', 'hash index', 'queue id', 'actual queue id', 'pass '])
 
@@ -205,14 +218,13 @@ class TestPmdrssHash(TestCase):
             i = i + 1
 
         self.result_table_print()
-        reta_lines = []
         self.verify(sum(result) == 0, "the reta update function failed!")
 
     def send_packet_symmetric(self, itf, tran_type):
         """
         Sends packets.
         """
-        global reta_lines
+        received_pkts = []
         self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
         mac = self.dut.get_mac_address(0)
@@ -370,44 +382,49 @@ class TestPmdrssHash(TestCase):
                     item = item.strip()
                     if(item.startswith("RSS hash")):
                         name, value = item.split("=", 1)
+                    else:
+                        continue
 
                 reta_line[name.strip()] = value.strip()
-                reta_lines.append(reta_line)
+                received_pkts.append(reta_line)
 
-        self.verifyResult_symmetric()
+        self.verifyResult_symmetric(received_pkts)
 
-    def verifyResult_symmetric(self):
+    def verifyResult_symmetric(self, reta_lines):
         """
         Verify whether or not the result passes.
         """
 
-        global reta_lines
         global reta_num
         result = []
+        self.verify(len(reta_lines) > 0, 'No packet received!')
         self.result_table_create(
             ['packet index', 'RSS hash', 'hash index', 'queue id', 'actual queue id', 'pass '])
 
         i = 0
         for tmp_reta_line in reta_lines:
-            status = "true"
+            status = "false"
             # compute the hash result of five tuple into the 7 LSBs value.
             hash_index = int(tmp_reta_line["RSS hash"], 16) % reta_num
-
-            if(i % 2 == 1):
-                if(pre_RSS_hash == tmp_reta_line["RSS hash"]):
-                    status = "true"
-                    result.insert((i - 1) / 2, 0)
-                else:
-                    status = "fail"
-                    result.insert((i - 1) / 2, 1)
-            pre_RSS_hash = tmp_reta_line["RSS hash"]
-
+            if(reta_entries[hash_index] == int(tmp_reta_line["queue"])):
+                status = "true"
+                result.insert(i, 0)
+                if(i % 2 == 1):
+                    if(pre_RSS_hash == tmp_reta_line["RSS hash"]):
+                        status = "true"
+                        result.insert(len(reta_lines) + (i - 1) / 2, 0)
+                    else:
+                        status = "fail"
+                        result.insert(len(reta_lines) + (i - 1) / 2, 1)
+                pre_RSS_hash = tmp_reta_line["RSS hash"]
+            else:
+                status = "fail"
+                result.insert(i, 1)
             self.result_table_add(
                 [i, tmp_reta_line["RSS hash"], hash_index, reta_entries[hash_index], tmp_reta_line["queue"], status])
             i = i + 1
 
         self.result_table_print()
-        reta_lines = []
         self.verify(
             sum(result) == 0, "the symmetric RSS hash function failed!")
 
@@ -418,19 +435,30 @@ class TestPmdrssHash(TestCase):
 
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                     "fortville_spirit_single", "redrockcanyou", "atwood",
-                    "boulderrapid", "fortpark_TLV", "fortville_25g"],
+                    "boulderrapid", "fortpark_TLV", "fortville_25g", "niantic"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
+        global iptypes
+
         if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g"]:
             reta_num = 512
         elif self.nic in ["niantic"]:
             reta_num = 128
+            iptypes = {'ipv4-other': 'ip',
+                       'ipv4-frag': 'ip',
+                       'ipv4-udp': 'udp',
+                       'ipv4-tcp': 'tcp',
+                       'ipv6-other': 'ip',
+                       'ipv6-udp': 'udp',
+                       'ipv6-tcp': 'tcp',
+                       'ipv6-frag': 'ip'
+                       }
         elif self.nic in ["redrockcanyou", "atwood", "boulderrapid"]:
             reta_num = 128
         else:
             self.verify(False, "NIC Unsupported:%s" % str(self.nic))
         ports = self.dut.get_ports(self.nic)
-        self.verify(len(ports) >= 2, "Not enough ports available")
+        self.verify(len(ports) >= 1, "Not enough ports available")
 
     def set_up(self):
         """
@@ -443,49 +471,35 @@ class TestPmdrssHash(TestCase):
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         global reta_num
-        iptypes = {'ipv4-sctp': 'sctp',
-                   'ipv4-other': 'ip',
-                   'ipv4-frag': 'ip',
-                   'ipv4-udp': 'udp',
-                   'ipv4-tcp': 'tcp',
-                   # this hash not support in dpdk2.0
-                   # 'l2_payload':'ether',
-                   'ipv6-other': 'ip',
-                   'ipv6-sctp': 'sctp',
-                   'ipv6-udp': 'udp',
-                   'ipv6-tcp': 'tcp',
-                   'ipv6-frag': 'ip'
-                   }
+        global iptypes
 
         self.dut.kill_all()
 
         # test with different rss queues
-        for queue in testQueues:
+        self.dut.send_expect(
+            "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
+            (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+
+        for iptype, rsstype in iptypes.items():
+            self.dut.send_expect("set verbose 8", "testpmd> ")
+            self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+                "set nbcore %d" % (queue + 1), "testpmd> ")
 
-            for iptype, rsstype in iptypes.items():
-                self.dut.send_expect("set verbose 8", "testpmd> ")
-                self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("port stop all", "testpmd> ")
+            self.dut.send_expect(
+                "set_hash_global_config  0 toeplitz %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect("port start all", "testpmd> ")
+            out = self.dut.send_expect(
+                "port config all rss %s" % rsstype, "testpmd> ")
+            self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+            # configure the reta with specific mappings.
+            for i in range(reta_num):
+                reta_entries.insert(i, random.randint(0, queue - 1))
                 self.dut.send_expect(
-                    "set nbcore %d" % (queue + 1), "testpmd> ")
+                    "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
 
-                self.dut.send_expect("port stop all", "testpmd> ")
-                # self.dut.send_expect("port config all rss ip", "testpmd> ")
-                self.dut.send_expect(
-                    "set_hash_global_config  0 toeplitz %s enable" % iptype, "testpmd> ")
-                self.dut.send_expect("port start all", "testpmd> ")
-                out = self.dut.send_expect(
-                    "port config all rss %s" % rsstype, "testpmd> ")
-                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
-                # configure the reta with specific mappings.
-                for i in range(reta_num):
-                    reta_entries.insert(i, random.randint(0, queue - 1))
-                    self.dut.send_expect(
-                        "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-
-                self.send_packet(itf, iptype)
+            self.send_packet(itf, iptype)
 
         self.dut.send_expect("quit", "# ", 30)
 
@@ -494,72 +508,48 @@ class TestPmdrssHash(TestCase):
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         global reta_num
-        iptypes = {'ipv4-sctp': 'sctp',
-                   'ipv4-other': 'ip',
-                   'ipv4-frag': 'ip',
-                   'ipv4-udp': 'udp',
-                   'ipv4-tcp': 'tcp',
-                   # this hash not support in dpdk2.0
-                   # 'l2_payload':'ether',
-                   'ipv6-other': 'ip',
-                   'ipv6-sctp': 'sctp',
-                   'ipv6-udp': 'udp',
-                   'ipv6-tcp': 'tcp',
-                   'ipv6-frag': 'ip'
-                   }
+        global iptypes
 
         self.dut.kill_all()
 
         # test with different rss queues
-        for queue in testQueues:
+        self.dut.send_expect(
+            "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
+            (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+
+        for iptype, rsstype in iptypes.items():
+            self.dut.send_expect("set verbose 8", "testpmd> ")
+            self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+                "set nbcore %d" % (queue + 1), "testpmd> ")
 
-            for iptype, rsstype in iptypes.items():
-                self.dut.send_expect("set verbose 8", "testpmd> ")
-                self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("port stop all", "testpmd> ")
+            self.dut.send_expect(
+                "set_hash_global_config 0 toeplitz %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect(
+                "set_sym_hash_ena_per_port 0 enable", "testpmd> ")
+            self.dut.send_expect("port start all", "testpmd> ")
+            out = self.dut.send_expect(
+                "port config all rss %s" % rsstype, "testpmd> ")
+            self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+
+            # configure the reta with specific mappings.
+            for i in range(reta_num):
+                reta_entries.insert(i, random.randint(0, queue - 1))
                 self.dut.send_expect(
-                    "set nbcore %d" % (queue + 1), "testpmd> ")
+                    "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
 
-                self.dut.send_expect("port stop all", "testpmd> ")
-                self.dut.send_expect(
-                    "set_hash_global_config 0 toeplitz %s enable" % iptype, "testpmd> ")
-                self.dut.send_expect(
-                    "set_sym_hash_ena_per_port 0 enable", "testpmd> ")
-                self.dut.send_expect("port start all", "testpmd> ")
-                out = self.dut.send_expect(
-                    "port config all rss %s" % rsstype, "testpmd> ")
-                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+            self.send_packet_symmetric(itf, iptype)
 
-                # configure the reta with specific mappings.
-                for i in range(reta_num):
-                    reta_entries.insert(i, random.randint(0, queue - 1))
-                    self.dut.send_expect(
-                        "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-
-                self.send_packet_symmetric(itf, iptype)
-
-            self.dut.send_expect("quit", "# ", 30)
+        self.dut.send_expect("quit", "# ", 30)
 
     def test_simple(self):
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         global reta_num
-        iptypes = {'ipv4-sctp': 'sctp',
-                   'ipv4-other': 'ip',
-                   'ipv4-frag': 'ip',
-                   'ipv4-udp': 'udp',
-                   'ipv4-tcp': 'tcp',
-                   # this hass not support in dpdk 2.0
-                   # 'l2_payload':'ether',
-                   'ipv6-other': 'ip',
-                   'ipv6-sctp': 'sctp',
-                   'ipv6-udp': 'udp',
-                   'ipv6-tcp': 'tcp',
-                   'ipv6-frag': 'ip'
-                   }
+        global iptypes
+
         if self.kdriver in ["fm10k"]:
             iptypes.pop('ipv4-sctp')
             iptypes.pop('ipv6-sctp')
@@ -567,36 +557,34 @@ class TestPmdrssHash(TestCase):
         self.dut.kill_all()
 
         # test with different rss queues
-        for queue in testQueues:
+        self.dut.send_expect(
+            "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
+            (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+
+        for iptype, rsstype in iptypes.items():
+            self.logger.info("***********************%s rss test********************************" % iptype)
+            self.dut.send_expect("set verbose 8", "testpmd> ")
+            self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+                "set nbcore %d" % (queue + 1), "testpmd> ")
 
-            for iptype, rsstype in iptypes.items():
-                self.logger.info("***********************%s rss test********************************" % iptype)
-                self.dut.send_expect("set verbose 8", "testpmd> ")
-                self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("port stop all", "testpmd> ")
+            # some nic not support change hash algorithm
+            if self.kdriver not in ["fm10k"]:
                 self.dut.send_expect(
-                    "set nbcore %d" % (queue + 1), "testpmd> ")
+                    "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect("port start all", "testpmd> ")
+            out = self.dut.send_expect(
+                "port config all rss %s" % rsstype, "testpmd> ")
+            self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+            # configure the reta with specific mappings.
+            for i in range(reta_num):
+                reta_entries.insert(i, random.randint(0, queue - 1))
+                self.dut.send_expect(
+                    "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+            self.send_packet(itf, iptype)
 
-                self.dut.send_expect("port stop all", "testpmd> ")
-                # some nic not support change hash algorithm
-                if self.kdriver not in ["fm10k"]:
-                    self.dut.send_expect(
-                        "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
-                self.dut.send_expect("port start all", "testpmd> ")
-                out = self.dut.send_expect(
-                    "port config all rss %s" % rsstype, "testpmd> ")
-                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
-                # configure the reta with specific mappings.
-                for i in range(reta_num):
-                    reta_entries.insert(i, random.randint(0, queue - 1))
-                    self.dut.send_expect(
-                        "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-
-                self.send_packet(itf, iptype)
-
-            self.dut.send_expect("quit", "# ", 30)
+        self.dut.send_expect("quit", "# ", 30)
 
     def test_simple_symmetric(self):
 
@@ -604,58 +592,47 @@ class TestPmdrssHash(TestCase):
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         global reta_num
-        iptypes = {'ipv4-sctp': 'sctp',
-                   'ipv4-other': 'ip',
-                   'ipv4-frag': 'ip',
-                   'ipv4-udp': 'udp',
-                   'ipv4-tcp': 'tcp',
-                   # this hash not support in dpdk2.0
-                   # 'l2_payload':'ether',
-                   'ipv6-other': 'ip',
-                   'ipv6-sctp': 'sctp',
-                   'ipv6-udp': 'udp',
-                   'ipv6-tcp': 'tcp',
-                   'ipv6-frag': 'ip'
-                   }
+        global iptypes
         self.dut.kill_all()
 
         # test with different rss queues
-        for queue in testQueues:
+        self.dut.send_expect(
+            "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
+            (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+
+        for iptype, rsstype in iptypes.items():
+            self.dut.send_expect("set verbose 8", "testpmd> ")
+            self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+                "set nbcore %d" % (queue + 1), "testpmd> ")
 
-            for iptype, rsstype in iptypes.items():
-                self.dut.send_expect("set verbose 8", "testpmd> ")
-                self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("port stop all", "testpmd> ")
+            self.dut.send_expect(
+                "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect(
+                "set_sym_hash_ena_per_port 0 enable", "testpmd> ")
+            self.dut.send_expect("port start all", "testpmd> ")
+
+            out = self.dut.send_expect(
+                "port config all rss %s" % rsstype, "testpmd> ")
+            self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
+            # configure the reta with specific mappings.
+            for i in range(reta_num):
+                reta_entries.insert(i, random.randint(0, queue - 1))
                 self.dut.send_expect(
-                    "set nbcore %d" % (queue + 1), "testpmd> ")
+                    "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+            self.send_packet_symmetric(itf, iptype)
 
-                self.dut.send_expect("port stop all", "testpmd> ")
-                # self.dut.send_expect("port config all rss ip", "testpmd> ")
-                self.dut.send_expect(
-                    "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
-                self.dut.send_expect(
-                    "set_sym_hash_ena_per_port 0 enable", "testpmd> ")
-                self.dut.send_expect("port start all", "testpmd> ")
-
-                out = self.dut.send_expect(
-                    "port config all rss %s" % rsstype, "testpmd> ")
-                self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
-                # configure the reta with specific mappings.
-                for i in range(reta_num):
-                    reta_entries.insert(i, random.randint(0, queue - 1))
-                    self.dut.send_expect(
-                        "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-
-                self.send_packet_symmetric(itf, iptype)
-
-            self.dut.send_expect("quit", "# ", 30)
+        self.dut.send_expect("quit", "# ", 30)
 
     def test_dynamic_rss_bond_config(self):
         
         # setup testpmd and finish bond config
-        self.dut.send_expect("./%s/app/testpmd -c f -n 4 -- -i --tx-offloads=0x8fff" % self.target, "testpmd> ", 120)
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                    "fortpark_TLV", "fortville_25g"],
+                    "NIC Unsupported: " + str(self.nic))
+
+        self.dut.send_expect("./%s/app/testpmd -c f -n 4 -- -i" % self.target, "testpmd> ", 120)
         out = self.dut.send_expect("create bonded device 3 0", "testpmd> ", 30)
         bond_device_id = int(re.search("port \d+", out).group().split(" ")[-1].strip())
 

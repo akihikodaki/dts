@@ -329,7 +329,7 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         for rxfreet_value in self.rxfreet_values:
 
-            self.pmdout.start_testpmd("1S/2C/1T", "--portmask=%s --enable-rx-cksum --disable-hw-vlan --disable-rss --rxd=1024 --txd=1024 --rxfreet=%d" % ( port_mask, rxfreet_value), socket=self.ports_socket)
+            self.pmdout.start_testpmd("1S/2C/1T", "--portmask=%s --enable-rx-cksum --disable-rss --rxd=1024 --txd=1024 --rxfreet=%d" % ( port_mask, rxfreet_value), socket=self.ports_socket)
             self.dut.send_expect("set fwd csum", "testpmd> ")
             self.dut.send_expect("start", "testpmd> ")
 

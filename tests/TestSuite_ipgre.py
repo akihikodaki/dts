@@ -44,7 +44,7 @@ import re
 import time
 import os
 
-from packet import Packet, sniff_packets, load_sniff_packets, NVGRE, IPPROTO_NVGRE
+from packet import Packet, NVGRE, IPPROTO_NVGRE
 
 from scapy.utils import wrpcap, rdpcap
 from scapy.packet import split_layers,bind_layers
@@ -98,11 +98,11 @@ class TestIpgre(TestCase):
             if layer_configs:
                 for layer in layer_configs.keys():
                     pkt.config_layer(layer, layer_configs[layer])
-            inst = sniff_packets(self.tester_iface, count=1, timeout=8)
+            inst = self.tester.tcpdump_sniff_packets(self.tester_iface, count=1, timeout=8)
             pkt.send_pkt(tx_port=self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             time.sleep(1)
-            load_sniff_packets(inst)
+            self.tester.load_tcpdump_sniff_packets(inst)
             if self.printFlag: # debug output
                 print out
             for pkt_layer_name in pkt_names:
@@ -225,7 +225,7 @@ class TestIpgre(TestCase):
         }
         
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
+        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-hw-vlan" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
@@ -257,13 +257,13 @@ class TestIpgre(TestCase):
         """
         Start testpmd with multi queues, add GRE filter that forward 
         inner/outer ip address 0.0.0.0 to queue 3, Send packet inner 
-        ip address matched and check packet recevied by queue 3
+        ip address matched and check packet received by queue 3
         """
         outer_mac = self.tester_iface_mac
         inner_mac = "10:00:00:00:00:00"
         
         # Start testpmd with multi queues
-        #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4 --tx-offloads=0x8fff" % self.target
+        #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4" % self.target
         testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum  --rxq=4 --txq=4" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
@@ -275,13 +275,13 @@ class TestIpgre(TestCase):
         cmd = "tunnel_filter add 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
         self.dut.send_expect( cmd, "testpmd>")
         
-        # Send packet inner ip address matched and check packet recevied by queue 3
+        # Send packet inner ip address matched and check packet received by queue 3
         pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":  ["TUNNEL_GRENAT",  "INNER_L4_UDP"]}
         config_layers = {'ether': {'src': self.outer_mac_src},
                          'ipv4': {'dst': "0.0.0.0", 'proto': 'gre'}}
         self.check_packet_transmission(pkt_types, config_layers)
 
-        # Remove tunnel filter and check same packet recevied by queue 0
+        # Remove tunnel filter and check same packet received by queue 0
         cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
         self.dut.send_expect( cmd, "testpmd>")
         
@@ -289,7 +289,7 @@ class TestIpgre(TestCase):
         cmd = "tunnel_filter add 0 %s %s 0.0.0.0 1 ipingre oip 0 3"%(outer_mac, inner_mac)
         self.dut.send_expect( cmd, "testpmd>")
 
-        # Send packet outer ip address matched and check packet recevied by queue 3.
+        # Send packet outer ip address matched and check packet received by queue 3.
         pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"]}
         config_layers = {'ether': {'src': self.outer_mac_src},
                          'ipv4': {'dst': "0.0.0.0", 'proto': 'gre'}}
@@ -307,16 +307,19 @@ class TestIpgre(TestCase):
         Send packet with wrong IP/TCP/UDP/SCTP checksum and check forwarded packet checksum 
         """
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum --tx-offloads=0x8fff --port-topology=loop" % self.target
+        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum --port-topology=loop" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
+        self.dut.send_expect("stop", "testpmd>")
+        self.dut.send_expect("port stop all", "testpmd>")
         self.dut.send_expect("csum set ip hw 0", "testpmd>")
         self.dut.send_expect("csum set udp hw 0", "testpmd>")
         self.dut.send_expect("csum set sctp hw 0", "testpmd>")
         self.dut.send_expect("csum set outer-ip hw 0", "testpmd>")
         self.dut.send_expect("csum set tcp hw 0", "testpmd>")
-        self.dut.send_expect("csum parse_tunnel on 0", "testpmd>")
+        self.dut.send_expect("csum parse-tunnel on 0", "testpmd>")
+        self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
         # Send packet with wrong outer IP checksum and check forwarded packet IP checksum is correct

@@ -17,7 +17,7 @@ from test_case import TestCase
 # Test class.
 #
 
-command_line = """./%s/app/test -c %s -n %d --log-level 8"""
+command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" """
 
 
 class TestCoremask(TestCase):
@@ -39,11 +39,6 @@ class TestCoremask(TestCase):
         self.mem_channel = self.dut.get_memory_channels()
 
         self.all_cores = self.dut.get_core_list("all")
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LOG_LEVEL=.*$/"
-                          + "CONFIG_RTE_LOG_LEVEL=RTE_LOG_DEBUG/' config/common_base", "# ", 30)
-
-        self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
 
     def set_up(self):
         """
@@ -51,12 +46,28 @@ class TestCoremask(TestCase):
         """
         pass
 
+    def get_available_max_lcore(self):
+        """
+        Check available max lcore according to configuration.
+        """
+
+        config_max_lcore = self.dut.get_def_rte_config('CONFIG_RTE_MAX_LCORE')
+
+        if config_max_lcore:
+            available_max_lcore = min(int(config_max_lcore), len(self.all_cores) + 1)
+        else:
+            available_max_lcore = len(self.all_cores) + 1
+
+        return available_max_lcore
+
     def test_individual_coremask(self):
         """
         Check coremask parsing for all the available cores one by one.
         """
 
-        for core in self.all_cores:
+        available_max_lcore = self.get_available_max_lcore()
+
+        for core in self.all_cores[:available_max_lcore - 1]:
 
             core_mask = utils.create_mask([core])
 
@@ -64,7 +75,6 @@ class TestCoremask(TestCase):
                                       self.mem_channel)
 
             out = self.dut.send_expect(command, "RTE>>", 10)
-
             self.verify("EAL: Detected lcore %s as core" % core in out,
                         "Core %s not detected" % core)
 
@@ -78,19 +88,20 @@ class TestCoremask(TestCase):
         Check coremask parsing for all the cores at once.
         """
 
-        core_mask = utils.create_mask(self.all_cores)
+        available_max_lcore = self.get_available_max_lcore()
+
+        core_mask = utils.create_mask(self.all_cores[:available_max_lcore - 1])
 
         command = command_line % (self.target, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
-
         self.verify("EAL: Master lcore 1 is ready" in out,
                     "Core 1 not ready")
 
         self.verify("EAL: Detected lcore 1 as core" in out,
                     "Core 1 not detected")
 
-        for core in self.all_cores[1:]:
+        for core in self.all_cores[1:available_max_lcore - 1]:
             self.verify("EAL: lcore %s is ready" % core in out,
                         "Core %s not ready" % core)
 
@@ -104,41 +115,25 @@ class TestCoremask(TestCase):
         Check coremask parsing for more cores than available.
         """
 
-        command_line = """./%s/app/test -c %s -n %d --log-level 8 2>&1 |tee out"""
-
-        # Default big coremask value 128
-        big_coremask_size = 128
-
-        try:
-            out = self.dut.send_expect("cat config/defconfig_%s" % self.target, "]# ", 10)
-            start_position = out.find('CONFIG_RTE_MAX_LCORE=')
-
-            if start_position > -1:
-                end_position = out.find('\n', start_position)
-                big_coremask_size = int(out[start_position + 21:end_position])
-
-                print "Detected CONFIG_RTE_MAX_LCORE=%d" % big_coremask_size
-        except:
-            print "Using default big coremask %d" % big_coremask_size
+        command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" 2>&1 |tee out"""
 
         # Create a extremely big coremask
+        big_coremask_size = self.get_available_max_lcore()
         big_coremask = "0x"
         for _ in range(0, big_coremask_size, 4):
-            big_coremask += "F"
+            big_coremask += "f"
 
         command = command_line % (self.target, big_coremask, self.mem_channel)
         try:
-            self.dut.send_expect(command, "RTE>>", 10)
+            out = self.dut.send_expect(command, "RTE>>", 10)
         except:
-            out = self.dut.send_expect("cat out", "# ")
-
             self.verify("EAL: invalid coremask" in out,
-                    "Small core mask set")
+                        "Small core mask set")
 
         self.verify("EAL: Detected lcore 0 as core" in out,
                     "Core 0 not detected")
 
-        for core in self.all_cores[1:]:
+        for core in self.all_cores[1:big_coremask_size - 1]:
 
             self.verify("EAL: Detected lcore %s as core" % core in out,
                         "Core %s not detected" % core)
@@ -178,8 +173,4 @@ class TestCoremask(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LOG_LEVEL=.*$/"
-                          + "CONFIG_RTE_LOG_LEVEL=RTE_LOG_INFO/' config/common_base", "# ", 30)
-
-        #self.dut.skip_setup = False
-        self.dut.build_install_dpdk(self.target)
+        pass

@@ -12,7 +12,7 @@ VM_CORES_MASK = 'all'
 class TestDynamicFlowtype(TestCase):
 
     def set_up_all(self):
-        self.verify(self.nic in ['fortville_25g'],
+        self.verify('fortville' in self.nic,
                     'dynamic flow type mapping can not support %s nic'
                     % self.nic)
         ports = self.dut.get_ports()
@@ -61,7 +61,7 @@ class TestDynamicFlowtype(TestCase):
         self.dut_testpmd.execute_cmd('port stop all')
         time.sleep(1)
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
-        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo')
+        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo,/tmp/gtp.bak')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         self.verify("Profile number is: 1" in out,
                     "Failed to load ddp profile!!!")
@@ -179,8 +179,6 @@ class TestDynamicFlowtype(TestCase):
             self.tester.scapy_execute()
             out = self.dut.get_session_output(timeout=2)
             if match_opt == 'matched':
-                self.verify("port 0/queue 0" not in out,
-                            "Failed to receive packet in rss queue!!!")
                 self.verify("PKT_RX_RSS_HASH" in out,
                             "Failed to receive packet in rss queue!!!")
             elif match_opt == 'not matched':
@@ -192,7 +190,7 @@ class TestDynamicFlowtype(TestCase):
     def dynamic_flowtype_test(self, pctype=22, flowtype=26, reset=False):
         """
         Dynamic modify, return or reset the contents of flow type to pctype
-        dynamic mapping, enable rss hash for new protocal.
+        dynamic mapping, enable rss hash for new protocol.
         reset: If reset is true, reset the contents of flow type to pctype
                mapping. If reset is false, enable rss hash for new protocal.
         """
@@ -280,10 +278,17 @@ class TestDynamicFlowtype(TestCase):
         self.dynamic_flowtype_test(pctype=25, flowtype=25, reset=False)
 
     def tear_down(self):
-        if self.dut_testpmd:
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 1')
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 2')
-            self.dut_testpmd.quit()
+        self.dut_testpmd.execute_cmd('stop')
+        out = self.dut_testpmd.execute_cmd('ddp get list 0')
+        if "Profile number is: 0" not in out:
+            self.dut_testpmd.execute_cmd('port stop all')
+            time.sleep(1)
+            self.dut_testpmd.execute_cmd('ddp del 0 /tmp/gtp.bak')
+            out = self.dut_testpmd.execute_cmd('ddp get list 0')
+            self.verify("Profile number is: 0" in out,
+                        "Failed to delete ddp profile!!!")
+            self.dut_testpmd.execute_cmd('port start all')
+        self.dut_testpmd.quit()
 
     def tear_down_all(self):
         self.dut.kill_all()

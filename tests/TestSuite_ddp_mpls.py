@@ -8,7 +8,6 @@ from scapy.utils import rdpcap
 from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
 from settings import get_nic_name
 import random
 
@@ -19,8 +18,8 @@ VF_MAX_QUEUE = 4
 class Testddp_mpls(TestCase):
 
     def set_up_all(self):
-        self.verify(self.nic in ['fortville_25g'], 
-            'ddp mpls can not support %s nic' % self.nic)
+        self.verify('fortville' in self.nic,
+                    'ddp mpls can not support %s nic' % self.nic)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
@@ -124,7 +123,7 @@ class Testddp_mpls(TestCase):
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         self.verify("Profile number is: 0" in out,
             "Failed to get ddp profile info list!!!") 
-        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/mpls.pkgo')
+        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/mpls.pkgo,/tmp/mpls.bak')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         self.verify("Profile number is: 1" in out,
             "Failed to load ddp profile!!!")
@@ -225,13 +224,19 @@ class Testddp_mpls(TestCase):
     
 
     def tear_down(self):
-        if self.vm0_testpmd:
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 1')
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 2')
-            self.vm0_testpmd.quit()
-            self.dut_testpmd.quit()
-        self.vm0_dut.kill_all()
-        pass
+        self.vm0_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('stop')
+        out = self.dut_testpmd.execute_cmd('ddp get list 0')
+        if "Profile number is: 0" not in out:
+            self.dut_testpmd.execute_cmd('port stop all')
+            time.sleep(1)
+            self.dut_testpmd.execute_cmd('ddp del 0 /tmp/mpls.bak')
+            out = self.dut_testpmd.execute_cmd('ddp get list 0')
+            self.verify("Profile number is: 0" in out,
+                        "Failed to delete mpls profile!!!")
+            self.dut_testpmd.execute_cmd('port start all')
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
 
 
     def tear_down_all(self):

@@ -92,9 +92,10 @@ Test Case: Load dynamic device personalization
 
     testpmd > port stop all
 
-2. Load profile gtp.pkgo which is a binary file::
+2. Load gtp.pkgo file to the memory buffer, save original configuration
+   and return in the same buffer to the gtp.bak file::
 
-    testpmd > ddp add (port_id) (profile_path)
+    testpmd > ddp add (port_id) /tmp/gtp.pkgo,/tmp/gtp.bak
 
 3. Check profile information successfully::
 
@@ -104,21 +105,22 @@ Test Case: Load dynamic device personalization
 
     testpmd > port start all
 
+Test Case: Delete dynamic device personalization
+================================================
+
+Remove profile from the network adapter and restore original configuration::
+   
+    testpmd > ddp del (port_id) /tmp/gtp.bak
+
 Note:
 
-1. Gtp.pkgo profile is not released by ND yet, only have engineer version for
-   internal use so far. Plan to keep public reference profiles at Intel 
-   Developer Zone, release versions of profiles and supply link later.
+1. Gtp.pkgo profile has been released publicly. You could download below
+   version to do relative test.
+   https://downloadcenter.intel.com/download/27587
 
 2. Loading DDP is the prerequisite for below GTP relative cases. Load 
    profile again once restarting testpmd to let software detect this 
-   event, although has “profile has already existed” reminder. Operate
-   global reset or lanconf tool to recover original setting. Global reset
-   trigger reg is 0xb8190, first cmd is core reset, second cmd is global
-   reset::
-
-    testpmd > write reg 0 0xb8190 1
-    testpmd > write reg 0 0xb8190 2
+   event, although has “profile has already existed” reminder. 
 	  
 
 Test Case: GTP-C FDIR packet for PF

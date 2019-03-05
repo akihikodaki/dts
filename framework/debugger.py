@@ -157,7 +157,7 @@ def keyboard_handle(signum, frame):
 
     global debug_cmd
     if debug_cmd == 'debug':
-        # call pyton debugger
+        # call python debugger
         import pdb
         pdb.set_trace()
     elif debug_cmd == 'exit':

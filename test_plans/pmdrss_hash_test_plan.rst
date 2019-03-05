@@ -97,7 +97,7 @@ Testpmd configuration - 16 RX/TX queues per port
 
 #. set hash functions, can choose symmetric or not, choose port and packet type::
 
-       set_hash_function 0 toeplitz
+       testpmd command: set_hash_global_config 0 toeplitz ipv4-other enable
 
 #. start packet receive::
 
@@ -129,9 +129,8 @@ Test Case:  test_toeplitz_symmetric
 
 The same with the above steps, pay attention to "set hash function", should use::
 
-  set_hash_function 0 toeplitz
+  set_hash_global_config 0 toeplitz ipv4-other enable
   set_sym_hash_ena_per_port 0 enable
-  set_sym_hash_ena_per_pctype 0 35 enable
 
 And send packets with the same flow in different direction::
 
@@ -143,12 +142,12 @@ And the hash value and queue should be the same for these two flow .
 Test Case:  test_simple
 =======================
 
-The same as the above two test cases. Just pay attention to set the hash function to "simple xor"
+The same as the above test case "test_toeplitz". Just pay attention to set the hash function to "simple xor"
 
 Test Case:  test_simple_symmetric
 =================================
 
-The same as the above two test cases. Just pay attention to set the hash function to "simple xor"
+The same as the above test case "test_toeplitz_symmetric". Just pay attention to set the hash function to "simple xor"
 
 Test Case:  test_dynamic_rss_bond_config
 ========================================
@@ -156,7 +155,7 @@ This case test bond slaves will auto sync rss hash config, it only support by fo
 
 #. set up testpmd with fortville NICs::
 
-      ./testpmd -c f -n 4 -- -i --portmask 0x3 --tx-offloads=0x8fff
+      ./testpmd -c f -n 4 -- -i
 
 #. create bond device with mode 3::
 

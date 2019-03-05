@@ -305,6 +305,16 @@ class Dut(Crb):
             return
         hugepages_size = self.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
         total_huge_pages = self.get_total_huge_pages()
+        total_numa_nodes = self.send_expect("ls /sys/devices/system/node | grep node* | wc -l", "# ")
+        numa_service_num = self.get_def_rte_config('CONFIG_RTE_MAX_NUMA_NODES')
+        try:
+            int(total_numa_nodes)
+        except ValueError:
+            total_numa_nodes = -1
+        if numa_service_num is not None:
+            numa = min(int(total_numa_nodes), int(numa_service_num))
+        else:
+            numa = total_numa_nodes
         force_socket = False
 
         if int(hugepages_size) < (1024 * 1024):
@@ -332,7 +342,10 @@ class Dut(Crb):
                 if force_socket:
                     self.set_huge_pages(arch_huge_pages, 0)
                 else:
-                    self.set_huge_pages(arch_huge_pages)
+                    for numa_id in range(0, int(numa)):
+                        self.set_huge_pages(arch_huge_pages, numa_id)
+                    if numa == -1:
+                        self.set_huge_pages(arch_huge_pages)
 
         self.mount_huge_pages()
         self.hugepage_path = self.strip_hugepage_path()
@@ -481,7 +494,7 @@ class Dut(Crb):
 
         while len(available_ports) > 0:
             accepted_ports = []
-            # first avaiable port is the reference port
+            # first available port is the reference port
             accepted_ports.append(available_ports[0])
 
             # check from second port according to parameter
@@ -588,7 +601,7 @@ class Dut(Crb):
 
     def rescan_ports_uncached(self):
         """
-        rescan ports and update port's mac adress, intf, ipv6 address.
+        rescan ports and update port's mac address, intf, ipv6 address.
         """
         rescan_ports_uncached = getattr(self, 'rescan_ports_uncached_%s' % self.get_os_type())
         return rescan_ports_uncached()
@@ -696,14 +709,14 @@ class Dut(Crb):
 
     def scan_ports_uncached(self):
         """
-        Scan ports and collect port's pci id, mac adress, ipv6 address.
+        Scan ports and collect port's pci id, mac address, ipv6 address.
         """
         scan_ports_uncached = getattr(self, 'scan_ports_uncached_%s' % self.get_os_type())
         return scan_ports_uncached()
 
     def scan_ports_uncached_linux(self):
         """
-        Scan Linux ports and collect port's pci id, mac adress, ipv6 address.
+        Scan Linux ports and collect port's pci id, mac address, ipv6 address.
         """
         self.ports_info = []
 
@@ -751,7 +764,7 @@ class Dut(Crb):
 
     def scan_ports_uncached_freebsd(self):
         """
-        Scan Freebsd ports and collect port's pci id, mac adress, ipv6 address.
+        Scan Freebsd ports and collect port's pci id, mac address, ipv6 address.
         """
         self.ports_info = []
 
@@ -799,12 +812,12 @@ class Dut(Crb):
         Setup current virtualization hypervisor type and remove elder VM ssh keys
         """
         self.virttype = virttype
-        # remove VM ras keys from tester
+        # remove VM rsa keys from tester
         remove_old_rsa_key(self.tester, self.crb['My IP'])
 
     def generate_sriov_vfs_by_port(self, port_id, vf_num, driver='default'):
         """
-        Generate SRIOV VFs with default driver it is bound now or specifid driver.
+        Generate SRIOV VFs with default driver it is bound now or specified driver.
         """
         port = self.ports_info[port_id]['port']
         port_driver = port.get_nic_driver()
@@ -929,7 +942,7 @@ class Dut(Crb):
                         self.ports_map[dutPort] = remotePort
                         break
                 if self.ports_map[dutPort] == -1:
-                    self.logger.error("CONFIGURED TESTER PORT CANNOT FOUND!!!")
+                    self.logger.error("CONFIGURED TESTER PORT CANNOT BE FOUND!!!")
                 else:
                     continue  # skip ping6 map
 

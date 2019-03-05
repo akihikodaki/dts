@@ -215,7 +215,7 @@ class TestIpReassembly(TestCase):
 
     def send_packets(self):
         """
-        Goes trhough all the steps to send packets from the tester to the self.dut.
+        Goes through all the steps to send packets from the tester to the self.dut.
         Generates the PCAP file, place it into the tester board, calls scapy and
         finally removes the PCAP file.
         """

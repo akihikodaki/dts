@@ -156,17 +156,17 @@ class VirtResource(object):
     @parallel_lock()
     def alloc_cpu(self, vm='', number=-1, socket=-1, corelist=None):
         """
-        There're two options for request cpu resouce for vm.
+        There're two options for request cpu resource for vm.
         If number is not -1, just allocate cpu from not used cores.
         If list is not None, will allocate cpu after checked.
         """
         cores = []
 
         if vm == '':
-            print "Alloc cpu request vitual machine name!!!"
+            print "Alloc cpu request virtual machine name!!!"
             return cores
 
-        # if vm has been alloacted cores, just return them
+        # if vm has been allocated cores, just return them
         if self.__vm_has_resource(vm, 'cores'):
             return self.allocated_info[vm]['cores']
 
@@ -197,8 +197,8 @@ class VirtResource(object):
 
     def __vm_has_resource(self, vm, resource=''):
         if vm == '':
-            self.dut.logger.info("VM name cannt be NULL!!!")
-            raise Exception("VM name cannt be NULL!!!")
+            self.dut.logger.info("VM name can't be NULL!!!")
+            raise Exception("VM name can't be NULL!!!")
         if vm not in self.allocated_info:
             self.dut.logger.info(
                 "There is no resource allocated to VM [%s]." % vm)
@@ -398,7 +398,7 @@ class VirtResource(object):
             port -= 5900
             self.allocated_info[vm]['displayport'] = port
 
-        # do not scan port from the begining
+        # do not scan port from the beginning
         if QuickScan:
             if port_type == 'connect':
                 INIT_FREE_PORT = port
@@ -437,7 +437,7 @@ class VirtResource(object):
 
     def get_cpu_on_vm(self, vm=''):
         """
-        Return core list on specifid VM.
+        Return core list on specified VM.
         """
         if vm in self.allocated_info:
             if "cores" in self.allocated_info[vm]:
@@ -445,7 +445,7 @@ class VirtResource(object):
 
     def get_vfs_on_vm(self, vm=''):
         """
-        Return vf device list on specifid VM.
+        Return vf device list on specified VM.
         """
         if vm in self.allocated_info:
             if 'vfs' in self.allocated_info[vm]:
@@ -453,7 +453,7 @@ class VirtResource(object):
 
     def get_pfs_on_vm(self, vm=''):
         """
-        Return pf device list on specifid VM.
+        Return pf device list on specified VM.
         """
         if vm in self.allocated_info:
             if 'ports' in self.allocated_info[vm]:
@@ -524,7 +524,7 @@ if __name__ == "__main__":
     print virt_pool.alloc_cpu(vm="test3", number=2)
     print "Alloc port for VM-test1"
     print virt_pool.alloc_port(vm='test1')
-    print "Alloc information after allcated"
+    print "Alloc information after allocated"
     print virt_pool.allocated_info
 
     print "Get cores on VM-test1"

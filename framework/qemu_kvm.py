@@ -40,7 +40,7 @@ from exception import StartVMFailedException
 from settings import get_host_ip, load_global_setting, DTS_PARALLEL_SETTING
 from utils import parallel_lock, RED
 
-# This name is derictly defined in the qemu guest serivce
+# This name is directly defined in the qemu guest service
 # So you can not change it except it is changed by the service
 QGA_DEV_NAME = 'org.qemu.guest_agent.0'
 
@@ -88,7 +88,7 @@ class QEMUKvm(VirtBase):
         # initialize some resource used by guest.
         self.init_vm_request_resource()
 
-        # charater and network device default index
+        # character and network device default index
         self.char_idx = 0
         self.netdev_idx = 0
         self.pt_idx = 0
@@ -104,7 +104,7 @@ class QEMUKvm(VirtBase):
         # internal variable to track whether default nic has been added
         self.__default_nic = False
 
-        # arch info for multi-paltform init
+        # arch info for multi-platform init
         self.arch = self.host_session.send_expect('uname -m', '# ')
 
         # set some default values for vm,
@@ -234,7 +234,7 @@ class QEMUKvm(VirtBase):
 
     def enable_virtual_ability(self):
         """
-        Load the virutal module of kernel to enable the virutal ability.
+        Load the virtual module of kernel to enable the virtual ability.
         """
         self.host_session.send_expect('modprobe kvm', '# ')
         self.host_session.send_expect('modprobe kvm_intel', '# ')
@@ -297,11 +297,17 @@ class QEMUKvm(VirtBase):
 
     def add_vm_machine(self, **options):
         """
-        'machine': 'virt'
+        'machine': 'virt','opt_gic_version'
         """
+        machine_boot_line='-machine'
+        separator = ','
         if 'machine' in options.keys() and \
                 options['machine']:
-            machine_boot_line = '-machine %s' % options['machine']
+            machine_boot_line += '%s' % options['machine']
+            if 'opt_gic_version' in options.keys() and \
+                    options['opt_gic_version']:
+                machine_boot_line += separator + 'gic_version=%s' % options['opt_gic_version']
+
             self.__add_boot_line(machine_boot_line)
 
     def set_vm_pid_file(self):
@@ -571,7 +577,7 @@ class QEMUKvm(VirtBase):
         field = lambda option, index, separator=':': \
             option.split(separator)[index]
 
-        # get the forword type
+        # get the forward type
         fwd_type = field(opt_hostfwd, 0)
         if not fwd_type:
             fwd_type = 'tcp'
@@ -693,7 +699,7 @@ class QEMUKvm(VirtBase):
         """
         driver: [pci-assign | virtio-net-pci | ...]
         opt_[host | addr | ...]: value
-            note:the sub-opterty will be decided according to the driver.
+            note:the sub-option will be decided according to the driver.
         """
         if 'driver' in options.keys() and \
                 options['driver']:
@@ -873,7 +879,7 @@ class QEMUKvm(VirtBase):
 
     def __string_has_multi_fields(self, string, separator, field_num=2):
         """
-        Check if string has multiple fields which is splited with
+        Check if string has multiple fields which are splitted with
         specified separator.
         """
         fields = string.split(separator)
@@ -900,7 +906,7 @@ class QEMUKvm(VirtBase):
 
     def add_vm_monitor(self, **options):
         """
-        path: if adding monitor to vm, need to specify unix socket patch
+        path: if adding monitor to vm, need to specify unix socket path
         """
         if 'path' in options.keys():
             monitor_boot_line = '-monitor unix:%s,server,nowait' % options[
@@ -979,14 +985,14 @@ class QEMUKvm(VirtBase):
         Connect to serial port and return connected session for usage
         if connected failed will return None
         """
-        shell_reg = r"(\s*)\[(.*)\]# "
+        shell_reg = r"(.*)# "
         try:
             if getattr(self, 'control_session', None) is None:
                 self.control_session = self.host_session
 
-                self.control_session.send_command("nc -U %s" % self.serial_path)
+                self.control_session.send_command("socat %s STDIO" % self.serial_path)
 
-            # login message not ouput if timeout too small
+            # login message not output if timeout is too small
             out = self.control_session.send_command("", timeout=5).replace('\r', '').replace('\n', '')
 
             if len(out) == 0:
@@ -1025,7 +1031,7 @@ class QEMUKvm(VirtBase):
         Connect to serial port and return connected session for usage
         if connected failed will return None
         """
-        shell_reg = r"(\s*)\[(.*)\]# "
+        shell_reg = r"(.*)# "
         scan_cmd = "lsof -i:%d | grep telnet | awk '{print $2}'" % self.serial_port
 
         try:
@@ -1058,7 +1064,7 @@ class QEMUKvm(VirtBase):
                     return True
 
             # login into Redhat os, not sure can work on all distributions
-            if "x86_64 on an x86_64" not in out:
+            if ("x86_64 on an x86_64" not in out) and (self.LOGIN_PROMPT not in out):
                 print RED("[%s:%s] not ready for login" % (self.host_dut.crb['My IP'], self.vm_name))
                 return False
             else:
@@ -1560,7 +1566,7 @@ class QEMUKvm(VirtBase):
 
     def __monitor_session(self, command, *args):
         """
-        Connect the qemu montior session, send command and return output message.
+        Connect the qemu monitor session, send command and return output message.
         """
         if not self.monitor_sock_path:
             self.host_logger.info(
@@ -1690,7 +1696,7 @@ class QEMUKvm(VirtBase):
                 self.quit_control_session()
                 return out
             except Exception as e:
-                print RED("Exception happend on [%s] serial with cmd [%s]" % (self.vm_name, command))
+                print RED("Exception happened on [%s] serial with cmd [%s]" % (self.vm_name, command))
                 print RED(e)
                 self.close_control_session(dut_id=self.host_dut.dut_id)
                 return 'Failed'
@@ -1716,7 +1722,7 @@ class QEMUKvm(VirtBase):
         """
         # return control_session to host_session
         if self.control_type == 'socket':
-            scan_cmd = "ps -e -o pid,cmd  |grep 'nc -U %s' |grep -v grep" % self.serial_path
+            scan_cmd = "ps -e -o pid,cmd  |grep 'socat %s STDIO' |grep -v grep" % self.serial_path
             out = self.host_dut.send_expect(scan_cmd, "#")
             proc_info = out.strip().split()
             try:

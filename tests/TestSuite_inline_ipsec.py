@@ -167,7 +167,7 @@ class TestInlineIpsec(TestCase):
 
     def send_encryption_package(self, intf, paysize=64, do_encrypt=False, send_spi=5, count=1, inner_dst='192.168.105.10', sa_src='172.16.1.5', sa_dst='172.16.2.5'):
         """
-        make a package and send 
+        prepare a packet and send
         """
         test = 'test-' * 2000
         payload = test[0:int(paysize)]

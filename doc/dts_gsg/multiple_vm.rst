@@ -28,7 +28,7 @@ Arguments for "start" command:
     +-----------------+----------------------------------+----------------+-------------+
     | virt_config     | virtual machine config location  | N/A            | Alternative |
     +-----------------+----------------------------------+----------------+-------------+
-    | virt_params     | local parameters of virutal      | N/A            | Alternative |
+    | virt_params     | local parameters of virtual      | N/A            | Alternative |
     |                 | machine                          |                |             |
     +-----------------+----------------------------------+----------------+-------------+
 

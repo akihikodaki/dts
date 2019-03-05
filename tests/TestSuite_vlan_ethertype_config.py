@@ -43,7 +43,6 @@ import utils
 
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
 from scapy.utils import struct, socket, wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
 from scapy.layers.l2 import Dot1Q, ARP, GRE
@@ -62,7 +61,7 @@ class TestVlanEthertypeConfig(TestCase):
         Run at the start of each test suite.
 
 
-        Vlan Prerequistites
+        Vlan Prerequisites
         """
         global dutRxPortId
         global dutTxPortId
@@ -125,7 +124,6 @@ class TestVlanEthertypeConfig(TestCase):
         # off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
-        self.inst = sniff_packets(self.rxItf)
         pkt = []
         if outer_vid < 0 or outer_tpid <= 0:
             pkt = [
@@ -189,7 +187,7 @@ class TestVlanEthertypeConfig(TestCase):
                 self.vlan_send_packet(rx_vlan, tpid)
                 out = self.dut.get_session_output()
                 self.verify(
-                    "PKT_RX_VLAN_PKT" in out, "Vlan recognized error:" + str(out))
+                    "PKT_RX_VLAN" in out, "Vlan recognized error:" + str(out))
 
     def test_vlan_filter_on_off(self):
         """
@@ -286,8 +284,12 @@ class TestVlanEthertypeConfig(TestCase):
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutTxPortId), "testpmd> ")
             for tx_vlan in tx_vlans:
+                self.dut.send_expect("stop", "testpmd>")
+                self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect(
                     "tx_vlan set %s 0x%x" % (dutTxPortId, tx_vlan), "testpmd> ")
+                self.dut.send_expect("port start all", "testpmd> ")
+                self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
                 self.vlan_send_packet(-1)
                 out = self.get_tcpdump_packet(self.rxItf)
@@ -296,8 +298,12 @@ class TestVlanEthertypeConfig(TestCase):
                 self.verify(str("%x" % tpid) in out, "Wrong vlan:" + str(out))
                 self.verify(
                     str("%x" % tx_vlan) in out, "Vlan not found:" + str(out))
+                self.dut.send_expect("stop", "testpmd>")
+                self.dut.send_expect("port stop all", "testpmd> ")
                 self.dut.send_expect(
                     "tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
+                self.dut.send_expect("port start all", "testpmd> ")
+                self.dut.send_expect("start", "testpmd>")
                 self.start_tcpdump(self.rxItf)
                 self.vlan_send_packet(-1)
                 out = self.get_tcpdump_packet(self.rxItf)

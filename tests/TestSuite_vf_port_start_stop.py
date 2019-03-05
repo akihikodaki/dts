@@ -3,7 +3,7 @@
 import re
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 from utils import RED, GREEN
@@ -120,7 +120,7 @@ class TestVfPortStartStop(TestCase):
 
     def testpmd_reset_status(self, testpmd):
         """
-        Reset testpmd :stop forword & stop port
+        Reset testpmd :stop forward & stop port
         """
         testpmd.execute_cmd('stop')
         testpmd.execute_cmd('port stop all')
@@ -180,7 +180,7 @@ class TestVfPortStartStop(TestCase):
                 self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_port_start_stop')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_port_start_stop')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -247,6 +247,8 @@ class TestVfPortStartStop(TestCase):
            getattr(self, 'tester_tx_pci', None):
             self.tester.send_expect("./dpdk_nic_bind.py --bind=%s %s" \
                 %(self.tester_port_driver, self.tester_tx_pci), "#")
+            tx_interface = self.tester.get_interface(self.tester_tx_port)
+            self.tester.send_expect("ifconfig %s up" % tx_interface, "#")
 
         if getattr(self, 'vm0', None):
             self.vm0.stop()

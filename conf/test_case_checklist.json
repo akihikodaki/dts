@@ -15,7 +15,10 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
-                "kawela_4"
+                "kawela_4",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -33,6 +36,8 @@
                 "springville",
                 "ironpond",
                 "springfountain",
+                "cavium_a034",
+                "cavium_a011",
                 "twinpond"
             ],
             "Target": [
@@ -57,7 +62,10 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -81,7 +89,10 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -100,7 +111,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "springville"
+                "springville",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -125,7 +137,10 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -148,7 +163,10 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -170,8 +188,11 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
-            ],
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
+            ], 
             "Target": [
                 "ALL"
             ],
@@ -192,7 +213,10 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -216,7 +240,10 @@
                 "fortville_25g",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+                "cavium_a034",
+                "cavium_a011",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -237,7 +264,8 @@
                 "powerville",
                 "kawela_4",
                 "springville",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -255,7 +283,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -464,7 +493,10 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV",
+                "sagepond",
+                "sageville"
             ],
             "Target": [
                 "ALL"
@@ -482,7 +514,10 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV",
+                "sagepond",
+                "sageville"
             ],
             "Target": [
                 "ALL"
@@ -517,7 +552,7 @@
                 "springfountain",
                 "twinpond",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_a011"
             ],
             "Target": [
                 "ALL"
@@ -551,6 +586,7 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+		"niantic",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -691,6 +727,7 @@
                 "ironpond",
                 "springfountain",
                 "twinpond",
+		"niantic",
                 "cavium_a034",
                 "cavium_0011"
             ],
@@ -771,6 +808,28 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "dynamic_rss_bond_config": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "ironpond",
+                "springfountain",
+                "twinpond",
+                "niantic",
+                "fortville_spirit_single"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "pmdrss_reta": [
         {
             "OS": [
@@ -816,6 +875,8 @@
                 "springville",
                 "ironpond",
                 "springfountain",
+                "cavium_a034",
+                "cavium_a011",
                 "twinpond"
             ],
             "Target": [
@@ -1587,6 +1648,81 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "dpdk_2pf_2vf_1vm": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dpdk_2pf_2vf_1vm_iplink_macfilter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dpdk_pf_vf_reset": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "kernel_2pf_2vf_1vm_mac_add_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "vf_vlan_strip": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "rx_checksum_valid_flags": [
         {
             "OS": [
@@ -1799,7 +1935,13 @@
                 "ALL"
             ],
             "NIC": [
-                "ALL"
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf"
             ],
             "Target": [
                 "ALL"
@@ -1958,6 +2100,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
+                "cavium_a034",
+                "cavium_a011",
                 "fortville_25g"
             ],
             "Target": [
@@ -1980,6 +2124,81 @@
             ],
             "Bug ID": "",
             "Comments": "Niantic not support this case"
+        }
+    ],
+     "queue_region_with_rss_rule_api": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "powerville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "queue_region_with_rss_rule_combination": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "powerville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "queue_region_with_invalid_parameter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "powerville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "retrieve_reg": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
         }
     ]
 }

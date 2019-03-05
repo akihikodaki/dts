@@ -43,7 +43,6 @@ from test_case import TestCase
 from plotting import Plotting 
 from settings import HEADER_SIZE   
 from etgen import IxiaPacketGenerator
-from packet import Packet, sniff_packets, load_sniff_packets
 
 class TestNetmapCompat(TestCase):
 
@@ -80,7 +79,7 @@ class TestNetmapCompat(TestCase):
 
         self.rxItf = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
 
-        self.inst = sniff_packets(self.rxItf)
+        self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
 
         self.scapy_send_packet()
 
@@ -98,7 +97,7 @@ class TestNetmapCompat(TestCase):
         self.dut.send_expect(cmd,"Port %s now in Netmap mode" % self.dut_ports[0], 60)
        
         self.rxItf = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[1]))
-        self.inst = sniff_packets(self.rxItf)
+        self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
 
         self.scapy_send_packet()
 
@@ -117,7 +116,7 @@ class TestNetmapCompat(TestCase):
 
 
     def get_tcpdump_package(self):  
-        pkts = load_sniff_packets(self.inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
         dsts = []  
         for packet in pkts:  
             dst = packet.strip_element_layer2("dst")  

@@ -46,7 +46,7 @@ Prerequisites
 In this feature, Only 82576 and 82599 are supported.
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio
@@ -152,14 +152,14 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
  ``1`` and send 1 packet on port ``A``.Verify that the VLAN packet cannot been
  received in port ``B``.
 
-Test Case: Enable/Disable VLAN header striping
-==============================================
+Test Case: Enable/Disable VLAN header stripping
+===============================================
 
 Enable vlan packet forwarding on port ``0`` first::
 
     testpmd> vlan set filter off 0
 
-Enable vlan header striping on port ``0``::
+Enable vlan header stripping on port ``0``::
 
     testpmd> vlan set strip on 0
 
@@ -184,7 +184,7 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 ``1`` and send 1 packet on port ``A``. Verify that the packet without VLAN Tag
 Identifier can been received in port ``B``.
 
-Disable vlan header striping on port ``0``::
+Disable vlan header stripping on port ``0``::
 
     testpmd> vlan set strip off 0
 
@@ -209,18 +209,18 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 ``1`` and send 1 packet on port ``A``. Verify that the packet with VLAN Tag
 Identifier ``1`` can been received in port ``B``.
 
-Test Case: Enable/Disable VLAN header striping in queue
-=======================================================
+Test Case: Enable/Disable VLAN header stripping in queue
+========================================================
 
 Enable vlan packet forwarding on port ``0`` first::
 
     testpmd> vlan set filter off 0
 
-Disable vlan header striping on port ``0``::
+Disable vlan header stripping on port ``0``::
 
     testpmd> vlan set strip off 0
 
-Disable vlan header striping in queue 0 on port ``0``::
+Disable vlan header stripping in queue 0 on port ``0``::
 
     testpmd> vlan set stripq off 0,0
 
@@ -229,7 +229,7 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 Identifier ``1`` can been received in port ``B``.
 
 
-Enable vlan header striping in queue 0 on port ``0``::
+Enable vlan header stripping in queue 0 on port ``0``::
 
     testpmd> vlan set stripq on 0,0
 
@@ -237,7 +237,7 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 ``1`` and send 1 packet on port ``A``. Verify that the packet without VLAN Tag
 Identifier ``1`` can been received in port ``B``.
 
-Enable vlan header striping on port ``0``.
+Enable vlan header stripping on port ``0``.
 
     MISSING COMMAND
 

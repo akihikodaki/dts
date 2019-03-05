@@ -28,7 +28,7 @@ The commit message must end with a "Signed-off-by:" line which is added using:
 
 The purpose of the signoff is explained in the Linux kernel guidelines
 Developer's Certificate of Origin:
-http://www.kernel.org/doc/Documentation/SubmittingPatches
+https://www.kernel.org/doc/Documentation/process/submitting-patches.rst
 
 Note:
     All developers must ensure that they have read, understood and complied
@@ -47,4 +47,4 @@ Coding Guidelines
 Maintainer
 ----------
 
-The DTS maintainer is: Marvin Liu <yong.liu@intel.com>
+The DTS maintainer is: Lijuan Tu <lijuan.tu@intel.com>

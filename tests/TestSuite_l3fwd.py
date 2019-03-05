@@ -137,10 +137,12 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
         netdev = self.dut.ports_info[ports[0]]['port']
         
         self.port_socket = netdev.socket
+        if self.port_socket == -1:
+            self.port_socket = 0
         
 
         # Verify that enough threads are available
-        cores = self.dut.get_core_list("2S/8C/2T")
+        cores = self.dut.get_core_list("1S/4C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
         global valports

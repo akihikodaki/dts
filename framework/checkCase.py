@@ -2,7 +2,7 @@ import xlrd
 import collections
 import json
 
-from settings import get_nic_name
+from settings import get_nic_name, load_global_setting, HOST_DRIVER_SETTING
 from utils import RED
 
 filter_json_file = './conf/test_case_checklist.json'
@@ -61,6 +61,15 @@ class CheckCase(object):
         if 'all' == target[0].lower():
             return True
         if self.dut.target in target:
+            return True
+        else:
+            return False
+
+    def _check_host_driver(self, drivers):
+        host_driver = load_global_setting(HOST_DRIVER_SETTING)
+        if 'all' == drivers[0].lower():
+            return True
+        if host_driver in drivers:
             return True
         else:
             return False

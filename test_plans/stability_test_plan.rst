@@ -78,7 +78,7 @@ Test Case: Mix of different NIC types
 
 Check that a mix of different NIC types is supported. The system should
 recognize all the NICs that are part of the system and are supported by the
-Intel DPDK PMD. Check that ports from NICs of different type can send and
+DPDK PMD. Check that ports from NICs of different type can send and
 receive traffic at the same time.
 
 Recommended test configuration: testpmd application using a single logical core
@@ -88,7 +88,7 @@ two 10GbE ports (e.g. Intel 82599 NIC).
 Test Case: Coexistence of kernel space drivers with Poll Mode Drivers
 =====================================================================
 
-Verify that Intel DPDK PMD running in user space can work with the kernel
+Verify that DPDK PMD running in user space can work with the kernel
 space space NIC drivers.
 
 Recommended test configuration: testpmd application using a single logical core

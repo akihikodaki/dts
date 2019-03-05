@@ -16,9 +16,8 @@ VM_CORES_MASK = 'all'
 class TestDdpGtp(TestCase):
 
     def set_up_all(self):
-        self.verify(
-            self.nic in ['fortville_25g'], 'ddp gtp can not support %s nic'
-            % self.nic)
+        self.verify('fortville' in self.nic,
+                    'ddp gtp can not support %s nic' % self.nic)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
@@ -26,10 +25,12 @@ class TestDdpGtp(TestCase):
         profile_file = 'dep/gtp.pkgo'
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
-        PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
-        VF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
-        self.PF_QUEUE = self.search_queue_number(PF_Q_strip)
-        self.VF_QUEUE = self.search_queue_number(VF_Q_strip)
+        self.PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        # commit ee653bd8, queue number of per vf default value is defined
+        # in drivers/net/i40e/i40e_ethdev.c, named as RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF
+        self.VF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
+        self.PF_QUEUE = self.search_queue_number(self.PF_Q_strip)
+        self.VF_QUEUE = self.search_queue_number(self.VF_Q_strip)
 
     def set_up(self):
         self.setup_vm_env()
@@ -39,15 +40,22 @@ class TestDdpGtp(TestCase):
         """
         Search max queue number from configuration.
         """
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        pattern = "(%s=)(\d*)" % Q_strip
+        if Q_strip is self.PF_Q_strip:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            pattern = "(%s=)(\d*)" % Q_strip
+        else :
+            out = self.dut.send_expect("cat drivers/net/i40e/i40e_ethdev.c", "]# ", 10)
+            pattern = "#define %s\s*(\d*)" % Q_strip
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
             print utils.RED('Search no queue number.')
             return None
         else:
-            queue = res.group(2)
+            if Q_strip is self.VF_Q_strip:
+                queue = res.group(1)
+            else :
+                queue = res.group(2)
             return int(queue)
 
     def bind_nic_driver(self, ports, driver=""):
@@ -132,7 +140,7 @@ class TestDdpGtp(TestCase):
         self.dut_testpmd.execute_cmd('port stop all')
         time.sleep(1)
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
-        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo')
+        self.dut_testpmd.execute_cmd('ddp add 0 /tmp/gtp.pkgo,/tmp/gtp.bak')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         self.verify("Profile number is: 1" in out,
                     "Failed to load ddp profile!!!")
@@ -312,7 +320,7 @@ class TestDdpGtp(TestCase):
     def test_fdir_gtpc_pf(self):
         """
         GTP is supported by NVM with profile updated. Select flow director to
-        do classfication, send gtpc packet to PF, check PF could receive
+        do classification, send gtpc packet to PF, check PF could receive
         packet using configured queue, checksum is good.
         """
         self.gtp_test(
@@ -321,7 +329,7 @@ class TestDdpGtp(TestCase):
     def test_fdir_gtpu_pf(self):
         """
         GTP is supported by NVM with profile updated. Select flow director to
-        do classfication, send gtpu packet to PF, check PF could receive
+        do classification, send gtpu packet to PF, check PF could receive
         packet using configured queue, checksum is good.
         """
         self.gtp_test(
@@ -376,11 +384,19 @@ class TestDdpGtp(TestCase):
             type='clfter', port='vf id 0', tunnel_pkt='gtpu', inner_L3='ipv6')
 
     def tear_down(self):
-        if self.vm0_testpmd:
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 1')
-            self.dut_testpmd.execute_cmd('write reg 0 0xb8190 2')
-            self.vm0_testpmd.quit()
-            self.dut_testpmd.quit()
+        self.vm0_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('stop')
+        out = self.dut_testpmd.execute_cmd('ddp get list 0')
+        if "Profile number is: 0" not in out:
+            self.dut_testpmd.execute_cmd('port stop all')
+            time.sleep(1)
+            self.dut_testpmd.execute_cmd('ddp del 0 /tmp/gtp.bak')
+            out = self.dut_testpmd.execute_cmd('ddp get list 0')
+            self.verify("Profile number is: 0" in out,
+                        "Failed to delete ddp profile!!!")
+            self.dut_testpmd.execute_cmd('port start all')
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
 
     def tear_down_all(self):
         self.destroy_vm_env()

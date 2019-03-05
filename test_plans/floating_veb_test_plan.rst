@@ -78,44 +78,43 @@ Prerequisites for VEB testing
 
 1. Get the pci device id of DUT, for example::
 
-       ./dpdk-devbind.py --st
-       0000:05:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens785f0 drv=i40e
-       unused=
+      ./dpdk-devbind.py --st
+      0000:05:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens785f0 drv=i40e
+      unused=
 
 2. Host PF in kernel driver. Create 2 VFs from 1 PF with kernel driver, and
    set the VF MAC address at PF::
 
-       echo 2 > /sys/bus/pci/devices/0000\:05\:00.0/sriov_numvfs
-       ./dpdk-devbind.py --st
+      echo 2 > /sys/bus/pci/devices/0000\:05\:00.0/sriov_numvfs
+      ./dpdk-devbind.py --st
 
-       0000:05:02.0 'XL710/X710 Virtual Function' unused=
-       0000:05:02.1 'XL710/X710 Virtual Function' unused=
+      0000:05:02.0 'XL710/X710 Virtual Function' unused=
+      0000:05:02.1 'XL710/X710 Virtual Function' unused=
 
-       ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
-       ip link set ens785f0 vf 1 mac 00:11:22:33:44:12
+      ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
+      ip link set ens785f0 vf 1 mac 00:11:22:33:44:12
 
 3. Host PF in DPDK driver. Create 2VFs from 1 PF with dpdk driver::
 
-       ./dpdk-devbind.py -b igb_uio 05:00.0
-       echo 2 >/sys/bus/pci/devices/0000:05:00.0/max_vfs
-       ./dpdk-devbind.py --st
-       0000:05:02.0 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
-       0000:05:02.1 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
+      ./dpdk-devbind.py -b igb_uio 05:00.0
+      echo 2 >/sys/bus/pci/devices/0000:05:00.0/max_vfs
+      ./dpdk-devbind.py --st
+      0000:05:02.0 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
+      0000:05:02.1 'XL710/X710 Virtual Function' unused=i40evf,igb_uio
 
 4. Bind the VFs to dpdk driver::
 
-       ./tools/dpdk-devbind.py -b igb_uio 05:02.0 05:02.1
+      ./tools/dpdk-devbind.py -b igb_uio 05:02.0 05:02.1
 
 5. Reserve huge pages memory(before using DPDK)::
 
-       echo 4096 > /sys/devices/system/node/node0/hugepages/hugepages-2048kB
-       /nr_hugepages
-       mkdir /mnt/huge
-       mount -t hugetlbfs nodev /mnt/huge
+      echo 4096 > /sys/devices/system/node/node0/hugepages/hugepages-2048kB
+      /nr_hugepages
+      mkdir /mnt/huge
+      mount -t hugetlbfs nodev /mnt/huge
 
-
-Test Case1: Floating VEB inter VF-VF
-====================================
+Test Case: Floating VEB inter VF-VF
+===================================
 
 Summary: 1 DPDK PF, then create 2VF, PF in the host running dpdk testpmd,
 and VF0 are running dpdk testpmd, VF0 send traffic, and set the packet's
@@ -126,92 +125,86 @@ MAC switch when PF is link down as well as up.
 
       ./testpmd -c 0xf -n 4 --socket-mem 1024,1024
       -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
-
-2. In the host, run testpmd with floating parameters and make the link down::
-
-      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024
-      -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
       testpmd> port start all
       testpmd> show port info all
 
-3. In VM1, run testpmd::
+2. VF1, run testpmd::
 
       ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024
       -w 05:02.0 --file-prefix=test2 -- -i --crc-strip
-      testpmd>mac_addr add 0 vf1_mac_address
-      testpmd>set fwd rxonly
-      testpmd>start
-      testpmd>show port stats all
+      testpmd> mac_addr add 0 vf1_mac_address
+      testpmd> set fwd rxonly
+      testpmd> set promisc all off
+      testpmd> start
+      testpmd> show port stats all
 
-   In VM2, run testpmd::
+   VF2, run testpmd::
 
       ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test3
       -- -i --crc-strip --eth-peer=0,vf1_mac_address
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
+      testpmd> set fwd txonly
+      testpmd> start
+      testpmd> show port stats all
 
-4. Check if VF1 can get all the packets. Check the packet content is no
+3. Check if VF1 can get all the packets. Check the packet content is no
    corrupted. RX-packets=TX-packets, but there is a little RX-error.
-   RF receive no packets.
+   PF receive no packets.
 
-5. Set "testpmd> port stop all" and "testpmd> start" in step2,
-   then run the step3-4 again. same result.
+4. Set "testpmd> port stop all" and "testpmd> start" in step2,
+   then run the step2-3 again. Get same result.
 
+Test Case: Floating VEB PF can't get traffic from VF
+====================================================
 
-Test Case2: Floating VEB PF can't get traffic from VF
-=====================================================
-DPDK PF, then create 1VF, PF in the host running dpdk testpmd,
+Summary: DPDK PF, then create 1VF, PF in the host running dpdk testpmd,
 send traffic from PF to VF0, VF0 can't receive any packets;
 send traffic from VF0 to PF, PF can't receive any packets either.
 
+1. In PF, launch testpmd::
 
-1. In host, launch testpmd::
-
-      ./testpmd -c 0x3 -n 4 -w 82:00.0,enable_floating_veb=1 -- -i
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i
       testpmd> set fwd rxonly
+      testpmd> set promisc all off
       testpmd> port start all
       testpmd> start
       testpmd> show port stats all
 
-3. In VM1, run testpmd::
+2. VF1, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,pf_mac_addr
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
+      testpmd> set fwd txonly
+      testpmd> start
+      testpmd> show port stats all
 
-4. Check if PF can not get any packets, so VF1->PF is not working.
+3. Check if PF can not get any packets, so VF1->PF is not working.
 
-5. Set "testpmd> port stop all" in step2, then run the test case again.
+4. Set "testpmd> port stop all" in step2, then run the test case again.
    Same result.
 
+5. in the opposite direction, PF->VF1 is not working either.
 
-
-Test Case3 Floating VEB VF can't receive traffic from outside world
+Test Case: Floating VEB VF can't receive traffic from outside world
 ===================================================================
 
-DPDK PF, then create 1VF, send traffic from tester to VF1,
+Summary: DPDK PF, then create 1VF, send traffic from tester to VF1,
 in floating mode, check VF1 can't receive traffic from tester.
 
 1. Start VM1 with VF1, see the prerequisite part.
 
-2. In host, launch testpmd::
+2. PF, launch testpmd::
 
-      ./testpmd -c 0x3 -n 4 -w 82:00.0,enable_floating_veb=1 -- -i
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w 05:00.0,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,VF_mac_address
       testpmd> set fwd mac
       testpmd> port start all
       testpmd> start
       testpmd> show port stats all
 
+   VF1, run testpmd::
 
-   In VM1, run testpmd::
-
-      ./testpmd -c 0x3 -n 4 -- -i
-       testpmd>show port info all    //get VF_mac_address
-       testpmd>set fwd rxonly
-       testpmd>start
-       testpmd>show port stats all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i
+      testpmd> set fwd rxonly
+      testpmd> start
+      testpmd> show port stats all
 
    In tester, run scapy::
 
@@ -219,115 +212,98 @@ in floating mode, check VF1 can't receive traffic from tester.
       sendp(packet,iface="enp132s0f0")
 
 3. Check if VF1 can not get any packets, so tester->VF1 is not working.
+
 4. Set "testpmd> port stop all" in step2 in Host, then run the test case
-   again. same result.PF can't receive any packets.
+   again. Get same result. PF can't receive any packets.
 
+Test Case: Floating VEB VF can not communicate with legacy VEB VF
+=================================================================
 
-Test Case4: Floating VEB VF can not communicate with legacy VEB VF
-==================================================================
-
-Summary: DPDK PF, then create 4VFs and 4VMs, VF1,VF3,VF4, floating VEB;
-VF2, legacy VEB. Make PF link down(the cable can be plugged out),
+Summary: DPDK PF, then create 4VFs and 4VMs, VF0,VF2,VF3, floating VEB;
+VF1, legacy VEB. Make PF link down(the cable can be plugged out),
 VFs in VMs are running dpdk testpmd.
 
-1. VF1 send traffic, and set the packet's DEST MAC to VF2,
-   check VF2 can not receive the packets.
-2. VF1 send traffic, and set the packet's DEST MAC to VF3,
-   check VF3 can receive the packets.
-3. VF4 send traffic, and set the packet's DEST MAC to VF3,
-   check VF3 can receive the packets.
-4. VF2 send traffic, and set the packet's DEST MAC to VF1,
+1. VF0 send traffic, and set the packet's DEST MAC to VF1,
    check VF1 can not receive the packets.
+2. VF0 send traffic, and set the packet's DEST MAC to VF2,
+   check VF2 can receive the packets.
+3. VF3 send traffic, and set the packet's DEST MAC to VF2,
+   check VF2 can receive the packets.
+4. VF1 send traffic, and set the packet's DEST MAC to VF0,
+   check VF0 can not receive the packets.
 
-Check Inter-VM VF-VF MAC switch when PF is link down as well as up.
+Details:
 
-Launch PF testpmd::
+1. Launch PF testpmd, run testpmd with floating parameters and make the link down::
 
-   ./testpmd -c 0x3 -n 4
-   -w "82:00.0,enable_floating_veb=1,floating_veb_list=0;2-3" -- -i
-
-1. Start VM1 with VF1, VM2 with VF2, VM3 with VF3,
-   VM4 with VF4,see the prerequisite part.
-
-2. In the host, run testpmd with floating parameters and make the link down::
-
-      ./testpmd -c 0x3 -n 4
-       -w "82:00.0,enable_floating_veb=1,floating_veb_list=0;2-3" -- -i
-       //VF1 and VF3 in floating VEB, VF2 in legacy VEB
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 \
+      \"-w "05:00.0,enable_floating_veb=1,floating_veb_list=0;2-3\" \
+      --file-prefix=test1 -- -i
+      //VF0, VF2 and VF3in floating VEB, VF1 in legacy VEB
 
       testpmd> port stop all
       //this step should be executed after vf running testpmd.
 
       testpmd> show port info all
 
-3. VF1 send traffic, and set the packet's DEST MAC to VF2,
-   check VF2 can not receive the packets.
-
-   In VM2, run testpmd::
-
-       ./testpmd -c 0x3 -n 4 -- -i
-       testpmd>set fwd rxonly
-       testpmd>mac_addr add 0 vf2_mac_address     //set the vf2_mac_address
-       testpmd>start
-       testpmd>show port stats all
-
-   In VM1, run testpmd::
-
-       ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,vf2_mac_address
-       testpmd>set fwd txonly
-       testpmd>start
-       testpmd>show port stats all
-
-   Check VF2 can not get any packets, so VF1->VF2 is not working.
-
-4. VF1 send traffic, and set the packet's DEST MAC to VF3,
-   check VF3 can receive the packets.
-
-   In VM3, run testpmd::
-
-      ./testpmd -c 0x3 -n 4 -- -i
-      testpmd>set fwd rxonly
-      testpmd>show port info all     //get the vf3_mac_address
-      testpmd>start
-      testpmd>show port stats all
-
-   In VM1, run testpmd::
-
-      ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,vf3_mac_address
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
-
-    Check VF3 can get all the packets. Check the packet content is no
-    corrupted.  so VF1->VF2 is working.
-
-5. VF2 send traffic, and set the packet's DEST MAC to VF1,
+2. VF0 send traffic, and set the packet's DEST MAC to VF1,
    check VF1 can not receive the packets.
 
-   In VM1, run testpmd::
+   VF0, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i
-      testpmd>set fwd rxonly
-      testpmd>show port info all     //get the vf1_mac_address
-      testpmd>start
-      testpmd>show port stats all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+      --file-prefix=test2 -- -i --eth-peer=0,vf1_mac_address
+      testpmd> set fwd rxonly
+      testpmd> mac_addr add 0 vf0_mac_address     //set the vf0_mac_address
+      testpmd> start
+      testpmd> show port stats all
 
-   In VM2, run testpmd::
+   VF1, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,vf1_mac_address
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.1 \
+       --file-prefix=test3 -- -i --eth-peer=0,vf1_mac_address
+      testpmd> set fwd txonly
+      testpmd> mac_addr add 0 vf1_mac_addres
+      testpmd> start
+      testpmd> show port stats all
 
-   Check VF1 can not get any packets, so VF2->VF1 is not working.
+   Check VF1 can not get any packets, so VF0->VF1 is not working.
+   In the opposite direction, VF1->VF0 is not working either.
 
-6. Set "testpmd> port start all" and "testpmd> start" in step2,
-   then run the step3-5 again. same result.
+3. VF0 send traffic, and set the packet's DEST MAC to VF2,
+   check VF2 can receive the packets.
 
+   VF2, run testpmd::
 
-Test Case5: PF interaction with Floating VF and legacy VF
-=========================================================
-DPDK PF, then create 2VFs, VF0 is in floating VEB, VF1 is in legacy VEB.
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.2 \
+      --file-prefix=test2 -- -i
+      testpmd> set fwd rxonly
+      testpmd> mac_addr add 0 vf2_mac_addres
+      testpmd> start
+      testpmd> show port stats all
+
+   VF0, run testpmd::
+
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+       --file-prefix=test3 -- -i --eth-peer=0,vf2_mac_address
+      testpmd> set fwd txonly
+      testpmd> start
+      testpmd> show port stats all
+
+    Check VF2 can get all the packets. Check the packet content is no
+    corrupted.  so VF0->VF2 is working.
+
+4. VF2 send traffic, and set the packet's DEST MAC to VF3,
+   check VF3 can receive the packets.
+
+5. Set "testpmd> port start all" and "testpmd> start" in step1,
+   then run the step2-4 again. same result.
+
+Test Case: PF interaction with Floating VF and legacy VF
+========================================================
+
+Summary: DPDK PF, then create 4VFs, VF0 and VF3 is in floating VEB,
+VF1 and VF2 is in legacy VEB.
 
 1. Send traffic from VF0 to PF, then check PF will not see any traffic;
 2. Send traffic from VF1 to PF, then check PF will receive all the packets.
@@ -335,77 +311,87 @@ DPDK PF, then create 2VFs, VF0 is in floating VEB, VF1 is in legacy VEB.
    tester.
 4. send traffic from tester to VF1, check VF1 can receive all the traffic
    from tester.
+5. send traffic from VF1 to VF2, check VF2 can receive all the traffic
+   from VF1.
 
-5. In host, launch testpmd::
+Details:
 
-      ./testpmd -c 0x3 -n 4
-       -w 82:00.0,enable_floating_veb=1,floating_veb_list=0 -- -i
+1. In PF, launch testpmd::
+
+      ./testpmd -c 0xf -n 4 --socket-mem 1024,1024 \
+      \"-w 05:00.0,enable_floating_veb=1,floating_veb_list=0;3\" \
+      --file-prefix=test1 -- -i
       testpmd> set fwd rxonly
       testpmd> port start all
       testpmd> start
       testpmd> show port stats all
 
-6. In VF1, run testpmd::
+2. VF0, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,pf_mac_addr
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
-
-   Check PF can not get any packets, so VF1->PF is not working.
-
-7. In VF2, run testpmd::
-
-      ./testpmd -c 0x3 -n 4 -- -i --eth-peer=0,pf_mac_addr
-      testpmd>set fwd txonly
-      testpmd>start
-      testpmd>show port stats all
-
-      Check PF can get all the packets, so VF2->PF is working.
-
-8. Set "testpmd> port stop all" in step2 in Host,
-   then run the test case again. same result.
-
-9. In host, launch testpmd::
-
-      ./testpmd -c 0x3 -n 4
-       -w 82:00.0,enable_floating_veb=1,floating_veb_list=0 -- -i
-      testpmd> set fwd mac
-      testpmd> port start all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 \
+      --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
+      testpmd> set fwd txonly
       testpmd> start
-      testpmd> show port stats all
 
+   Check PF can not get any packets, so VF0->PF is not working.
 
-10. In VF1, run testpmd::
+3. VF1, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i
-       testpmd>show port info all       //get VF1_mac_address
-       testpmd>set fwd rxonly
-       testpmd>start
-       testpmd>show port stats all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 \
+      --file-prefix=test2 -- -i --eth-peer=0,pf_mac_addr
+      testpmd> set fwd txonly
+      testpmd> start
+
+   Check PF can get all the packets, so VF1->PF is working.
+
+4. VF0, run testpmd::
+
+     ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.0 --file-prefix=test2 -- -i
+      testpmd> mac_addr add 0 VF0_mac_address
+      testpmd> set promisc all off
+      testpmd> set fwd rxonly
+      testpmd> start
+
+   In tester, run scapy::
+
+      packet=Ether(dst="VF0_mac_address")/IP()/UDP()/Raw('x'*20)
+      sendp(packet,iface="enp132s0f0")
+
+   Check VF0 can get all the packets, so tester->VF0 is working.
+
+5. VF1, run testpmd::
+
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test2 -- -i
+      testpmd> mac_addr add 0 VF1_mac_address
+      testpmd> set promisc all off
+      testpmd> set fwd rxonly
+      testpmd> start
 
    In tester, run scapy::
 
       packet=Ether(dst="VF1_mac_address")/IP()/UDP()/Raw('x'*20)
       sendp(packet,iface="enp132s0f0")
 
-   Check VF1 can not get any packets, so tester->VF1 is not working.
+   Check VF1 can get all the packets, so tester->VF1 is working.
 
-11. In VF2, run testpmd::
+6. VF1, run testpmd::
 
-      ./testpmd -c 0x3 -n 4 -- -i
-       testpmd>show port info all       //get VF2_mac_address
-       testpmd>set fwd rxonly
-       testpmd>start
-       testpmd>show port stats all
+      ./testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w 05:02.1 --file-prefix=test2 -- -i
+      testpmd> mac_addr add 0 VF1_mac_address
+      testpmd> set promisc all off
+      testpmd> set fwd rxonly
+      testpmd> start
 
-   In tester, run scapy::
+   VF2, run testpmd::
 
-      packet=Ether(dst="VF2_mac_address")/IP()/UDP()/Raw('x'*20)
-      sendp(packet,iface="enp132s0f0")
+      ./testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w 05:02.2 \
+      --file-prefix=test3 -- -i --eth-peer=0,VF1_mac_address
+      testpmd> set fwd txonly
+      testpmd> start
 
-   Check VF1 can get all the packets, so tester->VF2 is working.
+   Check VF1 can get all the packets, so VF2->VF1 is working.
+   PF link down, VF2->VF1 can work too.
 
-12. Set "testpmd> port stop all" in step2 in Host, then run the test case
-    again.  VF1 and VF2 cannot receive any packets. (because PF link down, and
-    PF can't receive any packets. so even if VF2 can't receive any packets.)
+7. Set "testpmd> port stop all" in step1 in PF, then run the test case
+   again.  VF1 and VF2 cannot receive any packets. (because PF link down, and
+   PF can't receive any packets. so even if VF2 can't receive any packets.)

@@ -60,7 +60,7 @@ class TestPmdPcap(TestCase):
 
         # make sure there is no interface to bind
         # because if there is any interface bonded to igb_uio,
-        # it will result in packet transmiting failed
+        # it will result in packet transmitting failed
         self.dut.restore_interfaces()
 
     def get_pcap_compile_config(self):
@@ -127,8 +127,6 @@ class TestPmdPcap(TestCase):
         command = ("./{}/app/testpmd -c {} -n {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "-- -i --port-topology=chained --no-flush-rx")
-        if "cavium" in self.dut.nic_type:
-            command += " --disable-hw-vlan-filter"
 
         self.dut.send_expect(command.format(self.target, core_mask,
                              self.memory_channel,
@@ -163,8 +161,6 @@ class TestPmdPcap(TestCase):
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} " +
                    "-- -i --no-flush-rx")
-        if "cavium" in self.dut.nic_type:
-            command += " --disable-hw-vlan-filter"
 
         self.dut.send_expect(command.format(self.target, core_mask,
                                             self.memory_channel,
@@ -173,7 +169,7 @@ class TestPmdPcap(TestCase):
                                             out_pcap1,
                                             TestPmdPcap.dut_pcap_files_path +
                                             in_pcap2,
-                                            out_pcap2), 'testpmd> ', 10)
+                                            out_pcap2), 'testpmd> ', 15)
 
         self.dut.send_expect('start', 'testpmd> ')
         sleep(2)

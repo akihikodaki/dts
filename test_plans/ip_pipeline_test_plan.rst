@@ -1,4 +1,4 @@
-.. Copyright (c) <2010-2017>, Intel Corporation
+.. Copyright (c) <2016>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -34,286 +34,376 @@
 IP Pipeline Application Tests
 =============================
 
-The ``ip_pipeline application`` is the main DPDK Packet Framework (PFW)
+Description
+===========
+The "examples/ip_pipeline" application is the main DPDK Packet Framework
 application.
 
-The application allows setting of a pipeline through the PFW. Currently the
-application set a pipeline using 2 main features, routing and flow control
-and, in addition, ARP is used.
-
-The application has an interactive session when started to allow in-app
-configuration.
-
-This application uses 5 CPU cores, reception, flow control, routing and
-transmission.
-
-The traffic will pass through the pipeline if meets the following conditions:
-
-- If ``flow add all`` is used in the setup then:
-
-  - TCP/IPv4
-  - IP destination = A.B.C.D with A = 0 and B,C,D random
-  - IP source = 0.0.0.0
-  - TCP destination port = 0
-  - TCP source port = 0
-
-- If ``flow add all`` is not used then there is no restrictions.
-
 Prerequisites
-=============
+==============
+The DUT must have four 10G Ethernet ports connected to four ports on
+Tester that are controlled by the Scapy packet generator::
 
-Launch the ``ip_pipeline`` app with 5 lcores and two ports::
+    dut_port_0 <---> tester_port_0
+    dut_port_1 <---> tester_port_1
+    dut_port_2 <---> tester_port_2
+    dut_port_3 <---> tester_port_3
 
-  $ examples/ip_pipeline/build/ip_pipeline -c 0x3e -n <memory channels> -- -p
-  <ports mask>
+Assume four DUT 10G Ethernet ports' pci device id is as the following::
 
-The expected prompt is::
+    dut_port_0 : "0000:05:00.0"
+    dut_port_1 : "0000:05:00.1"
+    dut_port_2 : "0000:05:00.2"
+    dut_port_3 : "0000:05:00.3"
 
-  pipeline>
+Bind them to dpdk igb_uio driver::
 
+    ./usertools/dpdk-devbind.py -b igb_uio 05:00.0 05:00.1 05:00.2 05:00.3
 
-The selected ports will be called 0 and 1 in the following instructions.
+Notes:
+>>> if using trex as packet generator::
 
-Tcpdump is used in test as a traffic sniffer unless otherwise stated. Tcpdump
-is set in both ports to check that traffic is sent and forwarded, or not
-forwarded.
+    trex>
+    portattr --prom on -a
+    service --port 1                                                                  1
+    capture monitor start --rx 1 -v
 
-Scapy is used in test as traffic generator unless otherwise stated.
+The crypto cases need an IXIA as packet generator::
 
-The PCAP driver is used in some tests as a traffic generator and sniffer.
+    dut_port_0 <---> IXIA_port_0
 
-NOTE: ``ip_pipeline`` is currently hardcoded to start the reception from ports
-automatically. Prior to running the test described in this document this
-behavior has to be modified by commenting out the following lines in
-``examples/ip_pipeline/pipeline_rx.c``::
+Change pci device id of LINK0 to pci device id of dut_port_0.
+There are two drivers supported now: aesni_gcm and aesni_mb.
+Different drivers support different Algorithms.
 
-    /* Enable input ports */
-    for (i = 0; i < app.n_ports; i ++) {
-            if (rte_pipeline_port_in_enable(p, port_in_id[i])) {
-                    rte_panic("Unable to enable input port %u\n", port_in_id[i]);
-            }
-    }
-
-
-Test Case: test_incremental_ip
-==============================
-
-Create a PCAP file containing permutations of the following parameters:
-
- - TCP/IPv4.
- - 64B size.
- - Number of frames sent. 1, 3, 63, 64, 65, 127, 128.
- - Interval between frames. 0s, 0.7s.
- - Incremental destination IP address. 1 by 1 increment on every frame.
- - Maximum IP address 255.128.0.0.
-
-Start the ``ip_pipeline`` application as described in prerequisites. Run the
-default config script::
-
-  pipeline> run examples/ip_pipeline/ip_pipeline.sh
-
-Start port reception::
-
-  link 0 up link 1 up
-
-Send the generated PCAP file from port 1 to 0, check that all frames are
-forwarded to port 0. Send the generated PCAP file from port 0 to 1, check that
-all frames are forwarded to port 0.
-
-Stop port reception::
-
-  link 0 down link 1 down
-
-Test Case: test_frame_sizes
+Test Case: l2fwd pipeline
 ===========================
+1. Edit examples/ip_pipeline/examples/l2fwd.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_port_0, dut_port_1, dut_port_2, dut_port_3
 
-Create a PCAP file containing permutations of the following parameters:
+2. Run ip_pipeline app as the following::
 
- - TCP/IPv4.
- - Frame size 64, 65, 128.
- - 100 frames.
- - 0.5s interval between frames.
- - Incremental destination IP address. 1 by 1 increment on every frame.
- - Maximum IP address 255.128.0.0.
+    ./build/ip_pipeline -c 0x3 -n 4 -- -s examples/l2fwd.cli
 
-Start the ``ip_pipeline`` application as described in prerequisites. Run the
-default config script::
+3. Send packets at tester side with scapy, verify:
 
-  pipeline> run examples/ip_pipeline/ip_pipeline.sh
+   packets sent from tester_port_0 can be received at tester_port_1, and vice versa.
+   packets sent from tester_port_2 can be received at tester_port_3, and vice versa.
 
-Start port reception::
+Test Case: flow classification pipeline
+=========================================
+1. Edit examples/ip_pipeline/examples/flow.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_port_0, dut_port_1, dut_port_2, dut_port_3
 
-  link 0 up link 1 up
+2. Run ip_pipeline app as the following::
 
-Send the generated PCAP file from port 1 to 0, check that all frames are
-forwarded to port 0. Send the generated PCAP file from port 0 to 1, check that
-all frames are forwarded to port 0.
+    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/flow.cli
 
-Stop port reception::
+3. Send following packets with one test port::
 
-  link 0 down link 1 down
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)
+    packet_2:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)
+    packet_3:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.12",dst="200.0.0.12")/TCP(sport=102,dport=202)/Raw(load="X"*6)
+    packet_4:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.13",dst="200.0.0.13")/TCP(sport=103,dport=203)/Raw(load="X"*6)
 
-Test Case: test_pcap_incremental_ip
-===================================
+   Verify packet_1 was received by tester_port_0.
+   Verify packet_2 was received by tester_port_1.
+   Verify packet_3 was received by tester_port_2.
+   Verify packet_4 was received by tester_port_3.
 
-Compile the DPDK to use the PCAP driver. Modify the target config file to allow
-PCAP driver::
+Test Case: routing pipeline
+=============================
+1. Edit examples/ip_pipeline/examples/route.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_port_0, dut_port_1, dut_port_2, dut_port_3.
 
-    sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/defconfig_<target>
+2. Run ip_pipeline app as the following::
 
-Create a PCAP file containing permutations of the following parameters:
+    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/route.cli,
 
- - TCP/IPv4.
- - 64B size.
- - Number of frames sent. 1, 3, 63, 64, 65, 127, 128.
- - Incremental destination IP address. 1 by 1 increment on every frame.
- - Maximum IP address 255.128.0.0.
+3. Send following packets with one test port::
 
-Start the ``ip_pipeline`` application using pcap devices::
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.1")/Raw(load="X"*26)
+    packet_2:Ether(dst="00:11:22:33:44:55")/IP(dst="100.64.0.1")/Raw(load="X"*26)
+    packet_3:Ether(dst="00:11:22:33:44:55")/IP(dst="100.128.0.1")/Raw(load="X"*26)
+    packet_4:Ether(dst="00:11:22:33:44:55")/IP(dst="100.192.0.1")/Raw(load="X"*26)
 
-    $ ./examples/ip_pipeline/build/ip_pipeline -c <core mask> -n <mem channels> --use-device <pcap devices> -- -p 0x3
+   Verify packet_1 was received by tester_port_0 and src_mac="a0:a1:a2:a3:a4:a5" dst_mac="00:01:02:03:04:05".
+   Verify packet_2 was received by tester_port_1 and src_mac="b0:b1:b2:b3:b4:b5" dst_mac="10:11:12:13:14:15".
+   Verify packet_3 was received by tester_port_2 and src_mac="c0:c1:c2:c3:c4:c5" dst_mac="20:21:22:23:24:25".
+   Verify packet_4 was received by tester_port_3 and src_mac="d0:d1:d2:d3:d4:d5" dst_mac="30:31:32:33:34:35".
 
-    <pcap devices>: 'eth_pcap0;rx_pcap=/root/<input pcap file 0>;tx_pcap=/tmp/port0out.pcap,eth_pcap1;rx_pcap=/root/<input pcap file 1>;tx_pcap=/tmp/port1out.pcap'
+Test Case: firewall pipeline
+==============================
+1. Edit examples/ip_pipeline/examples/firewall.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_port_0, dut_port_1, dut_port_2, dut_port_3.
 
-Run the default config script::
+2. Run ip_pipeline app as the following::
 
-  pipeline> run examples/ip_pipeline/ip_pipeline.sh
+    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/firewall.cli
 
-As the traffic is sent and received by PCAP devices the traffic flow is
-triggered by enabling the ports::
+3. Send following packets with one test port::
 
-  link 0 up link 1 up
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(dst="100.0.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)
+    packet_2:Ether(dst="00:11:22:33:44:55")/IP(dst="100.64.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)
+    packet_3:Ether(dst="00:11:22:33:44:55")/IP(dst="100.128.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)
+    packet_4:Ether(dst="00:11:22:33:44:55")/IP(dst="100.192.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)
 
-Wait 1s to allow all frames to be sent and stop the ports::
+   Verify packet_1 was received by tester_port_0.
+   Verify packet_2 was received by tester_port_1.
+   Verify packet_3 was received by tester_port_2.
+   Verify packet_4 was received by tester_port_3.
 
-  link 0 down link 1 down
+Test Case: pipeline with tap
+==============================
+1. Edit examples/ip_pipeline/examples/tap.cli,
+   change pci device id of LINK0, LINK1 to pci device id of dut_port_0, dut_port_1.
 
-Check the results PCAP files ``tmp/port0out.pcap`` and ``tmp/port1out.pcap``,
-the frames must be received in port 0, ``tmp/port0out.pcap``.
+2. Run ip_pipeline app as the following::
 
-Test Case: test_pcap_frame_sizes
-================================
+    ./build/ip_pipeline -c 0x3 -n 4 –- -s examples/tap.cli,
 
-Compile DPDK to use PCAP driver. Modify the target config file to allow PCAP
-driver::
+3. Send packets at tester side with scapy, verify
+   packets sent from tester_port_0 can be received at tester_port_1, and vice versa.
 
-    sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/'
-    config/defconfig_<target>
+Test Case: traffic management pipeline
+========================================
+1. Connect dut_port_0 to one port of ixia network traffic generator.
 
-Create a PCAP file containing permutations of the following parameters:
+2. Edit examples/ip_pipeline/examples/traffic_manager.cli,
+   change pci device id of LINK0 to pci device id of dut_port_0.
 
- - TCP/IPv4.
- - Frame sizes 64, 65, 128.
- - Number of frames sent. 1, 3, 63, 64, 65, 127, 128.
- - Incremental destination IP address. 1 by 1 increment on every frame.
- - Maximum IP address 255.128.0.0.
+3. Run ip_pipeline app as the following::
 
-Start the ``ip_pipeline`` application using pcap devices::
+    ./build/ip_pipeline -c 0x3 -n 4 -w 0000:81:00.0 -- -s examples/traffic_manager.cli
 
-    $ ./examples/ip_pipeline/build/ip_pipeline -c <core mask> -n <mem channels> --use-device <pcap devices> -- -p 0x3
+4. Config traffic with dst ipaddr increase from 0.0.0.0 to 15.255.0.0, total 4096 streams,
+   also config flow tracked-by dst ipaddr, verify each flow's throughput is about linerate/4096.
 
-    <pcap devices>: 'eth_pcap0;rx_pcap=/root/<input pcap file 0>;tx_pcap=/tmp/port0out.pcap,eth_pcap1;rx_pcap=/root/<input pcap file 1>;tx_pcap=/tmp/port1out.pcap'
+Test Case: RSS pipeline
+=========================
+1. Edit examples/ip_pipeline/examples/rss.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_port_0, dut_port_1, dut_port_2, dut_port_3.
 
-Run the default config script::
+2. Run ip_pipeline app as the following::
 
-   pipeline> run examples/ip_pipeline/ip_pipeline.sh
+    ./build/ip_pipeline -c 0x1f -n 4 –- -s examples/rss.cli
 
-As the traffic is sent and received by PCAP devices the traffic flow is
-triggered by enabling the ports::
+3. Send following packets with one test port::
 
-   link 0 up
-   link 1 up
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.10.1",dst="100.0.20.2")/Raw(load="X"*6)
+    packet_2:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.0",dst="100.0.0.1")/Raw(load="X"*6)
+    packet_3:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.10.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_4:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.1",dst="100.0.10.2")/Raw(load="X"*6)
 
-Wait 1s to allow all frames to be sent and stop the ports::
+   Verify packet_1 was received by tester_port_0.
+   Verify packet_2 was received by tester_port_1.
+   Verify packet_3 was received by tester_port_2.
+   Verify packet_4 was received by tester_port_3.
 
-   link 0 down
-   link 1 down
+Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
+======================================================
+1. Create vf with pf bound to dpdk driver::
 
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.0/max_vfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.1/max_vfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.2/max_vfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.3/max_vfs
 
-Check the results PCAP files ``tmp/port0out.pcap`` and ``tmp/port1out.pcap``,
-the frames must be received in port 0, ``tmp/port0out.pcap``.
+   Then bind the four vfs to dpdk vfio_pci driver::
 
-Test Case: test_flow_management
-===============================
+    ./usertools/dpdk-devbind.py -b vfio_pci 05:02.0 05:06.0 05:0a.0 05:0e.0
 
-This test checks the flow addition and removal feature in the packet framework.
+2. Start testpmd with the four pf ports::
 
-Create a PCAP file containing the following traffic:
+    ./testpmd -c 0xf0 -n 4 -w 05:00.0 -w 05:00.1 -w 05:00.2 -w 05:00.3 --file-prefix=pf --socket-mem 1024,1024 -- -i
 
- - TCP/IPv4.
- - Frame size 64.
- - Source IP address 0.0.0.0
- - Destination IP addresses: '0.0.0.0', '0.0.0.1', '0.0.0.127', '0.0.0.128',
-   '0.0.0.255', '0.0.1.0', '0.0.127.0', '0.0.128.0', '0.0.129.0', '0.0.255.0',
-   '0.127.0.0', '0.127.1.0', '0.127.127.0', '0.127.255.0', '0.127.255.255'
+   Set vf mac address from pf port::
 
-Start the ``ip_pipeline`` application as described in prerequisites and set up
-the following configuration::
+    testpmd> set vf mac addr 0 0 00:11:22:33:44:55
+    testpmd> set vf mac addr 1 0 00:11:22:33:44:56
+    testpmd> set vf mac addr 2 0 00:11:22:33:44:57
+    testpmd> set vf mac addr 3 0 00:11:22:33:44:58
 
-    pipeline> arp add 0 0.0.0.1 0a:0b:0c:0d:0e:0f
-    pipeline> arp add 1 0.128.0.1 1a:1b:1c:1d:1e:1f
-    pipeline> route add 0.0.0.0 9 0 0.0.0.1
-    pipeline> route add 0.128.0.0 9 1 0.128.0.1
+3. Edit examples/ip_pipeline/examples/vf.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_vf_port_0, dut_vf_port_1, dut_vf_port_2, dut_vf_port_3.
 
-Start port reception::
+4. Run ip_pipeline app as the following::
 
-  link 0 up link 1 up
+    ./build/ip_pipeline -c 0x3 -n 4 -w 0000:05:02.0 -w 0000:05:06.0 \
+    -w 0000:05:0a.0 -w 0000:05:0e.0 --file-prefix=vf --socket-mem 1024,1024 -- -s examples/vf.cli
 
-1. Send the pcap file and check that the number of frames forwarded matches the
-   number of flows added (starting at 0)
+   The exact format of port whitelist: domain:bus:devid:func
 
-2. Add a new flow matching one of the IP address::
+5. Send packets at tester side with scapy::
 
-      pipeline> flow add 0.0.0.0 <dst IP> 0 0 0 <port>
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_2:Ether(dst="00:11:22:33:44:56")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_3:Ether(dst="00:11:22:33:44:57")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_4:Ether(dst="00:11:22:33:44:58")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
 
-3. Repeat Step 1 until all the frames pass
+   Verify:
+   Only packet_1 sent from tester_port_0 can be received at tester_port_1,
+   other packets sent from tester_port_0 cannot be received by any port.
+   Only packet_2 sent from tester_port_1 can be received at tester_port_0,
+   other packets sent from tester_port_1 cannot be received by any port.
+   Only packet_3 sent from tester_port_2 can be received at tester_port_3,
+   other packets sent from tester_port_2 cannot be received by any port.
+   Only packet_4 sent from tester_port_3 can be received at tester_port_2,
+   other packets sent from tester_port_3 cannot be received by any port.
 
-4. Remove a flow previously added::
+Test Case: vf l2fwd pipeline(pf bound to kernel driver)
+=========================================================
+1. Create vf with pf bound to kernel driver::
 
-      pipeline> flow del 0.0.0.0 <dst IP> 0 0 0
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.0/sriov_numvfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.1/sriov_numvfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.2/sriov_numvfs
+    echo 1 > /sys/bus/pci/devices/0000\:05\:00.3/sriov_numvfs
 
-5. Check if a frames less is forwarded.
+2. Set vf mac address::
 
-6. Repeat from step 4 until no frames are forwarded.
+    ip link set dut_port_0 vf 0 mac 00:11:22:33:44:55
+    ip link set dut_port_1 vf 0 mac 00:11:22:33:44:56
+    ip link set dut_port_2 vf 0 mac 00:11:22:33:44:57
+    ip link set dut_port_3 vf 0 mac 00:11:22:33:44:58
 
-Test Case: test_route_management
-================================
+   Disable spoof checking on vfs::
 
-This test checks the route addition and removal feature in the packet framework.
+    ip link set dut_port_0 vf 0 spoofchk off
+    ip link set dut_port_1 vf 0 spoofchk off
+    ip link set dut_port_2 vf 0 spoofchk off
+    ip link set dut_port_3 vf 0 spoofchk off
 
-Create a PCAP file containing the following traffic:
+   Then bind the four vfs to dpdk vfio_pci driver::
 
- - TCP/IPv4.
- - Frame size 64.
- - Source IP address 0.0.0.0
- - Destination IP addresses: '0.0.0.0', '0.0.0.1', '0.0.0.127', '0.0.0.128',
-   '0.0.0.255', '0.0.1.0', '0.0.127.0', '0.0.128.0', '0.0.129.0', '0.0.255.0',
-   '0.127.0.0', '0.127.1.0', '0.127.127.0', '0.127.255.0', '0.127.255.255'
+    ./usertools/dpdk-devbind.py -b vfio_pci 05:02.0 05:06.0 05:0a.0 05:0e.0
 
-Start the ``ip_pipeline`` application as described in prerequisites and set up
-the following configuration::
+3. Edit examples/ip_pipeline/examples/vf.cli,
+   change pci device id of LINK0, LINK1, LINK2, LINK3 to pci device id of
+   dut_vf_port_0, dut_vf_port_1, dut_vf_port_2, dut_vf_port_3.
 
-    pipeline> arp add 0 0.0.0.1 0a:0b:0c:0d:0e:0f
-    pipeline> arp add 1 0.128.0.1 1a:1b:1c:1d:1e:1f
-    pipeline> flow add all
+4. Run ip_pipeline app as the following::
 
-Start port reception::
+    ./build/ip_pipeline -c 0x3 -n 4 -- -s examples/vf.cli
 
-  link 0 up link 1 up
+5. Send packets at tester side with scapy::
 
-1. Send the pcap file and check that the number of frames forwarded matches
-   the number of routes added (starting at 0)
+    packet_1:Ether(dst="00:11:22:33:44:55")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_2:Ether(dst="00:11:22:33:44:56")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_3:Ether(dst="00:11:22:33:44:57")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
+    packet_4:Ether(dst="00:11:22:33:44:58")/IP(src="100.0.0.1",dst="100.0.0.2")/Raw(load="X"*6)
 
-2. Add a new route matching one of the IP address::
+   Verify:
+   Only packet_1 sent from tester_port_0 can be received at tester_port_1,
+   other packets sent from tester_port_0 cannot be received by any port.
+   Only packet_2 sent from tester_port_1 can be received at tester_port_0,
+   other packets sent from tester_port_1 cannot be received by any port.
+   Only packet_3 sent from tester_port_2 can be received at tester_port_3,
+   other packets sent from tester_port_2 cannot be received by any port.
+   Only packet_4 sent from tester_port_3 can be received at tester_port_2,
+   other packets sent from tester_port_3 cannot be received by any port.
 
-      pipeline> route add <src IP> 32 <port> 0.0.0.1
+Test Case: crypto pipeline - AEAD algorithm in aesni_gcm
+===========================================================
+1. Edit examples/ip_pipeline/examples/flow_crypto.cli,
+   use AEAD algorithm in aesni_gcm driver.
 
-3. Repeat Step 1 until all the frames pass
+2. Create a cryptodev aesni_gcm::
 
-4. Remove a route previously added::
+    cryptodev CRYPTO0 dev crypto_aesni_gcm0 queue 1 1024
 
-      pipeline> route del <dst IP> 32
+3. Use AEAD algorithm aes-gcm to encrypt and decrypt payload
+   with specified aead_key, aead_iv, aead_aad and digest_size::
 
-5. Check if a frames less is forwarded.
+    pipeline PIPELINE0 table 0 rule add match hash ipv4_addr 100.0.0.10 action fwd port 0 sym_crypto encrypt type aead aead_algo aes-gcm aead_key 000102030405060708090a0b0c0d0e0f aead_iv 000102030405060708090a0b aead_aad 000102030405060708090a0b0c0d0e0f digest_size 8 data_offset 290
 
-6. Repeat from step 4 until no frames are forwarded.
+    pipeline PIPELINE0 table 0 rule add match hash ipv4_addr 100.0.0.10 action fwd port 0 sym_crypto decrypt type aead aead_algo aes-gcm aead_key 000102030405060708090a0b0c0d0e0f aead_iv 000102030405060708090a0b aead_aad 000102030405060708090a0b0c0d0e0f digest_size 8 data_offset 290
+
+   AEAD_KEY: 16 BYTES, AEAD_IV: 12 BYTES, AAD: MAXIMUM 16 BYTES, DIGEST 8/12/16 bytes,
+   You may find all supported key/aad/iv info in
+   dpdk/drivers/crypto/aesni_gcm/aesni_gcm_pmd_ops.c aesni_gcm_pmd_capabilities
+
+4. Run ip_pipeline app as the following::
+
+    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_gcm0
+    --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+
+5. Send packets with IXIA port,
+   Use a tool to caculate the ciphertext from plaintext and key as an expected value.
+   Then compare the received ciphertext through the ip_pipeline to the expected value to see whether consistent.
+
+   For instance, send a packet with ixia, set the frame size to 70 bytes, which is 32-byte data ipv4 pkts.
+   You may add longer length, but the received packets length = ROUND_UP_MULTIPLE_TIMES_OF_16(x(size of pkt) – 38) + DIGEST_SIZE
+   Track the packets of IXIA, expect receiving a packet with 78 bytes long,
+   with the 32-byte payload matching encryption result of the tool, and 8 bytes digest matching the tool-computed tag.
+
+   Set the input packet to 78 bytes in decrypt procedure,
+   including the 32-byte ciphertext and 8-byte authentication tag.
+   The output data is plaintext consistent with the input data of encrypt procedure.
+
+Test Case: crypto pipeline - cipher algorithm in aesni_mb
+============================================================
+1. Edit examples/ip_pipeline/examples/flow_crypto.cli,
+   use cipher algorithm in aesni_mb driver.
+
+2. Create a cryptodev aesni_mb::
+
+    cryptodev CRYPTO0 dev crypto_aesni_mb0 queue 1 1024
+
+3. Then use cipher algorithm aes-cbc or aes-ctr to encrypt and decrypt payload
+   with specified cipher_key and cipher_iv::
+
+    pipeline PIPELINE0 table 0 rule add match hash ipv4_addr 100.0.0.10 action fwd port 0 sym_crypto encrypt type cipher cipher_algo aes-cbc cipher_key 000102030405060708090a0b0c0d0e0f cipher_iv 000102030405060708090a0b0c0d0e0f data_offset 290
+
+    pipeline PIPELINE0 table 0 rule add match hash ipv4_addr 100.0.0.10 action fwd port 0 sym_crypto decrypt type cipher cipher_algo aes-cbc cipher_key 000102030405060708090a0b0c0d0e0f cipher_iv 000102030405060708090a0b0c0d0e0f data_offset 290
+
+4. Run ip_pipeline app as the following::
+
+    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+
+5. Send packets with IXIA port,
+   Use a tool to caculate the ciphertext from plaintext and key as an expected value.
+   Compare the received ciphertext through the ip_pipeline to the expected value to see whether consistent.
+
+   For instance, send a packet with ixia, set the frame size to 70 bytes, which is 32-byte data ipv4 pkts.
+   You may add longer length, but the received packets length = ROUND_UP_MULTIPLE_TIMES_OF_16(x(size of pkt) – 38)
+   Track the packets of IXIA, expect receiving a packet with 70 bytes long,
+   with the 32-byte payload matching encryption result of the tool.
+
+   Set the input packet to 70 bytes in decrypt procedure too,
+   The output data is plaintext consistent with the input data of encrypt procedure.
+
+Test Case: crypto pipeline - cipher_auth algorithm in aesni_mb
+=================================================================
+1. Edit examples/ip_pipeline/examples/flow_crypto.cli,
+   use cipher_auth algorithm in aesni_mb driver.
+
+2. Create a cryptodev aesni_mb::
+
+    cryptodev CRYPTO0 dev crypto_aesni_mb0 queue 1 1024
+
+3. Then use cipher_auth algorithm aes-cbc and SHA1_HMAC to encrypt and decrypt payload
+   with specified cipher_key, cipher_iv, auth_key and digest_size::
+
+    pipeline PIPELINE0 table 0 rule add match hash ipv4_addr 100.0.0.10 action fwd port 0 sym_crypto encrypt type cipher_auth cipher_algo aes-cbc cipher_key 000102030405060708090a0b0c0d0e0f cipher_iv 000102030405060708090a0b0c0d0e0f auth_algo sha1-hmac auth_key 000102030405060708090a0b0c0d0e0f digest_size 12 data_offset 290
+
+4. Run ip_pipeline app as the following::
+
+    ./examples/ip_pipeline/build/ip_pipeline -w 0000:81:00.0 --vdev crypto_aesni_mb0 --socket-mem 0,2048 -l 23,24,25 -- -s ./examples/ip_pipeline/examples/flow_crypto.cli
+
+5. Send packets with IXIA port,
+   Use a tool to caculate the ciphertext from plaintext and cipher key with AES-CBC algorithm.
+   Then caculate the 12-byte digest tag from ciphertext plus IP header (52 bytes)and auth_key with SHA1-HMAC algorithm.
+   Compare the received ciphertext through the ip_pipeline to the expected value to see whether consistent,
+   and compare the 12-byte digest tag with the tool-computed tag.
+
+   For instance, send a packet with ixia, set the frame size to 70 bytes, which is 32-byte data ipv4 pkts.
+   You may add longer length, but the received packets length = ROUND_UP_MULTIPLE_TIMES_OF_16(x(size of pkt) – 38) + DIGEST_SIZE
+   Track the packets of IXIA, expect receiving a packet with 82 bytes long,
+   with the 32-byte payload matching encryption result of the tool, and 12 bytes digest matching the tool-computed tag.

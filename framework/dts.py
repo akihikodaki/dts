@@ -108,7 +108,7 @@ def dts_parse_param(config, section):
 
     settings.save_global_setting(settings.HOST_NIC_SETTING, paramDict['nic_type'])
 
-    # save perf/funtion setting in enviornment
+    # save perf/function setting in environment
     if performance:
         settings.save_global_setting(settings.PERF_SETTING, 'yes')
     else:
@@ -525,7 +525,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     crbs_conf = CrbsConf()
     crbs = crbs_conf.load_crbs_config()
 
-    # for all Exectuion sections
+    # for all Execution sections
     for section in config.sections():
         dts_parse_param(config, section)
 

@@ -308,7 +308,7 @@ class TestKni(TestCase):
         config_param = self.build_config_param()
 
         out_kni = self.dut.send_expect(
-            './examples/kni/build/app/kni -c %s -n %d -- -P -p %s %s &' %
+            './examples/kni/build/app/kni -c %s -n %d -- -P -p %s %s -m &' %
             (core_mask, self.dut.get_memory_channels(), port_mask, config_param),
             "Link Up", 20)
 
@@ -677,12 +677,17 @@ class TestKni(TestCase):
                         "'ethtool -i' not supported")
 
             # Request pause parameters
-            out = self.dut.send_expect("ethtool -a %s" % virtual_interface,
-                                       "# ")
-            self.verify("Pause parameters for %s" % virtual_interface in out,
-                        "'ethtool -a' not supported")
-            self.verify("Operation not supported" not in out,
-                        "ethtool '-a' not supported")
+            with open("/usr/include/linux/ethtool.h","r") as ethtool_h:
+                ethtool_contents = ethtool_h.read()
+                GSET = "ETHTOOL_GLINKSETTINGS"
+                SSET = "ETHTOOL_SLINKSETTINGS"
+                if (GSET in ethtool_contents) and (SSET in ethtool_contents):
+                    out = self.dut.send_expect("ethtool -a %s" % virtual_interface,
+                                               "# ")
+                    self.verify("Pause parameters for %s" % virtual_interface in out,
+                                "'ethtool -a' not supported")
+                    self.verify("Operation not supported" not in out,
+                                "ethtool '-a' not supported")
 
             # Request statistics
             out = self.dut.send_expect("ethtool -S %s" % virtual_interface,
@@ -709,7 +714,7 @@ class TestKni(TestCase):
             self.verify("Operation not supported" not in out,
                         "'ethtool -g' not supported")
 
-            # Request coalesce parameters. NOT SUPORTED
+            # Request coalesce parameters. NOT SUPPORTED
             out = self.dut.send_expect("ethtool -c %s" % virtual_interface,
                                        "# ")
             self.verify("Operation not supported" in out,
@@ -803,7 +808,7 @@ class TestKni(TestCase):
             try:
                 out = self.start_kni(step['lo_mode'], step['kthread_mode'])
                 self.verify("Error" not in out, "Error found during kni start")
-                # kni setup out info by kernel debug function. so should re-build kenel.
+                # kni setup out info by kernel debug function. so should re-build kernel.
                 # now not check kni setup out info, only check kni setup ok and setup no error output
                 out = self.dut.send_expect('ps -aux', "]# ")
                 self.verify("kni" not in out, "kni process setup failed")
@@ -1183,7 +1188,7 @@ class TestKni(TestCase):
                 self.tester.scapy_append(
                     'flows.append(Ether(dst="%s")/IP(src="192.170.%d.2",dst="192.170.%d.2")/("X"*%d))' %
                     (rx_mac, 100 + port, 100 + (port + 1) % ports_without_kni, payload_size))
-                tgen_input.append((tx_port, tx_port, "routePerf.pcap"))
+                tgen_input.append((tx_port, tx_port, "routePerf_%d.pcap" % ports_without_kni))
 
             self.tester.scapy_append(
                 'wrpcap("routePerf_%d.pcap",flows)' % ports_without_kni)

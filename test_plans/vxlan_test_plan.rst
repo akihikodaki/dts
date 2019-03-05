@@ -139,8 +139,8 @@ Enable VXLAN protocol on ports::
 
 Enable IP,UDP,TCP,SCTP,OUTER-IP checksum offload::
 
-    csum parse_tunnel on 0
-    csum parse_tunnel on 1
+    csum parse-tunnel on 0
+    csum parse-tunnel on 1
     csum set ip hw 0
     csum set udp hw 0
     csum set tcp hw 0
@@ -236,8 +236,8 @@ Enable VXLAN protocol on ports::
 
 Enable IP,UDP,TCP,SCTP,VXLAN checksum offload::
 
-    csum parse_tunnel on 0
-    csum parse_tunnel on 1
+    csum parse-tunnel on 0
+    csum parse-tunnel on 1
     csum set ip hw 0
     csum set udp hw 0
     csum set tcp hw 0

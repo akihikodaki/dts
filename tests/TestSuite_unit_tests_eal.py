@@ -115,6 +115,13 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
+
+        # Extendable Bucket Table enhances and guarantees insertion of 100% of
+        # the keys for a given hash table size. Add the check that average
+        # table utilization is 100% when extendable table is enabled.
+
+        self.verify("Average table utilization = 100.00%" in out,
+                    "Test failed for extenable bucket table")
         self.verify("Test OK" in out, "Test failed")
 
     def test_hash_perf(self):
@@ -125,6 +132,54 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect(self.test_app_cmdline,
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_perf_autotest", "RTE>>", self.run_cmd_time * 10)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_hash_functions(self):
+        """
+        Run hash functions autotest.
+        """
+
+        self.dut.send_expect(self.test_app_cmdline,
+                             "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("hash_functions_autotest",
+                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_hash_multiwriter(self):
+        """
+        Run hash multiwriter autotest.
+        """
+
+        self.dut.send_expect(self.test_app_cmdline,
+                             "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("hash_multiwriter_autotest",
+                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_hash_readwrite(self):
+        """
+        Run hash readwrite autotest.
+        """
+
+        self.dut.send_expect(self.test_app_cmdline,
+                             "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("hash_readwrite_autotest",
+                                   "RTE>>", self.run_cmd_time)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_hash_readwrite_lf(self):
+        """
+        Run hash readwrite_lf autotest.
+        """
+
+        self.dut.send_expect("./%s/app/test" % self.target,
+                             "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("hash_readwrite_lf_autotest",
+                                   "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
@@ -261,11 +316,13 @@ class TestUnitTestsEal(TestCase):
         Run eal flags autotest.
         """
 
+        self.dut.unbind_interfaces_linux()
         self.dut.send_expect(self.test_app_cmdline + ' -m 64', "R.*T.*E.*>.*>", self.start_test_time)
         # on FreeBSD need more time than other OS
         out = self.dut.send_expect("eal_flags_autotest", "RTE>>", 600)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
+        self.dut.bind_interfaces_linux(driver=self.drivername)
 
     def test_alarm(self):
         """
@@ -336,16 +393,6 @@ class TestUnitTestsEal(TestCase):
 
         self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("tailq_autotest", "RTE>>", self.run_cmd_time)
-        self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
-
-    def test_devargs(self):
-        """
-        Run devargs autotest.
-        """
-
-        self.dut.send_expect(self.test_app_cmdline, "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("devargs_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 

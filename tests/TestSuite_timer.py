@@ -49,7 +49,7 @@ class TestTimer(TestCase):
         Run at the start of each test suite.
 
 
-        timer prerequistites
+        timer prerequisites
         """
         out = self.dut.build_dpdk_apps('examples/timer')
 

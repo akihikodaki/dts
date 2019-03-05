@@ -3,7 +3,7 @@
 import re
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 
@@ -61,7 +61,6 @@ class TestVfPacketRxtx(TestCase):
             vf0_prop = {'opt_host': self.sriov_vfs_port_0[0].pci}
             vf1_prop = {'opt_host': self.sriov_vfs_port_1[0].pci}
 
-
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
@@ -73,7 +72,7 @@ class TestVfPacketRxtx(TestCase):
                     self.host_testpmd.start_testpmd("1S/5C/1T", "", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_packet_rxtx')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -192,17 +191,20 @@ class TestVfPacketRxtx(TestCase):
                 eal_param = '-b %(vf0)s -b %(vf1)s -b %(vf2)s' % {'vf0': self.sriov_vfs_port[0].pci,
                                                                   'vf1': self.sriov_vfs_port[1].pci,
                                                                   'vf2': self.sriov_vfs_port[2].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                if (self.nic in ["niantic", "sageville", "sagepond"]):
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                else:
+                    self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_packet_rxtx')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
             # set up VM1 ENV
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_packet_rxtx')
+            self.vm1 = VM(self.dut, 'vm1', 'vf_packet_rxtx')
             self.vm1.set_vm_device(driver=self.vf_assign_method, **vf2_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
@@ -252,10 +254,16 @@ class TestVfPacketRxtx(TestCase):
 
         self.setup_3vf_2vm_env_flag = 0
 
-    def test_vf_reset(self):
+    def test_kernel_pf_vf_reset(self):
 
         self.setup_3vf_2vm_env(driver='')
+        self.vf_reset()
 
+    def test_dpdk_pf_vf_reset(self):
+        self.setup_3vf_2vm_env(driver='igb_uio')
+        self.vf_reset()
+
+    def vf_reset(self):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
 
@@ -279,6 +287,7 @@ class TestVfPacketRxtx(TestCase):
         rx_port = tx_port
 
         dst_mac = pmd0_vf0_mac
+        self.vm0_testpmd.execute_cmd('clear port stats all')
         self.tester.sendpkt_bg(tx_port, dst_mac)
 
         #vf port stop/start can trigger reset action

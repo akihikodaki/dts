@@ -438,7 +438,7 @@ class TestNvgre(TestCase):
         """
         send nvgre packet and check whether testpmd detect the correct packet type
         """
-        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --tx-offloads=0x8fff"
+        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
                                    % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         out = self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
@@ -467,7 +467,7 @@ class TestNvgre(TestCase):
         """
         send nvgre packet and check whether receive packet in assigned queue
         """
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --tx-offloads=0x8fff"
+        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
                              % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
@@ -543,7 +543,7 @@ class TestNvgre(TestCase):
         self.logger.info("chksums_ref:" + str(chksums_default))
 
         # start testpmd with 2queue/1port
-        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum --tx-offloads=0x8fff"
+        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum"
                                    % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         # disable vlan filter
         self.dut.send_expect('vlan set filter off %d' % self.dut_rx_port, "testpmd")
@@ -551,12 +551,14 @@ class TestNvgre(TestCase):
         # enable tx checksum offload
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.dut.send_expect("set fwd csum", "testpmd>", 10)
+        self.dut.send_expect("port stop all", "testpmd>")
         self.dut.send_expect("csum set ip hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set udp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set tcp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set sctp hw %d" % (self.dut_tx_port), "testpmd>", 10)
         self.dut.send_expect("csum set outer-ip hw %d" % (self.dut_tx_port), "testpmd>", 10)
-        self.dut.send_expect("csum parse_tunnel on %d" % (self.dut_tx_port), "testpmd>", 10)
+        self.dut.send_expect("csum parse-tunnel on %d" % (self.dut_tx_port), "testpmd>", 10)
+        self.dut.send_expect("port start all", "testpmd>")
 
         # log the nvgre format
         arg_str = ""
@@ -571,7 +573,7 @@ class TestNvgre(TestCase):
         config.outer_mac_dst = self.dut_rx_port_mac
         config.create_pcap()
 
-        # remove tempory files
+        # remove temporary files
         self.tester.send_expect("rm -rf %s" % config.capture_file, "# ")
         # save the capture packet into pcap format
         self.tester.scapy_background()
@@ -664,7 +666,7 @@ class TestNvgre(TestCase):
         self.nvgre_filter(filter_type="imac", remove=True)
         config = NvgreTestConfig(self)
         # config.outer_mac_dst = self.dut_port_mac
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --tx-offloads=0x8fff"
+        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
                              % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
                                    % (self.dut_rx_port, config.outer_mac_dst, self.invalid_mac, config.inner_ip_dst, vlan_id,

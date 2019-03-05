@@ -44,7 +44,7 @@ import os
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import FOLDERS
-from packet import Packet, sniff_packets, load_sniff_packets, strip_pktload
+from packet import Packet, strip_pktload
 
 #
 #
@@ -99,10 +99,10 @@ class TestQueueStartStop(TestCase):
         dmac = self.dut.get_mac_address(txPort)
 
         pkt = Packet(pkt_type="UDP", pkt_len=pktSize)
-        inst = sniff_packets(rxitf)
+        inst = self.tester.tcpdump_sniff_packets(rxitf)
         pkt.config_layer('ether', {'dst': dmac})
         pkt.send_pkt(tx_port=txitf)
-        sniff_pkts = load_sniff_packets(inst)
+        sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         if received:
             res = strip_pktload(sniff_pkts[0], layer="L4")
@@ -177,7 +177,7 @@ class TestQueueStartStop(TestCase):
 
         try:
             self.dut.send_expect("stop", "testpmd>")
-            self.dut.send_expect("quit", "testpmd>")
+            self.dut.send_expect("quit", "#")
         except:
             print "Failed to quit testpmd"
 

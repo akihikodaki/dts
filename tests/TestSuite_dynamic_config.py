@@ -60,7 +60,7 @@ class TestDynamicConfig(TestCase):
         Run at the start of each test suite.
 
 
-        Dynamic config Prerequistites
+        Dynamic config Prerequisites
         """
 
         # Based on h/w type, choose how many ports to use
@@ -77,9 +77,6 @@ class TestDynamicConfig(TestCase):
         # launch app
         cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
         --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
-
-	if "cavium" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
 
@@ -119,9 +116,6 @@ class TestDynamicConfig(TestCase):
         cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
         --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
 
-	if "cavium" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
-
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
         time.sleep(5)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -146,9 +140,9 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
 
-        # check the pakcet increasment
+        # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "1st packet increasement check error")
+                    + 1, "1st packet increment check error")
 
         # send one packet with the portid MAC address
         self.dynamic_config_send_packet(portid, self.dest)
@@ -157,9 +151,9 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
 
-        # check the pakcet increasment
+        # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "2nd packet increasement check error")
+                    + 1, "2nd packet increment check error")
 
     def test_dynamic_config_disable_promiscuous(self):
         """
@@ -179,14 +173,14 @@ class TestDynamicConfig(TestCase):
               "show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
         self.verify(int(cur_rxpkt) == int(
-              pre_rxpkt), "1st packet increasment error")
+              pre_rxpkt), "1st packet increment error")
         self.dynamic_config_send_packet(portid, self.dest)
         pre_rxpkt = cur_rxpkt
         out = self.dut.send_expect(
               "show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
         self.verify(int(cur_rxpkt) == int(
-              pre_rxpkt) + 1, "2nd packet increasment error")
+              pre_rxpkt) + 1, "2nd packet increment error")
 
     def test_dynamic_config_broadcast(self):
         """
@@ -261,9 +255,9 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
 
-        # check the pakcet increasment
+        # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "1st packet increasment error")
+                    + 1, "1st packet increment error")
 
         # send one packet with the portid MAC address
         self.dynamic_config_send_packet(portid, self.dest)
@@ -272,9 +266,9 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
 
-        # check the pakcet increasment
+        # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "2nd packet increasment error")
+                    + 1, "2nd packet increment error")
 
         #self.dut.send_expect("quit", "# ", 30)
 

@@ -175,7 +175,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         self.test_cycles = [{'cores': '1S/4C/2T', 'Mpps': {}, 'pct': {}}]
 
-        # Nianatic only support 2bytes payload, Fotville support 16 bytes
+        # Niantic only support 2bytes payload, Fortville support 16 bytes
         self.flexbytes = [{'length': 2, 'flexbytes': '0x11,0x11', 'payload': '\\x11\\x11'},
                           {'length': 16, 'flexbytes': '0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88', 'payload': '\\x11\\x11\\x22\\x22\\x33\\x33\\x44\\x44\\x55\\x55\\x66\\x66\\x77\\x77\\x88\\x88'}
                           ]
@@ -245,7 +245,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd rxonly", "testpmd>")
 
-        # fwd comand testing
+        # fwd command testing
         self.fdir_type = "fwd"
 
         # ipv4 ip
@@ -819,7 +819,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                              /Raw(load="%s")], iface="%s")' \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
-        # test add and remove proto reul
+        # test add and remove proto rule
         self.dut.send_expect("set_fdir_input_set %d ipv4-other ipv4-proto add" % self.dut_ports[0], "testpmd>")
         self.dut.send_expect("flow_director_filter %d mode IP add flow ipv4-other src 192.168.1.1 dst 192.168.1.2 \
                               tos 16 proto 253 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 1 fd_id 1"
@@ -906,7 +906,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set_fdir_input_set %d ipv6-other src-ipv6 add" % self.dut_ports[0], "testpmd>")
         self.dut.send_expect("set_fdir_input_set %d ipv6-other dst-ipv6 add" % self.dut_ports[0], "testpmd>")
 
-        # test add and remove ipv6 tc reul
+        # test add and remove ipv6 tc rule
         self.dut.send_expect("set_fdir_input_set %d ipv6-other ipv6-tc add" % self.dut_ports[0], "testpmd>")
         self.dut.send_expect("flow_director_filter %d mode IP add flow ipv6-other src 2000::1 dst 2000::2 \
                               tos 16 proto 255 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 1 fd_id 1"
@@ -940,7 +940,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                              /Raw(load="%s")], iface="%s")' \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
-        # test add and remove pv6-next-header  reul
+        # test add and remove ipv6-next-header  rule
         self.dut.send_expect("set_fdir_input_set %d ipv6-other ipv6-next-header add" % self.dut_ports[0], "testpmd>")
         self.dut.send_expect("flow_director_filter %d mode IP add flow ipv6-other src 2000::1 dst 2000::2 \
                               tos 16 proto 253 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 1 fd_id 1"
@@ -1284,7 +1284,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
     def ip(self, port, frag, src, proto, tos, dst, chksum, len, version, flags, ihl, ttl, id, options=None):
         """
-        Configure IP protocal.
+        Configure IP protocol.
         """
         self.add_tcl_cmd("protocol config -name ip")
         self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)

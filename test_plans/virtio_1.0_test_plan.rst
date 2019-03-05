@@ -44,8 +44,7 @@ test with virtio0.95 to ensure they can co-exist. Besides, we need test virtio
 
 
 Test Case 1: test_func_vhost_user_virtio1.0-pmd with different tx-offloads
-=======================================================================
-
+==========================================================================
 Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0.
 
 1. Launch the Vhost sample by below commands, socket-mem is set for the vhost sample to use, need ensure that the PCI port located socket has the memory. In our case, the PCI BDF is 81:00.0, so we need assign memory for socket1.::
@@ -63,7 +62,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
      -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 -nographic
 
 
-3. In the VM, change the config file--common_linuxapp, "CONFIG_RTE_LIBRTE_VIRTIO_DEBUG_INIT=y"; Run dpdk testpmd in VM::
+3. In the VM, run dpdk testpmd:
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 
@@ -123,7 +122,7 @@ Note: For virtio1.0 usage, we need use qemu version >2.4, such as 2.4.1 or 2.5.0
      -netdev tap,id=ipvm1,ifname=tap3,script=/etc/qemu-ifup -device rtl8139,netdev=ipvm1,id=net0,mac=00:00:00:00:10:01 -nographic
 
 
-3. In the VM, change the config file--common_linuxapp, "CONFIG_RTE_LIBRTE_VIRTIO_DEBUG_INIT=y"; Run dpdk testpmd in VM::
+3. In the VM, run dpdk testpmd:
 
      ./<dpdk_folder>/tools/dpdk_nic_bind.py --bind igb_uio 00:03.0
 

@@ -227,7 +227,7 @@ class Texttable:
     def set_deco(self, deco):
         """Set the table decoration
 
-        - 'deco' can be a combinaison of:
+        - 'deco' can be a combination of:
 
             Texttable.BORDER: Border around the table
             Texttable.HEADER: Horizontal line below the header

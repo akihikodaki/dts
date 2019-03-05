@@ -209,7 +209,7 @@ class TestLinkFlowctrl(TestCase):
         """
         Build the PAUSE Frame for the tests. 3 available options:
         0: Correct frame (correct src and dst addresses and opcode)
-        1: Wrong source frame (worng src, correct and dst address and opcode)
+        1: Wrong source frame (wrong src, correct and dst address and opcode)
         2: Wrong opcode frame (correct src and dst address and wrong opcode)
         3: Wrong destination frame (correct src and opcode, wrong dst address)
         """

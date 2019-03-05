@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2018 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -29,323 +29,177 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""
-DPDK Test suite.
-Test userland 10Gb PMD
-"""
+import utils
+import re
+import time
 
-from scapy.layers.inet import Ether, IP, TCP
-from scapy.utils import struct, socket, PcapWriter
 from settings import HEADER_SIZE
 from test_case import TestCase
-from time import sleep
-import utils
+from pmd_output import PmdOutput
+from settings import DRIVERS
+from crb import Crb
 
+from virt_dut import VirtDut
+from project_dpdk import DPDKdut
+from dut import Dut
+from packet import Packet
+
+import os
+import random
+from exception import VerifyFailure
+import scapy.layers.inet
+from scapy.utils import rdpcap
+
+from time import sleep
+#from scapy.all import conf
+from scapy.utils import wrpcap, rdpcap, hexstr
+from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
+from scapy.layers.l2 import Dot1Q, ARP, GRE
+from scapy.layers.sctp import SCTP, SCTPChunkData
+from scapy.route import *
+from scapy.packet import bind_layers, Raw
+from scapy.arch import get_if_hwaddr
+from scapy.sendrecv import sniff
+from scapy.sendrecv import sendp
 
 class TestIPPipeline(TestCase):
-    payload_watermark = 'TestPF'
 
-    frame_sizes = [64, 65, 128, 1024]
-    """Sizes of the frames to be sent"""
-
-    number_of_frames = [1, 3, 63, 64, 65, 127, 128]
-    """Number of frames in the pcap file to be created"""
-
-    incremental_ip_address = [True, False]
-    """True if the IP address is incremented in the frames"""
-
-    inter = [0, 0.7]
-    """Interval between frames sent in seconds"""
-
-    dummy_pcap = 'dummy.pcap'
-
-    def increment_ip_addr(self, ip_address, increment):
-
-        ip2int = lambda ipstr: struct.unpack('!I', socket.inet_aton(ipstr))[0]
-        x = ip2int(ip_address)
-        int2ip = lambda n: socket.inet_ntoa(struct.pack('!I', n))
-        return int2ip(x + increment)
-
-    def create_tcp_ipv4_frame(
-        self, ip_id, src_ip_addr, dst_ip_addr, frame_size,
-        src_mac_addr='00:00:0A:00:0B:00',
-            dst_mac_addr='00:00:0A:00:0A:00'):
-
-        payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] -\
-            HEADER_SIZE['tcp'] - \
-            len(TestIPPipeline.payload_watermark)
-
-        if payload_size < 0:
-            payload_size = 0
-
-        frame = Ether() / IP() / TCP(flags="") / (TestIPPipeline.payload_watermark +
-                                                  "X" * payload_size)
-        frame[Ether].src = src_mac_addr
-        frame[Ether].dst = dst_mac_addr
-
-        frame[IP].src = src_ip_addr
-        frame[IP].dst = dst_ip_addr
-        frame[IP].id = ip_id
-
-        # TCP ports always 0
-        frame[TCP].sport = 0
-        frame[TCP].dport = 0
-
-        return frame
-
-    def create_pcap_file_from_frames(self, file_name, frames):
-
-        writer = PcapWriter(file_name, append=False)
-
-        for frame in frames:
-            writer.write(frame)
-
-        writer.close()
-
-    def create_pcap_file(self, file_name, frame_size, number_of_frames,
-                         incremental_ip_address,
-                         src_ip="0.0.0.0",
-                         dst_ip="0.0.0.0"):
-
-        current_frame = 0
-        writer = PcapWriter(file_name, append=False)
-
-        while current_frame < number_of_frames:
-            ip_id = 0  # current_frame % 0x10000
-
-            frame = self.create_tcp_ipv4_frame(ip_id, src_ip, dst_ip,
-                                               frame_size)
-            writer.write(frame)
-
-            if incremental_ip_address:
-                dst_ip = self.increment_ip_addr(dst_ip, 1)
-
-            current_frame += 1
-
-        writer.close()
-
-    def create_passthrough_cfgfile(self):
+    def tcpdump_start_sniff(self, interface, filters=""):
         """
-        Create configuration file for passthrough pipeline.
-        Two ports are connected as follows: RXQ0.0 -> TXQ1.0, RXQ1.0 -> TXQ0.0.
+        Starts tcpdump in the background to sniff packets that received by interface.
         """
-
-        self.dut.send_expect('echo [PIPELINE0] > /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = MASTER >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo [PIPELINE1] >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = PASS-THROUGH >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 1 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_in = RXQ0.0 RXQ1.0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_out = TXQ1.0 TXQ0.0 >> /tmp/ip_pipeline.cfg', '#')
-
-    def create_routing_cfgfile(self):
-        """
-        Create configuration file for ip routing pipeline.
-        It is mainly to set ip header offset and arp key offset in the packet buffer.
-        """
-
-        self.dut.send_expect('echo [PIPELINE0] > /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = MASTER >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo [PIPELINE1] >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = ROUTING >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 1 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_in = RXQ0.0 RXQ1.0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_out = TXQ0.0 TXQ1.0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo encap = ethernet >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo ip_hdr_offset = 270 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo arp_key_offset = 128 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo n_arp_entries = 1000 >> /tmp/ip_pipeline.cfg', '#')
-
-    def create_flow_cfgfile(self):
-        """
-        Create configuration file for flow classification pipeline.
-        It is mainly to set key size, offset and mask to get the ipv4 5-tuple.
-        """
-
-        self.dut.send_expect('echo [PIPELINE0] > /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = MASTER >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo [PIPELINE1] >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo type = FLOW_CLASSIFICATION >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo core = 1 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_in = RXQ0.0 RXQ1.0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo pktq_out = TXQ0.0 TXQ1.0 SINK0 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo n_flows = 65536 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo key_size = 16 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo key_offset = 278 >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo key_mask = 00FF0000FFFFFFFFFFFFFFFFFFFFFFFF >> /tmp/ip_pipeline.cfg', '#')
-        self.dut.send_expect('echo flowid_offset = 128 >> /tmp/ip_pipeline.cfg', '#')
-
-    def start_ip_pipeline(self, ports):
-        command_line = "./examples/ip_pipeline/build/ip_pipeline -p %s -f /tmp/ip_pipeline.cfg" % ports
-
-        out = self.dut.send_expect(command_line, 'pipeline>', 60)
-        sleep(5)    # 'Initialization completed' is not the last output, some
-        # seconds are still needed for init.
-
-        self.verify("Aborted" not in out, "Error starting ip_pipeline")
-        self.verify("PANIC" not in out, "Error starting ip_pipeline")
-        self.verify("ERROR" not in out, "Error starting ip_pipeline")
-
-    def quit_ip_pipeline(self):
-        self.dut.send_expect("quit", "# ", 5)
-
-    def tcpdump_start_sniffing(self, ifaces=[]):
-        """
-        Starts tcpdump in the background to sniff the tester interface where
-        the packets are transmitted to and from the self.dut.
-        All the captured packets are going to be stored in a file for a
-        post-analysis.
-        """
-
-        for iface in ifaces:
-            command = ('rm -f tcpdump_{0}.pcap').format(iface)
-            self.tester.send_expect(command, '#')
-            command = (
-                'tcpdump -w tcpdump_{0}.pcap -i {0} 2>tcpdump_{0}.out &').format(iface)
-            self.tester.send_expect(command, '#')
+        command = 'rm -f /tmp/tcpdump_{0}.pcap'.format(interface)
+        self.tester.send_expect(command, '#')
+        command = 'tcpdump -n -e -Q in -w /tmp/tcpdump_{0}.pcap -i {0} {1} 2>/tmp/tcpdump_{0}.out &'\
+                  .format(interface, filters)
+        self.tester.send_expect(command, '# ')
 
     def tcpdump_stop_sniff(self):
         """
         Stops the tcpdump process running in the background.
         """
-
-        self.tester.send_expect('killall tcpdump', '#')
+        self.tester.send_expect('killall tcpdump', '# ')
         # For the [pid]+ Done tcpdump... message after killing the process
         sleep(1)
-        self.tester.send_expect('echo "Cleaning buffer"', '#')
+        self.tester.send_expect('echo "Cleaning buffer"', '# ')
         sleep(1)
 
-    def tcpdump_command(self, command, machine):
-        """
-        Sends a tcpdump related command and returns an integer from the output
-        """
+    def write_pcap_file(self, pcap_file, pkts):
+        try:
+            wrpcap(pcap_file, pkts)
+        except:
+            raise Exception("write pcap error")
 
-        if machine == 'dut':
-            result = self.dut.send_expect(command, '#', alt_session=True)
-        else:
-            result = self.tester.send_expect(command, '#', alt_session=True)
+    def read_pcap_file(self, pcap_file):
+        pcap_pkts = []
+        try:
+            pcap_pkts = rdpcap(pcap_file)
+        except:
+            raise Exception("write pcap error")
 
-        return int(result.strip())
+        return pcap_pkts
 
-    def number_of_packets(self, file_name, machine='tester'):
+    def send_and_sniff_pkts(self, from_port, to_port, pcap_file, filters="", count=1):
         """
-        By reading the file generated by tcpdump it counts how many packets were
-        forwarded by the sample app and received in the self.tester. The sample app
-        will add a known MAC address for the test to look for.
+        Sent pkts that read from the pcap_file.
+        Return the sniff pkts.
         """
-
-        command = ('tcpdump -A -nn -e -v -r %s 2>/dev/null | grep -c "%s"' %
-                   (file_name, TestIPPipeline.payload_watermark))
-        return int(self.tcpdump_command(command, machine))
-
-    def send_and_sniff_pcap_file(self, pcap_file, frames_number, from_port,
-                                 to_port, inter=0):
-        """
-        Sent frames_number frames from the pcap_file with inter seconds of
-        interval.
-        Returns the number of received frames.
-        """
-
         tx_port = self.tester.get_local_port(self.dut_ports[from_port])
         rx_port = self.tester.get_local_port(self.dut_ports[to_port])
-        port0 = self.tester.get_local_port(self.dut_ports[0])
 
         tx_interface = self.tester.get_interface(tx_port)
         rx_interface = self.tester.get_interface(rx_port)
 
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
+        self.tcpdump_start_sniff(rx_interface, filters)
 
-        timeout = frames_number * inter + 2
-        inter = ", inter=%d" % inter
-
-        # Prepare the frames to be sent
+        # Prepare the pkts to be sent
         self.tester.scapy_foreground()
-        self.tester.scapy_append('p = rdpcap("%s")' % (pcap_file))
-        self.tester.scapy_append(
-            'sendp(p[:%s], iface="%s" %s)' % (frames_number,
-                                              tx_interface,
-                                              inter))
-
-        # Execute scapy to sniff sniffing and send the frames
-        self.tester.scapy_execute(timeout)
+        self.tester.scapy_append('pkt = rdpcap("%s")' % (pcap_file))
+        self.tester.scapy_append('sendp(pkt, iface="%s", count=%d)' % (tx_interface, count))
+        self.tester.scapy_execute()
 
         self.tcpdump_stop_sniff()
 
-        rx_stats = self.number_of_packets('tcpdump_%s.pcap' % rx_interface)
-        tx_stats = self.number_of_packets('tcpdump_%s.pcap' % tx_interface)
+        return self.read_pcap_file('/tmp/tcpdump_%s.pcap' % rx_interface)
 
-        # Do not count the sent frames in the tx_interface
-        tx_stats = tx_stats - frames_number
-
-        if port0 == tx_port:
-            return {'rx0': tx_stats, 'rx1': rx_stats}
-        else:
-            return {'rx0': rx_stats, 'rx1': tx_stats}
-
-    def check_results(self, stats, expected):
+    def setup_env(self, port_nums, driver):
         """
-        This function check that the received packet numbers of port0 and port1 match the expected.
-        expected = [Rx0, Rx1]
+        This is to set up vf environment.
+        The pf is bound to dpdk driver.
         """
+        if driver == 'default':
+            for port_id in self.dut_ports:
+                port = self.dut.ports_info[port_id]['port']
+                port.bind_driver()
+        # one PF generate one VF
+        for port_num in range(port_nums):
+            self.dut.generate_sriov_vfs_by_port(self.dut_ports[port_num], 1, driver)
+            self.sriov_vfs_port.append(self.dut.ports_info[self.dut_ports[port_num]]['vfs_port'])
+        if driver == 'default':
+            self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf0_interface, self.vf0_mac), "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf1_interface, self.vf1_mac), "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf2_interface, self.vf2_mac), "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.pf3_interface, self.vf3_mac), "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" % self.pf0_interface, "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" % self.pf1_interface, "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" % self.pf2_interface, "# ", 3)
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" % self.pf3_interface, "# ", 3)
 
-        for port in ['rx0', 'rx1']:
-            self.verify(stats[port] == expected[port],
-                        'Frames expected (%s) and received (%s) mismatch on %s port' % (
-                expected[port], stats[port], port))
+        try:
+            for port_num in range(port_nums):
+                for port in self.sriov_vfs_port[port_num]:
+                    port.bind_driver(driver="vfio-pci")
+        except Exception as e:
+            self.destroy_env(port_nums, driver)
+            raise Exception(e)
 
-    def pipeline_command(self, command):
-        out = self.dut.send_expect(command, 'pipeline>')
-        self.verify("arguments" not in out, "Incorrect arguments: '%s'" % command)
-        self.verify("Invalid" not in out, "Invalid argument: '%s'" % command)
-        self.verify("Syntax error" not in out, "Syntax error: '%s'" % command)
-        return out
-
-    def pipeline_add_flow(self, port, src_ip, dst_ip, src_port, dst_port, flowid,
-                          protocol=6):
-        command = 'p 1 flow add ipv4 %s %s %d %d %d port %d id %d' % (src_ip, dst_ip, src_port,
-                                                  dst_port, protocol, port, flowid)
-        out = self.pipeline_command(command)
-        self.verify("failed" not in out, "Add flow error")
-
-    def pipeline_del_flow(self, src_ip, dst_ip, src_port, dst_port,
-                          protocol=6):
-        command = 'p 1 flow del ipv4 %s %s %d %d %d' % (src_ip, dst_ip, src_port,
-                                               dst_port, protocol)
-        out = self.pipeline_command(command)
-        self.verify("failed" not in out, "Del flow error")
-
-    def pipeline_add_route(self, port, src_ip, netmask, gw_ip):
-        command = 'p 1 route add %s %d port %d ether %s' % (src_ip, netmask, port, gw_ip)
-        out = self.pipeline_command(command)
-        self.verify("failed" not in out, "Add route error")
-
-    def pipeline_del_route(self, src_ip, netmask):
-        command = 'p 1 route del %s %d' % (src_ip, netmask)
-        out = self.pipeline_command(command)
-        self.verify("failed" not in out, "Del route error")
+    def destroy_env(self, port_nums, driver):
+        """
+        This is to stop testpmd and destroy vf environment.
+        """
+        cmd = "^C"
+        self.session_secondary.send_expect(cmd, "# ", 20)
+        time.sleep(5)
+        if driver == self.drivername:
+            self.dut.send_expect("quit", "# ")
+            time.sleep(5)
+        for port_num in range(port_nums):
+            self.dut.destroy_sriov_vfs_by_port(self.dut_ports[port_num])
 
     def set_up_all(self):
         """
         Run at the start of each test suite.
-
-        PMD prerequisites.
         """
-
         self.dut_ports = self.dut.get_ports()
-        self.verify(len(self.dut_ports) >= 2,
+        self.port_nums = 4
+        self.verify(len(self.dut_ports) >= self.port_nums,
                     "Insufficient ports for speed testing")
+
+        self.dut_p0_pci = self.dut.get_port_pci(self.dut_ports[0])
+        self.dut_p1_pci = self.dut.get_port_pci(self.dut_ports[1])
+        self.dut_p2_pci = self.dut.get_port_pci(self.dut_ports[2])
+        self.dut_p3_pci = self.dut.get_port_pci(self.dut_ports[3])
+
+        self.dut_p0_mac = self.dut.get_mac_address(self.dut_ports[0])
+        self.dut_p1_mac = self.dut.get_mac_address(self.dut_ports[1])
+        self.dut_p2_mac = self.dut.get_mac_address(self.dut_ports[2])
+        self.dut_p3_mac = self.dut.get_mac_address(self.dut_ports[3])
+
+        self.pf0_interface = self.dut.ports_info[self.dut_ports[0]]['intf']
+        self.pf1_interface = self.dut.ports_info[self.dut_ports[1]]['intf']
+        self.pf2_interface = self.dut.ports_info[self.dut_ports[2]]['intf']
+        self.pf3_interface = self.dut.ports_info[self.dut_ports[3]]['intf']
+
+        self.vf0_mac = "00:11:22:33:44:55"
+        self.vf1_mac = "00:11:22:33:44:56"
+        self.vf2_mac = "00:11:22:33:44:57"
+        self.vf3_mac = "00:11:22:33:44:58"
+
+        self.sriov_vfs_port = []
+        self.session_secondary = self.dut.new_session()
 
         out = self.dut.build_dpdk_apps("./examples/ip_pipeline")
         self.verify("Error" not in out, "Compilation error")
-
-        self.ports_mask = utils.create_mask(
-            [self.dut_ports[0], self.dut_ports[1]])
-        self.coremask = "0x3e"  # IP Pipeline app requires FIVE cores
-
-        self.dut.setup_memory(4096)
 
     def set_up(self):
         """
@@ -353,229 +207,567 @@ class TestIPPipeline(TestCase):
         """
         pass
 
-    def test_incremental_ip(self):
+    def test_routing_pipeline(self):
         """
-        Testing that frames with incremental IP addresses pass through the
-        pipeline regardless the frames_number and the speed.
+        routing pipeline
         """
-        pcap_file = 'ip_pipeline.pcap'
-        frame_size = 64
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/route.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/route.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/route.cli" % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/route.cli" % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
 
-        self.create_passthrough_cfgfile()
-        self.start_ip_pipeline(ports=self.ports_mask)
-        self.dut.send_expect(
-            'run examples/ip_pipeline/config/ip_pipeline.sh', 'pipeline>', 10)
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/route.cli"
 
-        # Create a PCAP file containing the maximum frames_number of frames needed
-        # with fixed size and incremental IP
-        self.create_pcap_file(pcap_file, frame_size,
-                              max(TestIPPipeline.number_of_frames), True)
-        self.tester.session.copy_file_to(pcap_file)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "30:31:32:33:34:35", 60)
 
-        for frames_number in TestIPPipeline.number_of_frames:
-            for inter in TestIPPipeline.inter:
-                print utils.BLUE(
-                    "\tNumber of frames %d, interval %.1f" % (frames_number,
-                                                              inter))
-                stats = self.send_and_sniff_pcap_file(pcap_file, frames_number,
-                                                      1, 0, inter)
+        #rule 0 test
+        pcap_file = '/tmp/route_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.0.0.1")/Raw(load="X"*26)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
+        dst_mac_list = []
+        for packet in sniff_pkts:
+            dst_mac_list.append(packet.getlayer(0).dst)
+        self.verify( "a0:a1:a2:a3:a4:a5" in dst_mac_list, "rule 0 test fail")
 
-                expected = {'rx0': frames_number, 'rx1': 0}
-                self.check_results(stats, expected)
+        #rule 1 test
+        pcap_file = '/tmp/route_1.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.64.0.1")/Raw(load="X"*26)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.64.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_mac_list = []
+        for packet in sniff_pkts:
+            dst_mac_list.append(packet.getlayer(0).dst)
+        self.verify( "b0:b1:b2:b3:b4:b5" in dst_mac_list, "rule 1 test fail")
 
-                stats = self.send_and_sniff_pcap_file(pcap_file, frames_number,
-                                                      0, 1, inter)
+        #rule 2 test
+        pcap_file = '/tmp/route_2.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.128.0.1")/Raw(load="X"*26)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.128.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
+        dst_mac_list = []
+        for packet in sniff_pkts:
+            dst_mac_list.append(packet.getlayer(0).dst)
+        self.verify( "c0:c1:c2:c3:c4:c5" in dst_mac_list, "rule 2 test fail")
 
-                expected = {'rx0': 0, 'rx1': frames_number}
-                self.check_results(stats, expected)
+        #rule 3 test
+        pcap_file = '/tmp/route_3.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.192.0.1")/Raw(load="X"*26)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.192.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
+        dst_mac_list = []
+        for packet in sniff_pkts:
+            dst_mac_list.append(packet.getlayer(0).dst)
+        self.verify( "d0:d1:d2:d3:d4:d5" in dst_mac_list, "rule 3 test fail")
 
-    def test_frame_sizes(self):
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
+
+    def test_firewall_pipeline(self):
         """
-        Testing that frames with different sizes pass through the pipeline.
+        firewall pipeline
         """
-        pcap_file = 'ip_pipeline.pcap'
-        frames_number = 100
-        inter = 0.5
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/firewall.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/firewall.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/firewall.cli" % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/firewall.cli" % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
 
-        self.create_passthrough_cfgfile()
-        self.start_ip_pipeline(ports=self.ports_mask)
-        self.dut.send_expect(
-            'run examples/ip_pipeline/config/ip_pipeline.sh', 'pipeline>', 10)
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/firewall.cli"
 
-        for frame_size in TestIPPipeline.frame_sizes:
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "fwd port 3", 60)
 
-            # Create a PCAP file containing the fixed number of frames above
-            # with variable size and incremental IP
-            self.create_pcap_file(pcap_file, frame_size, 100, True)
-            self.tester.session.copy_file_to(pcap_file)
+        #rule 0 test
+        pcap_file = '/tmp/fw_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.0.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.0.0.1" in dst_ip_list, "rule 0 test fail")
 
-            print utils.BLUE("\tFrame size %d, interval %.1f" % (frame_size,
-                                                               inter))
+        #rule 1 test
+        pcap_file = '/tmp/fw_1.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.64.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.64.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.64.0.1" in dst_ip_list, "rule 1 test fail")
 
-            stats = self.send_and_sniff_pcap_file(pcap_file, frames_number,
-                                                  1, 0, inter)
+        #rule 2 test
+        pcap_file = '/tmp/fw_2.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.128.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.128.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.128.0.1" in dst_ip_list, "rule 2 test fail")
 
-            expected = {'rx0': frames_number, 'rx1': 0}
-            self.check_results(stats, expected)
+        #rule 3 test
+        pcap_file = '/tmp/fw_3.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(dst="100.192.0.1")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.192.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.192.0.1" in dst_ip_list, "rule 3 test fail")
 
-            stats = self.send_and_sniff_pcap_file(pcap_file, frames_number,
-                                                  0, 1, inter)
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
 
-            expected = {'rx0': 0, 'rx1': frames_number}
-            self.check_results(stats, expected)
-
-    def test_flow_management(self):
+    def test_flow_pipeline(self):
         """
-        Add several flows and check only frames with matching IPs passes
+        flow pipeline
         """
-        pcap_file = 'ip_pipeline.pcap'
-        frame_size = 64
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/flow.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/flow.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/flow.cli" % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/flow.cli" % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
 
-        ip_addrs = [
-            '0.0.0.0', '0.0.0.1', '0.0.0.127', '0.0.0.128', '0.0.0.255',
-            '0.0.1.0', '0.0.127.0', '0.0.128.0', '0.0.129.0', '0.0.255.0',
-            '0.127.0.0', '0.127.1.0', '0.127.127.0', '0.127.255.0',
-            '0.127.255.255']
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/flow.cli"
 
-        frames = []
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "fwd port 3", 60)
 
-        for addr in ip_addrs:
-            frames.append(self.create_tcp_ipv4_frame(0, '0.0.0.0', addr,
-                                                     frame_size))
+        #rule 0 test
+        pcap_file = '/tmp/fl_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.10" in dst_ip_list, "rule 0 test fail")
 
-        self.create_flow_cfgfile()
-        self.create_pcap_file_from_frames(pcap_file, frames)
-        self.tester.session.copy_file_to(pcap_file)
+        #rule 1 test
+        pcap_file = '/tmp/fl_1.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.11" in dst_ip_list, "rule 1 test fail")
 
-        # Start ip_pipeline app and setup defaults
-        self.start_ip_pipeline(ports=self.ports_mask)
+        #rule 2 test
+        pcap_file = '/tmp/fl_2.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.12",dst="200.0.0.12")/TCP(sport=102,dport=202)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.12" in dst_ip_list, "rule 2 test fail")
 
-        # default to SINK0
-        self.pipeline_command('p 1 flow add default 2')
+        #rule 3 test
+        pcap_file = '/tmp/fl_3.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.13",dst="200.0.0.13")/TCP(sport=103,dport=203)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.13" in dst_ip_list, "rule 3 test fail")
 
-        # Check that no traffic pass though
-        stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                              1, 0, 0.2)
-        expected = {'rx0': 0, 'rx1': 0}
-        self.check_results(stats, expected)
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
 
-        # Add the flows
-        flows_added = 0
-        for addrs in ip_addrs:
-            self.pipeline_add_flow(0, '0.0.0.0', addrs, 0, 0, flows_added)
-            flows_added += 1
-
-            # Check that traffic matching flows pass though
-            stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                                  1, 0, 0.2)
-            expected = {'rx0': flows_added, 'rx1': 0}
-            self.check_results(stats, expected)
-
-        # Remove flows
-        for addrs in ip_addrs:
-            self.pipeline_del_flow('0.0.0.0', addrs, 0, 0)
-            flows_added -= 1
-
-            # Check that traffic matching flows pass though
-            stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                                  1, 0, 0.2)
-            expected = {'rx0': flows_added, 'rx1': 0}
-            self.check_results(stats, expected)
-
-        out = self.dut.send_expect('flow print', 'pipeline>')
-        self.verify("=> Port =" not in out, "Flow found after deletion")
-
-        # Check that again no traffic pass though
-        stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                              1, 0, 0.2)
-        expected = {'rx0': 0, 'rx1': 0}
-        self.check_results(stats, expected)
-
-        self.quit_ip_pipeline()
-
-    def test_route_management(self):
+    def test_l2fwd_pipeline(self):
         """
-        Add several flows and check only frames with matching IPs passes
+        l2fwd pipeline
         """
-        pcap_file = 'ip_pipeline.pcap'
-        frame_size = 64
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
 
-        default_setup = ['p 1 arp add 0 0.0.0.1 0a:0b:0c:0d:0e:0f',
-                         'p 1 arp add 1 0.128.0.1 1a:1b:1c:1d:1e:1f']
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
 
-        ip_addrs = [
-            '0.0.0.0', '0.0.0.1', '0.0.0.127', '0.0.0.128', '0.0.0.255',
-            '0.0.1.0', '0.0.127.0', '0.0.128.0', '0.0.129.0', '0.0.255.0',
-            '0.127.0.0', '0.127.1.0', '0.127.127.0', '0.127.255.0',
-            '0.127.255.255']
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "fwd port 2", 60)
 
-        frames = []
+        #rule 0 test
+        pcap_file = '/tmp/pt_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.10" in dst_ip_list, "rule 0 test fail")
 
-        for addr in ip_addrs:
-            frames.append(self.create_tcp_ipv4_frame(0, '0.0.0.0', addr,
-                                                     frame_size))
+        #rule 1 test
+        pcap_file = '/tmp/pt_1.pcap'
+        pkt = [Ether(dst=self.dut_p1_mac)/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.11" in dst_ip_list, "rule 1 test fail")
 
-        self.create_pcap_file_from_frames(pcap_file, frames)
-        self.tester.session.copy_file_to(pcap_file)
+        #rule 2 test
+        pcap_file = '/tmp/pt_2.pcap'
+        pkt = [Ether(dst=self.dut_p2_mac)/IP(src="100.0.0.12",dst="200.0.0.12")/TCP(sport=102,dport=202)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.12" in dst_ip_list, "rule 2 test fail")
 
-        self.create_routing_cfgfile()
-        # Start ip_pipeline app and setup defaults
-        self.start_ip_pipeline(ports=self.ports_mask)
-        for command in default_setup:
-            self.pipeline_command(command)
+        #rule 3 test
+        pcap_file = '/tmp/pt_3.pcap'
+        pkt = [Ether(dst=self.dut_p3_mac)/IP(src="100.0.0.13",dst="200.0.0.13")/TCP(sport=103,dport=203)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.13" in dst_ip_list, "rule 3 test fail")
 
-        # Check that no traffic pass though
-        stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                              1, 0, 0.2)
-        expected = {'rx0': 0, 'rx1': 0}
-        self.check_results(stats, expected)
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
 
-        # Add the routes
-        routes_added = 0
-        for addr in ip_addrs:
-            self.pipeline_add_route(0, addr, 32, '0.0.0.1')
-            routes_added += 1
+    def test_pfdpdk_vf_l2fwd_pipeline(self):
+        """
+        VF l2fwd pipeline, PF bound to DPDK driver
+        """
+        self.setup_env(self.port_nums, driver=self.drivername)
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
 
-            # Check that traffic matching routes pass though
-            stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                                  1, 0, 0.2)
+        TESTPMD = "./%s/app/testpmd" % self.target
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PF_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        PF_SCRIPT_FILE = "--file-prefix=pf --socket-mem 1024,1024"
 
-            expected = {'rx0': routes_added, 'rx1': 0}
-            self.check_results(stats, expected)
+        DUT_VF_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.sriov_vfs_port[0][0].pci, self.sriov_vfs_port[1][0].pci, self.sriov_vfs_port[2][0].pci, self.sriov_vfs_port[3][0].pci)
+        VF_SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
 
-        # Remove routes
-        for addr in ip_addrs:
-            self.pipeline_del_route(addr, 32)
-            routes_added -= 1
+        pf_cmd = "{0} -c 0xf0 -n 4 {1} {2} -- -i".format(TESTPMD, DUT_PF_PORTS, PF_SCRIPT_FILE)
+        self.dut.send_expect(pf_cmd, "testpmd> ", 60)
+        self.dut.send_expect("set vf mac addr 0 0 %s" % self.vf0_mac, "testpmd> ", 30)
+        self.dut.send_expect("set vf mac addr 1 0 %s" % self.vf1_mac, "testpmd> ", 30)
+        self.dut.send_expect("set vf mac addr 2 0 %s" % self.vf2_mac, "testpmd> ", 30)
+        self.dut.send_expect("set vf mac addr 3 0 %s" % self.vf3_mac, "testpmd> ", 30)
 
-            # Check that traffic matching flows pass though
-            stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                                  1, 0, 0.2)
-            expected = {'rx0': routes_added, 'rx1': 0}
-            self.check_results(stats, expected)
+        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_VF_PORTS, VF_SCRIPT_FILE)
+        self.session_secondary.send_expect(vf_cmd, "fwd port 2", 60)
 
-        out = self.dut.send_expect('route print', 'pipeline>')
-        self.verify("Destination = " not in out, "Route found after deletion")
+        #rule 0 test
+        pcap_file = '/tmp/pt_0.pcap'
+        pkt = [Ether(dst=self.vf0_mac)/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.10" in dst_ip_list, "rule 0 test fail")
 
-        # Check that again no traffic pass though
-        stats = self.send_and_sniff_pcap_file(pcap_file, len(frames),
-                                              1, 0, 0.2)
-        expected = {'rx0': 0, 'rx1': 0}
-        self.check_results(stats, expected)
+        #rule 1 test
+        pcap_file = '/tmp/pt_1.pcap'
+        pkt = [Ether(dst=self.vf1_mac)/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.11" in dst_ip_list, "rule 1 test fail")
 
-        self.quit_ip_pipeline()
+        #rule 2 test
+        pcap_file = '/tmp/pt_2.pcap'
+        pkt = [Ether(dst=self.vf2_mac)/IP(src="100.0.0.12",dst="200.0.0.12")/TCP(sport=102,dport=202)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.12" in dst_ip_list, "rule 2 test fail")
+
+        #rule 3 test
+        pcap_file = '/tmp/pt_3.pcap'
+        pkt = [Ether(dst=self.vf3_mac)/IP(src="100.0.0.13",dst="200.0.0.13")/TCP(sport=103,dport=203)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.13" in dst_ip_list, "rule 3 test fail")
+
+        sleep(1)
+        self.destroy_env(self.port_nums, driver=self.drivername)
+
+    def test_pfkernel_vf_l2fwd_pipeline(self):
+        """
+        VF l2fwd pipeline, PF bound to kernel driver
+        """
+        self.setup_env(self.port_nums, driver='default')
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
+        self.dut.send_expect(cmd, "# ", 20)
+
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_VF_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.sriov_vfs_port[0][0].pci, self.sriov_vfs_port[1][0].pci, self.sriov_vfs_port[2][0].pci, self.sriov_vfs_port[3][0].pci)
+        VF_SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
+
+        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_VF_PORTS, VF_SCRIPT_FILE)
+        self.session_secondary.send_expect(vf_cmd, "fwd port 2", 60)
+
+        #rule 0 test
+        pcap_file = '/tmp/pt_0.pcap'
+        pkt = [Ether(dst=self.vf0_mac)/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.10" in dst_ip_list, "rule 0 test fail")
+
+        #rule 1 test
+        pcap_file = '/tmp/pt_1.pcap'
+        pkt = [Ether(dst=self.vf1_mac)/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.11" in dst_ip_list, "rule 1 test fail")
+
+        #rule 2 test
+        pcap_file = '/tmp/pt_2.pcap'
+        pkt = [Ether(dst=self.vf2_mac)/IP(src="100.0.0.12",dst="200.0.0.12")/TCP(sport=102,dport=202)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(2, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.12" in dst_ip_list, "rule 2 test fail")
+
+        #rule 3 test
+        pcap_file = '/tmp/pt_3.pcap'
+        pkt = [Ether(dst=self.vf3_mac)/IP(src="100.0.0.13",dst="200.0.0.13")/TCP(sport=103,dport=203)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(3, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.13" in dst_ip_list, "rule 3 test fail")
+
+        sleep(1)
+        self.destroy_env(self.port_nums, driver=self.drivername)
+        for port_id in self.dut_ports:
+            port = self.dut.ports_info[port_id]['port']
+            port.bind_driver(driver=self.drivername)
+
+    def test_pipeline_with_tap(self):
+        """
+        pipeline with tap
+        """
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/tap.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/tap.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/tap.cli"
+
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "fwd port 3", 60)
+
+        tap_session = self.dut.new_session()
+        cmd = "ip link set br1 down; brctl delbr br1"
+        tap_session.send_expect(cmd, "# ", 20)
+        cmd = "brctl addbr br1; brctl addif br1 TAP0; brctl addif br1 TAP1"
+        tap_session.send_expect(cmd, "# ", 20)
+        cmd = "ifconfig TAP0 up;  ifconfig TAP1 up; ifconfig br1 up"
+        tap_session.send_expect(cmd, "# ", 20)
+        #rule 0 test
+        pcap_file = '/tmp/tap_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.10",dst="200.0.0.10")/TCP(sport=100,dport=200)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.10" in dst_ip_list, "link 1 failed to receive packet")
+
+        #rule 1 test
+        pcap_file = '/tmp/tap_1.pcap'
+        pkt = [Ether(dst=self.dut_p1_mac)/IP(src="100.0.0.11",dst="200.0.0.11")/TCP(sport=101,dport=201)/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(1, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "200.0.0.11" in dst_ip_list, "link 0 failed to receive packet")
+
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
+
+        cmd = "ip link set br1 down; brctl delbr br1"
+        tap_session.send_expect(cmd, "# ", 20)
+        self.dut.close_session(tap_session)
+
+    def test_rss_pipeline(self):
+        """
+        rss pipeline
+        """
+        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/rss.cli" % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/rss.cli" % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/rss.cli" % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/rss.cli" % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
+
+        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+        SCRIPT_FILE = "./examples/ip_pipeline/examples/rss.cli"
+
+        cmd = "{0} -c 0x1f -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        self.dut.send_expect(cmd, "PIPELINE3 enable", 60)
+
+        #rule 0 test
+        pcap_file = '/tmp/rss_0.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.10.1",dst="100.0.20.2")/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.20.2"
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.0.20.2" in dst_ip_list, "rule 0 test fail")
+
+        #rule 1 test
+        pcap_file = '/tmp/rss_1.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.0",dst="100.0.0.1")/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.0.1"
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.0.0.1" in dst_ip_list, "rule 1 test fail")
+
+        #rule 2 test
+        pcap_file = '/tmp/rss_2.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.10.1",dst="100.0.0.2")/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.0.2"
+        sniff_pkts = self.send_and_sniff_pkts(0, 2, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.0.0.2" in dst_ip_list, "rule 2 test fail")
+
+        #rule 3 test
+        pcap_file = '/tmp/rss_3.pcap'
+        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="100.0.0.1",dst="100.0.10.2")/Raw(load="X"*6)]
+        self.write_pcap_file(pcap_file, pkt)
+        filters = "dst host 100.0.10.2"
+        sniff_pkts = self.send_and_sniff_pkts(0, 3, pcap_file, filters)
+        dst_ip_list = []
+        for packet in sniff_pkts:
+            dst_ip_list.append(packet.getlayer(1).dst)
+        self.verify( "100.0.10.2" in dst_ip_list, "rule 3 test fail")
+
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.quit_ip_pipeline()
+        pass
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("rm -f /tmp/ip_pipeline.cfg", "#")
-        self.dut.send_expect("rm -f /tmp/ip_pipeline.cfg.out", "#")
-        out = self.dut.build_dpdk_apps("./examples/ip_pipeline")
-        self.verify("Error" not in out, "Compilation error")
+        self.dut.close_session(self.session_secondary)
+        self.dut.kill_all()

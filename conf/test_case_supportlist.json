@@ -16,6 +16,23 @@
             "Comments": "this case only support on fortville"
         }
     ],
+    "dpdk_2pf_2vf_1vm_mac_add_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+		"fortville_spirit",
+		"fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
+    ],
     "two_vms_prevent_rx_broadcast_on_vf": [
         {
             "OS": [
@@ -114,7 +131,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -131,7 +149,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -147,13 +166,18 @@
             ],
             "NIC": [
                 "powerville",
-                "niantic"
+                "niantic",
+                "fortville_25g",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+		"fortpark_TLV"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic and i350"
+            "Comments": "IPv6_in_IPv4 tunnel packet detect only support on Niantic/FVL/powerville/fortpark_TLV"
         }
     ],
     "IP_in_IPv6_tunnel": [
@@ -164,7 +188,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -181,7 +206,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -198,7 +224,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -215,7 +242,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -232,13 +260,698 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_spirit_single"
+                "fortville_spirit_single",
+                "fortville_25g"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
             "Comments": "Vxlan  tunnel packet detect only support on FVL"
+        }
+    ],
+    "outer_dst_contrl_gtpcq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpcq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "sport_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "dport_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_src_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_dst_contrl_gtpu_ipv4q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "teid_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "sport_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "dport_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_src_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "inner_dst_contrl_gtpu_ipv6q": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+     "fdir_ipv6_tc": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "ipv4_tos_proto_ttl": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "fdir_ivlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "nsh": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV",
+                "fortpark_TLV_vf",
+                "fvl10g_vf"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e driver nic"
+        }
+    ],
+    "set_key_keylen": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_rss_rule_api": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_rss_rule_combination": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "queue_region_with_invalid_parameter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "rxoffload_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic"
+        }
+    ],
+    "txoffload_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "fortpark",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "tunnel_filter_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "2_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on bartonhills and powerville"
+        }
+    ],
+    "fdir_for_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville, sagepond and sageville"
+        }
+    ],
+    "fdir_for_mac_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,sagepond and sageville"
+        }
+    ],
+    "n_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "kawela",
+                "twinville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,niantic,kawela_4 and kawela"
+        }
+    ],
+    "fdir_for_ipv4": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "fdir_for_L2_payload": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "fdir_for_ipv6": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "fdir_for_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on twinville,sagepond and sageville"
+        }
+    ],
+    "fdir_for_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
+        }
+    ],
+    "ethertype_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "kawela_4",
+                "kawela",
+                "bartonhills",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "powerville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,kawela_4,kawela,bartonhills,twinville,sagepond,sageville,powerville and FVL"
+        }
+    ],
+    "flexbytes_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "bartonhills",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on bartonhills and powerville"
+        }
+    ],
+    "L2_tunnel_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on sagepond and sageville"
+        }
+    ],
+    "fdir_for_flexbytes": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "twinville",
+                "sagepond",
+                "sageville",
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on niantic,twinville,sagepond,sageville and FVL"
+        }
+    ],
+    "tunnel_filter_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support on FVL"
         }
     ]
 }

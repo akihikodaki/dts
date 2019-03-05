@@ -42,7 +42,7 @@ Description
 -----------
 
 This test is a basic multi-process test which demonstrates the basics of sharing
-information between Intel DPDK processes. The same application binary is run
+information between DPDK processes. The same application binary is run
 twice - once as a primary instance, and once as a secondary instance. Messages
 are sent from primary to secondary and vice versa, demonstrating the processes
 are sharing memory and can communicate using rte_ring structures.
@@ -51,14 +51,14 @@ Prerequisites
 -------------
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-Assuming that an Intel DPDK build has been set up and the multi-process sample
+Assuming that a DPDK build has been set up and the multi-process sample
 applications have been built.
 
 Test Case: Basic operation

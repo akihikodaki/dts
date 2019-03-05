@@ -35,7 +35,7 @@ Test Scattered Packets.
 """
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets, strip_pktload
+from packet import Packet, strip_pktload
 import time
 #
 #
@@ -53,7 +53,7 @@ class TestScatter(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Scatter Prerequistites
+        Scatter Prerequisites
         """
         dutPorts = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
@@ -66,7 +66,7 @@ class TestScatter(TestCase):
         if self.nic in ["magnolia_park", "niantic", "sageville", "fortpark", "fortville_eagle",
                         "fortville_spirit", "fortville_spirit_single", "fortville_25g",
                         "redrockcanyou", "atwood", "boulderrapid",
-                        "ironpond", "twinpond", "springfountain", "fortpark_TLV"]:
+                        "ironpond", "twinpond", "springfountain", "fortpark_TLV", "sagepond"]:
             self.mbsize = 2048
         else:
             self.mbsize = 1024
@@ -82,11 +82,11 @@ class TestScatter(TestCase):
         """
         dmac = self.dut.get_mac_address(self.port)
 
-        inst = sniff_packets(self.intf)
+        inst = self.tester.tcpdump_sniff_packets(self.intf)
         pkt = Packet(pkt_type="IP_RAW", pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': dmac})
         pkt.send_pkt(tx_port=self.intf)
-        sniff_pkts = load_sniff_packets(inst)
+        sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         res = ""
         if len(sniff_pkts):
@@ -105,7 +105,7 @@ class TestScatter(TestCase):
         """
         out = self.pmdout.start_testpmd(
             "1S/2C/1T", "--mbcache=200 --mbuf-size=%d --portmask=0x1 "
-            "--max-pkt-len=9000 --port-topology=loop" % (self.mbsize))
+            "--max-pkt-len=9000 --port-topology=loop --tx-offloads=0x00008000" % (self.mbsize))
 
         self.verify("Error" not in out, "launch error 1")
 

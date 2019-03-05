@@ -46,7 +46,7 @@ from exception import VerifyFailure
 
 from scapy.utils import rdpcap
 
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 VM_CORES_MASK = 'all'
 
@@ -263,8 +263,8 @@ class TestEtag(TestCase):
                           ['set verbose 1'],
                           ['start']]
             if test_type == 'etag_pf':
-                # Same E-tag forwarding to PF0, Send 802.1BR packet with broardcast mac and
-                # check packet only recevied on PF
+                # Same E-tag forwarding to PF0, Send 802.1BR packet with broadcast mac and
+                # check packet only received on PF
                 
                 host_cmds = [['E-tag set filter add e-tag-id 1000 dst-pool 2 port 0'],
                              ['set fwd mac'],
@@ -276,8 +276,8 @@ class TestEtag(TestCase):
                 pkt_types = {'ETAG_UDP': {'dut':['type=0x893f'],
                                           'layer_configs': config_layers}}
             elif test_type == 'etag_remove':
-                # Remove E-tag, Send 802.1BR packet with broardcast mac and check packet not
-                # recevied
+                # Remove E-tag, Send 802.1BR packet with broadcast mac and check packet not
+                # received
                 host_cmds = [ ['E-tag set filter del e-tag-id 1000 port 0'],
                               ['set fwd rxonly'],
                               ['set verbose 1'],
@@ -288,8 +288,8 @@ class TestEtag(TestCase):
                                           'dut':[''],
                                           'layer_configs': config_layers}}
             else:
-                # Same E-tag forwarding to VF0, Send 802.1BR packet with broardcast mac and
-                # check packet only recevied on VF0 or VF1
+                # Same E-tag forwarding to VF0, Send 802.1BR packet with broadcast mac and
+                # check packet only received on VF0 or VF1
                 host_cmds = [['E-tag set filter add e-tag-id 1000 dst-pool %d port 0'%test_type[-1:]],
                              ['set fwd rxonly'],
                              ['set verbose 1'],
@@ -325,11 +325,11 @@ class TestEtag(TestCase):
         pkt_types = {'IP_RAW': {'layer_configs': config_layers}}
 
         intf = self.src_intf
-        inst = sniff_packets(intf)
+        inst = self.tester.tcpdump_sniff_packets(intf)
 
         self.check_packet_transmission(pkt_types)
         time.sleep(1)
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         self.host_testpmd.execute_cmd('E-tag set insertion off port-tag-id 1000 port 0 vf 0')
 
         # load sniff pcap file, check received packet's content

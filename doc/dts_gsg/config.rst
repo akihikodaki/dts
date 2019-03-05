@@ -72,7 +72,7 @@ DPDK Test Suite supports the following parameters:
     | --re_run TIMES            | Rerun failed test cases for stable result         | 0                |
     +---------------------------+---------------------------------------------------+------------------+
     | --commands COMMANDS       | Run self assigned commands at different stages of |                  |
-    |                           | exection. Format is [commands]:dut|tester:pre-\   |                  |
+    |                           | execution. Format is [commands]:dut|tester:pre-   |                  |
     |                           | init|post-init:check|ignore                       |                  |
     |                           | E.g. [/root/setup.sh]:dut:pre-init:check          |                  |
     +---------------------------+---------------------------------------------------+------------------+
@@ -136,7 +136,7 @@ Debug interact support commands as below:
     list(): list all connected sessions
     connect(name): connect to session directly
     exit(): exit dts
-    quit(): quit debug mode and into noraml mode
+    quit(): quit debug mode and into normal mode
     debug(): call python debug module
 
 **--debugcase**
@@ -189,7 +189,7 @@ First of all, you must create a file named execution.cfg as below.
 *   test_suites:  defines list of test suites, which will plan to be executed.
 *   targets: list of DPDK targets to be tested.
 *   parameters: you can define multiple keywords
-*   scenario: Senario of DPDK virtualization environment for this execution.
+*   scenario: Scenario of DPDK virtualization environment for this execution.
 
     – nic_type : is the type of the NIC to use. The types are defined in the file settings.py.
                  There's one special type named as **cfg**, which mean network information will be loaded from file.

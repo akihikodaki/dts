@@ -4,7 +4,7 @@ import re
 import time
 
 import utils
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE
@@ -111,7 +111,7 @@ class TestVfJumboFrame(TestCase):
             vf_popt = {'opt_host': self.sriov_vfs_port[0].pci}
 
             # set up VM ENV
-            self.vm = QEMUKvm(self.dut, 'vm0', 'vf_jumboframe')
+            self.vm = VM(self.dut, 'vm0', 'vf_jumboframe')
             self.vm.set_vm_device(driver=self.vf_assign_method, **vf_popt)
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
@@ -209,7 +209,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_STANDARD_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -223,13 +223,13 @@ class TestVfJumboFrame(TestCase):
     def test_vf_normal_withjumbo(self):
         """
         When jumbo frame supported, this case is to verify that the normal size
-        packet forwrding should be support correct.
+        packet forwarding should be support correct.
         """
         # should enable jumbo on host
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -249,7 +249,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8fff" )
+        self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8000" )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -257,7 +257,7 @@ class TestVfJumboFrame(TestCase):
         # On igb, for example i350, refer to :DPDK-1117
         # For PF, the max-pkt-len = mtu + 18 + 4(VLAN header len).
         # For VF, the real max-pkt-len = the given max-pkt-len + 4(VLAN header len).
-        # This behavior is levelraged from kernel driver.
+        # This behavior is leveraged from kernel driver.
         # And it means max-pkt-len is always 4 bytes longer than assumed.
 
         if self.kdriver == "igb":
@@ -277,7 +277,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -298,7 +298,7 @@ class TestVfJumboFrame(TestCase):
         self.dutobj = self.dut.ports_info[self.port]['port']
         self.dutobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU)
 
-        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8fff" % (ETHER_JUMBO_FRAME_MTU))
+        self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
@@ -320,7 +320,7 @@ class TestVfJumboFrame(TestCase):
 
     def tear_down_all(self):
         """
-        When the case of this test suite finished, the enviroment should
+        When the case of this test suite finished, the environment should
         clear up.
         """
         self.destroy_vm_env()

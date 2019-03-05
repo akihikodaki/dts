@@ -47,6 +47,7 @@ from rst import RstReport
 from test_result import ResultTable, Result
 from logger import getLogger
 from config import SuiteConf
+from utils import BLUE, RED
 
 class TestCase(object):
 
@@ -65,7 +66,7 @@ class TestCase(object):
             self._check_and_reconnect(crb=dutobj)
         self._check_and_reconnect(crb=self.tester)
 
-        # covert netdevice to codename
+        # convert netdevice to codename
         self.nics = []
         for portid in range(len(self.dut.ports_info)):
             nic_type = self.dut.ports_info[portid]['type']
@@ -85,7 +86,7 @@ class TestCase(object):
         if self._suite_result is None:
             raise ValueError("Result object should not None")
 
-        # load running enviornment
+        # load running environment
         if load_global_setting(PERF_SETTING) == "yes":
             self._enable_perf = True
         else:
@@ -114,6 +115,10 @@ class TestCase(object):
         # load suite configuration
         self._suite_conf = SuiteConf(self.suite_name)
         self._suite_cfg = self._suite_conf.suite_cfg
+
+        # command history
+        self.setup_history = list()
+        self.test_history = list()
 
     def init_log(self):
         # get log handler
@@ -154,6 +159,11 @@ class TestCase(object):
 
     def verify(self, passed, description):
         if not passed:
+            if self._enable_debug:
+                print RED("Error happened, dump command history...")
+                self.dump_history()
+                print "Error \"%s\" happened" % RED(description)
+                print RED("History dump finished.")
             raise VerifyFailure(description)
 
     def _get_nic_driver(self, nic_name):
@@ -229,6 +239,9 @@ class TestCase(object):
             dutobj.get_session_output(timeout=0.1)
         self.tester.get_session_output(timeout=0.1)
 
+        # save into setup history list
+        self.enable_history(self.setup_history)
+
         try:
             self.set_up_all()
             return True
@@ -247,13 +260,17 @@ class TestCase(object):
 
     def _execute_test_case(self, case_obj):
         """
-        Execute specified test case in specified suite. If any exception occured in
+        Execute specified test case in specified suite. If any exception occurred in
         validation process, save the result and tear down this case.
         """
         case_name = case_obj.__name__
         self._suite_result.test_case = case_obj.__name__
 
         self._rst_obj.write_title("Test Case: " + case_name)
+
+        # save into test command history
+        self.test_history = list()
+        self.enable_history(self.test_history)
 
         # load suite configuration file here for rerun command
         self._suite_conf = SuiteConf(self.suite_name)
@@ -263,13 +280,13 @@ class TestCase(object):
         case_result = True
         if self._check_inst is not None:
             if self._check_inst.case_skip(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPED:' % case_name)
+                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
 
             if not self._check_inst.case_support(case_name[len("test_"):]):
-                self.logger.info('Test Case %s Result SKIPED:' % case_name)
+                self.logger.info('Test Case %s Result SKIPPED:' % case_name)
                 self._rst_obj.write_result("N/A")
                 self._suite_result.test_case_skip(self._check_inst.comments)
                 return case_result
@@ -301,7 +318,7 @@ class TestCase(object):
             self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(v))
         except KeyboardInterrupt:
             self._suite_result.test_case_blocked("Skipped")
-            self.logger.error('Test Case %s SKIPED: ' % (case_name))
+            self.logger.error('Test Case %s SKIPPED: ' % (case_name))
             self.tear_down()
             raise KeyboardInterrupt("Stop DTS")
         except TimeoutException as e:
@@ -411,6 +428,23 @@ class TestCase(object):
             # destroy all vfs
             dutobj.destroy_all_sriov_vfs()
 
+    def enable_history(self, history):
+        """
+        Enable history for all CRB's default session
+        """
+        for dutobj in self.duts:
+            dutobj.session.set_history(history)
+
+        self.tester.session.set_history(history)
+
+    def dump_history(self):
+        """
+        Dump recorded command history
+        """
+        for cmd_history in self.setup_history:
+            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
+        for cmd_history in self.test_history:
+            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
 
     def wirespeed(self, nic, frame_size, num_ports):
         """

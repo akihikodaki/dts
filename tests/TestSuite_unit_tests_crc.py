@@ -37,6 +37,7 @@ Cmdline autotest
 """
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -55,7 +56,8 @@ class TestUnitTestsCrc(TestCase):
         """
         Run at the start of each test suite.
         """
-        pass
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
 
     def set_up(self):
         """
@@ -65,10 +67,10 @@ class TestUnitTestsCrc(TestCase):
 
     def test_cmdline(self):
         """
-        Run cmdline autotests in RTE comand line.
+        Run cmdline autotests in RTE command line.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("crc_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")

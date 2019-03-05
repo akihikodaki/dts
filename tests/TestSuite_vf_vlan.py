@@ -3,10 +3,10 @@
 import re
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 from settings import get_nic_name
 import random
 
@@ -114,7 +114,7 @@ class TestVfVlan(TestCase):
             vf1_prop = {'opt_host': self.sriov_vfs_port_1[0].pci}
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_vlan')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_vlan')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -173,9 +173,9 @@ class TestVfVlan(TestCase):
 
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': self.vf1_mac})
-        inst = sniff_packets(self.tester_intf0, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
         pkt.send_pkt(tx_port=self.tester_intf1)
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         self.verify(len(pkts), "Not receive expected packet")
         self.vm0_testpmd.quit()
@@ -242,7 +242,7 @@ class TestVfVlan(TestCase):
             self.verify(
                 "received" not in out, "Received vlan packet without pvid!!!")
 
-        # send packe with vlan 0
+        # send packet with vlan 0
         out = self.send_and_getout(vlan=0, pkt_type="VLAN_UDP")
         self.verify(
             "received" in out, "Not recevied packet with vlan 0!!!")
@@ -258,13 +258,13 @@ class TestVfVlan(TestCase):
             "ip link set %s vf 0 vlan 0" % (self.host_intf0), "# ")
 
     def tx_and_check(self, tx_vlan=1):
-        inst = sniff_packets(self.tester_intf0, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
         self.vm0_testpmd.execute_cmd('set burst 1')
         self.vm0_testpmd.execute_cmd('start tx_first')
         self.vm0_testpmd.execute_cmd('stop')
 
         # strip sniffered vlans
-        pkts = load_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
         vlans = []
         for pkt in pkts:
             vlan = pkt.strip_element_vlan("vlan")
@@ -290,7 +290,10 @@ class TestVfVlan(TestCase):
             # please enable rx_vlan at the same time
             if self.kdriver == "i40e":
                 self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % tx_vlan)
+            self.vm0_testpmd.execute_cmd('stop')
+            self.vm0_testpmd.execute_cmd('port stop all')
             self.vm0_testpmd.execute_cmd('tx_vlan set 0 %d' % tx_vlan)
+            self.vm0_testpmd.execute_cmd('port start all')
             self.tx_and_check(tx_vlan=tx_vlan)
 
         self.vm0_testpmd.quit()
@@ -380,6 +383,7 @@ class TestVfVlan(TestCase):
 
         for rx_vlan in rx_vlans:
             self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+            self.vm0_testpmd.execute_cmd('vlan set filter on 0')
             self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % rx_vlan)
             time.sleep(1)
             out = self.send_and_getout(vlan=rx_vlan, pkt_type="VLAN_UDP")

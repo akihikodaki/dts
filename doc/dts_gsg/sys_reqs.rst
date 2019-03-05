@@ -47,7 +47,7 @@ Since some third party tools required TCL (Tool Command Language) supports, plea
 
 .. code-block:: console
 
-   yum install tcl                 # download / install ssh software
+   yum install tcl                 # download / install tcl software
 
 Install Third Party python modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -76,7 +76,7 @@ Setup and configure Scapy
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Scapy is a powerful interactive packet manipulation program. It is able to forge or decode packets of a wide number of protocols, send them on the wire, capture them, match requests and replies, and much more. It can easily handle most classical tasks like scanning, tracerouting, probing, unit tests, attacks or network discovery.
 
-DTCS uses python module scapy to forge or decode packets of a wide number of protocols, send them over the wire, capture them, and analyse the packets.
+DTS uses python module scapy to forge or decode packets of a wide number of protocols, send them over the wire, capture them, and analyse the packets.
 
 .. code-block:: console
 
@@ -159,9 +159,6 @@ If the platform BIOS has any particular performance option, select the settings 
 DPDK running Prerequisite
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 Compilation of DPDK need GNU maker, gcc, libc-header, kernel header installed. For 32-bit compilation on 64-bit systems, there’re some additional packages required. For Intel® C++ Compiler (icc) additional libraries may be required. For more detail information of required packets, please refer to Data Plane Development Kit Getting Started Guide.
-
-The  DPDK igb_uio kernel module depends on traditional Linux kernel uio support to operate. Linux traditional uio support may be compiled as a module, so this module should be loaded using the modprobe program.
-Kernel must support the allocation of hugepages. Hugepage support is required for the large memory pool allocation used for packet buffers. By using hugepage allocations, performance will be improved  since only fewer pages are needed, and therefore less Translation Lookaside Buffers (TLBs, high speed translation caches), which reduce the time it takes to translate a virtual page address to a physical page address. Without hugepages, high TLB miss rates would occur, slowing performance.
 
 The  DPDK igb_uio kernel module depends on traditional Linux kernel ``uio`` support to operate. Linux traditional ``uio`` support may be compiled as a module, so this module should be loaded using the ``modprobe`` program.
 Kernel must support the allocation of hugepages. Hugepage support is required for the large memory pool allocation used for packet buffers. By using hugepage allocations, performance will be improved  since only fewer pages are needed, and therefore less Translation Lookaside Buffers (TLBs, high speed translation caches), which reduce the time it takes to translate a virtual page address to a physical page address. Without hugepages, high TLB miss rates would occur, slowing performance.

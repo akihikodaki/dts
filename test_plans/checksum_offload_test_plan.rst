@@ -56,7 +56,7 @@ On the TX side:
 RX side, the L3/L4 checksum offload by hardware can be enabled with the
 following command of the ``testpmd`` application::
 
-   enable-rx-checksum
+   enable-rx-cksum
 
 TX side, the insertion of a L3/L4 checksum by hardware can be enabled with the
 following command of the ``testpmd`` application and running in a dedicated
@@ -81,7 +81,7 @@ Prerequisites
 =============
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio
@@ -93,7 +93,7 @@ launch the ``testpmd`` with the following arguments::
 
   ./build/app/testpmd -cffffff -n 1 -- -i --burst=1 --txpt=32 \
   --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=250 --portmask=0x5
-  enable-rx-checksum
+  enable-rx-cksum
 
 Set the verbose level to 1 to display information for each received packet::
 

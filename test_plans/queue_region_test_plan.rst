@@ -118,17 +118,26 @@ Test case 1: different pctype packet can enter the expected queue region
     pkt6 = Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/IPv6(src="2001::1", dst="2001::2")/Raw('x' * 20)
     pkt7 = Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/IPv6(src="2001::1", dst="2001::2")/UDP(sport=24,dport=25)/Raw('x'*20)
     pkt8 = Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/Dot1Q(prio=1)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x'*20)
+    pkt9 = Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/IPv6(src="2001::1", dst="2001::2")/TCP(sport=24,dport=25)/Raw('x'*20)
 
    verify the pkt1 to queue 1, pkt2 to queue 3 or queue 4,
    pkt3 to queue 6 or queue 7, pkt4 to queue 8 or queue 9,
    pkt5 to queue 11 or 12 or 13 or 14,
    pkt6 to queue 15, pkt7 to queue 6 or queue 7,
    pkt8 enter the same queue with pkt5.
+   pkt9 to queue 1.
+
+   Notes: If the packet type doesn’t match any queue region rules, 
+   it will be distributed to the queue of queue region 0,
+   despite queue region 0 matches any rule.
 
 4. verified the rules can be listed and flushed::
  
     testpmd> show port 0 queue-region
     testpmd> set port 0 queue-region flush off
+
+   Send the pkt1-pkt9, the packets can't enter the same queue which defined in queue region rule.
+   They are distributed to queues according RSS rule.
 
 Notes: fortville can't parse the TCP SYN type packet, fortpark can parse it.
 So if fortville, pkt2 to queue 6 or queue 7.
@@ -138,8 +147,8 @@ Test case 2: different user priority packet can enter the expected queue region
 
 1. Set queue region on a port::
 
-    testpmd> set port 0 queue-region region_id 0 queue_start_index 0 queue_num 1
-    testpmd> set port 0 queue-region region_id 7 queue_start_index 1 queue_num 8
+    testpmd> set port 0 queue-region region_id 0 queue_start_index 14 queue_num 2
+    testpmd> set port 0 queue-region region_id 7 queue_start_index 0 queue_num 8
     testpmd> set port 0 queue-region region_id 2 queue_start_index 10 queue_num 4
 
 2. Set the mapping of User Priority to Traffic Classes on a port::
@@ -159,17 +168,24 @@ Test case 2: different user priority packet can enter the expected queue region
     pkt5=Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/Dot1Q(prio=7)/IP(src="192.168.0.3", dst="192.168.0.4")/UDP(sport=22, dport=23)/Raw('x'*20)
     pkt6=Ether(dst="00:00:00:00:01:00", src="00:02:00:00:00:01")/IP(src="192.168.0.3", dst="192.168.0.4")/UDP(sport=22, dport=23)/Raw('x'*20)
 
-   verify the pkt1 to queue 0,
-   pkt2 to queue 1 or 2 or 3 or 4 or 5 or 6 or 7 or 8.
+   verify the pkt1 to queue 14 or 15,
+   pkt2 to queue 0 or 1 or 2 or 3 or 4 or 5 or 6 or 7.
    pkt3 to queue 10 or 11 or 12 or 13.
    pkt4 enter the same queue with pkt3.
    pkt5 to queue 10 or 11 or 12 or 13.
-   pkt6 enter different queue from pkt5.
+   pkt6 to queue 14 or 15.
+
+   Notes: If the packet UP doesn’t match any queue region rules,
+   it will be distributed to the queue of queue region 0,
+   despite queue region 0 matches any rule.
 
 4. verified the rules can be listed and flushed::
 
     testpmd> show port 0 queue-region
     testpmd> set port 0 queue-region flush off
+
+   Send the pkt1-pkt6, the packets can't enter the same queue which defined in queue region rule.
+   They are distributed to queues according RSS rule.
 
 Test case 3: boundary value testing
 ===================================

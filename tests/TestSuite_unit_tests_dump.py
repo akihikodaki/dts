@@ -39,6 +39,7 @@ Run Inter-VM share memory autotests
 
 
 from test_case import TestCase
+import utils
 
 #
 #
@@ -60,6 +61,8 @@ class TestUnitTestsDump(TestCase):
         Nothing to do here.
         """
         # Based on h/w type, choose how many ports to use
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.start_test_time = 60
@@ -76,7 +79,7 @@ class TestUnitTestsDump(TestCase):
         """
         Run history log dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_log_history", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         self.verify("EAL" in out, "Test failed")
@@ -86,9 +89,6 @@ class TestUnitTestsDump(TestCase):
         Run history log dump test case.
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
-
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_ring", "testpmd>", self.run_cmd_time)
@@ -107,9 +107,6 @@ class TestUnitTestsDump(TestCase):
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
 
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
-
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_mempool", "testpmd>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
@@ -123,11 +120,11 @@ class TestUnitTestsDump(TestCase):
         """
         Run physical memory dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_physmem", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         elements = ['Segment', 'IOVA', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
-        match_regex = "Segment (\d)+:"
+        match_regex = "Segment (.*?):"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
         match_regex += " %s:(.*?)" % elements[-1]
@@ -145,21 +142,17 @@ class TestUnitTestsDump(TestCase):
         """
         cmd = "./%s/app/testpmd -n 1 -c f -- -i" % self.target
 
-        if "cavium_a034" in self.dut.nic_type:
-            cmd += " --disable-hw-vlan-filter"
-
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_memzone", "testpmd>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
-        elements = ['Zone', 'name', 'IO', 'len', 'virt', 'socket_id', 'flags']
+        elements = ['Zone', 'name', 'len', 'virt', 'socket_id', 'flags']
         match_regex = "Zone (\d):"
         for element in elements[1:-1]:
             match_regex += " %s:(.*?)," % element
         match_regex += " %s:(.*?)\n" % elements[-1]
         m = re.compile(r"%s" % match_regex, re.DOTALL)
         results = m.findall(out)
-
         memzone_info = []
         for result in results:
             memzone_info.append(dict(zip(elements, result)))
@@ -170,7 +163,7 @@ class TestUnitTestsDump(TestCase):
         """
         Run struct size dump test case.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % (self.target), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_struct_sizes", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
@@ -180,6 +173,7 @@ class TestUnitTestsDump(TestCase):
             match_regex += "sizeof\(%s\) = (\d+)\r\n" % element
         match_regex += "sizeof\(%s\) = (\d+)" % elements[-1]
         m = re.compile(r"%s" % match_regex, re.S)
+
         result = m.search(out)
         struct_info = dict(zip(elements, result.groups()))
 
@@ -189,15 +183,15 @@ class TestUnitTestsDump(TestCase):
         """
         test_port = self.dut_ports[0]
         pci_address = self.dut.ports_info[test_port]['pci'];
-        self.dut.send_expect("./%s/app/test -n 1 -c f -b %s"
-                             % (self.target, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s -b %s"
+                             % (self.target, self.coremask, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         black_str = " %s" % pci_address
         self.verify(black_str in out, "Dump black list failed")
 
-        self.dut.send_expect("./%s/app/test -n 1 -c f -w %s"
-                             % (self.target, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
+        self.dut.send_expect("./%s/app/test -n 1 -c %s -w %s"
+                             % (self.target, self.coremask, pci_address), "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 

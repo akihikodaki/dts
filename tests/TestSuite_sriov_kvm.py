@@ -12,7 +12,7 @@ import re
 import pdb
 import time
 
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 
 from pmd_output import PmdOutput
@@ -23,6 +23,8 @@ VM_CORES_MASK = 'all'
 
 
 class TestSriovKvm(TestCase):
+
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
 
     def set_up_all(self):
         # port_mirror_ref = {port_id: rule_id_list}
@@ -39,6 +41,16 @@ class TestSriovKvm(TestCase):
         self.vm1 = None
         self.vm2 = None
         self.vm3 = None
+
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
     def set_up(self):
         self.setup_2vm_2pf_env_flag = 0
@@ -296,13 +308,13 @@ class TestSriovKvm(TestCase):
         vf1_prop = {'opt_host': self.port1_pci}
 
         # set up VM0 ENV
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
+        self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
         self.vm_dut_0 = self.vm0.start()
 
         # set up VM1 ENV
-        self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
+        self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
         self.vm_dut_1 = self.vm1.start()
 
         self.setup_2vm_2vf_env_flag = 1
@@ -327,11 +339,10 @@ class TestSriovKvm(TestCase):
             self.used_dut_port, 2, driver=driver)
         self.sriov_vfs_port = self.dut.ports_info[
             self.used_dut_port]['vfs_port']
-
         try:
 
             for port in self.sriov_vfs_port:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
 
@@ -350,20 +361,20 @@ class TestSriovKvm(TestCase):
                 eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
                                                        'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", "--rxq=4 --txq=4 --tx-offloads=0x8fff", eal_param=eal_param)
+                    "1S/2C/2T", "--rxq=4 --txq=4", eal_param=eal_param)
                 self.host_testpmd.execute_cmd('set fwd rxonly')
                 self.host_testpmd.execute_cmd('start')
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
+            self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
 
             # set up VM1 ENV
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
-            self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
+            self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
+            self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
                 raise Exception("Set up VM1 ENV failed!")
@@ -435,26 +446,26 @@ class TestSriovKvm(TestCase):
                 self.host_testpmd.start_testpmd(
                     "1S/2C/2T", eal_param=eal_param)
 
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'sriov_kvm')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
+            self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception("Set up VM0 ENV failed!")
 
-            self.vm1 = QEMUKvm(self.dut, 'vm1', 'sriov_kvm')
-            self.vm1.set_vm_device(driver='pci-assign', **vf1_prop)
+            self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
+            self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_1 = self.vm1.start()
             if self.vm_dut_1 is None:
                 raise Exception("Set up VM1 ENV failed!")
 
-            self.vm2 = QEMUKvm(self.dut, 'vm2', 'sriov_kvm')
-            self.vm2.set_vm_device(driver='pci-assign', **vf2_prop)
+            self.vm2 = VM(self.dut, 'vm2', 'sriov_kvm')
+            self.vm2.set_vm_device(driver=self.vf_assign_method, **vf2_prop)
             self.vm_dut_2 = self.vm2.start()
             if self.vm_dut_2 is None:
                 raise Exception("Set up VM2 ENV failed!")
 
-            self.vm3 = QEMUKvm(self.dut, 'vm3', 'sriov_kvm')
-            self.vm3.set_vm_device(driver='pci-assign', **vf3_prop)
+            self.vm3 = VM(self.dut, 'vm3', 'sriov_kvm')
+            self.vm3.set_vm_device(driver=self.vf_assign_method, **vf3_prop)
             self.vm_dut_3 = self.vm3.start()
             if self.vm_dut_3 is None:
                 raise Exception("Set up VM3 ENV failed!")
@@ -772,7 +783,7 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_mirror(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
         vlan_id = 0
         vf_mask = '0x1'
@@ -804,7 +815,8 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_and_pool_mirror(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
         vlan_id = 3
         vf_mask = '0x2'
@@ -899,7 +911,8 @@ class TestSriovKvm(TestCase):
     def test_two_vms_vlan_and_pool_and_uplink_and_downlink(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
+        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
+        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         self.vm0_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('stop')
 
@@ -1251,7 +1264,6 @@ class TestSriovKvm(TestCase):
     def test_two_vms_negative_input_commands(self):
         self.setup_2vm_2vf_env()
         self.setup_two_vm_common_prerequisite()
-
         for command in ["set port 0 vf 65 tx on",
                         "set port 2 vf -1 tx off",
                         "set port 0 vf 0 rx oneee",

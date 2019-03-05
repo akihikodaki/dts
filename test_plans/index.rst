@@ -42,57 +42,94 @@ The following are the test plans for the DPDK DTS automated test system.
     checksum_offload_test_plan
     cloud_filter_test_plan
     coremask_test_plan
-    crypto_perf_test_plan
+    cryptodev_perf_crypto-perf_test_plan
+    ddp_gtp_qregion_test_plan
+    ddp_gtp_test_plan
     ddp_mpls_test_plan
+    ddp_ppp_l2tp_test_plan
     dual_vlan_test_plan
     dynamic_config_test_plan
+    dynamic_flowtype_test_plan
+    dynamic_queue_test_plan
     etag_test_plan
+    external_memory_test_plan
     external_mempool_handler_test_plan
     fdir_test_plan
     floating_veb_test_plan
+    flow_classify_softnic_test_plan
     fortville_rss_granularity_config_test_plan
     ftag_test_plan
     generic_filter_test_plan
+    generic_flow_api_test_plan
+    hotplug_mp_test_plan
     hotplug_test_plan
     ieee1588_test_plan
+    inline_ipsec_test_plan
     interrupt_pmd_test_plan
+    ip_pipeline_test_plan
     ipfrag_test_plan
     ipgre_test_plan
-    ip_pipeline_test_plan
+    ipsec_gw_cryptodev_func_test_plan
     ipv4_reassembly_test_plan
+    ixgbe_vf_get_extra_queue_information_test_plan
     jumboframes_test_plan
     kni_test_plan
-    l2fwd_crypto_test_plan
+    l2fwd_cryptodev_func_test_plan
     l2fwd_test_plan
     l3fwd_em_test_plan
     l3fwd_test_plan
+    l3fwdacl_test_plan
     link_flowctrl_test_plan
     link_status_interrupt_test_plan
+    loopback_multi_paths_port_restart_performance_test_plan
+    loopback_multi_paths_port_restart_test_plan
+    loopback_virtio_user_server_mode_test_plan
     mac_filter_test_plan
     macsec_for_ixgbe_test_plan
-    mempool_exthandler_test_plan
+    metering_and_policing_test_plan
+    multiple_pthread_test_plan
     NICStatistics_test_plan
     nvgre_test_plan
+    pmd_bonded_8023ad_test_plan
     pmd_bonded_test_plan
+    pmd_stacked_bonded_test_plan
+    pmd_test_plan
     pmdpcap_test_plan
     pmdrss_hash_test_plan
     pmdrssreta_test_plan
-    pmd_test_plan
     ptype_mapping_test_plan
+    pvp_multi_paths_performance_test_plan
+    pvp_multi_paths_vhost_single_core_performance_test_plan
+    pvp_multi_paths_virtio_single_core_performance_test_plan
+    qinq_filter_test_plan
+    qos_api_test_plan
+    qos_meter_test_plan
+    qos_sched_test_plan
+    queue_region_test_plan
     queue_start_stop_test_plan
+    rss_to_rte_flow_test_plan
+    runtime_vf_queue_number_kernel_test_plan
+    runtime_vf_queue_number_maxinum_test_plan
+    runtime_vf_queue_number_test_plan
+    rxtx_offload_test_plan
     scatter_test_plan
     short_live_test_plan
     shutdown_api_test_plan
     sriov_kvm_test_plan
     stability_test_plan
+    sw_eventdev_pipeline_sample_test_plan
     tso_test_plan
     tx_preparation_test_plan
     uni_pkt_test_plan
     userspace_ethtool_test_plan
+    vlan_ethertype_config_test_plan
+    vlan_test_plan
+    vxlan_test_plan
     veb_switch_test_plan
     vf_daemon_test_plan
-    vf_jumboframe_test_plan
     vf_interrupt_pmd_test_plan
+    vf_jumboframe_test_plan
+    vf_kernel_test_plan
     vf_macfilter_test_plan
     vf_offload_test_plan
     vf_packet_rxtx_test_plan
@@ -101,32 +138,22 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_rss_test_plan
     vf_to_vf_nic_bridge_test_plan
     vf_vlan_test_plan
+    vhost_multi_queue_qemu_test_plan
     vhost_pmd_xstats_test_plan
+    vhost_qemu_mtu_test_plan
     vhost_tso_test_plan
     vhost_user_live_migration_test_plan
     virtio_1.0_test_plan
-    vlan_ethertype_config_test_plan
-    vlan_test_plan
-    vmdq_test_plan
     vm_power_manager_test_plan
-    vxlan_test_plan
-    ixgbe_vf_get_extra_queue_information_test_plan
-    queue_region_test_plan
-    inline_ipsec_test_plan
-    sw_eventdev_pipeline_sample_test_plan
-    dynamic_flowtype_test_plan
-    vf_kernel_test_plan
-    multiple_pthread_test_plan
-    qinq_filter_test_plan
-    ddp_gtp_test_plan
-    generic_flow_api_test_plan
+    vmdq_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
-    unit_tests_cryptodev_test_plan
+    unit_tests_cryptodev_func_test_plan
     unit_tests_dump_test_plan
     unit_tests_eal_test_plan
     unit_tests_kni_test_plan
+    unit_tests_loopback_test_plan
     unit_tests_lpm_test_plan
     unit_tests_mbuf_test_plan
     unit_tests_mempool_test_plan
@@ -150,3 +177,4 @@ The following are the test plans for the DPDK DTS automated test system.
     ptpclient_test_plan
     distributor_test_plan
     efd_test_plan
+    example_build_test_plan

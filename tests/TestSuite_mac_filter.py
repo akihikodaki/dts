@@ -45,7 +45,7 @@ class TestWhitelist(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Whitelist Prerequistites:
+        Whitelist Prerequisites:
             Two Ports
             testpmd can normally started
         """
@@ -99,56 +99,44 @@ class TestWhitelist(TestCase):
         fake_mac_addr = "00:01:01:00:00:00"
         portid = self.dutPorts[0]
         self.dut.send_expect("set promisc %d off" % portid, "testpmd> ")
-
         self.dut.send_expect("clear port stats all", "testpmd> ")
-
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
-        pre_rxpkt = utils.regexp(out, "RX-packets: ([0-9]+)")
 
         # send one packet with the portid MAC address
         self.whitelist_send_packet(portid, self.dest)
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
-        cur_rxpkt = utils.regexp(out, "RX-packets: ([0-9]+)")
+
+        # Niantic and FVL have different packet statistics when using the
+        # "show port stats" command. Packets number is stripped from log.
+        out = self.dut.get_session_output()
+        cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt) == int(pre_rxpkt) + self.frames_to_send,
+        self.verify(int(cur_rxpkt) == self.frames_to_send,
                     "Packet has not been received on default address")
+
         # send one packet to a different MAC address
         # new_mac = self.dut.get_mac_address(portid)
         self.whitelist_send_packet(portid, fake_mac_addr)
-
-        pre_rxpkt = cur_rxpkt
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
-        cur_rxpkt = utils.regexp(out, "RX-packets: ([0-9]+)")
-
+        out = self.dut.get_session_output()
         # check the packet DO NOT increase
-        self.verify(int(cur_rxpkt) == int(pre_rxpkt),
+        self.verify("received" not in out,
                     "Packet has been received on a new MAC address that has not been added yet")
-        # add the different MAC address
-        out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
 
+        # add the different MAC address
+        self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
         # send again one packet to a different MAC address
         self.whitelist_send_packet(portid, fake_mac_addr)
-
-        pre_rxpkt = cur_rxpkt
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
-        cur_rxpkt = utils.regexp(out, "RX-packets: ([0-9]+)")
-
+        out = self.dut.get_session_output()
+        cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt) == int(pre_rxpkt) + self.frames_to_send,
+        self.verify(int(cur_rxpkt) == self.frames_to_send,
                     "Packet has not been received on a new MAC address that has been added to the port")
 
         # remove the fake MAC address
-        out = self.dut.send_expect("mac_addr remove %d" % portid + " %s" % fake_mac_addr, "testpmd>")
-
+        self.dut.send_expect("mac_addr remove %d" % portid + " %s" % fake_mac_addr, "testpmd>")
         # send again one packet to a different MAC address
         self.whitelist_send_packet(portid, fake_mac_addr)
-
-        pre_rxpkt = cur_rxpkt
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
-        cur_rxpkt = utils.regexp(out, "RX-packets: ([0-9]+)")
-
+        out = self.dut.get_session_output()
         # check the packet increase
-        self.verify(int(cur_rxpkt) == int(pre_rxpkt),
+        self.verify("received" not in out,
                     "Packet has been received on a new MAC address that has been removed from the port")
         self.dut.send_expect("stop", "testpmd> ")
 

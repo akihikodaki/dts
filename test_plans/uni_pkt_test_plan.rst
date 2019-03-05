@@ -952,3 +952,97 @@ Send IPv4+Vxlan+MAC packet and verify inner and outer L2/L3/L4 corrected::
 
     Inner L3 type: Unknown
     Inner L4 type: Unknown
+
+
+Test Case: NSH
+==================
+This case checks if NSH packets could be detected by I40e driver NIC
+
+Send a ether+nsh packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x0,NSP=0x000002,NSI=0xff)], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+
+Send a ether+nsh+ip packet and verify the detection message::
+    sendp([Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_NONFRAG
+
+Send a ether+nsh+ip+icmp packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/ICMP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_ICMP
+
+Send a ether+nsh+ip_frag packet and verify the detection message::
+    sendp([Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP(frag=1,flags="MF"), iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_FRAG
+
+Send a ether+nsh+ip+tcp packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/TCP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_TCP
+
+Send a ether+nsh+ip+udp packet verify the detection message::
+    sendp([Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/UDP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_UDP
+
+Send a ether+nsh+ip+sctp packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/SCTP(tag=1)/SCTPChunkData(data=\'X\' * 16)], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV4_EXT_UNKNOWN
+    L4 type: L4_SCTP
+
+Send a ether+nsh+ipv6 packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_NONFRAG
+
+Send a ether+nsh+ipv6+icmp packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(src="2001::1",dst="2003::2",nh=0x3A)/ICMP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_ICMP
+
+Send a ether+nsh+ipv6_frag packet and verify the detection message::
+    sendp([Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/IPv6ExtHdrFragment()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_FRAG
+
+Send a ether+nsh+ipv6+tcp packet and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/TCP()],iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_TCP
+
+Send a ether+nsh+ipv6+udp packet and verify the detection message::
+    sendp([Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/UDP()], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_UDP
+
+Send a ether+nsh+ipv6+sctp and verify the detection message::
+    sendp([Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(nh=0x84)/SCTP(tag=1)/SCTPChunkData("x" * 16)], iface=txItf)
+
+    L2 type: L2_ETHER_NSH
+    L3 type: L3_IPV6_EXT_UNKNOWN
+    L4 type: L4_SCTP

@@ -87,7 +87,7 @@ class TestFtag(TestCase):
    
     def send_packet(self, txPort, rxPort, nic, received=True): 
         """
-        Send packages according to parameters.
+        Send packets according to parameters.
         """
         rxitf = self.tester.get_interface(self.tester.get_local_port(rxPort))
         txitf = self.tester.get_interface(self.tester.get_local_port(txPort))

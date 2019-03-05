@@ -79,21 +79,23 @@ class DPDKdut(Dut):
             self.build_install_dpdk(target)
 
         self.setup_memory()
-        self.setup_modules(target)
+
+        drivername = load_global_setting(HOST_DRIVER_SETTING)
+        drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
+        self.setup_modules(target, drivername, drivermode)
 
         if bind_dev and self.get_os_type() == 'linux':
             self.bind_interfaces_linux(drivername)
         self.extra_nic_setup()
 
-    def setup_modules(self, target):
+    def setup_modules(self, target, drivername, drivermode):
         """
         Install DPDK required kernel module on DUT.
         """
         setup_modules = getattr(self, 'setup_modules_%s' % self.get_os_type())
-        setup_modules(target)
+        setup_modules(target, drivername, drivermode)
 
-    def setup_modules_linux(self, target):
-        drivername = load_global_setting(HOST_DRIVER_SETTING)
+    def setup_modules_linux(self, target, drivername, drivermode):
         if drivername == "vfio-pci":
             self.send_expect("rmmod vfio_pci", "#", 70)
             self.send_expect("rmmod vfio_iommu_type1", "#", 70)
@@ -103,7 +105,6 @@ class DPDKdut(Dut):
             out = self.send_expect("lsmod | grep vfio_iommu_type1", "#")
             assert ("vfio_iommu_type1" in out), "Failed to setup vfio-pci"
 
-            drivermode = load_global_setting(HOST_DRIVER_MODE_SETTING)
             if drivermode == "noiommu":
                 self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
 
@@ -115,8 +116,8 @@ class DPDKdut(Dut):
 
         elif drivername == "mlx5_core":
             pass
-
-        else:
+ 
+        elif drivername == "igb_uio":
             self.send_expect("modprobe uio", "#", 70)
             out = self.send_expect("lsmod | grep igb_uio", "#")
             if "igb_uio" in out:
@@ -126,7 +127,10 @@ class DPDKdut(Dut):
             out = self.send_expect("lsmod | grep igb_uio", "#")
             assert ("igb_uio" in out), "Failed to insmod igb_uio"
 
-    def setup_modules_freebsd(self, target):
+        else:
+            pass
+
+    def setup_modules_freebsd(self, target, drivername, drivermode):
         """
         Install DPDK required Freebsd kernel module on DUT.
         """
@@ -220,7 +224,7 @@ class DPDKdut(Dut):
         out = self.send_expect("make -j %d install T=%s %s" % 
             (self.number_of_cores, target, extra_options), "# ", build_time)
         #should not check test app compile status, because if test compile fail,
-        #all unit test can't exec, but others case will exec sucessfull 
+        #all unit test can't exec, but others case will exec successfully
         self.build_install_dpdk_test_app(target, build_time)
 
         if("Error" in out or "No rule to make" in out):
@@ -281,7 +285,7 @@ class DPDKdut(Dut):
             out = self.send_expect("ls %s && cd %s" % (dst_dir, p_dir),
                                    "#", verify=True)
             if out == -1:
-                raise ValueError("Directiry %s or %s does not exist,"
+                raise ValueError("Directory %s or %s does not exist,"
                                  "please check params -d"
                                  % (p_dir, dst_dir))
             self.session.copy_file_to(self.package, dst_dir)
@@ -431,6 +435,19 @@ class DPDKdut(Dut):
         blacklist = ''
         # No blacklist option in FreeBSD
         return blacklist
+
+    def get_def_rte_config(self, config):
+        """
+        Get RTE configuration from config/defconfig_*.
+        """
+        out = self.session.send_command("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
+                                        % self.target, 1)
+
+        def_rte_config = re.findall(config+'=(\S+)', out)
+        if def_rte_config:
+            return def_rte_config[0]
+        else:
+            return None
 
     def set_driver_specific_configurations(self, drivername):
         """

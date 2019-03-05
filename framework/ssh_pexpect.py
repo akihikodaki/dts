@@ -7,8 +7,8 @@ from utils import RED, GREEN, parallel_lock
 
 """
 Module handle ssh sessions between tester and DUT.
-Implement send_expect function to send command and get output data.
-Aslo support transfer files to tester or DUT.
+Implements send_expect function to send command and get output data.
+Also supports transfer files to tester or DUT.
 """
 
 
@@ -50,8 +50,8 @@ class SSHPexpect(object):
         except Exception as e:
             print RED(e)
             if getattr(self, 'port', None):
-                suggestion = "\nSuggession: Check if the fireware on [ %s ] " % \
-                    self.ip + "is stoped\n"
+                suggestion = "\nSuggession: Check if the firewall on [ %s ] " % \
+                    self.ip + "is stopped\n"
                 print GREEN(suggestion)
 
             raise SSHConnectionException(self.host)

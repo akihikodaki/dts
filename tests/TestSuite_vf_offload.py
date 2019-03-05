@@ -5,7 +5,7 @@ import time
 import string
 
 import utils
-from qemu_kvm import QEMUKvm
+from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
 from utils import RED, GREEN
@@ -73,7 +73,7 @@ class TestVfOffload(TestCase):
                 self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
-            self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_offload')
+            self.vm0 = VM(self.dut, 'vm0', 'vf_offload')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
@@ -118,10 +118,12 @@ class TestVfOffload(TestCase):
         self.setup_2pf_2vf_1vm_env_flag = 0
 
     def checksum_enablehw(self, port, dut):
+        dut.send_expect("port stop all", "testpmd>")
         dut.send_expect("csum set ip hw %d" % port, "testpmd>")
         dut.send_expect("csum set udp hw %d" % port, "testpmd>")
         dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
         dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        dut.send_expect("port start all", "testpmd>")
 
     def checksum_enablesw(self, port, dut):
         dut.send_expect("csum set ip sw %d" % port, "testpmd>")
@@ -206,7 +208,7 @@ class TestVfOffload(TestCase):
         verify forwarded packets have correct checksum
         """
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
-                                      (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " + "--tx-offloads=0x8fff " +
+                                      (self.portMask) + "--enable-rx-cksum " + "" +
                                       "--port-topology=loop")
         self.vm0_testpmd.execute_cmd('set fwd csum')
 
@@ -256,7 +258,7 @@ class TestVfOffload(TestCase):
         """
 
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
-                                      (self.portMask) + "--disable-hw-vlan --enable-rx-cksum " +
+                                      (self.portMask) + "--enable-rx-cksum " +
                                       "--port-topology=loop")
         self.vm0_testpmd.execute_cmd('set fwd csum')
 
@@ -348,7 +350,7 @@ class TestVfOffload(TestCase):
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
                                       (self.portMask) + "--enable-rx-cksum " +
-                                      "--tx-offloads=0x8fff " + 
+                                      "" + 
                                       "--port-topology=loop")
 
         mac = self.vm0_testpmd.get_port_mac(0)

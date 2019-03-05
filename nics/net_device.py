@@ -867,12 +867,12 @@ def get_pci_id(crb, domain_id, bus_id, devfun_id):
     command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/vendor' %
                (domain_id, bus_id, devfun_id))
     out = crb.send_expect(command, "# ")
-    vender = out[2:]
+    vendor = out[2:]
     command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/device' %
                (domain_id, bus_id, devfun_id))
     out = crb.send_expect(command, '# ')
     device = out[2:]
-    return "%s:%s" % (vender, device)
+    return "%s:%s" % (vendor, device)
 
 
 def add_to_list(host, obj):

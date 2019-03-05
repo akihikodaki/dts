@@ -197,7 +197,7 @@ tester Configuration
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=3)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
 
-Test Case 4: qinq packet filter with diffierent tpid
+Test Case 4: qinq packet filter with different tpid
 ====================================================
 #. create VF on dut::
 

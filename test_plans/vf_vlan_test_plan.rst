@@ -74,14 +74,14 @@ Prerequisites
      echo 0000:87:0a.0 > /sys/bus/pci/devices/0000:87:0a.0/driver/unbind
      echo 0000:87:0a.0 > /sys/bus/pci/drivers/pci-stub/bind
 
-3. Passthrough VFs 87:02.0 & 87:02.1 to vm0 and start vm0::
+3. Passthrough VFs 87:02.0 & 87:0a.0 to vm0 and start vm0::
 
      /usr/bin/qemu-system-x86_64  -name vm0 -enable-kvm \
      -cpu host -smp 4 -m 2048 -drive file=/home/image/sriov-fc20-1.img -vnc :1 \
      -device pci-assign,host=87:02.0,id=pt_0 \
      -device pci-assign,host=87:0a.0,id=pt_1
 
-4. Login vm0 and them bind VF devices to igb_uio driver.::
+4. Login vm0 and then bind VF devices to igb_uio driver.::
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:04.0 00:05.0
 
@@ -105,7 +105,7 @@ Linux network configuration tool only set pvid on VF devices.
 
 3. Send packet without vlan and check VF can't receive
 
-4. Send packet with wrong and check Vf can't receive
+4. Send packet with wrong vlan id and check Vf can't receive
 
 5. Check pf device show correct pvid setting::
 
@@ -154,7 +154,7 @@ Test Case 3: VF tagged vlan tx
 
 2. Add tx vlan offload on VF0, take care the first param is port::
 
-     testpmd> tx_vlan 0 1
+     testpmd> tx_vlan set 0 1
 
 3. Send packet from tester port1 and check packet received by tester port0::
 

@@ -43,7 +43,7 @@ import time
 
 from test_case import TestCase
 from pmd_output import PmdOutput
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 
 
 class TestVlan(TestCase):
@@ -53,7 +53,7 @@ class TestVlan(TestCase):
         Run at the start of each test suite.
 
 
-        Vlan Prerequistites
+        Vlan Prerequisites
         """
         global dutRxPortId
         global dutTxPortId
@@ -88,7 +88,7 @@ class TestVlan(TestCase):
             netobj.add_vlan(vlan_id = self.vlan)
 
     def get_tcpdump_package(self):
-        pkts = load_sniff_packets(self.inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
         vlans = []
         for packet in pkts:
             vlan = packet.strip_element_vlan("vlan")
@@ -107,10 +107,10 @@ class TestVlan(TestCase):
         port = self.tester.get_local_port(dutTxPortId)
         self.rxItf = self.tester.get_interface(port)
 
-        # the package dect mac must is dut tx port id when the port promisc is off
+        # the packet dest mac must is dut tx port id when the port promisc is off
         self.dmac = self.dut.get_mac_address(dutRxPortId)
 
-        self.inst = sniff_packets(self.rxItf)
+        self.inst = self.tester.tcpdump_sniff_packets(self.rxItf)
         # FIXME  send a burst with only num packet
         if vid == -1:
             pkt = Packet(pkt_type='UDP')
@@ -151,6 +151,7 @@ class TestVlan(TestCase):
         """
         Disable receipt of VLAN packets
         """
+        self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
 
         self.dut.send_expect("rx_vlan rm %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -205,14 +206,20 @@ class TestVlan(TestCase):
         intf = self.tester.get_interface(port)
 
         self.dut.send_expect("set nbport 2", "testpmd> ")
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> ")
+        self.dut.send_expect("port start all", "testpmd> ")
 
         self.dut.send_expect("start", "testpmd> ")
         self.vlan_send_packet(-1)
 
         out = self.get_tcpdump_package()
         self.verify(self.vlan in out, "Vlan not found:" + str(out))
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan reset %s" % dutTxPortId, "testpmd> ", 30)
+        self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ", 30)
 
         if self.kdriver == "fm10k":

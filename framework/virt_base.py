@@ -51,7 +51,7 @@ ST_UNKNOWN = "UNKNOWN"
 class VirtBase(object):
     """
     Basic module for customer special virtual type. This module implement
-    functions configurated and composed the VM boot command. With these
+    functions configured and composed in the VM boot command. With these
     function, we can get and set the VM boot command, and instantiate the VM.
     """
 
@@ -59,7 +59,7 @@ class VirtBase(object):
         """
         Initialize the VirtBase.
         dut: the instance of Dut
-        vm_name: the name of VM which you have confiured in the configure
+        vm_name: the name of VM which you have configured in the configure
         suite_name: the name of test suite
         """
         self.host_dut = dut
@@ -73,7 +73,7 @@ class VirtBase(object):
         # base_dir existed for host dut has prepared it
         self.host_session.send_expect("cd %s" % self.host_dut.base_dir, "# ")
 
-        # init the host resouce pool for VM
+        # init the host resource pool for VM
         self.virt_pool = self.host_dut.virt_pool
 
         if not self.has_virtual_ability():
@@ -92,6 +92,10 @@ class VirtBase(object):
         # vm status is running by default, only be changed in internal module
         self.vm_status = ST_RUNNING
 
+        # by default no special kernel module is required
+        self.def_driver = ''
+        self.driver_mode = ''
+
     def get_virt_type(self):
         """
         Get the virtual type, such as KVM, XEN or LIBVIRT.
@@ -106,13 +110,13 @@ class VirtBase(object):
 
     def enable_virtual_ability(self):
         """
-        Enalbe the virtual ability on the DUT.
+        Enable the virtual ability on the DUT.
         """
         NotImplemented
 
     def load_global_config(self):
         """
-        Load global configure in the path DTS_ROOT_PAHT/conf.
+        Load global configure in the path DTS_ROOT_PATH/conf.
         """
         conf = VirtConf(VIRTCONF)
         conf.load_virt_config(self.virt_type)
@@ -144,10 +148,9 @@ class VirtBase(object):
 
         # replace global configurations with local configurations
         for param in self.local_conf:
-            if 'mem' in param.keys():
-                self.__save_local_config('mem', param['mem'])
-            if 'cpu' in param.keys():
-                self.__save_local_config('cpu', param['cpu'])
+            if 'virt_type' in param.keys():
+                # param 'virt_type' is for virt_base only
+                continue
             # save local configurations
             for key in param.keys():
                 self.__save_local_config(key, param[key])
@@ -184,6 +187,15 @@ class VirtBase(object):
             except Exception:
                 self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                 raise exception.VirtConfigParamException(key)
+
+    def add_vm_def_driver(self, **options):
+        """
+        Set default driver which may required when setup VM
+        """
+        if 'driver_name' in options.keys():
+            self.def_driver = options['driver_name']
+        if 'driver_mode' in options.keys():
+            self.driver_mode = options['driver_mode']
 
     def find_option_index(self, option):
         """
@@ -268,7 +280,7 @@ class VirtBase(object):
             # compose boot command for different hypervisors
             self.compose_boot_param()
 
-            # start virutal machine
+            # start virtual machine
             self._start_vm()
 
             if self.vm_status is ST_RUNNING:
@@ -279,9 +291,9 @@ class VirtBase(object):
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             if callable(self.callback):
                 self.callback()
@@ -299,14 +311,14 @@ class VirtBase(object):
             # compose boot command for different hypervisors
             self.compose_boot_param()
 
-            # start virutal machine
+            # start virtual machine
             self._quick_start_vm()
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             if callable(self.callback):
                 self.callback()
@@ -322,9 +334,9 @@ class VirtBase(object):
                 vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled expection " + str(type(vm_except)))
+                print utils.RED("Handled exception " + str(type(vm_except)))
             else:
-                print utils.RED("Unhandled expection " + str(type(vm_except)))
+                print utils.RED("Unhandled exception " + str(type(vm_except)))
 
             return None
 
@@ -424,7 +436,7 @@ class VirtBase(object):
             vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches, autodetect_topo)
             if set_target:
                 target = self.host_dut.target
-                vm_dut.set_target(target, bind_dev)
+                vm_dut.set_target(target, bind_dev, self.def_driver, self.driver_mode)
         except:
             raise exception.VirtDutInitException(vm_dut)
             return None

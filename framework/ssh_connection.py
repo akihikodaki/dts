@@ -41,7 +41,7 @@ class SSHConnection(object):
 
     """
     Module for create session to host.
-    Implement send_expect/copy function upper SSHPexpet module.
+    Implement send_expect/copy function upper SSHPexpect module.
     """
 
     def __init__(self, host, session_name, username, password='', dut_id=0):
@@ -50,21 +50,29 @@ class SSHConnection(object):
         connection = {}
         connection[self.name] = self.session
         CONNECTIONS.append(connection)
+        self.history = None
 
     def init_log(self, logger):
         self.logger = logger
         self.session.init_log(logger, self.name)
 
+    def set_history(self, history):
+        self.history = history
+
     def send_expect(self, cmds, expected, timeout=15, verify=False):
         self.logger.info(cmds)
         out = self.session.send_expect(cmds, expected, timeout, verify)
         self.logger.debug(out)
+        if type(self.history) is list:
+            self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
 
     def send_command(self, cmds, timeout=1):
         self.logger.info(cmds)
         out = self.session.send_command(cmds, timeout)
         self.logger.debug(out)
+        if type(self.history) is list:
+            self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
 
     def get_session_before(self, timeout=15):
@@ -90,7 +98,7 @@ class SSHConnection(object):
     def check_available(self):
         MAGIC_STR = "DTS_CHECK_SESSION"
         out = self.session.send_command('echo %s' % MAGIC_STR, timeout=0.1)
-        # if not avaiable, try to send ^C and check again
+        # if not available, try to send ^C and check again
         if MAGIC_STR not in out:
             self.logger.info("Try to recover session...")
             self.session.send_command('^C', timeout=TIMEOUT)

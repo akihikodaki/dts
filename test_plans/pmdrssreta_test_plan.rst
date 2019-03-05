@@ -72,7 +72,7 @@ handled by a different logical core.
 
 The RSS RETA update feature is designed to make RSS more flexible by allowing
 users to define the correspondence between the seven LSBs of hash result and
-the queue id(RSS output index) by them self.
+the queue id(RSS output index) by themself.
 
 
 Test Case:  Results - IO Forwarding Mode
@@ -92,7 +92,7 @@ Testpmd configuration - 2 RX/TX queues per port
 
 ::
 
-  testpmd -cffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=2 --txq=2
 
@@ -101,7 +101,7 @@ Testpmd configuration - 9 RX/TX queues per port
 
 ::
 
-  testpmd -cffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=9 --txq=9
 
@@ -110,7 +110,7 @@ Testpmd configuration - 16 RX/TX queues per port
 
 ::
 
-  testpmd -cffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
+  testpmd -c ffffff -n 3 -b 0000:05:00.1 -- -i --rxd=512 --txd=512 --burst=32 \
   --txpt=36 --txht=0 --txwt=0 --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 \
   --rxq=16 --txq=16
 
@@ -148,9 +148,9 @@ interactive commands of the ``testpmd`` application.
 tester Configuration
 --------------------
 
-#. In order to make most entries of the reta to be tested,the traffic
+#. In order to make most entries of the reta to be tested, the traffic
    generator has to be configured to randomize the value of the 5-tuple fields
-   of the transmitted IP/UDP packets so that RSS hash function output of
+   of the transmitted IP/UDP packets, so that RSS hash function output of
    5-tuple fields covers most of reta index.
 
 #. Set the package numbers of one burst to a certain value.
@@ -176,3 +176,17 @@ Example output (1P/2Q)  received by the dut):::
 +--------------+-------------+------------+-----------------+------+
 | 127          |             |            |                 |      |
 +--------------+-------------+------------+-----------------+------+
+
+Test Case:  Check RSS key size
+==============================
+
+Different NIC types support different RSS hasd key size.
+Use the testpmd command::
+
+  testpmd command: show port info all
+
+Get the RSS hash key size::
+
+  Hash key size in bytes: 52
+
+Check the value to the key size supported by NIC.

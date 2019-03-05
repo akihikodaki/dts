@@ -55,7 +55,7 @@ class TestQueue_region(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Queue region Prerequistites
+        Queue region Prerequisites
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))
@@ -109,6 +109,7 @@ class TestQueue_region(TestCase):
             self.send_packet_up(mac, pkt_type, prio)
         queue = self.get_queue_number()
         self.verify(queue in queue_region, "the packet doesn't enter the expected queue region.")
+        return queue
 
     def send_packet_pctype(self, mac, pkt_type="udp", frag=0, flags=None, tag=None, ethertype=None):
         """
@@ -202,14 +203,13 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region region_id 3 queue_start_index 8 queue_num 2", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 queue_start_index 11 queue_num 4", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 5 queue_start_index 15 queue_num 1", "testpmd> ")
-        self.dut.send_expect("set port 0 queue-region region_id 6 queue_start_index 2 queue_num 1", "testpmd> ")
+        self.dut.send_expect("set port 0 queue-region region_id 6 queue_start_index 5 queue_num 1", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 7 queue_start_index 10 queue_num 1", "testpmd> ")
 
         # Set the mapping of flowtype to region index on a port
         self.dut.send_expect("set port 0 queue-region region_id 0 flowtype 31", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 1 flowtype 32", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 33", "testpmd> ")
-        self.dut.send_expect("set port 0 queue-region region_id 3 flowtype 34", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 35", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 flowtype 36", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
@@ -217,22 +217,26 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 44", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 5 flowtype 45", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 7 flowtype 46", "testpmd> ")
-        self.dut.send_expect("set port 0 queue-region region_id 1 flowtype 63", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region flush on", "testpmd> ")
 
+        # mapping table:
+        # region  |  queue       |  flowtype  |  packet_type
+        #   0     |  1           |  31        |  IPv4_UDP
+        #   1     |  3,4         |  32        |  IPv4_TCP_SYN
+        #   2     |  6,7         |  33,41     |  IPv4_TCP, IPv6_UDP
+        #   3     |  8,9         |  43        |  IPv6_TCP
+        #   4     |  11,12,13,14 |  35,44     |  IPv4_Other, IPv6_SCTP
+        #   5     |  15          |  45        |  IPv6_Other
+        #   6     |  5           |  36        |  Frag_IPv4
+        #   7     |  10          |  46        |  Frag_IPv6
         # send the packets and verify the results
         queue_region = ["1"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp")
+        queue_udp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp")
 
         # fortville can't parse the TCP SYN type packet, fortpark can parse it.
-        # but you need to update hardware defined pctype to software defined
-        # flow type mapping table manully.
         if(self.nic in ["fortpark_TLV"]):
-            self.dut.send_expect("port config 0 pctype mapping update 32 1", "testpmd> ")
-            self.dut.send_expect("port config all rss 1", "testpmd> ")
             queue_region = ["3", "4"]
             self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", flags="S")
-            self.dut.send_expect("port config all rss all", "testpmd> ")
         else:
             queue_region = ["6", "7"]
             self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", flags="S")
@@ -240,17 +244,25 @@ class TestQueue_region(TestCase):
         queue_region = ["6", "7"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", flags="PA")
 
-        queue_region = ["8", "9"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="sctp", tag=1)
+        # not assign ipv4-sctp packet to any queue region, the packet to queue region 0.
+        queue_region = ["1"]
+        queue_sctp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="sctp", tag=1)
 
         queue_region = ["11", "12", "13", "14"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv4")
+        queue_ipv4 = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv4")
 
-        queue_region = ["2"]
+        queue_region = ["5"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv4", frag=1)
 
-        queue_region = ["8", "9"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
+        # fortville can't parse the TCP SYN type packet, fortpark can parse it.
+        # default is SYN mode.
+        # not assign ipv4-tcp SYN packet to any queue region, the packet to queue region 0.
+        if(self.nic in ["fortpark_TLV"]):
+            queue_region = ["1"]
+            queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
+        else:
+            queue_region = ["8", "9"]
+            queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
 
         queue_region = ["11", "12", "13", "14"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_sctp", tag=2)
@@ -261,7 +273,8 @@ class TestQueue_region(TestCase):
         queue_region = ["15"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6")
 
-        queue_region = ["3", "4"]
+        # not assign L2 packet to any queue region, the packet to queue region 0.
+        queue_region = ["1"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="L2", ethertype=0x88bb)
 
         queue_region = ["11", "12", "13", "14"]
@@ -270,14 +283,28 @@ class TestQueue_region(TestCase):
         # clear all the queue region configuration
         # check if there is 1 flow rule have been created
         out = self.dut.send_expect("show port 0 queue-region", "testpmd> ")
-        self.get_and_compare_rules(out, 8, 12, 0)
+        self.get_and_compare_rules(out, 8, 10, 0)
         self.dut.send_expect("set port 0 queue-region flush off", "testpmd> ")
         out = self.dut.send_expect("show port 0 queue-region", "testpmd> ")
         self.get_and_compare_rules(out, 0, 0, 0)
 
+        # confirm packet not to the same queue after flush all the queue regions rules.
+        self.send_packet_pctype(mac=self.pf_mac, pkt_type="udp")
+        queue = self.get_queue_number()
+        self.verify(queue != queue_udp, "the queue regions have not been flushed clearly.")
+        self.send_packet_pctype(mac=self.pf_mac, pkt_type="sctp")
+        queue = self.get_queue_number()
+        self.verify(queue != queue_sctp, "the queue regions have not been flushed clearly.")
+        self.send_packet_pctype(mac=self.pf_mac, pkt_type="ipv4")
+        queue = self.get_queue_number()
+        self.verify(queue != queue_ipv4, "the queue regions have not been flushed clearly.")
+        self.send_packet_pctype(mac=self.pf_mac, pkt_type="ipv6_tcp")
+        queue = self.get_queue_number()
+        self.verify(queue != queue_ipv6tcp, "the queue regions have not been flushed clearly.")
+
     def test_up_map_queue_region(self):
         # set queue region on a port
-        self.dut.send_expect("set port 0 queue-region region_id 0 queue_start_index 0 queue_num 1", "testpmd> ")
+        self.dut.send_expect("set port 0 queue-region region_id 0 queue_start_index 14 queue_num 2", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 queue_start_index 1 queue_num 8", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 2 queue_start_index 10 queue_num 4", "testpmd> ")
 
@@ -288,28 +315,33 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region UP 7 region_id 2", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region flush on", "testpmd> ")
 
+        # mapping table:
+        # region  |  queue            |  User Priority
+        #   0     |  14,15            |  3
+        #   6     |  1,2,3,4,5,6,7,8  |  1
+        #   2     |  10,11,12,13      |  2,7
         # send the packets and verify the results
-        queue_region = ["0"]
+        queue_region = ["14", "15"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=4)
 
-        queue_region = ["0"]
+        queue_region = ["14", "15"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=3)
 
         queue_region = ["1", "2", "3", "4", "5", "6", "7", "8"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_udp", prio=1)
 
         queue_region = ["10", "11", "12", "13"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", prio=2)
+        queue_tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", prio=2)
 
         queue_region = ["10", "11", "12", "13"]
         self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", prio=7)
 
         queue_region = ["10", "11", "12", "13"]
-        self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=7)
+        queue_udp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp", prio=7)
 
         self.send_packet_pctype(mac=self.pf_mac, pkt_type="udp")
         queue = self.get_queue_number()
-        self.verify(queue not in ["10", "11", "12", "13"], "the packet doesn't enter the expected queue.")
+        self.verify(queue in ["14", "15"], "the packet doesn't enter the expected queue.")
 
         # clear all the queue region configuration
         out = self.dut.send_expect("show port 0 queue-region", "testpmd> ")
@@ -318,10 +350,13 @@ class TestQueue_region(TestCase):
         out = self.dut.send_expect("show port 0 queue-region", "testpmd> ")
         self.get_and_compare_rules(out, 0, 0, 0)
 
-        # confirm packet can't into the previous queue_region
+        # confirm packet not to the same queue after flush all the queue region rull.
         self.send_packet_up(mac=self.pf_mac, pkt_type="udp", prio=7)
         queue = self.get_queue_number()
-        self.verify(queue not in ["10", "11", "12", "13"], "the queue regions have not been flushed clearly.")
+        self.verify(queue != queue_udp, "the queue regions have not been flushed clearly.")
+        self.send_packet_up(mac=self.pf_mac, pkt_type="tcp", prio=2)
+        queue = self.get_queue_number()
+        self.verify(queue != queue_tcp, "the queue regions have not been flushed clearly.")
 
     def test_boundary_values(self):
         # boundary value testing of "Set a queue region on a port"

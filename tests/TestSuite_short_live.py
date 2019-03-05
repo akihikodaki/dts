@@ -102,10 +102,7 @@ class TestShortLiveApp(TestCase):
         if (txPort == rxPort):
             count = 2
 
-        self.tester.scapy_append('p=sniff(iface="%s", filter="ether[12:2]!=0x88cc", count=%d, timeout=5)' % (rxitf, count))
-        self.tester.scapy_append('RESULT=str(p[%d].show)' % (count-1))
-
-        self.tester.scapy_foreground()
+        inst = self.tester.tcpdump_sniff_packets(rxitf, count=count, timeout=5)
 
         pktlen = pktSize - 14
         padding = pktlen - 20
@@ -114,7 +111,9 @@ class TestShortLiveApp(TestCase):
         self.tester.scapy_execute()
         time.sleep(3)
 
-        out = self.tester.scapy_get_result()
+        pkts = self.tester.load_tcpdump_sniff_packets(inst)
+        out = str(pkts[0].pktgen.pkt.show)
+        self.logger.info('SCAPY Result:\n' + out + '\n\n\n')
         if received:
             self.verify(('PPP' in out) and 'src=%s'% Dut_tx_mac in out, "Receive test failed")
         else:
@@ -151,17 +150,18 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print "clean_up_with_signal_testpmd round %d" % (i + 1)
-            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "LSC event", 120)
+            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "link state change event", 120)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
             self.check_forwarding([0, 1], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 testpmd", "#", 60, True)
             else:
                 self.dut.send_expect("pkill -15 testpmd", "#", 60, True)
+            time.sleep(2)
 
     def test_clean_up_with_signal_l2fwd(self):
         repeat_time = 5
@@ -172,7 +172,7 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("./examples/l2fwd/build/app/l2fwd -n 4 -c 0xf -- -p 0x3 &", "L2FWD: entering main loop", 60)
             self.check_forwarding([0, 1], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l2fwd", "#", 60, True)
                 time.sleep(2)
@@ -189,7 +189,7 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 
-            # kill with differen Signal
+            # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l3fwd", "#", 60, True)
                 time.sleep(2)

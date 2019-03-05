@@ -33,6 +33,5 @@ class NVGRE(Packet):
 
 bind_layers(NVGRE, Ether, protocoltype=0x6558)
 # fix conflict of GRE and NVGRE
-split_layers(IP, GRE, frag=0, proto=IPPROTO_NVGRE)
 bind_layers(IP, NVGRE, frag=0, proto=IPPROTO_NVGRE)
 

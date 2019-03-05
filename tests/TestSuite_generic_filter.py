@@ -53,7 +53,7 @@ class TestGeneric_filter(TestCase):
         Run at the start of each test suite.
 
 
-        Generic filter Prerequistites
+        Generic filter Prerequisites
         """
 
         # Based on h/w type, choose how many ports to use
@@ -75,7 +75,7 @@ class TestGeneric_filter(TestCase):
         """
         default txq/rxq descriptor is 64
         """
-        return 128 * queue_num + 512
+        return 1024 * queue_num + 512
 
     def port_config(self):
         """
@@ -102,8 +102,14 @@ class TestGeneric_filter(TestCase):
                 "vlan set strip off %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set strip off %s" % valports[1], "testpmd> ")
+            #reson dpdk-5315
+            self.dut.send_expect(
+                "vlan set filter on %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[0], "testpmd> ")
+            #reson dpdk-5315
+            self.dut.send_expect(
+                "vlan set filter on %s" % valports[1], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[1], "testpmd> ")
 
@@ -597,7 +603,7 @@ class TestGeneric_filter(TestCase):
             out = self.dut.send_expect("stop", "testpmd> ")
             self.verify_result(out, tx_pkts="1", expect_queue="1")
 
-            # remove all filter
+            # remove all filters
 
             self.dut.send_expect(
                 "syn_filter %s del priority high queue 1" % valports[0], "testpmd> ")
@@ -689,7 +695,7 @@ class TestGeneric_filter(TestCase):
         self.tester.send_expect("ifconfig %s mtu %s" % (rxItf, 1500), "# ")
 
     def test_128_queues(self):
-        # testpmd can't support assign queue to received package, so can't test
+        # testpmd can't support assign queue to received packet, so can't test
         if self.kdriver == "ixgbe":
 	    self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
 	    self.dut.build_install_dpdk(self.target)
@@ -792,7 +798,7 @@ class TestGeneric_filter(TestCase):
                     pps_lists.append(pps)
                 self.result_table_add(
                     ["defult", key, pps_lists[0], pps_lists[1], (pps_lists[0] - pps_lists[1]) / float(pps_lists[1])])
-            # this is a TCP/IP package, need test different payload_size
+            # this is a TCP/IP packet, need to test different payload_size
             if ("5tuple" == key) and ("niantic" == self.nic):
                 for package_size in package_sizes:
                     payload_size = package_size - \

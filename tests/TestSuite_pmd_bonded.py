@@ -343,7 +343,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def get_port_connect_socket(self, port_id):
         """
-        Get the socket id which the specified port is connectting with.
+        Get the socket id which the specified port is connecting with.
         """
         return self.get_detail_from_port_info("Connect to socket: ", "\d+", port_id)
 
@@ -367,7 +367,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def get_port_link_duplex(self, port_id):
         """
-        Get the specified port link mode, duplex or siplex.
+        Get the specified port link mode, duplex or simplex.
         """
         return self.get_detail_from_port_info("Link duplex: ", "\S+", port_id)
 
@@ -385,7 +385,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def get_port_vlan_offload(self, port_id):
         """
-        Function: get the port vlan settting info.
+        Function: get the port vlan setting info.
         return value:
             'strip':'on'
             'filter':'on'
@@ -699,7 +699,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         *** unbound_port: the unbonded port id
         *** bond_port: the bonded device port id
         *** slaves:
-        ******* 'actvie':[]
+        ******* 'active':[]
         ******* 'inactive':[]
         """
         pkt_orig = {}
@@ -1031,6 +1031,9 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                         pkt_now[bond_port][0] == pkt_count,
                         "RX or TX packet number not correct when promiscuous disabled")
 
+        # Stop fwd threads first before removing slaves from bond to avoid
+        # races and crashes
+        self.dut.send_expect("stop", "testpmd> ")
         self.remove_all_slaves(bond_port)
         self.dut.send_expect("quit", "# ")
         self.launch_app()
@@ -1158,7 +1161,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def get_all_stats(self, unbound_port, rx_tx, bond_port, **slaves):
         """
-        Get all the port stats which the testpmd can dicover.
+        Get all the port stats which the testpmd can discover.
         Parameters:
         *** unbound_port: pmd port id
         *** rx_tx: unbond port stat 'rx' or 'tx'
@@ -1274,7 +1277,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def test_active_backup_one_slave_down(self):
         """
-        Verify that receiving and transmitting the pcakets correctly in the active-backup mode,
+        Verify that receiving and transmitting the packets correctly in the active-backup mode,
         when bringing any one slave of the bonding device link down.
         """
         bond_port = self.create_bonded_device(MODE_ACTIVE_BACKUP, SOCKET_0)
@@ -1417,7 +1420,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
     def verify_xor_rx(self, unbound_port, bond_port, **slaves):
         """
-        Verify receiving the pcakets correctly in the XOR mode.
+        Verify receiving the packets correctly in the XOR mode.
         Parameters:
         *** unbound_port: the unbonded port id
         *** bond_port: the bonded device port id
@@ -1602,7 +1605,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         *** unbound_port: the unbonded port id
         *** bond_port: the bonded device port id
         *** slaves:
-        ******* 'actvie':[]
+        ******* 'active':[]
         ******* 'inactive':[]
         """
         pkt_count = 100
@@ -1863,7 +1866,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         *** unbound_port: the unbonded port id
         *** bond_port: the bonded device port id
         *** slaves:
-        ******* 'actvie':[]
+        ******* 'active':[]
         ******* 'inactive':[]
         """
         pkt_count = 'MANY'

@@ -92,7 +92,7 @@ class Crb(object):
 
     def create_session(self, name=""):
         """
-        Create new session for addtional useage. This session will not enable log.
+        Create new session for additional usage. This session will not enable log.
         """
         logger = getLogger(name)
         session = SSHConnection(self.get_ip_address(),
@@ -106,7 +106,7 @@ class Crb(object):
 
     def destroy_session(self, session=None):
         """
-        Destroy addtional session.
+        Destroy additional session.
         """
         for save_session in self.sessions:
             if save_session == session:
@@ -204,8 +204,10 @@ class Crb(object):
         if numa == -1:
             self.send_expect('echo %d > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, page_size), '# ', 5)
         else:
-            # sometimes we set hugepage on kernel cmdline, so we need clear default hugepage
-            self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+            # sometimes we set hugepage on kernel cmdline, so we clear all nodes' default hugepages at the first time.
+            if numa == 0:
+                self.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
+
             # some platform not support numa, example vm dut
             try:
                 self.send_expect('echo %d > /sys/devices/system/node/node%d/hugepages/hugepages-%skB/nr_hugepages' % (huge_pages, numa, page_size), '# ', 5)
@@ -280,8 +282,8 @@ class Crb(object):
             #check if device is cavium and check its linkspeed, append only if it is 10G
             if "177d:" in match[i][1]:
                 linkspeed = "10000"
-                nic_linkspeed = self.send_command("cat /sys/bus/pci/devices/%s/net/*/speed" % match[i][0])
-                if nic_linkspeed == linkspeed:
+                nic_linkspeed = self.send_expect("cat /sys/bus/pci/devices/%s/net/*/speed" % match[i][0], "# ", alt_session=True)
+                if nic_linkspeed.split()[0] == linkspeed:
                     self.pci_devices_info.append((match[i][0], match[i][1]))
             else:
                 self.pci_devices_info.append((match[i][0], match[i][1]))
@@ -438,7 +440,7 @@ class Crb(object):
         """
         pids = []
         pid_reg = r'p(\d+)'
-        cmd = 'lsof -Fp /var/run/.rte_config'
+        cmd = 'lsof -Fp /var/run/dpdk/rte/config'
         out = self.send_expect(cmd, "# ", 20, alt_session)
         if len(out):
             lines = out.split('\r\n')
@@ -450,7 +452,7 @@ class Crb(object):
             self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
             self.get_session_output(timeout=2)
 
-        cmd = 'lsof -Fp /var/run/.rte_hugepage_info'
+        cmd = 'lsof -Fp /var/run/dpdk/rte/hugepage_info'
         out = self.send_expect(cmd, "# ", 20, alt_session)
         if len(out) and "No such file or directory" not in out:
             self.logger.warning("There are some dpdk process not free hugepage")
@@ -545,16 +547,16 @@ class Crb(object):
 
         cpuinfo = \
             self.send_expect(
-                "lscpu -p|grep -v \#",
+                "lscpu -p=CPU,CORE,SOCKET,NODE|grep -v \#",
                 "#", alt_session=True)
 
         cpuinfo = cpuinfo.split()
         # haswell cpu on cottonwood core id not correct
-        # need addtional coremap for haswell cpu
+        # need additional coremap for haswell cpu
         core_id = 0
         coremap = {}
         for line in cpuinfo:
-            (thread, core, socket, unused) = line.split(',')[0:4]
+            (thread, core, socket, node) = line.split(',')[0:4]
 
             if core not in coremap.keys():
                 coremap[core] = core_id
@@ -563,8 +565,12 @@ class Crb(object):
             if self.crb['bypass core0'] and core == '0' and socket == '0':
                 self.logger.info("Core0 bypassed")
                 continue
-            self.cores.append(
-                    {'thread': thread, 'socket': socket, 'core': coremap[core]})
+            if self.crb['dut arch'] == "arm64":
+                self.cores.append(
+                        {'thread': thread, 'socket': node, 'core': coremap[core]})
+            else:
+                self.cores.append(
+                        {'thread': thread, 'socket': socket, 'core': coremap[core]})
 
         self.number_of_cores = len(self.cores)
 
@@ -576,7 +582,7 @@ class Crb(object):
 
     def remove_hyper_core(self, core_list, key=None):
         """
-        Remove hyperthread locre for core list.
+        Remove hyperthread lcore for core list.
         """
         found = set()
         for core in core_list:
@@ -627,7 +633,7 @@ class Crb(object):
     def get_core_list(self, config, socket=-1):
         """
         Get lcore array according to the core config like "all", "1S/1C/1T".
-        We can specify the physical CPU socket by paramter "socket".
+        We can specify the physical CPU socket by the "socket" parameter.
         """
         if config == 'all':
             cores = []

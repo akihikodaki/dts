@@ -35,6 +35,7 @@ Interface for bulk traffic generators.
 
 import re
 import subprocess
+import os
 from time import sleep
 from settings import NICS, load_global_setting, PERF_SETTING
 from crb import Crb
@@ -392,7 +393,7 @@ class Tester(Crb):
 
     def send_ping(self, localPort, ipv4, mac):
         """
-        Send ping6 packet from local port with destination ipv4 address.
+        Send ping4 packet from local port with destination ipv4 address.
         """
         if self.ports_info[localPort]['type'].lower() in ('ixia', 'trex'):
             return "Not implemented yet"
@@ -468,14 +469,14 @@ class Tester(Crb):
 
     def scapy_background(self):
         """
-        Configure scapy running in backgroud mode which mainly purpose is
+        Configure scapy running in background mode which mainly purpose is
         that save RESULT into scapyResult.txt.
         """
         self.inBg = True
 
     def scapy_foreground(self):
         """
-        Running backgroup scapy and convert to foregroup mode.
+        Running background scapy and convert to foreground mode.
         """
         self.send_expect("echo -n '' >  scapyResult.txt", "# ")
         if self.inBg:
@@ -547,7 +548,7 @@ class Tester(Crb):
         elif not self.check_port_list(portList):
             self.logger.warning("exception by mixed port types")
             return None
-        return self.packet_gen.loss(portList, ratePercent, delay)
+        return self.packet_gen.loss(portList, ratePercent)
 
     def traffic_generator_latency(self, portList, ratePercent=100, delay=5):
         """
@@ -573,8 +574,6 @@ class Tester(Crb):
         module = __import__("packet")
         pkt_c = getattr(module, "Packet")
         send_f = getattr(module, "send_packets")
-        sniff_f = getattr(module, "sniff_packets")
-        load_f = getattr(module, "load_sniff_packets")
         compare_f = getattr(module, "compare_pktload")
         strip_f = getattr(module, "strip_pktload")
         save_f = getattr(module, "save_packets")
@@ -601,7 +600,7 @@ class Tester(Crb):
                     for param in params:
                         layer, config = param
                         pkt.config_layer(layer, config)
-                # hardcode src/dst port for some protocal may cause issue
+                # hardcode src/dst port for some protocol may cause issue
                 if "TCP" in pkt_type:
                     pkt.config_layer('tcp', {'src': 65535, 'dst': 65535})
                 else:
@@ -619,7 +618,7 @@ class Tester(Crb):
 
             # send and sniff packets
             save_f(pkts=pkts, filename="/tmp/%s_tx.pcap" % txIntf)
-            inst = sniff_f(intf=rxIntf, count=pktnum, timeout=timeout, filters=
+            inst = self.tcpdump_sniff_packets(intf=rxIntf, count=pktnum, timeout=timeout, filters=
                 [{'layer': 'network', 'config': {'srcport': '65535'}},
                  {'layer': 'network', 'config': {'dstport': '65535'}}])
             rx_inst[rxport] = inst
@@ -640,9 +639,9 @@ class Tester(Crb):
         # Verify all packets
         prev_id = -1
         for txport, rxport in portList:
-            recv_pkts = load_f(rx_inst[rxport])
+            recv_pkts = self.load_tcpdump_sniff_packets(rx_inst[rxport])
 
-            # only report when recevied number not matched
+            # only report when received number not matched
             if len(tx_pkts[txport]) > len(recv_pkts):
                 print ("Pkt number not matched,%d sent and %d received\n" \
                        % (len(tx_pkts[txport]), len(recv_pkts)))
@@ -675,7 +674,7 @@ class Tester(Crb):
                         prev_id = t_idx
 
                 if compare_f(tx_pkts[txport][t_idx], recv_pkts[idx], "L4") is False:
-                    print "Pkt recevied index %d not match original " \
+                    print "Pkt received index %d not match original " \
                           "index %d" % (idx, t_idx)
                     print "Sent: %s" % strip_f(tx_pkts[txport][t_idx], "L4")
                     print "Recv: %s" % strip_f(recv_pkts[idx], "L4")
@@ -716,6 +715,47 @@ class Tester(Crb):
         if self.proc:
             self.proc.kill()
             self.proc = None
+
+    def tcpdump_sniff_packets(self, intf, count=0, timeout=5, filters=[]):
+        """
+        Wrapper for packet module sniff_packets
+        """
+        # load functions in packet module
+        module = __import__("packet")
+        sniff_f = getattr(module, "sniff_packets")
+
+        target=[]
+        target.append(self.get_ip_address())
+        target.append(self.get_username())
+        target.append(self.get_password())
+        return sniff_f(intf, count, timeout, filters, target)
+
+    def load_tcpdump_sniff_pcap(self, index=''):
+        """
+        Wrapper for packet module load_sniff_pcap
+        """
+        # load functions in packet module
+        module = __import__("packet")
+        load_pcap_f = getattr(module, "load_sniff_pcap")
+
+        target=[]
+        target.append(self.get_ip_address())
+        target.append(self.get_username())
+        target.append(self.get_password())
+        pcap = load_pcap_f(index, target)
+        self.session.copy_file_from(pcap)
+
+        return pcap.split(os.sep)[-1]
+
+    def load_tcpdump_sniff_packets(self, index=''):
+        """
+        Wrapper for packet module load_pcapfile
+        """
+        # load functions in packet module
+        packet = __import__("packet")
+        file = self.load_tcpdump_sniff_pcap(index)
+
+        return packet.load_pcapfile(file)
 
     def kill_all(self, killall=False):
         """

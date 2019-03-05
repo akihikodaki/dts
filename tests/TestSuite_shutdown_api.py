@@ -83,14 +83,14 @@ class TestShutdownApi(TestCase):
         stats = output.get_pmd_stats(portid)
         return stats
 
-    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False):
+    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
         if ports is None:
             ports = self.ports
         if len(ports) == 1:
-            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc)
+            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc, vlan_strip)
             return
 
-    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False):
+    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
         """
         Send packages according to parameters.
         """
@@ -138,7 +138,7 @@ class TestShutdownApi(TestCase):
             # RRC will always strip rx/tx crc
             rx_bytes_exp -= 4
             tx_bytes_exp -= 4
-            if vlan is True:
+            if vlan_strip is True:
                 # RRC will always strip rx/tx vlan
                 rx_bytes_exp -= 4
                 tx_bytes_exp -= 4
@@ -146,8 +146,8 @@ class TestShutdownApi(TestCase):
             # some NIC will always include tx crc
             rx_bytes_exp -= 4
             tx_bytes_exp -= 4
-            if vlan is True:
-                # vlan strip default is on
+            if vlan_strip is True:
+                # vlan strip default is off
                 tx_bytes_exp -= 4
          
         # fortville nic enable send lldp packet function when port setup
@@ -253,8 +253,8 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
-        self.verify("RX queues=2" in out, "RX queues not reconfigured properly")
-        self.verify("TX queues=2" in out, "TX queues not reconfigured properly")
+        self.verify("RX queue number: 2" in out, "RX queues not reconfigured properly")
+        self.verify("Tx queue number: 2" in out, "TX queues not reconfigured properly")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
         self.dut.send_expect("quit", "# ", 30)
@@ -263,15 +263,32 @@ class TestShutdownApi(TestCase):
         """
         Reconfigure All Ports With The Same Configurations (CRC)
         """
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        RX_OFFLOAD_KEEP_CRC = 0x10000
+
+        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
+        out = self.dut.send_expect("show config rxtx", "testpmd> ")
+        Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
+        crc_keep_temp = []
+        for i in range(len(self.dut.get_ports())):
+            crc_keep_temp.append(int(Rx_offloads[i],16) & RX_OFFLOAD_KEEP_CRC)
+            crc_keep = crc_keep_temp[0]
+            crc_keep = crc_keep and crc_keep_temp[i]
+        self.verify(
+            crc_keep == RX_OFFLOAD_KEEP_CRC, "CRC keeping not enabled properly")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all crc-strip on", "testpmd> ")
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
+        Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
+        crc_strip_temp = []
+        for i in range(len(self.dut.get_ports())):
+            crc_strip_temp.append(int(Rx_offloads[i],16) | ~RX_OFFLOAD_KEEP_CRC)
+            crc_strip = crc_strip_temp[0]
+            crc_strip = crc_strip and crc_strip_temp[i]
         self.verify(
-            "CRC stripping enabled" in out, "CRC stripping not enabled properly")
+            crc_strip == ~RX_OFFLOAD_KEEP_CRC, "CRC stripping not enabled properly")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
@@ -302,6 +319,9 @@ class TestShutdownApi(TestCase):
                     continue
             elif self.nic in ["fortville_eagle"]:
                 if config[0] != '10000':
+                    continue
+            elif self.nic in ["sagepond"]:
+                if config[0] != '1000' and '10000':
                     continue
             self.dut.send_expect("port stop all", "testpmd> ", 100)
             for port in self.ports:
@@ -337,20 +357,26 @@ class TestShutdownApi(TestCase):
         out = self.dut.send_expect("vlan set strip off all", "testpmd> ")
         if "fail" not in out:
             for port in self.ports:
+                self.dut.send_expect("vlan set filter on %d" % port, "testpmd> ")
                 self.dut.send_expect("rx_vlan add 1 %d" % port, "testpmd> ")
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("port start all", "testpmd> ", 100)
             self.dut.send_expect("start", "testpmd> ")
 
-            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'springville', 'powerville']:
+            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'springville', 'powerville', 'sageville', 'sagepond']:
                 # nantic vlan length will not be calculated
                 vlan_jumbo_size = jumbo_size + 4
             else:
                 vlan_jumbo_size = jumbo_size
-
-            self.check_forwarding(pktSize=vlan_jumbo_size - 1, vlan=True)
-            self.check_forwarding(pktSize=vlan_jumbo_size, vlan=True)
-            self.check_forwarding(pktSize=vlan_jumbo_size + 1, received=False, vlan=True)
+            out = self.dut.send_expect("show port cap %d" % port, "testpmd> ")
+            state = re.findall("VLAN stripped:\s*([a-z]*)", out)
+            if state[0] == 'on':
+                vlan_strip = True
+            else:
+                vlan_strip = False
+            self.check_forwarding(pktSize=vlan_jumbo_size - 1, vlan=True, vlan_strip=vlan_strip)
+            self.check_forwarding(pktSize=vlan_jumbo_size, vlan=True, vlan_strip=vlan_strip)
+            self.check_forwarding(pktSize=vlan_jumbo_size + 1, received=False, vlan=True, vlan_strip=vlan_strip)
 
             self.dut.send_expect("stop", "testpmd> ")
 

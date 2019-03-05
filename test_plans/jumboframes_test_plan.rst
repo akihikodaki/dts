@@ -43,7 +43,7 @@ Prerequisites
 =============
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio
@@ -54,7 +54,7 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to the traffic generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./build/app/testpmd -cffffff -n 3 -- -i --rxd=1024 --txd=1024 \
+  ./build/app/testpmd -c ffffff -n 3 -- -i --rxd=1024 --txd=1024 \
   --burst=144 --txpt=32 --txht=0 --txfreet=0 --rxfreet=64 \
   --mbcache=200 --portmask=0x3 --mbuf-size=2048 --max-pkt-len=9600
 
@@ -175,7 +175,7 @@ Test Case: Normal frames with jumbo frame support
 
 Start testpmd with jumbo frame support enabled ::
 
-  ./testpmd -cffffff -n 3 -- -i --rxd=1024 --txd=1024 \
+  ./testpmd -c ffffff -n 3 -- -i --rxd=1024 --txd=1024 \
   --burst=144 --txpt=32 --txht=8 --txwt=8 --txfreet=0 --rxfreet=64 \
   --mbcache=200 --portmask=0x3 --mbuf-size=2048 --max-pkt-len=9600
 

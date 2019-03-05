@@ -39,12 +39,13 @@ import utils
 import time
 import re
 from test_case import TestCase
-from packet import Packet, sniff_packets, load_sniff_packets
+from packet import Packet
 import random
 from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
 from settings import SCAPY2IXIA
 from utils import RED
+from exception import VerifyFailure
 
 
 class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
@@ -236,7 +237,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             portinfo = portsinfo[index]
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -256,6 +257,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.dut.send_expect(self.cmd, "EthApp>", 60)
         # ethtool doesn't support port disconnect by tools of linux 
         # only detect physical link disconnect status
+        verify_pass = True
+        verify_msg = ''
         if self.nic.startswith("fortville") == False:  
             # check link status dump function
             for port in self.ports:
@@ -273,8 +276,14 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 if m:
                     port = m.group(1)
                     status = m.group(2)
-                    self.verify(status == "Down", "Userspace tool failed to detect link down")
-    
+                    # record link down verification result
+                    # then continue the test to restore ports link
+                    try:
+                        self.verify(status == "Down", "Userspace tool failed to detect port %s link down" % port)
+                    except VerifyFailure as v:
+                        verify_msg += str(v)
+                        verify_pass = False
+
             for port in self.ports:
                 tester_port = self.tester.get_local_port(port)
                 intf = self.tester.get_interface(tester_port)
@@ -294,6 +303,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.verify((rx_pkts == (ori_rx_pkts + 1)), "Failed to record Rx/Tx packets")
 
         self.dut.send_expect("quit", "# ")
+        # Check port link down verification result
+        if verify_pass == False:
+            raise VerifyFailure(verify_msg)
 
     def test_retrieve_reg(self):
         """
@@ -318,7 +330,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
             portinfo = portsinfo[index]
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -347,7 +359,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         ori_drivers = []
 
         for portid in range(len(self.ports)):
-            # dump eemprom by userspace ethtool
+            # dump eeprom by userspace ethtool
             self.dut.send_expect("eeprom %d eeprom_%d.bin" % (portid, portid), "EthApp>")
             portinfo = {'portid': portid, 'eeprom_file': 'eeprom_%d.bin' % portid}
             portsinfo.append(portinfo)
@@ -358,7 +370,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             port = self.ports[index]
             netdev = self.dut.ports_info[port]['port']
             portinfo = portsinfo[index]
-            # strip orignal driver
+            # strip original driver
             portinfo['ori_driver'] = netdev.get_nic_driver()
             portinfo['net_dev'] = netdev
             # bind to default driver
@@ -366,7 +378,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # get linux interface
             intf = netdev.get_interface_name()
             ethtool_eeprom = "ethtool_eeprom_%d.bin" % index
-            # dump eemprom by linux ethtool
+            # dump eeprom by linux ethtool
             self.dut.send_expect("ethtool --eeprom-dump %s raw on > %s" % (intf, ethtool_eeprom), "# ")
             # wait for file ready
             time.sleep(2)
@@ -411,7 +423,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         """
         main_file = "examples/ethtool/ethtool-app/main.c"
         # enable vlan filter
-        self.dut.send_expect("sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.hw_vlan_filter=1;' %s" % main_file, "# ")
+        self.dut.send_expect("sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;' %s" % main_file, "# ")
 
         # build sample app
         self.build_ethtool()
@@ -442,8 +454,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': wrong_vlan})
             pkt.send_pkt(tx_port=intf)
             time.sleep(2)
-            rx_pkts_wrong, _ = self.strip_portstats(port)
-            self.verify(rx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
+            rx_pkts_wrong, tx_pkts_wrong = self.strip_portstats(port)
+            self.verify(tx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
 
             # remove vlan
             self.dut.send_expect("vlan %d del %d" % (index, vlan), "EthApp>")
@@ -451,11 +463,11 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': vlan})
             pkt.send_pkt(tx_port=intf)
             time.sleep(2)
-            rx_pkts_del, _ = self.strip_portstats(port)
-            self.verify(rx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
+            rx_pkts_del, tx_pkts_del = self.strip_portstats(port)
+            self.verify(tx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
 
         self.dut.send_expect("quit", "# ")
-        self.dut.send_expect("sed -i -e '/hw_vlan_filter=1;$/d' %s" % main_file, "# ")
+        self.dut.send_expect("sed -i -e '/cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;$/d' %s" % main_file, "# ")
         # build sample app
         self.build_ethtool()
 
@@ -478,14 +490,14 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
             # send and sniff packet
-            inst = sniff_packets(intf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf, timeout=5)
             pkt.send_pkt(tx_port=intf)
-            pkts = load_sniff_packets(inst)
+            pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == 1, "Packet not forwarded as expected")
             src_mac = pkts[0].strip_layer_element("layer2", "src")
             self.verify(src_mac == valid_mac, "Forwarded packet not match default mac")
 
-        # check multicase will not be valid mac
+        # check multicast will not be valid mac
         invalid_mac = "01:00:00:00:00:00"
         out = self.dut.send_expect("validate %s" % invalid_mac, "EthApp>")
         self.verify("not unicast" in out, "Failed to detect incorrect unicast mac")

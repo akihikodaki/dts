@@ -43,7 +43,7 @@ Test Case1: xstats based on packet size
 
 Flow::
 
-  TG-->NIC-->>Vhost TX-->Virtio RX-->Virtio TX-->Vhsot RX-->NIC-->TG
+  TG-->NIC-->>Vhost TX-->Virtio RX-->Virtio TX-->Vhost RX-->NIC-->TG
 
 1. Bind one physical port to igb_uio, then launch the testpmd
 

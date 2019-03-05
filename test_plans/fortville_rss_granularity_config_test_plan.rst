@@ -64,10 +64,16 @@ Prerequisites
    * 1x Fortville_spirit NIC (2x 40G)
    * 2x Fortville_spirit_single NIC (1x 40G)
 
-2. software:
+2. Software:
 
    * dpdk: http://dpdk.org/git/dpdk
    * scapy: http://www.secdev.org/projects/scapy/
+
+3. Bind one port to DPDK driver::
+
+    ./usertools/dpdk-devbind.py -b igb_uio 05:00.0
+
+   Suppose the MAC address of the port is "00:00:00:00:01:00".
 
 
 Test Case 1: test with flow type ipv4-tcp
@@ -77,7 +83,7 @@ Test Case 1: test with flow type ipv4-tcp
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 
@@ -105,7 +111,7 @@ Test Case 1: test with flow type ipv4-tcp
 
 2. using scapy to send packets with ipv4-tcp on tester::
 
-    sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1025)], iface="%s")
+    sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=1024,dport=1025)], iface=tester_itf)
 
    then got hash value and queue value that output from the testpmd on DUT.
 
@@ -152,7 +158,7 @@ Test Case 2: test with flow type ipv4-udp
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 
@@ -181,7 +187,7 @@ Test Case 2: test with flow type ipv4-udp
 2. using scapy to send packets with ipv4-udp on tester::
 
 
-      sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1025)], iface="%s"))
+      sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1025)], iface=tester_itf))
 
    then got hash value and queue value that output from the testpmd on DUT.
 
@@ -226,7 +232,7 @@ Test Case 3: test with flow type ipv6-tcp
 test method is same as Test Case 1, but it need change all ipv4 to ipv6,
 and using scapy to send packets with ipv6-tcp on tester::
 
-    sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1025)], iface="%s")
+    sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:1fff::1", dst="3ffe:2501:200:3::2")/TCP(sport=1024,dport=1025)], iface=tester_itf)
 
 and the test result should be same as Test Case 1.
 
@@ -237,7 +243,7 @@ Test Case 4: test with flow type ipv6-udp
 test method is same as Test Case 2, but it need change all ipv4 to ipv6,
 and using scapy to send packets with ipv6-udp on tester::
 
-   sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1025)], iface="%s")
+   sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:1fff::1", dst="3ffe:2501:200:3::2")/UDP(sport=1024,dport=1025)], iface=tester_itf)
 
 and the test result should be same as Test Case 2.
 
@@ -248,7 +254,7 @@ Test Case 5: test dual vlan(QinQ)
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. set qinq on::
 
@@ -277,7 +283,7 @@ Test Case 5: test dual vlan(QinQ)
 2. using scapy to send packets with dual vlan (QinQ) on tester::
 
 
-      sendp([Ether(dst="%s")/Dot1Q(id=0x8100,vlan=%s)/Dot1Q(id=0x8100,vlan=%s)], iface="%s")
+      sendp([Ether(dst="00:00:00:00:01:00")/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=2)], iface=tester_itf)
 
    then got hash value and queue value that output from the testpmd on DUT.
 
@@ -302,7 +308,7 @@ Test Case 5: test dual vlan(QinQ)
       testpmd> set_hash_input_set 0 l2_payload ivlan add
 
    send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
-   different with the values in step 2.
+   different with the values in step 2 & step 4.
 
 Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 =====================================================
@@ -311,7 +317,7 @@ Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 
    1. set up testpmd with Fortville NICs::
 
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x3  --rxq=16 --txq=16 --tx-offloads=0x8fff
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
 
    2. Reta Configuration(optional, if not set, will use default)::
 
@@ -339,8 +345,7 @@ Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 
 2. using scapy to send packets with GRE header on tester::
 
-
-      sendp([Ether(dst="%s")/IP(src="192.168.0.1",dst="192.168.0.2",proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface="%s")
+      sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.1",dst="192.168.0.2",proto=47)/GRE(key_present=1,proto=2048,key=67108863)/IP()], iface=tester_itf)
 
    then got hash value and queue value that output from the testpmd on DUT.
 
@@ -365,14 +370,14 @@ Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
       testpmd> set_hash_input_set 0 ipv4-other gre-key add
 
    send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
-   different with the values in step 2.
+   different with the values in step 2 & step3.
 
-5. set gre-key-len=4 by testpmd on dut, enable gre-key::
+6. set gre-key-len=4 by testpmd on dut, enable gre-key::
 
       testpmd> global_config 0 gre-key-len 4
 
    send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the values should be
-   different with the values in step 4.
+   different with the values in step 2 & step3 & step 5.
 
    So with gre-key-len=3 (24bit gre key) or gre-key-len=4 (32bit gre key), different rss hash value and queue value
    can be got, it can be proved that 32bit & 24bit gre key are supported by Fortville.

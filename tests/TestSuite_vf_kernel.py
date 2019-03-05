@@ -223,7 +223,7 @@ class TestVfKernel(TestCase):
 
     def ping4(self, session, intf, ipv4):
         """
-        using seesion , ping -I $intf $ip
+        using session , ping -I $intf $ip
         sometimes it failed, so we try 5 times.
         """
         for i in range(5):
@@ -399,6 +399,8 @@ class TestVfKernel(TestCase):
         verify add/delete vlan
         """
         vlan_ids = random.randint(1, 4095)
+        self.dut_testpmd.execute_cmd("vlan set filter on 0")
+        self.dut_testpmd.execute_cmd("vlan set strip on 0")
         self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
 
@@ -415,15 +417,14 @@ class TestVfKernel(TestCase):
 
         # Send packet from tester to VF MAC with not-matching vlan id, check
         # the packet can't be received at the vlan device
+        # fortville nic need add -p parameter to disable promisc mode
         wrong_vlan = vlan_ids % 4095 + 1
-
         self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, vm0_vf0_mac,
-                                           vlan_id='%d' % wrong_vlan) == False, "received wrong vlan packet")
-
+                                           vlan_id='%d' % wrong_vlan, param='-p') == False, "received wrong vlan packet")
         # Send packet from tester to VF MAC with matching vlan id, check the packet can be received at the vlan device.
         # check_result = self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, self.vm0_vf0_mac, vlan_id='%d' %vlan_ids)
         check_result = self.verify_vm_tcpdump(
-            self.vm0_dut, self.vm0_intf0, vm0_vf0_mac, vlan_id='%d' % vlan_ids)
+            self.vm0_dut, self.vm0_intf0, vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p')
         self.verify(check_result, "can't received vlan_id=%d packet" % vlan_ids)
 
         # Delete configured vlan device
@@ -432,14 +433,11 @@ class TestVfKernel(TestCase):
         out = self.vm0_dut.send_expect("ls /proc/net/vlan/ ", "#")
         self.verify("%s.%s" % (self.vm0_intf0, vlan_ids)
                     not in out, "vlan error")
-        # behavior is diffrent bettwn niantic and fortville ,because of kernel
+        # behavior is different between niantic and fortville ,because of kernel
         # driver
-        if self.nic.startswith('fortville'):
-            self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
-                                               vm0_vf0_mac, vlan_id='%d' % vlan_ids) == True, "delete vlan error")
-        else:
-            self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
-                                               vm0_vf0_mac, vlan_id='%d' % vlan_ids) == False, "delete vlan error")
+        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
+                                           vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p') == False, "delete vlan error")
+        self.dut_testpmd.execute_cmd("vlan set filter off 0")
 
     def test_packet_statistic(self):
         """
@@ -479,7 +477,7 @@ class TestVfKernel(TestCase):
             if "Network is down" in out:
                 print GREEN(out)
                 print GREEN("Try again")
-                self.vm0_dut.restore_interfaces_linux()
+                session.restore_interfaces_linux()
             else:
                 out = session.send_expect("ethtool %s" % intf, "#")
                 if "Link detected: yes" in out:
@@ -574,6 +572,8 @@ class TestVfKernel(TestCase):
         # Start DPDK PF, enable promisc mode, set rxonly forwarding
         self.dut_testpmd.execute_cmd('stop')
         self.dut_testpmd.execute_cmd('set promisc all on')
+        self.dut_testpmd.execute_cmd('set fwd rxonly')
+        self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
         self.verify(self.check_pf_vf_link_status(
             self.vm0_dut, self.vm0_intf0), "VM0_VF0 link down")

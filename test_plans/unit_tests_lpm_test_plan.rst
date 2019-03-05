@@ -77,3 +77,31 @@ The steps to run the unit test manually are as follow::
 
 
 The final output of the test has to be "Test OK"
+
+
+====================
+Unit Tests: LPM_perf
+====================
+
+This section explains how to run the unit tests for LPM performance.
+The steps to run the unit test manually are as follow::
+
+  # make -C ./app/test/
+  # ./app/test/test -n 1 -c ffff
+  RTE>> lpm_perf_autotest
+
+The final output of the test has to be "Test OK"
+
+
+=========================
+Unit Tests: LPM_ipv6_perf
+=========================
+
+This section explains how to run the unit tests for LPM IPv6
+performance. The steps to run the unit test manually are as follow::
+
+  # make -C ./app/test/
+  # ./app/test/test -n 1 -c ffff
+  RTE>> lpm6_perf_autotest
+
+The final output of the test has to be "Test OK"

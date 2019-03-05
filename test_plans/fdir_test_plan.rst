@@ -65,7 +65,7 @@ Prerequisites
 =============
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
-using vfio, use the following commands to to load the vfio driver and bind it
+using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
    modprobe vfio
@@ -475,7 +475,7 @@ filter and check that there is a match::
 Test case: FDir filter masks
 ============================
 
-This section tests the functionality of the setting FDir masks to to affect
+This section tests the functionality of the setting FDir masks to affect
 which fields, or parts of fields are used in the matching process. Note that
 setting up a mask resets all the FDir filters, so the ``testpmd`` application
 does not have to be relaunched for each sub-case.

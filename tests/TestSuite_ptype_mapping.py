@@ -53,9 +53,11 @@ class TestPtype_Mapping(TestCase):
         self.dut_port = valports[0]
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
-        self.dut.send_expect("sed -i -e '/mb->vlan_tci, mb->vlan_tci_outer);" +\
-            "/a\printf(\" - pktype: 0x%x\", mb->packet_type);'" +\
-            " app/test-pmd/rxonly.c", "# ", 30, verify = True)
+        self.dut.send_expect("sed -i -e '" +\
+            "/printf(\" - VLAN tci=0x%x\", mb->vlan_tci);" +\
+            "/a\\\\t\\tprintf(\" - pktype: 0x%x\", mb->packet_type);'" +\
+            " app/test-pmd/util.c", "# ", 30, verify = True)
+
         self.dut.build_install_dpdk(self.dut.target)
         
 
@@ -223,14 +225,12 @@ class TestPtype_Mapping(TestCase):
         Run after each test case.
         """
         self.dut_testpmd.quit()
-        pass
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
         self.dut.send_expect("sed -i '/printf(\" - pktype: 0x%x\", " +\
-            "mb->packet_type);/d' app/test-pmd/rxonly.c", "# ", 30, verify = True)
+            "mb->packet_type);/d' app/test-pmd/util.c", "# ", 30, verify = True)
         self.dut.build_install_dpdk(self.dut.target)
         self.dut.kill_all()
-        pass

@@ -56,7 +56,7 @@ The steps to run the unit test manually are as follow::
   # ./build/build/test/test/test -n 1 -c ffff
   RTE>> crc_autotest
 
-The final output of the test will has to be "Test OK".
+The final output of the test will have to be "Test OK".
 
 Algorithm Description
 =====================
