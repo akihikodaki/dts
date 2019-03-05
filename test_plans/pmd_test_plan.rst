@@ -1,4 +1,4 @@
-.. Copyright (c) <2010-2017>, Intel Corporation
+.. Copyright (c) <2010-2019>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,32 +30,30 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=================
-Niantic PMD Tests
-=================
+======================
+Poll Mode Driver Tests
+======================
 
-This document provides benchmark tests for the userland Intel®
-82599 Gigabit Ethernet Controller (Niantic) Poll Mode Driver (PMD).
-The userland PMD application runs the ``IO forwarding mode`` test
-described in the PMD test plan document with different parameters for
-the configuration of Niantic NIC ports.
+This document provides benchmark tests for the userland Ethernet Controller Poll Mode Driver (PMD).
+The userland PMD application runs the ``IO forwarding mode`` test which described in the PMD test
+plan document with different parameters for the configuration of NIC ports.
 
 The core configuration description is:
 
 - 1C/1T: 1 Physical Core, 1 Logical Core per physical core (1 Hyperthread)
-  using core #2 (socket 0, 2nd physical core)
+  eg: using core #2 (socket 0, 2nd physical core)
 
 - 1C/2T: 1 Physical Core, 2 Logical Cores per physical core (2 Hyperthreads)
-  using core #2 and #14 (socket 0, 2nd physical core, 2 Hyperthreads)
+  eg: using core #2 and #14 (socket 0, 2nd physical core, 2 Hyperthreads)
 
 - 2C/1T: 2 Physical Cores, 1 Logical Core per physical core
-  using core #2 and #4 (socket 0, 2nd and 3rd physical cores)
+  eg: using core #2 and #4 (socket 0, 2nd and 3rd physical cores)
 
 
 Prerequisites
 =============
 
-Each of the 10Gb Ethernet* ports of the DUT is directly connected in
+Each of the 10Gb/25Gb/40Gb/100Gb Ethernet* ports of the DUT is directly connected in
 full-duplex to a different port of the peer traffic generator.
 
 Using interactive commands, the traffic generator can be configured to
@@ -76,90 +74,100 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
+If using igb_uio::
+
+   modprobe uio
+   modprobe igb_uio
+   usertools/dpdk-devbind.py --bind=igb_uio device_bus_id
+
 Test Case: Packet Checking
 ==========================
 
-The linuxapp is started with the following parameters:
+#. Start testpmd and start forwarding::
 
-::
+    ./testpmd -c 0xf0 -n 4 -- -i
+    testpmd> start
 
-  -c 0xffffff -n 3 -- -i --coremask=0x4 \
-  --rxd=512 --txd=512 --burst=32 --txfreet=32 --rxfreet=64 --mbcache=128 --portmask=0xffff \
-  --rxpt=4 --rxht=4 --rxwt=16 --txpt=36 --txht=0 --txwt=0 --txrst=32
-
-
-The tester sends packets with different sizes (64, 65, 128, 256, 512, 1024,
-1280 and 1518 bytes), using scapy, which will be forwarded by the DUT.
-The test checks if the packets are correctly forwarded and if both RX and TX
-packet sizes match.
+#. The tester sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes)
+   which will be forwarded by the DUT. The test checks if the packets are correctly forwarded and
+   if both RX and TX packet sizes match by `show port all stats`
 
 Test Case: Descriptors Checking
 ===============================
 
-The linuxapp is started with the following parameters:
+#. Start testpmd with descriptor parameters::
 
-::
+   ./testpmd -c 0xf0 -n 4 -- -i--rxd={rxd} --txd={txd}
 
-  -c 0xffffff -n 3 -- -i --coremask=0x4 \
-  --rxd={rxd} --txd={txd} --burst=32 --rxfreet=64 --mbcache=128 \
-  --portmask=0xffff --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32
+#. The tester sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes)
+   for different values of rxd and txd (128,,256, 512, 1024, 2048 and 4096)
+   The packets will be forwarded by the DUT. The test checks if the packets are correctly forwarded.
 
+Test Case: Single Core Performance Benchmarking
+===============================================
 
-IXIA sends packets with different sizes (64, 65, 128, 256, 512, 1024, 1280 and
-1518 bytes) for different values of rxd and txd (between 128 and 4096)
-The packets will be forwarded by the DUT. The test checks if the packets are
-correctly forwarded.
+Snice this case we focus on CPU single core performance, the network aggregated throughput
+must grater than single core performance, then the bottleneck will be the core.
+Below is an example setup topology for performance test, NIC (one or more) ports connect to
+Traffic Generator ports directly::
 
-Test Case: Performance Benchmarking
-===================================
+    Dut Card 0 port 0 ---- Traffic Generator port 0
+    Dut Card 1 port 0 ---- Traffic Generator port 1
+     ...
+    DUT Card n port 0 ---- Traffic Generator port n
 
-The linuxapp is started with the following parameters, for each of
-the configurations referenced above:
+In order to trigger the best performance of NIC, there will be specific setting, and the setting vary
+from NIC to NIC.
 
-1C/1T::
+In order to get the best single core performance, Server configuration are required:
 
-  -c 0xffffff -n 3 -- -i --coremask=0x4 \
-  --rxd=512 --txd=512 --burst=32 --txfreet=32 --rxfreet=64 --mbcache=128 --portmask=0xffff \
-  --rxpt=4 --rxht=4 --rxwt=16 --txpt=36 --txht=0 --txwt=0 --txrst=32
+- BIOS
 
-1C/2T::
+  * CPU Power and Performance Policy <Performance>
+  * CPU C-state Disabled
+  * CPU P-state Disabled
+  * Enhanced Intel® Speedstep® Tech
+  * Disabled Turbo Boost Disabled
 
-  -c 0xffffff -n 3 -- -i --coremask=0x4004 \
-  --rxd=512 --txd=512 --burst=32 --txfreet=32 --rxfreet=64 --mbcache=128 --portmask=0xffff \
-  --rxpt=4 --rxht=4 --rxwt=16 --txpt=36 --txht=0 --txwt=0 --txrst=32
+- Grub
 
-2C/1T::
+  * default_hugepagesz=1G hugepagesz=1G hugepages=8
+  * isolcpus=1-21,28-48 nohz_full=1-21,28-48 rcu_nocbs=1-21,28-48
 
-  -c 0xffffff -n 3 -- -i --coremask=0x14 \
-  --rxd=512 --txd=512 --burst=32 --txfreet=32 --rxfreet=64 --mbcache=128 --portmask=0xffff \
-  --rxpt=4 --rxht=4 --rxwt=16 --txpt=36 --txht=0 --txwt=0 --txrst=32
+- Other
 
+  * Core and NIC should be in the same socket.
 
-The throughput is measured for each of these cases for the packet size
-of 64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes.
+Test steps:
+
+#. Start testpmd and start io forwading::
+
+   ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1800000000 -n 4 -- -i--portmask=0x3 -txd=2048 --rxd=2048 --txq=2 --rxq=2
+
+#. The tester send packets which will be forwarded by the DUT, record the perfromance numbers.
+
+The throughput is measured for each of these combinations of different packet size
+(64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes) and different value of rxd and txd(128,,256, 512, 1024, 2048 and 4096)
 The results are printed in the following table:
 
-+-------+---------+---------+---------+-----------+
-| Frame |  1C/1T  |  1C/2T  |  2C/1   | wirespeed |
-| Size  |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  64   |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  65   |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  128  |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  256  |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  512  |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  1024 |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  1280 |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-|  1518 |         |         |         |           |
-+-------+---------+---------+---------+-----------+
-
+  +-------+---------+------------+--------+---------------------+
+  | Frame | TXD/RXD | Throughput |  Rate  | Excepted Throughput |
+  | Size  |         |            |        |                     |
+  +=======+=========+============+========+=====================+
+  |  64   |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  128  |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  256  |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  512  |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  1024 |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  1280 |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
+  |  1518 |         |            |        |                     |
+  +-------+---------+------------+--------+---------------------+
 
 The memory partial writes are measured with the ``vtbwrun`` application and printed
 in the following table:::
