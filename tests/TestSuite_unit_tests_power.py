@@ -81,7 +81,8 @@ class TestUnitTestsPower(TestCase):
         """
         Run power acpi cpu frequency autotest.
         """
-
+        # This acpi driver test case need correct BIOS and Grub settings.
+        # otherwise, the power lib initialization will be failed
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_acpi_cpufreq_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
@@ -91,7 +92,8 @@ class TestUnitTestsPower(TestCase):
         """
         Run power acpi cpu caps autotest.
         """
-
+        # This acpi driver test case need correct BIOS and Grub settings.
+        # otherwise, the power lib initialization will be failed
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_acpi_caps_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
