@@ -767,22 +767,22 @@ class TestKni(TestCase):
             self.tester.scapy_append('srcmac = "%s"' % tx_mac)
 
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/UDP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/UDP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/TCP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/TCP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/ICMP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/ICMP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/("X"*38)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/("X"*38)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/("X"*46)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/("X"*46)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_execute()
 
             out = self.dut.send_expect("ifconfig %s" % virtual_interface, "# ")
             m = re.search(rx_match, out)
             rx_packets = int(m.group(1))
 
-            self.verify(rx_packets == (previous_rx_packets + 5),
+            self.verify(rx_packets == (previous_rx_packets + 1000),
                         "Rx statistics error in iface %s" % virtual_interface)
 
         self.dut.kill_all()
