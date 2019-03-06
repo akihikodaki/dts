@@ -26,7 +26,7 @@ class TestVfMacFilter(TestCase):
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         if self.vf_driver is None:
             self.vf_driver = 'pci-stub'
-        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unsupported vf driver")
         if self.vf_driver == 'pci-stub':
             self.vf_assign_method = 'pci-assign'
         else:
@@ -125,11 +125,11 @@ class TestVfMacFilter(TestCase):
     def test_kernel_2pf_2vf_1vm_iplink_macfilter(self):
         """
         test case for kernel pf and dpdk vf 2pf_2vf_1vm MAC filter
-        scenario
+        scenario.
         kernel pf will first run 'ip link set pf_interface vf 0 mac
         xx:xx:xx:xx:xx:xx', then send packets with this MAC to VF, check
         if the MAC filter works. Also send the packets with wrong MAC
-        address to VF, check if the VF will not RX the packets.
+        address to VF, check the VF will not RX the packets.
         """
         self.setup_2pf_2vf_1vm_env(True,driver='')
         self.result_verify_iplink(True)
@@ -174,25 +174,25 @@ class TestVfMacFilter(TestCase):
         scenario.
         kernel pf will not set MAC address and the VF will get a random
         generated MAC in the testpmd in VM, and then add VF mac address
-        in the testpmd,for example, VF_MAC1 then send packets to the VF
+        in the testpmd, for example, VF_MAC1 then send packets to the VF
         with the random generated MAC and the new added VF_MAC1 and the
         expected result is that all packets can be RXed and TXed.
         What's more, send packets with a wrong MAC address to the VF will
-        not received by the VF.
+        not be received by the VF.
         """
         self.setup_2pf_2vf_1vm_env(False,driver='')
         self.send_packet_and_verify()
 
     def test_dpdk_2pf_2vf_1vm_mac_add_filter(self):
         """
-        test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario
+        test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.
         dpdk pf will not set MAC address and the VF will get a random
         generated MAC in the testpmd in VM, and then add VF mac address
-        in the testpmd,for example, VF_MAC1 then send packets to the VF
+        in the testpmd, for example, VF_MAC1 then send packets to the VF
         with the random generated MAC and the new added VF_MAC1 and the
         expected result is that all packets can be RXed and TXed.
-        What's more, send packets with a wrong MAC address to the VF will
-        not received by the VF.
+        What's more, send packets with a wrong MAC address to the VF, check
+        the VF will not RX packets.
         """
         self.verify(self.nic.startswith('fortville') == True, "NIC is [%s], skip this case" %self.nic)
         self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
@@ -200,12 +200,12 @@ class TestVfMacFilter(TestCase):
 
     def test_dpdk_2pf_2vf_1vm_iplink_macfilter(self):
         """
-        test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario
-        dpdk pf will first run 'set vf mac addr 0 0 xx:xx:xx:xx:xx:xx,
-        then send packets with this MAC to VF, check if the MAC filter
-        send the packets with wrong MAC address to VF, check if the VF will
-        not RX the packets works. Also send the packets with wrong MAC
-        address to VF, check if the VF will not RX the packets.
+        test case for dpdk pf and dpdk vf 2pf_2vf_1vm MAC filter scenario.
+        dpdk pf will not set MAC address and the VF will get a random
+        generated MAC in the testpmd in VM, then send packets with this
+        MAC to VF, check that all packets can be RXed and TXed, send the
+        packets with a wrong MAC address to VF, check the VF will not RX
+        packets.
         """
         self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
         self.result_verify_iplink(False)
