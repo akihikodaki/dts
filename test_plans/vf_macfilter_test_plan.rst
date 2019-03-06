@@ -107,12 +107,12 @@ Test Case 1: test_kernel_2pf_2vf_1vm_iplink_macfilter
       testpmd> start
 
 6. Use scapy to send 100 random packets with ip link set MAC to VF, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 7. Also use scapy to send 100 random packets with a wrong MAC to VF, verify
-   the packets can't be received by one VF and can be forward to another VF
-   correctly.
+   the packets can't be received by one VF and also can't be forwarded to
+   another VF correctly.
 
 Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
 ===================================================
@@ -189,21 +189,21 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
    case will be failed for FVL/Fort park NICs.
 
 6. Use scapy to send 100 random packets with current VF0's MAC, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 7. Use scapy to send 100 random packets with new added VF0's MAC, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 8. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
-   packets can't be received by one VF and can be forward to another VF
-   correctly.
+   packets can't be received by one VF and also can't be forwarded to another
+   VF correctly.
 
 Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
 ===================================================
 
-1. Get the pci device id of DUT, bind them to igb_uio,for example::
+1. Get the pci device id of DUT, bind them to igb_uio, for example::
 
       ./usertools/dpdk-devbind.py -s
 
@@ -245,7 +245,7 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
       virsh nodedev-detach pci_0000_81_02_0;
       virsh nodedev-detach pci_0000_81_0a_0;
 
-      ./dpdk_nic_bind.py --st
+      ./usertools/dpdk-devbind.py -s
 
       0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
       0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
@@ -264,7 +264,7 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
    bind them to igb_uio driver, and then start testpmd, enable CRC strip on
    VF, disable promisc mode, add a new MAC to VF0 and then start::
 
-      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0 00:07.0
+      ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
       ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
@@ -279,21 +279,21 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
    case will be failed for FVL/Fort park NICs.
 
 7. Use scapy to send 100 random packets with current VF0's MAC, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 8. Use scapy to send 100 random packets with new added VF0's MAC, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 9. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
-   packets can't be received by one VF and can be forward to another VF
-   correctly.
+   packets can't be received by one VF and also can't be forwarded to
+   another VF correctly.
 
 Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
 ===================================================
 
-1. Get the pci device id of DUT, bind them to igb_uio,for example::
+1. Get the pci device id of DUT, bind them to igb_uio, for example::
 
       ./usertools/dpdk-devbind.py -s
 
@@ -337,7 +337,7 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
       virsh nodedev-detach pci_0000_81_02_0;
       virsh nodedev-detach pci_0000_81_0a_0;
 
-      ./dpdk_nic_bind.py --st
+      ./usertools/dpdk-devbind.py -s
 
       0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
       0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
@@ -354,9 +354,9 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
 
 6. Login vm0, got VFs pci device id in vm0, assume they are 00:06.0 & 00:07.0,
    bind them to igb_uio driver, and then start testpmd, enable CRC strip,
-   disable promisc mode,set it in mac forward mode::
+   disable promisc mode, set it in mac forward mode::
 
-      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0 00:07.0
+      ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
       ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -w 00:06.0 -w 00:07.0 -- -i --portmask=0x3 --tx-offloads=0x8fff
 
       testpmd> port stop all
@@ -367,9 +367,9 @@ Test Case 4: test_dpdk_2pf_2vf_1vm_iplink_macfilter
       testpmd> start
 
 7. Use scapy to send 100 random packets with ip link set MAC to VF, verify the
-   packets can be received by one VF and can be forward to another VF
+   packets can be received by one VF and can be forwarded to another VF
    correctly.
 
 8. Also use scapy to send 100 random packets with a wrong MAC to VF, verify
-   the packets can't be received by one VF and can be forward to another VF
-   correctly.
+   the packets can't be received by one VF and also can't be forwarded to
+   another VF correctly.
