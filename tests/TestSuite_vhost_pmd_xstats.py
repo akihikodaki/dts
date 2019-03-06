@@ -158,21 +158,14 @@ class TestVhostPmdXstats(TestCase):
         Verify receiving and transmitting packets correctly in the Vhost PMD xstats
         """
         self.prepare_start()
-        sizes = [64, 65, 128, 256, 513, 1025]
-        scope = ''
-        for pktsize in sizes:
-            if pktsize == 64:
-                scope = 'size_64'
-            elif 65 <= pktsize <= 127:
-                scope = 'size_65_to_127'
-            elif 128 <= pktsize <= 255:
-                scope = 'size_128_to_255'
-            elif 256 <= pktsize <= 511:
-                scope = 'size_256_to_511'
-            elif 512 <= pktsize <= 1023:
-                scope = 'size_512_to_1023'
-            elif 1024 <= pktsize:
-                scope = 'size_1024_to_max'
+        out = self.dut.send_expect(
+            "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
+        p = re.compile(r'rx_size_[0-9]+_[to_\w+]*packets')
+        categories = p.findall(out)
+        self.verify(len(categories) > 0, 'Unable to find the categories of RX packet size!')
+        for cat in categories:
+            scope = re.search(r'(?<=rx_)\w+(?=_packets)', cat).group(0)
+            pktsize = int(re.search(r'(?<=rx_size_)\d+', cat).group(0))
 
             self.scapy_send_packet(pktsize, self.dmac, 10000)
             self.send_verify(scope, 10000)
