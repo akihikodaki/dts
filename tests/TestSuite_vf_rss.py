@@ -225,7 +225,7 @@ class TestVfRss(TestCase):
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         if self.vf_driver is None:
             self.vf_driver = 'pci-stub'
-        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unsupported vf driver")
         if self.vf_driver == 'pci-stub':
             self.vf_assign_method = 'pci-assign'
         else:
