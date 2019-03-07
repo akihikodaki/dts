@@ -1165,6 +1165,30 @@ class QEMUKvm(VirtBase):
             cmd = options['cmd']
         self.__add_boot_line(cmd)
 
+    def add_vm_crypto(self, **options):
+        """
+        Add VM crypto options
+        """
+        separator = ' '
+
+        if 'enable' in options.keys() and options['enable'] == 'yes':
+            if 'opt_num' in options.keys():
+                opt_num = int(options['opt_num'])
+            else:
+                opt_num = 1
+
+            for id in range(opt_num):
+                cryptodev_id = '%(vm_name)s_crypto%(id)s' % {'vm_name': self.vm_name, 'id': id}
+                cryptodev_soch_path = '/tmp/%(vm_name)s_crypto%(id)s.sock' % {'vm_name': self.vm_name, 'id': id}
+
+                crypto_boot_block = '-chardev socket,path=%(SOCK_PATH)s,id=%(ID)s' + separator +\
+                                    '-object cryptodev-vhost-user,id=cryptodev%(id)s,chardev=%(ID)s' + separator +\
+                                    '-device virtio-crypto-pci,id=crypto%(id)s,cryptodev=cryptodev%(id)s'
+                crypto_boot_line = crypto_boot_block % {'SOCK_PATH': cryptodev_soch_path,
+                                                        'ID': cryptodev_id,
+                                                        'id': id}
+                self.__add_boot_line(crypto_boot_line)
+
     def _check_vm_status(self):
         """
         Check and restart QGA if not ready, wait for network ready
