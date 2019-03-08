@@ -37,7 +37,7 @@ VFD as SRIOV Policy Manager Tests
 VFD is SRIOV Policy Manager (daemon) running on the host allowing
 configuration not supported by kernel NIC driver, supports ixgbe and
 i40e NIC. Run on the host for policy decisions w.r.t. what a VF can and
-cannot do to the PF. Only the DPDK PF would provide a callback to implement 
+can not do to the PF. Only the DPDK PF would provide a callback to implement
 these features, the normal kernel drivers would not have the callback so 
 would not support the features. Allow passing information to application 
 controlling PF when VF message box event received such as those listed below, 
@@ -55,7 +55,7 @@ Test Case 1: Set up environment and load driver
 
 2. Host PF in DPDK driver. Create VFs from PF with dpdk driver::
 
-	./tools/dpdk-devbind.py -b igb_uio 05:00.0
+	./usertools/dpdk-devbind.py -b igb_uio 05:00.0
 	echo 2 >/sys/bus/pci/devices/0000\:05\:00.0/max_vfs 
 	
 3. Check ixgbevf version and update ixgbevf to required version
@@ -238,7 +238,7 @@ Pre-environment::
 
 Steps: 
 
-1. Check DPDK PF and kernel VF mtu, normal as 1500
+1. Check DPDK PF and kernel VF mtu, normal is 1500
 
 2. Use scapy to send one packet with length as 2000 with DPDK PF MAC as 
    DST MAC, check that DPDK PF can't receive packet
@@ -246,7 +246,7 @@ Steps:
 3. Use scapy to send one packet with length as 2000 with kernel VF MAC as 
    DST MAC, check that Kernel VF can't receive packet
 
-4. Change DPDK PF mtu as 3000,check no confusion/crash on kernel VF::
+4. Change DPDK PF mtu as 3000, check no confusion/crash on kernel VF::
 
     Testpmd > port stop all
     Testpmd > port config mtu 0 3000
@@ -260,7 +260,7 @@ Steps:
     ifconfig eth0 mtu 3000
 
 7. Use scapy to send one packet with length as 2000 with kernel VF MAC 
-   as DST MAC, check Kernel VF can receive packet
+   as DST MAC, check kernel VF can receive packet
 
 Note:
 HW limitation on 82599, need add “--max-pkt-len=<length>” on testpmd to 
@@ -379,7 +379,7 @@ Steps:
 
 2. Bind kernel VF0, VF1 to igb_uio in VM0, bind kernel VF4 to igb_uio in VM1
 
-3. Link up DPDK VF0,VF1 in VM0, link up DPDK VF4 in VM1
+3. Link up DPDK VF0, VF1 in VM0, link up DPDK VF4 in VM1
 
 4. Link up kernel VF2, VF3 in VM0, link up kernel VF5 in VM1
 
