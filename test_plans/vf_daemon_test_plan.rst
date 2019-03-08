@@ -37,7 +37,7 @@ VFD as SRIOV Policy Manager Tests
 VFD is SRIOV Policy Manager (daemon) running on the host allowing
 configuration not supported by kernel NIC driver, supports ixgbe and
 i40e drivers' NIC. Run on the host for policy decisions w.r.t. what a
-VF can and cannot do to the PF. Only the DPDK PF would provide a callback
+VF can and can not do to the PF. Only the DPDK PF would provide a callback
 to implement these features, the normal kernel drivers would not have the
 callback so would not support the features. Allow passing information to
 application controlling PF when VF message box event received such as those
@@ -70,10 +70,10 @@ by APP to know if they're permitted to be processed.
 Prerequisites
 =============
 
-1. Host PF in DPDK driver. Create 2 VFs from 1 PF with dpdk driver,take
+1. Host PF in DPDK driver. Create 2 VFs from 1 PF with dpdk driver, take
    Niantic for example::
 
-        ./tools/dpdk-devbind.py -b igb_uio 81:00.0
+        ./usertools/dpdk-devbind.py -b igb_uio 81:00.0
         echo 2 >/sys/bus/pci/devices/0000:81:00.0/max_vfs
 
 2. Detach VFs from the host::
@@ -116,7 +116,7 @@ Test Case 1: Set VLAN insert for VF from PF
 
 Test Case 2: Set VLAN strip for VF from PF
 ==========================================
-1. Disable VLAN strip for all queues for VF0 from PF::
+1. Disable vlan strip for all queues for VF0 from PF::
 
       testpmd> set vf vlan stripq 0 0 off
 
@@ -129,7 +129,7 @@ Test Case 2: Set VLAN strip for VF from PF
 
 4. Stop VF0 testpmd and check VF0 can receive packet with configured vlan id
 
-5. Enable VLAN strip for all queues for VF0 from PF::
+5. Enable vlan strip for all queues for VF0 from PF::
 
       testpmd> set vf vlan stripq 0 0 on
 
@@ -160,9 +160,9 @@ Test Case 3: Set VLAN antispoof for VF from PF
 
 4. Disable vlan filter and strip on VF0
 
-5. Start testpmd on VF0, set it in mac forwarding mode and enable::
+5. Start testpmd on VF0, set it in mac forwarding mode and enable print::
 
-     verbose output
+     testpmd> set verbose 1
 
 6. Send packets with matching/non-matching/no vlan id on tester port
 
@@ -242,7 +242,7 @@ Test Case 6: Enable/disable tx loopback
 
 2. Set VF0 in rxonly forwarding mode and start testpmd
 
-3. tcpdump on the tester port
+3. Tcpdump on the tester port
 
 4. Send 10 packets from VF1 to VF0
 
@@ -257,14 +257,14 @@ Test Case 6: Enable/disable tx loopback
 
 8. Send packet from VF1 to VF0
 
-9. Stop VF0 testpmd, check VF0 can receive packet,but tester port can't
+9. Stop VF0 testpmd, check VF0 can receive packet, but tester port can't
    capture packet
 
 
 Test Case 7: Set drop enable bit for all queues
 ===============================================
 1. Bind VF1 device to igb_uio driver and start testpmd in chained port
-   topology
+   topology with 1024 rx descriptor "--rxd=1024"
 
 2. Disable drop enable bit for all queues from PF::
 
@@ -273,7 +273,8 @@ Test Case 7: Set drop enable bit for all queues
 3. Only start VF1 to capture packet, set it in rxonly forwarding mode and
    enable verbose output
 
-4. Send 200 packets to VF0, make VF0 queue full of packets
+4. Send 2000 packets to VF0, packet number should be more than rx
+   descriptor(1024) to make VF0 queue full of packets
 
 5. Send 20 packets to VF1
 
@@ -315,25 +316,22 @@ Test Case 8: Set split drop enable bit for VF from PF
 
 
 
-Test Case 9: Get/Reset stats for VF from PF
-===========================================
-1. Add testpmd and some print code in the rte_pmd_i40e_set_vf_vlan_filter()
-   function(drivers/net/i40e/i40e_ethdev.c) to start test, rebuild the code
+Test Case 9: Show/Clear stats for VF from PF
+============================================
+1. Show stats output for VF0 from PF, and check RX/TX packets is 0::
 
-2. Get stats output for VF0 from PF, and check RX/TX packets is 0::
+      testpmd> show vf stats 0 0
 
-      testpmd> get vf stats 0 0
+2. Set VF0 in mac forwarding mode and start testpmd
 
-3. Set VF0 in mac forwarding mode and start testpmd
+3. Send 10 packets to VF0 and check VF0 can receive 10 packets
 
-4. Send 10 packets to VF0 and check VF0 can receive 10 packets
+4. Show stats for VF0 from PF, and check RX/TX packets is 10
 
-5. Get stats for VF0 from PF, and check RX/TX packets is 10
+5. Clear stats for VF0 from PF, and check PF and VF0 RX/TX packets is 0::
 
-6. Reset stats for VF0 from PF, and check PF and VF0 RX/TX packets is 0::
-
-      testpmd> reset vf stats 0 0
-      testpmd> get vf stats 0 0
+      testpmd> clear vf stats 0 0
+      testpmd> show vf stats 0 0
 
 
 Test Case 10: enhancement to identify VF MTU change
@@ -341,7 +339,7 @@ Test Case 10: enhancement to identify VF MTU change
 1. Set VF0 in mac forwarding mode and start testpmd
 
 2. Default mtu size is 1500, send one packet with length bigger than default
-   mtu size, such as 2000 from tester,check VF0 can receive but can't transmit
+   mtu size, such as 2000 from tester, check VF0 can receive but can't transmit
    packet
 
 3. Set VF0 mtu size as 3000, but need to stop then restart port to active mtu::
@@ -351,7 +349,7 @@ Test Case 10: enhancement to identify VF MTU change
       testpmd> port start all
       testpmd> start
 
-4. Send one packet with length 2000 from tester,check VF0 can receive and
+4. Send one packet with length 2000 from tester, check VF0 can receive and
    transmit packet
 
 5. Send one packet with length bigger than configured mtu size, such as 5000
@@ -390,16 +388,16 @@ Test Case 12: Broadcast mode
 
 2. Disable broadcast mode for VF0 from PF::
 
-       testpmd>set vf broadcast 0 0 off
+       testpmd> set vf broadcast 0 0 off
 
-3. Send packets from tester with broadcast address,ff:ff:ff:ff:ff:ff, and check
+3. Send packets from tester with broadcast address, ff:ff:ff:ff:ff:ff, and check
    VF0 can not receive the packet
 
 4. Enable broadcast mode for VF0 from PF::
 
-       testpmd>set vf broadcast 0 0 on
+       testpmd> set vf broadcast 0 0 on
 
-5. Send packets from tester with broadcast address,ff:ff:ff:ff:ff:ff, and check
+5. Send packets from tester with broadcast address, ff:ff:ff:ff:ff:ff, and check
    VF0 can receive the packet
 
 
@@ -409,15 +407,15 @@ Test Case 13: Multicast mode
 
 2. Disable promisc and multicast mode for VF0 from PF::
 
-       testpmd>set vf promisc 0 0 off
-       testpmd>set vf allmulti 0 0 off
+       testpmd> set vf promisc 0 0 off
+       testpmd> set vf allmulti 0 0 off
 
 3. Send packet from tester to VF0 with multicast MAC, and check VF0 can not
    receive the packet
 
 4. Enable multicast mode for VF0 from PF::
 
-       testpmd>set vf allmulti 0 0 on
+       testpmd> set vf allmulti 0 0 on
 
 5. Send packet from tester to VF0 with multicast MAC, and check VF0 can receive
    the packet
