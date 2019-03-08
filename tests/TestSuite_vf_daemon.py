@@ -16,7 +16,7 @@ VM_CORES_MASK = 'all'
 MAX_VLAN = 4095
 
 
-class Testvf_daemon(TestCase):
+class TestVfDaemon(TestCase):
 
     def set_up_all(self):
 
@@ -704,9 +704,7 @@ class Testvf_daemon(TestCase):
         time.sleep(3)
         self.vm0_dut.kill_all()
         self.vm1_dut.kill_all()
-        pass
 
 
     def tear_down_all(self):
         self.destroy_vm_env()
-        pass
