@@ -383,7 +383,7 @@ class TestDualVlan(TestCase):
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % txvlan in out, "vlan inset enalber error: " + out)
+        self.verify("vlan %s" % txvlan in out, "vlan insert enable error: " + out)
 
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
@@ -394,7 +394,7 @@ class TestDualVlan(TestCase):
 
         self.vlan_send_packet()
         out = self.get_tcpdump_package()
-        self.verify("vlan %s" % txvlan not in out, "vlan inset disable error: " + out)
+        self.verify("vlan %s" % txvlan not in out, "vlan insert disable error: " + out)
 
     def test_vlan_tpid_config(self):
         """
