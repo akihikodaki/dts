@@ -15,6 +15,8 @@ VM_CORES_MASK = 'all'
 
 class TestDdpGtp(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
         self.verify('fortville' in self.nic,
                     'ddp gtp can not support %s nic' % self.nic)
@@ -31,6 +33,16 @@ class TestDdpGtp(TestCase):
         self.VF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
         self.PF_QUEUE = self.search_queue_number(self.PF_Q_strip)
         self.VF_QUEUE = self.search_queue_number(self.VF_Q_strip)
+
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
     def set_up(self):
         self.setup_vm_env()
@@ -88,14 +100,14 @@ class TestDdpGtp(TestCase):
             self.sriov_vfs_port = self.dut.ports_info[
                 self.used_dut_port]['vfs_port']
             for port in self.sriov_vfs_port:
-                    port.bind_driver('pci-stub')
+                    port.bind_driver(self.vf_driver)
             time.sleep(1)
             self.dut_testpmd = PmdOutput(self.dut)
             time.sleep(1)
             vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'ddp_gtp')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
             try:
                 self.vm0_dut = self.vm0.start()
                 if self.vm0_dut is None:
