@@ -281,8 +281,18 @@ class Dut(Crb):
                 self.send_expect('modprobe %s' % driver, '# ')
                 self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
                                  % (pci_bus, driver), '# ')
-                itf = port.get_interface_name()
-                self.send_expect("ifconfig %s up" % itf, "# ")
+                pull_retries = 5
+                while pull_retries > 0:
+                    itf = port.get_interface_name()
+                    if itf == 'N/A':
+                        time.sleep(1)
+                        pull_retries -= 1
+                    else:
+                        break
+                if itf == 'N/A':
+                    self.logger.warning("Fail to bind the device with the linux driver")
+                else:
+                    self.send_expect("ifconfig %s up" % itf, "# ")
             else:
                 self.logger.info("NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id))
 
