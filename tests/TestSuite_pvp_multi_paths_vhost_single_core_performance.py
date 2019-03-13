@@ -31,7 +31,7 @@
 
 """
 DPDK Test suite.
-Test PVP vhost single core performance using virtio_user on 7 tx/rx path.
+Test PVP vhost single core performance using virtio_user on 8 tx/rx path.
 """
 
 import utils
@@ -46,21 +46,16 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         Run at the start of each test suite.
         """
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
-        self.test_cycles = {'Mpps': {}, 'pct': {}}
         self.core_config = "1S/5C/1T"
         self.number_of_ports = 1
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + \
             HEADER_SIZE['udp']
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        ports = []
-        for port in xrange(self.number_of_ports):
-            ports.append(self.dut_ports[port])
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:5]
-        self.port_mask = utils.create_mask(ports)
         self.core_mask_user = utils.create_mask(self.core_list_user)
         self.core_mask_host = utils.create_mask(self.core_list_host)
         if self.dut.cores[len(self.dut.cores) - 1]['socket'] == '0':
@@ -175,7 +170,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.close_all_session()
         self.result_table_print()
 
-    def test_perf_vhost_single_core_virtio11_no_mergeable(self):
+    def test_perf_vhost_single_core_virtio11_normal(self):
         """
         performance for Vhost PVP virtio1.1 Normal Path.
         """
@@ -186,8 +181,25 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1_mergeable off", frame_size)
+            self.send_and_verify("virtio_1.1 normal", frame_size)
             self.close_all_testpmd()
+        self.close_all_session()
+        self.result_table_print()
+
+    def test_perf_vhost_single_core_virtio11_inorder(self):
+        """
+        performance for Vhost PVP virtio 1.1 inorder Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.vhost_user = self.dut.new_session(suite="user")
+        self.vhost = self.dut.new_session(suite="vhost")
+        for frame_size in self.frame_sizes:
+            self.start_vhost_testpmd()
+            self.start_virtio_testpmd(virtio_pmd_arg)
+            self.send_and_verify("virtio_1.1 inorder", frame_size)
+            self.close_all_testpmd()
+
         self.close_all_session()
         self.result_table_print()
 
@@ -195,7 +207,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         performance for Vhost PVP In_order mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=1,mrg_rxbuf=1",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost = self.dut.new_session(suite="vhost")
@@ -211,7 +223,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         performance for Vhost PVP In_order no_mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=1,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
                         "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost = self.dut.new_session(suite="vhost")
@@ -227,7 +239,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         performance for Vhost PVP Mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=0,mrg_rxbuf=1",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost = self.dut.new_session(suite="vhost")
@@ -243,7 +255,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         performance for Vhost PVP Normal Path.
         """
-        virtio_pmd_arg = {"version": "in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost = self.dut.new_session(suite="vhost")
@@ -259,7 +271,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         performance for Vhost PVP Vector_RX Path
         """
-        virtio_pmd_arg = {"version": "in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
                             "path": "--tx-offloads=0x0"}
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost = self.dut.new_session(suite="vhost")
