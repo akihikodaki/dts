@@ -262,7 +262,7 @@ class TestDualVlan(TestCase):
                 resultList.append("vlan %s" % allResult[resultKey][i])
             resultList.append("vlan %s" % allResult[resultKey][len(allResult[resultKey]) - 1])
             for line in resultList:
-                self.verify(line in out, "reviceive package is wrong:%s" % out)
+                self.verify(line in out, "receive packet is wrong:%s" % out)
 
     def set_up(self):
         """
