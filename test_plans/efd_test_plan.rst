@@ -58,6 +58,9 @@ Two ports connect to packet generator.
 
 DUT board must be two sockets system and each cpu have more than 16 lcores.
 
+Unit test cases
+===================
+
 Test Case: EFD function unit test
 ---------------------------------
 Start test application and run efd unit test::
@@ -77,28 +80,20 @@ Verify when key size increased, no significant increment in cpu cycles.
 Verify when value bits increased, no significant increment in cpu cycles.
 Compare with cuckoo hash performance result, lookup cycles should be less.
 
-Test Case: Load balancer performance based on EFD
--------------------------------------------------
+Performance test cases
+==============================
 In EFD sample, EFD work as a flow-level load balancer. Flows are received at
 a front end server before being forwarded to the target back end server for
 processing. This case will measure the performance of flow distribution with
 different parameters.
 
-Value bits: number of bits of value that be stored in EFD table
 Nodes: number of back end nodes
 Entries: number of flows to be added in EFD table
+Value bits: number of bits of value that be stored in EFD table
 
-+--------------+-------+-----------+------------+
-| Value Bits   | Nodes | Entries   | Throughput |
-+--------------+-------+-----------+------------+
-|  8           |   2   |    2M     |            |
-+--------------+-------+-----------+------------+
-|  16          |   2   |    2M     |            |
-+--------------+-------+-----------+------------+
-|  24          |   2   |    2M     |            |
-+--------------+-------+-----------+------------+
-|  32          |   2   |    2M     |            |
-+--------------+-------+-----------+------------+
+Test Case: Load balancer performance based on node numbers
+----------------------------------------------------------------------
+This case will measure the performance based on node numbers.
 
 +--------------+-------+-----------+------------+
 | Value Bits   | Nodes | Entries   | Throughput |
@@ -120,6 +115,10 @@ Entries: number of flows to be added in EFD table
 |  8           |   8   |    2M     |            |
 +--------------+-------+-----------+------------+
 
+Test Case: Load balancer performance based on flow numbers
+-----------------------------------------------------------------------
+This case will measure the performance based on flow numbers.
+
 +--------------+-------+-----------+------------+
 | Value Bits   | Nodes | Entries   | Throughput |
 +--------------+-------+-----------+------------+
@@ -134,4 +133,20 @@ Entries: number of flows to be added in EFD table
 |  8           |   2   |    16M    |            |
 +--------------+-------+-----------+------------+
 |  8           |   2   |    32M    |            |
++--------------+-------+-----------+------------+
+
+Test Case: Load balancer performance based on value bits
+-----------------------------------------------------------------------
+This case will measure the performance based on value bits.
+
++--------------+-------+-----------+------------+
+| Value Bits   | Nodes | Entries   | Throughput |
++--------------+-------+-----------+------------+
+|  8           |   2   |    2M     |            |
++--------------+-------+-----------+------------+
+|  16          |   2   |    2M     |            |
++--------------+-------+-----------+------------+
+|  24          |   2   |    2M     |            |
++--------------+-------+-----------+------------+
+|  32          |   2   |    2M     |            |
 +--------------+-------+-----------+------------+
