@@ -40,15 +40,8 @@ Support configuring hash functions.
 Prerequisites
 -------------
 
-* 2x Intel? 82599 (Niantic) NICs (2x 10GbE full duplex optical ports per NIC)
-* 1x Fortville_eagle NIC (4x 10G)
-* 1x Fortville_spirit NIC (2x 40G)
-* 2x Fortville_spirit_single NIC (1x 40G)
-
-The one port of the 82599 connect to the Fortville_eagle;
-The one port of Fortville_spirit connect to Fortville_spirit_single.
-The three kinds of NICs are the target NICs. the connected NICs can send packets
-to these three NICs using scapy.
+Each of the Ethernet ports of the DUT is directly connected in full-duplex
+to a different port of the peer traffic generator.
 
 Network Traffic
 ---------------
@@ -60,19 +53,19 @@ handled by a different logical core.
 #. The receive packet is parsed into the header fields used by the hash
    operation (such as IP addresses, TCP port, etc.)
 
-#. A hash calculation is performed. The Fortville  supports three hash function:
+#. A hash calculation is performed. The Fortville supports three hash function:
    Toeplitz, simple XOR and their Symmetric RSS.
 
-#. Hash result are used as an index into a 128/512 entry
+#. Hash results are used as an index into a 128/512 entry
    'redirection table'.
 
-#. Niantic VF only support simple default hash algorithm(simple). Fortville NIC
+#. Niantic VF only supports simple default hash algorithm(simple). Fortville NICs
    support all hash algorithm only used dpdk driver on host. when used kernel driver on host,
-   fortville nic only support default hash algorithm(simple).
+   fortville NICs only support default hash algorithm(simple).
 
 The RSS RETA update feature is designed to make RSS more flexible by allowing
 users to define the correspondence between the seven LSBs of hash result and
-the queue id(RSS output index) by them self.
+the queue id(RSS output index) by themself.
 
 
 Test Case:  test_rss_hash
@@ -100,7 +93,7 @@ interactive commands of the ``testpmd`` application.
 
 1. Got the pci device id of DUT, for example::
 
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
      0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
@@ -109,7 +102,7 @@ interactive commands of the ``testpmd`` application.
 
      echo 1 > /sys/bus/pci/devices/0000\:81\:00.0/sriov_numvfs
      echo 1 > /sys/bus/pci/devices/0000\:81\:00.1/sriov_numvfs
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
      0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
@@ -135,7 +128,7 @@ interactive commands of the ``testpmd`` application.
      virsh nodedev-detach pci_0000_81_02_0;
      virsh nodedev-detach pci_0000_81_0a_0;
 
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f0 drv=i40e unused=
      0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens259f1 drv=i40e unused=
@@ -155,7 +148,7 @@ interactive commands of the ``testpmd`` application.
    bind them to igb_uio driver, and then start testpmd, set it in mac forward
    mode::
 
-     ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0 00:07.0
+    ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
 
 6. Reta Configuration.  128 reta entries configuration::
 
@@ -167,7 +160,7 @@ interactive commands of the ``testpmd`` application.
 
 8. Rss received package type configuration two received packet types configuration::
 
-     testpmd command: port config 0 rss ip/udp/tcp
+     testpmd command: port config all rss ip/udp/tcp
 
 9. Verbose configuration::
 
@@ -177,8 +170,8 @@ interactive commands of the ``testpmd`` application.
 
       testpmd command: start
 
-11. Send packet and check rx port received packet by different queue.
-    different hash type send different packet, example hash type is ip, packet src and dts ip not different::
+11. Send different hash types' packets with different keywords, then check rx port
+    could receive packets by different queues::
 
       sendp([Ether(dst="90:e2:ba:36:99:3c")/IP(src="192.168.0.4", dst="192.168.0.5")], iface="eth3")
       sendp([Ether(dst="90:e2:ba:36:99:3c")/IP(src="192.168.0.5", dst="192.168.0.4")], iface="eth3")
@@ -188,6 +181,6 @@ Test Case:  test_reta
 
 This case test hash reta table, the test steps same with test_rss_hash except config hash reta table
 
-Before send packet, config hash reta,512(niantic nic have 128 reta) reta entries configuration::
+Before send packet, config hash reta,512(niantic NICs have 128 reta) reta entries configuration::
 
   testpmd command: port config 0 rss reta (hash_index,queue_id)
