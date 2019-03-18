@@ -51,6 +51,8 @@ from utils import GREEN, RED
 
 class TestVfKernel(TestCase):
 
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
+
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -68,6 +70,16 @@ class TestVfKernel(TestCase):
 
         self.intf = self.dut.ports_info[self.dut_ports[0]]['intf']
         self.pci = self.dut.ports_info[self.dut_ports[0]]['pci'].split(':')
+
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
         self.src_logo = '12:34:56:78:90:10'
         self.setup_vm_env()
@@ -103,12 +115,16 @@ class TestVfKernel(TestCase):
         self.sriov_vfs_port = self.dut.ports_info[
             self.used_dut_port]['vfs_port']
         for port in self.sriov_vfs_port:
-            port.bind_driver('pci-stub')
+            port.bind_driver(self.vf_driver)
         time.sleep(1)
 
         self.dut_testpmd = PmdOutput(self.dut)
+        eal_param = ''
+        for sriov_vf in self.sriov_vfs_port:
+            eal_param += " -b %s" % sriov_vf.pci
         self.dut_testpmd.start_testpmd(
-            "Default", "--rxq=4 --txq=4 --port-topology=chained")
+            "Default", "--rxq=4 --txq=4 --port-topology=chained",
+            eal_param=eal_param)
         # dpdk-2208
         # since there is no forward engine on DPDK PF to forward or drop packet in packet pool,
         # so finally the pool will be full, then no more packet will be
@@ -122,10 +138,10 @@ class TestVfKernel(TestCase):
         vf0_prop_4 = {'opt_host': self.sriov_vfs_port[3].pci}
 
         self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_kernel')
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_1)
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_2)
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_3)
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_4)
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop_1)
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop_2)
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop_3)
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop_4)
         try:
             self.vm0_dut = self.vm0.start()
             if self.vm0_dut is None:
@@ -140,8 +156,8 @@ class TestVfKernel(TestCase):
         vf1_prop_5 = {'opt_host': self.sriov_vfs_port[4].pci}
         vf1_prop_6 = {'opt_host': self.sriov_vfs_port[5].pci}
         self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_kernel')
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop_5)
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop_6)
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop_5)
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop_6)
 
         try:
             self.vm1_dut = self.vm1.start()
@@ -740,8 +756,8 @@ class TestVfKernel(TestCase):
         vf1_prop_5 = {'opt_host': self.sriov_vfs_port[4].pci}
         vf1_prop_6 = {'opt_host': self.sriov_vfs_port[5].pci}
         self.vm1 = QEMUKvm(self.dut, 'vm1', 'vf_kernel')
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop_5)
-        self.vm1.set_vm_device(driver='pci-assign', **vf1_prop_6)
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop_5)
+        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop_6)
 
         try:
             self.vm1_dut = self.vm1.start()
