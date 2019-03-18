@@ -38,7 +38,7 @@ VF Offload
 Prerequisites for checksum offload
 ==================================
 
-If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
+If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios. When
 using vfio, use the following commands to load the vfio driver and bind it
 to the device under test::
 
@@ -46,12 +46,13 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-Assuming that ports ``0`` and ``2`` are connected to a traffic generator,
+Assuming that ports ``0`` and ``1`` are connected to a traffic generator,
+enable hardware rx checksum offload with "--enable-rx-cksum",
 launch the ``testpmd`` with the following arguments::
 
   ./build/app/testpmd -cffffff -n 1 -- -i --burst=1 --txpt`=32 \
   --txht=8 --txwt=0 --txfreet=0 --rxfreet=64 --mbcache=250 --portmask=0x5
-  enable-rx-cksum
+  --enable-rx-cksum
 
 Set the verbose level to 1 to display information for each received packet::
 
@@ -84,20 +85,21 @@ Verify that how many packets found with Bad-ipcsum or Bad-l4csum::
 
 Test Case: HW checksum offload check
 ====================================
-Start testpmd and enable checksum offload on tx port.
+Start testpmd and enable checksum offload on rx port.
 
 Setup the ``csum`` forwarding mode::
 
   testpmd> set fwd csum
   Set csum packet forwarding mode
 
-Enable the IPv4/UDP/TCP/SCTP checksum offload on port 0::
+Enable the IPv4/UDP/TCP/SCTP HW checksum offload on port 0::
 
-  testpmd>
-  testpmd> tx_checksum set ip hw 0
-  testpmd> tx_checksum set udp hw 0
-  testpmd> tx_checksum set tcp hw 0
-  testpmd> tx_checksum set sctp hw 0
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -110,9 +112,9 @@ Configure the traffic generator to send the multiple packets for the following
 combination: IPv4/UDP, IPv4/TCP, IPv4/SCTP, IPv6/UDP, IPv6/TCP.
 
 Send packets with incorrect checksum,
-Verify dpdk can rx it and reported the checksum error,
-Verify that the same number of packet are correctly received on the traffic
-generator side. And IPv4 checksum, TCP checksum, UDP checksum, SCTP CRC32c need
+verify dpdk can rx it and report the checksum error,
+verify that the same number of packet are correctly received on the traffic
+generator side. And IPv4 checksum, TCP checksum, UDP checksum, SCTP checksum need
 be validated as pass by the tester.
 
 The IPv4 source address will not be changed by testpmd.
@@ -121,17 +123,22 @@ The IPv4 source address will not be changed by testpmd.
 Test Case: SW checksum offload check
 ====================================
 
-Disable HW checksum offload on tx port, SW Checksum check.
-Send same packet with incorrect checksum and verify checksum is valid.
+Enable SW checksum offload, send same packet with incorrect checksum
+and verify checksum is valid.
 
 Setup the ``csum`` forwarding mode::
 
   testpmd> set fwd csum
   Set csum packet forwarding mode
 
-Disable the IPv4/UDP/TCP/SCTP checksum offload on port 0::
+Enable the IPv4/UDP/TCP/SCTP SW checksum offload on port 0::
 
-  testpmd> tx_checksum set 0x0 0
+  testpmd> port stop all
+  testpmd> csum set ip sw 0
+  testpmd> csum set tcp sw 0
+  testpmd> csum set udp sw 0
+  testpmd> csum set sctp sw 0
+  testpmd> port start all
   testpmd> start
     csum packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -144,12 +151,12 @@ Configure the traffic generator to send the multiple packets for the following
 combination: IPv4/UDP, IPv4/TCP, IPv6/UDP, IPv6/TCP.
 
 Send packets with incorrect checksum,
-Verify dpdk can rx it and reported the checksum error,
-Verify that the same number of packet are correctly received on the traffic
+verify dpdk can rx it and report the checksum error,
+verify that the same number of packet are correctly received on the traffic
 generator side. And IPv4 checksum, TCP checksum, UDP checksum need
-be validated as pass by the IXIA.
+be validated as pass by the tester.
 
-The first byte of source IPv4 address will be increment by testpmd. The checksum
+The first byte of source IPv4 address will be increased by testpmd. The checksum
 is indeed recalculated by software algorithms.
 
 Prerequisites for TSO
@@ -169,15 +176,17 @@ On tester, all offload feature should be disabled on tx port, and start rx port 
 On DUT, run pmd with parameter "--enable-rx-cksum". Then enable TSO on tx port
 and checksum on rx port. The test commands is below::
 
-  #enable hw checksum on rx port
-  tx_checksum set ip hw 0
-  tx_checksum set udp hw 0
-  tx_checksum set tcp hw 0
-  tx_checksum set sctp hw 0
-  set fwd csum
+  # Enable hw checksum on rx port
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
+  testpmd> set fwd csum
 
-  # enable TSO on tx port
-  *tso set 800 1
+  # Enable TSO on tx port
+  testpmd> tso set 800 1
 
 
 Test case: csum fwd engine, use TSO
@@ -192,22 +201,25 @@ Turn off tx port by ethtool on tester::
   ethtool -K <tx port> rx off tx off tso off gso off gro off lro off
   ip l set <tx port> up
 
-capture package rx port on tester::
+Capture package rx port on tester::
 
   tcpdump -n -e -i <rx port> -s 0 -w /tmp/cap
 
 Launch the userland ``testpmd`` application on DUT as follows::
 
   testpmd> set verbose 1
+  # Enable hw checksum on rx port
+  testpmd> port stop all
+  testpmd> csum set ip hw 0
+  testpmd> csum set tcp hw 0
+  testpmd> csum set udp hw 0
+  testpmd> csum set sctp hw 0
+  testpmd> port start all
 
-  # enable hw checksum on rx port
-  testpmd> tx_checksum set ip hw 0
-  testpmd> tx_checksum set udp hw 0
-  testpmd> tx_checksum set tcp hw 0
-  testpmd> tx_checksum set sctp hw 0
-  # enable TSO on tx port
+  # Enable TSO on tx port
   testpmd> tso set 800 1
-  # set fwd engine and start
+  # Set fwd engine and start
+
   testpmd> set fwd csum
   testpmd> start
 
@@ -217,4 +229,4 @@ Test IPv4() in scapy::
 
 Test IPv6() in scapy::
 
-    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s"
+    sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1021,dport=1021)/Raw(load="\x50"*%s)], iface="%s")
