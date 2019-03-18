@@ -90,7 +90,7 @@ It receive one packet that it send.
 Test Case2: netmap compat with two port
 =======================================
 
-Run bridge with one port::
+Run bridge with two ports::
 
         ./examples/netmap_compat/build/bridge -c 0x1e -n 4 -- -i 0 -i 1
 
