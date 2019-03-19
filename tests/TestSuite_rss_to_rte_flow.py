@@ -422,10 +422,10 @@ class TestRSS_to_Rteflow(TestCase):
         list1 = [queue1, queue2, queue3, queue4, queue5]
 
         # Create a rss key rule
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+        key = "1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF"
         self.dut.send_expect(
-            "flow flush 0", "testpmd> ")
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types ipv4-udp end key 67108863 / end", "created")
+            "flow create 0 ingress pattern end actions rss types ipv4-udp end key %s / end" % key, "created")
         out2 = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ", 120)
         key_queue1 = self.send_and_check(pkt1, rss_queue)
         key_queue2 = self.send_and_check(pkt2, rss_queue)
@@ -434,18 +434,39 @@ class TestRSS_to_Rteflow(TestCase):
         key_queue5 = self.send_and_check(pkt5, rss_queue)
         list2 = [key_queue1, key_queue2, key_queue3, key_queue4, key_queue5]
 
-        self.verify((out1 != out2) and (list1 != list2), "the key setting doesn't take effect.")
+        self.verify((key in out2) and (out1 != out2) and (list1 != list2), "the key setting doesn't take effect.")
 
-        # Create a rss key_len rule
+        # Create a rss rult with truncating key_len
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+        key = "1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF"
+        key_len = "50"
         self.dut.send_expect(
-            "flow flush 0", "testpmd> ")
+            "flow create 0 ingress pattern end actions rss types ipv4-udp end key %s key_len %s / end" % (key, key_len), "created")
+        out3 = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ", 120)
+        key_queue1 = self.send_and_check(pkt1, rss_queue)
+        key_queue2 = self.send_and_check(pkt2, rss_queue)
+        key_queue3 = self.send_and_check(pkt3, rss_queue)
+        key_queue4 = self.send_and_check(pkt4, rss_queue)
+        key_queue5 = self.send_and_check(pkt5, rss_queue)
+        list3 = [key_queue1, key_queue2, key_queue3, key_queue4, key_queue5]
+
+        self.verify((key not in out3) and (out3 != out1 != out2) and (list3 != list1 != list2), "the key setting doesn't take effect.")
+
+        # Create a rss rule with padding key_len
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+        key = "1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFF"
+        key_len = "52"
         self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types ipv4-udp end key_len 3 / end", "created")
-        # Create a rss key rule
-        self.dut.send_expect(
-            "flow flush 0", "testpmd> ")
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types ipv4-udp end key 67108863 key_len 3 / end", "created")
+            "flow create 0 ingress pattern end actions rss types ipv4-udp end key %s key_len %s / end" % (key, key_len), "created")
+        out4 = self.dut.send_expect("show port 0 rss-hash key", "testpmd> ", 120)
+        key_queue1 = self.send_and_check(pkt1, rss_queue)
+        key_queue2 = self.send_and_check(pkt2, rss_queue)
+        key_queue3 = self.send_and_check(pkt3, rss_queue)
+        key_queue4 = self.send_and_check(pkt4, rss_queue)
+        key_queue5 = self.send_and_check(pkt5, rss_queue)
+        list4 = [key_queue1, key_queue2, key_queue3, key_queue4, key_queue5]
+
+        self.verify((key in out4) and (out4 != out1 != out2 != out3) and (list4 != list1 != list2), "the key setting doesn't take effect.")
 
     def test_disable_rss_in_commandline(self):
         """
