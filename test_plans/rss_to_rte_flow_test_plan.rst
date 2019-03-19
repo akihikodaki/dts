@@ -278,7 +278,7 @@ Only i40e support key and key_len setting.
     testpmd> set verbose 1
     testpmd> start
 
-2. Set ipv4-udp RSS and show the RSS key::
+2. Set ipv4-udp RSS and show the default RSS key::
 
     testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end / end
     testpmd> show port 0 rss-hash key
@@ -304,24 +304,26 @@ Only i40e support key and key_len setting.
 3. Set ipv4-udp key::
 
     testpmd> flow flush 0
-    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key 67108863 / end
+    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key \
+    1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF / end
     testpmd> show port 0 rss-hash key
     RSS functions:
      ipv4-udp udp
     RSS key:
-    4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366
+    1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF
 
    Send the same five packets to port 0,
    pkt1 is distributed to queue 3.
-   pkt2 is distributed to queue 3.
-   pkt3 is distributed to queue 0.
-   pkt4 is distributed to queue 1.
-   pkt5 is distributed to queue 0.
+   pkt2 is distributed to queue 2.
+   pkt3 is distributed to queue 2.
+   pkt4 is distributed to queue 0.
+   pkt5 is distributed to queue 3.
 
-4. Set ipv4-udp key_len::
+4. Set ipv4-udp with truncating key_len::
 
     testpmd> flow flush 0
-    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key_len 3 / end
+    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key \
+    1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF key_len 50 / end
     testpmd> show port 0 rss-hash key
     RSS functions:
      ipv4-udp udp
@@ -335,22 +337,30 @@ Only i40e support key and key_len setting.
    pkt4 is distributed to queue 1.
    pkt5 is distributed to queue 0.
 
-5. Set ipv4-udp key and key_len::
+   The key length is 52 bytes, if setting it shorter than 52, the key value doesn't take effect.
+   The showed key value is an invalid value, not the default value.
+   The key length is different among different NIC types.
+
+5. Set ipv4-udp with padding key_len::
 
     testpmd> flow flush 0
-    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key 67108863 key_len 3 / end
+    testpmd> flow create 0 ingress pattern end actions rss types ipv4-udp end key \
+    1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFF key_len 52 / end
     testpmd> show port 0 rss-hash key
     RSS functions:
      ipv4-udp udp
     RSS key:
-    4439796BB54C5023B675EA5B124F9F30B8A2C03DDFDC4D02A08C9B334AF64A4C05C6FA343958D8557D99583AE138C92E81150366
+    1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFF657474
 
    Send the same five packets to port 0,
    pkt1 is distributed to queue 3.
-   pkt2 is distributed to queue 3.
-   pkt3 is distributed to queue 0.
-   pkt4 is distributed to queue 1.
-   pkt5 is distributed to queue 0.
+   pkt2 is distributed to queue 2.
+   pkt3 is distributed to queue 2.
+   pkt4 is distributed to queue 0.
+   pkt5 is distributed to queue 3.
+
+   The lengh of key is 49 bytes, but the key_len is 52,
+   so the last three bytes of key is padded by default value.
 
 Test case: Flow directory rule and RSS rule combination
 =======================================================
