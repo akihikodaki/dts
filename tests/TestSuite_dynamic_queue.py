@@ -27,7 +27,7 @@ class TestDynamicQueue(TestCase):
         self.dut_testpmd = PmdOutput(self.dut)
 
     def set_up(self):
-        # Because of forville spirit limitation,can't use 2 ports for testing
+        # Because of fortville spirit limitation,can't use 2 ports for testing
         if (self.nic in ["fortville_spirit"]):
             self.dut_testpmd.start_testpmd(
                 "Default", "--port-topology=chained --txq=%s --rxq=%s"
