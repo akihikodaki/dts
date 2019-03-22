@@ -55,7 +55,7 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | settings.py           | Setting for default network card and its identifiers supported by the framework                                                                              |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
-    | utils.py              | Provide shared simple functions like IP address covertion and mask creation                                                                                  |
+    | utils.py              | Provide shared simple functions like IP address conversion and mask creation                                                                                  |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
     | ssh_connection.py     | Create session to host, implement send_expect and copy function                                                                                              |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
