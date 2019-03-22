@@ -109,6 +109,8 @@ class TestFlowClassifySoftnic(TestCase):
             self.dut.send_expect(cmd, "# ", 20)
             cmd = "sed -i '4i\link LINK3 dev %s' ./drivers/net/softnic/flow_classify_softnic/%s" % (self.dut_p3_pci, filename)
             self.dut.send_expect(cmd, "# ", 20)
+        self.dut.send_expect("sed -i 's/^thread 4 pipeline/thread %d pipeline/g' ./drivers/net/softnic/flow_classify_softnic/%s" % (self.port_num, filename), "# ", 20)
+
 
     def set_table(self, cmd, filename):
         """
@@ -1349,10 +1351,10 @@ class TestFlowClassifySoftnic(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        self.dut.kill_all()
+        pass
