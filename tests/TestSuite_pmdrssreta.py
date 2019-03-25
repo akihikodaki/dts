@@ -172,6 +172,8 @@ class TestPmdrssreta(TestCase):
         """
         Run at the start of each test suite.
         """
+	cores = self.dut.get_core_list("all")
+	self.coremask = utils.create_mask(cores)
 
         ports = self.dut.get_ports(self.nic)
         self.ports_socket = self.dut.get_numa_id(ports[0])
@@ -242,7 +244,8 @@ class TestPmdrssreta(TestCase):
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         self.dut.kill_all()
-        self.dut.send_expect("./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --rxq=2 --txq=2" % (self.target, self.dut.get_memory_channels()), "testpmd> ", 120)
+        self.dut.send_expect("./%s/app/testpmd  -c %s -n %d -- -i --rxq=2 --txq=2" % (self.target, self.coremask, self.dut.get_memory_channels()), "testpmd> ", 120)
+
         self.dut.send_expect("start", "testpmd> ", 120)
         out = self.dut.send_expect("show port info all", "testpmd> ", 120)
         self.dut.send_expect("quit", "# ", 30)
