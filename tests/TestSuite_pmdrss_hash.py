@@ -484,6 +484,7 @@ class TestPmdrssHash(TestCase):
         for iptype, rsstype in iptypes.items():
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect(
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
@@ -521,6 +522,7 @@ class TestPmdrssHash(TestCase):
         for iptype, rsstype in iptypes.items():
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect(
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
@@ -566,6 +568,7 @@ class TestPmdrssHash(TestCase):
             self.logger.info("***********************%s rss test********************************" % iptype)
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect(
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
@@ -604,6 +607,7 @@ class TestPmdrssHash(TestCase):
         for iptype, rsstype in iptypes.items():
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
+            self.dut.send_expect("set promisc all off", "testpmd> ")
             self.dut.send_expect(
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
@@ -634,6 +638,7 @@ class TestPmdrssHash(TestCase):
                     "NIC Unsupported: " + str(self.nic))
 
         self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i" % (self.target, self.coremask, self.dut.get_memory_channels()), "testpmd> ", 120)
+        self.dut.send_expect("set promisc all off", "testpmd> ")
         out = self.dut.send_expect("create bonded device 3 0", "testpmd> ", 30)
         bond_device_id = int(re.search("port \d+", out).group().split(" ")[-1].strip())
 
