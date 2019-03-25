@@ -70,7 +70,7 @@ class TestUnitTestsLoopback(TestCase):
         [self.arch, machine, env, toolchain] = self.target.split('-')
         self.verify(self.arch in ["x86_64", "arm64"], "pmd perf request running in x86_64 or arm64")
         self.max_traffic_burst = self.get_max_traffic_burst()
-        self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              %s/#define MAX_TRAFFIC_BURST              32/' test/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
+        self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              %s/#define MAX_TRAFFIC_BURST              32/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
 
     def set_up(self):
         """
@@ -79,7 +79,7 @@ class TestUnitTestsLoopback(TestCase):
         pass
 
     def get_max_traffic_burst(self):
-        pmd_file = self.dut.send_expect("cat test/test/test_pmd_perf.c", "# ", 30)
+        pmd_file = self.dut.send_expect("cat app/test/test_pmd_perf.c", "# ", 30)
         result_scanner = r"#define MAX_TRAFFIC_BURST\s+([0-9]+)"
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(pmd_file)
@@ -90,14 +90,14 @@ class TestUnitTestsLoopback(TestCase):
         """
         Run pmd stream control mode burst test case.
         """
-        self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' test/test/test_pmd_perf.c", "# ", 30)
-        self.dut.send_expect("cd test/test", "# ")
+        self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
+        self.dut.send_expect("cd app/test", "# ")
         self.dut.send_expect("make", "# ", 120)
         self.dut.send_expect("cd /root/dpdk", "# ")
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
-        self.dut.send_expect("./test/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./app/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
         print out
         self.dut.send_expect("quit", "# ")
@@ -111,14 +111,14 @@ class TestUnitTestsLoopback(TestCase):
         """
         Run pmd stream control mode burst test case.
         """
-        self.dut.send_expect("sed -i -e 's/lpbk_mode = 1/lpbk_mode = 0/' test/test/test_pmd_perf.c", "# ", 30)
-        self.dut.send_expect("cd test/test", "# ")
+        self.dut.send_expect("sed -i -e 's/lpbk_mode = 1/lpbk_mode = 0/' app/test/test_pmd_perf.c", "# ", 30)
+        self.dut.send_expect("cd app/test", "# ")
         self.dut.send_expect("make", "# ", 120)
         self.dut.send_expect("cd /root/dpdk", "# ")
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
-        self.dut.send_expect("./test/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./app/test/test -n 1 -c %s" % self.coremask, "R.*T.*E.*>.*>", 60)
         self.dut.send_command("pmd_perf_autotest", 30)
         # There is no packet loopback, so the test is hung.
         # It needs to kill the process manually.
@@ -137,9 +137,9 @@ class TestUnitTestsLoopback(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' test/test/test_pmd_perf.c", "# ", 30)
-        self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' test/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
-        self.dut.send_expect("cd test/test", "# ")
+        self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
+        self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
+        self.dut.send_expect("cd app/test", "# ")
         self.dut.send_expect("make", "# ", 30)
         self.dut.send_expect("cd /root/dpdk", "# ")
         self.dut.kill_all()

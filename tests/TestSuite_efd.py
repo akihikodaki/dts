@@ -45,10 +45,6 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         """
         self.tester.extend_external_packet_generator(TestEFD, self)
 
-        out = self.dut.send_expect("make -C test -j", "#")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-
         out = self.dut.build_dpdk_apps("./examples/server_node_efd")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -67,7 +63,7 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         """
         Run EFD unit test
         """
-        self.dut.send_expect("./test/test/test -n 1 -c f", "RTE>>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
         out = self.dut.send_expect("efd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -76,7 +72,7 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         """
         Run EFD unit perf test
         """
-        self.dut.send_expect("./test/test/test -n 1 -c f", "RTE>>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
         out = self.dut.send_expect("efd_perf_autotest", "RTE>>", 120)
         self.logger.info(out)
         self.dut.send_expect("quit", "# ")

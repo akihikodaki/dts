@@ -45,10 +45,6 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
         """
         self.tester.extend_external_packet_generator(TestDistributor, self)
 
-        out = self.dut.send_expect("make -C test -j", "#")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-
         # reduce tx queues for enable many workers
         self.dut.send_expect("sed -i -e 's/.*txRings = .*/\\tconst uint16_t rxRings = 1, txRings = 1;/' ./examples/distributor/main.c", "#")
         out = self.dut.build_dpdk_apps("./examples/distributor")
@@ -68,7 +64,7 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
         """
         Run distributor unit test
         """
-        self.dut.send_expect("./test/test/test -n 1 -c f", "RTE>>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
         out = self.dut.send_expect("distributor_autotest", "RTE>>", 30)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -77,7 +73,7 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
         """
         Run distributor unit perf test
         """
-        self.dut.send_expect("./test/test/test -n 1 -c f", "RTE>>", 60)
+        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
         out = self.dut.send_expect("distributor_perf_autotest", "RTE>>", 120)
         cycles_single = self.strip_cycles(out, "single")
         cycles_burst = self.strip_cycles(out, "burst")
