@@ -40,7 +40,7 @@ from test_case import TestCase
 from pmd_output import PmdOutput
 from packet import Packet
 
-class TestWhitelist(TestCase):
+class TestMacFilter(TestCase):
 
     def set_up_all(self):
         """
