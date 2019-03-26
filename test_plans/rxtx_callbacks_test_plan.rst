@@ -46,7 +46,7 @@ prior to transmission to calculate the elapsed time, in CPU cycles.
 Running the Application
 =======================
 
-Open common_base and set ``CONFIG_RTE_ETHDEV_RXTX_CALLBACKS=y``.
+Set ``CONFIG_RTE_ETHDEV_RXTX_CALLBACKS=y`` in config/common_base.
 
 To run the example in a ``linuxapp`` environment::
 
@@ -55,10 +55,10 @@ To run the example in a ``linuxapp`` environment::
 Refer to *DPDK Getting Started Guide* for general information on running
 applications and the Environment Abstraction Layer (EAL) options.
 
-test_rxtx_callbacks
-===================
+Test Case:rxtx callbacks
+==========================
 
-Running::
+Run the example::
 
      ./examples/rxtx_callbacks/build/rxtx_callbacks -c 2 -n 4
 
@@ -66,5 +66,5 @@ waked up:::
 
      Core X forwarding packets.
 
-Send one packet on Port0,check the port1 receive packet.
-It receive one packet that the port0 send.
+Send one packet from port0,check the received packet on port1.
+Should receive the packet sent from port0.
