@@ -127,6 +127,7 @@ class TestIPPipeline(TestCase):
         This is to set up vf environment.
         The pf is bound to dpdk driver.
         """
+        self.dut.send_expect("modprobe vfio-pci","# ")
         if driver == 'default':
             for port_id in self.dut_ports:
                 port = self.dut.ports_info[port_id]['port']
@@ -488,13 +489,14 @@ class TestIPPipeline(TestCase):
         VF l2fwd pipeline, PF bound to DPDK driver
         """
         self.setup_env(self.port_nums, driver=self.drivername)
-        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
+        self.dut.send_expect("sed -i '/^link LINK/d' ./examples/ip_pipeline/examples/l2fwd.cli", "# ", 20)
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK3 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK2 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK1 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK0 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
         self.dut.send_expect(cmd, "# ", 20)
 
         TESTPMD = "./%s/app/testpmd" % self.target
@@ -569,13 +571,14 @@ class TestIPPipeline(TestCase):
         VF l2fwd pipeline, PF bound to kernel driver
         """
         self.setup_env(self.port_nums, driver='default')
-        cmd = "sed -i -e 's/0000:02:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
+        self.dut.send_expect("sed -i '/^link LINK/d' ./examples/ip_pipeline/examples/l2fwd.cli", "# ", 20)
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK3 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK2 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:06:00.0/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[2][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK1 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[1][0].pci
         self.dut.send_expect(cmd, "# ", 20)
-        cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[3][0].pci
+        cmd = "sed -i '/mempool MEMPOOL0/a\link LINK0 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
         self.dut.send_expect(cmd, "# ", 20)
 
         IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
