@@ -53,7 +53,7 @@ Test Case: Distributor unit test
 ================================
 Start test application and run distributor unit test::
 
-	   test -c f -n 4 -- -i
+	   ./x86_64-native-linuxapp-gcc/app/test -c f -n 4
 	   RTE>>distributor_autotest
 
 Verify burst distributor API unit test passed
@@ -62,46 +62,12 @@ Test Case: Distributor performance unit test
 ============================================
 Start test application and run distributor unit test::
 
-	   test -c f -n 4 -- -i
+	   ./x86_64-native-linuxapp-gcc/app/test -c f -n 4
 	   RTE>>distributor_perf_autotest
 
 Compared CPU cycles for normal distributor and burst API
 
 Verify burst distributor API cost much less cycles then normal version
-
-Test Case: Distributor packet check
-===================================
-Start distributor sample with one worker::
-
-	distributor_app -c 0x7c  -n 4 -- -p 0x1
-
-Send few packets (less then burst size) with sequence index which indicated in
-ip dst address
-
-Check forwarded packets are all in sequence and content not changed
-
-Send packets equal to burst size with sequence index
-
-Check forwarded packets are all in sequence and content not changed
-
-Send packets over burst size with sequence index
-
-Check forwarded packets are all in sequence and content not changed
-
-Test Case: Distributor with workers
-===================================
-Start distributor sample with two workers::
-
-	distributor_app -c 0xfc  -n 4 -- -p 0x1
-	
-Send several packets with ip address increasing
-
-Check packets distributed to different workers
-
-Check all packets have been sent back from tx lcore
-
-Repeat step 1 to step4 with 4(3fc)/8(3ffc)/16(0x3ffffc)/32(0xffff0003ffffc)
-workers
 
 Test case: Distribute with maximum workers
 ==========================================
@@ -117,7 +83,7 @@ Test Case: Distributor with multiple input ports
 ================================================
 Start distributor sample with two workers and two ports::
 
-	distributor_app -c 0x7c -n 4 -- -p 0x3
+	./examples/distributor/build/distributor_app -c 0x7c -n 4 -- -p 0x3
 
 Send packets with sequence indicated in udp port id
 
@@ -150,6 +116,4 @@ for each action in lcores as listed in the table below::
 	| 6  |    16   |        |         |        |         |        |         |        |         |        |         |        |         |
 	+----+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+
 	| 7  |    32   |        |         |        |         |        |         |        |         |        |         |        |         |
-	+----+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+
-	| 8  |    63   |        |         |        |         |        |         |        |         |        |         |        |         |
 	+----+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+--------+---------+
