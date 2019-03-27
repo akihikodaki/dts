@@ -95,7 +95,7 @@ class TestUnitTestsQos(TestCase):
         """
 
         [arch, machine, env, toolchain] = self.target.split('-')
-        self.verify(arch in ["x86_64" ,"arm64"], "Sched auto_test only support in x86_64 or arm64")
+        self.verify(arch in ["x86_64" ,"arm64" ,"ppc_64"], "Sched auto_test only support in x86_64 or arm64 ppc_64")
 
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("sched_autotest", "RTE>>", 5)
