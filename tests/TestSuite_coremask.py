@@ -92,14 +92,16 @@ class TestCoremask(TestCase):
 
         core_mask = utils.create_mask(self.all_cores[:available_max_lcore - 1])
 
+        first_core=self.all_cores[0]
+
         command = command_line % (self.target, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
-        self.verify("EAL: Master lcore 1 is ready" in out,
-                    "Core 1 not ready")
+        self.verify("EAL: Master lcore %s is ready" % first_core in out,
+                    "Core %s not ready" % first_core )
 
-        self.verify("EAL: Detected lcore 1 as core" in out,
-                    "Core 1 not detected")
+        self.verify("EAL: Detected lcore %s as core" % first_core in out,
+                    "Core %s not detected" % first_core )
 
         for core in self.all_cores[1:available_max_lcore - 1]:
             self.verify("EAL: lcore %s is ready" % core in out,
