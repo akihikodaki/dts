@@ -81,7 +81,7 @@ class TestUnitTestsMempool(TestCase):
         Run memory pool performance autotest.
         """
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
-        out = self.dut.send_expect("mempool_perf_autotest", "RTE>>", 1200)
+        out = self.dut.send_expect("mempool_perf_autotest", "RTE>>", 2000)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
