@@ -162,7 +162,7 @@ Test Case 1: set valid VF queue number in testpmd command-line options
       TX-packets: 3       TX-dropped: 0             TX-total: 3
       ----------------------------------------------------------------------------
 
-6. Repeat step 2 to 6 with the mininum queue number, 1, and the maximum queue number, 16.
+6. Repeat step 1 to 5 with the mininum queue number, 1, and the maximum queue number, 16.
 
 Test case 2: set invalid VF queue number in testpmd command-line options
 ========================================================================
@@ -204,7 +204,7 @@ Test case 3: set valid VF queue number with testpmd function command
     testpmd> port config all txq 3
     testpmd> port start all
 
-4. Repeat step 4-7 of test case 1.
+4. Repeat step 3-6 of test case 1.
 
 Test case 4: set invalid VF queue number with testpmd function command
 ======================================================================
