@@ -30,29 +30,32 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=====================================
-PVP multi-paths performance Tests
-=====================================
+==================================================
+vhost/virtio pvp multi-paths performance test plan
+==================================================
 
 Description
 ===========
 
-Benchmark PVP multi-paths performance with 7 TX/RX PATHs.
-Includes Mergeable, Normal, Vector_RX, Inorder mergeable, Inorder 
-no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
+Benchmark pvp multi-paths performance with 8 tx/rx paths.
+Includes mergeable, normal, vector_rx, inorder mergeable,
+inorder no-mergeable, virtio 1.1 mergeable, virtio 1.1 inorder, virtio 1.1 normal path.
 Give 1 core for vhost and virtio respectively.
 
-Test Case 1: pvp test with Virtio 1.1 mergeable path
-=======================================================================
+Test flow
+=========
 
-flow: 
 TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+
+Test Case 1: pvp test with virtio 1.1 mergeable path
+====================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -60,24 +63,24 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 2: pvp test with Virtio 1.1 no-mergeable path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 2: pvp test with virtio 1.1 normal path
+=================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -85,24 +88,24 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 3: pvp test with Inorder mergeable path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 3: pvp test with inorder mergeable path
+=================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -111,23 +114,23 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 4: pvp test with Inorder no-mergeable path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 4: pvp test with inorder no-mergeable path
+====================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -136,23 +139,23 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1,mrg_rxbuf=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 5: pvp test with Mergeable path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 5: pvp test with mergeable path
+=========================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -161,23 +164,23 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 6: pvp test with Normal path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 6: pvp test with normal path
+======================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -186,23 +189,23 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
 
-Test Case 7: pvp test with Vector_RX path
-=======================================================================
+    testpmd>show port stats all
 
-flow: 
-TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+Test Case 7: pvp test with vector_rx path
+=========================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -211,8 +214,35 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0 \
-    -- -i --tx-offloads=0x0 --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --tx-offloads=0x0 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
-3. Send packet with packet generator with different packet size, check the throughput.
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
+
+    testpmd>show port stats all
+
+Test Case 8: pvp test with virtio 1.1 inorder path
+==================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
+
+    testpmd>show port stats all
