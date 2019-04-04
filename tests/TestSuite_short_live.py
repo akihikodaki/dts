@@ -119,6 +119,18 @@ class TestShortLiveApp(TestCase):
         else:
             self.verify('PPP' not in out, "Receive test failed")
 
+    def check_process(self, delay_max=10):
+        process_file = "/var/run/dpdk/rte/config"
+        delay = 0
+        while delay < delay_max:
+            process = self.dut.send_expect("lsof %s | wc -l" % process_file, "#")
+            if process != '0':
+                time.sleep(1)
+                delay = delay + 1
+            else:
+                break
+        self.verify(delay < delay_max, "Failed to kill the process within %s seconds" % delay_max)
+
     def test_basic_forwarding(self):
         """
         Basic rx/tx forwarding test
@@ -161,7 +173,7 @@ class TestShortLiveApp(TestCase):
                 self.dut.send_expect("pkill -2 testpmd", "#", 60, True)
             else:
                 self.dut.send_expect("pkill -15 testpmd", "#", 60, True)
-            time.sleep(2)
+            self.check_process()
 
     def test_clean_up_with_signal_l2fwd(self):
         repeat_time = 5
@@ -175,10 +187,9 @@ class TestShortLiveApp(TestCase):
             # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l2fwd", "#", 60, True)
-                time.sleep(2)
             else:
                 self.dut.send_expect("pkill -15 l2fwd", "#", 60, True)
-                time.sleep(2)
+            self.check_process()
 
     def test_clean_up_with_signal_l3fwd(self):
         repeat_time = 5
@@ -192,10 +203,9 @@ class TestShortLiveApp(TestCase):
             # kill with different Signal
             if i%2 == 0:
                 self.dut.send_expect("pkill -2 l3fwd", "#", 60, True)
-                time.sleep(2)
             else:
                 self.dut.send_expect("pkill -15 l3fwd", "#", 60, True)
-                time.sleep(2)
+            self.check_process()
 
     def tear_down(self):
         """
