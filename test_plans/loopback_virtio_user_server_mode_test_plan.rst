@@ -30,22 +30,21 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-==========================================
-Loopback virtio-user server mode test plan
-==========================================
+================================================
+vhost/virtio-user loopback server mode test plan
+================================================
 
 Description
 ===========
 
-Without virtio-user server mode support, if the vhost-user backend restarts, 
-there’s no way for it to reconnect to virtio-user. To address this, support for server mode has been added.
-In this mode the socket file is created by virtio-user, which the backend connects to. 
-This means that if the backend restarts, it can reconnect to virtio-user and continue communications.
-Design below five cases for virtio-user server mode test.
+Virtio-user server mode is a feature to enable the virtio-user as the server,
+vhost as the client, then when the vhost-user is killed then re-launched,
+the virtio-user can connect back to vhost-user again; at another hand,
+virtio-user can be reconnected to vhost-user when virtio-user is killed or rebooted.
+This test plan ensure the reconnect can work well with current test setup.
 
-
-Test Case1:  Basic test for virtio-user server mode, launch vhost first
-=============================================================================
+Test Case 1:  Basic test for virtio-user server mode, launch vhost first
+========================================================================
 
 1. Launch vhost as client mode::
 
@@ -66,8 +65,8 @@ Test Case1:  Basic test for virtio-user server mode, launch vhost first
 
     testpmd>show port stats all
 
-Test Case2:  Basic test for virtio-user server mode, launch virtio-user first
-=============================================================================
+Test Case 2:  Basic test for virtio-user server mode, launch virtio-user first
+==============================================================================
 
 1. Launch virtio-user as server mode::
 
@@ -87,37 +86,13 @@ Test Case2:  Basic test for virtio-user server mode, launch virtio-user first
 
     testpmd>show port stats all
 
-Test Case3: Reconnect virtio-user from the vhost side:
-=============================================================================
+Test Case 3: Reconnect virtio-user from the vhost side with vhost/virtio1.1 loopback multi_queues
+=================================================================================================
 
-1. Launch vhost as client mode::
-
-    rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=/tmp/sock0,client=1,queues=1' -- -i --rxq=1 --txq=1 --nb-cores=1
-    >set fwd mac
-    >start
-
-2. Launch virtio-user as server mode::
-
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=1 -- -i --rxq=1 --txq=1 --no-numa
-    >set fwd mac
-    >start tx_first 32
-
-3. Quit vhost side, then relaunch it as step1
-
-4. Run below command to get throughput,verify the loopback throughput is not zero::
-
-    testpmd>show port stats all
-
-Test Case4: Reconnect virtio-user from the vhost side with multi_queues :
-=============================================================================
-
-1. launch vhost as client mode with 2 queues:: 
+1. Launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost\
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
@@ -125,24 +100,40 @@ Test Case4: Reconnect virtio-user from the vhost side with multi_queues :
 2. Launch virtio-user as server mode with 2 queues::
 
     ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
 
-3. Quit vhost side, then relaunch it as step1
+3. Quit vhost side, check the virtio-user side link status::
 
-4. Run below command to get throughput,verify the loopback throughput is not zero::
+    testpmd> show port info 0
+    #it should show "down"
 
+4. Relaunch vhost and send packets::
+
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start tx_first 32
+
+5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+
+    testpmd> show port info 0
+    #it should show up"
     testpmd>show port stats all
 
-Test Case5: Port start/stop at virtio-user side with server mode multi queues
-=============================================================================
+6. Check each queue's RX/TX packet numbers are not zero::
 
-1. launch vhost as client mode with 2 queues:: 
+    testpmd>stop
+
+Test Case 4: Reconnect virtio-user from the vhost side with vhost/virtio1.0 loopback multi_queues
+=================================================================================================
+
+1. Launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost\
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
@@ -150,20 +141,103 @@ Test Case5: Port start/stop at virtio-user side with server mode multi queues
 2. Launch virtio-user as server mode with 2 queues::
 
     ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
 
-3. Stop/start virtio-user port,check Link status is down/up after stop/start virtio-user port::
+3. Quit vhost side, check the virtio-user side link status::
 
-    Virtio-user side: testpmd>stop
-    Virtio-user side: testpmd>port stop 0
-    Virtio-user side: testpmd>show port info all
-    Virtio-user side: testpmd>port start 0
-    Virtio-user side: testpmd>show port info all
+    testpmd> show port info 0
+    #it should show "down"
 
-4. Run below command to get throughput,verify the loopback throughput is not zero::
+4. Relaunch vhost and send packets::
 
-     testpmd>show port stats all
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start tx_first 32
+
+5. Check the virtio-user side link status and run below command to get throughput,verify the loopback throughput is not zero::
+
+    testpmd> show port info 0
+    #it should show up"
+    testpmd>show port stats all
+
+6. Check each queue's RX/TX packet numbers are not zero::
+
+    testpmd>stop
+
+Test Case 5: Reconnect vhost-user from the virtio side with vhost/virtio1.0 loopback multi_queues
+=================================================================================================
+
+1. Launch vhost as client mode with 2 queues::
+
+    rm -rf vhost-net*
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start
+
+2. Launch virtio-user as server mode with 2 queues::
+
+    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start tx_first 32
+
+3. Quit virtio side, check the vhost side link status::
+
+    testpmd> show port info 0
+    #it should show "down"
+
+4. Relaunch virtio-user and send packets::
+
+    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start tx_first 32
+
+5. Check the vhost side link status and run below command to get throughput, verify the loopback throughput is not zero::
+
+    testpmd> show port info 0
+    #it should show up"
+    testpmd>show port stats all
+
+6. Check each queue's RX/TX packet numbers are not zero::
+
+    testpmd>stop
+
+Test Case 6: Port start/stop at vhost side with server mode multi queues
+========================================================================
+
+1. Launch vhost as client mode with 2 queues::
+
+    rm -rf vhost-net*
+    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost\
+    --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+2. Launch virtio-user as server mode with 2 queues::
+
+    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start tx_first 32
+
+3. Port restart at vhost side by below command and re-calculate the average throughput::
+
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+6. Check all queue has packets::
+
+    testpmd>stop
 
