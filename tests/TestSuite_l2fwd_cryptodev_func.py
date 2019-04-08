@@ -85,6 +85,10 @@ class TestL2fwdCrypto(TestCase):
         if not cc.is_build_skip(self):
             cc.build_dpdk_with_cryptodev(self)
 
+        out = self.dut.build_dpdk_apps("./examples/l2fwd-crypto")
+        self.verify("Error" not in out, "Compilation error")
+        self.verify("No such" not in out, "Compilation error")
+
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         cc.bind_qat_device(self, self.vf_driver)
 
