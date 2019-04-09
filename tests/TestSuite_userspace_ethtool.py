@@ -547,6 +547,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         """
         self.dut.send_expect(self.cmd, "EthApp>", 60)
         mtus = [1519, 2048]
+        mtu_threshold = 2022
         for index in range(len(self.ports)):
             port = self.ports[index]
             # change mtu
@@ -555,14 +556,19 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             ori_mtu = self.strip_mtu(intf)
             self.tester.send_expect("ifconfig %s mtu 9000" % (intf), "# ")
             for mtu in mtus:
+                # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
+                if mtu > mtu_threshold:
+                    self.dut.send_expect("stop %s" % index, "EthApp>")
+                    self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
+                    self.dut.send_expect("open %s" % index, "EthApp>")
                 self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
                 ori_rx_pkts, _ = self.strip_portstats(index)
                 pkt_size = mtu + HEADER_SIZE['eth']
                 pkt = Packet(pkt_len=pkt_size)
                 pkt.send_pkt(tx_port=intf)
                 rx_pkts, _ = self.strip_portstats(index)
-                self.verify(rx_pkts == ori_rx_pkts, "Packet match mtu not forwarded as expected")
-                pkt = Packet(pkt_len=mtu + 1)
+                self.verify(rx_pkts == ori_rx_pkts + 1, "Packet match mtu not forwarded as expected")
+                pkt = Packet(pkt_len=mtu + 1 + HEADER_SIZE['eth'])
                 pkt.send_pkt(tx_port=intf)
                 rx_pkts_over, _ = self.strip_portstats(index)
                 self.verify(rx_pkts == rx_pkts_over, "Packet over mtu should not be forwarded")
