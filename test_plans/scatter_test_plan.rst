@@ -72,15 +72,15 @@ the CRC from the packet before returning it.
 As a whole, the following packet lengths (CRC included) must be tested to
 check all packet memory configurations:
 
-#. packet length < mbuf data buffer size
+1) packet length < mbuf data buffer size
 
-#. packet length = mbuf data buffer size
+2) packet length = mbuf data buffer size
 
-#. packet length = mbuf data buffer size + 1
+3) packet length = mbuf data buffer size + 1
 
-#. packet length = mbuf data buffer size + 4
+4) packet length = mbuf data buffer size + 4
 
-#. packet length = mbuf data buffer size + 5
+5) packet length = mbuf data buffer size + 5
 
 In cases 1) and 2), the hardware RX engine stores the packet data and the CRC
 in a single buffer.
@@ -101,21 +101,23 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to a Traffic Generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./build/app/testpmd -cffffff -n 3 -- -i --rxd=1024 --txd=1024 \
-  --burst=144 --txpt=32 --txht=8 --txwt=8 --txfreet=0 --rxfreet=64 \
-  --mbcache=200 --portmask=0x3 --mbuf-size=1024
+  ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x6 -n 4 -- -i --mbcache=200 \
+  --mbuf-size=2048 --portmask=0x1 --max-pkt-len=9000 --port-topology=loop \
+  --tx-offloads=DEV_TX_OFFLOAD_MULTI_SEGS
 
 The -n command is used to select the number of memory channels. It should match
 the number of memory channels on that setup.
 
-Setting the size of the mbuf data buffer to 1024 makes 1025-bytes input packets
-(CRC included) and larger packets to be stored in two buffers by the hardware
-RX engine.
+DEV_TX_OFFLOAD_MULTI_SEGS is a TX offload capability, means device supports
+multi segment send. Defined in DPDK code lib/librte_ethdev/rte_ethdev.h::
 
-Test Case: Mbuf 1024 traffic
+  #define DEV_TX_OFFLOAD_MULTI_SEGS       0x00008000
+
+Test Case: Scatter Mbuf 2048
 ============================
 
 Start packet forwarding in the ``testpmd`` application with the ``start`` command.
-Send 5 packets of lengths (CRC included) 1023, 1024, 1025, 1028, and 1029.
+Send 5 packets,the lengths are mbuf-size + offset (CRC included).
+The offset are -1, 0, 1, 4, 5 respectively.
 Check that the same amount of frames and bytes are received back by the Traffic
-Generator from its port connected to the target's port 1.
+Generator from it's port connected to the target's port 1.
