@@ -3,7 +3,7 @@ Introduction
 
 This document describes how to install and configure the Data Plane Development Kit Test Suite (DPDK Test Suite) in a Linux environment. Users can refer this document to enable this test infrastructure in their environment and don’t need go deeply with too much details about this framework.
 DPDK Test Suite is an automation test tool for DPDK software, a python-base library.  It can run on the tester machine, and communicate/manage DUT by SSH connection. DTF supports different kind of traffic generators, including DPDK-based PacketGen, third-party professional tester equipment (IXIA®).
-Data Plane Development Kit Test Suite (DPDK Test Suite) includes one set of test cases and DPDK generic test framework. DPDK Test Suite provides test example, references and framework for open source community. Based on DPDK Test Suite, everyone can develop their test plan, automation script and configuration for own features and platform. In addition, DPDK Test Suite provides a solution to allow that DPDK developers contribute their function test to certify their patch integration. It only requires limitation effort to maintain test cases once merged into DPDK Test Suite.  Everyone can utilize DPDK Test Suite to measure performance and functionality for features.
+Data Plane Development Kit Test Suite (DPDK Test Suite) includes one set of test cases and DPDK generic test framework. DPDK Test Suite provides test example, references and framework for open source community. Based on DPDK Test Suite, everyone can develop their test plan, automation script and configuration for own features and platform. In addition, DPDK Test Suite provides a solution to allow that DPDK developers contribute their function test to certify their patch integration. It only requires limited effort to maintain test cases once merged into DPDK Test Suite.  Everyone can utilize DPDK Test Suite to measure performance and functionality for features.
 
 Please see DPDK Test Suite architecture in the following figures: 
 
@@ -100,9 +100,9 @@ In the DPDK Test Suite Test Framework, it provides the following modules to help
     | virt_scene.py         | Generate virtualization scenario based on configuration file                                                                                                 |
     +-----------------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------+
 
-Beside Framework tool, DPDK Test Suite also defines one set of test cases. It includes basic test suite to verify basic functionality of DPDK library. These test script provides example and reference. Everyone can develop their test cases, verify their features functionality, and commit generic test report to maintainer. However, user-defined test cases, plan and script must follow DPDK Test Suite standard including code standard, naming conventions, configure format, rst test plan, API. 
+Beside Framework tool, DPDK Test Suite also defines one set of test cases. It includes basic test suite to verify basic functionality of DPDK library. These test script provides example and reference. Everyone can develop their test cases, verify their features functionality, and commit generic test report to maintainer. However, user-defined test cases, test plans and scripts must follow DPDK Test Suite standard including code standard, naming conventions, configure format, rst test plan, API.
 
-Please see test cases, which included in the DPDK compliance test suites:
+Please see test cases, which are included in the DPDK compliance test suites:
 
 .. table::
 
