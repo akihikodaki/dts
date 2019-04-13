@@ -436,7 +436,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         self.verify((key in out2) and (out1 != out2) and (list1 != list2), "the key setting doesn't take effect.")
 
-        # Create a rss rult with truncating key_len
+        # Create a rss rule with truncating key_len
         self.dut.send_expect("flow flush 0", "testpmd> ")
         key = "1234567890123456789012345678901234567890FFFFFFFFFFFF1234567890123456789012345678901234567890FFFFFFFFFFFF"
         key_len = "50"
