@@ -30,24 +30,27 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=======================================
-PVP multi-paths vhost single core Tests
-=======================================
+
+========================================================
+vhost/virtio pvp multi-paths vhost single core test plan
+========================================================
 
 Description
 ===========
 
-Benchmark PVP vhost single core performance with 7 TX/RX PATHs.
-Includes Mergeable, Normal, Vector_RX, Inorder mergeable, Inorder 
-no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
-For vhost single core test, give 2 cores for virtio and 1 core for vhost, use io fwd at virtio side to lower the virtio workload.
+Benchmark PVP vhost single core performance with 8 tx/rx paths.
+Includes mergeable, normal, vector_rx, inorder mergeable,
+inorder no-mergeable, virtio 1.1 mergeable, virtio 1.1 inorder, virtio 1.1 normal path.
+Give 2 cores for virtio and 1 core for vhost, set io fwd at virtio side to lower the virtio workload.
 
-Test Case 1: vhost single core performance test with Virtio 1.1 mergeable path
+Test flow
+=========
+
+TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+
+Test Case 1: vhost single core performance test with virtio 1.1 mergeable path
 ==============================================================================
 
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
-
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
@@ -59,42 +62,36 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 2. Launch virtio-user by below command::
 
     ./testpmd -l 7-9 -n 4  --socket-mem 1024,1024 --legacy-mem --file-prefix=virtio \
-    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1 \
+    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
     >start
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 2: vhost single core performance test with Virtio 1.1 no-mergeable path
-=================================================================================
-
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
-
-1. Bind one port to igb_uio, then launch vhost by below command::
-
-    rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
-    --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    testpmd>set fwd mac
-    testpmd>start
-
-2. Launch virtio-user by below command::
-
-    ./testpmd -l 7-9 -n 4  --socket-mem 1024,1024 --legacy-mem --file-prefix=virtio \
-    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
-    >set fwd io
-    >start
-
-3. Send packet with packet generator with different packet size, check the throughput.
-
-Test Case 3: vhost single core performance test with Inorder mergeable path
+Test Case 2: vhost single core performance test with virtio 1.1 normal path
 ===========================================================================
 
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -l 7-9 -n 4  --socket-mem 1024,1024 --legacy-mem --file-prefix=virtio \
+    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
+    >set fwd io
+    >start
+
+3. Send packet with packet generator with different packet size, check the throughput.
+
+Test Case 3: vhost single core performance test with inorder mergeable path
+===========================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -114,11 +111,8 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 4: vhost single core performance test with Inorder no-mergeable path
+Test Case 4: vhost single core performance test with inorder no-mergeable path
 ==============================================================================
-
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -138,11 +132,8 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 5: vhost single core performance test with Mergeable path
-=======================================================================
-
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
+Test Case 5: vhost single core performance test with mergeable path
+===================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -162,11 +153,8 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 6: vhost single core performance test with Normal path
-=======================================================================
-
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
+Test Case 6: vhost single core performance test with normal path
+================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -186,11 +174,8 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 7: vhost single core performance test with Vector_RX path
-=======================================================================
-
-flow: 
-TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
+Test Case 7: vhost single core performance test with vector_rx path
+===================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -205,6 +190,27 @@ TG --> NIC --> Virtio --> Vhost --> Virtio --> NIC --> TG
     ./testpmd -l 7-9 -n 4  --socket-mem 1024,1024 --legacy-mem --file-prefix=virtio \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,in_order=0,mrg_rxbuf=0 \
     -- -i --tx-offloads=0x0 --nb-cores=2 --txd=1024 --rxd=1024
+    >set fwd io
+    >start
+
+3. Send packet with packet generator with different packet size, check the throughput.
+
+Test Case 8: vhost single core performance test with virtio 1.1 inorder path
+============================================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -l 7-9 -n 4  --socket-mem 1024,1024 --legacy-mem --file-prefix=virtio \
+    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
     >start
 
