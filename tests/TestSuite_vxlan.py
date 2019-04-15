@@ -468,8 +468,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # verify detected l4 invalid checksum
         if "inner_l4_invalid" in kwargs:
             self.verify(self.pmdout.get_pmd_value("Bad-l4csum:", out)
-                        == self.l4err_num + 1, "Failed to count inner l4 chksum error")
-            self.l4err_num += 1
+                        == 1, "Failed to count inner l4 chksum error")
 
         # verify detected l3 invalid checksum
         if "ip_invalid" in kwargs:
@@ -649,7 +648,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                               'PORT': self.portMask}
         self.dut.send_expect(pmd_cmd, "testpmd>", 30)
         self.iperr_num = 0
-        self.l4err_num = 0
 
         # disable vlan filter
         self.dut.send_expect('vlan set filter off %d' %self.dut_port, "testpmd")
@@ -724,7 +722,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                               'PORT': self.portMask}
         self.dut.send_expect(pmd_cmd, "testpmd>", 30)
         self.iperr_num = 0
-        self.l4err_num = 0
 
         # disable vlan filter
         self.dut.send_expect('vlan set filter off %d' %self.dut_port, "testpmd")
