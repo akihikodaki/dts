@@ -180,6 +180,7 @@ class TestVF2VFBridge(TestCase):
         self.vm0_pmd = PmdOutput(self.vm0_dut)
         self.vm0_pmd.start_testpmd('all')
         self.vm0_pmd.execute_cmd('set fwd rxonly')
+        self.vm0_pmd.execute_cmd("set promisc all off")
         self.vm0_pmd.execute_cmd('start')
 
         self.vm1_ports = self.vm1_dut.get_ports('any')
@@ -194,6 +195,7 @@ class TestVF2VFBridge(TestCase):
         load = {}
         load['content'] = "'X'*46"
         self.generate_pcap_pkt(dst, src, load)
+        self.vm0_pmd.execute_cmd('clear port stats all')
         self.send_stream_pktgen(self.vm1_dut)
         recv_num = self.vm0_pmd.get_pmd_stats(0)['RX-packets']
         time.sleep(1)
