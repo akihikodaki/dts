@@ -46,7 +46,7 @@ distributor lcore: responsible for load balancing or distributing packets
 worker locres: responsible for receiving the packets from the distributor
                and operating on them.
 
-tx lcore: responsible for dequeue packets from distrbutor and transmit them
+tx lcore: responsible for dequeue packets from distributor and transmit them
 
 
 Test Case: Distributor unit test
