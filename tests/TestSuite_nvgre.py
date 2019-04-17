@@ -158,11 +158,23 @@ class NvgreTestConfig(object):
         self.inner_l4_invalid = 0
         self.payload_size = 18
 
-    def packet_type(self):
+    def packet_type(self,nic = None):
         """
         Return nvgre packet type
         """
-        if self.outer_ip_proto != 47:
+        if "cavium_a063" in nic:
+            if self.outer_ip_proto !=47:
+                if self.outer_l3_type == 'IPv4':
+                    return 'L3_IPV4'
+                else:
+                    return 'L3_IPV6'
+            else:
+                if self.inner_l3_type == 'IPv4':
+                    return 'L3_IPV4'
+                else:
+                    return 'L3_IPV6'
+
+        elif self.outer_ip_proto != 47:
             if self.outer_l3_type == 'IPv4':
                 return 'L3_IPV4_EXT_UNKNOWN'
             else:
@@ -349,7 +361,7 @@ class TestNvgre(TestCase):
         nvgre Prerequisites
         """
         # this feature only enable in FVL now
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063"]:
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
@@ -458,7 +470,7 @@ class TestNvgre(TestCase):
         # check whether detect nvgre type
         out = self.dut.get_session_output()
         print out
-        self.verify(config.packet_type() in out, "Nvgre Packet not detected")
+        self.verify(config.packet_type(self.nic) in out, "Nvgre Packet not detected")
         self.dut.send_expect("show port stats all", "testpmd>", 10)
         self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
