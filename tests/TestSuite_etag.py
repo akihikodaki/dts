@@ -51,9 +51,10 @@ from packet import Packet
 VM_CORES_MASK = 'all'
 
 class TestEtag(TestCase):
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
-        self.verify(self.nic in ['sagepond'], '802.1BR only support by sagepond')
+        self.verify(self.nic in ['sagepond','sageville'], '802.1BR only support by sagepond and sageville')
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports')
         self.src_intf = self.tester.get_interface(self.tester.get_local_port(0))
         self.src_mac =  self.tester.get_mac(self.tester.get_local_port(0))
@@ -78,9 +79,20 @@ class TestEtag(TestCase):
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 2, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
 
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
+
         try:
             for port in self.sriov_vfs_port_0:
-                port.bind_driver('pci-stub')
+                port.bind_driver(self.vf_driver)
 
             time.sleep(1)
             vf0_prop = {'opt_host': self.sriov_vfs_port_0[0].pci}
@@ -91,12 +103,12 @@ class TestEtag(TestCase):
             eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
                                                    'vf1': self.sriov_vfs_port_0[1].pci}
 
-            self.preset_host_testpmd('1S/2C/2T', eal_param)
+            self.preset_host_testpmd(VM_CORES_MASK, eal_param)
 
             # set up VM0 ENV
             self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_etag')
-            self.vm0.set_vm_device(driver='pci-assign', **vf0_prop)
-            self.vm0.set_vm_device(driver='pci-assign', **vf1_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
+            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
             self.vm_dut_0 = self.vm0.start()
             if self.vm_dut_0 is None:
                 raise Exception('Set up VM0 ENV failed!')
@@ -290,7 +302,7 @@ class TestEtag(TestCase):
             else:
                 # Same E-tag forwarding to VF0, Send 802.1BR packet with broadcast mac and
                 # check packet only received on VF0 or VF1
-                host_cmds = [['E-tag set filter add e-tag-id 1000 dst-pool %d port 0'%test_type[-1:]],
+                host_cmds = [['E-tag set filter add e-tag-id 1000 dst-pool %d port 0'% int(test_type[-1:])],
                              ['set fwd rxonly'],
                              ['set verbose 1'],
                              ['start']]
