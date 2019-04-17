@@ -372,15 +372,21 @@ class TestGeneric_filter(TestCase):
 
         self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", 
                            "powerville", "fortville_eagle", "fortville_spirit",
-                           "fortville_spirit_single", "fortpark_TLV", "fortville_25g"], "%s nic not support syn filter" % self.nic)
+                           "fortville_spirit_single", "fortpark_TLV", "fortville_25g","cavium_a063"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
         self.ethertype_filter = "on"
         ethertype = "0x0806"
-        self.dut.send_expect(
-            "ethertype_filter %s add mac_ignr 00:00:00:00:00:00 ethertype %s fwd queue 2" %
-            (valports[0], ethertype), "testpmd> ")
+
+        if self.nic == "cavium_a063":
+            self.dut.send_expect(
+                "flow create %s ingress pattern eth type is %s / end actions queue index 2 / end"%
+                (valports[0], ethertype), "testpmd> ")
+        else:
+            self.dut.send_expect(
+                "ethertype_filter %s add mac_ignr 00:00:00:00:00:00 ethertype %s fwd queue 2" %
+                (valports[0], ethertype), "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
 
         self.filter_send_packet("arp")
@@ -396,10 +402,12 @@ class TestGeneric_filter(TestCase):
             out = self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("clear port stats all", "testpmd> ")
             self.verify_result(out, tx_pkts="1", expect_queue="2")
-
-        self.dut.send_expect(
-            "ethertype_filter %s del mac_ignr 00:00:00:00:00:00 ethertype %s fwd queue 2" %
-            (valports[0], ethertype), "testpmd> ")
+        if self.nic == "cavium_a063":
+            self.dut.send_expect("flow flush %s" % (valports[0]), "testpmd> ")
+        else:
+            self.dut.send_expect(
+                "ethertype_filter %s del mac_ignr 00:00:00:00:00:00 ethertype %s fwd queue 2" %
+                (valports[0], ethertype), "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         self.filter_send_packet("arp")
         time.sleep(2)
@@ -493,7 +501,7 @@ class TestGeneric_filter(TestCase):
 
     def test_twotuple_filter(self):
 
-        if self.nic in ["powerville", "bartonhills"]:
+        if self.nic in ["powerville", "bartonhills", "cavium_a063"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -526,7 +534,7 @@ class TestGeneric_filter(TestCase):
             self.verify(False, "%s nic not support two tuple filter" % self.nic)
 
     def test_flex_filter(self):
-        self.verify(self.nic in ["powerville", "bartonhills"], '%s not support flex filter' % self.nic)
+        self.verify(self.nic in ["powerville", "bartonhills", "cavium_a063"], '%s not support flex filter' % self.nic)
 
         masks = ['000C', '000C']
         self.pmdout.start_testpmd(
