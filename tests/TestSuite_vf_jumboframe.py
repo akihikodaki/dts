@@ -212,6 +212,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
 
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1)
@@ -232,6 +233,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
 
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1)
@@ -252,6 +254,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.start_testpmd("Default", "--port-topology=loop --tx-offloads=0x8000" )
 
         self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
 
         # On igb, for example i350, refer to :DPDK-1117
@@ -280,6 +283,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
 
         self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1)
@@ -301,6 +305,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
 
         self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
 
         # On 1G NICs, when the jubmo frame MTU set as 9000, the software adjust it to 9004.
