@@ -118,7 +118,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with same type nic
 	python ./usertools/telemetry_client.py
 	enter 1/2/ :
 
-4.check and very any error show on testpmd
+4.check and verify any error show on testpmd
 
 5.set rx/tx configration by testpmd
 
@@ -149,7 +149,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with different  type nic
 	python ./usertools/telemetry_client.py
 	enter 1/2/ :
 
-4.check and very any error show on testpmd
+4.check and verify any error show on testpmd
 
 5.set rx/tx configration by testpmd
 
@@ -180,7 +180,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with same type nic
 	python ./usertools/telemetry_client.py
 	enter 1/2/
 
-4.check and very any error show on testpmd
+4.check and verify any error show on testpmd
 
 5.set rx/tx configration by testpmd
 
@@ -211,7 +211,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with different  type nic
 	python ./usertools/telemetry_client.py
 	enter 1/2/ :
 
-4.check and very any error show on testpmd
+4.check and verify any error show on testpmd
 
 5.set rx/tx configration by testpmd
 
