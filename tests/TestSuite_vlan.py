@@ -97,7 +97,7 @@ class TestVlan(TestCase):
 
     def vlan_send_packet(self, vid, num=1):
         """
-        Send $num of packet to portid, if vid is -1, it means send pakcage not include vlan id.
+        Send $num of packets to portid, if vid is -1, it means send a packet which does not include a vlan id.
         """
         # The package stream : testTxPort->dutRxPort->dutTxport->testRxPort
         port = self.tester.get_local_port(dutRxPortId)
