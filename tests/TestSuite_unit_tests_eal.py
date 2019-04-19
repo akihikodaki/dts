@@ -321,8 +321,8 @@ class TestUnitTestsEal(TestCase):
         # on FreeBSD need more time than other OS
         out = self.dut.send_expect("eal_flags_autotest", "RTE>>", 600)
         self.dut.send_expect("quit", "# ")
-        self.verify("Test OK" in out, "Test failed")
         self.dut.bind_interfaces_linux(driver=self.drivername)
+        self.verify("Test OK" in out, "Test failed")
 
     def test_alarm(self):
         """
