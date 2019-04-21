@@ -72,7 +72,7 @@ Prerequisites
 
 4.   Launch the ``telemetry`` python script with a client filepath :
 
-	 python usertools/telemetry_client.py /var/run/some_client
+	 python usertools/dpdk-telemetry-client.py /var/run/some_client
 
 5. Build should include both  make and mesion static/shared
 
@@ -115,7 +115,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with same type nic
 
 3.Run Python terminal:
 
-	python ./usertools/telemetry_client.py
+	python ./usertools/dpdk-telemetry-client.py
 	enter 1/2/ :
 
 4.check and verify any error show on testpmd
@@ -146,7 +146,7 @@ Test case:  Stats of 2 ports for testpmd and telemetry with different  type nic
 
 3.Run Python terminal:
 
-	python ./usertools/telemetry_client.py
+	python ./usertools/dpdk-telemetry-client.py
 	enter 1/2/ :
 
 4.check and verify any error show on testpmd
@@ -177,7 +177,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with same type nic
 
 3.Run Python terminal:
 
-	python ./usertools/telemetry_client.py
+	python ./usertools/dpdk-telemetry-client.py
 	enter 1/2/
 
 4.check and verify any error show on testpmd
@@ -208,7 +208,7 @@ Test case:  Stats of 4 ports for testpmd and telemetry with different  type nic
 
 3.Run Python terminal:
 
-	python ./usertools/telemetry_client.py
+	python ./usertools/dpdk-telemetry-client.py
 	enter 1/2/ :
 
 4.check and verify any error show on testpmd
