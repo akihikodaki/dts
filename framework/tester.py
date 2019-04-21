@@ -452,7 +452,7 @@ class Tester(Crb):
 
         sleep(2)
         self.scapyCmds = []
-        self.send_expect("exit()", "# ")
+        self.send_expect("exit()", "# ", timeout)
 
     def scapy_background(self):
         """
