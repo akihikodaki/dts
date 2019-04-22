@@ -134,6 +134,7 @@ class TestVfPacketRxtx(TestCase):
         out = self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         pmd_vf0_mac = self.vm0_testpmd.get_port_mac(port_id_0)
         self.vm0_testpmd.execute_cmd('set fwd mac')
+        self.vm0_testpmd.execute_cmd("set promisc all off")
         self.vm0_testpmd.execute_cmd('start')
 
         time.sleep(2)
@@ -275,6 +276,7 @@ class TestVfPacketRxtx(TestCase):
         self.vm0_testpmd.execute_cmd('show port info all')
         pmd0_vf0_mac = self.vm0_testpmd.get_port_mac(port_id_0)
         self.vm0_testpmd.execute_cmd('set fwd mac')
+        self.vm0_testpmd.execute_cmd("set promisc all off")
         self.vm0_testpmd.execute_cmd('start')
 
         time.sleep(2)
