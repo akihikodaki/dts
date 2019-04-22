@@ -170,7 +170,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
             # verify normal packet just by number, verify fragment packet by all elements
             pkts = self.tester.load_tcpdump_sniff_packets(inst)
-            self.verify(len(pkts) == expPkts, "Failed on forward packet size " + str(size))
+            self.verify(len(pkts) == expPkts, "in functional_check_ipv4(): failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
                 for pkt in pkts:
@@ -220,7 +220,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
             # verify normal packet just by number, verify fragment packet by all elements
             pkts = self.tester.load_tcpdump_sniff_packets(inst)
-            self.verify(len(pkts) == expPkts, "Failed on forward packet size " + str(size))
+            self.verify(len(pkts) == expPkts, "In functional_check_ipv6(): failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
                 for pkt in pkts:
