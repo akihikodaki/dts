@@ -30,35 +30,33 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-===========================================
-Loopback multi-paths and port restart Tests
-===========================================
+=================================================================
+vhost/virtio loopback with multi-paths and port restart test plan
+=================================================================
 
 Description
 ===========
 
-Benchmark vhost/virtio-user loopback test with 7 RX/TX PATHs.
-Includes Mergeable, Normal, Vector_RX, Inorder mergeable,
-Inorder no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
+Benchmark vhost/virtio-user loopback test with 8 rx/tx paths.
+Includes mergeable, normal, vector_rx, inorder mergeable,
+inorder no-mergeable, virtio 1.1 mergeable, virtio 1.1 inorder, virtio 1.1 normal path.
 Also cover port restart test with each path.
 
-
-
-Test Case 1:loopback test with Virtio 1.1 mergeable path
-===========================================================================
+Test Case 1: loopback test with virtio 1.1 mergeable path
+=========================================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -67,35 +65,118 @@ Test Case 1:loopback test with Virtio 1.1 mergeable path
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Repeat below command to get throughput 10 times,then calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
     testpmd>show port stats all
 
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
 
-Test Case 2: loopback test with Virtio 1.1 no-mergeable path
-===========================================================================
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+Test Case 2: loopback test with virtio 1.1 normal path
+======================================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+4. Get throughput 10 times and calculate the average throughput::
+
+    testpmd>show port stats all
+
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
+
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>show port stats all
+
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+Test Case 3: loopback test with virtio 1.1 inorder path
+=======================================================
+
+1. Launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,in_order=1,mrg_rxbuf=0 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+4. Get throughput 10 times and calculate the average throughput::
+
+    testpmd>show port stats all
+
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
+
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>show port stats all
+
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+Test Case 4: loopback test with inorder mergeable path
+======================================================
+
+1. Launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -104,64 +185,32 @@ Test Case 2: loopback test with Virtio 1.1 no-mergeable path
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Get throughput 10 times and calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
     testpmd>show port stats all
 
-Test Case 3: loopback test with Inorder mergeable path
-===========================================================================
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
 
-1. Launch vhost by below command::
-
-    rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
-
-2. Launch virtio-user by below command::
-
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
-    >start
-
-3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
-
-    testpmd>set txpkts [frame_size]
+    testpmd>port start 0
     testpmd>start tx_first 32
-    testpmd>start
-
-4. Get throughput 10 times and calculate the average throughput::
-
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
-
-    testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
-    testpmd>show port stats all
-
-Test Case 4: loopback test with Inorder no-mergeable path
-===========================================================================
+Test Case 5: loopback test with inorder no-mergeable path
+=========================================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
@@ -172,32 +221,36 @@ Test Case 4: loopback test with Inorder no-mergeable path
     >set fwd mac
     >start
 
-3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Get throughput 10 times and calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
     testpmd>show port stats all
 
-Test Case 5: loopback test with Mergeable path
-===========================================================================
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+Test Case 6: loopback test with mergeable path
+==============================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
@@ -208,37 +261,36 @@ Test Case 5: loopback test with Mergeable path
     >set fwd mac
     >start
 
-3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Get throughput 10 times and calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart 100 times by below command and re-calculate the average througnput::
+5. Port restart at vhost side 100 times and re-calculate the average throughput, verify the throughput is not zero after port restart::
 
     testpmd>stop
-    testpmd>start
+    testpmd>port stop 0
+    testpmd>port start 0
     ...
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
+    testpmd>port start 0
+    testpmd>start tx_first 32
     testpmd>show port stats all
 
-
-
-Test Case 6: loopback test with Normal path
-===========================================================================
+Test Case 7: loopback test with normal path
+===========================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
@@ -253,28 +305,32 @@ Test Case 6: loopback test with Normal path
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Get throughput 10 times and calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
     testpmd>show port stats all
 
-Test Case 7: loopback test with Vector_RX path
-===========================================================================
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+
+Test Case 8: loopback test with vector_rx path
+==============================================
 
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
     ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
-    >set fwd mac
+    testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
@@ -285,19 +341,23 @@ Test Case 7: loopback test with Vector_RX path
     >set fwd mac
     >start
 
-3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
 
     testpmd>set txpkts [frame_size]
     testpmd>start tx_first 32
-    testpmd>start
 
 4. Get throughput 10 times and calculate the average throughput::
 
     testpmd>show port stats all
 
-5. Port restart by below command and re-calculate the average througnput::
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
 
     testpmd>stop
-    testpmd>clear port stats all
-    testpmd>start
+    testpmd>port stop 0
+    testpmd>show port stats all
+
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>start tx_first 32
     testpmd>show port stats all
