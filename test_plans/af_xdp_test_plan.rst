@@ -47,7 +47,7 @@ Prerequisites
 
     I40e 25G*2
     enp216s0f0 <---> IXIA_port_0
-    enp216s0f1 <---> IXIA_port_0
+    enp216s0f1 <---> IXIA_port_1
 
 2. The NIC is located on the socket 1, so we define the cores of socket 1.
 
@@ -94,7 +94,7 @@ Test case 1: 1 port, 1 kernel core, 1 user core
 3. Send packet with packet generator with different packet size,
    from 64 bytes to 1518 bytes, check the throughput.
 
-Test case 2: 2 ports, 2 kernel cores, 1 user cores
+Test case 2: 2 ports, 2 kernel cores, 2 user cores
 ==================================================
 
 1. Start the testpmd::
