@@ -92,11 +92,12 @@ class TestUnitTestsPmdPerf(TestCase):
     
        out = self.dut.send_expect("./usertools/cpu_layout.py", "#", 10)
        k = re.search("Core 0 (.*)", out)
-       result = re.findall("(\d+),", k.group())
        socket_id = self.dut.ports_info[0]['port'].socket
        if socket_id == 0 or socket_id == -1:
+          result = re.findall("(\d+)", k.group())
           return  int(result[0])
        else:
+          result = re.findall("(\d+),", k.group())
           return  int(result[1])
 
     def test_pmd_burst(self):
