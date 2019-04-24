@@ -334,7 +334,7 @@ class TestShutdownApi(TestCase):
             for port in self.ports:
                 out = self.tester.send_expect(
                     "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(port)), "# ")
-                self.verify("Speed: %s" % config[0] in out,
+                self.verify("Speed: %sMb/s" % config[0] in out,
                             "Wrong speed reported by the self.tester.")
                 self.verify("Duplex: %s" % config[1] in out,
                             "Wrong link type reported by the self.tester.")
