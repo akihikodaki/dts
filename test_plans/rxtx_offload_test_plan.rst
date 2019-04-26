@@ -125,7 +125,7 @@ Test case: Rx offload per-port setting
       Queue[ 2] :
       Queue[ 3] :
 
-2. Improve the tester ports's mtu::
+2. Increase the tester ports's mtu::
 
     ifconfig enp131s0f0 mtu 9200
     ifconfig enp131s0f1 mtu 9200
