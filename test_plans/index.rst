@@ -138,6 +138,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_rss_test_plan
     vf_to_vf_nic_bridge_test_plan
     vf_vlan_test_plan
+    kernelpf_iavf_test_plan
     vhost_multi_queue_qemu_test_plan
     vhost_pmd_xstats_test_plan
     vhost_qemu_mtu_test_plan
