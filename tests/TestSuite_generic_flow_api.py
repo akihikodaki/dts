@@ -155,36 +155,65 @@ class TestGeneric_flow_api(TestCase):
         elif module == "nvgre":
             self.tester.scapy_append('from nvgre import NVGRE')
 
-    def verify_result(self, pf_vf, expect_rxpkts, expect_queue):
+    def verify_result(self, pf_vf, expect_rxpkts, expect_queue, verify_mac):
         """
         verify the packet to the expected queue or be dropped
         """
         self.tester.scapy_execute()
         time.sleep(2)
+        verify_mac = verify_mac.upper()
 
         if self.vf_flag == 1:
+            out_vf0 = self.session_secondary.get_session_before(timeout=2)
             outstring_vf0 = self.session_secondary.send_expect("stop", "testpmd> ", 120)
+            out_vf1 = self.session_third.get_session_before(timeout=2)
             outstring_vf1 = self.session_third.send_expect("stop", "testpmd> ", 120)
+            self.logger.info("vf0: %s" % out_vf0)
+            self.logger.info("vf1: %s" % out_vf1)
+        out_pf = self.dut.get_session_output(timeout=2)
         outstring_pf = self.dut.send_expect("stop", "testpmd> ", 120)
+        self.logger.info("pf: %s" % out_pf)
         time.sleep(2)
+
         if expect_rxpkts == "0":
             if pf_vf == "pf":
-                self.verify("Queue" not in outstring_pf, "the packet is not dropped.")
+                self.verify(verify_mac not in out_pf, "the packet is not dropped.")
             elif pf_vf == "vf0":
-                self.verify("Queue" not in outstring_vf0, "the packet is not dropped.")
+                self.verify(verify_mac not in out_vf0, "the packet is not dropped.")
             else:
-                self.verify("Queue" not in outstring_vf1, "the packet is not dropped.")
+                self.verify(verify_mac not in out_vf1, "the packet is not dropped.")
         else:
-            result_scanner = r"Forward Stats for RX Port= %s/Queue=\s?([0-9]+)" % self.dut_ports[0]
+            result_scanner = r"port\s*%s/queue\s?[0-9]+" % self.dut_ports[0]
             scanner = re.compile(result_scanner, re.DOTALL)
             if pf_vf == "pf":
-                m = scanner.search(outstring_pf)
+                self.verify(verify_mac in out_pf, "the pf not receive the expect packet.")
+                out_info = out_pf
             elif pf_vf == "vf0":
-                m = scanner.search(outstring_vf0)
+                self.verify(verify_mac in out_vf0, "the vf0 not receive the expect packet.")
+                out_info = out_vf0
             else:
-                m = scanner.search(outstring_vf1)
-            queue_id = m.group(1)
-            self.verify(int(expect_queue) == int(queue_id), "the actual queue doesn't equal to the expected queue.")
+                self.verify(verify_mac in out_vf1, "the vf1 not receive the expect packet.")
+                out_info = out_vf1
+
+            # find the expected packet receive position
+            mac_index = out_info.find("dst=%s" % verify_mac)
+            m = scanner.findall(out_info)
+            # get all the port 0/queue X str position
+            # and calculate the port 0/queue X info of expected packet
+            all_queue_index = []
+            queue_index = 0
+            find_index = False
+            for i in range(len(m)):
+                cur = out_info.find(m[i], all_queue_index[i-1] + len(m[i-1]) if i > 0 else 0)
+                if cur > mac_index:
+                    queue_index = i - 1
+                    find_index = True
+                    break
+                all_queue_index.append(cur)
+            if find_index is False:
+                queue_index = len(m) - 1
+            curr_queue = int(m[queue_index][len("port 0/queue"):])
+            self.verify(int(expect_queue) == curr_queue, "the actual queue doesn't equal to the expected queue.")
 
         self.dut.send_expect("start", "testpmd> ")
 
@@ -287,28 +316,30 @@ class TestGeneric_flow_api(TestCase):
 
                 # The rule is created successfully, so send the consistent packet.
                 self.tester.scapy_append('sendp(%s, iface="%s")' % (flow_pkt, self.tester_itf))
+                cur_mac = re.search("dst='(\S\S:\S\S:\S\S:\S\S:\S\S:\S\S)'", flow_pkt)
+                cur_mac = cur_mac.group(1)
                 if ("queue" in flow_action['actions']) or ("passthru" in flow_action['actions']):
                     if ("vf0" in flow_action['flows']) or ("vf0" in flow_action['actions']):
-                        self.verify_result("vf0", expect_rxpkts="1", expect_queue=flow_queue)
+                        self.verify_result("vf0", expect_rxpkts="1", expect_queue=flow_queue, verify_mac=cur_mac)
                     elif "vf1" in flow_action['flows'] or "vf1" in flow_action['actions']:
-                        self.verify_result("vf1", expect_rxpkts="1", expect_queue=flow_queue)
+                        self.verify_result("vf1", expect_rxpkts="1", expect_queue=flow_queue, verify_mac=cur_mac)
                     else:
-                        self.verify_result("pf", expect_rxpkts="1", expect_queue=flow_queue)
+                        self.verify_result("pf", expect_rxpkts="1", expect_queue=flow_queue, verify_mac=cur_mac)
                 elif "drop" in flow_action['actions']:
                     if ("vf0" in flow_action['flows']) or ("vf0" in flow_action['actions']):
-                        self.verify_result("vf0", expect_rxpkts="0", expect_queue="NULL")
+                        self.verify_result("vf0", expect_rxpkts="0", expect_queue="NULL", verify_mac=cur_mac)
                     elif ("vf1" in flow_action['flows']) or ("vf1" in flow_action['actions']):
-                        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL")
+                        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=cur_mac)
                     else:
-                        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL")
+                        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=cur_mac)
                 # L2-tunnel filter
                 else:
                     if "vf0" in flow_action['actions']:
-                        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0")
+                        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=cur_mac)
                     elif "vf1" in flow_action['actions']:
-                        self.verify_result("vf1", expect_rxpkts="1", expect_queue="0")
+                        self.verify_result("vf1", expect_rxpkts="1", expect_queue="0", verify_mac=cur_mac)
                     elif "pf" in flow_action['actions']:
-                        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=cur_mac)
         # Return the status of the rule.
         return rule_created
 
@@ -629,11 +660,11 @@ class TestGeneric_flow_api(TestCase):
         # send the packets and verify the results
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="S")/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="3")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="3", verify_mac=self.pf_mac)
 
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(dport=80,flags="PA")/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
 
         # the ipv6 rule is conflicted with ipv4 rule.
         self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
@@ -644,11 +675,11 @@ class TestGeneric_flow_api(TestCase):
         # send the packets and verify the results
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/TCP(dport=80,flags="S")/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="4")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="4", verify_mac=self.pf_mac)
 
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/TCP(dport=80,flags="PA")/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
 
         self.verify_rulenum(1)
 
@@ -676,13 +707,13 @@ class TestGeneric_flow_api(TestCase):
         # send the packets inconsistent to the rules.
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="%s", dst="%s")/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[0]['dip'], extra_packet[0]['sip'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="%s", dst="%s")/SCTP(sport=%s,dport=%s)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[3]['dip'], extra_packet[3]['sip'], extra_packet[3]['sport'], extra_packet[3]['dport'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="%s", dst="%s")/SCTP(sport=%s,dport=%s)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[0]['sip'], extra_packet[0]['dip'], extra_packet[3]['sport'], extra_packet[3]['dport'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0], verify_mac=self.pf_mac)
 
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
@@ -710,10 +741,10 @@ class TestGeneric_flow_api(TestCase):
         # send the packets inconsistent to the rules.
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=22,dport=24)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=34)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
@@ -765,7 +796,7 @@ class TestGeneric_flow_api(TestCase):
             extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s",type=0x88E5)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
             rule_num = extrapkt_rulenum['rulenum']
             self.verify_rulenum(rule_num)
 
@@ -810,7 +841,7 @@ class TestGeneric_flow_api(TestCase):
         extra_packet = extrapkt_rulenum['extrapacket']
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1BR(GRP=0x2, ECIDbase=%s)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[0]['etag'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
@@ -884,46 +915,46 @@ class TestGeneric_flow_api(TestCase):
         # send the packets with dst/src ip and dst/src port.
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", proto=3)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[0]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3)/UDP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[1]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][1])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][1], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[2]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][2])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][2], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", tos=3, ttl=3)/SCTP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[3]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][3])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][3], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.1", dst="192.168.0.2", ttl=3)/TCP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[3]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/UDP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[2]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/SCTP(sport=44,dport=45,tag=1)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[6]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="192.168.0.5", dst="192.168.0.6", tos=3, ttl=3)/UDP(sport=44,dport=45)/SCTPChunkData(data="X" * 20)], iface="%s")' % (self.outer_mac, extra_packet[7]['vlan'], self.tester_itf))
-        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=1, nh=5, hlim=10)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[8]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][8])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][8], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[9]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][9])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][9], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[10]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][10])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][10], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)], iface="%s")' % (self.pf_mac, extra_packet[11]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][11])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][11], verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=4, nh=132, hlim=40)/SCTP(sport=44,dport=45,tag=1)/SCTPChunkData(data="X" * 20)], iface="%s")' % (self.pf_mac, extra_packet[14]['vlan'], self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("pf", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.pf_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/TCP(sport=32,dport=33)/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[15]['vlan'], self.tester_itf))
-        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.outer_mac)
 
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
@@ -977,7 +1008,7 @@ class TestGeneric_flow_api(TestCase):
             extra_packet = extrapkt_rulenum['extrapacket']
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.3", dst="192.168.0.4", proto=%s)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[0]['proto'], self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
             rule_num = extrapkt_rulenum['rulenum']
             self.verify_rulenum(rule_num)
 
@@ -1001,7 +1032,7 @@ class TestGeneric_flow_api(TestCase):
                 extra_packet = extrapkt_rulenum['extrapacket']
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IP(src="%s", dst="%s")/SCTP(sport=%s,dport=%s)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[2]['sip'], extra_packet[2]['dip'], extra_packet[2]['dport'], extra_packet[2]['sport'], self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 rule_num = extrapkt_rulenum['rulenum']
                 self.verify_rulenum(rule_num)
             else:
@@ -1015,7 +1046,7 @@ class TestGeneric_flow_api(TestCase):
                 extra_packet = extrapkt_rulenum['extrapacket']
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IP(src="%s", dst="%s")/SCTP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[2]['dip'], extra_packet[2]['sip'], self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 rule_num = extrapkt_rulenum['rulenum']
                 self.verify_rulenum(rule_num)
 
@@ -1061,7 +1092,7 @@ class TestGeneric_flow_api(TestCase):
             extra_packet = extrapkt_rulenum['extrapacket']
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/Dot1Q(vlan=%s)/IPv6(src="2001::1", dst="2001::2", tc=2, hlim=20)/UDP(sport=22,dport=23)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[1]['vlan'], self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
             rule_num = extrapkt_rulenum['rulenum']
             self.verify_rulenum(rule_num)
 
@@ -1089,13 +1120,13 @@ class TestGeneric_flow_api(TestCase):
                 extra_packet = extrapkt_rulenum['extrapacket']
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2",nh=132)/SCTP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP()/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/UDP(sport=22,dport=23)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
                 rule_num = extrapkt_rulenum['rulenum']
                 self.verify_rulenum(rule_num+1)
             elif (self.nic in ["sagepond", "sageville"]):
@@ -1113,13 +1144,13 @@ class TestGeneric_flow_api(TestCase):
                 extra_packet = extrapkt_rulenum['extrapacket']
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="%s", dst="%s", nh=132)/SCTP(sport=32,dport=33,tag=1)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[3]['sip'], extra_packet[3]['dip'], self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IP(src="%s", dst="%s", proto=132)/SCTP(sport=32,dport=33)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, extra_packet[4]['dip'], extra_packet[4]['sip'], self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/UDP(sport=22,dport=23)/Raw("x" * 20)], iface="%s")' % (self.pf_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
                 rule_num = extrapkt_rulenum['rulenum']
                 self.verify_rulenum(rule_num+1)
 
@@ -1162,27 +1193,27 @@ class TestGeneric_flow_api(TestCase):
             # send the packets and verify the results
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s", type=0x0807)/Raw(load="abcdefghijklmnop")], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.pf_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/Dot1Q(vlan=4095)/IP(src="192.168.0.1", dst="192.168.0.2", proto=255, ttl=40)/Raw(load="xxabxxxxxxxxxxabcdefghijabcdefg")], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="2")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.pf_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="2.2.2.4", dst="2.2.2.5")/UDP(sport=22,dport=23)/Raw(load="fhfhdsdsfwef")], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="3")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="3", verify_mac=self.pf_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="2.2.2.4", dst="2.2.2.5", tos=4, ttl=3)/TCP(sport=32,dport=33)/Raw(load="fhhijk")], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="4")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="4", verify_mac=self.pf_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="2.2.2.4", dst="2.2.2.5")/SCTP(sport=42,dport=43,tag=1)/Raw(load="xxabcdefghijklmnopqrst")], iface="%s")' % (self.pf_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="5")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="5", verify_mac=self.pf_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="2.2.2.4", dst="2.2.2.5")/SCTP(sport=42,dport=43,tag=1)/Raw(load="xxabxxxabcddxxabcdefghijklmn")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
             self.verify_rulenum(5)
 
@@ -1202,7 +1233,7 @@ class TestGeneric_flow_api(TestCase):
             # send the packet and verify the result
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IPv6(src="2001::1", dst="2001::2", tc=3, hlim=30)/TCP(sport=32,dport=33)/Raw(load="hijkabcdefghabcdefghijklmn")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="6")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="6", verify_mac=self.outer_mac)
 
         # ixgbe
         else:
@@ -1219,7 +1250,7 @@ class TestGeneric_flow_api(TestCase):
             # send the packet and verify the result
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=24,dport=25)/Raw(load="xx86ddef")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.outer_mac)
 
             self.dut.send_expect("quit", "# ")
             time.sleep(2)
@@ -1238,11 +1269,11 @@ class TestGeneric_flow_api(TestCase):
             # send the packet and verify the result
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.3", dst="192.168.0.4")/TCP(sport=22,dport=23)/Raw(load="abcdxxx")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.3", dst="192.168.0.4")/TCP(sport=22,dport=23)/Raw(load="cdcdxxx")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="2")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.outer_mac)
 
             self.dut.send_expect("quit", "# ")
             time.sleep(2)
@@ -1265,10 +1296,10 @@ class TestGeneric_flow_api(TestCase):
             # send the packet and verify the result
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=24,dport=25)/Raw(load="xxabcdef")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="3")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="3", verify_mac=self.outer_mac)
             self.tester.scapy_append(
                 'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=24,dport=25)/Raw(load="xxaccdef")], iface="%s")' % (self.outer_mac, self.tester_itf))
-            self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
             # ipv6-other-flexbytes
             if (self.nic in ["niantic", "twinville"]):
@@ -1285,10 +1316,10 @@ class TestGeneric_flow_api(TestCase):
                     "flow create 0 ingress pattern fuzzy thresh is 6 / ipv6 src is 2001::1 dst is 2001::2 / raw relative is 0 search is 0 offset is 56 limit is 0 pattern is 86 / end actions queue index 4 / end", "created")
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/Raw(load="xx86abcd")], iface="%s")' % (self.outer_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="4")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="4", verify_mac=self.outer_mac)
                 self.tester.scapy_append(
                     'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/Raw(load="xxx86abcd")], iface="%s")' % (self.outer_mac, self.tester_itf))
-                self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+                self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
     def test_flexbytes_filter(self):
         """
@@ -1325,31 +1356,31 @@ class TestGeneric_flow_api(TestCase):
         # send the packet and verify the result
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Raw(load="fhdsab")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/Raw(load="afhdsb")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="abcdef")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="2")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/Raw(load="xxxxefgh")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="3")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="3", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IPv6(src="2001::1", dst="2001::2")/TCP(sport=32,dport=33)/Raw(load="abcdefgh")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="cdxxabxxefghxxxx")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="4")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="4", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2", tos=4, ttl=3)/UDP(sport=32,dport=33)/Raw(load="xxefghabcdxxxxxxhijklmnopqxxxx")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="5")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="5", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxabxxklmnefgh")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="6")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="6", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxabxxklcdefgh")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.dut.send_expect("flow flush 0", "testpmd> ", 120)
 
@@ -1369,16 +1400,16 @@ class TestGeneric_flow_api(TestCase):
         # send the packet and verify the result
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxab")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="1")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="1", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcb")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxxxxxabxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxcd")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="2")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="2", verify_mac=self.outer_mac)
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22,dport=23)/Raw(load="xxxxxxxxxxxxxxabxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxce")], iface="%s")' % (self.outer_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.verify_rulenum(2)
 
@@ -1488,22 +1519,22 @@ class TestGeneric_flow_api(TestCase):
         self.load_module("vxlan")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan()/Ether(dst="%s")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.inner_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0], verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=5)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.wrong_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[5]['vni'], self.wrong_mac, extra_packet[5]['invlan'], self.tester_itf))
-        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.wrong_mac, extra_packet[6]['vni'], self.inner_mac, self.tester_itf))
-        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.wrong_mac)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
@@ -1547,22 +1578,22 @@ class TestGeneric_flow_api(TestCase):
         self.load_module("nvgre")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/NVGRE()/Ether(dst="%s")/Dot1Q(vlan=1)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.inner_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0])
+        self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0], verify_mac=self.outer_mac)
 
         self.load_module("nvgre")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[4]['tni'], self.wrong_mac, self.tester_itf))
-        self.verify_result("pf", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("nvgre")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[5]['tni'], self.wrong_mac, extra_packet[5]['invlan'], self.tester_itf))
-        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0")
+        self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("nvgre")
         self.tester.scapy_append(
             'sendp([Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.wrong_mac, extra_packet[6]['tni'], self.inner_mac, self.tester_itf))
-        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL")
+        self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.wrong_mac)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
