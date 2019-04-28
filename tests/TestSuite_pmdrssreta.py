@@ -66,43 +66,43 @@ class TestPmdrssreta(TestCase):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "IPV4&TCP":
             for i in range(16):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "IPV4&UDP":
             for i in range(16):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "IPV6":
             for i in range(16):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "IPV6&TCP":
             for i in range(16):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "IPV6&UDP":
             for i in range(16):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
-                self.tester.scapy_execute()
-                time.sleep(.5)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         else:
             print "\ntran_type error!\n"
         out = self.dut.get_session_output(timeout=1)
