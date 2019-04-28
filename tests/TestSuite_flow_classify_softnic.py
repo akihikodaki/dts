@@ -275,7 +275,7 @@ class TestFlowClassifySoftnic(TestCase):
                     packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="%s.%d", dst="%s", proto=17)/UDP(sport=100, dport=200)], iface="%s")' % (
                         self.dut_p0_mac, itf, ipaddr, i, dst_addr, itf)
                     self.tester.scapy_append(packet)
-                    self.tester.scapy_execute()
+                self.tester.scapy_execute()
             elif ptype == "ipv6":
                 var = src_addr.split(":")
                 string = ":"
@@ -287,7 +287,7 @@ class TestFlowClassifySoftnic(TestCase):
                     packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="%s:%d", dst="%s", nh=17)/UDP(sport=100, dport=200)], iface="%s")' % (
                         self.dut_p0_mac, itf, ipaddr, i, dst_addr, itf)
                     self.tester.scapy_append(packet)
-                    self.tester.scapy_execute()
+                self.tester.scapy_execute()
 
         elif src_dst == "dst":
             if ptype == "ipv4":
@@ -298,7 +298,7 @@ class TestFlowClassifySoftnic(TestCase):
                     packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="%s", dst="%s.%d", proto=17)/UDP(sport=100, dport=100)], iface="%s")' % (
                         self.dut_p0_mac, itf, src_addr, ipaddr, i, itf)
                     self.tester.scapy_append(packet)
-                    self.tester.scapy_execute()
+                self.tester.scapy_execute()
             elif ptype == "ipv6":
                 var = dst_addr.split(":")
                 string = ":"
@@ -310,7 +310,7 @@ class TestFlowClassifySoftnic(TestCase):
                     packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IPv6(src="%s", dst="%s:%d", nh=17)/UDP(sport=100, dport=200)], iface="%s")' % (
                         self.dut_p0_mac, itf, src_addr, ipaddr, i, itf)
                     self.tester.scapy_append(packet)
-                    self.tester.scapy_execute()
+                self.tester.scapy_execute()
 
     def check_packet_queue(self, queues=[], out=""):
         """
