@@ -36,18 +36,11 @@ Test moving RSS to rte_flow.
 
 """
 
-import utils
 import time
 import re
 
 from test_case import TestCase
-from settings import HEADER_SIZE
 from pmd_output import PmdOutput
-from settings import DRIVERS
-
-from project_dpdk import DPDKdut
-from dut import Dut
-from packet import Packet
 
 
 class TestRSS_to_Rteflow(TestCase):
@@ -99,14 +92,13 @@ class TestRSS_to_Rteflow(TestCase):
         """
         get the queue which packet enter.
         """
-        outstring = self.dut.send_expect("stop", "testpmd> ")
-        time.sleep(2)
-        result_scanner = r"Forward Stats for RX Port= %s/Queue=\s?([0-9]+)" % self.dut_ports[0]
+        outstring = self.pmdout.get_output()
+        result_scanner = r'port\s?%s/queue\s?(\d+):\s?received \d+ packets' % self.dut_ports[0]
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(outstring)
         queue_id = m.group(1)
-        print "queue is %s" % queue_id
-        self.dut.send_expect("start", "testpmd> ")
+        print("queue is %s" % queue_id)
+        self.pmdout.execute_cmd("clear port stats all")
         return queue_id
 
     def send_and_check(self, pkt, rss_queue):
@@ -115,7 +107,6 @@ class TestRSS_to_Rteflow(TestCase):
         """
         self.tester.scapy_append('sendp(%s, iface="%s")' % (pkt, self.tester_itf))
         self.tester.scapy_execute()
-        time.sleep(2)
         queue = self.get_queue_number()
         self.verify(queue in rss_queue, "the packet doesn't enter the expected RSS queue.")
         return queue
@@ -128,14 +119,14 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
         for i in range(128):
             if ptype == "ipv4-udp":
-                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(dport=%d, sport=%d)], iface="%s")' % (
-                    self.pf_mac, itf, i + 1, i + 2, i + 21, i + 22, itf)
+                packet = r'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(dport=%d, sport=%d)], iface="%s")' % (
+                    self.pf_mac, self.tester_mac, i + 1, i + 2, i + 21, i + 22, itf)
             elif ptype == "ipv4-other":
-                packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
-                    self.pf_mac, itf, i + 1, i + 2, itf)
+                packet = r'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
+                    self.pf_mac, self.tester_mac, i + 1, i + 2, itf)
             self.tester.scapy_append(packet)
-            self.tester.scapy_execute()
-            time.sleep(2)
+        self.tester.scapy_execute()
+        time.sleep(2)
 
     def check_packet_queue(self, queue, out):
         """
