@@ -214,7 +214,11 @@ def create_mask(indexes):
 
     return hex(val).rstrip("L")
 
-def convert_int2ip(value, ip_type):
+def convert_int2ip(value, ip_type=4):
+    '''
+    @change:
+    2019.0403 set default value
+    '''
     if ip_type == 4:
         ip_str = socket.inet_ntop(socket.AF_INET, struct.pack('!I', value))
     else:
@@ -224,7 +228,11 @@ def convert_int2ip(value, ip_type):
 
     return ip_str
 
-def convert_ip2int(ip_str, ip_type):
+def convert_ip2int(ip_str, ip_type=4):
+    '''
+    @change:
+    2019.0403 set default value
+    '''
     if ip_type == 4:
         ip_val = struct.unpack("!I", socket.inet_aton(ip_str))[0]
     else:
@@ -233,6 +241,26 @@ def convert_ip2int(ip_str, ip_type):
         ip_val = (h << 64) | l
 
     return ip_val
+
+def convert_mac2long(mac_str):
+    """
+    convert the MAC type from the string into the int.
+    """
+    mac_hex = '0x'
+    for mac_part in mac_str.lower().split(':'):
+        mac_hex += mac_part
+    ret  = long(mac_hex, 16)
+    return ret
+
+def convert_mac2str(mac_long):
+    """
+    convert the MAC type from the int into the string.
+    """
+    mac = hex(mac_long)[2:-1].zfill(12)
+    b = []
+    [b.append(mac[n:n+2]) for n in range(len(mac)) if n % 2 == 0 ]
+    new_mac = ":".join(b)
+    return new_mac
 
 def get_backtrace_object(file_name, obj_name):
     import inspect
