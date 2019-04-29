@@ -136,7 +136,7 @@ Ipv4 packet match destination port 101 will be dropped::
     Send one ipv4 packet with destination port 101 will be dropped.
     Send one ipv4 packet with destination port 1 will be forwarded to PORT0
 
-Ipv4 packet match protocal TCP will be dropped::
+Ipv4 packet match protocol TCP will be dropped::
 
     Add one ACL rule and default route rule in /root/rule_ipv4.db
     @0.0.0.0/0 0.0.0.0/0 0 : 65535 0 : 65535 6/0xff
@@ -231,7 +231,7 @@ Ipv6 packet match destination port 101 will be dropped::
     Send one ipv6 packet with destination port 101 will be dropped.
     Send one ipv6 packet with destination port 1 will be forwarded to PORT0
 
-Ipv6 packet match protocal TCP will be dropped::
+Ipv6 packet match protocol TCP will be dropped::
 
     Add one ACL rule and default route rule in /root/rule_ipv6.db
     @0:0:0:0:0:0:0:0/0 0:0:0:0:0:0:0:0/0 0 : 65535 0 : 65535 6/0xff

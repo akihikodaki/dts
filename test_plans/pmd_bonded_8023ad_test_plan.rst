@@ -39,7 +39,7 @@ testpmd.
 link bonding mode 4 is IEEE 802.3ad Dynamic link aggregation. Creates
 aggregation groups that share the same speed and duplex settings. Utilizes all
 slaves in the active aggregator according to the 802.3ad specification. DPDK
-realize it based on 802.1AX specification, it includes LACP protocal and Marker
+realize it based on 802.1AX specification, it includes LACP protocol and Marker
 protocol. This mode requires a switch that supports IEEE 802.3ad Dynamic link
 aggregation.
 

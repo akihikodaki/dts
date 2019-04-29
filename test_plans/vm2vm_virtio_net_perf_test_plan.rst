@@ -74,12 +74,12 @@ Test Case 1: vhost-user + virtio-net VM2VM with tcp traffic
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -124,12 +124,12 @@ Test Case 2: vhost-user + virtio-net VM2VM zero-copy with tcp traffic
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on  \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -174,12 +174,12 @@ Test Case 3: vhost-user + virtio-net VM2VM with udp traffic
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
