@@ -696,6 +696,40 @@ class TestVfDaemon(TestCase):
         self.vm0_testpmd.execute_cmd('vlan set strip off 0')
         self.vm0_testpmd.execute_cmd('vlan set filter off 0')
 
+    def test_stats_show_clear(self):
+        """
+        Show and clear statistics for a VF from PF
+        """
+        self.check_vf_link_status()
+        self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
+        out = self.dut_testpmd.execute_cmd('show vf stats 0 0')
+        self.verify("RX-packets: 0" in out and "TX-packets: 0" in out,
+            "Fail to show VF RX and TX stats from PF")
+        out = self.vm0_testpmd.execute_cmd('show port stats 0')
+        self.verify("RX-packets: 0" in out and "TX-packets: 0" in out,
+            "Fail to show VF RX and TX stats")
+
+        self.vm0_testpmd.execute_cmd('set fwd mac')
+        self.vm0_testpmd.execute_cmd('set verbose 1')
+        self.vm0_testpmd.execute_cmd('start')
+
+        self.send_packet(self.vf0_mac, 0, 64 , 10)
+
+        out = self.dut_testpmd.execute_cmd('show vf stats 0 0')
+        self.verify("RX-packets: 10" in out and "TX-packets: 10" in out,
+            "Wrong to show VF RX and TX packets from PF")
+        out = self.vm0_testpmd.execute_cmd('show port stats 0')
+        self.verify("RX-packets: 10" in out and "TX-packets: 10" in out,
+            "Wrong to show VF RX and TX stats")
+
+        self.dut_testpmd.execute_cmd('clear vf stats 0 0')
+        out = self.dut_testpmd.execute_cmd('show vf stats 0 0')
+        self.verify("RX-packets: 0" in out and "TX-packets: 0" in out,
+            "Fail to clear VF RX and TX stats from PF")
+        out = self.vm0_testpmd.execute_cmd('show port stats 0')
+        self.verify("RX-packets: 0" in out and "TX-packets: 0" in out,
+            "Wrong to show VF RX and TX stats after clear")
+
 
     def tear_down(self):
         self.vm0_testpmd.quit()
