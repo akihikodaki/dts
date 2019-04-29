@@ -32,7 +32,7 @@
 """
 DPDK Test suite.
 
-Test VEB Switch and floating VEB Features by Poll Mode Drivers.
+Test Floating VEB Features by Poll Mode Drivers.
 """
 
 import re
@@ -48,7 +48,7 @@ from packet import Packet
 from utils import RED
 
 
-class TestVEBSwitching(TestCase):
+class TestFloatingVEBSwitching(TestCase):
 
     def VEB_get_stats(self, vf0_vf1, portid, rx_tx):
         """
