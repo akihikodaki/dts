@@ -68,13 +68,13 @@ Test Case 1: Basic virtio interrupt test with 4 queues
 
 3. Bind virtio port to vfio-pci::
 
-	  modprobe vfio enable_unsafe_noiommu_mode=1
-	  modprobe vfio-pci
+	modprobe vfio enable_unsafe_noiommu_mode=1
+	modprobe vfio-pci
     ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
 
 4. In VM, launch l3fwd-power sample::
 
-  ./l3fwd-power -c 0xf -n 4 --log-level='user1,7' -- -p 1 -P --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)" --no-numa --parse-ptype
+    ./l3fwd-power -c 0xf -n 4 --log-level='user1,7' -- -p 1 -P --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)" --no-numa --parse-ptype
 
 5. Send random dest ip address packets to host nic with packet generator, packets will distribute to all queues, check l3fwd-power log that all related cores are waked up.
 
@@ -101,7 +101,7 @@ Test Case 2: Basic virtio interrupt test with 16 queues
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=40  \
      -vnc :11 -daemonize
 
-3   Bind virtio port to vfio-pci::
+3. Bind virtio port to vfio-pci::
 
     modprobe vfio enable_unsafe_noiommu_mode=1
     modprobe vfio-pci
@@ -109,7 +109,7 @@ Test Case 2: Basic virtio interrupt test with 16 queues
 
 4. In VM, launch l3fwd-power sample::
 
-  ./l3fwd-power -c 0x0ffff -n 4 --log-level='user1,7' -- -p 1 -P  --config '(0,0,0),(0,1,1),(0,2,2),(0,3,3)(0,4,4),(0,5,5),(0,6,6),(0,7,7)(0,8,8),(0,9,9),(0,10,10),(0,11,11)(0,12,12),(0,13,13),(0,14,14),(0,15,15)' --no-numa  --parse-ptype
+    ./l3fwd-power -c 0x0ffff -n 4 --log-level='user1,7' -- -p 1 -P  --config '(0,0,0),(0,1,1),(0,2,2),(0,3,3)(0,4,4),(0,5,5),(0,6,6),(0,7,7)(0,8,8),(0,9,9),(0,10,10),(0,11,11)(0,12,12),(0,13,13),(0,14,14),(0,15,15)' --no-numa  --parse-ptype
 
 5. Send random dest ip address packets to host nic with packet generator, packets will distribute to all queues, check l3fwd-power log that all related cores are waked up.
 
@@ -136,7 +136,7 @@ Test Case 3: Basic virtio-1.0 interrupt test with 4 queues
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,disable-modern=false,mrg_rxbuf=on,csum=on,mq=on,vectors=15  \
      -vnc :11 -daemonize
 
-3   Bind virtio port to vfio-pci::
+3. Bind virtio port to vfio-pci::
 
     modprobe vfio enable_unsafe_noiommu_mode=1
     modprobe vfio-pci
@@ -144,7 +144,7 @@ Test Case 3: Basic virtio-1.0 interrupt test with 4 queues
 
 4. In VM, launch l3fwd-power sample::
 
-  ./l3fwd-power -c 0xf -n 4 --log-level='user1,7' -- -p 1 -P --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)" --no-numa --parse-ptype
+    ./l3fwd-power -c 0xf -n 4 --log-level='user1,7' -- -p 1 -P --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)" --no-numa --parse-ptype
 
 5. Send random dest ip address packets to host nic with packet generator, packets will distribute to all queues, check l3fwd-power log that all related cores are waked up.
 

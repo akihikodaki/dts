@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=======================================
+========================================
 Cryptodev virtio ipsec Application Tests
-=======================================
+========================================
 
 
 Description
@@ -80,13 +80,15 @@ Prerequisites
 =============
 
 qemu version >= 2.12
-in qemu enable vhost-user-crypto:
+in qemu enable vhost-user-crypto::
+
     ./configure --target-list=x86_64-softmmu --enable-vhost-crypto --prefix=/root/qemu-2.12 && make && make install
+
 the bin is in /root/qemu-2.12 folder, which is your specified
 
-The options of ipsec-secgw is below:
+The options of ipsec-secgw is below::
 
-   ./build/ipsec-secgw [EAL options] --
+    ./build/ipsec-secgw [EAL options] --
                         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
                         -l -w REPLAY_WINOW_SIZE -e -a
                         --config (port,queue,lcore)[,(port,queue,lcore]
@@ -109,28 +111,37 @@ payload in packet by using algorithm setting in VM. the packet back to tester.
 Use TCPDump to capture the received packet on tester. Then tester parses the payload
 and compare the payload with correct answer pre-stored in scripts:
 
-   +----------+              +----------------------------------+
-   |          |              |   +--------+        +--------+   |
-   |          | -------------|-->|   VM0  | -----> |        |   |
-   |  Tester  |              |   +--------+        |   VM1  |   |
-   |          | <------------|-------------------> |        |   |
-   |          |              |                     +--------+   |
-   +----------+              +----------------------------------+
+.. figure:: image/virtio_ipsec_cryptodev_func_test_plan.png
 
 In Host:
-# Build DPDK and vhost_crypto app
-      enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
-      make install -j T=x86_64-native-linuxapp-gcc
-      make -C examples/vhost_crypto
+
+# Build DPDK and vhost_crypto app::
+
+    enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
+    make install -j T=x86_64-native-linuxapp-gcc
+    make -C examples/vhost_crypto
 
 # Compile the latest qemu
-# Run the dpdk vhost sample
-    ./examples/vhost_crypto/build/vhost-crypto --socket-mem 2048,0 --legacy-mem -w 1a:01.0 -w 1c:01.0 -w 1e:01.0 --vdev crypto_scheduler_pmd_1,slave=0000:1a:01.0_qat_sym,slave=0000:1c:01.0_qat_sym,slave=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable -l 8,9,10,11,12 -n 6  -- --config "(9,0,0),(10,0,0),(11,0,0),(12,0,0)" --socket-file 9,/tmp/vm0_crypto0.sock --socket-file=10,/tmp/vm0_crypto1.sock --socket-file=11,/tmp/vm1_crypto0.sock --socket-file=12,/tmp/vm1_crypto1.sock
 
-# bind vfio-pci
+# Run the dpdk vhost sample::
+
+    ./examples/vhost_crypto/build/vhost-crypto \
+    --socket-mem 2048,0 --legacy-mem \
+    -w 1a:01.0 -w 1c:01.0 -w 1e:01.0 \
+    --vdev crypto_scheduler_pmd_1,slave=0000:1a:01.0_qat_sym,slave=0000:1c:01.0_qat_sym,slave=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable \
+    -l 8,9,10,11,12 -n 6 \
+    -- --config "(9,0,0),(10,0,0),(11,0,0),(12,0,0)" \
+    --socket-file 9,/tmp/vm0_crypto0.sock  \
+    --socket-file=10,/tmp/vm0_crypto1.sock \
+    --socket-file=11,/tmp/vm1_crypto0.sock \
+    --socket-file=12,/tmp/vm1_crypto1.sock
+
+# bind vfio-pci::
+
     usertools/dpdk-devbind.py --bind=vfio-pci 0000:60:00.0 0000:60:00.1 0000:3b:00.0 0000:3b:00.1
 
-# Start VM0 by the qemu
+# Start VM0 by the qemu::
+
     taskset -c 11,12,13,14 /root/qemu-2/bin/qemu-system-x86_64  -name vm0 -enable-kvm -pidfile /tmp/.vm0.pid
         -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait
         -net nic,vlan=0,macaddr=00:00:00:42:65:aa,model=e1000,addr=1f -net user,vlan=0,hostfwd=tcp:10.67.111.126:6000-:22
@@ -143,7 +154,8 @@ In Host:
         -device vfio-pci,host=0000:3b:00.0,id=pt_0
         -device vfio-pci,host=0000:3b:00.1,id=pt_1
 
-# Start VM1 by the qemu
+# Start VM1 by the qemu::
+
     taskset -c 15,16,17,18 /root/qemu-2/bin/qemu-system-x86_64  -name vm1 -enable-kvm -pidfile /tmp/.vm1.pid
         -daemonize -monitor unix:/tmp/vm1_monitor.sock,server,nowait
         -net nic,vlan=0,macaddr=00:00:00:db:2e:f9,model=e1000,addr=1f -net user,vlan=0,hostfwd=tcp:10.67.111.126:6001-:22
@@ -157,7 +169,9 @@ In Host:
         -device vfio-pci,host=0000:60:00.1,id=pt_1
 
 In VM
-# set virtio device
+
+# set virtio device::
+
     modprobe uio_pci_generic
     echo -n 0000:00:04.0 > /sys/bus/pci/drivers/virtio-pci/unbind
     echo -n 0000:00:05.0 > /sys/bus/pci/drivers/virtio-pci/unbind
@@ -166,13 +180,19 @@ In VM
 # Run the ipsec test cases cmd
 
     1. AESNI_MB case Command line Eg:
-    In vm0:
+    In vm0::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
-    In vm1:
+
+    In vm1::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
     2. VIRTIO case Command line Eg:
-    In vm0:
+    In vm0::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
-    In vm1:
+
+    In vm1::
+
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg

@@ -77,14 +77,14 @@ Test Case 1: wake up vhost-user core with event idx interrupt mode
     --parse-ptype 1 \
     --config "(0,0,1)"
 
-3.  On VM, set ip for virtio device and send packets to vhost by cmds::
+4. On VM, set ip for virtio device and send packets to vhost by cmds::
 
     ifconfig [ens3] 1.1.1.2
     #[ens3] is the virtual device name
     ping 1.1.1.3
     #send packets to vhost
 
-4. Check vhost related core is waked up by reading l3fwd-power log.
+5. Check vhost related core is waked up by reading l3fwd-power log.
 
 Test Case 2: wake up vhost-user cores with event idx interrupt mode 16 queues test
 ==================================================================================
@@ -119,12 +119,12 @@ Test Case 2: wake up vhost-user cores with event idx interrupt mode 16 queues te
     --parse-ptype 1 \
     --config "(0,0,1),(0,1,2),(0,2,3),(0,3,4),(0,4,5),(0,5,6),(0,6,7),(0,7,8),(0,8,9),(0,9,10),(0,10,11),(0,11,12),(0,12,13),(0,13,14),(0,14,15),(0,15,16)"
 
-3.  Set vitio-net with 16 quques and give vitio-net ip address::
+4. Set vitio-net with 16 quques and give vitio-net ip address::
 
     ethtool -L [ens3] combined 16    # [ens3] is the name of virtio-net
     ifconfig [ens3] 1.1.1.1
 
-4.  Send packets with different IPs from virtio-net, notice to bind each vcpu to different send packets process::
+5. Send packets with different IPs from virtio-net, notice to bind each vcpu to different send packets process::
 
     taskset -c 0 ping 1.1.1.2
     taskset -c 1 ping 1.1.1.3
@@ -143,11 +143,11 @@ Test Case 2: wake up vhost-user cores with event idx interrupt mode 16 queues te
     taskset -c 14 ping 1.1.1.2
     taskset -c 15 ping 1.1.1.2
 
-5.  Check vhost related cores are waked up with l3fwd-power log, such as following::
+6. Check vhost related cores are waked up with l3fwd-power log, such as following::
 
     L3FWD_POWER: lcore 0 is waked up from rx interrupt on port 0 queue 0
-    .....
-    .....
+    ...
+    ...
     L3FWD_POWER: lcore 15 is waked up from rx interrupt on port 0 queue 15
 
 Test Case 3: wake up vhost-user cores by multi virtio-net in VMs with event idx interrupt mode
@@ -193,7 +193,7 @@ Test Case 3: wake up vhost-user cores by multi virtio-net in VMs with event idx 
     --parse-ptype 1 \
     --config "(0,0,1),(1,0,2)"
 
-4.  On VM1, set ip for virtio device and send packets to vhost::
+4. On VM1, set ip for virtio device and send packets to vhost::
 
     ifconfig [ens3] 1.1.1.2
     #[ens3] is the virtual device name

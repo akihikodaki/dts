@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=======================================
+==============================================
 Cryptodev virtio Performance Application Tests
-=======================================
+==============================================
 
 
 Description
@@ -55,7 +55,7 @@ Part of the algorithms are not supported currently.
 +-----------+-------------------+---------------------------------------------------------------------------+
 | sha       |                   | sha1, sha2-224, sha2-384, sha2-256, sha2-512                              |
 +-----------+-------------------+---------------------------------------------------------------------------+
-| hmac      |                   | Support sha implementations sha1, sha2-224, sha2-256,             |
+| hmac      |                   | Support sha implementations sha1, sha2-224, sha2-256,                     |
 |           |                   |                                                                           |
 |           |                   | sha2-384, sha2-512                                                        |
 +-----------+-------------------+---------------------------------------------------------------------------+
@@ -71,7 +71,7 @@ Part of the algorithms are not supported currently.
 +-----------+-------------------+---------------------------------------------------------------------------+
 | sha       |                   | sha1, sha2-224, sha2-384, sha2-256, sha2-512                              |
 +-----------+-------------------+---------------------------------------------------------------------------+
-| hmac      |                   | Support sha implementations sha1, sha2-224, sha2-256,             |
+| hmac      |                   | Support sha implementations sha1, sha2-224, sha2-256,                     |
 |           |                   |                                                                           |
 |           |                   | sha2-384, sha2-512                                                        |
 +-----------+-------------------+---------------------------------------------------------------------------+
@@ -81,8 +81,10 @@ Prerequisites
 =============
 
 qemu version >= 2.12
-in qemu enable vhost-user-crypto:
+in qemu enable vhost-user-crypto::
+
     ./configure --target-list=x86_64-softmmu --enable-vhost-crypto --prefix=/root/qemu-2.12 && make && make install
+
 the bin is in /root/qemu-2.12 folder, which is your specified
 
 Test case setup:
@@ -97,19 +99,24 @@ Test case setup:
     +--------------+
 
 In Host:
-# Build DPDK and vhost_crypto app
+
+# Build DPDK and vhost_crypto app::
+
       enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
       make install -j T=x86_64-native-linuxapp-gcc
       make -C examples/vhost_crypto
 
 # Compile the latest qemu
-# Run the dpdk vhost sample
+# Run the dpdk vhost sample::
+
     ./examples/vhost_crypto/build/vhost-crypto --socket-mem 2048,0 --legacy-mem --vdev crypto_aesni_mb_pmd_1 -l 8,9,10 -n 4  -- --config "(9,0,0),(10,0,0)" --socket-file 9,/tmp/vm0_crypto0.sock --socket-file=10,/tmp/vm0_crypto1.sock
 
-# bind vfio-pci
+# bind vfio-pci::
+
     usertools/dpdk-devbind.py --bind=vfio-pci 0000:60:00.0 0000:60:00.1
 
-# Start VM by the qemu
+# Start VM by the qemu::
+
     taskset -c 11,12,13,14 /root/qemu-2/bin/qemu-system-x86_64  -name vm0
         -enable-kvm -pidfile /tmp/.vm0.pid
         -cpu host -smp 4
@@ -127,7 +134,9 @@ In Host:
         -device vfio-pci,host=0000:60:00.1,id=pt_1
 
 In VM:
-# set virtio device
+
+# set virtio device::
+
     modprobe uio_pci_generic
     echo -n 0000:00:04.0 > /sys/bus/pci/drivers/virtio-pci/unbind
     echo -n 0000:00:05.0 > /sys/bus/pci/drivers/virtio-pci/unbind
@@ -135,10 +144,17 @@ In VM:
 
 # Run the virtio performance test cases
 
-    1. The AESNI_MB case Command line Eg:
+  1. The AESNI_MB case Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+      ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  \
+      -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  \
+      --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 \
+      --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 \
+      --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
-    2. The VIRTIO case Command line Eg:
+  2. The VIRTIO case Command line Eg::
 
-    ./build/app/dpdk-test-crypto-perf -c 0xf  -w 00:05.0 -- --ptest throughput --devtype crypto_qat --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
+      ./build/app/dpdk-test-crypto-perf -c 0xf  -w 00:05.0 -- --ptest throughput \
+      --devtype crypto_qat --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt \
+      --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 \
+      --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
