@@ -42,7 +42,7 @@ The following are the test plans for the DPDK DTS automated test system.
     checksum_offload_test_plan
     cloud_filter_test_plan
     coremask_test_plan
-    cryptodev_perf_crypto-perf_test_plan
+    crypto_perf_cryptodev_perf_test_plan
     ddp_gtp_qregion_test_plan
     ddp_gtp_test_plan
     ddp_mpls_test_plan
@@ -117,7 +117,7 @@ The following are the test plans for the DPDK DTS automated test system.
     shutdown_api_test_plan
     sriov_kvm_test_plan
     stability_test_plan
-    sw_eventdev_pipeline_sample_test_plan
+    eventdev_pipeline_test_plan
     tso_test_plan
     tx_preparation_test_plan
     uni_pkt_test_plan
@@ -125,6 +125,12 @@ The following are the test plans for the DPDK DTS automated test system.
     vlan_ethertype_config_test_plan
     vlan_test_plan
     vxlan_test_plan
+    af_xdp_test_plan
+    l2fwd_jobstats_test_plan
+    loadbalancer_test_plan
+    loopback_multi_queues_test_plan
+    telemetry_test_plan
+
     veb_switch_test_plan
     vf_daemon_test_plan
     vf_interrupt_pmd_test_plan
@@ -144,9 +150,19 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_qemu_mtu_test_plan
     vhost_tso_test_plan
     vhost_user_live_migration_test_plan
-    virtio_1.0_test_plan
     vm_power_manager_test_plan
     vmdq_test_plan
+
+    virtio_1.0_test_plan
+    vhost_enqueue_interrupt_test_plan
+    vhost_event_idx_interrupt_test_plan
+    vhost_virtio_pmd_interrupt_test_plan
+    vhost_virtio_user_interrupt_test_plan
+    virtio_event_idx_interrupt_test_plan
+    virtio_ipsec_cryptodev_func_test_plan
+    virtio_perf_cryptodev_func_test_plan
+    vm2vm_virtio_net_perf_test_plan
+    vm2vm_virtio_pmd_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
