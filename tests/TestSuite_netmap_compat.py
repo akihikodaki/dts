@@ -40,9 +40,6 @@ import string
 import time
 import re
 from test_case import TestCase
-from plotting import Plotting 
-from settings import HEADER_SIZE   
-from etgen import IxiaPacketGenerator
 
 class TestNetmapCompat(TestCase):
 

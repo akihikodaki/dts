@@ -38,9 +38,6 @@ import utils
 import string
 import time
 from test_case import TestCase
-from plotting import Plotting
-from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
 
 
 class TestRxtxCallbacks(TestCase):

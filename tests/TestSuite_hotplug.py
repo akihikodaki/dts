@@ -35,14 +35,10 @@ DPDK Test suite.
 Test port hot plug.
 """
 
-import string
 import time
 import re
 import utils
 from test_case import TestCase
-from plotting import Plotting
-from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
 from packet import Packet
 
 class TestPortHotPlug(TestCase):
