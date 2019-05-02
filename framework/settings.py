@@ -99,6 +99,7 @@ NICS = {
     'cavium_0011': '177d:0011',
     'hi1822': '19e5:1822',
     'fortvile_bdw_de': '8086:15ac',
+    'cavium_a063': '177d:a063',
 }
 
 DRIVERS = {
@@ -152,6 +153,7 @@ DRIVERS = {
     'cavium_0011': 'thunder-nicvf',
     'hi1822': 'hinic',
     'fortvile_bdw_de': 'ixgbe',
+    'cavium_a063': 'octeontx2-nicpf',
 }
 
 """
