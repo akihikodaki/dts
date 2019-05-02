@@ -34,7 +34,8 @@
 from test_case import TestCase
 
 from time import sleep
-from scapy.all import *
+from scapy.layers.inet import Ether, IP
+from scapy.utils import wrpcap
 import utils
 
 
