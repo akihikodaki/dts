@@ -203,7 +203,7 @@ class TestJumboframes(TestCase):
     def test_jumboframes_bigger_jumbo(self):
         """
         When the jubmo frame MTU set as 9000, this case is to verify that the
-        packet which the length bigger than MTU can not be forwarded.
+        packet with a length bigger than MTU can not be forwarded.
         """
         self.pmdout.start_testpmd("Default", "--max-pkt-len=%s --port-topology=loop --tx-offloads=0x8000" % (ETHER_JUMBO_FRAME_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")
