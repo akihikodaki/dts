@@ -351,7 +351,7 @@ def dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer
         return False
 
 
-def dts_run_target(duts, tester, targets, test_suites):
+def dts_run_target(duts, tester, targets, test_suites, subtitle):
     """
     Run each target in execution targets.
     """
@@ -378,7 +378,7 @@ def dts_run_target(duts, tester, targets, test_suites):
             result.add_failed_target(result.dut, target, str(ex))
             continue
 
-        dts_run_suite(duts, tester, test_suites, target)
+        dts_run_suite(duts, tester, test_suites, target, subtitle)
 
     tester.restore_interfaces()
 
@@ -388,7 +388,7 @@ def dts_run_target(duts, tester, targets, test_suites):
         dutobj.restore_modules()
 
 
-def dts_run_suite(duts, tester, test_suites, target):
+def dts_run_suite(duts, tester, test_suites, target, subtitle):
     """
     Run each suite in test suite list.
     """
@@ -402,6 +402,7 @@ def dts_run_suite(duts, tester, test_suites, target):
                 suite_obj.init_log()
                 suite_obj.set_requested_cases(requested_tests)
                 suite_obj.set_check_inst(check=check_case_inst)
+                suite_obj.set_subtitle(subtitle)
                 result.nic = suite_obj.nic
 
                 dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname)
@@ -439,7 +440,7 @@ def dts_run_suite(duts, tester, test_suites, target):
 def run_all(config_file, pkgName, git, patch, skip_setup,
             read_cache, project, suite_dir, test_cases,
             base_dir, output_dir, verbose, virttype, debug,
-            debugcase, re_run, commands):
+            debugcase, re_run, commands, subtitle):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -560,7 +561,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
             dts_crbs_exit(duts, tester)
             continue
 
-        dts_run_target(duts, tester, targets, test_suites)
+        dts_run_target(duts, tester, targets, test_suites, subtitle)
 
         dts_crbs_exit(duts, tester)
 

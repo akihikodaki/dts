@@ -58,6 +58,7 @@ class TestCase(object):
 
         # local variable
         self._requested_tests = None
+        self._subtitle 		    = None
 
         # check session and reconnect if possible
         for dutobj in self.duts:
@@ -218,6 +219,13 @@ class TestCase(object):
         Pass down input cases list for check
         """
         self._requested_tests = case_list
+
+    def set_subtitle(self, subtitle):
+        """
+        Pass down subtitle for Rst report
+        """
+	self._rst_obj._subtitle = subtitle
+	self._rst_obj.write_subtitle()
 
     def _get_test_cases(self, test_name_regex):
         """

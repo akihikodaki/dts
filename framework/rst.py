@@ -107,6 +107,11 @@ class RstReport(object):
             f.write(line)
             f.write('-' * len(line) + '\n')
 
+    def write_subtitle(self):
+	if self._subtitle is not None:
+	    with open(self.rstName, "a") as f:
+		f.write("%s\n" % self._subtitle)
+
     def write_annex_title(self, text):
         """
         write annex to test case title Annex to #Name#
