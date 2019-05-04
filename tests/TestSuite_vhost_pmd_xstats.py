@@ -216,7 +216,7 @@ class TestVhostPmdXstats(TestCase):
             "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
         rx_packet = re.search("rx_size_64_packets:\s*(\d*)", out_0)
         rx_packets = rx_packet.group(1)
-        self.verify(self.scapy_num == int(rx_packets), "Error for rx_package:%s != tx_package :%s" % (
+        self.verify(self.scapy_num == int(rx_packets), "Error for rx_packets:%s != tx_packets :%s" % (
             self.scapy_num, int(rx_packets)))
 
     def tear_down(self):
