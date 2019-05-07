@@ -196,7 +196,7 @@ class TestPmdBonded(TestCase):
         """
         Send count packet to portid
         count: 1 or 2 or 3 or ... or 'MANY'
-               if count is 'MANY', then set count=1000,
+               if count is 'MANY', then set count=100000,
                send packets during 5 seconds.
         ether_ip:
             'ether':
@@ -226,7 +226,7 @@ class TestPmdBonded(TestCase):
         except ValueError as e:
             if count == 'MANY':
                 during = 5
-                count = 1000
+                count = 100000
             else:
                 raise e
 
@@ -261,7 +261,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                 self.tester.scapy_append('sendp([Ether(dst=nutmac, src=srcmac)/Dot1Q(vlan=vlanvalue)/IP(dst=destip, src=srcip, len=%s)/\
 UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' % (pktlen, padding, itf, count))
 
-            self.tester.scapy_execute()
+            self.tester.scapy_execute(timeout=180)
             loop += 1
 
             now = time.time()
