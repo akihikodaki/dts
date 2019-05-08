@@ -27,12 +27,12 @@ class TestDynamicQueue(TestCase):
         self.dut_testpmd = PmdOutput(self.dut)
 
     def set_up(self):
-        # Because of fortville spirit limitation,can't use 2 ports for testing
+        # Fortville_spirit needs more cores to run properly
         if (self.nic in ["fortville_spirit"]):
+            self.verify("len(self.dut.cores)>=7", "Less than seven cores can't run testpmd")
             self.dut_testpmd.start_testpmd(
-                "Default", "--port-topology=chained --txq=%s --rxq=%s"
-                % (self.PF_QUEUE, self.PF_QUEUE), eal_param="-w %s"
-                % (self.dut.get_port_pci(self.dut_ports[0])))
+                "all", "--port-topology=chained --txq=%s --rxq=%s"
+                % (self.PF_QUEUE, self.PF_QUEUE))
         elif (self.nic in ["cavium_a063"]):
             eal_opts = ""
             for port in self.dut_ports:
