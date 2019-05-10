@@ -193,6 +193,8 @@ Test case: Rx offload per-port setting in command-line
 1. Enable rx cksum in command-line::
 
     ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4 --enable-rx-cksum
+    testpmd> set fwd csum
+    testpmd> set verbose 1
     testpmd> show port 0 rx_offload configuration
     Rx Offloading Configuration of port 0 :
       Port : IPV4_CKSUM UDP_CKSUM TCP_CKSUM
@@ -200,6 +202,20 @@ Test case: Rx offload per-port setting in command-line
       Queue[ 1] :
       Queue[ 2] :
       Queue[ 3] :
+
+1) Send packets::
+
+    pkt1=Ether(dst="00:00:00:00:01:00", src="52:00:00:00:00:00")/IP(src="10.0.0.1")/TCP()/("X"*46)
+    pkt2=Ether(dst="00:00:00:00:01:00", src="52:00:00:00:00:00")/IP(chksum=0x0)/TCP(chksum=0xf)/("X"*46)
+    pkt3=Ether(dst="00:00:00:00:01:00", src="52:00:00:00:00:00")/IP(src="10.0.0.1")/UDP(chksum=0xf)/("X"*46)
+    pkt4=Ether(dst="00:00:00:00:01:00", src="52:00:00:00:00:00")/IP(chksum=0x0)/UDP()/("X"*46)
+
+2) Check the rx flags::
+
+    PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD
+    PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD
+    PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_GOOD
+    PKT_RX_L4_CKSUM_UNKNOWN PKT_RX_IP_CKSUM_BAD
 
 2. Disable the rx cksum per_port::
 
@@ -503,6 +519,68 @@ Test case: Tx offload per-port setting in command-line
 
    The tester port received packets with vlan ID.
    The per_port capability can be enabled by per_port command.
+
+Test case: Tx offload checksum
+==============================
+
+1. Set checksum forward mode::
+
+    ./testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    testpmd> set fwd csum
+    testpmd> set verbose 1
+    testpmd> show port 0 tx_offload configuration
+    Rx Offloading Configuration of port 0 :
+      Port :
+      Queue[ 0] :
+      Queue[ 1] :
+      Queue[ 2] :
+      Queue[ 3] :
+
+1) Send an ipv4-udp packet to the port::
+
+    sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/UDP(sport=1024,dport=1025)], iface="enp131s0f3")
+
+2) Check the tx flags::
+
+    PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+2. Enable the tx ipv4_cksum of port 1::
+
+    testpmd> port stop 1
+    testpmd> port config 1 tx_offload ipv4_cksum on
+    testpmd> show port 1 tx_offload configuration
+    Tx Offloading Configuration of port 1 :
+      Port : IPV4_CKSUM
+      Queue[ 0] : IPV4_CKSUM
+      Queue[ 1] : IPV4_CKSUM
+      Queue[ 2] : IPV4_CKSUM
+      Queue[ 3] : IPV4_CKSUM
+    testpmd> port start 1
+    testpmd> start
+
+   The port can start normally.
+
+3. Send an ipv4-udp packet to the port::
+
+    sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/UDP(sport=1024,dport=1025)], iface="enp131s0f3")
+
+   There is printing "PKT_TX_IP_CKSUM" and "PKT_TX_L4_NO_CKSUM" in the tx line.
+
+4. Disable tx ipv4_cksum and enable tx udp_cksum,
+   then send the same ipv4-udp packet, there is printing "PKT_TX_UDP_CKSUM",
+   but no "PKT_TX_IP_CKSUM".
+
+5. Try step 4 with "tcp_cksum" on, then send an ipv4-tcp packet::
+
+    sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/TCP(sport=1024,dport=1025)], iface="enp131s0f3")
+
+   There is printing "PKT_TX_TCP_CKSUM".
+
+6. Try step 4 with "sctp_cksum" on, then send an ipv4-sctp packet::
+
+    sendp([Ether(dst="00:00:00:00:01:00")/IP(src="100.0.0.1", dst="100.0.0.2")/sctp(sport=1024,dport=1025)], iface="enp131s0f3")
+
+   There is printing "PKT_TX_SCTP_CKSUM".
 
 Test case: Tx offload per-queue and per-port setting
 ====================================================
