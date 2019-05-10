@@ -880,7 +880,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.enable_vxlan(dut_port)
 
         if tun_filter != 'None':
-            args = [self.dut_port, config.outer_mac_dst,
+            args = [dut_port, config.outer_mac_dst,
                     config.inner_mac_dst, config.inner_ip_dst,
                     config.inner_vlan, tun_filter,
                     config.vni, 0]
