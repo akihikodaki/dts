@@ -1,4 +1,4 @@
-.. Copyright (c) <2010-2017>, Intel Corporation
+.. Copyright (c) <2019>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -44,15 +44,15 @@ sample applications.
 Running the Application
 =======================
 
-To run the example in a ``linuxapp`` environment::
+To run the example in a linux environment::
 
     ./build/basicfwd -c 2 -n 4
 
 Refer to *DPDK Getting Started Guide* for general information on running
 applications and the Environment Abstraction Layer (EAL) options.
 
-test_skeleton
-=============
+Test case: skeleton
+====================
 
 Running::
 
@@ -62,5 +62,5 @@ waked up::
 
      Core X forwarding packets.
 
-Send one packet on Port0,check the port1 receive packet.
-It receive one packet that the port0 send.
+Send one packet from port0, check the received packet on port1.
+It should receive the packet sent from port0.
