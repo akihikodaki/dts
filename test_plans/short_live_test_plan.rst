@@ -1,4 +1,4 @@
-.. Copyright (c) <2016-2017>, Intel Corporation
+.. Copyright (c) <2019>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -34,13 +34,13 @@
 Short-lived Application Tests
 =============================
 
-This feature is to reduce application start up time, and when exit, do more
-clean up so that it could be re-run many times.
+This feature is to reduce application start-up time, and do more
+cleanup when exit so that it could rerun many times.
 
 Prerequisites
 -------------
 
-To test this feature, need to using linux time and start testpmd by: create
+To test this feature, need to use linux time and start testpmd by: create
 and mount hugepage, must create more hugepages so that could measure time more
 obviously::
 
@@ -49,7 +49,7 @@ obviously::
 
 Bind nic to DPDK::
 
-        ./tools/dpdk_nic_bind.py -b igb_uio xxxx:xx:xx.x
+        ./usertools/dpdk-devbind.py -b igb_uio device_bus_id
 
 Start testpmd using time::
 
