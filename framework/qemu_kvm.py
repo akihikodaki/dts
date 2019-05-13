@@ -562,7 +562,7 @@ class QEMUKvm(VirtBase):
         Use regular expression to check if hostfwd value format is correct.
         """
         regx_ip = '\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}'
-        regx_hostfwd = r'["tcp" | "udp"]?:%s?:\d+-%s?:\d+' % (regx_ip, regx_ip)
+        regx_hostfwd = r'(tcp|udp)?:(%s)?:\d+-(%s)?:\d+' % (regx_ip, regx_ip)
         if not re.match(regx_hostfwd, opt_hostfwd):
             raise Exception("Option opt_hostfwd format is not correct,\n" +
                             "it is %s,\n " % opt_hostfwd +
