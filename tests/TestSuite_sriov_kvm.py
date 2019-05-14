@@ -51,15 +51,16 @@ class TestSriovKvm(TestCase):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
-
-    def set_up(self):
         self.setup_2vm_2pf_env_flag = 0
-
         self.setup_2vm_2vf_env_flag = 0
         self.setup_2vm_prerequisite_flag = 0
-
         self.setup_4vm_4vf_env_flag = 0
         self.setup_4vm_prerequisite_flag = 0
+        self.setup_2vm_2vf_env()
+
+    def set_up(self):
+
+        self.setup_two_vm_common_prerequisite()
 
     def get_stats(self, dut, portid, rx_tx):
         """
@@ -637,13 +638,9 @@ class TestSriovKvm(TestCase):
         self.setup_2vm_prerequisite_flag = 1
 
     def destroy_two_vm_common_prerequisite(self):
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm0_testpmd.execute_cmd('quit', '# ')
         self.vm0_testpmd = None
         self.vm0_dut_ports = None
 
-        self.vm1_testpmd.execute_cmd('stop')
-        self.vm1_testpmd.execute_cmd('quit', '# ')
         self.vm0_testpmd = None
         self.vm1_dut_ports = None
 
@@ -667,8 +664,9 @@ class TestSriovKvm(TestCase):
         self.destroy_2vm_2pf_env()
 
     def test_two_vms_intervm_communication(self):
-        self.setup_2vm_2vf_env()
-
+        if self.setup_2vm_prerequisite_flag == 1:
+            self.vm0_testpmd.execute_cmd('quit', '# ')
+            self.vm1_testpmd.execute_cmd('quit', '# ')
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
         port_id_0 = 0
@@ -712,9 +710,6 @@ class TestSriovKvm(TestCase):
         return ret_stats
 
     def test_two_vms_pool_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
-
         port_id_0 = 0
         packet_num = 10
 
@@ -733,9 +728,6 @@ class TestSriovKvm(TestCase):
         self.reset_port_mirror_rule(port_id_0, rule_id)
 
     def test_two_vms_uplink_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
-
         port_id_0 = 0
         packet_num = 10
 
@@ -754,9 +746,6 @@ class TestSriovKvm(TestCase):
         self.reset_port_mirror_rule(port_id_0, rule_id)
 
     def test_two_vms_downlink_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
-
         self.vm0_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('stop')
 
@@ -781,8 +770,6 @@ class TestSriovKvm(TestCase):
         self.reset_port_mirror_rule(port_id_0, rule_id)
 
     def test_two_vms_vlan_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
         self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
         vlan_id = 0
@@ -809,12 +796,11 @@ class TestSriovKvm(TestCase):
         self.verify(vm1_ret_stats['RX-packets'] == packet_num and
                     vm1_ret_stats['TX-packets'] == packet_num,
                     "Vlan mirror failed between VM0 and VM1!")
-
+        self.host_testpmd.execute_cmd(
+            'rx_vlan rm %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
         self.reset_port_mirror_rule(port_id_0, rule_id)
 
     def test_two_vms_vlan_and_pool_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
         self.vm0_testpmd.execute_cmd('vlan set strip on 0')
         self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
@@ -857,13 +843,11 @@ class TestSriovKvm(TestCase):
 
         self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 10 * packet_num),
                     "Vlan mirror failed between VM0 and VM1 when set vlan and pool mirror!")
-
+        self.host_testpmd.execute_cmd(
+            'rx_vlan rm %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
         self.reset_port_all_mirror_rule(port_id_0)
 
     def test_two_vms_uplink_and_downlink_mirror(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
-
         self.vm0_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('stop')
 
@@ -909,8 +893,6 @@ class TestSriovKvm(TestCase):
         self.reset_port_all_mirror_rule(port_id_0)
 
     def test_two_vms_vlan_and_pool_and_uplink_and_downlink(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
         self.vm0_testpmd.execute_cmd('vlan set strip on 0')
         self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         self.vm0_testpmd.execute_cmd('stop')
@@ -990,13 +972,11 @@ class TestSriovKvm(TestCase):
                     vm1_ret_stats['RX-packets'] == 2 * packet_num,
                     "Vlan and downlink mirror failed between VM0 and VM1 " +
                     "when set vlan, pool, uplink and downlink mirror!")
-
+        self.host_testpmd.execute_cmd("rx_vlan rm %d port %d vf %s" %
+                                      (vlan_id, port_id_0, vf_mask))
         self.reset_port_all_mirror_rule(port_id_0)
 
     def test_two_vms_add_multi_exact_mac_on_vf(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
-
         port_id_0 = 0
         vf_num = 0
         packet_num = 10
@@ -1031,8 +1011,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         port_id_0 = 0
         vf_mac = "00:11:22:33:44:55"
@@ -1081,8 +1059,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         port_id_0 = 0
         packet_num = 10
@@ -1113,8 +1089,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         port_id_0 = 0
         vf_mac = "00:55:44:33:22:11"
@@ -1152,8 +1126,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         port_id_0 = 0
         packet_num = 10
@@ -1188,8 +1160,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         self.vm0_testpmd.execute_cmd("stop")
         self.vm0_testpmd.execute_cmd("set fwd mac")
@@ -1227,8 +1197,6 @@ class TestSriovKvm(TestCase):
         if self.nic.startswith('fortville'):
             self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
             return
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
 
         port_id_0 = 0
         vf_mac = "FF:FF:FF:FF:FF:FF"
@@ -1262,8 +1230,6 @@ class TestSriovKvm(TestCase):
                             "when enable or pause TX queues on VF!")
 
     def test_two_vms_negative_input_commands(self):
-        self.setup_2vm_2vf_env()
-        self.setup_two_vm_common_prerequisite()
         for command in ["set port 0 vf 65 tx on",
                         "set port 2 vf -1 tx off",
                         "set port 0 vf 0 rx oneee",
@@ -1291,6 +1257,11 @@ class TestSriovKvm(TestCase):
                 error, "Execute command '%s' successfully, it should be failed!" % command)
 
     def tear_down(self):
+        self.vm0_testpmd.execute_cmd('quit', '# ')
+        self.vm1_testpmd.execute_cmd('quit', '# ')
+        time.sleep(1)
+
+    def tear_down_all(self):
         if self.setup_2vm_prerequisite_flag == 1:
             self.destroy_two_vm_common_prerequisite()
         if self.setup_2vm_2vf_env_flag == 1:
@@ -1303,8 +1274,6 @@ class TestSriovKvm(TestCase):
             self.destroy_four_vm_common_prerequisite()
         if self.setup_4vm_4vf_env_flag == 1:
             self.destroy_4vm_4vf_env()
-
-    def tear_down_all(self):
         if getattr(self, 'vm0', None):
             self.vm0.stop()
         if getattr(self, 'vm1', None):
