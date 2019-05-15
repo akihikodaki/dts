@@ -2201,5 +2201,20 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+        "stats_show_clear": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
