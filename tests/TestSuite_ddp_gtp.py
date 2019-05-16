@@ -285,6 +285,7 @@ class TestDdpGtp(TestCase):
                 'flow create 0 ingress pattern eth / ipv4 / udp / \
                 %s teid is %s / end actions %s / queue index %d / end'
                 % (tunnel_pkt, correct_teid, port, queue))
+        count = 0
         for match_opt in ['matched', 'not matched']:
             teid = correct_teid
             pkts = []
@@ -294,33 +295,45 @@ class TestDdpGtp(TestCase):
                     pkts = self.gtp_packets(
                         type, tunnel_pkt, inner_L3, match_opt, chk, teid)
                     for packet_type in pkts.keys():
+                        count = count + 1
                         self.tester.scapy_append(
                             'sendp([%s], iface="%s")'
                             % (pkts[packet_type], self.tester_intf))
-                        self.tester.scapy_execute()
-                        if port is 'pf':
-                            out = self.dut.get_session_output(timeout=2)
+                    self.tester.scapy_execute()
+                    if port is 'pf':
+                        out = self.dut.get_session_output(timeout=5)
+                    else:
+                        out = self.vm0_dut.get_session_output(timeout=5)
+                    self.verify(
+                        count == out.count('port 0/queue %d' % queue),
+                        "Failed to receive packet in this queue!!!")
+                    if port is 'pf':
+                        layerparams = ['L3_', 'TUNNEL_',
+                                       'INNER_L3_', 'INNER_L4_']
+                        ptypes = packet_type.split('/')
+                        other_ptypes = ptypes[1:]
+                        if 'IPV6' in ptypes:
+                            other_ptypes.insert(0,'IPV4')
                         else:
-                            out = self.vm0_dut.get_session_output(timeout=2)
-                        self.verify(
-                            "port 0/queue %d" % queue in out,
-                            "Failed to receive packet in this queue!!!")
-
-                        if port is 'pf':
-                            layerparams = ['L3_', 'TUNNEL_',
-                                           'INNER_L3_', 'INNER_L4_']
-                            ptypes = packet_type.split('/')
-                            endparams = ['_EXT_UNKNOWN', '',
-                                         '_EXT_UNKNOWN', '']
-                            for layerparam, ptype, endparam in zip(
-                                    layerparams, ptypes, endparams):
-                                layer_type = layerparam + ptype + endparam
-                                self.verify(
-                                    layer_type in out,
-                                    "Failed to output ptype information!!!")
-                        if queue != 0 and type is 'fdir':
-                            self.verify("PKT_RX_FDIR" in out,
-                                        "Failed to test flow director!!!")
+                            other_ptypes.insert(0,'IPV6')
+                        endparams = ['_EXT_UNKNOWN', '',
+                                     '_EXT_UNKNOWN', '']
+                        for layerparam, ptype, endparam in zip(
+                                layerparams, ptypes, endparams):
+                            layer_type = layerparam + ptype + endparam
+                            self.verify(
+                                layer_type in out,
+                                "Failed to output ptype information!")
+                        for layerparam, ptype, endparam in zip(
+                                layerparams, other_ptypes, endparams):
+                            layer_type = layerparam + ptype + endparam
+                            self.verify(
+                                layer_type in out,
+                                "Failed to output ptype information!!!")
+                    if queue != 0 and type is 'fdir':
+                        self.verify(count == out.count("PKT_RX_FDIR"),
+                                    "Failed to test flow director!!!")
+                    count = 0
                     if teid == wrong_teid or match_opt == 'not matched':
                         break
                     chk = 'chksum=0x1234,'
