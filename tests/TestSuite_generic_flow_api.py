@@ -61,9 +61,12 @@ MAX_VLAN = 4095
 MAX_QUEUE = 15
 MAX_VFQUEUE = 3
 MAX_PORT = 65535
-MAX_PROTO = 133
 MAX_TTL = 255
 MAX_TOS = 255
+TCP_PROTO = 6
+UDP_PROTO = 17
+SCTP_PROTO = 132
+RESERVED_PROTO = 255
 
 class TestGeneric_flow_api(TestCase):
 
@@ -453,17 +456,14 @@ class TestGeneric_flow_api(TestCase):
                     pkt += ", src='%s'" % sip
                 if 'proto' in flows:
                     if "udp" in flows:
-                        proto = 17
-                        extrapacket['proto'] = '17'
+                        proto = UDP_PROTO
                     elif "tcp" in flows:
-                        proto = 6
-                        extrapacket['proto'] = '6'
+                        proto = TCP_PROTO
                     elif "sctp" in flows:
-                        proto = 132
-                        extrapacket['proto'] = '132'
+                        proto = SCTP_PROTO
                     else:
-                        proto = self.generate_random_int(0, MAX_PROTO)
-                        extrapacket['proto'] = str(proto)
+                        proto = RESERVED_PROTO
+                    extrapacket['proto'] = str(proto)
                     flow_str += "proto is %d " % proto
                     if 'sip' in flows or 'dip' in flows:
                         pkt += ", proto=%d" % proto
@@ -476,7 +476,7 @@ class TestGeneric_flow_api(TestCase):
                     pkt += ", tos=%d" % tos
                     extrapacket['tos'] = tos
                 if 'ttl' in flows:
-                    ttl = self.generate_random_int(0, MAX_TTL)
+                    ttl = self.generate_random_int(1, MAX_TTL)
                     flow_str += "ttl is %d " % ttl
                     pkt += ", ttl=%d" % ttl
                     extrapacket['ttl'] = ttl
@@ -495,17 +495,14 @@ class TestGeneric_flow_api(TestCase):
                 pkt += "/IPv6(src='%s', dst='%s'" % (sip, dip)
                 if 'proto' in flows:
                     if "udp" in flows:
-                        proto = 17
-                        extrapacket['proto'] = '17'
+                        proto = UDP_PROTO
                     elif "tcp" in flows:
-                        proto = 6
-                        extrapacket['proto'] = '6'
+                        proto = TCP_PROTO
                     elif "sctp" in flows:
-                        proto = 132
-                        extrapacket['proto'] = '132'
+                        proto = SCTP_PROTO
                     else:
-                        proto = self.generate_random_int(0, MAX_PROTO)
-                        extrapacket['proto'] = str(proto)
+                        proto = RESERVED_PROTO
+                    extrapacket['proto'] = str(proto)
                     flow_str += "proto is %d " % proto
                     pkt += ", nh=%d" % proto
                 if 'tc' in flows:
@@ -514,13 +511,13 @@ class TestGeneric_flow_api(TestCase):
                     pkt += ", tc=%d" % tc
                     extrapacket['tos'] = str(tc)
                 if 'hop' in flows:
-                    hop = self.generate_random_int(0, 255)
+                    hop = self.generate_random_int(1, 255)
                     flow_str += "hop is %d " % hop
                     pkt += ", hlim=%d" % hop
                     extrapacket['ttl'] = str(hop)
                 if 'sctp' in flows:
-                    pkt += ", nh=132"
-                    extrapacket['proto'] = '132'
+                    pkt += ", nh=%d" % SCTP_PROTO
+                    extrapacket['proto'] = str(SCTP_PROTO)
                 pkt += ")"
             elif flow_type == "tcp":
                 flow_str += "/ tcp "
