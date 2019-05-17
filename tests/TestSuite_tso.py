@@ -51,13 +51,6 @@ class TestTSO(TestCase):
         """
         Run at the start of each test suite.
         """
-        # this feature support Fortville, Niantic
-        self.verify(self.nic in ["kawela_2", "niantic", "bartonhills", "82545EM",
-                                 "82540EM", "springfountain", "fortville_eagle",
-                                 "fortville_spirit", "fortville_spirit_single",
-                                 "redrockcanyou", "atwood", "boulderrapid", "fortpark_TLV","fortville_25g","hi1822", "cavium_a063"],
-                    "NIC Unsupported: " + str(self.nic))
-
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
 
@@ -72,12 +65,6 @@ class TestTSO(TestCase):
         self.frame_sizes = [128, 1458]
         self.rxfreet_values = [0, 8, 16, 32, 64, 128]
 
-        # self.test_cycles = [{'cores': '1S/1C/1T', 'Mpps': {}, 'pct': {}},
-        #                     {'cores': '1S/1C/2T', 'Mpps': {}, 'pct': {}},
-        #                     {'cores': '1S/2C/1T', 'Mpps': {}, 'pct': {}},
-        #                     {'cores': '1S/2C/2T', 'Mpps': {}, 'pct': {}},
-        #                     {'cores': '1S/4C/2T', 'Mpps': {}, 'pct': {}}
-        #                     ]
         self.test_cycles = [{'cores': '1S/1C/2T', 'Mpps': {}, 'pct': {}}]
 
         self.table_header = ['Frame Size']
@@ -86,8 +73,6 @@ class TestTSO(TestCase):
             self.table_header.append("% linerate")
 
         self.blacklist = ""
-
-        # self.coreMask = utils.create_mask(cores)
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['tcp']
@@ -160,6 +145,7 @@ class TestTSO(TestCase):
         cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("port stop all", "testpmd> ", 120)
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
@@ -176,6 +162,7 @@ class TestTSO(TestCase):
 
         self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("set fwd csum", "testpmd> ", 120)
+        self.dut.send_expect("port start all", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ")
 
         self.tester.scapy_foreground()
@@ -226,6 +213,7 @@ class TestTSO(TestCase):
         cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("port stop all", "testpmd> ", 120)
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
@@ -242,6 +230,7 @@ class TestTSO(TestCase):
 
         self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("set fwd csum", "testpmd> ", 120)
+        self.dut.send_expect("port start all", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ")
 
         self.tester.scapy_foreground()
@@ -295,6 +284,7 @@ class TestTSO(TestCase):
             self.rst_report(command_line + "\n\n", frame=True, annex=True)
 
             self.dut.send_expect(command_line, "testpmd> ", 120)
+            self.dut.send_expect("port stop all", "testpmd> ", 120)
             self.dut.send_expect("csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
             self.dut.send_expect("csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
             self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
@@ -309,6 +299,7 @@ class TestTSO(TestCase):
             self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120)
             self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
             self.dut.send_expect("set fwd csum", "testpmd> ", 120)
+            self.dut.send_expect("port start all", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ")
             for frame_size in self.frame_sizes:
                 wirespeed = self.wirespeed(self.nic, frame_size, 2)
@@ -350,3 +341,15 @@ class TestTSO(TestCase):
             self.result_table_add(table_row)
 
         self.result_table_print()
+    def tear_down(self):
+        """
+        Run after each test case.
+        """
+        self.dut.kill_all()
+        time.sleep(2)
+
+    def tear_down_all(self):
+        """
+        Run after each test suite.
+        """
+        pass
