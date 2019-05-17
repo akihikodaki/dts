@@ -89,12 +89,23 @@ class TestL2fwdCrypto(TestCase):
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
-        self.vf_driver = self.get_suite_cfg()['vf_driver']
-        cc.bind_qat_device(self, self.vf_driver)
+        cc.bind_qat_device(self)
 
 
     def set_up(self):
         pass
+
+    def test_qat_AES_XTS_auto(self):
+        if cc.is_test_skip(self):
+            return
+
+        result = True
+        self.logger.info("Test qat_AES_XTS_00")
+        if not self.__execute_l2fwd_crypto_test(
+                test_vectors, "qat_AES_XTS_00"):
+            result = False
+
+        self.verify(result, "Test failed")
 
     def test_qat_AES_CBC_auto(self):
         if cc.is_test_skip(self):
@@ -314,6 +325,19 @@ class TestL2fwdCrypto(TestCase):
             result = False
 
         self.verify(result, "Test failed")
+
+    def test_aesni_mb_AES_GCM_auto(self):
+        if cc.is_test_skip(self):
+            return
+
+        result = True
+        self.logger.info("Test aesni_mb_aead_AES_GCM_00")
+        if not self.__execute_l2fwd_crypto_test(
+                test_vectors, "aesni_mb_aead_AES_GCM_00"):
+            result = False
+
+        self.verify(result, "Test failed")
+
 
     def test_aesni_mb_AES_CCM_auto(self):
         if cc.is_test_skip(self):
@@ -749,7 +773,7 @@ class TestL2fwdCrypto(TestCase):
             pkt.send_pkt(tx_port=self.tx_interface, count=PACKET_COUNT)
 
             pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
-
+            self.logger.info("Receive pkgs: {}".format(len(pkt_rec)))
             for pkt_r in pkt_rec:
                 packet_hex = pkt_r.pktgen.pkt["Raw"].getfieldval("load")
                 if packet_hex == None:
@@ -979,6 +1003,9 @@ class TestL2fwdCrypto(TestCase):
             elif vector["cipher_algo"] == "3des-ctr":
                 cipher_algo = algorithms.TripleDES(key)
                 cipher_mode = modes.CTR(iv)
+            elif vector["cipher_algo"] == "aes-xts":
+                cipher_algo = algorithms.AES(key)
+                cipher_mode = modes.XTS(iv)
 
             elif vector["cipher_algo"] == "des-cbc":
                 cipher = pyDes.des(key, pyDes.CBC, iv)
@@ -1236,6 +1263,10 @@ class TestL2fwdCrypto(TestCase):
 
     def __is_valid_size(self, key_type, algo, size):
         algo_size_map = {
+                "aes-xts": {
+                    "cipher_key": [32, 64],
+                    "iv": [16],
+                    },
                 "aes-cbc": {
                     "cipher_key": [16, 24, 32],
                     "iv": [16],
@@ -1913,7 +1944,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_key": [0],
         "iv": "",
         "auth_algo": ["null"],
-        "auth_op": "",
+        "auth_op": ["GENERATE"],
         "auth_key": [0],
         "auth_key_random_size": "",
         "aad": [0],
@@ -1933,15 +1964,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
         "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [12, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -1954,15 +1984,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16],
         "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [12, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -1983,7 +2012,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [12, 14, 16, 24],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2016,18 +2045,18 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [8, 16, 24],
         "iv": [8],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [0, 64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [12, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
+
     "aesni_mb_h_MD_SHA_00": {
         "vdev": "crypto_aesni_mb_pmd",
         "chain": ["HASH_ONLY"],
@@ -2044,7 +2073,27 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 16, 20, 28, 48, 64],
+        "digest_size": [12, 14, 16, 24],
+        "output_cipher": "*",
+        "output_hash": "*"
+    },
+
+    "aesni_mb_aead_AES_GCM_00": {
+        "vdev": "crypto_aesni_mb_pmd",
+        "chain": ["AEAD"],
+        "cdev_type": "SW",
+        "cipher_algo": ["aes-gcm"],
+        "cipher_op": ["ENCRYPT"],
+        "cipher_key": [16, 24, 32],
+        "iv": [12],
+        "auth_algo": ["aes-gcm", "aes-gmac"],
+        "auth_op": ["GENERATE"],
+        "auth_key": [16],
+        "auth_key_random_size": "",
+        "aad": [16],
+        "aad_random_size": "",
+        "input": [256],
+        "digest_size": [16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2238,15 +2287,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [8, 16, 24],
         "iv": [8],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [0, 64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [20, 28, 32, 48],
+        "digest_size": [20, 28],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2259,15 +2307,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [24],
         "iv": [8],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [0, 64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [20, 28, 32, 48],
+        "digest_size": [20, 28],
         "output_cipher": "470c43ce135176ff34300c11b8a5dc463be774851c405eb67a3c54e\
 30707b6ac47b1dca58d5a2dab1dee452f7712f1803709d100608f8df9786156e4656ff60cb6a2f722\
 e6a96932fa0dbba8c4941e61b8ca2b5903bc724d5f68856b9e6f66d7b4e42cc49b44bb85b7ce2f1c5\
@@ -2286,15 +2333,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
         "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [20, 28, 32, 48],
+        "digest_size": [20, 28],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2307,15 +2353,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
         "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [20, 28, 32, 48],
+        "digest_size": [20, 28],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2377,7 +2422,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 16, 20, 28, 48, 64],
+        "digest_size": [16, 20, 28, 48, 64],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2490,15 +2535,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [8],
         "iv": [8],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [12, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2511,21 +2555,20 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [8],
         "iv": [8],
-        "auth_algo": ["sha1-hmac", "sha2-224-hmac", "sha2-256-hmac",
-                      "sha2-384-hmac", "sha2-512-hmac"],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64, 128],
         "auth_key_random_size": "",
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [12, 14, 16, 24, 32],
+        "digest_size": [20, 28],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
     "scheduler_rr_AES_CBC_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_rr",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "HW",
         "cipher_algo": ["aes-cbc"],
@@ -2545,7 +2588,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_rr_AES_GCM_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_rr",
         "chain": ["AEAD"],
         "cdev_type": "HW",
         "cipher_algo": ["aes-gcm"],
@@ -2565,9 +2608,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_psb_AES_CBC_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_psb",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-cbc"],
         "cipher_op": ["ENCRYPT", "DECRYPT"],
         "cipher_key": [16],
@@ -2585,9 +2628,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_psb_AES_GCM_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_psb",
         "chain": ["AEAD"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
@@ -2605,9 +2648,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_fo_AES_CBC_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_fo",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-cbc"],
         "cipher_op": ["ENCRYPT", "DECRYPT"],
         "cipher_key": [16],
@@ -2625,9 +2668,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_fo_AES_GCM_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_fo",
         "chain": ["AEAD"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
@@ -2645,9 +2688,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_mm_AES_CBC_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_mm",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-cbc"],
         "cipher_op": ["ENCRYPT", "DECRYPT"],
         "cipher_key": [16],
@@ -2665,9 +2708,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "scheduler_mm_AES_GCM_00": {
-        "vdev": "",
+        "vdev": "crypto_scheduler_mm",
         "chain": ["AEAD"],
-        "cdev_type": "HW",
+        "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
@@ -2680,6 +2723,26 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad_random_size": "",
         "input": [256],
         "digest_size": [16],
+        "output_cipher": "*",
+        "output_hash": "*"
+    },
+
+    "qat_AES_XTS_00": {
+        "vdev": "",
+        "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
+        "cdev_type": "HW",
+        "cipher_algo": ["aes-xts"],
+        "cipher_op": ["ENCRYPT"],
+        "cipher_key": [32],
+        "iv": [16],
+        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
+        "auth_op": ["GENERATE"],
+        "auth_key": [64, 128],
+        "auth_key_random_size": "",
+        "aad": [0],
+        "aad_random_size": "",
+        "input": [256],
+        "digest_size": [20, 32],
         "output_cipher": "*",
         "output_hash": "*"
     },
