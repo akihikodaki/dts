@@ -54,7 +54,7 @@ Test Case 1: vhost single core performance test with virtio 1.1 mergeable path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -75,7 +75,7 @@ Test Case 2: vhost single core performance test with virtio 1.1 normal path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -96,7 +96,7 @@ Test Case 3: vhost single core performance test with inorder mergeable path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -117,7 +117,7 @@ Test Case 4: vhost single core performance test with inorder no-mergeable path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -138,7 +138,7 @@ Test Case 5: vhost single core performance test with mergeable path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -159,7 +159,7 @@ Test Case 6: vhost single core performance test with normal path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -180,7 +180,7 @@ Test Case 7: vhost single core performance test with vector_rx path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -201,7 +201,7 @@ Test Case 8: vhost single core performance test with virtio 1.1 inorder path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --file-prefix=vhost \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
