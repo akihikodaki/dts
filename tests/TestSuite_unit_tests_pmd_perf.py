@@ -61,20 +61,20 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        [self.arch, machine, env, toolchain] = self.target.split('-')
+        [self.arch, machine, _, toolchain] = self.target.split('-')
         self.verify(self.arch in ["x86_64", "arm64"], "pmd perf request running in x86_64 or arm64")
         self.burst_ctlmodes = ['poll_before_xmit', 'poll_after_xmit']
         self.rxtx_modes = ['vector', 'scalar', 'full', 'hybrid']
         self.anchors = ['rxtx', 'rxonly', 'txonly']
 
         # for better scalar performance data, need disable CONFIG_RTE_IXGBE_INC_VECTOR
-        [arch, machine, env, toolchain] = self.target.split('-')
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=y/CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_%s" % env, "# ", 30)
+        [arch, machine, _, toolchain] = self.target.split('-')
+        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=y/CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
         out = self.dut.build_dpdk_apps('./app/test/')
         self.verify('make: Leaving directory' in out, "Compilation failed")
         self.dut.send_expect("mv -f ./app/test/test ./app/test/test_scalar", "# ")
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=n/CONFIG_RTE_IXGBE_INC_VECTOR=y/' config/common_%s" % env, "# ", 30)
+        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=n/CONFIG_RTE_IXGBE_INC_VECTOR=y/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
         out = self.dut.build_dpdk_apps('./app/test/')
         self.verify('make: Leaving directory' in out, "Compilation failed")
