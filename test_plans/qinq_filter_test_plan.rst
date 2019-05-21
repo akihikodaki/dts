@@ -56,7 +56,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 #. set up testpmd with fortville NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --disable-rss
 
 #. enable qinq::
 
@@ -89,7 +89,7 @@ Testpmd configuration - 4 RX/TX queues per port
 
 #. set up testpmd with fortville NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff  --disable-rss
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 -- -i --rxq=4 --txq=4 --disable-rss
 
 #. enable qinq::
 
@@ -118,7 +118,7 @@ tester Configuration
 #. send dual vlan packet with scapy, verify packets can filter to queues::
 
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4093)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
-    sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4093)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
+    sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
 
 Test Case 3: qinq packet filter to VF queues
 ============================================
@@ -126,13 +126,13 @@ Test Case 3: qinq packet filter to VF queues
 
     linux cmdline: echo 2 > /sys/bus/pci/devices/0000:81:00.0/max_vfs
 
-#. bind igb_uio to vfs
+#. bind igb_uio to vfs::
 
     linux cmdline: ./usertools/dpdk-devbind.py -b igb_uio 81:02.0 81:02.1
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4
 
 #. enable qinq::
 
@@ -158,7 +158,7 @@ Test Case 3: qinq packet filter to VF queues
 
 #. set up testpmd with fortville VF0 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -172,9 +172,9 @@ Test Case 3: qinq packet filter to VF queues
 
     testpmd command: start
 
-#. set up testpmd with fortville VF0 NICs::
+#. set up testpmd with fortville VF1 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.1 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -193,7 +193,7 @@ tester Configuration
 
 #. send dual vlan packet with scapy, verify packets can filter to the corresponding PF and VF queues::
 
-    sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
+    sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x8100,vlan=4093)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=2)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
     sendp([Ether(dst="3C:FD:FE:A3:A0:AE")/Dot1Q(type=0x8100,vlan=3)/Dot1Q(type=0x8100,vlan=4094)/IP(src="192.168.0.1", dst="192.168.0.2")/Raw('x' * 20)], iface="eth17")
 
@@ -203,13 +203,13 @@ Test Case 4: qinq packet filter with different tpid
 
     linux cmdline: echo 2 > /sys/bus/pci/devices/0000:81:00.0/max_vfs
 
-#. bind igb_uio to vfs
+#. bind igb_uio to vfs::
 
     linux cmdline: ./usertools/dpdk-devbind.py -b igb_uio 81:02.0 81:02.1
  
 #. set up testpmd with fortville PF NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4 --tx-offloads=0x8fff
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -n 4 --socket-mem=1024,1024 --file-prefix=pf -w 81:00.0 -- -i --rxq=4 --txq=4
 
 #. enable qinq::
 
@@ -239,7 +239,7 @@ Test Case 4: qinq packet filter with different tpid
 
 #. set up testpmd with fortville VF0 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3e0 -n 4 --socket-mem=1024,1024 --file-prefix=vf0 -w 81:02.0 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -253,9 +253,9 @@ Test Case 4: qinq packet filter with different tpid
 
     testpmd command: start
 
-#. set up testpmd with fortville VF0 NICs::
+#. set up testpmd with fortville VF1 NICs::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.0 -- -i --rxq=4 --txq=4 --rss-udp
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7c0 -n 4 --socket-mem=1024,1024 --file-prefix=vf1 -w 81:02.1 -- -i --rxq=4 --txq=4
 
 #. PMD fwd only receive the packets::
 
@@ -272,8 +272,8 @@ Test Case 4: qinq packet filter with different tpid
 tester Configuration
 -------------------- 
 
-#. send dual vlan packet with scapy, verify packets can filter to the corresponding VF queues::    
-7. send qinq packet with traffic generator, verify packets can filter to the corresponding VF queues.
+#. send dual vlan packet with scapy, verify packets can filter to the corresponding VF queues.
+#. send qinq packet with traffic generator, verify packets can filter to the corresponding VF queues.
 
 Note
 ====================================================
