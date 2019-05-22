@@ -73,12 +73,14 @@ Prerequisites
 1. Hardware:
 
    * 1x Niantic NIC (2x 10G)
-     port0:
-       pci address: 07:00.0
-       mac address: 00:00:00:00:00:01
-     port1:
-       pci address: 07:00.1
-       mac address: 00:00:00:00:00:02
+     ::
+
+       port0:
+         pci address: 07:00.0
+         mac address: 00:00:00:00:00:01
+       port1:
+         pci address: 07:00.1
+         mac address: 00:00:00:00:00:02
 
    * 2x IXIA ports (10G)
 

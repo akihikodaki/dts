@@ -81,7 +81,9 @@ Modify the testpmd code as following::
 Test flow
 =========
 
-NIC2(In kernel) <- NIC1(DPDK) <- testpmd(csum fwd) <- Vhost <- Virtio-net
+::
+
+  NIC2(In kernel) <- NIC1(DPDK) <- testpmd(csum fwd) <- Vhost <- Virtio-net
 
 Test Case1: DPDK GSO test with tcp traffic
 ==========================================
@@ -109,7 +111,9 @@ Test Case1: DPDK GSO test with tcp traffic
     testpmd>port start 0
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
@@ -169,7 +173,9 @@ Test Case3: DPDK GSO test with vxlan traffic
     testpmd>port start 0
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
@@ -221,7 +227,9 @@ Test Case4: DPDK GSO test with gre traffic
     testpmd>port start 0
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \

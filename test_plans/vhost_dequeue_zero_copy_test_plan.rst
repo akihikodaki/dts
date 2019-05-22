@@ -323,7 +323,9 @@ Test topology: NIC2(In kernel) <- NIC1(DPDK) <- testpmd(csum fwd) <- Vhost <- Vi
     testpmd>port start 0
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \

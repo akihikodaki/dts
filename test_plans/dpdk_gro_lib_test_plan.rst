@@ -87,7 +87,9 @@ Modify the testpmd code as following::
 Test flow
 =========
 
-NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
+::
+
+  NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
 Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
 =========================================================
@@ -119,7 +121,9 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
@@ -172,7 +176,9 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
@@ -225,7 +231,9 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \
@@ -253,11 +261,15 @@ Test Case4: DPDK GRO test with vxlan traffic
 
 Vxlan topology
 --------------
-  VM          Host
-50.1.1.2      50.1.1.1
-   |           |
-1.1.2.3       1.1.2.4
-   |------------Testpmd------------|
+
+::
+
+    VM          Host
+  50.1.1.2      50.1.1.1
+     |           |
+  1.1.2.3       1.1.2.4
+     |------------Testpmd------------|
+
 
 1. Connect two nic port directly, put nic2 into another namesapce and create Host VxLAN port::
 
@@ -296,7 +308,9 @@ Vxlan topology
     testpmd>port start 1
     testpmd>start
 
-3.  Set up vm with virto device and using kernel virtio-net driver::
+3.  Set up vm with virto device and using kernel virtio-net driver:
+
+  ::
 
     taskset -c 13 \
     qemu-system-x86_64 -name us-vhost-vm1 \

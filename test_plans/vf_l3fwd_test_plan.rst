@@ -89,7 +89,7 @@ Setup overview
 Set up topology as above based on the NIC used.
 
 Test Case 1: Measure performance with kernel PF & dpdk VF
-========================================================
+=========================================================
 
 1, Bind PF ports to kernel driver, i40e or ixgbe, then create 1 VF from each PF,
 take XL710 for example::
@@ -132,7 +132,7 @@ Fill out this table with results.
 
 
 Test Case 2: Measure performance with dpdk PF & dpdk VF
-======================================================
+=======================================================
 
 1, Bind PF ports to igb_uio driver, then create 1 VF from each PF,
 take XL710 for example::
