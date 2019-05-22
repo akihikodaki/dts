@@ -97,6 +97,9 @@ different ports of the peer traffic generator.
 Bind two ports to vfio-pci.
 modprobe vfio-pci
 
+This suite depend PyCryptodome,it provide authenticated encryption modes(GCM)
+module dependences:cryptography (1.7.2), pycryptodome (3.4.7), pycryptodomex (3.4.7),
+pycryptopp (0.6.0), scapy (2.3.3 or later)
 	
 Test Case: Inline cfg parsing
 =============================
