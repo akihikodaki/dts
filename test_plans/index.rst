@@ -130,6 +130,9 @@ The following are the test plans for the DPDK DTS automated test system.
     loadbalancer_test_plan
     loopback_multi_queues_test_plan
     telemetry_test_plan
+    compressdev_isal_pmd_test_plan
+    compressdev_qat_pmd_test_plan
+    compressdev_zlib_pmd_test_plan
 
     veb_switch_test_plan
     vf_daemon_test_plan
@@ -152,6 +155,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_user_live_migration_test_plan
     vm_power_manager_test_plan
     vmdq_test_plan
+    vf_l3fwd_test_plan
 
     virtio_1.0_test_plan
     vhost_enqueue_interrupt_test_plan
@@ -163,6 +167,10 @@ The following are the test plans for the DPDK DTS automated test system.
     virtio_perf_cryptodev_func_test_plan
     vm2vm_virtio_net_perf_test_plan
     vm2vm_virtio_pmd_test_plan
+    dpdk_gro_lib_test_plan
+    dpdk_gso_lib_test_plan
+    vhost_dequeue_zero_copy_test_plan
+    vxlan_gpe_support_in_i40e_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
