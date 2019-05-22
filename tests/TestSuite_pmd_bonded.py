@@ -965,6 +965,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
         slaves = {}
         slaves['active'] = [self.dut_ports[0]]
         slaves['inactive'] = []
+        curr_primary = self.dut_ports[0]
 
         pkt_now, summary = self.send_customized_packet_to_slave(unbound_port, bond_port, *pkt_info, **slaves)
         if mode_set == MODE_LACP:
@@ -997,6 +998,8 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
             self.verify(port_disabled_num == 2,
                         "Not only the primary slave turn promiscous mode off in mode %d, " % mode_set +
                         " when bonded device  promiscous disabled.")
+            curr_primary = int(self.get_bond_primary(bond_port))
+            slaves['active'] = [curr_primary]
 
         if mode_set != MODE_LACP:
             send_param['verify'] = True
@@ -1011,7 +1014,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                         pkt_size == LACP_MESSAGE_SIZE,
                         "Data received by slave or bonding device when promiscuous disabled")
         else:
-            self.verify(pkt_now[self.dut_ports[0]][0] == 0 and
+            self.verify(pkt_now[curr_primary][0] == 0 and
                         pkt_now[bond_port][0] == 0,
                         "Data received by slave or bonding device when promiscuous disabled")
 
@@ -1026,7 +1029,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                         pkt_size != LACP_MESSAGE_SIZE,
                         "RX or TX packet number not correct when promiscuous disabled")
         else:
-            self.verify(pkt_now[self.dut_ports[0]][0] == pkt_now[bond_port][0] and
+            self.verify(pkt_now[curr_primary][0] == pkt_now[bond_port][0] and
                         pkt_now[self.dut_ports[3]][0] == pkt_now[bond_port][0] and
                         pkt_now[bond_port][0] == pkt_count,
                         "RX or TX packet number not correct when promiscuous disabled")
