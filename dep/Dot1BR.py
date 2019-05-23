@@ -13,6 +13,7 @@ VBPE (virtual brige port extenstion)
 from scapy.packet import *
 from scapy.fields import *
 from scapy.layers.l2 import Ether
+from scapy.data import ETHER_TYPES
 
 class Dot1BR(Packet):
     name = "802.1BR"
