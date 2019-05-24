@@ -70,7 +70,7 @@ class TestFtag(TestCase):
         patch_dst = "/tmp/"
         self.dut.session.copy_file_to(patch_file, patch_dst)
         self.patch_hotfix_dpdk(patch_dst + "fm10k-add-a-unit-test-for-FTAG-based-forwarding.patch", True)
-        self.dut.send_expect("sed -i -e '/CONFIG_RTE_VIRTIO_USER=y/a\CONFIG_RTE_LIBRTE_FM10K_FTAG_FWD=y' config/common_linuxapp", "# ")
+        self.dut.send_expect("sed -i -e '/CONFIG_RTE_VIRTIO_USER=y/a\CONFIG_RTE_LIBRTE_FM10K_FTAG_FWD=y' config/common_linux", "# ")
         self.dut.send_expect("sed -i -e '/SRCS-y += test_pmd_perf.c/a\SRCS-y += test_fm10k_ftag.c' app/test/Makefile", "# ")
         self.dut.build_install_dpdk(self.dut.target)
 
@@ -165,7 +165,7 @@ class TestFtag(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all() 
-        self.dut.send_expect("sed -i  '/CONFIG_RTE_LIBRTE_FM10K_FTAG_FWD=y/d' config/common_linuxapp", "# ")
+        self.dut.send_expect("sed -i  '/CONFIG_RTE_LIBRTE_FM10K_FTAG_FWD=y/d' config/common_linux", "# ")
         self.dut.send_expect("sed -i  '/SRCS-y += test_fm10k_ftag.c/d' app/test/Makefile", "# ")
         patch_dst = "/tmp/"
         self.patch_hotfix_dpdk(patch_dst + "fm10k-add-a-unit-test-for-FTAG-based-forwarding.patch", False)
