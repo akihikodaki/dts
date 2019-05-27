@@ -1,6 +1,6 @@
 #BSD LICENSE
 #
-# Copyright(c) 2010-2016 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,14 +28,12 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
-
-
-
 """
 DPDK Test suite.
 Test metering_and_policing.
 """
+
+import os
 import utils
 import string
 import time
@@ -55,7 +53,8 @@ class TestMeteringAndPolicing(TestCase):
         file = 'meter_and_policy_config.tar.gz'
         src_file = r'./dep/%s' % file
         dst1 = '/tmp'
-        dst2 = '/root/dpdk/drivers/net/softnic'
+        dst2 = os.sep.join([self.target_dir,
+                            'drivers/net/softnic'])
         self.dut.session.copy_file_to(src_file, dst1)
         self.dut.send_expect("tar xf %s/%s -C %s" % (dst1, file, dst2), "#", 30)
 
@@ -63,9 +62,12 @@ class TestMeteringAndPolicing(TestCase):
         """
         Update firmware.cli.
         """
-        self.ori_firmware_cli = "/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli"
+        self.ori_firmware_cli = os.sep.join([self.target_dir,
+                        'drivers/net/softnic/meter_and_policing_firmware.cli'])
+        
         if len(self.dut_ports) == 4:
-            self.ori_firmware_cli = "/root/dpdk/drivers/net/softnic/meter_and_policing_firmware_4ports.cli"
+            self.ori_firmware_cli = os.sep.join([self.target_dir,
+                "drivers/net/softnic/meter_and_policing_firmware_4ports.cli"])
         self.new_firmware_cli = "%s-%s" % (self.ori_firmware_cli, caseID)
         self.dut.send_expect("rm -f %s" % self.new_firmware_cli, "#")
         self.dut.send_expect("cp %s %s" % (self.ori_firmware_cli, self.new_firmware_cli), "#")
@@ -102,21 +104,21 @@ class TestMeteringAndPolicing(TestCase):
         else:
             self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s acl ipv4 offset 270 size 4K action AP0/g' %s"
                                  % (temp, temp, self.new_firmware_cli), "#")
-
         # use .sh file as RX table
         temp = "pipeline RX table 0 dscp"
+        target_dir = '\/'.join(self.target_dir.split('/'))
         if caseID == 10:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  \/root\/dpdk\/drivers\/net\/softnic\/dscp_red.sh/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_red.sh/g' %s"
+                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
         elif caseID == 11:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  \/root\/dpdk\/drivers\/net\/softnic\/dscp_yellow.sh/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_yellow.sh/g' %s"
+                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
         elif caseID == 12:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  \/root\/dpdk\/drivers\/net\/softnic\/dscp_green.sh/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_green.sh/g' %s"
+                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
         elif caseID == 13:
-            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  \/root\/dpdk\/drivers\/net\/softnic\/dscp_default.sh/g' %s"
-                                 % (temp, temp, self.new_firmware_cli), "#")
+            self.dut.send_expect("sed -i -e 's/^.*%s.*$/%s  %s\/drivers\/net\/softnic\/dscp_default.sh/g' %s"
+                                 % (temp, temp, target_dir, self.new_firmware_cli), "#")
 
         # thread * pipeline RX/TX enable
         self.dut.send_expect("sed -i -e 's/thread 5 pipeline RX enable/thread %d pipeline RX enable/g' %s"
@@ -257,7 +259,7 @@ class TestMeteringAndPolicing(TestCase):
             for i in range(0, len(self.dut_ports)):
                 self.verify(int(tx_packets_port[i]) == 0, "Wrong: the packet is not dropped")
         else:
-            self.verify(int(tx_packets_port[expect_port]) == 1, "Wrong: can't forward package to port %d " % expect_port)
+            self.verify(int(tx_packets_port[expect_port]) == 1, "Wrong: can't forward packet to port %d " % expect_port)
 
     def run_param(self, cbs, pbs, head):
         """
@@ -278,6 +280,10 @@ class TestMeteringAndPolicing(TestCase):
         """
         Run at the start of each test suite.
         """
+        # get absolute directory of target source code
+        self.target_dir = '/root' + self.dut.base_dir[1:] \
+                          if self.dut.base_dir.startswith('~') else \
+                          self.dut.base_dir
         self.dut_ports = self.dut.get_ports()
         self.port_nums = 2
         self.verify(len(self.dut_ports) >= self.port_nums,
