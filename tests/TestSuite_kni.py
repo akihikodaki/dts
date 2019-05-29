@@ -261,7 +261,7 @@ class TestKni(TestCase):
         self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=n$/KNI_KMOD_ETHTOOL=y/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
 
-        out = self.dut.send_expect("make -C ./examples/kni/", "# ", 5)
+        out = self.dut.build_dpdk_apps("./examples/kni/")
         self.verify('Error' not in out, "Compilation failed")
 
         self.extract_ports_cores_config(default_1_port_cores_config)

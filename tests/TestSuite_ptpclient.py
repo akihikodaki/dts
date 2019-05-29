@@ -59,7 +59,7 @@ class TestPtpClient(TestCase):
         self.dut.build_install_dpdk(self.target)
 
         # build sample app
-        out = self.dut.send_expect("make -C examples/ptpclient", "# ")
+        out = self.dut.build_dpdk_apps("examples/ptpclient")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 

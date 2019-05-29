@@ -55,7 +55,7 @@ class TestLoadbalancer(TestCase):
             "Flow4": [rx_port3, "1.0.3.1"],
         }
 
-        out = self.dut.send_expect("make -C examples/load_balancer", "#")
+        out = self.dut.build_dpdk_apps("examples/load_balancer")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 

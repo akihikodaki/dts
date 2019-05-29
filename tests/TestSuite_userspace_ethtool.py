@@ -58,7 +58,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.verify(len(self.ports) >= 2, "No ports found for " + self.nic)
 
         # build sample app
-        out = self.dut.send_expect("make -C examples/ethtool", "# ")
+        out = self.dut.build_dpdk_apps("examples/ethtool")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -80,7 +80,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         pass
 
     def build_ethtool(self):
-        out = self.dut.send_expect("make -C examples/ethtool", "# ")
+        out = self.dut.build_dpdk_apps("examples/ethtool")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 

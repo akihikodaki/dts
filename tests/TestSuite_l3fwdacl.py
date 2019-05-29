@@ -652,7 +652,7 @@ class TestL3fwdacl(TestCase):
         TestL3fwdacl.default_rule["Port"] = self.dut_ports[1]
 
         # compile l3fwd-acl
-        out = self.dut.send_expect("make -C examples/l3fwd-acl", "# ")
+        out = self.dut.build_dpdk_apps("examples/l3fwd-acl")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 

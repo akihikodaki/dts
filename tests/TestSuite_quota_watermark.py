@@ -112,7 +112,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
         Builds the example app and checks for errors.
         """
 
-        out = self.dut.send_expect("make -C examples/quota_watermark", "# ")
+        out = self.dut.build_dpdk_apps("examples/quota_watermark")
         self.verify("Error" not in out and "No such file" not in out,
                     "Compilation error")
 
