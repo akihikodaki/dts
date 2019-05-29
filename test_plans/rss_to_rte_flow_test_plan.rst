@@ -442,7 +442,7 @@ Test case: Set queue-region generic flow api
     1       0       0       i-      VLAN => RSS
     3       0       0       i-      VLAN => RSS
 
-   Send the 3 packets to port 0. They are all distributed to queue 8.
+   Send the 3 packets to port 0. They are all distributed to queue 0.
    Queue region only can be deleted all or none.
 
 Test case: Set queue region with invalid parameter
