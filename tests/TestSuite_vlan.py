@@ -145,6 +145,12 @@ class TestVlan(TestCase):
         out = self.get_tcpdump_package()
         self.verify(self.vlan in out, "Wrong vlan:" + str(out))
 
+        notmatch_vlan = self.vlan + 1
+        self.vlan_send_packet(notmatch_vlan)
+        out = self.get_tcpdump_package()
+        self.verify(len(out) == 0, "Received unexpected packet, filter not work!!!")
+        self.verify(notmatch_vlan not in out, "Wrong vlan:" + str(out))
+
         self.dut.send_expect("stop", "testpmd> ")
 
     def test_vlan_disable_receipt(self):
