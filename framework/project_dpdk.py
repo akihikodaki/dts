@@ -64,10 +64,7 @@ class DPDKdut(Dut):
         self.set_toolchain(target)
 
         # set env variable
-        # These have to be setup all the time. Some tests need to compile
-        # example apps by themselves and will fail otherwise.
-        self.send_expect("export RTE_TARGET=" + target, "#")
-        self.send_expect("export RTE_SDK=`pwd`", "#")
+        self.set_env_variable()
 
         self.set_rxtx_mode()
 
@@ -87,6 +84,12 @@ class DPDKdut(Dut):
         if bind_dev and self.get_os_type() == 'linux':
             self.bind_interfaces_linux(drivername)
         self.extra_nic_setup()
+
+    def set_env_variable(self):
+        # These have to be setup all the time. Some tests need to compile
+        # example apps by themselves and will fail otherwise.
+        self.send_expect("export RTE_TARGET=" + self.target, "#")
+        self.send_expect("export RTE_SDK=`pwd`", "#")
 
     def setup_modules(self, target, drivername, drivermode):
         """

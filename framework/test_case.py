@@ -135,6 +135,7 @@ class TestCase(object):
             crb.reconnect_session()
             if 'dut' in str(type(crb)):
                 crb.send_expect("cd %s" % crb.base_dir, "#")
+                crb.set_env_variable()
 
         try:
             result = crb.alt_session.check_available()
