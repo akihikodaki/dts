@@ -102,6 +102,11 @@ Configure the traffic generator to send VLAN packets with the Tag Identifier
 
 Verify that the VLAN packet was correctly received on port ``B`` with VLAN tag ``1``.
 
+Configure the traffic generator to send VLAN packets with not matched Tag
+Identifier and send 1 packet on port ``A``.
+
+Verify that the VLAN packet was not correctly received on port ``B`` with
+this not matched VLAN Tag.
 
 Test Case: Disable receipt of VLAN packets
 ==========================================
