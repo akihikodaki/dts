@@ -45,7 +45,7 @@ class TestPtype_Mapping(TestCase):
         Run at the start of each test suite.
         """
         self.verify(self.nic in ['fortville_eagle', 'fortville_spirit',
-            'fortville_spirit_single', 'fortville_25g'], 
+            'fortville_spirit_single', 'fortville_25g', 'fortpark_TLV'],
             'ptype mapping test can not support %s nic' % self.nic)
         ports = self.dut.get_ports()
         self.verify(len(ports) >= 1, "Insufficient ports for testing")  
