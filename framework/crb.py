@@ -630,7 +630,7 @@ class Crb(object):
         # return thread list
         return map(str, thread_list)
 
-    def get_core_list(self, config, socket=-1):
+    def get_core_list(self, config, socket=-1, from_last = False):
         """
         Get lcore array according to the core config like "all", "1S/1C/1T".
         We can specify the physical CPU socket by the "socket" parameter.
@@ -663,7 +663,10 @@ class Crb(object):
                     if (int(n['socket']) == socket):
                         sockList = [int(n['socket'])]
 
-            sockList = list(sockList)[:nr_sockets]
+            if from_last:
+                sockList = list(sockList)[-nr_sockets:]
+            else:
+                sockList = list(sockList)[:nr_sockets]
             partial_cores = [n for n in partial_cores if int(n['socket'])
                              in sockList]
             core_list = set([int(n['core']) for n in partial_cores])
@@ -676,7 +679,10 @@ class Crb(object):
             for sock in sockList:
                 core_list = set([int(
                     n['core']) for n in partial_cores if int(n['socket']) == sock])
-                core_list = list(core_list)[:nr_cores]
+                if from_last:
+                    core_list = list(core_list)[-nr_cores:]
+                else:
+                    core_list = list(core_list)[:nr_cores]
                 temp.extend(core_list)
 
             core_list = temp
@@ -686,7 +692,10 @@ class Crb(object):
                 partial_cores = self.cores
                 sockList = set([int(n['socket']) for n in partial_cores])
 
-                sockList = list(sockList)[:nr_sockets]
+                if from_last:
+                    sockList = list(sockList)[-nr_sockets:]
+                else:
+                    sockList = list(sockList)[:nr_sockets]
                 partial_cores = [n for n in partial_cores if int(
                     n['socket']) in sockList]
 
@@ -694,7 +703,10 @@ class Crb(object):
                 for sock in sockList:
                     core_list = list([int(n['thread']) for n in partial_cores if int(
                         n['socket']) == sock])
-                    core_list = core_list[:nr_cores]
+                    if from_last:
+                        core_list = core_list[-nr_cores:]
+                    else:
+                        core_list = core_list[:nr_cores]
                     temp.extend(core_list)
 
                 core_list = temp
@@ -716,23 +728,32 @@ class Crb(object):
                 for core in coreList_aux:
                     thread_list = list([int(n['thread']) for n in partial_cores if (
                         (int(n['core']) == core) and (int(n['socket']) == sock))])
-                    thread_list = thread_list[:nr_threads]
+                    if from_last:
+                        thread_list = thread_list[-nr_threads:]
+                    else:
+                        thread_list = thread_list[:nr_threads]
                     temp.extend(thread_list)
                     thread_list = temp
                 i += 1
             return map(str, thread_list)
 
-    def get_lcore_id(self, config):
+    def get_lcore_id(self, config, inverse = False):
         """
         Get lcore id of specified core by config "C{socket.core.thread}"
         """
 
-        m = re.match("C{([01]).(\d).([01])}", config)
+        m = re.match("C{([01]).(\d+).([01])}", config)
 
         if m:
             sockid = m.group(1)
             coreid = int(m.group(2))
+            if inverse:
+                coreid += 1
+                coreid = -coreid
             threadid = int(m.group(3))
+            if inverse:
+                threadid += 1
+                threadid = -threadid
 
             perSocklCs = [_ for _ in self.cores if _['socket'] == sockid]
             coreNum = perSocklCs[coreid]['core']
