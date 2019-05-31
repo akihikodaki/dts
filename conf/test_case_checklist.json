@@ -2216,5 +2216,25 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+     "tso_tunneling": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+                "powerville",
+                "twinpond",
+                "twinville",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
