@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,13 +37,14 @@ Layer-3 forwarding test script.
 import utils
 import string
 import re
+import os
 from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
 from utils import *
+from pktgen import PacketGeneratorHelper
 
-class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
+class TestFM10kL3fwd(TestCase):
 
     path = "./examples/l3fwd/build/"
 
@@ -110,11 +111,10 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
         self.tester.extend_external_packet_generator(TestFM10kL3fwd, self)
         # Verify that enough ports are available
         self.verify(len(ports) >= 2, "Insufficient ports for speed testing")
-        
-        netdev = self.dut.ports_info[ports[0]]['port']
-        
-        self.port_socket = netdev.socket
 
+        netdev = self.dut.ports_info[ports[0]]['port']
+
+        self.port_socket = netdev.socket
 
         # Verify that enough threads are available
         cores = self.dut.get_core_list("2S/8C/2T")
@@ -122,7 +122,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
 
         global valports
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
-        
+
         self.verify(len(valports) >= 2, "Insufficient active ports for speed testing")
 
         self.main_file = "examples/l3fwd/main.c"
@@ -132,13 +132,22 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("sed -i -e 's/FM10K_TQDLOC_BASE_32_DESC/FM10K_TQDLOC_BASE_128_DESC/' %s" % self.pf_file, "# ")
             self.dut.send_expect("sed -i -e 's/FM10K_TQDLOC_SIZE_32_DESC/FM10K_TQDLOC_SIZE_128_DESC/' %s" % self.pf_file, "# ")
             self.dut.send_expect("sed -i -e 's/FM10K_TDLEN_ITR_SCALE_GEN3;$/FM10K_TDLEN_ITR_SCALE_GEN3 * 2;/' %s" % self.pf_file, "# ")
-            
+
             self.dut.build_install_dpdk(self.target)
 
         self.l3fwd_test_results = {'header': [],
-                                   'data': []}
 
         self.rebuild_l3fwd()
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def rebuild_l3fwd(self):
         pat = re.compile("P([0123])")
@@ -173,7 +182,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
         Return a list of packets that implements the flows described in the
         l3fwd test plan.
 
-        """   
+        """
         return [
             'IP(src="1.2.3.4",dst="11.100.0.1")',
             'IP(src="1.2.3.4",dst="11.101.0.1")',
@@ -236,9 +245,9 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
 
     def test_perf_fm10k_legacy_perf(self):
         # add setting for scatter
-        #self.dut.send_expect("sed -i -e '/.hw_ip_checksum = .*$/a\\.enable_scatter = 0,' %s" % self.main_file, "# ")
+        # self.dut.send_expect("sed -i -e '/.hw_ip_checksum = .*$/a\\.enable_scatter = 0,' %s" % self.main_file, "# ")
 
-#        mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
+        # mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
         mode_settings = [{'rxmode': 'default', 'txmode': 'default'}]
         for mode in mode_settings:
             self.fm10k_rxmode_set(mode = mode['rxmode'])
@@ -251,7 +260,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 for key in TestFM10kL3fwd.test_cases_2_ports.keys():
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" %(mode['rxmode'], mode['txmode']))
+            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
             self.perf_l3fwd_2ports()
 
         # remove setting for scatter
@@ -259,9 +268,9 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
 
     def test_perf_fm10k_vec_perf(self):
         # add setting for scatter
-        #self.dut.send_expect("sed -i -e '/.hw_ip_checksum = .*$/a\\.enable_scatter = 0,' %s" % self.main_file, "# ")
+        # self.dut.send_expect("sed -i -e '/.hw_ip_checksum = .*$/a\\.enable_scatter = 0,' %s" % self.main_file, "# ")
 
-#        mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
+        # mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
         mode_settings = [{'rxmode': 'vector', 'txmode': 'vector'}]
         for mode in mode_settings:
             self.fm10k_rxmode_set(mode = mode['rxmode'])
@@ -274,12 +283,11 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 for key in TestFM10kL3fwd.test_cases_2_ports.keys():
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" %(mode['rxmode'], mode['txmode']))
+            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
             self.perf_l3fwd_2ports()
 
         # remove setting for scatter
         self.dut.send_expect("sed -i -e '/.enable_scatter= .*$/d' %s" % self.main_file, "# ")
-
 
     def perf_l3fwd_2ports(self):
         """
@@ -288,31 +296,43 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
 
         header_row = ["Frame", "mode", "S/C/T", "Mpps", "% linerate", "latency_max(us)", "latency_min(us)", "latency_avg(us)"]
         self.l3fwd_test_results['header'] = header_row
-        utils.result_table_create(header_row)
+        self.result_table_create(header_row)
         self.l3fwd_test_results['data'] = []
 
-	mac = ["02:00:00:00:00:00", "02:00:00:00:00:01"]
+        mac = ["02:00:00:00:00:00", "02:00:00:00:00:01"]
         for frame_size in TestFM10kL3fwd.frame_sizes:
 
             # Prepare traffic flow
             payload_size = frame_size -  \
                 HEADER_SIZE['ip'] - HEADER_SIZE['eth']
+            flows = []
+            pcaps = {}
             for _port in range(2):
                 dmac = self.dut.get_mac_address(valports[_port])
-                flows = ['Ether(dst="%s", src="%s")/%s/("X"*%d)' % (dmac, mac[_port], flow, payload_size) for flow in self.flows()[_port *2:(_port +1)*2]]
-                self.tester.scapy_append('wrpcap("dst%d.pcap", [%s])' %(valports[_port],string.join(flows,',')))
-            self.tester.scapy_execute() 
+                cnt = 0
+                for layer in self.flows()[_port * 2: (_port + 1) * 2]:
+                    flow = 'Ether(dst="%s", src="%s")/%s/("X"*%d)' % (
+                                        dmac, mac[_port], flow, payload_size)
+                    flows.append(flow)
+                    pcap = os.sep.join([
+                                self.output_path,
+                                "dst{0}_{1}.pcap".format(valports[_port], cnt)])
+                    self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, flow))
+                    self.tester.scapy_execute()
+                    if valports[_port] not in pcaps:
+                        pcaps[valports[_port]] = []
+                    pcaps[valports[_port]].append(pcap)
+                    cnt += 1
 
             self.rst_report("Flows for 2 ports, %d frame size.\n" % (frame_size),
                        annex=True)
             self.rst_report("%s" % string.join(flows, '\n'),
                        frame=True, annex=True)
 
-
             # Prepare the command line
             global corelist
             pat = re.compile("P([0123]),([01234567]),(C\{\d.\d.\d\})")
-            
+
             pat2 = re.compile("C\{\d")
             repl1 = "C{" + str(self.port_socket)
 
@@ -322,7 +342,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
-                    if key.find('1S')>=0:
+                    if key.find('1S') >= 0:
                         rtCmdLines[key] = pat2.sub(repl1, rtCmdLines[key])
                     rtCmdLines[key] = pat.sub(self.repl, rtCmdLines[key])
 
@@ -330,7 +350,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 coreMask[key] = utils.create_mask(set(corelist))
 
             # measure by two different mode
-            #methods = TestFM10kL3fwd.methods
+            # methods = TestFM10kL3fwd.methods
 
             for mode in TestFM10kL3fwd.methods:
 
@@ -365,17 +385,30 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                             txIntf = self.tester.get_local_port(valports[rxPort - 1])
 
                         rxIntf = self.tester.get_local_port(valports[rxPort])
-                        if rxPort % 2 == 0: 
-                            tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort+1]))
-                        else: 
-                            tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort-1]))
+                        port_id = valports[rxPort+1] if rxPort % 2 == 0 else \
+                                  valports[rxPort-1]
+                        for pcap in pcaps[port_id]:
+                            tgenInput.append((txIntf, rxIntf, pcap))
 
-                    _, pps = self.tester.traffic_generator_throughput(tgenInput)
+                    vm_config = self.set_fields()
+                    # clear streams before add new streams
+                    self.tester.pktgen.clear_streams()
+                    # run packet generator
+                    streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                            vm_config, self.tester.pktgen)
+                    _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
                     self.verify(pps > 0, "No traffic detected")
                     pps /= 1000000.0
                     linerate = self.wirespeed(self.nic, frame_size, 2)
                     pct = pps * 100 / linerate
-                    latencys = self.tester.traffic_generator_latency(tgenInput)
+
+                    # clear streams before add new streams
+                    self.tester.pktgen.clear_streams()
+                    # run packet generator
+                    streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                                 vm_config, self.tester.pktgen)
+                    latencys = self.tester.pktgen.measure_latency(stream_ids=streams)
 
                     index += 1
 
@@ -403,17 +436,31 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
             # Prepare traffic flow
             payload_size = frame_size -  \
                 HEADER_SIZE['ip'] - HEADER_SIZE['eth']
+            pcaps = {}
+            flows = []
             for _port in range(2):
-                dmac = self.dut.get_mac_address(valports[_port])
-                flows = ['Ether(dst="%s")/%s/("X"*%d)' % (dmac, flow, payload_size) for flow in self.flows()[_port *2:(_port +1)*2]]
-                self.tester.scapy_append('wrpcap("dst%d.pcap", [%s])' %(valports[_port],string.join(flows,',')))
-            self.tester.scapy_execute()
+                index = valports[_port]
+                dmac = self.dut.get_mac_address(index)
+                cnt = 0
+                for layer in self.flows()[_port * 2: (_port + 1) * 2]:
+                    flow = 'Ether(dst="%s")/%s/("X"*%d)' % (
+                                                    dmac, layer, payload_size)
+                    flows.append(flow)
+                    pcap = os.sep.join([
+                                self.output_path,
+                                "dst{0}_{1}.pcap".format(index, cnt)])
+                    self.tester.scapy_append('wrpcap("%s", [%s])' % (
+                                                pcap, flow))
+                    self.tester.scapy_execute()
+                    if index not in pcaps:
+                        pcaps[index] = []
+                    pcaps[index].append(pcap)
+                    cnt += 1
 
             self.rst_report("Flows for 2 ports, %d frame size.\n" % (frame_size),
                        annex=True)
             self.rst_report("%s" % string.join(flows, '\n'),
                        frame=True, annex=True)
-
 
             # Prepare the command line
             global corelist
@@ -428,7 +475,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
-                    if key.find('1S')>=0:
+                    if key.find('1S') >= 0:
                         rtCmdLines[key] = pat2.sub(repl1, rtCmdLines[key])
                     rtCmdLines[key] = pat.sub(self.repl, rtCmdLines[key])
 
@@ -443,7 +490,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 subtitle = []
                 for cores in rtCmdLines.keys():
 
-                    #in order to save time, only some of the cases will be run.
+                    # in order to save time, only some of the cases will be run.
                     if mode == "lpm" and (cores == "1S/1C/1T" or cores == "1S/4C/1T"):
                         info = "Executing l3fwd using %s mode, 2 ports, %s and %d frame size.\n" % (
                                mode, cores, frame_size)
@@ -451,13 +498,11 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                         self.logger.info(info)
                         self.rst_report(info, annex=True)
 
-
                         subtitle.append(cores)
                         cmdline = rtCmdLines[cores] % (TestFM10kL3fwd.path + "l3fwd_" + mode, coreMask[cores],
-                                                       self.dut.get_memory_channels(), utils.create_mask(valports[:2]))
 
                         if frame_size > 1518:
-                            cmdline = cmdline + "  --max-pkt-len %d" % frame_size
+                            cmdline = cmdline + "--max-pkt-len %d" % frame_size
                         self.rst_report(cmdline + "\n", frame=True, annex=True)
 
                         out = self.dut.send_expect(cmdline, "L3FWD:", 120)
@@ -472,12 +517,22 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                                 txIntf = self.tester.get_local_port(valports[rxPort - 1])
 
                             rxIntf = self.tester.get_local_port(valports[rxPort])
-                            if rxPort % 2 == 0:
-                                tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort+1]))
-                            else:
-                                tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort-1]))
 
-                        zero_loss_rate, tx_pkts, rx_pkts = self.tester.run_rfc2544(tgenInput, delay=5, permit_loss_rate=0.01)
+                            port_id = valports[rxPort+1] if rxPort % 2 == 0 else \
+                                      valports[rxPort-1]
+                            for pcap in pcaps[port_id]:
+                                tgenInput.append((txIntf, rxIntf, pcap))
+
+                        vm_config = self.set_fields()
+                        # clear streams before add new streams
+                        self.tester.pktgen.clear_streams()
+                        # run packet generator
+                        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput,
+                                            100, vm_config, self.tester.pktgen)
+                        # set traffic option
+                        traffic_opt = {'pdr': 0.01, 'duration': 5}
+                        zero_loss_rate, tx_pkts, rx_pkts = self.tester.pktgen.measure_rfc2544(stream_ids=streams, options=traffic_opt)
+
                         loss_pkts = tx_pkts - rx_pkts
                         self.dut.send_expect("^C", "#")
 
@@ -498,7 +553,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
     def test_perf_rfc2544_vec(self):
         # add setting for scatter
 
-        #mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
+        # mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
         mode_settings = [{'rxmode': 'vector', 'txmode': 'vector'}]
         for mode in mode_settings:
             self.fm10k_rxmode_set(mode = mode['rxmode'])
@@ -511,7 +566,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 for key in TestFM10kL3fwd.test_cases_2_ports.keys():
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" %(mode['rxmode'], mode['txmode']))
+            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
             self.perf_rfc2544()
 
         # remove setting for scatter
@@ -520,7 +575,7 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
     def test_perf_rfc2544_legacy(self):
         # add setting for scatter
 
-        #mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
+        # mode_settings = [{'rxmode': 'default', 'txmode': 'default'}, {'rxmode': 'vector', 'txmode': 'vector'}]
         mode_settings = [{'rxmode': 'default', 'txmode': 'default'}]
         for mode in mode_settings:
             self.fm10k_rxmode_set(mode = mode['rxmode'])
@@ -533,26 +588,17 @@ class TestFM10kL3fwd(TestCase, IxiaPacketGenerator):
                 for key in TestFM10kL3fwd.test_cases_2_ports.keys():
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" %(mode['rxmode'], mode['txmode']))
+            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
             self.perf_rfc2544()
 
         # remove setting for scatter
         self.dut.send_expect("sed -i -e '/.enable_scatter= .*$/d' %s" % self.main_file, "# ")
 
-
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipRandom")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIdle")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {'src': {'action': 'random'}}, }
+        return fields_config
 
     def tear_down(self):
         """
