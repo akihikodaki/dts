@@ -1,7 +1,7 @@
 # <COPYRIGHT_TAG>
 # BSD LICENSE
 #
-# Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,8 +38,11 @@ Test Kernel NIC Interface.
 
 import utils
 import re
+import os
 import time
 from random import randint
+from pktgen import PacketGeneratorHelper
+from test_case import TestCase
 
 dut_ports = []
 port_virtual_interaces = []
@@ -231,9 +234,6 @@ stress_modes_output = [{'lo_mode': None, 'kthread_mode': None,
                         'output': 'KNI.* Incognizant parameter, loopback disabled'}
                        ]
 
-
-from test_case import TestCase
-
 #
 #
 # Test class.
@@ -270,6 +270,16 @@ class TestKni(TestCase):
 
         self.dut.send_expect("service iptables stop", "# ")
         self.dut.send_expect("service firewalld stop", "# ")
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -316,9 +326,9 @@ class TestKni(TestCase):
         if kthread_mode == 'single':
             kthread_mask = utils.create_mask(self.config['kernel_cores'])
             out = self.dut.send_expect(
-                "taskset -p %s `pgrep -fl kni_single | awk '{print $1}'`" % kthread_mask, "#")
+                "taskset -p `pgrep -fl kni_single | awk '{print $1}'`", "#")
             self.verify(
-                'new affinity mask' in out, 'Unable to set core affinity')
+                'current affinity mask' in out, 'Unable to set core affinity')
 
         return out_kni
 
@@ -594,13 +604,13 @@ class TestKni(TestCase):
             # remove ip from tester
             self.tester.send_expect(
                  "ip addr del 192.168.%d.2 dev %s" % (port, tx_interface), "# ")
-          
+
         for port in self.config['ports']:
             tx_port = self.tester.get_local_port(port)
             tx_interface = self.tester.get_interface(tx_port)
             self.tester.disable_ipv6(tx_interface)
             time.sleep(1)
-        
+
     def test_tcpdump(self):
         """
         Tcpdump support KNI.
@@ -677,7 +687,7 @@ class TestKni(TestCase):
                         "'ethtool -i' not supported")
 
             # Request pause parameters
-            with open("/usr/include/linux/ethtool.h","r") as ethtool_h:
+            with open("/usr/include/linux/ethtool.h", "r") as ethtool_h:
                 ethtool_contents = ethtool_h.read()
                 GSET = "ETHTOOL_GLINKSETTINGS"
                 SSET = "ETHTOOL_SLINKSETTINGS"
@@ -724,7 +734,7 @@ class TestKni(TestCase):
             out = self.dut.send_expect("ethtool -d %s" % virtual_interface,
                                        "# ")
             expectstring = "0x00000: CTRL.*0x00008: STATUS"
-            self.verify(len(re.findall(expectstring, out , re.DOTALL)) > 0, "'ethtool -d' not supported")
+            self.verify(len(re.findall(expectstring, out, re.DOTALL)) > 0, "'ethtool -d' not supported")
             self.verify("Operation not supported" not in out,
                         "'ethtool -d' not supported")
 
@@ -767,22 +777,22 @@ class TestKni(TestCase):
             self.tester.scapy_append('srcmac = "%s"' % tx_mac)
 
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/UDP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/UDP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/TCP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/TCP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/ICMP()/("X"*28)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/ICMP()/("X"*28)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/("X"*38)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/("X"*38)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/("X"*46)],iface="%s")' % tx_interface)
+                'sendp([Ether(src = srcmac,dst=dstmac)/("X"*46)],iface="%s",count=200)' % tx_interface)
             self.tester.scapy_execute()
 
             out = self.dut.send_expect("ifconfig %s" % virtual_interface, "# ")
             m = re.search(rx_match, out)
             rx_packets = int(m.group(1))
 
-            self.verify(rx_packets == (previous_rx_packets + 5),
+            self.verify(rx_packets == (previous_rx_packets + 1000),
                         "Rx statistics error in iface %s" % virtual_interface)
 
         self.dut.kill_all()
@@ -836,7 +846,7 @@ class TestKni(TestCase):
             total_cores = len(self.config['tx_cores'] + self.config[
                               'rx_cores'] + self.config['kernel_cores'])
             if total_cores > self.dut_physical_cores():
-                print utils.RED("Skiping step %s (%d cores needed, got %d)" %
+                self.logger.info("Skiping step %s (%d cores needed, got %d)" %
                               (step['config'], total_cores,
                                self.dut_physical_cores())
                               )
@@ -862,14 +872,20 @@ class TestKni(TestCase):
                     self.tester.scapy_append('dstmac = "%s"' % rx_mac)
                     self.tester.scapy_append(
                         'flows = [Ether(dst=dstmac)/IP()/("X"*%d)]' % payload_size)
-                    self.tester.scapy_append(
-                        'wrpcap("tester%d.pcap",flows)' % tx_port)
+                    pcap = os.sep.join([self.output_path, "tester{0}.pcap".format(tx_port)])
+                    self.tester.scapy_append('wrpcap("%s",flows)' % pcap)
                     self.tester.scapy_execute()
-                    tgen_input.append(
-                        (tx_port, tx_port, "tester%d.pcap" % tx_port))
+                    tgen_input.append((tx_port, tx_port, pcap))
 
                 time.sleep(1)
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
+
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                        None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
                 pps_results.append(float(pps) / 1000000)
 
             ports_number = len(self.config['ports'])
@@ -888,8 +904,9 @@ class TestKni(TestCase):
         self.result_table_create(bridge_perf_results_header)
 
         self.tester.scapy_append('srcmac="00:00:00:00:00:01"')
+        pcap = os.sep.join([self.output_path, "kni.pcap"])
         self.tester.scapy_append(
-            'wrpcap("kni.pcap", [Ether(src=srcmac, dst="ff:ff:ff:ff:ff:ff")/IP(len=46)/UDP()/("X"*18)])')
+            'wrpcap("%s", [Ether(src=srcmac, dst="ff:ff:ff:ff:ff:ff")/IP(len=46)/UDP()/("X"*18)])' % pcap)
         self.tester.scapy_execute()
 
         for step in bridge_performance_steps:
@@ -899,7 +916,7 @@ class TestKni(TestCase):
             total_cores = len(self.config['tx_cores'] + self.config[
                               'rx_cores'] + self.config['kernel_cores'])
             if total_cores > self.dut_physical_cores():
-                print utils.RED("Skiping step %s (%d cores needed, got %d)" %
+                self.logger.info("Skiping step %s (%d cores needed, got %d)" %
                               (step['config'], total_cores,
                                self.dut_physical_cores())
                               )
@@ -933,13 +950,18 @@ class TestKni(TestCase):
             rx_port = self.tester.get_local_port(self.config['ports'][1])
 
             tgenInput = []
-            tgenInput.append((tx_port, rx_port, "kni.pcap"))
+            tgenInput.append((tx_port, rx_port, pcap))
 
             if step['flows'] == 2:
-                tgenInput.append((rx_port, tx_port, "kni.pcap"))
-
+                tgenInput.append((rx_port, tx_port, pcap))
             time.sleep(1)
-            _, pps = self.tester.traffic_generator_throughput(tgenInput)
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                    None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             step['pps'] = float(pps) / 10 ** 6
 
             results_row = [step['kthread_mode'], step['flows'],
@@ -963,8 +985,9 @@ class TestKni(TestCase):
         dut_ports = self.dut.get_ports(self.nic)
 
         self.tester.scapy_append('srcmac="00:00:00:00:00:01"')
+        pcap = os.sep.join([self.output_path, "kni.pcap"])
         self.tester.scapy_append(
-            'wrpcap("kni.pcap", [Ether(src=srcmac, dst="ff:ff:ff:ff:ff:ff")/IP(len=46)/UDP()/("X"*18)])')
+            'wrpcap("%s", [Ether(src=srcmac, dst="ff:ff:ff:ff:ff:ff")/IP(len=46)/UDP()/("X"*18)])' % pcap)
         self.tester.scapy_execute()
 
         white_list = self.make_white_list(self.target, self.nic)
@@ -993,13 +1016,19 @@ class TestKni(TestCase):
         rx_port = self.tester.get_local_port(dut_ports[1])
 
         for flows in range(1, flows_without_kni + 1):
-            tgenInput = []
-            tgenInput.append((tx_port, rx_port, "kni.pcap"))
+            tgen_input = []
+            tgen_input.append((tx_port, rx_port, pcap))
 
             if flows == 2:
-                tgenInput.append((rx_port, tx_port, "kni.pcap"))
+                tgen_input.append((rx_port, tx_port, pcap))
 
-            _, pps = self.tester.traffic_generator_throughput(tgenInput)
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                    None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
             self.result_table_add([flows, float(pps) / 10 ** 6])
 
         self.dut.send_expect("ifconfig br1 down", "# ")
@@ -1071,10 +1100,9 @@ class TestKni(TestCase):
                 # Test one port
                 tx_port = self.tester.get_local_port(self.config['ports'][0])
                 rx_mac = self.dut.get_mac_address(self.config['ports'][0])
-                self.tester.scapy_append('flows = []')
 
-                self.tester.scapy_append('flows = []')
                 port_iterator = 0
+                cnt = 0
                 for port in self.config['port_details']:
                     port_number = port['port']
 
@@ -1091,18 +1119,26 @@ class TestKni(TestCase):
                             src_ip_subnet + 1) % num_interfaces_per_port
                         dst_ip_subnet += port_iterator * \
                             num_interfaces_per_port
+                        self.tester.scapy_append('flows = []')
                         self.tester.scapy_append(
                             'flows.append(Ether(dst="%s")/IP(src="192.170.%d.2",dst="192.170.%d.2")/("X"*%d))' %
                             (rx_mac, src_ip_subnet, dst_ip_subnet, payload_size))
                         src_ip_subnet += 1
+                        pcap = os.sep.join([self.output_path,
+                                            "routePerf_{0}.pcap".format(cnt)])
+                        self.tester.scapy_append('wrpcap("%s",flows)' % pcap)
+                        self.tester.scapy_execute()
+                        tgen_input.append((tx_port, tx_port, pcap))
+                        cnt += 1
+                        time.sleep(1)
 
-                    tgen_input.append((tx_port, tx_port, "routePerf.pcap"))
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                        None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
-                self.tester.scapy_append('wrpcap("routePerf.pcap",flows)')
-                self.tester.scapy_execute()
-
-                time.sleep(1)
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
                 resutls_row.append(float(pps) / 10 ** 6)
 
             self.result_table_add(resutls_row)
@@ -1136,7 +1172,6 @@ class TestKni(TestCase):
             # Enables the interfaces
             information = self.dut.send_expect(
                 "./usertools/dpdk-devbind.py --status | grep '%s'" % port, "# ")
-            print information
             data = information.split(' ')
             for field in data:
                 if field.rfind("if=") != -1:
@@ -1169,33 +1204,50 @@ class TestKni(TestCase):
             self.tester.scapy_append('flows = []')
             self.tester.scapy_append(
                 'flows.append(Ether(dst="%s")/IP(src="192.170.100.2",dst="192.170.100.2")/("X"*%d))' % (rx_mac, payload_size))
-            self.tester.scapy_append('wrpcap("routePerf_1.pcap",flows)')
+            pcap = os.sep.join([self.output_path, "routePerf_1.pcap"])
+            self.tester.scapy_append('wrpcap("%s",flows)' % pcap)
             self.tester.scapy_execute()
 
             tgen_input = []
-            tgen_input.append((tx_port, tx_port, "routePerf_1.pcap"))
+            tgen_input.append((tx_port, tx_port, pcap))
 
             # Get throughput with 1 port
-            _, pps = self.tester.traffic_generator_throughput(tgen_input)
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                    None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
             one_port_resutls_row.append(float(pps) / 10 ** 6)
             self.result_table_add(one_port_resutls_row)
 
             # Prepare test with 'ports_without_kni' ports
-            self.tester.scapy_append('flows = []')
+            cnt = 0
             for port in range(ports_without_kni):
                 rx_mac = self.dut.get_mac_address(dut_ports[port])
                 tx_port = self.tester.get_local_port(dut_ports[port])
+                self.tester.scapy_append('flows = []')
                 self.tester.scapy_append(
                     'flows.append(Ether(dst="%s")/IP(src="192.170.%d.2",dst="192.170.%d.2")/("X"*%d))' %
-                    (rx_mac, 100 + port, 100 + (port + 1) % ports_without_kni, payload_size))
-                tgen_input.append((tx_port, tx_port, "routePerf_%d.pcap" % ports_without_kni))
-
-            self.tester.scapy_append(
-                'wrpcap("routePerf_%d.pcap",flows)' % ports_without_kni)
-            self.tester.scapy_execute()
+                    (rx_mac, 100 + port, 100 + (port + 1) % ports_without_kni,
+                     payload_size))
+                pcap = os.sep.join([self.output_path,
+                    "routePerf_{0}_{1}.pcap".format(ports_without_kni, cnt)])
+                tgen_input.append((tx_port, tx_port, pcap))
+                self.tester.scapy_append('wrpcap("%s",flows)' % pcap)
+                self.tester.scapy_execute()
+                cnt += 1
 
             # Get throughput with 'ports_without_kni' ports
-            _, pps = self.tester.traffic_generator_throughput(tgen_input)
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                    None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
             two_port_resutls_row.append(float(pps) / 10 ** 6)
             self.result_table_add(two_port_resutls_row)
 
