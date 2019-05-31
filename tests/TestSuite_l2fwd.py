@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -28,15 +28,16 @@
 # THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
 """
 DPDK Test suite.
 Test Layer-2 Forwarding support
 """
-
+import os
+import time
 import utils
 from test_case import TestCase
 from settings import HEADER_SIZE
+from pktgen import PacketGeneratorHelper
 
 
 class TestL2fwd(TestCase):
@@ -78,6 +79,16 @@ class TestL2fwd(TestCase):
             self.table_header.append("% linerate")
 
         self.result_table_create(self.table_header)
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -163,16 +174,18 @@ class TestL2fwd(TestCase):
             payload_size = frame_size - self.headers_size
 
             tgen_input = []
+            cnt = 1
             for port in xrange(self.number_of_ports):
                 rx_port = self.tester.get_local_port(self.dut_ports[port % self.number_of_ports])
                 tx_port = self.tester.get_local_port(self.dut_ports[(port + 1) % self.number_of_ports])
                 destination_mac = self.dut.get_mac_address(self.dut_ports[(port + 1) % self.number_of_ports])
-                self.tester.scapy_append('wrpcap("l2fwd_%d.pcap", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' % (
-                    port, destination_mac, payload_size))
-
-                tgen_input.append((tx_port, rx_port, "l2fwd_%d.pcap" % port))
-
-            self.tester.scapy_execute()
+                pcap = os.sep.join([self.output_path, "l2fwd_{0}_{1}.pcap".format(port, cnt)])
+                self.tester.scapy_append('wrpcap("%s", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' % (
+                    pcap, destination_mac, payload_size))
+                tgen_input.append((tx_port, rx_port, pcap))
+                time.sleep(3)
+                self.tester.scapy_execute()
+                cnt += 1
 
             for queues in self.test_queues:
 
@@ -189,7 +202,14 @@ class TestL2fwd(TestCase):
                 self.logger.info(info)
                 self.rst_report(info, annex=True)
                 self.rst_report(command_line + "\n\n", frame=True, annex=True)
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
+
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                                    None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
                 Mpps = pps / 1000000.0
                 queues['Mpps'][frame_size] = Mpps
                 queues['pct'][frame_size] = Mpps * 100 / float(self.wirespeed(
