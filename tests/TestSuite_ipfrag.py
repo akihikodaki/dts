@@ -38,8 +38,12 @@ import utils
 import string
 import re
 import time
+import os
 from settings import HEADER_SIZE
 from packet import Packet
+from pktgen import PacketGeneratorHelper
+from test_case import TestCase
+
 
 lpm_table_ipv4 = [
     "{IPv4(100,10,0,0), 16, P1}",
@@ -63,8 +67,6 @@ lpm_table_ipv6 = [
     "{{8,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1}, 48, P0}",
 ]
 
-from test_case import TestCase
-
 
 class TestIpfrag(TestCase):
 
@@ -84,7 +86,6 @@ class TestIpfrag(TestCase):
 
         # Based on h/w type, choose how many ports to use
         ports = self.dut.get_ports()
-        print ports
 
         # Verify that enough ports are available
         self.verify(len(ports) >= 2, "Insufficient ports for testing")
@@ -109,14 +110,12 @@ l3fwd_ipv4_route_array[] = {\\\n"
             rtLpmTbl[idx] = pat.sub(self.portRepl, rtLpmTbl[idx])
             lpmStr_ipv4 = lpmStr_ipv4 + ' ' * 4 + rtLpmTbl[idx] + ",\\\n"
         lpmStr_ipv4 = lpmStr_ipv4 + "};"
-        print lpmStr_ipv4
         lpmStr_ipv6 = "static struct l3fwd_ipv6_route l3fwd_ipv6_route_array[] = {\\\n"
         rtLpmTbl = list(lpm_table_ipv6)
         for idx in range(len(rtLpmTbl)):
             rtLpmTbl[idx] = pat.sub(self.portRepl, rtLpmTbl[idx])
             lpmStr_ipv6 = lpmStr_ipv6 + ' ' * 4 + rtLpmTbl[idx] + ",\\\n"
         lpmStr_ipv6 = lpmStr_ipv6 + "};"
-        print lpmStr_ipv6
         self.dut.send_expect(r"sed -i '/l3fwd_ipv4_route_array\[\].*{/,/^\}\;/c\\%s' examples/ip_fragmentation/main.c" % lpmStr_ipv4, "# ")
         self.dut.send_expect(r"sed -i '/l3fwd_ipv6_route_array\[\].*{/,/^\}\;/c\\%s' examples/ip_fragmentation/main.c" % lpmStr_ipv6, "# ")
         # make application
@@ -139,6 +138,16 @@ l3fwd_ipv4_route_array[] = {\\\n"
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
         self.rxItf = self.tester.get_interface(self.tester.get_local_port(P1))
         self.dmac = self.dut.get_mac_address(P0)
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def functional_check_ipv4(self, pkt_sizes, burst=1, flag=None):
         """
@@ -200,9 +209,9 @@ l3fwd_ipv4_route_array[] = {\\\n"
         for size in pkt_sizes[::burst]:
             # simulate to set TG properties
             if flag == 'frag':
-                # each packet max len: 1522 - 18 (eth) - 40 (ipv6) - 8 (ipv6 ext hdr) = 1456
-                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1456
-                if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) % 1456:
+                # each packet max len: 1518 - 18 (eth) - 40 (ipv6) - 8 (ipv6 ext hdr) = 1452
+                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1452
+                if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) % 1452:
                     expPkts += 1
                 val = 0
             else:
@@ -296,35 +305,47 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
         portmask = utils.create_mask([P0, P1])
 
+        self.dut.send_expect("^c", "# ", 120)
         self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d -- -p %s -q %s" % (
             core_mask, self.dut.get_memory_channels(), portmask, num_pthreads), "IP_FRAG:", 120)
 
         result = [2, lcore, num_pthreads]
         for size in size_list:
             dmac = self.dut.get_mac_address(P0)
-            flows = ['Ether(dst="%s")/IP(src="1.2.3.4", dst="100.10.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
-                     'Ether(dst="%s")/IP(src="1.2.3.4", dst="100.20.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
-                     'Ether(dst="%s")/IPv6(dst="101:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58),
-                     'Ether(dst="%s")/IPv6(dst="201:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58)]
-            self.tester.scapy_append('wrpcap("test1.pcap", [%s])' % string.join(flows, ','))
+            flows_p0 = ['Ether(dst="%s")/IP(src="1.2.3.4", dst="100.10.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
+                        'Ether(dst="%s")/IP(src="1.2.3.4", dst="100.20.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
+                        'Ether(dst="%s")/IPv6(dst="101:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58),
+                        'Ether(dst="%s")/IPv6(dst="201:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58)]
 
             # reserved for rx/tx bidirection test
             dmac = self.dut.get_mac_address(P1)
-            flows = ['Ether(dst="%s")/IP(src="1.2.3.4", dst="100.30.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
-                     'Ether(dst="%s")/IP(src="1.2.3.4", dst="100.40.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
-                     'Ether(dst="%s")/IPv6(dst="301:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58),
-                     'Ether(dst="%s")/IPv6(dst="401:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58)]
-            self.tester.scapy_append('wrpcap("test2.pcap", [%s])' % string.join(flows, ','))
-
-            self.tester.scapy_execute()
-
+            flows_p1 = ['Ether(dst="%s")/IP(src="1.2.3.4", dst="100.30.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
+                        'Ether(dst="%s")/IP(src="1.2.3.4", dst="100.40.0.1", flags=0)/("X"*%d)' % (dmac, size - 38),
+                        'Ether(dst="%s")/IPv6(dst="301:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58),
+                        'Ether(dst="%s")/IPv6(dst="401:101:101:101:101:101:101:101",src="ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80")/Raw(load="X"*%d)' % (dmac, size - 58)]
+            flow_len = len(flows_p0)
             tgenInput = []
-            tgenInput.append((self.tester.get_local_port(P0), self.tester.get_local_port(P1), "test1.pcap"))
-            tgenInput.append((self.tester.get_local_port(P1), self.tester.get_local_port(P0), "test2.pcap"))
+            for i in range(flow_len):
+
+                pcap0 = os.sep.join([self.output_path, "p0_{}.pcap".format(i)])
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap0, flows_p0[i]))
+                pcap1 = os.sep.join([self.output_path, "p1_{}.pcap".format(i)])
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap1, flows_p1[i]))
+                self.tester.scapy_execute()
+
+                tgenInput.append((self.tester.get_local_port(P0), self.tester.get_local_port(P1), pcap0))
+                tgenInput.append((self.tester.get_local_port(P1), self.tester.get_local_port(P0), pcap1))
 
             factor = (size + 1517) / 1518
             # wireSpd = 2 * 10000.0 / ((20 + size) * 8)
-            Bps[str(size)], Pps[str(size)] = self.tester.traffic_generator_throughput(tgenInput)
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                    None, self.tester.pktgen)
+            Bps[str(size)], Pps[str(size)] = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
             self.verify(Pps[str(size)] > 0, "No traffic detected")
             Pps[str(size)] *= 1.0 / factor / 1000000
             Pct[str(size)] = (1.0 * Bps[str(size)] * 100) / (2 * 10000000000)
