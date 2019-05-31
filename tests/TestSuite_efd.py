@@ -34,20 +34,17 @@ DPDK Test suite.
 """
 import re
 import utils
+import os
 from test_case import TestCase
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 
 
-class TestEFD(TestCase, IxiaPacketGenerator):
+class TestEFD(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
         """
         self.tester.extend_external_packet_generator(TestEFD, self)
-
-        out = self.dut.send_expect("make -C test -j", "#")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
 
         out = self.dut.build_dpdk_apps("./examples/server_node_efd")
         self.verify("Error" not in out, "Compilation error")
@@ -56,6 +53,16 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         self.dut_ports = self.dut.get_ports()
         self.node_app = "./examples/server_node_efd/node/%s/node" % self.target
         self.server_app = "./examples/server_node_efd/server/%s/server" % self.target
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -165,22 +172,23 @@ class TestEFD(TestCase, IxiaPacketGenerator):
 
     def _efd_perf_evaluate(self, node_num, flow_num):
         # extended flow number into etgen module
-        self.tester.ixia_packet_gen.flow_num = flow_num
 
         # output port is calculated from overall ports number
         server_cmd_fmt = "%s -c %s -n %d -w %s -w %s -- -p 0x3 -n %d -f %s"
         node_cmd_fmt = "%s -c %s -n %d --proc-type=secondary -- -n %d"
         socket = self.dut.get_numa_id(self.dut_ports[0])
 
-        self.tester.scapy_append('wrpcap("efd.pcap", [Ether()/IP(src="0.0.0.0", dst="0.0.0.0")/("X"*26)])')
+        pcap = os.sep.join([self.output_path, "efd.pcap"])
+        self.tester.scapy_append('wrpcap("%s", [Ether()/IP(src="0.0.0.0", dst="0.0.0.0")/("X"*26)])' % pcap)
         self.tester.scapy_execute()
 
         tgen_input = []
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[1])
 
-        tgen_input.append((tx_port, rx_port, "efd.pcap"))
-        tgen_input.append((rx_port, tx_port, "efd.pcap"))
+        pcap = os.sep.join([self.output_path, "efd.pcap"])
+        tgen_input.append((tx_port, rx_port, pcap))
+        tgen_input.append((rx_port, tx_port, pcap))
 
         cores = self.dut.get_core_list("1S/%dC/1T" % (node_num + 2), socket)
 
@@ -203,7 +211,12 @@ class TestEFD(TestCase, IxiaPacketGenerator):
             node_sessions.append(node_session)
             node_session.send_expect(node_cmd, "Finished Process Init", timeout=30)
 
-        _, pps = self.tester.traffic_generator_throughput(tgen_input, delay=10)
+        # clear streams before add new streams
+        self.tester.pktgen.clear_streams()
+        # run packet generator
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                None, self.tester.pktgen)
+        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
         for node_session in node_sessions:
             node_session.send_expect("^C", "#")
@@ -214,21 +227,15 @@ class TestEFD(TestCase, IxiaPacketGenerator):
         pps /= 1000000.0
         return pps
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipIdle")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIncrHost")
-        # increase number equal to flow number
-        self.add_tcl_cmd("ip config -destIpAddrRepeatCount %d" % self.flow_num)
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {
+            # self.flow_num not used by this suite
+            # 'dst': {'range': self.flow_num, 'action': 'inc'}
+            'dst': {'range': 64, 'action': 'inc'}
+        }, }
+        return fields_config
 
     def tear_down(self):
         """
