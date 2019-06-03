@@ -36,12 +36,13 @@ Multi-process Test.
 
 import utils
 import time
-from etgen import IxiaPacketGenerator
+import os
 executions = []
 from test_case import TestCase
+from pktgen import PacketGeneratorHelper
 
 
-class TestMultiprocess(TestCase, IxiaPacketGenerator):
+class TestMultiprocess(TestCase):
 
     def set_up_all(self):
         """
@@ -53,7 +54,7 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
             DUT core number >= 4
             multi_process build pass
         """
-        #self.verify('bsdapp' not in self.target, "Multiprocess not support freebsd")
+        # self.verify('bsdapp' not in self.target, "Multiprocess not support freebsd")
 
         self.verify(len(self.dut.get_all_cores()) >= 4, "Not enough Cores")
         self.tester.extend_external_packet_generator(TestMultiprocess, self)
@@ -69,8 +70,17 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
         executions.append({'nprocs': 8, 'cores': '1S/4C/2T', 'pps': 0})
         self.dut.alt_session.send_expect("cd dpdk","# ",5)
 
-       # start new session to run secondary
+        # start new session to run secondary
         self.session_secondary = self.dut.new_session()
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -201,11 +211,10 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
 
         self.tester.scapy_append('dmac="%s"' % self.dut.get_mac_address(dutPorts[0]))
         self.tester.scapy_append('smac="%s"' % mac)
-        if not self.dut.want_perf_tests:
-            self.tester.scapy_append('flows = [Ether(src=smac, dst=dmac)/IP(src="192.168.1.%s" % src, dst="192.168.1.%s" % dst)/("X"*26) for src in range(64) for dst in range(64)]')
-        else:
-            self.tester.scapy_append('flows = [Ether(src=smac, dst=dmac)/IP(src="192.168.1.1", dst="192.168.1.1")/("X"*26)]')
-        self.tester.scapy_append('wrpcap("test.pcap", flows)')
+        self.tester.scapy_append('flows = [Ether(src=smac, dst=dmac)/IP(src="192.168.1.1", dst="192.168.1.1")/("X"*26)]')
+
+        pcap = os.sep.join([self.output_path, "test.pcap"])
+        self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
         self.tester.scapy_execute()
 
         validExecutions = []
@@ -230,8 +239,15 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
                 self.dut.send_expect("bg", "# ")
 
             tgenInput = []
-            tgenInput.append([txPort, rxPort, "test.pcap"])
-            _, pps = self.tester.traffic_generator_throughput(tgenInput)
+            tgenInput.append([txPort, rxPort, pcap])
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                                None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
             execution['pps'] = pps
             self.dut.kill_all()
             time.sleep(5)
@@ -246,21 +262,15 @@ class TestMultiprocess(TestCase, IxiaPacketGenerator):
 
         self.result_table_print()
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd('ip config -sourceIpAddrMode ipIncrHost')
-        self.add_tcl_cmd('ip config -sourceIpAddrRepeatCount %d' % 64)
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd('ip config -destIpAddrMode ipIncrHost')
-        self.add_tcl_cmd('ip config -destIpAddrRepeatCount %d' % 64)
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol %d" % proto)
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {
+            'src': {'range': 64, 'action': 'inc'},
+            'dst': {'range': 64, 'action': 'inc'},
+        },}
+
+        return fields_config
 
     def tear_down(self):
         """
