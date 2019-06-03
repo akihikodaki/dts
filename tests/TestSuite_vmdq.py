@@ -7,13 +7,13 @@ Tests for vmdq.
 
 """
 import utils
+import os
 import re
-from etgen import IxiaPacketGenerator
 from test_case import TestCase
 from time import sleep
+from pktgen import PacketGeneratorHelper
 
-
-class TestVmdq(TestCase, IxiaPacketGenerator):
+class TestVmdq(TestCase):
     dut_ports = []
     ip_dot1q_header_size = 22
     default_framesize = 64
@@ -38,7 +38,6 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("sed -i 's/define MAX_QUEUES 128/define MAX_QUEUES 1024/' ./examples/vmdq/main.c", "#", 5)
         
         self.dut_ports = self.dut.get_ports(self.nic)
-        print self.dut_ports
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
 
         self.core_configs = []
@@ -50,6 +49,15 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         out = self.dut.send_expect("make -C examples/vmdq", "#", 10)
         self.verify("Error" not in out, "Compilation error")
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def validateApproxEqual(self, lines):
         """
@@ -97,7 +105,7 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         tx_port = self.tester.get_local_port(self.dut_ports[0])
         rx_port = self.tester.get_local_port(self.dut_ports[1])
         tx_mac = self.tester.get_mac(tx_port)
-        
+
         self.vlan_repeat = npools
         self.da_repeat = npools
         tgen_input = []
@@ -106,15 +114,22 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
             self.tester.scapy_append('smac="%s"' % tx_mac)
             self.tester.scapy_append(
                 'flows = [Ether(src=smac, dst=dmac)/Dot1Q(vlan=0,prio=%d)]'%p)
-            self.tester.scapy_append('wrpcap("test%d.pcap", flows)' %p)
-            self.tester.scapy_execute()
-            tgen_input.append((tx_port, rx_port, "test%d.pcap" %p))
 
-        loss, _, _ = self.tester.traffic_generator_loss(tgen_input, 10)
-        print "loss is %s !" % loss
+            pcap = os.sep.join([self.output_path, "test%d.pcap" % p])
+            self.tester.scapy_append('wrpcap("%s", flows)' %pcap)
+
+            self.tester.scapy_execute()
+            tgen_input.append((tx_port, rx_port, "%s" %pcap))
+
+        self.tester.pktgen.clear_streams()
+        # run packet generator
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                                        None, self.tester.pktgen)
+        loss = self.tester.pktgen.measure_loss(stream_ids=streams)
+        self.logger.info("loss is {}!".format(loss))
 
         # Verify the accurate
-        self.verify(loss < 0.001, "Excessive packet loss")
+        self.verify(loss[0]/100 < 0.001, "Excessive packet loss")
         self.validateApproxEqual(out.split("\r\n"))
 
     def set_up(self):
@@ -147,7 +162,7 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         frame_sizes = [64, 128, 256, 512, 1024, 1280, 1518]
         for config in self.core_configs:
 
-            print utils.BLUE(config["cores"])
+            self.logger.info(config["cores"])
             self.dut.kill_all()
 
             core_config = config['cores']
@@ -178,14 +193,12 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
             tx_port = self.tester.get_local_port(self.dut_ports[0])
             rx_port = self.tester.get_local_port(self.dut_ports[1])
 
-            print utils.GREEN("Waiting for application to initialize")
+            self.logger.info("Waiting for application to initialize")
             sleep(5)
 
             for frame_size in frame_sizes:
-
                 TestVmdq.current_frame_size = frame_size
-
-                print utils.BLUE(str(frame_size))
+                self.logger.info(str(frame_size))
 
                 self.tester.scapy_append('dstmac="%s"' % self.destmac_port0)
                 tx_mac = self.tester.get_mac(tx_port)
@@ -193,7 +206,10 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
                 self.tester.scapy_append(
                         'flows = [Ether(src=srcmac,dst=dstmac)/Dot1Q(vlan=0)/("X"*%d)]' %
                         (frame_size - TestVmdq.ip_dot1q_header_size))
-                self.tester.scapy_append('wrpcap("test1.pcap", flows)')
+
+                pcap = os.sep.join([self.output_path, "test1.pcap"])
+                self.tester.scapy_append('wrpcap("%s", flows)' %pcap)
+
                 self.tester.scapy_execute()
 
                 self.tester.scapy_append('dstmac="%s"' % self.destmac_port1)
@@ -202,16 +218,30 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
                 self.tester.scapy_append(
                         'flows = [Ether(src=srcmac,dst=dstmac)/Dot1Q(vlan=0)/("X"*%d)]' %
                         (frame_size - TestVmdq.ip_dot1q_header_size))
-                self.tester.scapy_append('wrpcap("test2.pcap", flows)')
+
+                pcap = os.sep.join([self.output_path, "test2.pcap"])
+                self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
+
                 self.tester.scapy_execute()
-                   
+
                 self.vlan_repeat = self.queues
                 self.da_repeat = self.queues
 
                 tgen_input = []
-                tgen_input.append((tx_port, rx_port, "test1.pcap"))
-                tgen_input.append((rx_port, tx_port, "test2.pcap"))
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
+
+                pcap1 = os.sep.join([self.output_path, "test1.pcap"])
+                pcap2 = os.sep.join([self.output_path, "test2.pcap"])
+
+                tgen_input.append((tx_port, rx_port, pcap1))
+                tgen_input.append((rx_port, tx_port, pcap2))
+
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                                    None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
                 config['mpps'][frame_size] = pps/1000000.0
 
         for n in range(len(self.core_configs)):
@@ -230,24 +260,12 @@ class TestVmdq(TestCase, IxiaPacketGenerator):
         self.result_table_print()
 
     # Override etgen.dot1q function
-    def dot1q(self, port, prio, id, vlan, type):
-        """
-        Change Ixia configuration
-        """
-        self.add_tcl_cmd("vlan config -mode vIncrement")
-        self.add_tcl_cmd("vlan config -step 1")
-        self.add_tcl_cmd("vlan config -repeat %d" % self.vlan_repeat)
-        self.add_tcl_cmd("stream config -framesize %d" %
-                         TestVmdq.current_frame_size)
-        super(TestVmdq, self).dot1q(port, prio, id, vlan, type)
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'vlan':  {
+            0: {'range': self.vlan_repeat, 'action': 'inc'}},
+        'mac':  {
+            'dst': {'range': self.da_repeat, 'action': 'inc'}},}
 
-    def ether(self, port, src, dst, type):
-        """
-        Configure Ether protocol.
-        """
-        self.add_tcl_cmd("protocol config -ethernetType ethernetII")
-        self.add_tcl_cmd('stream config -sa "%s"' % self.macToTclFormat(src))
-        self.add_tcl_cmd('stream config -da "%s"' % self.macToTclFormat(dst))
-        self.add_tcl_cmd('stream config -daRepeatCounter increment')
-        self.add_tcl_cmd('stream config -daStep 1')
-        self.add_tcl_cmd('stream config -numDA %d' % self.da_repeat)
+        return fields_config
