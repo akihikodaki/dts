@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,13 @@ Layer-3 forwarding test script.
 import utils
 import string
 import re
+import os
 from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 
-class TestL3fwd(TestCase,IxiaPacketGenerator):
+class TestL3fwd(TestCase):
 
     path = "./examples/l3fwd/build/"
 
@@ -185,7 +186,7 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
         out = self.dut.send_expect("make clean -C examples/l3fwd", "# ")
 
         # Compile l3fwd with hash/exact lookup.
-	self.dut.send_expect(r"sed -i -e '/ipv4_l3fwd_em_route_array\[\].*{/,/^\}\;/c\\%s' examples/l3fwd/l3fwd_em.c" % exactStr, "# ")
+        self.dut.send_expect(r"sed -i -e '/ipv4_l3fwd_em_route_array\[\].*{/,/^\}\;/c\\%s' examples/l3fwd/l3fwd_em.c" % exactStr, "# ")
         out = self.dut.build_dpdk_apps("./examples/l3fwd", "USER_FLAGS=-DAPP_LOOKUP_METHOD=0")
 
         self.verify("Error" not in out, "compilation error 1")
@@ -196,6 +197,16 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
 
         self.l3fwd_test_results = {'header': [],
                                    'data': []}
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def flows(self):
         """
@@ -249,11 +260,26 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
             payload_size = frame_size -  \
                 HEADER_SIZE['ip'] - HEADER_SIZE['eth'] - HEADER_SIZE['tcp']
 
+            pcaps = {}
+            flows = []
             for _port in range(ports_num):
-                dmac = self.dut.get_mac_address(valports[_port])
-                flows = ['Ether(dst="%s")/%s/TCP()/("X"*%d)' % (dmac, flow, payload_size) for flow in self.flows()[_port *2:(_port +1)*2]]
-                self.tester.scapy_append('wrpcap("dst%d.pcap", [%s])' %(valports[_port],string.join(flows,',')))
-            self.tester.scapy_execute()
+                index = valports[_port]
+                dmac = self.dut.get_mac_address(index)
+                cnt = 0
+                for layer in self.flows()[_port *2:(_port +1)*2]:
+                    flow = 'Ether(dst="%s")/%s/TCP()/("X"*%d)' % (
+                                                    dmac, layer, payload_size)
+                    flows.append(flow)
+                    pcap = os.sep.join([
+                                self.output_path,
+                                "dst{0}_{1}.pcap".format(index, cnt)])
+                    self.tester.scapy_append('wrpcap("%s", [%s])' % (
+                                                pcap, flow))
+                    self.tester.scapy_execute()
+                    if index not in pcaps:
+                        pcaps[index] = []
+                    pcaps[index].append(pcap)
+                    cnt += 1
 
             self.rst_report("Flows for %d ports, %d frame size.\n" % (ports_num, frame_size),
                        annex=True)
@@ -330,12 +356,23 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
                                 txIntf = self.tester.get_local_port(valports[rxPort - 1])
 
                             rxIntf = self.tester.get_local_port(valports[rxPort])
-                            if rxPort % 2 == 0:
-                                tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort+1]))
-                            else:
-                                tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort-1]))
+                            port_id = valports[rxPort+1] if rxPort % 2 == 0 else \
+                                      valports[rxPort-1]
+                            for pcap in pcaps[port_id]:
+                                tgenInput.append((txIntf, rxIntf, pcap))
 
-                        zero_loss_rate, tx_pkts, rx_pkts = self.tester.run_rfc2544(tgenInput, delay=60)
+                        # Run traffic generator
+
+                        vm_config = self.set_fields()
+                        # clear streams before add new streams
+                        self.tester.pktgen.clear_streams()
+                        # run packet generator
+                        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput,
+                                            100, vm_config, self.tester.pktgen)
+                        # set traffic option
+                        traffic_opt = {'duration': 60}
+                        zero_loss_rate, tx_pkts, rx_pkts = self.tester.pktgen.measure_rfc2544(stream_ids=streams, options=traffic_opt)
+
                         loss_pkts = tx_pkts - rx_pkts
                         self.dut.send_expect("^C", "#")
                         linerate = self.wirespeed(self.nic, frame_size, ports_num)
@@ -357,19 +394,11 @@ class TestL3fwd(TestCase,IxiaPacketGenerator):
 
         self.result_table_print()
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipRandom")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIdle")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {'src': {'action': 'random'},},}
+        return fields_config
 
     def tear_down(self):
         """
