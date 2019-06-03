@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,11 +36,13 @@ Test for Ethernet Link Flow Control Features by Poll Mode Drivers
 
 import utils
 import re
+import os
 
 from time import sleep
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE
+from pktgen import PacketGeneratorHelper
 
 
 class TestLinkFlowctrl(TestCase):
@@ -77,6 +79,15 @@ class TestLinkFlowctrl(TestCase):
 
         self.pmdout = PmdOutput(self.dut)
         self.pmdout.start_testpmd("all", "--portmask=%s" % self.portMask)
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def pause_frame_loss_test(self, rx_flow_control='off',
                               tx_flow_control='off',
@@ -86,7 +97,9 @@ class TestLinkFlowctrl(TestCase):
         tester_rx_port = self.tester.get_local_port(self.tx_port)
 
         tgenInput = []
-        tgenInput.append((tester_tx_port, tester_rx_port, "test.pcap"))
+        pcap = os.sep.join([self.output_path, "test.pcap"])
+
+        tgenInput.append((tester_tx_port, tester_rx_port, pcap))
 
         self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg on %d " % (
                              rx_flow_control,
@@ -96,18 +109,23 @@ class TestLinkFlowctrl(TestCase):
                              "testpmd> ")
 
         self.dut.send_expect("set fwd csum", "testpmd> ")
-        self.dut.send_expect("start", "testpmd> ")
-
-        self.tester.scapy_append('wrpcap("test.pcap",[Ether()/IP()/UDP()/("X"*%d)])' %
-                                 TestLinkFlowctrl.payload_size)
+        self.dut.send_expect("start", "testpmd> ", 60)
+        pcap = os.sep.join([self.output_path, "test.pcap"])
+        self.tester.scapy_append('wrpcap("%s",[Ether()/IP()/UDP()/("X"*%d)])' %
+                                 (pcap,TestLinkFlowctrl.payload_size))
 
         self.tester.scapy_execute()
 
-        # Run traffic generator
-        result = self.tester.traffic_generator_loss(tgenInput, 100)
+        # clear streams before add new streams
+        self.tester.pktgen.clear_streams()
+        # run packet generator
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                            None, self.tester.pktgen)
+        result = self.tester.pktgen.measure_loss(stream_ids=streams)
+
         self.dut.send_expect("stop", "testpmd> ")
 
-        return result
+        return result[0]/100
 
     def get_testpmd_port_stats(self, ports):
         """
@@ -184,9 +202,9 @@ class TestLinkFlowctrl(TestCase):
             Verifies the test results (use pause_frame_test before) against
             the expected behavior.
         """
-        print "Result (port, rx, tx) %s,  expected rx %s, expected fwd %s" % (result,
+        self.logger.info("Result (port, rx, tx) %s,  expected rx %s, expected fwd %s" % (result,
                                                                               expected_rx,
-                                                                              expected_fwd)
+                                                                              expected_fwd))
 
         if expected_rx:
             self.verify(result[self.rx_port][0] == TestLinkFlowctrl.frames_to_sent,
@@ -339,7 +357,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='on')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -353,7 +371,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -367,7 +385,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -381,7 +399,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='off',
                                             pause_frame_fwd='on')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result >= 0.5,
                     "Link flow control fail, the loss percent is less than 50%")
@@ -395,7 +413,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='off',
                                             pause_frame_fwd='off')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result >= 0.5,
                     "Link flow control fail, the loss percent is less than 50%")
@@ -409,7 +427,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        print "Packet loss: %.3f%%" % result
+        self.logger.info("Packet loss: %.3f%%" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
