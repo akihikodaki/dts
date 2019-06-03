@@ -63,17 +63,31 @@ class TestFdir(TestCase, IxiaPacketGenerator):
     # Utility methods and other non-test code.
     #
     ###########################################################################
+    scapyCmds = []
+
+    def start_scapy(self):
+        self.tester.scapy_foreground()
+        self.scapyCmds.append('sys.path.append("./")')
+        self.scapyCmds.append('from sctp import *')
+        self.tester.send_expect('scapy', '>>> ', 10)
+        sleep(2)
+
+    def end_scapy(self):
+        self.tester.send_expect("exit()", "#")
+
+    def scapy_execute(self, timeout=60):
+        for cmd in self.scapyCmds:
+            self.tester.send_expect(cmd, ">>> ", timeout)
+
+        self.scapyCmds = []
 
     def send_and_verify(self, condition, packet, queueid = -2):
         """
         Send packages and verify behavior.
         """
-        self.tester.scapy_foreground()
-        self.tester.scapy_append('sys.path.append("./")')
-        self.tester.scapy_append('from sctp import *')
-        self.tester.scapy_append(packet)
+        self.scapyCmds.append(packet)
         self.dut.send_expect("start", "testpmd>")
-        self.tester.scapy_execute()
+        self.scapy_execute()
         time.sleep(.5)
         out = self.dut.get_session_output()
         self.dut.send_expect("stop", "testpmd>")
@@ -200,7 +214,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         Run before each test case.
         """
-        pass
+        self.start_scapy()
 
     def fdir_set_rule(self):
         """
@@ -1165,7 +1179,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         dst_ip_temp = self.dst_ip
         print "*src_ip_temp = " + src_ip_temp + "dst_ip_temp = " + dst_ip_temp
         flows.append('Ether(src="52:00:00:00:00:00", dst="00:1B:21:8E:B2:30")/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw(load="%s" + "X"*(%d - 42 - %d))' % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
-        self.tester.scapy_append('wrpcap("test.pcap", [%s])' % string.join(flows, ','))
+        self.scapyCmds.append('wrpcap("/root/test.pcap", [%s])' % string.join(flows, ','))
 
     def perf_fdir_performance_2ports(self, test_type, num_rules, num_flows):
         """
@@ -1176,10 +1190,10 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                           self.tester.get_local_port(self.dut_ports[1]),
-                          "test.pcap"))
+                          "/root/test.pcap"))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                           self.tester.get_local_port(self.dut_ports[0]),
-                          "test.pcap"))
+                          "/root/test.pcap"))
 
         print "self.ports_socket=%s" % (self.ports_socket)
         # run testpmd for each core config
@@ -1229,7 +1243,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                 self.logger.info("Running with frame size %d " % frame_size)
                 self.fdir_perf_set_flows(num_flows, frame_size)
 
-                self.tester.scapy_execute()
+                self.scapy_execute()
 
                 """
                 tgen_input.append([self.tester.get_local_port(self.dut_ports[0]),
@@ -1326,7 +1340,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         Run after each test case.
         """
-        pass
+        self.end_scapy()
 
     def tear_down_all(self):
         """
