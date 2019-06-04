@@ -149,7 +149,15 @@ class TestLinkFlowctrl(TestCase):
         tgenInput = []
         tgenInput.append((tester_tx_port, tester_rx_port, "test.pcap"))
 
-        self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg %s %d " % (
+        if (self.nic in ["cavium_a063"]):
+             self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 autoneg %s %d " % (
+                             flow_control,
+                             flow_control,
+                             flow_control,
+                             self.rx_port),
+                             "testpmd> ")
+        else:
+             self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg %s %d " % (
                              flow_control,
                              flow_control,
                              pause_frame_fwd,
@@ -250,10 +258,14 @@ class TestLinkFlowctrl(TestCase):
         PAUSE Frames must not be received by testpmd
         """
 
-        pause_frames = [self.build_pause_frame(0),
-                        self.build_pause_frame(1),
-                        self.build_pause_frame(2),
-                        self.build_pause_frame(3)]
+        if (self.nic in ["cavium_a063"]):
+            pause_frames = [self.build_pause_frame(0),
+                            self.build_pause_frame(1)]
+        else:
+            pause_frames = [self.build_pause_frame(0),
+                            self.build_pause_frame(1),
+                            self.build_pause_frame(2),
+                            self.build_pause_frame(3)]
 
         for frame in pause_frames:
             port_stats = self.pause_frame_test(frame)
@@ -265,10 +277,14 @@ class TestLinkFlowctrl(TestCase):
         PAUSE Frames must not be received by testpmd
         """
 
-        pause_frames = [self.build_pause_frame(0),
-                        self.build_pause_frame(1),
-                        self.build_pause_frame(2),
-                        self.build_pause_frame(3)]
+        if (self.nic in ["cavium_a063"]):
+            pause_frames = [self.build_pause_frame(0),
+                            self.build_pause_frame(1)]
+        else:
+            pause_frames = [self.build_pause_frame(0),
+                            self.build_pause_frame(1),
+                            self.build_pause_frame(2),
+                            self.build_pause_frame(3)]
 
         for frame in pause_frames:
             port_stats = self.pause_frame_test(frame, flow_control='on')
