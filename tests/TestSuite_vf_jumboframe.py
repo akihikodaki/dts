@@ -50,9 +50,10 @@ class TestVfJumboFrame(TestCase):
         self.netobj = self.tester.ports_info[tester_port]['port']
         self.netobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU + 100)
 
+        self.setup_vm_env()
 
     def set_up(self):
-        self.setup_vm_env()
+        pass
 
     def bind_nic_driver(self, ports, driver=""):
         # modprobe vfio driver
@@ -321,7 +322,7 @@ class TestVfJumboFrame(TestCase):
         """
         Run after each test case.
         """
-        self.destroy_vm_env()
+        pass
 
     def tear_down_all(self):
         """
