@@ -297,10 +297,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
             ori_rx_pkts, ori_tx_pkts = self.strip_portstats(port)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             time.sleep(1)
             rx_pkts, tx_pkts = self.strip_portstats(port)
-            self.verify((rx_pkts == (ori_rx_pkts + 1)), "Failed to record Rx/Tx packets")
+            self.verify((rx_pkts == (ori_rx_pkts + 4)), "Failed to record Rx/Tx packets")
 
         self.dut.send_expect("quit", "# ")
         # Check port link down verification result
@@ -412,9 +412,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt = Packet()
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
-            self.verify(rx_pkts == ori_rx_pkts + 1, "Failed to forward after ring parameter changed")
+            self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to forward after ring parameter changed")
             self.dut.send_expect("quit", "# ")
 
     def test_ethtool_vlan(self):
@@ -444,15 +444,15 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': vlan})
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(port)
-            self.verify(rx_pkts == ori_rx_pkts + 1, "Failed to Rx vlan packet")
-            self.verify(tx_pkts == ori_tx_pkts + 1, "Failed to Tx vlan packet")
+            self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to Rx vlan packet")
+            self.verify(tx_pkts == ori_tx_pkts + 4, "Failed to Tx vlan packet")
 
             # send incorrect vlan packet to port
             wrong_vlan = (vlan + 1) % 4096
             pkt.config_layer('vlan', {'vlan': wrong_vlan})
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             time.sleep(2)
             rx_pkts_wrong, tx_pkts_wrong = self.strip_portstats(port)
             self.verify(tx_pkts_wrong == rx_pkts, "Failed to filter Rx vlan packet")
@@ -461,7 +461,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("vlan %d del %d" % (index, vlan), "EthApp>")
             # send same packet and make sure not received
             pkt.config_layer('vlan', {'vlan': vlan})
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             time.sleep(2)
             rx_pkts_del, tx_pkts_del = self.strip_portstats(port)
             self.verify(tx_pkts_del == rx_pkts, "Failed to remove Rx vlan filter")
@@ -491,9 +491,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             intf = self.tester.get_interface(tester_port)
             # send and sniff packet
             inst = self.tester.tcpdump_sniff_packets(intf, timeout=5)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             pkts = self.tester.load_tcpdump_sniff_packets(inst)
-            self.verify(len(pkts) == 1, "Packet not forwarded as expected")
+            self.verify(len(pkts) == 4, "Packet not forwarded as expected")
             src_mac = pkts[0].strip_layer_element("layer2", "src")
             self.verify(src_mac == valid_mac, "Forwarded packet not match default mac")
 
@@ -525,7 +525,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt = Packet()
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
             self.verify(rx_pkts == ori_rx_pkts, "Failed to stop port")
             # restart port and check packet can normally forwarded
@@ -534,10 +534,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # wait few time for port ready
             rx_pkts, tx_pkts = self.strip_portstats(index)
             time.sleep(2)
-            pkt.send_pkt(tx_port=intf)
+            pkt.send_pkt(tx_port=intf, count=4)
             rx_pkts_open, tx_pkts_open = self.strip_portstats(index)
-            self.verify(rx_pkts_open == rx_pkts + 1, "Failed to reopen port rx")
-            self.verify(tx_pkts_open == tx_pkts + 1, "Failed to reopen port tx")
+            self.verify(rx_pkts_open == rx_pkts + 4, "Failed to reopen port rx")
+            self.verify(tx_pkts_open == tx_pkts + 4, "Failed to reopen port tx")
 
         self.dut.send_expect("quit", "# ")
 
@@ -565,11 +565,11 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 ori_rx_pkts, _ = self.strip_portstats(index)
                 pkt_size = mtu + HEADER_SIZE['eth']
                 pkt = Packet(pkt_len=pkt_size)
-                pkt.send_pkt(tx_port=intf)
+                pkt.send_pkt(tx_port=intf, count=4)
                 rx_pkts, _ = self.strip_portstats(index)
                 self.verify(rx_pkts == ori_rx_pkts + 1, "Packet match mtu not forwarded as expected")
                 pkt = Packet(pkt_len=mtu + 1 + HEADER_SIZE['eth'])
-                pkt.send_pkt(tx_port=intf)
+                pkt.send_pkt(tx_port=intf, count=4)
                 rx_pkts_over, _ = self.strip_portstats(index)
                 self.verify(rx_pkts == rx_pkts_over, "Packet over mtu should not be forwarded")
 
