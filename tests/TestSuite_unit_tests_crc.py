@@ -32,7 +32,7 @@
 """
 DPDK Test suite.
 
-Cmdline autotest
+Crc autotest
 
 """
 
@@ -65,9 +65,9 @@ class TestUnitTestsCrc(TestCase):
         """
         pass
 
-    def test_cmdline(self):
+    def test_crc(self):
         """
-        Run cmdline autotests in RTE command line.
+        Run crc autotests in RTE command line.
         """
 
         self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
