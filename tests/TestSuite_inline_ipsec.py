@@ -86,7 +86,7 @@ class TestInlineIpsec(TestCase):
 
         self.path = "./examples/ipsec-secgw/build/ipsec-secgw"
         # add print code in IPSEC app
-        sedcmd = r"""sed -i -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %hhu packet in rxqueueid=%hhu\\n",nb_rx, queueid);' examples/ipsec-secgw/ipsec-secgw.c"""
+        sedcmd = r"""sed -i -e 's/if (nb_rx > 0)/if (nb_rx > 0) {/g' -e '/\/\* dequeue and process completed crypto-ops \*\//i\\t\t\t}' -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %hhu packet in rxqueueid=%hhu\\n",nb_rx, queueid);' examples/ipsec-secgw/ipsec-secgw.c"""
         self.dut.send_expect(sedcmd, "#", 60)
 
         # build sample app
@@ -216,6 +216,7 @@ class TestInlineIpsec(TestCase):
         sa_gcm = r"sa_gcm=SecurityAssociation(ESP,spi=%s,crypt_algo='AES-GCM',crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL',auth_key=None,tunnel_header=IP(src='172.16.1.5',dst='172.16.2.5'))" % receive_spi
 
         session_receive.send_expect("scapy", ">>>", 10)
+        time.sleep(1)
         session_receive.send_expect(
             "pkts=sniff(iface='%s',count=1,timeout=45)" % rxItf, "", 10)
 
