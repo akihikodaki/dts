@@ -226,8 +226,16 @@ class TestVfKernel(TestCase):
         """
         for i in range(5):
             # pf up + vf up -> vf up
+            start_time = time.time()
             self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
             out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
+            while "Link detected: yes" not in out:
+                end_time = time.time()
+                if end_time - start_time >= 3:
+                    break
+                else:
+                    out = self.vm0_dut.send_expect("ethtool %s" % self.vm0_intf0, "#")
+                    time.sleep(1)
             self.verify("Link detected: yes" in out, "Wrong link status")
             time.sleep(3)
 
@@ -391,6 +399,7 @@ class TestVfKernel(TestCase):
     def verify_vm_tcpdump(self, vm_dut, intf, mac, pkt_lens=64, num=1, vlan_id='', param=''):
         vm_dut.send_expect("tcpdump -i %s %s -e ether src %s" %
                            (intf, param, self.tester_mac), "tcpdump", 10)
+        time.sleep(2)
         self.send_packet(mac, pkt_lens, num, vlan_id)
         out = vm_dut.get_session_output(timeout=10)
         vm_dut.send_expect("^C", "#", 10)
@@ -417,8 +426,8 @@ class TestVfKernel(TestCase):
         vlan_ids = random.randint(1, 4095)
         self.dut_testpmd.execute_cmd("vlan set filter on 0")
         self.dut_testpmd.execute_cmd("vlan set strip on 0")
-        self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
-        vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
+        self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf1, "#")
+        vm0_vf1_mac = self.vm0_dut.ports_info[1]['port'].get_mac_addr()
 
         self.vm0_dut.send_expect("modprobe 8021q", "#")
         out = self.vm0_dut.send_expect("lsmod |grep 8021q", "#")
@@ -426,33 +435,33 @@ class TestVfKernel(TestCase):
 
         # Add random vlan id(0~4095) on kernel VF0
         self.vm0_dut.send_expect("vconfig add %s %s" %
-                                 (self.vm0_intf0, vlan_ids), "#")
+                                 (self.vm0_intf1, vlan_ids), "#")
         out = self.vm0_dut.send_expect("ls /proc/net/vlan/ ", "#")
-        self.verify("%s.%s" % (self.vm0_intf0, vlan_ids)
+        self.verify("%s.%s" % (self.vm0_intf1, vlan_ids)
                     in out, "take vlan id failure")
 
         # Send packet from tester to VF MAC with not-matching vlan id, check
         # the packet can't be received at the vlan device
         # fortville nic need add -p parameter to disable promisc mode
         wrong_vlan = vlan_ids % 4095 + 1
-        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, vm0_vf0_mac,
+        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf1, vm0_vf1_mac,
                                            vlan_id='%d' % wrong_vlan, param='-p') == False, "received wrong vlan packet")
         # Send packet from tester to VF MAC with matching vlan id, check the packet can be received at the vlan device.
         # check_result = self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0, self.vm0_vf0_mac, vlan_id='%d' %vlan_ids)
         check_result = self.verify_vm_tcpdump(
-            self.vm0_dut, self.vm0_intf0, vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p')
+            self.vm0_dut, self.vm0_intf1, vm0_vf1_mac, vlan_id='%d' % vlan_ids, param='-p')
         self.verify(check_result, "can't received vlan_id=%d packet" % vlan_ids)
 
         # Delete configured vlan device
         self.vm0_dut.send_expect("vconfig rem %s.%s" %
-                                 (self.vm0_intf0, vlan_ids), "#")
+                                 (self.vm0_intf1, vlan_ids), "#")
         out = self.vm0_dut.send_expect("ls /proc/net/vlan/ ", "#")
-        self.verify("%s.%s" % (self.vm0_intf0, vlan_ids)
+        self.verify("%s.%s" % (self.vm0_intf1, vlan_ids)
                     not in out, "vlan error")
         # behavior is different between niantic and fortville ,because of kernel
         # driver
-        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf0,
-                                           vm0_vf0_mac, vlan_id='%d' % vlan_ids, param='-p') == False, "delete vlan error")
+        self.verify(self.verify_vm_tcpdump(self.vm0_dut, self.vm0_intf1,
+                                           vm0_vf1_mac, vlan_id='%d' % vlan_ids, param='-p') == False, "delete vlan error")
         self.dut_testpmd.execute_cmd("vlan set filter off 0")
 
     def test_packet_statistic(self):
@@ -486,18 +495,15 @@ class TestVfKernel(TestCase):
         for i in range(5):
             # down-up get new mac form pf.
             # because  dpdk pf will give an random mac when dpdk pf restart.
-            session.send_expect("ifconfig %s down" % intf, "#")
-            out = session.send_expect("ifconfig %s up" % intf, "#")
+            out = session.send_expect("ethtool %s" % intf, "#")
             # SIOCSIFFLAGS: Network is down
             # i think the pf link abnormal
-            if "Network is down" in out:
+            if "Link detected: no" in out:
                 print GREEN(out)
                 print GREEN("Try again")
                 session.restore_interfaces_linux()
             else:
-                out = session.send_expect("ethtool %s" % intf, "#")
-                if "Link detected: yes" in out:
-                    return True
+                return True
             time.sleep(1)
         return False
 
