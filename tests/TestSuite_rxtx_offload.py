@@ -269,7 +269,7 @@ class TestRxTx_Offload(TestCase):
     def get_tcpdump_package(self):
 
         self.tester.send_expect("killall tcpdump", "#")
-        return self.tester.send_expect("tcpdump -nn -e -v -r ./getPackageByTcpdump.cap", "#", 120)
+        return self.tester.send_expect("tcpdump -nn -e -v -c 1024 -r ./getPackageByTcpdump.cap", "#", 120)
 
     def test_rxoffload_port(self):
         """
