@@ -44,12 +44,8 @@ import shlex        # separate command line for pipe
 from uuid import uuid4
 from settings import FOLDERS
 
-from scapy.config import conf
-conf.use_pcap = True
-
 import struct
 from socket import AF_INET6
-from scapy.all import conf
 from scapy.utils import wrpcap, rdpcap, hexstr
 from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
 from scapy.layers.inet6 import IPv6, IPv6ExtHdrRouting, IPv6ExtHdrFragment
