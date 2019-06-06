@@ -57,6 +57,10 @@ class UnitTestsCryptodev(TestCase):
         eal_opt_str = cc.get_eal_opt_str(self)
         self.__run_unit_test("cryptodev_qat_autotest", eal_opt_str)
 
+    def test_cryptodev_qat_asym_autotest(self):
+        eal_opt_str = cc.get_eal_opt_str(self)
+        self.__run_unit_test("cryptodev_qat_asym_autotest", eal_opt_str)
+
     def _test_cryptodev_qat_perftest(self):
         eal_opt_str = cc.get_eal_opt_str(self)
         self.__run_unit_test("cryptodev_qat_perftest", eal_opt_str)

@@ -56,6 +56,8 @@ def build_dpdk_with_cryptodev(test_case):
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y/' config/common_base", "# ")
     test_case.dut.send_expect(
+        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=y/' config/common_base", "# ")
+    test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=y/' config/common_base", "# ")
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_OPENSSL=n$/CONFIG_RTE_LIBRTE_PMD_OPENSSL=y/' config/common_base", "# ")
@@ -103,6 +105,8 @@ def clear_dpdk_config(test_case):
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n/' config/common_base", "# ")
     test_case.dut.send_expect(
+        "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=y$/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=n/' config/common_base", "# ")
+    test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=y$/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=n/' config/common_base", "# ")
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_OPENSSL=y$/CONFIG_RTE_LIBRTE_PMD_OPENSSL=n/' config/common_base", "# ")
@@ -124,17 +128,23 @@ default_eal_opts = {
 }
 
 
-def get_eal_opt_str(test_case, override_eal_opts={}):
-    return get_opt_str(test_case, default_eal_opts, override_eal_opts)
+def get_eal_opt_str(test_case, override_eal_opts={}, add_port=False):
+    return get_opt_str(test_case, default_eal_opts, override_eal_opts, add_port)
 
 
-def get_opt_str(test_case, default_opts, override_opts={}):
+def get_opt_str(test_case, default_opts, override_opts={}, add_port=False):
     opts = default_opts.copy()
 
     # Update options with test suite/case config file
     for key in opts.keys():
         if key in test_case.get_case_cfg():
             opts[key] = test_case.get_case_cfg()[key]
+
+    pci_list = [port["pci"] for port in test_case.dut.ports_info]
+    if 'w' in opts.keys() and opts['w']:
+        pci_list.append(opts['w'])
+    if add_port and pci_list:
+        opts['w'] = " -w ".join(pci_list)
 
     # Update options with func input
     opts.update(override_opts)
