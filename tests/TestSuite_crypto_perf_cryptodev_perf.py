@@ -106,7 +106,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,
@@ -128,7 +128,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,
@@ -150,7 +150,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,
@@ -172,7 +172,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,
@@ -194,7 +194,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,
@@ -216,7 +216,7 @@ class PerfTestsCryptodev(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
         result = self._run_crypto_perf_throughput(eal_opt_str,
                                                   crypto_perf_opt_str,

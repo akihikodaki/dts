@@ -829,7 +829,7 @@ class TestL2fwdCrypto(TestCase):
 
     def __test_vector_to_cmd(self, test_vector, core_mask="", port_mask=""):
 
-        eal_opt_str = cc.get_eal_opt_str(self)
+        eal_opt_str = cc.get_eal_opt_str(self, add_port=True)
 
         EAL_SEP = " --"
         PORT_MASK = "" if port_mask == "" else " -p " + port_mask

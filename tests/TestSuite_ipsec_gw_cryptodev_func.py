@@ -565,7 +565,7 @@ class TestIPsecGW(TestCase):
 
     def _execute_ipsec_gw_test(self, ipsec_gw_opt_str):
         result = True
-        eal_opt_str = cc.get_eal_opt_str(self)
+        eal_opt_str = cc.get_eal_opt_str(self, add_port=True)
 
         cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str, ipsec_gw_opt_str)
         self.logger.info("IPsec-gw cmd: " + cmd_str)
