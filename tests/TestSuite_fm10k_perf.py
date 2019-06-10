@@ -136,6 +136,7 @@ class TestFM10kL3fwd(TestCase):
             self.dut.build_install_dpdk(self.target)
 
         self.l3fwd_test_results = {'header': [],
+                                   'data': []}
 
         self.rebuild_l3fwd()
 
@@ -500,9 +501,10 @@ class TestFM10kL3fwd(TestCase):
 
                         subtitle.append(cores)
                         cmdline = rtCmdLines[cores] % (TestFM10kL3fwd.path + "l3fwd_" + mode, coreMask[cores],
+                                                       self.dut.get_memory_channels(), utils.create_mask(valports[:2]))
 
                         if frame_size > 1518:
-                            cmdline = cmdline + "--max-pkt-len %d" % frame_size
+                            cmdline = cmdline + " --max-pkt-len %d" % frame_size
                         self.rst_report(cmdline + "\n", frame=True, annex=True)
 
                         out = self.dut.send_expect(cmdline, "L3FWD:", 120)
