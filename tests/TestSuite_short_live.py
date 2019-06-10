@@ -106,7 +106,7 @@ class TestShortLiveApp(TestCase):
 
         pktlen = pktSize - 14
         padding = pktlen - 20
-        self.tester.scapy_append('sendp([Ether(src="%s", dst="%s")/IP()/Raw(load="P"*%s)], iface="%s")' % (smac, dmac, padding, txitf))
+        self.tester.scapy_append('sendp([Ether(src="%s", dst="%s")/IP()/Raw(load="P"*%s)], iface="%s", count=4)' % (smac, dmac, padding, txitf))
 
         self.tester.scapy_execute()
         time.sleep(3)
