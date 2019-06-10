@@ -51,7 +51,8 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
    # ./build/dpdk-test-eventdev -l 22-23 -w eventdev_device_bus_id -w device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_atq --stlist=A --wlcores=23
 
-    Parameters:
+    Parameters::
+
        -l CORELIST        : List of cores to run on
                             The argument format is <c1>[-c2][,c3[-c4],...]
                             where c1, c2, etc are core indexes between 0 and 24
@@ -273,4 +274,3 @@ Description: Execute performance test with Ordered_queue type of stage in multi-
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
 3. Observe the speed of packets received(Rx-rate) on Ixia.
-
