@@ -64,14 +64,35 @@ from scapy.sendrecv import sendp
 
 class TestIPPipeline(TestCase):
 
+    def get_flow_direction_param_of_tcpdump(self):
+        """
+        get flow dirction param depend on tcpdump version
+        """
+        param = ""
+        direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
+        out = self.tester.send_expect('tcpdump -h', '# ')
+        for line in out.split('\n'):
+            m = re.match(direct_param, line)
+            if m:
+                opt = re.search("-Q", m.group(2));
+                if opt:
+                    param = "-Q" + " in"
+                else:
+                    opt = re.search("-P", m.group(2));
+                    if opt:
+                        param = "-P" + " in"
+        if len(param) == 0:
+            self.logger.info("tcpdump not support direction choice!!!")
+        return param
+
     def tcpdump_start_sniff(self, interface, filters=""):
         """
         Starts tcpdump in the background to sniff packets that received by interface.
         """
         command = 'rm -f /tmp/tcpdump_{0}.pcap'.format(interface)
         self.tester.send_expect(command, '#')
-        command = 'tcpdump -n -e -Q in -w /tmp/tcpdump_{0}.pcap -i {0} {1} 2>/tmp/tcpdump_{0}.out &'\
-                  .format(interface, filters)
+        command = 'tcpdump -n -e {0} -w /tmp/tcpdump_{1}.pcap -i {1} {2} 2>/tmp/tcpdump_{1}.out &'\
+                  .format(self.param_flow_dir, interface, filters)
         self.tester.send_expect(command, '# ')
 
     def tcpdump_stop_sniff(self):
@@ -201,6 +222,8 @@ class TestIPPipeline(TestCase):
 
         out = self.dut.build_dpdk_apps("./examples/ip_pipeline")
         self.verify("Error" not in out, "Compilation error")
+
+        self.param_flow_dir = self.get_flow_direction_param_of_tcpdump()
 
     def set_up(self):
         """
