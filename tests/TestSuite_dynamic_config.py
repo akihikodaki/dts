@@ -105,7 +105,7 @@ class TestDynamicConfig(TestCase):
 
         self.tester.scapy_foreground()
         self.tester.scapy_append(
-            'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/Raw(load="X"*26)], iface="%s")' % (destMac, itf))
+            'sendp([Ether(dst="%s", src="52:00:00:00:00:00")/Raw(load="X"*26)], iface="%s", count=4)' % (destMac, itf))
 
         self.tester.scapy_execute()
 
@@ -142,7 +142,7 @@ class TestDynamicConfig(TestCase):
 
         # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "1st packet increment check error")
+                    + 4, "1st packet increment check error")
 
         # send one packet with the portid MAC address
         self.dynamic_config_send_packet(portid, self.dest)
@@ -153,7 +153,7 @@ class TestDynamicConfig(TestCase):
 
         # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "2nd packet increment check error")
+                    + 4, "2nd packet increment check error")
 
     def test_dynamic_config_disable_promiscuous(self):
         """
@@ -180,7 +180,7 @@ class TestDynamicConfig(TestCase):
               "show port stats %d" % self.dut_ports[1], "testpmd> ")
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
         self.verify(int(cur_rxpkt) == int(
-              pre_rxpkt) + 1, "2nd packet increment error")
+              pre_rxpkt) + 4, "2nd packet increment error")
 
     def test_dynamic_config_broadcast(self):
         """
@@ -198,7 +198,7 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
           
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
-        self.verify(int(cur_rxpkt) == 1, "not received broadcast packet")
+        self.verify(int(cur_rxpkt) == 4, "not received broadcast packet")
           
         self.dut.send_expect("clear port stats all", "testpmd> ")
 
@@ -224,7 +224,7 @@ class TestDynamicConfig(TestCase):
         out = self.dut.send_expect("show port stats %d" % self.dut_ports[1], "testpmd> ")
             
         cur_rxpkt = utils.regexp(out, "TX-packets: ([0-9]+)")
-        self.verify(int(cur_rxpkt) == 1, "enable allmulti switch, not received allmulti packet")
+        self.verify(int(cur_rxpkt) == 4, "enable allmulti switch, not received allmulti packet")
            
         self.dut.send_expect("clear port stats all", "testpmd> ")
         self.dut.send_expect("set allmulti all off", "testpmd> ")
@@ -257,7 +257,7 @@ class TestDynamicConfig(TestCase):
 
         # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "1st packet increment error")
+                    + 4, "1st packet increment error")
 
         # send one packet with the portid MAC address
         self.dynamic_config_send_packet(portid, self.dest)
@@ -268,7 +268,7 @@ class TestDynamicConfig(TestCase):
 
         # check the packet increment
         self.verify(int(cur_rxpkt) == int(pre_rxpkt)
-                    + 1, "2nd packet increment error")
+                    + 4, "2nd packet increment error")
 
         #self.dut.send_expect("quit", "# ", 30)
 
