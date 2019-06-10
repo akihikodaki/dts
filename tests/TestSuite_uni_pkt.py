@@ -81,7 +81,7 @@ class TestUniPacket(TestCase):
         for pkt_type in pkt_types.keys():
             pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
-            pkt.send_pkt(tx_port=self.tester_iface)
+            pkt.send_pkt(tx_port=self.tester_iface, count=4)
             out = self.dut.get_session_output(timeout=2)
             for pkt_layer_name in pkt_names:
                 if pkt_layer_name not in out:
