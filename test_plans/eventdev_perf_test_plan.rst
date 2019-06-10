@@ -30,11 +30,11 @@ echo 24 > /proc/sys/vm/nr_hugepages
 
 Configure limits of Eventdev devices
 ====================================
-Set all eventdev devices sso and ssow limits to zero. Then set eventdev device under tests sso and ssow limits to non-zero values as per cores/queues requriments :: 
+Set all eventdev devices sso and ssow limits to zero. Then set eventdev device under tests sso and ssow limits to non-zero values as per cores/queues requriments ::
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/sso
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/ssow
 
-Example :: 
+Example ::
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/tim
    echo 1 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/npa
    echo 16 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/sso
@@ -59,7 +59,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
        -w --pci-whitelist : Add a PCI device in white list.
                             Only use the specified PCI devices. The argument format
                             is <[domain:]bus:devid.func>. This option can be present
-                            several times (once per device).                                                
+                            several times (once per device).
        --prod_type_ethdev : use ethernet device as producer.
        --nb_pkts          : number of packets to produce, 0 implies no limit
        --test             : name of the test application to run
@@ -101,7 +101,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 1. Run the sample with below command::
 
    # ./build/dpdk-test-eventdev -l 22-23 -w eventdev_device_bus_id -w device_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
-   
+
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
 3. Observe the speed of packets received(Rx-rate) on Ixia.
@@ -173,7 +173,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 1. Run the sample with below command::
 
    # ./build/dpdk-test-eventdev -l 22-23 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
-   
+
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
 3. Observe the speed of packets received(Rx-rate) on Ixia.
@@ -246,7 +246,7 @@ Description: Execute performance test with Atomic_queue type of stage in multi-f
 1. Run the sample with below command::
 
    # ./build/dpdk-test-eventdev -l 22-23 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- --prod_type_ethdev --nb_pkts=0 --verbose 2 --test=pipeline_queue --stlist=A --wlcores=23
-   
+
 2. Use Ixia to send huge number of packets(with same 5-tuple and different 5-tuple)
 
 3. Observe the speed of packets received(Rx-rate) on Ixia.
