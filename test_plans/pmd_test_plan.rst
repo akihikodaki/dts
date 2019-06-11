@@ -169,6 +169,70 @@ The results are printed in the following table:
   |  1518 |         |            |        |                     |
   +-------+---------+------------+--------+---------------------+
 
+Test Case: Pmd RSS Performance
+==============================
+
+The RSS feature is designed to improve networking performance by load balancing
+the packets received from a NIC port to multiple NIC RX queues.
+
+In order to get the best pmdrss performance, Server configuration are required:
+
+- BIOS
+
+ * Intel Hyper-Threading Technology is ENABLED
+ * Other: reference to 'Test Case: Single Core Performance Benchmarking'
+
+
+Run application using a core mask for the appropriate thread and core
+settings given in the following:
+
+  +----+----------+-----------+-----------------------+
+  |    | Rx Ports | Rx Queues | Sockets/Cores/Threads |
+  +====+==========+===========+=======================+
+  |  1 |     1    |     2     |      1S/1C/2T         |
+  +----+----------+-----------+-----------------------+
+  |  2 |     2    |     2     |      1S/2C/1T         |
+  +----+----------+-----------+-----------------------+
+  |  3 |     2    |     2     |      1S/4C/1T         |
+  +----+----------+-----------+-----------------------+
+  |  4 |     2    |     2     |      1S/2C/2T         |
+  +----+----------+-----------+-----------------------+
+  |  5 |     2    |     3     |      1S/3C/2T         |
+  +----+----------+-----------+-----------------------+
+  |  6 |     2    |     3     |      1S/6C/1T         |
+  +----+----------+-----------+-----------------------+
+
+``note``: A queue can be handled by only one core, but one core can handle a couple of queues.
+
+#. Start testpmd and start io forwading with the above parameters.
+   For example, 1S/1C/2T::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x2000000000000030000000 -n 4 -- -i \
+    --portmask=0x3 --txd=512 --rxd=512 --burst=32 --txpt=36 --txht=0 --txwt=0 \
+    --txfreet=32 --rxfreet=64 --txrst=32 --mbcache=128 --nb-cores=2 --rxq=2 --txq=2
+
+# Send packet with frame size from 64bytes to 1518bytes with ixia traffic generator,
+  record the perfromance numbers:
+
+  +------------+----------+----------+-------------+----------+
+  | Frame Size | Rx ports | S/C/T    | Throughput  | Linerate |
+  +============+==========+==========+=============+==========+
+  | 64         |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 128        |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 256        |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 512        |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 1024       |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 1280       |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+  | 1518       |          |          |             |          |
+  +------------+----------+----------+-------------+----------+
+
+
 The memory partial writes are measured with the ``vtbwrun`` application and printed
 in the following table:::
 
