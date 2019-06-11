@@ -36,13 +36,15 @@ DPDK Test suite.
 Tests for TSO.
 
 """
-
+import os
 import utils
 import time
 import re
 from test_case import TestCase
 from settings import HEADER_SIZE
 
+DEFAULT_MUT = 1500
+TSO_MTU = 9000
 
 class TestTSO(TestCase):
     dut_ports = []
@@ -62,7 +64,7 @@ class TestTSO(TestCase):
         self.portMask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
-        self.frame_sizes = [128, 1458]
+        self.loading_sizes = [128, 800, 801, 1700, 2500]
         self.rxfreet_values = [0, 8, 16, 32, 64, 128]
 
         self.test_cycles = [{'cores': '1S/1C/2T', 'Mpps': {}, 'pct': {}}]
@@ -76,12 +78,23 @@ class TestTSO(TestCase):
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['tcp']
+        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), TSO_MTU), "# ")
 
     def set_up(self):
         """
         Run before each test case.
         """
         pass
+
+    def load_module(self):
+        """
+        Load vxlan or nvgre module to scapy.
+        """
+        cwd = os.getcwd()
+        dir_module = cwd + r'/' + 'dep'
+        self.tester.scapy_append('sys.path.append("%s")' % dir_module)
+        self.tester.scapy_append("from vxlan import Vxlan")
+        self.tester.scapy_append('from nvgre import NVGRE')
 
     def tcpdump_start_sniffing(self, ifaces=[]):
         """
@@ -93,7 +106,8 @@ class TestTSO(TestCase):
 
         for iface in ifaces:
             command = ('tcpdump -w tcpdump_{0}.pcap -i {0} 2>tcpdump_{0}.out &').format(iface)
-            self.tester.send_expect('rm -f tcpdump_{0}.pcap', '#').format(iface)
+            del_cmd = ('rm -f tcpdump_{0}.pcap').format(iface)
+            self.tester.send_expect(del_cmd, '#')
             self.tester.send_expect(command, '#')
 
     def tcpdump_stop_sniff(self):
@@ -125,6 +139,21 @@ class TestTSO(TestCase):
                    'grep -c "seq"')
         return self.tcpdump_command(command.format(**locals()))
 
+    def tcpdump_scanner(self, scanner):
+        """
+        Execute scanner to return results
+        """
+        scanner_result = self.tester.send_expect(scanner, '#')
+        fially_result = re.findall(r'length( \d+)', scanner_result)
+        return list(fially_result)
+
+    def number_of_bytes(self, iface):
+        """
+        Get the length of loading_sizes
+        """
+        scanner = ('tcpdump  -vv -r tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"')
+        return self.tcpdump_scanner(scanner.format(**locals()))
+
     def test_tso(self):
         """
         TSO IPv4 TCP, IPv6 TCP, VXLan testing
@@ -137,12 +166,11 @@ class TestTSO(TestCase):
         self.verify(cores is not None, "Insufficient cores for speed testing")
         self.coreMask = utils.create_mask(cores)
 
-        padding = self.frame_sizes[0] - self.headers_size
 
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
-        cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
+        cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("port stop all", "testpmd> ", 120)
@@ -163,34 +191,55 @@ class TestTSO(TestCase):
         self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("set fwd csum", "testpmd> ", 120)
         self.dut.send_expect("port start all", "testpmd> ", 120)
+        self.dut.send_expect("set promisc all off", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ")
 
         self.tester.scapy_foreground()
         time.sleep(5)
 
-        # IPv4 tcp test
+        for loading_size in self.loading_sizes:
+            # IPv4 tcp test
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
-
-        # IPv6 tcp test
-
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
+        for loading_size in self.loading_sizes:
+            # IPv6 tcp test
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
     def test_tso_tunneling(self):
         """
@@ -205,12 +254,10 @@ class TestTSO(TestCase):
         self.verify(cores is not None, "Insufficient cores for speed testing")
         self.coreMask = utils.create_mask(cores)
 
-        padding = self.frame_sizes[0] - self.headers_size
-
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
-        cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
+        cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("port stop all", "testpmd> ", 120)
@@ -228,35 +275,62 @@ class TestTSO(TestCase):
         self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120)
 
-        self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.dut.send_expect("tunnel_tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 120)
         self.dut.send_expect("set fwd csum", "testpmd> ", 120)
         self.dut.send_expect("port start all", "testpmd> ", 120)
+        self.dut.send_expect("set promisc all off", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ")
 
         self.tester.scapy_foreground()
         time.sleep(5)
 
-        # Vxlan test
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport="1021",dport="4789")/VXLAN()/Ether(dst=%s,src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport="1021",dport="1021")/("X"*%s)], iface="%s")' % (mac, mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
+        for loading_size in self.loading_sizes:
+            # Vxlan test
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            self.load_module()
+            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/Vxlan()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "Vxlan RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
-        # Nvgre test
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst=%s,src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport="1021",dport="1021")/("X"*%s)], iface="%s")' % (mac, mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
+        for loading_size in self.loading_sizes:
+            # Nvgre test
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            self.load_module()
+            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "Nvgre RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
+
 
     def test_perf_TSO_2ports(self):
         """
@@ -276,7 +350,7 @@ class TestTSO(TestCase):
             else:
                 queues = 1
 
-            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --coremask=%s --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.all_cores_mask, self.dut.get_memory_channels(), self.blacklist, self.coreMask, self.portMask)
+            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --coremask=%s --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.all_cores_mask, self.dut.get_memory_channels(), self.blacklist, self.coreMask, self.portMask, TSO_MTU)
 
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.logger.info(info)
@@ -300,18 +374,20 @@ class TestTSO(TestCase):
             self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
             self.dut.send_expect("set fwd csum", "testpmd> ", 120)
             self.dut.send_expect("port start all", "testpmd> ", 120)
+            self.dut.send_expect("set promisc all off", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ")
-            for frame_size in self.frame_sizes:
+            for loading_size in self.loading_sizes:
+                frame_size = loading_size + self.headers_size
                 wirespeed = self.wirespeed(self.nic, frame_size, 2)
 
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
 		for _port in range(2):
-			mac = self.dut.get_mac_address(self.dut_ports[_port])
-                	self.tester.scapy_append('wrpcap("dst%d.pcap", [Ether(dst="%s",src="52:00:00:00:00:01")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%d)])' % (_port, mac, payload_size))
-        		tgen_input.append((self.tester.get_local_port(self.dut_ports[_port]),
-                           self.tester.get_local_port(self.dut_ports[1-_port]), "dst%d.pcap") % _port)
+                    mac = self.dut.get_mac_address(self.dut_ports[_port])
+                    self.tester.scapy_append('wrpcap("dst%d.pcap", [Ether(dst="%s",src="52:00:00:00:00:01")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%d)])' % (_port, mac, loading_size))
+                    tgen_input.append((self.tester.get_local_port(self.dut_ports[_port]),
+                    self.tester.get_local_port(self.dut_ports[1-_port]), "dst%d.pcap") % _port)
                 self.tester.scapy_execute()
 
                 # run traffic generator
@@ -326,21 +402,22 @@ class TestTSO(TestCase):
             time.sleep(5)
 
         for n in range(len(self.test_cycles)):
-            for frame_size in self.frame_sizes:
+            for loading_size in self.loading_sizes:
                 self.verify(self.test_cycles[n]['Mpps'][
-                            frame_size] > 0, "No traffic detected")
+                            loading_size] > 0, "No traffic detected")
 
         # Print results
         self.result_table_create(self.table_header)
-        for frame_size in self.frame_sizes:
-            table_row = [frame_size]
+        for loading_size in self.loading_sizes:
+            table_row = [loading_size]
             for test_cycle in self.test_cycles:
-                table_row.append(test_cycle['Mpps'][frame_size])
-                table_row.append(test_cycle['pct'][frame_size])
+                table_row.append(test_cycle['Mpps'][loading_size])
+                table_row.append(test_cycle['pct'][loading_size])
 
             self.result_table_add(table_row)
 
         self.result_table_print()
+
     def tear_down(self):
         """
         Run after each test case.
@@ -352,4 +429,4 @@ class TestTSO(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), DEFAULT_MUT), "# ")
