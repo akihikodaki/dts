@@ -84,7 +84,7 @@ class TestRxtxCallbacks(TestCase):
         """
         Send a packet to port
         """
-        self.tester.scapy_append('sendp([Ether(dst="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s")' % (self.mac, iface))
+        self.tester.scapy_append('sendp([Ether(dst="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s", count=4)' % (self.mac, iface))
         self.tester.scapy_execute()
 
     def get_tcpdump_package(self,inst):
