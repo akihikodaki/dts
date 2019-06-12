@@ -183,6 +183,7 @@ The following are the test plans for the DPDK DTS automated test system.
     virtio_unit_cryptodev_func_test_plan
     virtio_user_for_container_networking_test_plan
     eventdev_perf_test_plan
+    eventdev_pipeline_perf_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
