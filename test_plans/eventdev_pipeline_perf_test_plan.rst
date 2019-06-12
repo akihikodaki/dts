@@ -31,10 +31,12 @@ echo 24 > /proc/sys/vm/nr_hugepages
 Configure limits of Eventdev devices
 ====================================
 Set all eventdev devices sso and ssow limits to zero. Then set eventdev device under tests sso and ssow limits to non-zero values as per cores/queues requriments ::
+
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/sso
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/ssow
 
 Example ::
+
    echo 0 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/tim
    echo 1 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/npa
    echo 16 > /sys/bus/pci/devices/eventdev_device_bus_id/limits/sso
@@ -51,7 +53,8 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -74,7 +77,8 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 -p --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -98,7 +102,8 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device_bus_id -- -w 0xc00000 -n=0 -o --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -122,7 +127,8 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -145,7 +151,8 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 -p --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -169,7 +176,8 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -- -w 0xc00000 -n=0 -o --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -193,7 +201,8 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -216,7 +225,8 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 -p --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
@@ -240,7 +250,8 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
 
    # ./build/dpdk-eventdev_pipeline -c 0xe00000 -w eventdev_device_bus_id -w device0_bus_id -w device1_bus_id -w device2_bus_id -w device3_bus_id -- -w 0xc00000 -n=0 -o --dump
 
-    Parameters:
+    Parameters::
+
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
         -w, --pci-whitelist  : Add a PCI device in white list.
                                Only use the specified PCI devices. The argument format
