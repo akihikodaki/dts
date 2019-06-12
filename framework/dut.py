@@ -455,6 +455,44 @@ class Dut(Crb):
         bind_script_path = self.get_dpdk_bind_script()
         self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
 
+    def bind_eventdev_port(self, driver='vfio-pci', port_to_bind=None):
+        """
+        Bind the eventdev interfaces to the selected driver. port_to_bind set to default, can be
+        changed at run time
+        """
+
+        binding_list = '--bind=%s %s' % (driver, port_to_bind)
+        bind_script_path = self.get_dpdk_bind_script()
+        self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
+
+    def set_eventdev_port_limits(self, device_id, port):
+        """
+        Setting the eventdev port SSO and SS0W limits.
+        """
+
+        bind_script_path = self.get_dpdk_bind_script()
+        eventdev_ports = self.send_expect('%s -s |grep -e %s | cut -d " " -f1' % (bind_script_path, device_id), '#')
+        eventdev_ports = eventdev_ports.split("\r\n")
+        for eventdev_port in eventdev_ports:
+            self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/sso' % (eventdev_port), '#')
+            self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
+        for eventdev_port in eventdev_ports:
+            if eventdev_port == port:
+                self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/tim' % (eventdev_port), '#')
+                self.send_expect('echo 1 >  /sys/bus/pci/devices/%s/limits/npa' % (eventdev_port), '#')
+                self.send_expect('echo 10 >  /sys/bus/pci/devices/%s/limits/sso' % (eventdev_port), '#')
+                self.send_expect('echo 32 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
+
+    def unbind_eventdev_port(self, port_to_unbind=None):
+        """
+        Unbind the eventdev interfaces to the selected driver. port_to_unbind set to None, can be
+        changed at run time
+        """
+
+        binding_list = '-u  %s' % (port_to_unbind)
+        bind_script_path = self.get_dpdk_bind_script()
+        self.send_expect('%s  %s' % (bind_script_path, binding_list), '# ')
+
     def get_ports(self, nic_type='any', perf=None, socket=None):
         """
         Return DUT port list with the filter of NIC type, whether run IXIA

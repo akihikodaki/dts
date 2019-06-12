@@ -960,5 +960,275 @@
             "Bug ID": "",
             "Comments": "This case only support on FVL"
         }
+    ],
+    "perf_eventdev_1ports_atq_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_1ports_atq_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_1ports_atq_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_1ports_queue_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_1ports_queue_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_1ports_queue_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_atq_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_atq_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_atq_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_queue_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_queue_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_2ports_queue_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_atq_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_atq_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_atq_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_queue_atomic_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_queue_parallel_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
+    ],
+    "perf_eventdev_4ports_queue_order_performance": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 "
+        }
     ]
 }
