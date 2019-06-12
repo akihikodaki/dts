@@ -52,7 +52,7 @@ class TestLinkFlowctrl(TestCase):
 
     pause_frame = '[Ether(src="%s",dst="%s",type=%s)/("%s%s%s")]'
 
-    frames_to_sent = 10
+    frames_to_sent = 12
 
     packet_size = 66    # 66 allows frame loss
     payload_size = packet_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
