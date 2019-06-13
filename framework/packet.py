@@ -46,6 +46,7 @@ from settings import FOLDERS
 
 import struct
 from socket import AF_INET6
+from scapy.all import conf
 from scapy.utils import wrpcap, rdpcap, hexstr
 from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
 from scapy.layers.inet6 import IPv6, IPv6ExtHdrRouting, IPv6ExtHdrFragment
