@@ -101,7 +101,7 @@ class TestQueueStartStop(TestCase):
         pkt = Packet(pkt_type="UDP", pkt_len=pktSize)
         inst = self.tester.tcpdump_sniff_packets(rxitf)
         pkt.config_layer('ether', {'dst': dmac})
-        pkt.send_pkt(tx_port=txitf)
+        pkt.send_pkt(tx_port=txitf, count=4)
         sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         if received:
@@ -157,7 +157,7 @@ class TestQueueStartStop(TestCase):
         except Exception, e:
             raise IOError("queue start/stop forward failure: %s" % e)
 
-        self.verify("ports 0 queue 0 receive 1 packages" in out, "start queue revice package failed, out = %s"%out)
+        self.verify("ports 0 queue 0 receive 4 packages" in out, "start queue revice package failed, out = %s"%out)
 
         try:
             # start tx queue test
