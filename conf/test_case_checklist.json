@@ -2251,5 +2251,20 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+     "ring_dump": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
