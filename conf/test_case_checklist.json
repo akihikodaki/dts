@@ -2236,5 +2236,20 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+     "flow_director_rss_rule_combination": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
