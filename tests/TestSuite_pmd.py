@@ -338,8 +338,8 @@ class TestPmd(TestCase,IxiaPacketGenerator):
             l4csum_error = self.stop_and_get_l4csum_errors()
 
             # Check the l4 checksum errors reported for Rx port
-            self.verify(1 == int(l4csum_error[1]),
-                        "Wrong l4 checksum error count using rxfreet=%d (expected 1, reported %s)" %
+            self.verify(4 == int(l4csum_error[1]),
+                        "Wrong l4 checksum error count using rxfreet=%d (expected 4, reported %s)" %
                         (rxfreet_value, l4csum_error[1]))
 
             self.dut.send_expect("quit", "# ", 30)
@@ -407,7 +407,7 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         self.tester.scapy_foreground()
         self.tester.scapy_append('nutmac="%s"' % mac)
-        self.tester.scapy_append('sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/UDP(%s)/Raw(load="\x50"*%s)], iface="%s")' % (
+        self.tester.scapy_append('sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/UDP(%s)/Raw(load="\x50"*%s)], iface="%s", count=4)' % (
             load_size, checksum, padding, interface))
 
         out = self.tester.scapy_execute()
@@ -429,11 +429,11 @@ class TestPmd(TestCase,IxiaPacketGenerator):
         self.verify(self.pmdout.check_tx_bytes(p0tx_pkts, p1rx_pkts),
                     "packet pass assert error, %d RX packets, %d TX packets" % (p1rx_pkts, p0tx_pkts))
 
-        self.verify(p1rx_bytes == frame_size - 4,
-                    "packet pass assert error, expected %d RX bytes, actual %d" % (frame_size - 4, p1rx_bytes))
+        self.verify(p1rx_bytes == (frame_size - 4)*4,
+                    "packet pass assert error, expected %d RX bytes, actual %d" % ((frame_size - 4)*4, p1rx_bytes))
 
-        self.verify(self.pmdout.check_tx_bytes(p0tx_bytes, frame_size - 4),
-                    "packet pass assert error, expected %d TX bytes, actual %d" % (frame_size - 4, p0tx_bytes))
+        self.verify(self.pmdout.check_tx_bytes(p0tx_bytes, (frame_size - 4)*4),
+                    "packet pass assert error, expected %d TX bytes, actual %d" % ((frame_size - 4)*4, p0tx_bytes))
 
         return out
     
