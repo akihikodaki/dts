@@ -209,7 +209,7 @@ class VirtioCryptodevPerfTest(TestCase):
         crypto_perf_opt_str = cc.get_opt_str(self, self._default_crypto_perf_opts)
         out = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
         self.logger.info(out)
-        self.verify("Failed" not in out, "Test fail")
+        self.verify("Enqueued" in out, "Test fail")
         self.verify("Error" not in out, "Test fail")
 
     def test_virtio_aes_cbc_sha1_hmac(self):
@@ -220,7 +220,7 @@ class VirtioCryptodevPerfTest(TestCase):
         crypto_perf_opt_str = cc.get_opt_str(self, self._default_crypto_perf_opts)
         out = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
         self.logger.info(out)
-        self.verify("Failed" not in out, "Test fail")
+        self.verify("Enqueued" in out, "Test fail")
         self.verify("Error" not in out, "Test fail")
 
     def _run_crypto_perf(self, eal_opt_str, crypto_perf_opt_str):
