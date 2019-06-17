@@ -192,7 +192,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV"
-            ], 
+            ],
             "Target": [
                 "ALL"
             ],
@@ -2255,6 +2255,36 @@
         }
     ],
      "ring_dump": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "reconfigure_ports": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "retrieve_reg": [
         {
             "OS": [
                 "ALL"
