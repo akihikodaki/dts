@@ -119,6 +119,7 @@ class TestDualVlan(TestCase):
 
     def get_tcpdump_package(self):
         self.tester.send_expect("killall tcpdump", "#")
+        self.tester.send_expect(" ", "#")
         return self.tester.send_expect("tcpdump -nn -e -v -r ./getPackageByTcpdump.cap", "#")
 
     def vlan_send_packet(self, *vid):
@@ -136,7 +137,7 @@ class TestDualVlan(TestCase):
         vlanString = 'sendp([Ether(dst="%s")/' % mac
         for i in range(len(vid)):
             vlanString += "Dot1Q(id=0x8100,vlan=%s)/" % vid[i]
-        vlanString += 'IP(len=46)],iface="%s")' % txItf
+        vlanString += 'IP(len=46)],iface="%s", count=4)' % txItf
 
         self.tester.scapy_append(vlanString)
 
