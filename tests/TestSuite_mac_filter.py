@@ -49,7 +49,7 @@ class TestMacFilter(TestCase):
             Two Ports
             testpmd can normally started
         """
-        self.frames_to_send = 1
+        self.frames_to_send = 4
         # Based on h/w type, choose how many ports to use
         self.dutPorts = self.dut.get_ports()
         # Verify that enough ports are available
@@ -88,7 +88,7 @@ class TestMacFilter(TestCase):
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'src': '52:00:00:00:00:00', 'dst': destMac})
-        pkt.send_pkt(tx_port=itf)
+        pkt.send_pkt(tx_port=itf, count=4)
 
     def test_add_remove_mac_address(self):
         """
