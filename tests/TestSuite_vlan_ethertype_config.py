@@ -198,7 +198,11 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("vlan set strip off %s" %
                              dutRxPortId, "testpmd> ", 20)
         rx_vlans = [1, random_vlan, MAX_VLAN]
-        tpids = [0x8100, 0xA100]
+        # caium_a063 card support only default '0x8100' tpid in rx mode
+        if self.nic == "cavium_a063":
+            tpids = [0x8100]
+        else:
+            tpids = [0x8100, 0xA100]
         for tpid in tpids:
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutRxPortId), "testpmd> ")
@@ -226,7 +230,11 @@ class TestVlanEthertypeConfig(TestCase):
                              dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ")
 
-        tpids = [0x8100, 0xA100]
+        # caium_a063 card support only default '0x8100' tpid in rx mode
+        if self.nic == "cavium_a063":
+            tpids = [0x8100]
+        else:
+            tpids = [0x8100, 0xA100]
         for tpid in tpids:
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutRxPortId), "testpmd> ")
@@ -254,7 +262,11 @@ class TestVlanEthertypeConfig(TestCase):
             "vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ", 20)
 
-        tpids = [0x8100, 0xA100]
+        # caium_a063 card support only default '0x8100' tpid in rx mode
+        if self.nic == "cavium_a063":
+            tpids = [0x8100]
+        else:
+            tpids = [0x8100, 0xA100]
         for tpid in tpids:
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutRxPortId), "testpmd> ")
@@ -279,7 +291,11 @@ class TestVlanEthertypeConfig(TestCase):
                              dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("start", "testpmd> ")
 
-        tpids = [0x8100, 0xA100]
+        # caium_a063 card support only default '0x8100' tpid in rx mode
+        if self.nic == "cavium_a063":
+            tpids = [0x8100]
+        else:
+            tpids = [0x8100, 0xA100]
         for tpid in tpids:
             self.dut.send_expect("vlan set outer tpid 0x%x %s" %
                                  (tpid, dutTxPortId), "testpmd> ")

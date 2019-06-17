@@ -2105,6 +2105,7 @@
                 "fortville_spirit_single",
                 "cavium_a034",
                 "cavium_a011",
+                "cavium_a063"
                 "fortville_25g"
             ],
             "Target": [
@@ -2285,6 +2286,21 @@
         }
     ],
      "retrieve_reg": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "vlan_change_tpid": [
         {
             "OS": [
                 "ALL"
