@@ -285,7 +285,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "cavium_a063"
             ],
             "Target": [
                 "ALL"
@@ -497,7 +498,8 @@
                 "fortville_25g",
                 "fortpark_TLV",
                 "sagepond",
-                "sageville"
+                "sageville",
+                "cavium_a063"
             ],
             "Target": [
                 "ALL"
