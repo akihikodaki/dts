@@ -70,9 +70,7 @@ Test case 1: Download the package successfully
     ./testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
     --port-topology=chained
 
-   There will be a printing::
-
-    download success
+   The testpmd can be started normally without any fail information.
 
 3. Normal forward
 
@@ -110,7 +108,7 @@ Test case 2: failed to download pkg
 
    There will be an error reported::
 
-    ice_dev_init(): Failed to load default OS package
+    ice_dev_init(): Failed to load the DDP package,Entering Safe Mode
 
    The driver need to go to safe mode.
 
