@@ -95,11 +95,16 @@ class TestUnitTestsDump(TestCase):
         self.dut.send_expect("quit", "# ")
         match_regex = "ring <(.*?)>"
         m = re.compile(r"%s" % match_regex, re.S)
-        result = m.findall(out)
+        results = m.findall(out)
         
         # Nic driver will create multiple rings.
         # Only check the last one to make sure ring_dump function work.
-        self.verify( 'MP_mbuf_pool_socket_0' in result, "dump ring name failed")
+        self.verify( 'MP_mbuf_pool_socket_0' in results, "dump ring name failed")
+        for result in results:
+            self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
+            out = self.dut.send_expect("dump_ring %s" % result, "testpmd>", self.run_cmd_time)
+            self.dut.send_expect("quit", "# ")
+            self.verify( 'capacity' in out, "dump ring name failed")
 
     def test_mempool_dump(self):
         """
@@ -112,9 +117,15 @@ class TestUnitTestsDump(TestCase):
         self.dut.send_expect("quit", "# ")
         match_regex = "mempool <(.*?)>@0x(.*?)\r\n"
         m = re.compile(r"%s" % match_regex, re.S)
-        result = m.findall(out)
+        results = m.findall(out)
 
-        self.verify(result[0][0] == 'mbuf_pool_socket_0', "dump mempool name failed")
+        self.verify(results[0][0] == 'mbuf_pool_socket_0', "dump mempool name failed")
+        for result in results:
+            self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
+            out = self.dut.send_expect("dump_mempool %s" % result[0], "testpmd>", self.run_cmd_time * 2)
+            self.dut.send_expect("quit", "# ")
+            self.verify("internal cache infos:" in out, "dump mempool name failed")
+
 
     def test_physmem_dump(self):
         """
@@ -197,6 +208,58 @@ class TestUnitTestsDump(TestCase):
 
         white_str = "[pci]: %s" % pci_address
         self.verify(white_str in out, "Dump white list failed")
+
+    def test_dump_malloc_stats(self):
+        """
+        Run dump malloc dump test case.
+        """
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("dump_malloc_stats", "RTE>>", self.run_cmd_time * 2)
+        self.dut.send_expect("quit", "# ")
+        match_regex = "Heap id:(\d*)"
+        m = re.compile(r"%s" % match_regex, re.DOTALL)
+        results = m.findall(out)
+        memzone_info = []
+        for result in results:
+            memzone_info.append(result)
+        self.verify(len(memzone_info) > 0, "Dump malloc stats failed")
+
+    def test_dump_malloc_heaps(self):
+        """
+        Run malloc heaps dump test case.
+        """
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("dump_malloc_heaps", "RTE>>", self.run_cmd_time * 2)
+        self.dut.send_expect("quit", "# ")
+
+        elements = ['Heap id', 'Heap size', 'Heap alloc count']
+        match_regex = ""
+        for element in elements:
+            match_regex += "%s:(.*?)\r\n" % element
+        m = re.compile(r"%s" % match_regex, re.DOTALL)
+        results = m.findall(out)
+        memzone_info = []
+        for result in results:
+            memzone_info.append(dict(zip(elements, result)))
+        self.verify(len(memzone_info) > 0, "Dump malloc heaps failed")
+
+    def test_dump_log_types(self):
+        """
+        Run log types dump test case.
+        """
+        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("dump_log_types", "RTE>>", self.run_cmd_time * 2)
+        self.dut.send_expect("quit", "# ")
+
+        elements = ['id']
+        match_regex = "id (\d):"
+        match_regex += "(.*?),"
+        m = re.compile(r"%s" % match_regex, re.DOTALL)
+        results = m.findall(out)
+        memzone_info = []
+        for result in results:
+            memzone_info.append(dict(zip(elements, result)))
+        self.verify(len(memzone_info) > 0, "Dump log types failed")
 
     def tear_down(self):
         """
