@@ -13,6 +13,8 @@ from net_device import NetDevice
 from crb import Crb
 from settings import HEADER_SIZE
 VM_CORES_MASK = 'all'
+DEFAULT_MTU = 1500
+TSO_MTU = 9000
 
 class TestVfOffload(TestCase):
 
@@ -39,6 +41,7 @@ class TestVfOffload(TestCase):
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
+        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), TSO_MTU), "# ")
 
         
     def set_up(self):
@@ -336,6 +339,21 @@ class TestVfOffload(TestCase):
                    'grep -c "seq"')
         return self.tcpdump_command(command.format(**locals()))
 
+    def tcpdump_scanner(self, scanner):
+        """
+        Execute scanner to return results
+        """
+        scanner_result = self.tester.send_expect(scanner, '#')
+        fially_result = re.findall(r'length( \d+)', scanner_result)
+        return list(fially_result)
+
+    def number_of_bytes(self, iface):
+        """
+        Get the length of loading_sizes
+        """
+        scanner = ('tcpdump  -vv -r tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"')
+        return self.tcpdump_scanner(scanner.format(**locals()))
+
     def test_tso(self):
         """
         TSO IPv4 TCP, IPv6 TCP testing.
@@ -343,59 +361,92 @@ class TestVfOffload(TestCase):
         tx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
         rx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[1]))
 
-        self.frame_sizes = [128, 1458]
-        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['tcp']
-        padding = self.frame_sizes[0] - self.headers_size
+        self.loading_sizes = [128, 800, 801, 1700, 2500]
 
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
+        self.dut.send_expect("ifconfig %s mtu %s" % (self.dut.ports_info[0]['intf'], TSO_MTU), "# ")
 
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=%s " %
-                                      (self.portMask) + "--enable-rx-cksum " +
-                                      "" + 
-                                      "--port-topology=loop")
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=0x3 "  + "--enable-rx-cksum " + "--max-pkt-len=%s" % TSO_MTU)
 
         mac = self.vm0_testpmd.get_port_mac(0)
 
-        self.checksum_enablehw(0,self.vm_dut_0)
+        self.vm0_testpmd.execute_cmd("set verbose 1", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("port stop all", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120)
+
+        self.vm0_testpmd.execute_cmd("csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set udp hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120)
+
         self.vm0_testpmd.execute_cmd("tso set 800 %d" % self.vm0_dut_ports[1])
         self.vm0_testpmd.execute_cmd("set fwd csum")
+        self.vm0_testpmd.execute_cmd("port start all", "testpmd> ", 120)
+        self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ", 120)
         self.vm0_testpmd.execute_cmd("start")
 
         self.tester.scapy_foreground()
         time.sleep(5)
 
-        # IPv4 tcp test
+        for loading_size in self.loading_sizes:
+            # IPv4 tcp test
+            out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.vm0_testpmd.execute_cmd("show port stats all")
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV4 RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.vm0_testpmd.execute_cmd("show port stats all")
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
-
-        # IPv6 tcp test
-
-        self.tcpdump_start_sniffing([tx_interface, rx_interface])
-        self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, padding, tx_interface))
-        out = self.tester.scapy_execute()
-        out = self.vm0_testpmd.execute_cmd("show port stats all")
-        print out
-        self.tcpdump_stop_sniff()
-        rx_stats = self.number_of_packets(rx_interface)
-        if (rx_stats == 2):
-            self.verify(1, "Pass")
-
+        for loading_size in self.loading_sizes:
+            # IPv6 tcp test
+            out = self.vm0_testpmd.execute_cmd("clear port info all", "testpmd> ", 120)
+            self.tcpdump_start_sniffing([tx_interface, rx_interface])
+            self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
+            out = self.tester.scapy_execute()
+            out = self.vm0_testpmd.execute_cmd("show port stats all")
+            print out
+            self.tcpdump_stop_sniff()
+            rx_stats = self.number_of_packets(rx_interface)
+            tx_stats = self.number_of_packets(tx_interface)
+            tx_outlist = self.number_of_bytes(rx_interface)
+            self.logger.info(tx_outlist)
+            if (loading_size <= 800):
+                self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
+            else:
+                num = loading_size/800
+                for i in range(num):
+                    self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
+                if loading_size% 800 != 0:
+                    self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
     def tear_down(self):
         self.vm0_testpmd.execute_cmd('quit', '# ')
-        pass
+        self.dut.send_expect("ifconfig %s mtu %s" % (self.dut.ports_info[0]['intf'], DEFAULT_MTU), "# ")
 
     def tear_down_all(self):
         print "tear_down_all"
         if self.setup_2pf_2vf_1vm_env_flag == 1:
             self.destroy_2pf_2vf_1vm_env()
+        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), DEFAULT_MTU), "# ")
