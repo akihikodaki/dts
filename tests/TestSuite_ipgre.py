@@ -99,7 +99,7 @@ class TestIpgre(TestCase):
                 for layer in layer_configs.keys():
                     pkt.config_layer(layer, layer_configs[layer])
             inst = self.tester.tcpdump_sniff_packets(self.tester_iface, count=1, timeout=8)
-            pkt.send_pkt(tx_port=self.tester_iface)
+            pkt.send_pkt(tx_port=self.tester_iface, count = 4)
             out = self.dut.get_session_output(timeout=2)
             time.sleep(1)
             self.tester.load_tcpdump_sniff_packets(inst)
@@ -315,7 +315,8 @@ class TestIpgre(TestCase):
         self.dut.send_expect("port stop all", "testpmd>")
         self.dut.send_expect("csum set ip hw 0", "testpmd>")
         self.dut.send_expect("csum set udp hw 0", "testpmd>")
-        self.dut.send_expect("csum set sctp hw 0", "testpmd>")
+        if self.nic != "cavium_a063":
+            self.dut.send_expect("csum set sctp hw 0", "testpmd>")
         self.dut.send_expect("csum set outer-ip hw 0", "testpmd>")
         self.dut.send_expect("csum set tcp hw 0", "testpmd>")
         self.dut.send_expect("csum parse-tunnel on 0", "testpmd>")
@@ -407,29 +408,29 @@ class TestIpgre(TestCase):
                          'udp': {'chksum': 0xffff}}
         self.check_packet_transmission(pkt_types, config_layers)
         self.compare_checksum()
-    
-        # Send packet with wrong inner SCTP checksum and check forwarded packet SCTP checksum is correct
-        pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["PKT_TX_SCTP_CKSUM"]}
-        config_layers = {'ether': {'src': self.outer_mac_src, 
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst},
-                         'sctp': {'src': 53,
-                                  'dst': 53}}
-        self.save_ref_packet(pkt_types, config_layers)
-        config_layers = {'ether': {'src': self.outer_mac_src, 
-                                   'dst': self.outer_mac_dst},
-                         'ipv4': {'proto': 'gre',
-                                  'src': self.outer_ip_src,
-                                  'dst': self.outer_ip_dst},
-                         'inner_ipv4':{'src':self.inner_ip_src,
-                                       'dst':self.inner_ip_dst},
-                         'sctp': {'chksum': 0x0}}
-        self.check_packet_transmission(pkt_types, config_layers)
-        self.compare_checksum()
+        if self.nic != "cavium_a063":
+            # Send packet with wrong inner SCTP checksum and check forwarded packet SCTP checksum is correct
+            pkt_types = { "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT": ["PKT_TX_SCTP_CKSUM"]}
+            config_layers = {'ether': {'src': self.outer_mac_src,
+                                       'dst': self.outer_mac_dst},
+                             'ipv4': {'proto': 'gre',
+                                      'src': self.outer_ip_src,
+                                      'dst': self.outer_ip_dst},
+                             'inner_ipv4':{'src':self.inner_ip_src,
+                                           'dst':self.inner_ip_dst},
+                             'sctp': {'src': 53,
+                                      'dst': 53}}
+            self.save_ref_packet(pkt_types, config_layers)
+            config_layers = {'ether': {'src': self.outer_mac_src,
+                                       'dst': self.outer_mac_dst},
+                             'ipv4': {'proto': 'gre',
+                                      'src': self.outer_ip_src,
+                                      'dst': self.outer_ip_dst},
+                             'inner_ipv4':{'src':self.inner_ip_src,
+                                           'dst':self.inner_ip_dst},
+                             'sctp': {'chksum': 0x0}}
+            self.check_packet_transmission(pkt_types, config_layers)
+            self.compare_checksum()
 
         self.dut.send_expect("quit", "#")
 
