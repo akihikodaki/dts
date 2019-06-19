@@ -121,11 +121,12 @@ class TestLinkFlowctrl(TestCase):
         # run packet generator
         streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
                                             None, self.tester.pktgen)
-        result = self.tester.pktgen.measure_loss(stream_ids=streams)
+        options = {'duration': 60}
+        result = self.tester.pktgen.measure_loss(stream_ids=streams, options=options)
 
         self.dut.send_expect("stop", "testpmd> ")
 
-        return result[0]/100
+        return result[0]
 
     def get_testpmd_port_stats(self, ports):
         """
@@ -373,7 +374,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='on')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -387,7 +388,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -401,7 +402,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
@@ -415,7 +416,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='off',
                                             pause_frame_fwd='on')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result >= 0.5,
                     "Link flow control fail, the loss percent is less than 50%")
@@ -429,7 +430,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='off',
                                             pause_frame_fwd='off')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result >= 0.5,
                     "Link flow control fail, the loss percent is less than 50%")
@@ -443,7 +444,7 @@ class TestLinkFlowctrl(TestCase):
                                             tx_flow_control='on',
                                             pause_frame_fwd='off')
 
-        self.logger.info("Packet loss: %.3f%%" % result)
+        self.logger.info("Packet loss: %.3f" % result)
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
