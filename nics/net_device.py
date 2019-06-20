@@ -540,6 +540,25 @@ class NetDevice(object):
         return self.crb.get_pci_dev_id(self.domain_id, self.bus_id, self.devfun_id)
 
     @nic_has_driver
+    def get_nic_speed(self):
+        """
+        Get the speed of specified pci device.
+        """
+        get_nic_speed = getattr(
+            self, 'get_nic_speed_%s' %
+            self.__get_os_type())
+        return get_nic_speed(self.domain_id, self.bus_id, self.devfun_id)
+
+    def get_nic_speed_linux(self, domain_id, bus_id, devfun_id):
+        command = ('cat /sys/bus/pci/devices/%s\:%s\:%s/net/*/speed' %
+                   (domain_id, bus_id, devfun_id))
+        nic_speed = self.__send_expect(command, '# ')
+        return nic_speed
+
+    def get_nic_speed_freebsd(self, domain_id, bus_id, devfun_id):
+        NotImplemented
+
+    @nic_has_driver
     def get_sriov_vfs_pci(self):
         """
         Get all SRIOV VF pci bus of specified pci device.

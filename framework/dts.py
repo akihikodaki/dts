@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2016 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -62,7 +62,6 @@ from utils import get_subclasses, copy_instance_attr, create_parallel_locks
 import sys
 reload(sys)
 sys.setdefaultencoding('UTF8')
-
 
 requested_tests = None
 result = None
@@ -244,8 +243,13 @@ def dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname):
 
     try:
         if tester.it_uses_external_generator():
-            getattr(tester, 'ixia_packet_gen')
-            tester.ixia_packet_gen.logger.config_suite(test_classname, 'ixia')
+            if tester.is_pktgen and \
+               hasattr(tester, 'pktgen') and \
+               getattr(tester, 'pktgen'):
+                tester.pktgen.logger.config_suite(test_classname, 'pktgen')
+            elif hasattr(tester, 'ixia_packet_gen') and \
+                 getattr(tester, 'ixia_packet_gen'):
+                tester.ixia_packet_gen.logger.config_suite(test_classname, 'ixia')
     except Exception as ex:
         pass
 
@@ -262,8 +266,13 @@ def dts_log_execution(duts, tester, log_handler):
 
     try:
         if tester.it_uses_external_generator():
-            getattr(tester, 'ixia_packet_gen')
-            tester.ixia_packet_gen.logger.config_execution('ixia')
+            if tester.is_pktgen and \
+               hasattr(tester, 'pktgen') and \
+               getattr(tester, 'pktgen'):
+                tester.pktgen.logger.config_execution('pktgen')
+            elif hasattr(tester, 'ixia_packet_gen') and \
+                 getattr(tester, 'ixia_packet_gen'):
+                tester.ixia_packet_gen.logger.config_execution('ixia')
     except Exception as ex:
         pass
 
@@ -440,7 +449,7 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
 def run_all(config_file, pkgName, git, patch, skip_setup,
             read_cache, project, suite_dir, test_cases,
             base_dir, output_dir, verbose, virttype, debug,
-            debugcase, re_run, commands, subtitle):
+            debugcase, re_run, commands, subtitle, update_expected):
     """
     Main process of DTS, it will run all test suites in the config file.
     """
@@ -479,6 +488,10 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         settings.save_global_setting(settings.DEBUG_SETTING, 'yes')
     if debugcase is True:
         settings.save_global_setting(settings.DEBUG_CASE_SETTING, 'yes')
+
+    # enable update-expected
+    if update_expected is True:
+        settings.save_global_setting(settings.UPDATE_EXPECTED, 'yes')
 
     # init log_handler handler
     if verbose is True:

@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,15 +38,17 @@ import subprocess
 import os
 from time import sleep
 from settings import NICS, load_global_setting, PERF_SETTING
+from settings import IXIA, USERNAME, PKTGEN, PKTGEN_GRP
 from crb import Crb
 from net_device import GetNicObj
 from etgen import IxiaPacketGenerator, SoftwarePacketGenerator
-from settings import IXIA, USERNAME
 import random
 from utils import GREEN, convert_int2ip, convert_ip2int
 from exception import ParameterInvalidException
 from multiprocessing import Process
 
+from pktgen import getPacketGenerator
+from config import PktgenConf
 
 class Tester(Crb):
 
@@ -71,13 +73,19 @@ class Tester(Crb):
         self.bgCmds = []
         self.bgItf = ''
         self.re_run_time = 0
+        self.pktgen = None
+        self.ixia_packet_gen = None
 
     def init_ext_gen(self):
         """
         Initialize tester packet generator object.
         """
         if self.it_uses_external_generator():
-            self.ixia_packet_gen = IxiaPacketGenerator(self)
+            if self.is_pktgen:
+                self.pktgen_init()
+            else:
+                self.ixia_packet_gen = IxiaPacketGenerator(self)
+            return
         self.packet_gen = SoftwarePacketGenerator(self)
 
     def set_re_run(self, re_run_time):
@@ -91,7 +99,7 @@ class Tester(Crb):
         Get ip address of tester CRB.
         """
         return self.crb['tester IP']
-
+ 
     def get_username(self):
         """
         Get login username of tester CRB.
@@ -104,12 +112,32 @@ class Tester(Crb):
         """
         return self.crb['tester pass']
 
+    @property
+    def is_pktgen(self):
+        """
+        Check whether packet generator is configured.
+        """
+        if PKTGEN not in self.crb or not self.crb[PKTGEN]:
+            return False
+
+        if self.crb[PKTGEN].lower() in PKTGEN_GRP:
+            return True
+        else:
+            msg = os.linesep.join([
+            "Packet generator <{0}> is not supported".format(self.crb[PKTGEN]),
+            "Current supports: {0}".format(' | '.join(PKTGEN_GRP))])
+            self.logger.info(msg)
+            return False 
+
     def has_external_traffic_generator(self):
         """
         Check whether performance test will base on IXIA equipment.
         """
         try:
-            if self.crb[IXIA] is not None:
+            # if pktgen_group is set, take pktgen config file as first selection
+            if self.is_pktgen:
+                return True 
+            elif self.crb[IXIA] is not None:
                 return True
         except Exception as e:
             return False
@@ -200,7 +228,7 @@ class Tester(Crb):
         if localPort == -1:
             raise ParameterInvalidException("local port should not be -1")
 
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.ports_info[localPort]['type'] in ('ixia', 'trex'):
             return "00:00:00:00:00:01"
         else:
             return self.ports_info[localPort]['mac']
@@ -250,6 +278,30 @@ class Tester(Crb):
 
         sleep(2)
 
+    def restore_trex_interfaces(self):
+        """
+        Restore Linux interfaces used by trex
+        """
+        try:
+            for port_info in self.ports_info:
+                nic_type = port_info.get('type') 
+                if nic_type is not 'trex':
+                    continue
+                pci_bus = port_info.get('pci')
+                port_inst = port_info.get('port')
+                port_inst.bind_driver()
+                itf = port_inst.get_interface_name()
+                self.enable_ipv6(itf)
+                self.send_expect("ifconfig %s up" % itf, "# ")
+                if port_inst.get_interface2_name():
+                    itf = port_inst.get_interface2_name()
+                    self.enable_ipv6(itf)
+                    self.send_expect("ifconfig %s up" % itf, "# ")
+        except Exception as e:
+            self.logger.error("   !!! Restore ITF: " + e.message)
+
+        sleep(2)
+
     def set_promisc(self):
         try:
             for (pci_bus, pci_id) in self.pci_devices_info:
@@ -283,6 +335,28 @@ class Tester(Crb):
             cached_ports_info.append(port_info)
         self.serializer.save(self.PORT_INFO_CACHE_KEY, cached_ports_info)
 
+    def _scan_pktgen_ports(self):
+        ''' packet generator port setting 
+        Currently, trex run on tester node
+        '''
+        pktgen_ports_info = self.pktgen.get_ports()
+        for pktgen_port_info in pktgen_ports_info:
+            pktgen_port_type = pktgen_port_info['type']
+            if pktgen_port_type.lower() == 'ixia':
+                self.ports_info.extend(pktgen_ports_info)
+                break
+            pktgen_port_name = pktgen_port_info['intf']
+            pktgen_pci = pktgen_port_info['pci']
+            pktgen_mac = pktgen_port_info['mac']
+            for port_info in self.ports_info:
+                dts_pci = port_info['pci']
+                if dts_pci != pktgen_pci:
+                    continue
+                port_info['intf'] = pktgen_port_name
+                port_info['type'] = pktgen_port_type
+                port_info['mac'] = pktgen_mac
+                break
+
     def scan_ports(self):
         """
         Scan all ports on tester and save port's pci/mac/interface.
@@ -294,7 +368,10 @@ class Tester(Crb):
         if not self.read_cache or self.ports_info is None:
             self.scan_ports_uncached()
             if self.it_uses_external_generator():
-                self.ports_info.extend(self.ixia_packet_gen.get_ports())
+                if self.is_pktgen:
+                    self._scan_pktgen_ports()
+                else:
+                    self.ports_info.extend(self.ixia_packet_gen.get_ports())
             self.save_serializer_ports()
 
         for port_info in self.ports_info:
@@ -305,7 +382,7 @@ class Tester(Crb):
             return
 
         for port_info in self.ports_info:
-            if port_info['type'] == 'ixia':
+            if port_info['type'].lower() in ('ixia', 'trex'):
                 continue
 
             addr_array = port_info['pci'].split(':')
@@ -358,7 +435,7 @@ class Tester(Crb):
                                     'type': pci_id,
                                     'intf': intf,
                                     'mac': macaddr,
-				    'ipv4': ipv4,
+                                    'ipv4': ipv4,
                                     'ipv6': ipv6})
 
             # return if port is not connect x3
@@ -380,11 +457,21 @@ class Tester(Crb):
                                     'mac': macaddr,
                                     'ipv6': ipv6})
 
+    def pktgen_init(self):
+        '''
+        initialize packet generator instance
+        '''
+        pktgen_type = self.crb[PKTGEN]
+        # init packet generator instance
+        self.pktgen = getPacketGenerator(self, pktgen_type)
+        # prepare running environment
+        self.pktgen.prepare_generator()
+
     def send_ping(self, localPort, ipv4, mac):
         """
         Send ping4 packet from local port with destination ipv4 address.
         """
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.ports_info[localPort]['type'].lower() in ('ixia', 'trex'):
             return "Not implemented yet"
         else:
             return self.send_expect("ping -w 5 -c 5 -A -I %s %s" % (self.ports_info[localPort]['intf'], ipv4), "# ", 10)
@@ -393,7 +480,13 @@ class Tester(Crb):
         """
         Send ping6 packet from local port with destination ipv6 address.
         """
-        if self.ports_info[localPort]['type'] == 'ixia':
+        if self.is_pktgen:
+            if self.ports_info[localPort]['type'].lower() in 'ixia':
+                return self.packet_gen.send_ping6(
+                                self.ports_info[localPort]['pci'], mac, ipv6)
+            elif self.ports_info[localPort]['type'].lower() == 'trex':
+                return "Not implemented yet"
+        elif self.ports_info[localPort]['type'].lower() in 'ixia':
             return self.ixia_packet_gen.send_ping6(self.ports_info[localPort]['pci'], mac, ipv6)
         else:
             return self.send_expect("ping6 -w 5 -c 5 -A %s%%%s" % (ipv6, self.ports_info[localPort]['intf']), "# ", 10)
@@ -673,6 +766,10 @@ class Tester(Crb):
         """
         Update packet generator function, will implement later.
         """
+        # packet generator has forbidden suite class to override parent class methods  
+        if self.is_pktgen:
+            return
+        # discard this in future
         if self.it_uses_external_generator():
             self.ixia_packet_gen.__class__ = clazz
             current_attrs = instance.__dict__
@@ -757,14 +854,21 @@ class Tester(Crb):
         """
         Close ssh session and IXIA tcl session.
         """
+        if self.it_uses_external_generator():
+            if self.is_pktgen and self.pktgen:
+                self.pktgen.quit_generator()
+                self.restore_trex_interfaces()
+                self.pktgen = None
+            elif self.ixia_packet_gen:
+                self.ixia_packet_gen.close()
+                self.ixia_packet_gen = None
+
         if self.session:
             self.session.close()
             self.session = None
         if self.alt_session:
             self.alt_session.close()
             self.alt_session = None
-        if self.it_uses_external_generator():
-            self.ixia_packet_gen.close()
 
     def crb_exit(self):
         """

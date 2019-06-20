@@ -40,8 +40,10 @@ import os
 import utils
 import time
 import re
+import os
 from test_case import TestCase
 from settings import HEADER_SIZE
+from pktgen import PacketGeneratorHelper
 
 DEFAULT_MUT = 1500
 TSO_MTU = 9000
@@ -79,6 +81,15 @@ class TestTSO(TestCase):
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['tcp']
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), TSO_MTU), "# ")
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -125,7 +136,6 @@ class TestTSO(TestCase):
         """
 
         result = self.tester.send_expect(command, '#')
-        print result
         return int(result.strip())
 
     def number_of_packets(self, iface):
@@ -331,7 +341,6 @@ class TestTSO(TestCase):
                 if loading_size% 800 != 0:
                     self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
 
-
     def test_perf_TSO_2ports(self):
         """
         TSO Performance Benchmarking with 2 ports.
@@ -350,8 +359,8 @@ class TestTSO(TestCase):
             else:
                 queues = 1
 
-            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --coremask=%s --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.all_cores_mask, self.dut.get_memory_channels(), self.blacklist, self.coreMask, self.portMask, TSO_MTU)
-
+            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
+>>>>>>> next
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.logger.info(info)
             self.rst_report(info, annex=True)
@@ -383,15 +392,21 @@ class TestTSO(TestCase):
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
-		for _port in range(2):
+                for _port in range(2):
                     mac = self.dut.get_mac_address(self.dut_ports[_port])
-                    self.tester.scapy_append('wrpcap("dst%d.pcap", [Ether(dst="%s",src="52:00:00:00:00:01")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%d)])' % (_port, mac, loading_size))
+
+                    pcap = os.sep.join([self.output_path, "dts{0}.pcap".format(_port)])
+                    self.tester.scapy_append('wrpcap("%s", [Ether(dst="%s",src="52:00:00:00:00:01")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%d)])' % (pcap, mac, payload_size))
                     tgen_input.append((self.tester.get_local_port(self.dut_ports[_port]),
-                    self.tester.get_local_port(self.dut_ports[1-_port]), "dst%d.pcap") % _port)
+                    self.tester.get_local_port(self.dut_ports[1-_port]), "%s" % pcap))
                 self.tester.scapy_execute()
 
-                # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input)
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                                    None, self.tester.pktgen)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
                 pps /= 1000000.0
                 test_cycle['Mpps'][frame_size] = pps

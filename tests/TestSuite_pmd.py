@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,15 +43,14 @@ from test_case import TestCase
 from time import sleep
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput
-from etgen import IxiaPacketGenerator
 
 from settings import FOLDERS
 from system_info import SystemInfo
 import perf_report
 from datetime import datetime
+from pktgen import PacketGeneratorHelper
 
-
-class TestPmd(TestCase,IxiaPacketGenerator):
+class TestPmd(TestCase):
 
     def set_up_all(self):
         """
@@ -104,6 +103,16 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         self.pmdout = PmdOutput(self.dut)
 
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
+
     def set_up(self):
         """
         Run before each test case.
@@ -151,22 +160,21 @@ class TestPmd(TestCase,IxiaPacketGenerator):
         PMD Performance Benchmarking with 4 ports.
         """
         all_cores_mask = utils.create_mask(self.dut.get_core_list("all"))
-
         # prepare traffic generator input
         tgen_input = []
-
+        pcap = os.sep.join([self.output_path, "test.pcap"])
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "test.pcap"))
+                           pcap))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[2]),
                            self.tester.get_local_port(self.dut_ports[3]),
-                           "test.pcap"))
+                           pcap))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "test.pcap"))
+                           pcap))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[3]),
                            self.tester.get_local_port(self.dut_ports[2]),
-                           "test.pcap"))
+                           pcap))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -184,7 +192,7 @@ class TestPmd(TestCase,IxiaPacketGenerator):
             port_mask = utils.create_mask(self.dut.get_ports())
 
             self.pmdout.start_testpmd(core_config, " --rxq=%d --txq=%d --portmask=%s --rss-ip --txrst=32 --txfreet=32 --txd=128 --tx-offloads=0" % (queues, queues, port_mask), socket=self.ports_socket)
-	    command_line = self.pmdout.get_pmd_cmd()
+            command_line = self.pmdout.get_pmd_cmd()
 
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.rst_report(info, annex=True)
@@ -200,11 +208,17 @@ class TestPmd(TestCase,IxiaPacketGenerator):
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
                 self.tester.scapy_append(
-                    'wrpcap("test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % payload_size)
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
-                # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+                vm_config = self.set_fields()
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                        vm_config, self.tester.pktgen)
+                traffic_opt = {'duration': 60, }
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
 
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
@@ -244,12 +258,13 @@ class TestPmd(TestCase,IxiaPacketGenerator):
 
         # prepare traffic generator input
         tgen_input = []
+        pcap = os.sep.join([self.output_path, "test.pcap"])
         tgen_input.append((self.tester.get_local_port(self.dut_ports[0]),
                            self.tester.get_local_port(self.dut_ports[1]),
-                           "test.pcap"))
+                           pcap))
         tgen_input.append((self.tester.get_local_port(self.dut_ports[1]),
                            self.tester.get_local_port(self.dut_ports[0]),
-                           "test.pcap"))
+                           pcap))
 
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
@@ -284,11 +299,19 @@ class TestPmd(TestCase,IxiaPacketGenerator):
                 self.logger.info("Running with frame size %d " % frame_size)
                 payload_size = frame_size - self.headers_size
                 self.tester.scapy_append(
-                    'wrpcap("test.pcap", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % payload_size)
+                    'wrpcap("%s", [Ether(src="52:00:00:00:00:00")/IP(src="1.2.3.4",dst="1.1.1.1")/TCP()/("X"*%d)])' % (pcap, payload_size))
                 self.tester.scapy_execute()
 
                 # run traffic generator
-                _, pps = self.tester.traffic_generator_throughput(tgen_input, rate_percent=100, delay=60)
+
+                vm_config = self.set_fields()
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                        vm_config, self.tester.pktgen)
+                traffic_opt = {'duration': 60, }
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
 
                 pps /= 1000000.0
                 pct = pps * 100 / wirespeed
@@ -436,22 +459,13 @@ class TestPmd(TestCase,IxiaPacketGenerator):
                     "packet pass assert error, expected %d TX bytes, actual %d" % ((frame_size - 4)*4, p0tx_bytes))
 
         return out
-    
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipRandom")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIdle")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
 
-    
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {'src': {'action': 'random'},},}
+        return fields_config
+
     def tear_down(self):
         """
         Run after each test case.

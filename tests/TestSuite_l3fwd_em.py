@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,16 +34,18 @@ DPDK Test suite.
 Layer-3 forwarding exact-match test script.
 """
 
+import os
 import utils
 import string
 import re
 from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
 from utils import *
+from pktgen import PacketGeneratorHelper
 
-class TestL3fwdEM(TestCase,IxiaPacketGenerator):
+
+class TestL3fwdEM(TestCase):
 
     path = "./examples/l3fwd/build/"
 
@@ -52,8 +54,7 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
                           "1S/4C/1T": "%s -c %s -n %d -- -p %s -E --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}),(P0,1,C{1.3.0}), (P1,1,C{1.4.0})' --hash-entry-num 0x400000"
                           }
 
-
-    frame_sizes = [64, 65, 128, 256, 512, 1518]  # 65, 128
+    frame_sizes = [64, 65, 128, 256, 512, 1518]
     methods = ['exact']
 
     #
@@ -99,7 +100,6 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
         
         self.port_socket = netdev.socket
         
-
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/8C/2T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
@@ -116,16 +116,21 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_PCI_EXTENDED_TAG=.*$/CONFIG_RTE_PCI_EXTENDED_TAG=\"on\"/' ./config/common_linuxapp", "#", 20)
         self.dut.build_install_dpdk(self.target)
 
-
-        
         out = self.dut.build_dpdk_apps("./examples/l3fwd")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
-
         self.l3fwd_test_results = {'header': [],
                                    'data': []}
-
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def repl(self, match):
         pid = match.group(1)
@@ -142,13 +147,11 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
 
         return '%s,%s,%s' % (str(valports[int(pid)]), qid, lcid)
 
-
     def set_up(self):
         """
         Run before each test case.
         """
         pass
-
 
     def test_perf_l3fwd_2ports(self):
         """
@@ -169,15 +172,20 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
             # Traffic for port0
             dmac_port0 = self.dut.get_mac_address(valports[0])
             flow1 = '[Ether(dst="%s")/IP(src="200.20.0.1",dst="201.0.0.0")/TCP(sport=12,dport=102)/("X"*%d)]' %(dmac_port0,payload_size)
-            self.tester.scapy_append('wrpcap("dst0.pcap",%s)' %flow1)
+
+            pcaps = {}
+            pcap = os.sep.join([self.output_path, "dst0.pcap"])
+            pcaps[0] = pcap
+            self.tester.scapy_append('wrpcap("{0}",{1})'.format(pcap, flow1))
 
             # Traffic for port1
             dmac_port1 = self.dut.get_mac_address(valports[1])
             flow2 = '[Ether(dst="%s")/IP(src="100.10.0.1",dst="101.0.0.0")/TCP(sport=11,dport=101)/("X"*%d)]' %(dmac_port1,payload_size)
-            self.tester.scapy_append('wrpcap("dst1.pcap",%s)' %flow2)
+
+            pcap = os.sep.join([self.output_path, "dst1.pcap"])
+            pcaps[1] = pcap
+            self.tester.scapy_append('wrpcap("{0}",{1})'.format(pcap, flow2))
             self.tester.scapy_execute()
-
-
 
             # Prepare the command line
             global corelist
@@ -192,7 +200,7 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
-                    if key.find('1S')>=0:
+                    if key.find('1S') >= 0:
                         rtCmdLines[key] = pat2.sub(repl1, rtCmdLines[key])
                     rtCmdLines[key] = pat.sub(self.repl, rtCmdLines[key])
 
@@ -220,11 +228,7 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
                     self.rst_report(cmdline + "\n", frame=True, annex=True)
 
                     out = self.dut.send_expect(cmdline, "L3FWD: entering main loop", 120)
-            
                     
-                    print self.dut.get_session_output(timeout=3)           
-                    
-
                     # Measure test
                     tgenInput = []
                     for rxPort in range(2):
@@ -235,18 +239,22 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
                             txIntf = self.tester.get_local_port(valports[rxPort - 1])
 
                         rxIntf = self.tester.get_local_port(valports[rxPort])
-                        if rxPort % 2 == 0: 
-                            tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort+1]))
-                        else: 
-                            tgenInput.append((txIntf, rxIntf, "dst%d.pcap" %valports[rxPort-1]))
+                        port_index = valports[rxPort+1] if rxPort % 2 == 0 else valports[rxPort-1]
+                        tgenInput.append((txIntf, rxIntf, pcaps[port_index]))
                     
-                    _, pps = self.tester.traffic_generator_throughput(tgenInput,delay=20)
+                    vm_config = self.set_fields()
+                    # clear streams before add new streams
+                    self.tester.pktgen.clear_streams()
+                    # run packet generator
+                    streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                                            vm_config, self.tester.pktgen)
+                    traffic_opt = {'duration': 20, }
+                    _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
                     
                     self.verify(pps > 0, "No traffic detected")
                     pps /= 1000000.0
                     linerate = self.wirespeed(self.nic, frame_size, 2)
                     pct = pps * 100 / linerate
-
                     index += 1
 
                     # Stop l3fwd
@@ -257,21 +265,14 @@ class TestL3fwdEM(TestCase,IxiaPacketGenerator):
 
         self.result_table_print()
 
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {
+            'dst': {'range': 64, 'mask': '255.240.0.0', 'action': 'inc'}
+        },}
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolTcp")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipIdle")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipContIncrHost")
-        self.add_tcl_cmd("ip config -destIpMask '255.240.0.0'")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+        return fields_config
 
     def tear_down(self):
         """

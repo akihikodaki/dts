@@ -37,13 +37,16 @@ Test support of RX/TX Checksum Offload Features by Poll Mode Drivers.
 """
 
 import string
+import os
 import re
-import rst
+from rst import RstReport
 import utils
 
 from test_case import TestCase
 from pmd_output import PmdOutput
 from test_capabilities import DRIVER_TEST_LACK_CAPA
+from pktgen import PacketGeneratorHelper
+
 
 class TestChecksumOffload(TestCase):
 
@@ -59,6 +62,15 @@ class TestChecksumOffload(TestCase):
         self.pmdout = PmdOutput(self.dut)
         self.portMask = utils.create_mask([self.dut_ports[0]])
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -85,7 +97,6 @@ class TestChecksumOffload(TestCase):
             self.dut.send_expect("csum set tcp sw %d" % port, "testpmd>")
             self.dut.send_expect("csum set sctp sw %d" % port, "testpmd>")
             self.dut.send_expect("port start all", "testpmd>")
-
 
     def get_chksum_values(self, packets_expected):
         """
@@ -175,16 +186,16 @@ class TestChecksumOffload(TestCase):
         self.tester.send_expect("exit()", "#")
 
         inst = self.tester.tcpdump_sniff_packets(intf=rx_interface, count=len(packets_sent),
-                filters=[{'layer':'ether', 'config':{'src': sniff_src}}])
+                filters=[{'layer': 'ether', 'config': {'src': sniff_src}}])
 
         for packet_type in packets_sent.keys():
             self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface))
 
         self.tester.scapy_execute()
-	p = self.tester.load_tcpdump_sniff_packets(inst)
-	nr_packets=len(p)
-	reslist = [p[i].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
-	out = string.join(reslist, ",")
+        p = self.tester.load_tcpdump_sniff_packets(inst)
+        nr_packets = len(p)
+        reslist = [p[i].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
+        out = string.join(reslist, ",")
         packets_received = out.split(',')
         self.verify(len(packets_sent) == len(packets_received), "Unexpected Packets Drop")
 
@@ -224,7 +235,7 @@ class TestChecksumOffload(TestCase):
 
         pktsChkErr = {'IP/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/UDP(chksum=0xf)/("X"*46)' % mac,
                       'IP/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/TCP(chksum=0xf)/("X"*46)' % mac,
-		      'IP/SCTP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/SCTP(chksum=0xf)/("X"*48)' % mac,
+                      'IP/SCTP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IP(chksum=0x0)/SCTP(chksum=0xf)/("X"*48)' % mac,
                       'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IPv6(src="::1")/UDP(chksum=0xf)/("X"*46)' % mac,
                       'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=1)/IPv6(src="::1")/TCP(chksum=0xf)/("X"*46)' % mac}
 
@@ -259,8 +270,8 @@ class TestChecksumOffload(TestCase):
                     'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="::1")/TCP()/("X"*46)' % mac}
 
         result = dict()
-        
-	self.checksum_enablehw(self.dut_ports[0])
+
+        self.checksum_enablehw(self.dut_ports[0])
 
         # get the packet checksum value
         result = self.get_chksum_values(pkts_ref)
@@ -279,7 +290,7 @@ class TestChecksumOffload(TestCase):
                     'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="::1")/UDP(chksum=0xf)/("X"*46)' % mac,
                     'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="::1")/TCP(chksum=0xf)/("X"*46)' % mac}
 
-	if self.kdriver in DRIVER_TEST_LACK_CAPA['sctp_tx_offload']:
+        if self.kdriver in DRIVER_TEST_LACK_CAPA['sctp_tx_offload']:
             del pkts_good['IP/SCTP']
             del pkts_bad['IP/SCTP']
             del pkts_ref['IP/SCTP']
@@ -361,19 +372,33 @@ class TestChecksumOffload(TestCase):
         Pps = dict()
         Pct = dict()
         dmac = self.dut.get_mac_address(self.dut_ports[0])
+        dmac1 = self.dut.get_mac_address(self.dut_ports[1])
 
         result = [2, lcore, ptype, mode]
         for size in size_list:
             flow = flow_format % (dmac, size)
-            self.tester.scapy_append('wrpcap("test.pcap", [%s])' % flow)
+            pcap = os.sep.join([self.output_path, "test.pcap"])
+            self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, flow))
             self.tester.scapy_execute()
+            flow = flow_format % (dmac1, size)
+            pcap = os.sep.join([self.output_path, "test1.pcap"])
+            self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, flow))
+            self.tester.scapy_execute()
+
             tgenInput = []
+            pcap = os.sep.join([self.output_path, "test.pcap"])
             tgenInput.append(
-                (self.tester.get_local_port(self.dut_ports[0]), self.tester.get_local_port(self.dut_ports[1]), "test.pcap"))
+                (self.tester.get_local_port(self.dut_ports[0]), self.tester.get_local_port(self.dut_ports[1]), pcap))
+            pcap = os.sep.join([self.output_path, "test1.pcap"])
             tgenInput.append(
-                (self.tester.get_local_port(self.dut_ports[1]), self.tester.get_local_port(self.dut_ports[0]), "test.pcap"))
-            Bps[str(size)], Pps[
-                str(size)] = self.tester.traffic_generator_throughput(tgenInput)
+                (self.tester.get_local_port(self.dut_ports[1]), self.tester.get_local_port(self.dut_ports[0]), pcap))
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                    None, self.tester.pktgen)
+            Bps[str(size)], Pps[str(size)] = self.tester.pktgen.measure_throughput(stream_ids=streams)
             self.verify(Pps[str(size)] > 0, "No traffic detected")
             Pps[str(size)] /= 1E6
             Pct[str(size)] = (Pps[str(size)] * 100) / \
@@ -390,6 +415,7 @@ class TestChecksumOffload(TestCase):
         """
         # Verify that enough ports are available
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports for testing")
+        self.dut.send_expect("quit", "#")
 
         # sizes = [64, 128, 256, 512, 1024]
         sizes = [64, 128]
@@ -406,16 +432,15 @@ class TestChecksumOffload(TestCase):
         portMask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         for mode in ["sw", "hw"]:
             self.logger.info("%s performance" % mode)
-            rst.write_text(mode + " Performance" + '\r\n')
             tblheader = ["Ports", "S/C/T", "Packet Type", "Mode"]
             for size in sizes:
                 tblheader.append("%sB mpps" % str(size))
                 tblheader.append("%sB %%   " % str(size))
             self.result_table_create(tblheader)
             self.pmdout.start_testpmd(
-                lcore, "--portmask=%s" % self.portMask, socket=self.ports_socket)
+                lcore, "--portmask=%s" % self.portMask + " --enable-rx-cksum " +
+                                  "--port-topology=loop", socket=self.ports_socket)
 
-            self.dut.send_expect("set verbose 1", "testpmd> ")
             self.dut.send_expect("set fwd csum", "testpmd> ")
             if mode == "hw":
                 self.checksum_enablehw(self.dut_ports[0])

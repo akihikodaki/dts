@@ -116,6 +116,9 @@ class DPDKdut(Dut):
             self.send_expect("modprobe uio_pci_generic", "#", 70)
             out = self.send_expect("lsmod | grep uio_pci_generic", "#")
             assert ("uio_pci_generic" in out), "Failed to setup uio_pci_generic"
+
+        elif drivername == "mlx5_core":
+            pass
  
         elif drivername == "igb_uio":
             self.send_expect("modprobe uio", "#", 70)
@@ -126,6 +129,9 @@ class DPDKdut(Dut):
 
             out = self.send_expect("lsmod | grep igb_uio", "#")
             assert ("igb_uio" in out), "Failed to insmod igb_uio"
+
+        else:
+            pass
 
     def setup_modules_freebsd(self, target, drivername, drivermode):
         """

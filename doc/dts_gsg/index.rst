@@ -43,3 +43,4 @@ Getting Started Guide
     virtualization
     scenario
     multiple_vm
+    trex

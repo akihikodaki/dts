@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -200,7 +200,11 @@ TIMEOUT = 15
 Global macro for dts.
 """
 IXIA = "ixia"
-
+PKTGEN = "pktgen"
+PKTGEN_DPDK = "dpdk"
+PKTGEN_TREX = "trex"
+PKTGEN_IXIA = "ixia"
+PKTGEN_GRP = frozenset([PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA])
 """
 The log name seperater.
 """
@@ -226,6 +230,7 @@ DPDK_RXMODE_SETTING = "DTS_DPDK_RXMODE"
 DTS_ERROR_ENV = "DTS_RUNNING_ERROR"
 DTS_CFG_FOLDER = "DTS_CFG_FOLDER"
 DTS_PARALLEL_SETTING = "DTS_PARALLEL_ENABLE"
+UPDATE_EXPECTED = "DTS_UPDATE_EXPECTED_ENABLE"
 
 
 """

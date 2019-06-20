@@ -146,6 +146,10 @@ parser.add_argument('--commands',
 parser.add_argument('--subtitle',
                     help='add a subtitle to the rst report')
 
+parser.add_argument('--update-expected',
+                    action='store_true',
+                    help='update expected values based on test results')
+
 args = parser.parse_args()
 
 
@@ -162,4 +166,5 @@ dts.run_all(args.config_file, args.snapshot, args.git,
             args.patch, args.skip_setup, args.read_cache,
             args.project, args.suite_dir, args.test_cases,
             args.dir, args.output, args.verbose,args.virttype,
-            args.debug, args.debugcase, args.re_run, args.commands, args.subtitle)
+            args.debug, args.debugcase, args.re_run, args.commands,
+            args.subtitle, args.update_expected)

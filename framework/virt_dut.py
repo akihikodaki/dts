@@ -386,7 +386,7 @@ class VirtDut(DPDKdut):
                 remotepci = self.tester.ports_info[remotePort]['pci']
                 port_type = self.tester.ports_info[remotePort]['type']
                 # IXIA port should not check whether has vfs
-                if port_type != 'ixia':
+                if port_type.lower() not in ('ixia', 'trex'):
                     remoteport = self.tester.ports_info[remotePort]['port']
                     vfs = []
                     # vm_dut and tester in same dut

@@ -34,11 +34,13 @@ DPDK Test suite.
 """
 import re
 import utils
+import os
 from test_case import TestCase
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 
 
-class TestDistributor(TestCase, IxiaPacketGenerator):
+class TestDistributor(TestCase):
+
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -53,6 +55,15 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
 
         self.dut_ports = self.dut.get_ports()
         self.app = "./examples/distributor/build/distributor_app"
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -103,12 +114,15 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
         cmd_fmt = "%s -c %s -n %d -w %s -- -p 0x1"
         socket = self.dut.get_numa_id(self.dut_ports[0])
 
-        self.tester.scapy_append('wrpcap("distributor.pcap", [Ether()/IP()/("X"*26)])')
+        pcap = os.sep.join([self.output_path, "distributor.pcap"])
+        self.tester.scapy_append('wrpcap("%s", [Ether()/IP()/("X"*26)])' % pcap)
         self.tester.scapy_execute()
         tgen_input = []
         rx_port = self.tester.get_local_port(self.dut_ports[0])
         tx_port = self.tester.get_local_port(self.dut_ports[0])
-        tgen_input.append((tx_port, rx_port, "distributor.pcap"))
+
+        pcap = os.sep.join([self.output_path, "distributor.pcap"])
+        tgen_input.append((tx_port, rx_port, pcap))
 
         self.result_table_create(table_header)
         for worker_num in workers:
@@ -124,8 +138,14 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
 
             self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
-            self.tester.ixia_packet_gen.hook_transmission_func = self.hook_transmission_func
-            _, pps = self.tester.traffic_generator_throughput(tgen_input, delay=2)
+            self.app_output = self.dut.session.get_session_before(timeout=2)
+
+            # clear streams before add new streams
+            self.tester.pktgen.clear_streams()
+            # run packet generator
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
+                                    None, self.tester.pktgen)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
             self.dut.send_expect("^C", "#")
 
@@ -251,19 +271,14 @@ class TestDistributor(TestCase, IxiaPacketGenerator):
         cycles = lines[2].split()[3]
         return int(cycles)
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipIdle")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipRandom")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        ''' set ip protocol field behavior '''
+        fields_config = {
+        'ip':  {
+            'dst': {'mask': '255.240.0.0', 'action': 'inc'}
+        }, }
+
+        return fields_config
 
     def tear_down(self):
         """

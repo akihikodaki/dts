@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,8 +35,9 @@ Generic port and crbs configuration file load function
 import os
 import re
 import ConfigParser  # config parse module
-import argparse      # prase arguments module
-from settings import IXIA, CONFIG_ROOT_PATH, SUITE_SECTION_NAME
+import argparse      # parse arguments module
+from settings import (IXIA, PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA,
+                      CONFIG_ROOT_PATH, SUITE_SECTION_NAME)
 from settings import load_global_setting, DTS_CFG_FOLDER
 from exception import ConfigParseException, VirtConfigParseException, PortConfigParseException
 
@@ -44,6 +45,8 @@ PORTCONF = "%s/ports.cfg" % CONFIG_ROOT_PATH
 CRBCONF = "%s/crbs.cfg" % CONFIG_ROOT_PATH
 VIRTCONF = "%s/virt_global.cfg" % CONFIG_ROOT_PATH
 IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
+PKTGENCONF = "%s/pktgen.cfg" % CONFIG_ROOT_PATH
+SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
 GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 
 
@@ -87,6 +90,7 @@ class UserConf():
             paramDict[key] = value
         return paramDict
 
+
 class GlobalConf(UserConf):
     def __init__(self):
         self.global_cfg = {}
@@ -112,6 +116,7 @@ class GlobalConf(UserConf):
         global_cfg = dict(section_confs)
         
         return global_cfg
+        
         
 class SuiteConf(UserConf):
     def __init__(self, suite_name=""):
@@ -144,6 +149,17 @@ class SuiteConf(UserConf):
             case_cfg[key] = eval(data_string)
 
         return case_cfg
+
+    def update_case_config(self, case_name=""):
+        """
+        update section (case_name) of the configure file
+        """
+        update_suite_cfg_obj = UserConf(self.config_file)
+        update_suite_cfg = update_suite_cfg_obj.load_section(case_name)
+        for key in update_suite_cfg_obj.conf.options(case_name):
+            update_suite_cfg_obj.conf.set(
+                case_name, key, str(self.suite_cfg[key]))
+        update_suite_cfg_obj.conf.write(open(self.config_file, 'w'))
 
 
 class VirtConf(UserConf):
@@ -249,6 +265,7 @@ class CrbsConf(UserConf):
     DEF_CRB = {'IP': '', 'board': 'default', 'user': '',
                'pass': '', 'tester IP': '', 'tester pass': '',
                IXIA: None, 'memory channels': 4,
+               PKTGEN: None,
                'bypass core0': True}
 
     def __init__(self, crbs_conf=CRBCONF):
@@ -292,6 +309,8 @@ class CrbsConf(UserConf):
                     if value.lower() == 'none':
                         value = None
                     crb[IXIA] = value
+                elif key == 'pktgen_group':
+                    crb[PKTGEN] = value.lower()
                 elif key == 'channels':
                     crb['memory channels'] = int(value)
                 elif key == 'bypass_core0':
@@ -365,6 +384,88 @@ class IxiaConf(UserConf):
             self.ixia_cfg[group] = ixia_group
 
         return self.ixia_cfg
+
+class PktgenConf(UserConf):
+
+    def __init__(self, pktgen_type='ixia', pktgen_conf=PKTGENCONF):
+        self.config_file = pktgen_conf
+        self.pktgen_type = pktgen_type.lower()
+        self.pktgen_cfg = {}
+        try:
+            self.pktgen_conf = UserConf(self.config_file)
+        except ConfigParseException:
+            self.pktgen_conf = None
+            raise ConfigParseException
+
+    def load_pktgen_ixia_config(self, section):
+        port_reg = r'card=(\d+),port=(\d+)'
+        pktgen_confs = self.pktgen_conf.load_section(section)
+        if not pktgen_confs:
+            return
+        # convert file configuration to dts ixiacfg
+        ixia_group = {}
+        for conf in pktgen_confs:
+            key, value = conf
+            if key == 'ixia_version':
+                ixia_group['Version'] = value
+            elif key == 'ixia_ip':
+                ixia_group['IP'] = value
+            elif key == 'ixia_ports':
+                ports = self.pktgen_conf.load_config(value)
+                ixia_ports = []
+                for port in ports:
+                    m = re.match(port_reg, port)
+                    if m:
+                        ixia_port = {}
+                        ixia_port["card"] = int(m.group(1))
+                        ixia_port["port"] = int(m.group(2))
+                        ixia_ports.append(ixia_port)
+                ixia_group['Ports'] = ixia_ports
+            elif key == 'ixia_enable_rsfec':
+                ixia_group['enable_rsfec'] = value
+
+        if 'Version' not in ixia_group:
+            print 'ixia configuration file request ixia_version option!!!'
+            return
+        if 'IP' not in ixia_group:
+            print 'ixia configuration file request ixia_ip option!!!'
+            return
+        if 'Ports' not in ixia_group:
+            print 'ixia configuration file request ixia_ports option!!!'
+            return
+
+        self.pktgen_cfg[section.lower()] = ixia_group
+
+    def load_pktgen_config(self):
+        sections = self.pktgen_conf.get_sections()
+        if not sections:
+            return self.pktgen_cfg
+
+        for section in sections:
+            if self.pktgen_type == PKTGEN_DPDK and section.lower() == PKTGEN_DPDK:
+                pktgen_confs = self.pktgen_conf.load_section(section)
+                if not pktgen_confs:
+                    continue
+
+                # covert file configuration to dts pktgen cfg
+                for conf in pktgen_confs:
+                    key, value = conf
+                    self.pktgen_cfg[key] = value
+            elif self.pktgen_type == PKTGEN_TREX and section.lower() == PKTGEN_TREX:
+                pktgen_confs = self.pktgen_conf.load_section(section)
+                if not pktgen_confs:
+                    continue
+
+                # covert file configuration to dts pktgen cfg
+                for conf in pktgen_confs:
+                    key, value = conf
+                    self.pktgen_cfg[key] = value
+            elif self.pktgen_type == PKTGEN_IXIA and section.lower() == PKTGEN_IXIA:
+                # covert file configuration to dts pktgen cfg
+                self.load_pktgen_ixia_config(section)
+
+        return self.pktgen_cfg
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
