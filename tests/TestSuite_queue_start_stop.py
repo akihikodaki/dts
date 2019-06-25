@@ -157,7 +157,10 @@ class TestQueueStartStop(TestCase):
         except Exception, e:
             raise IOError("queue start/stop forward failure: %s" % e)
 
-        self.verify("ports 0 queue 0 receive 4 packages" in out, "start queue revice package failed, out = %s"%out)
+        if self.nic == "cavium_a063":
+            self.verify("ports 0 queue 0 receive 4 packages" in out, "start queue revice package failed, out = %s"%out)
+        else:
+            self.verify("ports 0 queue 0 receive 1 packages\r\n"*4 in out, "start queue revice package failed, out = %s"%out)
 
         try:
             # start tx queue test
