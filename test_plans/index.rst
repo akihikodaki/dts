@@ -216,3 +216,4 @@ The following are the test plans for the DPDK DTS automated test system.
     distributor_test_plan
     efd_test_plan
     example_build_test_plan
+    flow_classify_test_plan
