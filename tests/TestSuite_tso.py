@@ -360,7 +360,6 @@ class TestTSO(TestCase):
                 queues = 1
 
             command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
->>>>>>> next
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.logger.info(info)
             self.rst_report(info, annex=True)
@@ -409,8 +408,8 @@ class TestTSO(TestCase):
                 _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
                 pps /= 1000000.0
-                test_cycle['Mpps'][frame_size] = pps
-                test_cycle['pct'][frame_size] = pps * 100 / wirespeed
+                test_cycle['Mpps'][loading_size] = pps
+                test_cycle['pct'][loading_size] = pps * 100 / wirespeed
 
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("quit", "# ", 30)
