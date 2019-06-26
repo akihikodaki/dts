@@ -102,6 +102,10 @@ NICS = {
     'cavium_a063': '177d:a063',
     'columbiaville_100g': '8086:1592',
     'columbiaville_25g': '8086:1593',
+    'fastlinq_ql45000': 'qede',
+    'fastlinq_ql41000': 'qede',
+    'fastlinq_ql45000_vf': 'qede',
+    'fastlinq_ql41000_vf': 'qede',
 }
 
 DRIVERS = {
@@ -158,6 +162,10 @@ DRIVERS = {
     'cavium_a063': 'octeontx2-nicpf',
     'columbiaville_100g': 'ice',
     'columbiaville_25g': 'ice',
+    'fastlinq_ql45000': '1077:1656',
+    'fastlinq_ql45000_vf': '1077:1664',
+    'fastlinq_ql41000': '1077:8070',
+    'fastlinq_ql41000_vf': '1077:8090',
 }
 
 """
