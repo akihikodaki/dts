@@ -129,7 +129,7 @@ class TestChecksumOffload(TestCase):
         self.tester.scapy_foreground()
 
         for packet_type in packets_sent.keys():
-            self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface))
+            self.tester.scapy_append('sendp([%s], iface="%s", count=4)' % (packets_sent[packet_type], tx_interface))
             self.tester.scapy_execute()
             out = self.dut.get_session_output(timeout=1)
             lines = out.split("\r\n")
@@ -146,7 +146,10 @@ class TestChecksumOffload(TestCase):
                             if (flag == 1):
                                 self.verify("PKT_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
                             elif (flag == 0):
-                                self.verify("PKT_RX_L4_CKSUM_BAD" in line, "Packet Rx L4 checksum valid-flags error!")
+                                if self.nic == "cavium_a063":
+                                    self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
+                                else:
+                                    self.verify("PKT_RX_L4_CKSUM_BAD" in line, "Packet Rx L4 checksum valid-flags error!")
                     else:
                         if "PKT_RX_L4_CKSUM" not in line:
                             self.verify(0, "There is no L4 checksum flags appeared!")
@@ -185,11 +188,11 @@ class TestChecksumOffload(TestCase):
 
         self.tester.send_expect("exit()", "#")
 
-        inst = self.tester.tcpdump_sniff_packets(intf=rx_interface, count=len(packets_sent),
+        inst = self.tester.tcpdump_sniff_packets(intf=rx_interface, count=len(packets_sent)*4,
                 filters=[{'layer': 'ether', 'config': {'src': sniff_src}}])
 
         for packet_type in packets_sent.keys():
-            self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface))
+            self.tester.scapy_append('sendp([%s], iface="%s", count=4)' % (packets_sent[packet_type], tx_interface))
 
         self.tester.scapy_execute()
         p = self.tester.load_tcpdump_sniff_packets(inst)
@@ -197,7 +200,7 @@ class TestChecksumOffload(TestCase):
         reslist = [p[i].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
         out = string.join(reslist, ",")
         packets_received = out.split(',')
-        self.verify(len(packets_sent) == len(packets_received), "Unexpected Packets Drop")
+        self.verify(len(packets_sent)*4 == len(packets_received), "Unexpected Packets Drop")
 
         for packet_received in packets_received:
             ip_checksum, tcp_checksum, udp_checksum, sctp_checksum = packet_received.split(';')
