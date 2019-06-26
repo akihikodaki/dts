@@ -567,7 +567,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 pkt = Packet(pkt_len=pkt_size)
                 pkt.send_pkt(tx_port=intf, count=4)
                 rx_pkts, _ = self.strip_portstats(index)
-                self.verify(rx_pkts == ori_rx_pkts + 1, "Packet match mtu not forwarded as expected")
+                self.verify(rx_pkts == ori_rx_pkts + 4, "Packet match mtu not forwarded as expected")
                 pkt = Packet(pkt_len=mtu + 1 + HEADER_SIZE['eth'])
                 pkt.send_pkt(tx_port=intf, count=4)
                 rx_pkts_over, _ = self.strip_portstats(index)
