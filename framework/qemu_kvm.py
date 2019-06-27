@@ -483,6 +483,31 @@ class QEMUKvm(VirtBase):
             elif options['type'] in ['tap', 'bridge']:
                 self.net_type = 'bridge'
 
+    def add_vm_kernel(self, **options):
+        """
+        Add Kernel Image explicitly
+        kernel_img: path to kernel Image
+        console: console details in kernel boot args
+        baudrate: console access baudrate in kernel boot args
+        root: root partition details in kernel boot args
+        """
+        print options
+        if 'kernel_img' in options.keys() and options['kernel_img']:
+            kernel_boot_line = '-kernel %s' % options['kernel_img']
+        else:
+            return False
+        self.__add_boot_line(kernel_boot_line)
+        kernel_args = ""
+        if 'console' in options.keys() and options['console']:
+            kernel_args = "console=%s" %options['console']
+            if 'baudrate' in options.keys() and options['baudrate']:
+                kernel_args += "," + options['baudrate']
+        if 'root' in options.keys() and options['root']:
+            kernel_args += " root=%s" %options['root']
+        if kernel_args:
+            append_boot_line = '--append \"%s\"' %kernel_args
+            self.__add_boot_line(append_boot_line)
+
     def __add_vm_net_nic(self, **options):
         """
         type: nic
