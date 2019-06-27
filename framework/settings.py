@@ -100,6 +100,8 @@ NICS = {
     'hi1822': '19e5:1822',
     'fortvile_bdw_de': '8086:15ac',
     'cavium_a063': '177d:a063',
+    'columbiaville_100g': '8086:1592',
+    'columbiaville_25g': '8086:1593',
 }
 
 DRIVERS = {
@@ -154,6 +156,8 @@ DRIVERS = {
     'hi1822': 'hinic',
     'fortvile_bdw_de': 'ixgbe',
     'cavium_a063': 'octeontx2-nicpf',
+    'columbiaville_100g': 'ice',
+    'columbiaville_25g': 'ice',
 }
 
 """
