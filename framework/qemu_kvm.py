@@ -303,7 +303,7 @@ class QEMUKvm(VirtBase):
         separator = ','
         if 'machine' in options.keys() and \
                 options['machine']:
-            machine_boot_line += '%s' % options['machine']
+            machine_boot_line += ' %s' % options['machine']
             if 'opt_gic_version' in options.keys() and \
                     options['opt_gic_version']:
                 machine_boot_line += separator + 'gic_version=%s' % options['opt_gic_version']
