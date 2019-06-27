@@ -93,12 +93,18 @@ class TestJumboframes(TestCase):
         rx_err -= rx_err_ori
 
         if received:
-            self.verify(self.pmdout.check_tx_bytes(tx_pkts, rx_pkts) 
-                         and ( self.pmdout.check_tx_bytes(tx_bytes + 4, pktsize )) 
-                         and ((rx_bytes + 4) == pktsize),
-                        "packet pass assert error")
+           if self.nic.startswith('fastlinq'):
+              self.verify(self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
+                           and ( self.pmdout.check_tx_bytes(tx_bytes, pktsize ))
+                           and (rx_bytes == pktsize),
+                           "packet pass assert error")
+           else:
+              self.verify(self.pmdout.check_tx_bytes(tx_pkts, rx_pkts)
+                           and ( self.pmdout.check_tx_bytes(tx_bytes + 4, pktsize ))
+                           and ((rx_bytes + 4) == pktsize),
+                           "packet pass assert error")
         else:
-            self.verify(rx_err == 1 or tx_pkts == 0, "packet drop assert error")
+              self.verify(rx_err == 1 or tx_pkts == 0, "packet drop assert error")
         return out
 
     #
