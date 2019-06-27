@@ -1365,5 +1365,37 @@
             "Bug ID": "",
             "Comments": "This case currently support for cavium_a063 "
         }
+    ],
+    "download_the_package_successfully": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for columbiaville"
+        }
+    ],
+    "download_the_package_failed": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for columbiaville"
+        }
     ]
 }
