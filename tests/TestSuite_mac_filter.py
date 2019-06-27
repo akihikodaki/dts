@@ -109,7 +109,7 @@ class TestMacFilter(TestCase):
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt) == self.frames_to_send,
+        self.verify(int(cur_rxpkt)*self.frames_to_send == self.frames_to_send,
                     "Packet has not been received on default address")
 
         # send one packet to a different MAC address
@@ -127,7 +127,7 @@ class TestMacFilter(TestCase):
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt) == self.frames_to_send,
+        self.verify(int(cur_rxpkt)*self.frames_to_send == self.frames_to_send,
                     "Packet has not been received on a new MAC address that has been added to the port")
 
         # remove the fake MAC address
