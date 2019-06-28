@@ -518,6 +518,7 @@ class QEMUKvm(VirtBase):
             model = options['opt_model']
         else:
             model = 'e1000'
+        self.nic_model = model
         net_boot_line += separator + 'model=%s' % model
 
         if 'opt_name' in options.keys() and \
@@ -1402,6 +1403,31 @@ class QEMUKvm(VirtBase):
 
         return qemu_boot_line
 
+    def __get_vmnet_pci(self):
+        """
+        Get PCI ID of access net interface on VM
+        """
+        if not getattr(self, 'nic_model', None) is None:
+            pci_reg = r'^.*Bus(\s+)(\d+), device(\s+)(\d+), function (\d+)'
+            dev_reg = r'^.*Ethernet controller:.*([a-fA-F0-9]{4}:[a-fA-F0-9]{4})'
+            if self.nic_model == "e1000":
+                dev_id = "8086:100e"
+            elif self.nic_model == "i82551":
+                dev_id = "8086:1209"
+            elif self.nic_model == "virtio":
+                dev_id = "1af4:1000"
+            out = self.__monitor_session('info', 'pci')
+            lines = out.split("\r\n")
+            for line in lines:
+                m = re.match(pci_reg, line)
+                o = re.match(dev_reg, line)
+                if m:
+                    pci = "%02d:%02d.%d" % (
+                        int(m.group(2)), int(m.group(4)), int(m.group(5)))
+                if o:
+                    if o.group(1) == dev_id:
+                        self.net_nic_pci = pci
+
     def __wait_vmnet_ready(self):
         """
         wait for 120 seconds for vm net ready
@@ -1412,6 +1438,8 @@ class QEMUKvm(VirtBase):
         try_times = 0
         network_ready = False
         while (time_diff < self.START_TIMEOUT):
+            if getattr(self, 'net_nic_pci', None) is None:
+                self.__get_vmnet_pci()
             if self.control_command("network") == "Success":
                 network_ready = True
                 break
@@ -1799,7 +1827,14 @@ class QEMUKvm(VirtBase):
                 time.sleep(5)
                 out = self.control_session.send_expect(self.qga_cmd_head + "ifconfig" , "#", timeout=self.OPERATION_TIMEOUT)
             else:
-                intf = self.control_session.send_expect("ls -1 /sys/bus/pci/devices/0000:00:1f.0/net", "#", timeout=self.OPERATION_TIMEOUT)
+                pci = "00:1f.0"
+                if not getattr(self, 'net_nic_pci', None) is None:
+                    pci = self.net_nic_pci
+                    ## If interface is vritio model, net file will be under virtio* directory
+                    if self.nic_model == "virtio":
+                        pci += "/virtio*/"
+
+                intf = self.control_session.send_expect("ls -1 /sys/bus/pci/devices/0000:%s/net" %pci, "#", timeout=self.OPERATION_TIMEOUT)
                 out = self.control_session.send_expect("ifconfig %s" % intf, "#", timeout=self.OPERATION_TIMEOUT)
                 if "10.0.2" not in out:
                     self.control_session.send_expect("dhclient %s -timeout 10" % intf, "#", timeout=30)
