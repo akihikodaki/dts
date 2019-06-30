@@ -57,7 +57,7 @@ class TestQueue_region(TestCase):
         Run at the start of each test suite.
         Queue region Prerequisites
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
                                  "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))
 
         # Based on h/w type, choose how many ports to use
