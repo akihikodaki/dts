@@ -92,7 +92,7 @@ class TestUnitTestsLoopback(TestCase):
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
         self.dut.send_expect("cd app/test", "# ")
-        self.dut.send_expect("make", "# ", 120)
+        self.dut.send_expect("make -j", "# ", 120)
         self.dut.send_expect("cd /root/dpdk", "# ")
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
@@ -113,7 +113,7 @@ class TestUnitTestsLoopback(TestCase):
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 1/lpbk_mode = 0/' app/test/test_pmd_perf.c", "# ", 30)
         self.dut.send_expect("cd app/test", "# ")
-        self.dut.send_expect("make", "# ", 120)
+        self.dut.send_expect("make -j", "# ", 120)
         self.dut.send_expect("cd /root/dpdk", "# ")
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
@@ -140,6 +140,6 @@ class TestUnitTestsLoopback(TestCase):
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
         self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
         self.dut.send_expect("cd app/test", "# ")
-        self.dut.send_expect("make", "# ", 120)
+        self.dut.send_expect("make -j", "# ", 120)
         self.dut.send_expect("cd /root/dpdk", "# ")
         self.dut.kill_all()
