@@ -824,11 +824,11 @@ class TestEventdevPipelinePerf(TestCase,IxiaPacketGenerator):
         """
         Run after each test case.
         """
-        self.dut.send_expect("^C", "# ", 5)
-        self.dut.unbind_eventdev_port(port_to_unbind=self.eventdev_device_bus_id)
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.dut.send_expect("^C", "# ", 5)
+        self.dut.unbind_eventdev_port(port_to_unbind=self.eventdev_device_bus_id)
         self.dut.kill_all()
