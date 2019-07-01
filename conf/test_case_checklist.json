@@ -2197,6 +2197,7 @@
                 "fortville_25g",
                 "fortpark",
                 "fortpark_TLV",
+                "cavium_a063",
                 "fortpark_TLV_vf"
             ],
             "Target": [
@@ -2272,21 +2273,6 @@
         }
     ],
      "reconfigure_ports": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a063"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-     "retrieve_reg": [
         {
             "OS": [
                 "ALL"
