@@ -33,7 +33,6 @@
 =====================
 Fortville Vxlan Tests
 =====================
-
 Cloud providers build virtual network overlays over existing network
 infrastructure that provide tenant isolation and scaling. Tunneling
 layers added to the packets carry the virtual networking frames over
@@ -58,7 +57,7 @@ Test Case: Vxlan ipv4 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -85,13 +84,11 @@ Send packet as table listed and check dumped packet type the same as column
 | Yes        | Ipv4     | Vxlan     | Yes        | Ipv4     | Udp       | PKT_RX_IPV4_HDR_EXT | None      |
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
 
-
-
 Test Case: Vxlan ipv6 packet detect
 ===================================
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -118,13 +115,11 @@ column "Rx packet type".
 | Yes        | Ipv6     | Vxlan     | Yes        | Ipv6     | Udp       | PKT_RX_IPV6_HDR_EXT | None      |
 +------------+----------+-----------+------------+----------+-----------+---------------------+-----------+
 
-
 Test Case: Vxlan ipv4 checksum offload
 ======================================
-
 Start testpmd with tunneling packet type to vxlan::
 
-    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set csum packet forwarding mode and enable verbose log::
 
@@ -216,7 +211,6 @@ checksum corrected and there's correct l4 chksum error counter increased.
 | Yes        | Ipv4     | Vxlan     | None       | Ipv4     | Bad Sctp  |
 +------------+----------+-----------+------------+----------+-----------+
 
-
 Test Case: Vxlan ipv6 checksum offload
 ======================================
 Start testpmd with tunneling packet type::
@@ -285,12 +279,12 @@ increased.
 | Yes        | Ipv6     | Vxlan     | Yes        | Ipv4     | Bad Sctp  |
 +------------+----------+-----------+------------+----------+-----------+
 
-Test Case: Cloud Filter
+Test Case: Tunnel Filter
 ========================
 Start testpmd with tunneling packet type to vxlan and disable receive side
 scale for hardware limitation::
 
-    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2 --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Set rxonly packet forwarding mode and enable verbose log::
 
@@ -319,11 +313,17 @@ Then send one packet and check packet was forwarded into right queue.
 | No         | No         | No         | No       | Yes      | No     | 1     |
 +------------+------------+------------+----------+----------+--------+-------+
 
-
 Add Cloud filter to max number will be failed.
 
 Remove Cloud filter which has been added. Then send one packet and check
 packet was received in queue 0.
+
+Test Case: Tunnel Filter invalid
+================================
+Start testpmd with tunneling packet type to vxlan and disable receive side
+scale for hardware limitation::
+
+    testpmd -c ffff -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=8 --nb-ports=2
 
 Add Cloud filter with invalid Mac address "00:00:00:00:01" will be failed.
 
@@ -337,7 +337,6 @@ Add Cloud filter with invalid queue id "64" will be failed.
 
 Test Case: Vxlan Checksum Offload Performance Benchmarking
 ==========================================================
-
 The throughput is measured for each of these cases for vxlan tx checksum
 offload of "all by software", "L3 offload by hardware", "L4 offload by
 hardware", "l3&l4 offload by hardware".
