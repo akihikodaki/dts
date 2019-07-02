@@ -212,7 +212,7 @@ class TestVfRss(TestCase):
         """
 
         self.verify(
-            self.nic in ["niantic", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g"],
+            self.nic in ["niantic", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "sageville", "fortpark_TLV"],
             "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Not enough ports available")
