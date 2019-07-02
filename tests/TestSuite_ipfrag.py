@@ -249,7 +249,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
                     # fragment offset should be correct
                     frag = pkt.strip_element_layer4("offset")
-                    self.verify((frag == int((idx - 1) * 182)), "Fragment packet frag not match")
+                    self.verify((frag == int((idx - 1) * 181)), "Fragment packet frag not match")
                     idx += 1
 
     def set_up(self):
