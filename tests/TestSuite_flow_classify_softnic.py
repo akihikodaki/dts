@@ -82,7 +82,10 @@ class TestFlowClassifySoftnic(TestCase):
         """
         self.set_ports(filename, port_num)
         TESTPMD = "./%s/app/testpmd" % self.target
-        VDEV = "--vdev 'net_softnic0,firmware=./drivers/net/softnic/flow_classify_softnic/%s,cpu_id=1,conn_port=8086'" % filename
+        cmd="cat /sys/bus/pci/devices/%s/numa_node"%self.dut_p0_pci
+        numa_node = int(self.dut.send_expect(cmd, "# ", 60))
+        cpu_id = numa_node if numa_node > 0 else 0
+        VDEV = "--vdev 'net_softnic0,firmware=./drivers/net/softnic/flow_classify_softnic/%s,cpu_id=%s,conn_port=8086'" % (filename,cpu_id)
         if port_num == 4:
             DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                         .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
