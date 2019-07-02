@@ -36,14 +36,14 @@ Dual VLAN Offload Tests
 
 The support of Dual VLAN offload features by Poll Mode Drivers consists in:
 
-- Dynamically enable/disable inner VLAN filtering on an interface on 82576/82599,
+- Dynamically enable/disable inner VLAN filtering on an interface on x7xx series, 82576/82599,
 - Dynamically enable/disable extended VLAN mode on 82576/82599,
 - Dynamically configure outer VLAN TPID value, i.e. S-TPID value, on 82576/82599.
 
 Prerequisites
 =============
 
-In this feature, Only 82576 and 82599 are supported.
+In this feature, x7xx series, 82576 and 82599 are supported.
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When
 using vfio, use the following commands to load the vfio driver and bind it
