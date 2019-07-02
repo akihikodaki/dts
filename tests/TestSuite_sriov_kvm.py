@@ -627,12 +627,14 @@ class TestSriovKvm(TestCase):
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
+        self.vm0_testpmd.execute_cmd('set promisc all off')
         self.vm0_testpmd.execute_cmd('start')
 
         self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
         self.vm1_testpmd = PmdOutput(self.vm_dut_1)
         self.vm1_testpmd.start_testpmd(VM_CORES_MASK)
         self.vm1_testpmd.execute_cmd('set fwd mac')
+        self.vm1_testpmd.execute_cmd('set promisc all off')
         self.vm1_testpmd.execute_cmd('start')
 
         self.setup_2vm_prerequisite_flag = 1
@@ -676,6 +678,7 @@ class TestSriovKvm(TestCase):
         self.vm1_testpmd.start_testpmd(VM_CORES_MASK)
         vf1_mac = self.vm1_testpmd.get_port_mac(port_id_0)
         self.vm1_testpmd.execute_cmd('set fwd mac')
+        self.vm1_testpmd.execute_cmd("set promisc all off")
         self.vm1_testpmd.execute_cmd('start')
 
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
@@ -683,6 +686,7 @@ class TestSriovKvm(TestCase):
             VM_CORES_MASK, "--eth-peer=0,%s" % vf1_mac)
         vf0_mac = self.vm0_testpmd.get_port_mac(port_id_0)
         self.vm0_testpmd.execute_cmd('set fwd mac')
+        self.vm0_testpmd.execute_cmd("set promisc all off")
         self.vm0_testpmd.execute_cmd('start')
 
         self.setup_2vm_prerequisite_flag = 1
@@ -982,9 +986,9 @@ class TestSriovKvm(TestCase):
         packet_num = 10
 
         for vf_mac in ["00:11:22:33:44:55", "00:55:44:33:22:11"]:
-            if self.nic.startswith('niantic'):
+            if self.nic.startswith('niantic') or self.nic.startswith('sage'):
                 set_mac_cmd = "mac_addr add port %d vf %d %s"
-            elif self.nic.startswith('fortville'):
+            elif self.nic.startswith('fortville') or self.nic.startswith('fortpark'):
                 set_mac_cmd = "set port %d vf %d %s exact-mac-vlan on"
             self.host_testpmd.execute_cmd(set_mac_cmd % (port_id_0, vf_num, vf_mac))
 
