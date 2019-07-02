@@ -263,13 +263,34 @@ class TestKni(TestCase):
 
         out = self.dut.build_dpdk_apps("./examples/kni/")
         self.verify('Error' not in out, "Compilation failed")
+        p0_pci = self.dut.ports_info[0]['pci']
+        numa_node = int(self.dut.send_expect("cat /sys/bus/pci/devices/%s/numa_node"%p0_pci, "# ", 30))
+        socket_id = numa_node if numa_node > 0 else 0
+        if socket_id==0:
+            global default_1_port_cores_config
+            global default_2_port_cores_config
+            global routing_performance_steps
+            global bridge_performance_steps
+            global loopback_performance_steps
+
+            default_1_port_cores_config=default_1_port_cores_config.replace('C{1.','C{0.')
+            default_2_port_cores_config=default_1_port_cores_config.replace('C{1.','C{0.')
+            for i in range(len(routing_performance_steps)):
+                routing_performance_steps[i]['config'] = routing_performance_steps[i]['config'].replace('C{1.','C{0.')
+            for j in range(len(bridge_performance_steps)):
+                bridge_performance_steps[j]['config'] = bridge_performance_steps[j]['config'].replace('C{1.','C{0.')
+            for k in range(len(loopback_performance_steps)):
+                loopback_performance_steps[k]['config'] = loopback_performance_steps[k]['config'].replace('C{1.','C{0.')
 
         self.extract_ports_cores_config(default_1_port_cores_config)
         out = self.start_kni()
         self.verify("Error" not in out, "Error found during kni start")
-
-        self.dut.send_expect("service iptables stop", "# ")
-        self.dut.send_expect("service firewalld stop", "# ")
+        out = self.dut.send_expect("cat /etc/os-release", "# ")
+        if "Ubuntu" in out:
+            self.dut.send_expect("ufw disable", "# ")
+        else:
+            self.dut.send_expect("service iptables stop", "# ")
+            self.dut.send_expect("service firewalld stop", "# ")
 
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
