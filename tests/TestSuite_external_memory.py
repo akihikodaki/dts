@@ -35,7 +35,6 @@ DPDK Test suite.
 Test external memory.
 """
 
-import string
 import time
 import re
 import utils
@@ -136,7 +135,7 @@ class TestExternalMemory(TestCase):
         p = re.compile(r'\d+')
         result = p.findall(out)
         amount = 20 * len(self.dut_ports)
-        self.verify(str(amount) in result, "Wrong: can't get <%s> package")
+        self.verify(str(amount) in result, "Wrong: can't get <%d> package" % amount)
 
         self.dut.send_expect("quit", "#", 10)
 
