@@ -8,7 +8,7 @@
    - Redistributions of source code must retain the above copyright
      notice, this list of conditions and the following disclaimer.
 
-   - Redistributions in binary forim must reproduce the above copyright
+   - Redistributions in binary form must reproduce the above copyright
      notice, this list of conditions and the following disclaimer in
      the documentation and/or other materials provided with the
      distribution.
@@ -74,12 +74,12 @@ Test Case 1: VM2VM vhost-user/virtio-net test with tcp traffic
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -124,12 +124,12 @@ Test Case 2: VM2VM vhost-user/virtio-net zero-copy test with tcp traffic
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -171,12 +171,12 @@ Test Case 3: VM2VM vhost-user/virtio-net test with udp traffic
      -chardev socket,id=char1,path=./vhost-net1 -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
@@ -261,12 +261,12 @@ Test Case 5: VM2VM vhost-user/virtio-net test with large packet payload valid ch
      -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on  \
      -vnc :11 -daemonize
 
-3. On VM1, set virtio device IP and run arp protocal::
+3. On VM1, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.2
     arp -s 1.1.1.8 52:54:00:00:00:02
 
-4. On VM2, set virtio device IP and run arp protocal::
+4. On VM2, set virtio device IP and run arp protocol::
 
     ifconfig ens3 1.1.1.8
     arp -s 1.1.1.2 52:54:00:00:00:01
