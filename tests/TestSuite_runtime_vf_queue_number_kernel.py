@@ -133,9 +133,11 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
     def send_packet2different_queue(self, dts, src, iface, count):
         self.tester.scapy_foreground()
-        for i in range(count):
-            pkt = 'sendp([Ether(dst="%s", src="%s")/IP(src="10.0.0.1",dst="192.168.13.%d")/("test"*10)],iface="%s")' % (
-                dts, src, (i % 254) + 1, iface)
+        for i in range(1,count+1):
+            j = (i//255)%255
+            k = i%255
+            pkt = 'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.%d.%d",dst="192.168.13.%d")/("test"*10)],iface="%s")' % (
+                dts, src, j,k,k, iface)
             self.tester.scapy_append(pkt)
         self.tester.scapy_execute()
 
