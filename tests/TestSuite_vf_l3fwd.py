@@ -29,17 +29,17 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import re
 import time
+import os
 import string
-
 import utils
 from test_case import TestCase
 from pmd_output import PmdOutput
-from etgen import IxiaPacketGenerator
 from settings import HEADER_SIZE
+from pktgen import PacketGeneratorHelper
 
-class TestVfL3fwd(TestCase, IxiaPacketGenerator):
+
+class TestVfL3fwd(TestCase):
 
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
@@ -90,6 +90,16 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
+
+        # get dts output path
+        if self.logger.log_path.startswith(os.sep):
+            self.output_path = self.logger.log_path
+        else:
+            cur_path = os.path.dirname(
+                                os.path.dirname(os.path.realpath(__file__)))
+            self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -144,7 +154,7 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
             self.host_testpmd.execute_cmd('quit', '# ')
             self.host_testpmd = None
         for i in valports:
-            if getattr(self, '%d' % self.used_dut_port[i] , None) != None:
+            if getattr(self, '%d' % self.used_dut_port[i], None) is not None:
                 self.dut.destroy_sriov_vfs_by_port(self.used_dut_port[i])
                 port = self.dut.ports_info[self.used_dut_port[i]]['port']
                 port.bind_driver()
@@ -175,26 +185,36 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
         dmac = self.vfs_mac
         smac = ["02:00:00:00:00:0%d" % i for i in valports]
         payload_size = frame_size - HEADER_SIZE['ip'] - HEADER_SIZE['eth']
+        pcaps = {}
         for _port in valports:
-            flows = ['Ether(dst="%s", src="%s")/%s/("X"*%d)' % (dmac[_port], smac[_port], flow, payload_size) for
-                     flow in self.flows()[_port*2:(_port + 1)*2]]
-            self.tester.scapy_append('wrpcap("dst%d.pcap", [%s])' % (valports[_port], string.join(flows, ',')))
-        self.tester.scapy_execute()
+            index = valports[_port]
+            cnt = 0
+            for layer in self.flows()[_port * 2:(_port + 1) * 2]:
+                flow = ['Ether(dst="%s", src="%s")/%s/("X"*%d)' % (dmac[index], smac[index], layer, payload_size)]
+                pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, string.join(flow, ',')))
+                self.tester.scapy_execute()
+                if index not in pcaps:
+                    pcaps[index] = []
+                pcaps[index].append(pcap)
+                cnt += 1
+        return pcaps
 
-    def prepare_steam(self):
+    def prepare_steam(self, pcaps):
         """
         create streams for ports,one port one stream
         """
         tgen_input = []
         for rxPort in valports:
-            if rxPort % len(valports) == 0 or rxPort % len(valports) == 2:
+            if rxPort % len(valports) == 0 or len(valports) % rxPort == 2:
                 txIntf = self.tester.get_local_port(valports[rxPort + 1])
-                rxIntf = self.tester.get_local_port(valports[rxPort])
-                tgen_input.append((txIntf, rxIntf, "dst%d.pcap" % valports[rxPort+1]))
-            elif rxPort % len(valports) == 1 or rxPort % len(valports) == 3:
+                port_id = valports[rxPort + 1]
+            else:
                 txIntf = self.tester.get_local_port(valports[rxPort - 1])
-                rxIntf = self.tester.get_local_port(valports[rxPort])
-                tgen_input.append((txIntf, rxIntf, "dst%d.pcap" % valports[rxPort-1]))
+                port_id = valports[rxPort - 1]
+            rxIntf = self.tester.get_local_port(valports[rxPort])
+            for pcap in pcaps[port_id]:
+                tgen_input.append((txIntf, rxIntf, pcap))
         return tgen_input
 
     def perf_test(self, cmdline):
@@ -207,8 +227,7 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
         self.result_table_create(header_row)
         self.l3fwd_test_results['data'] = []
         for frame_size in self.frame_sizes:
-            self.create_pacap_file(frame_size)
-
+            pcaps = self.create_pacap_file(frame_size)
             for mode in self.l3fwd_methods:
                 info = "Executing l3fwd using %s mode, %d ports, %d frame size.\n" % (mode, len(valports), frame_size)
                 self.logger.info(info)
@@ -216,8 +235,17 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
                     cmdline = cmdline + " --max-pkt-len %d" % frame_size
                 l3fwd_session.send_expect(cmdline, "L3FWD:", 120)
                 # send the traffic and Measure test
-                tgenInput = self.prepare_steam()
-                _, pps = self.tester.traffic_generator_throughput(tgenInput, rate_percent=100, delay=30)
+                tgenInput = self.prepare_steam(pcaps)
+
+                vm_config = self.set_fields()
+                # clear streams before add new streams
+                self.tester.pktgen.clear_streams()
+                # run packet generator
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
+                # set traffic option
+                traffic_opt = {'delay': 30}
+                # _, pps = self.tester.traffic_generator_throughput(tgenInput, rate_percent=100, delay=30)
+                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
                 self.verify(pps > 0, "No traffic detected")
                 pps /= 1000000.0
                 linerate = self.wirespeed(self.nic, frame_size, len(valports))
@@ -265,20 +293,12 @@ class TestVfL3fwd(TestCase, IxiaPacketGenerator):
 
         self.measure_vf_performance(host_driver=self.vf_driver)
 
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd("ip config -sourceIpAddrMode ipRandom")
-        self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -destIpAddrMode ipIdle")
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol ipV4ProtocolReserved255")
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
+    def set_fields(self):
+        """
+        set ip protocol field behavior
+        """
+        fields_config = {'ip':  {'src': {'action': 'random'}, }, }
+        return fields_config
 
     def tear_down(self):
 
