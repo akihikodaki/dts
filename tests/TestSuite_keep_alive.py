@@ -79,7 +79,7 @@ class TestKeepAlive(TestCase):
         p = re.compile(r'\d+')
         result = p.findall(out)
         amount = 2000 * len(self.dut_ports)
-        self.verify(str(amount) in result, "Wrong: can't get <%s> package")
+        self.verify(str(amount) in result, "Wrong: can't get <%d> package" % amount)
          
     def scapy_send_packet(self,nu):
         """
