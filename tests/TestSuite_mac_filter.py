@@ -168,7 +168,7 @@ class TestMacFilter(TestCase):
         # add 1 address more that max number
         i = 0
         base_addr = "00:01:00:00:00:"
-        while i <= int(self.max_mac_addr):
+        while i < int(self.max_mac_addr):
             new_addr = base_addr + "%0.2X" % i
             out = self.dut.send_expect("mac_addr add %d" % portid + " %s" % new_addr, "testpmd>")
             i = i + 1
