@@ -104,6 +104,8 @@ class TestDynamicQueue(TestCase):
                 pattern = "%s([0-9]+)" % qring_strip
                 qringsize = self.element_strip(out, pattern)
                 chg_qringsize = qringsize % 1024 + 256
+                if qringsize == 512:
+                    chg_qringsize = 256
                 self.dut_testpmd.execute_cmd(
                     'port config 0 rxq %d ring_size %d'
                     % (queue[i], chg_qringsize))
@@ -155,6 +157,8 @@ class TestDynamicQueue(TestCase):
                         "Fail to stop txq at runtime")
             if chgflag == 1:
                 chg_qringsize = qringsize % 1024 + 256
+                if qringsize == 512:
+                    chg_qringsize = 256
                 self.dut_testpmd.execute_cmd(
                     'port config 0 txq %d ring_size %d'
                     % (queue, chg_qringsize))
