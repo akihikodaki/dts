@@ -85,7 +85,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
             "--socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost " + \
             "--vdev 'net_vhost0,iface=vhost-net0,queues=1%s' " + \
             "--vdev 'net_vhost1,iface=vhost-net1,queues=1%s' " + \
-            "-- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992 "
+            "-- -i --nb-cores=1 --txd=1024 --rxd=1024"
 
         self.command_line = self.command_line % (
                             self.coremask, self.memory_channel,
@@ -93,15 +93,17 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vhost.send_expect(self.command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
-    def start_vms(self, mode="tso"):
+    def start_vms(self, mode="normal"):
         """
         start two VM, each VM has one virtio device
         """
-        setting_args = "mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
+        setting_args = "mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         if mode == "tso":
             setting_args += ",gso=on"
         elif mode == "ufo":
             setting_args += ",guest_ufo=on,host_ufo=on"
+        elif mode == "normal":
+            setting_args = "mrg_rxbuf=on"
 
         for i in range(self.vm_num):
             vm_dut = None
@@ -227,6 +229,23 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.verify(tcp6_info is not None and tcp6_info.group(1) == "on",
                     "tx-tcp6-segmentation in vm not right")
 
+    def check_payload_valid(self):
+        """
+        scp 64b and 64KB file form VM1 to VM2, check the data is valid
+        """
+        # create a 64b and 64K size file
+        for b_size in [64, 65535]:
+            data = 'x'*b_size
+            self.vm_dut[0].send_expect('echo "%s" > /tmp/payload' % data, '# ')
+            # scp this file to vm1
+            out = self.vm_dut[1].send_command('scp root@%s:/tmp/payload /root' % self.virtio_ip1, timeout=5)
+            if 'Are you sure you want to continue connecting' in out:
+                self.vm_dut[1].send_command('yes', timeout=3)
+            self.vm_dut[1].send_command(self.vm[0].password, timeout=3)
+            # get the file info in vm1, and check it valid
+            file_info = self.vm_dut[1].send_expect('cat /root/payload', '# ')
+            self.verify(file_info == data, 'the file info is invalid as: %s' % file_info)
+
     def test_vhost_vm2vm_tso_iperf(self):
         """
         vhost-user + virtio-net VM2VM with tcp traffic
@@ -265,6 +284,16 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.start_vms(mode="ufo")
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
+        self.stop_all_apps()
+
+    def test_vhost_vm2vm_packet_payload_valid_check(self):
+        """
+        VM2VM vhost-user/virtio-net test with large packet payload valid check
+        """
+        self.start_vhost_testpmd(zerocopy=False)
+        self.start_vms(mode="normal")
+        self.config_vm_env()
+        self.check_payload_valid()
         self.stop_all_apps()
 
     def tear_down(self):
