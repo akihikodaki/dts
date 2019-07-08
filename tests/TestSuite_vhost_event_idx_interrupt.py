@@ -36,6 +36,7 @@ Vhost event idx interrupt need test with l3fwd-power sample
 
 import utils
 import time
+import re
 from virt_common import VM
 from test_case import TestCase
 
@@ -136,6 +137,26 @@ class TestVhostEventIdxInterrupt(TestCase):
             if vm_config.params[i].keys()[0] == 'cpu':
                 vm_config.params[i]['cpu'][0]['number'] = self.queues
 
+    def check_qemu_version(self, vm_config):
+        """
+        in this suite, the qemu version should greater 2.7
+        """
+        self.vm_qemu_version = vm_config.qemu_emulator
+        params_number = len(vm_config.params)
+        for i in range(params_number):
+            if vm_config.params[i].keys()[0] == 'qemu':
+                self.vm_qemu_version = vm_config.params[i]['qemu'][0]['path']
+
+        out = self.dut.send_expect("%s --version" % self.vm_qemu_version, "#")
+        result = re.search("QEMU\s*emulator\s*version\s*(\d*.\d*)", out)
+        self.verify(result is not None,
+                'the qemu path may be not right: %s' % self.vm_qemu_version)
+        version = result.group(1)
+        index = version.find('.')
+        self.verify(int(version[:index])>2 or (int(version[:index])==2 and int(version[index+1:])>=7),
+                    'This qemu version should greater than 2.7 ' + \
+                    'in this suite, please config it in vhost_sample.cfg file')
+
     def start_vms(self, vm_num=1):
         """
         start qemus
@@ -156,6 +177,7 @@ class TestVhostEventIdxInterrupt(TestCase):
             vm_params['opt_settings'] = opt_args
             vm_info.set_vm_device(**vm_params)
             self.set_vm_cpu_number(vm_info)
+            self.check_qemu_version(vm_info)
             vm_dut = None
             try:
                 vm_dut = vm_info.start(load_config=False)
