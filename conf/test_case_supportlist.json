@@ -1366,6 +1366,159 @@
             "Comments": "This case currently support for cavium_a063 "
         }
     ],
+    "dcd_4tc_queue_map_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for i40e "
+        }
+    ],
+    "dcd_8tc_queue_map_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for i40e "
+        }
+    ],
+    "perf_shaping_for_port_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for i40e "
+        }
+    ],
+    "perf_shaping_1port_4tc_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for i40e "
+        }
+    ],
+    "perf_shaping_1port_8tc_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for i40e "
+        }
+    ],
+    "dcd_4tc_queue_map_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for ixgbe "
+        }
+    ],
+    "dcd_8tc_queue_map_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for ixgbe "
+        }
+    ],
+    "perf_shaping_1port_4tc_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for ixgbe "
+        }
+    ],
+    "perf_shaping_1port_8tc_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for ixgbe "
+        }
+    ],
     "download_the_package_successfully": [
         {
             "OS": [
