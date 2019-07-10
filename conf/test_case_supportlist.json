@@ -1553,5 +1553,37 @@
             "Bug ID": "",
             "Comments": "This case currently support for columbiaville"
         }
+    ],
+    "perf_pvp_share_lib_of_fortville": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for fortville_eagle/spirit/25g "
+        }
+    ],
+    "perf_pvp_share_lib_of_niantic": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for niantic "
+        }
     ]
 }
