@@ -151,7 +151,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
                 self.vm_dut.send_expect(
                     "set_cpu_freq %d down" % vcpu, "vmpower\(guest\)>")
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
-                print utils.GREEN("After freqency down, freq is %d\n" % cur_freq)
+                print utils.GREEN("After frequency down, freq is %d\n" % cur_freq)
                 self.verify(
                     ori_freq > cur_freq, "Cpu freqenecy can not scale down")
                 ori_freq = cur_freq
@@ -178,7 +178,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
                 self.vm_dut.send_expect(
                     "set_cpu_freq %d up" % vcpu, "vmpower\(guest\)>")
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
-                print utils.GREEN("After freqency up, freq is %d\n" % cur_freq)
+                print utils.GREEN("After frequency up, freq is %d\n" % cur_freq)
                 self.verify(
                     cur_freq > ori_freq, "Cpu freqenecy can not scale up")
                 ori_freq = cur_freq
@@ -205,7 +205,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
             max_freq = int(out)
 
             self.verify(freq == max_freq, "Cpu max frequency not correct")
-            print utils.GREEN("After freqency max, freq is %d\n" % max_freq)
+            print utils.GREEN("After frequency max, freq is %d\n" % max_freq)
         self.vm_dut.send_expect("quit", "# ")
 
     def test_vm_power_managment_freqmin(self):
@@ -228,7 +228,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
             min_freq = int(out)
 
             self.verify(freq == min_freq, "Cpu min frequency not correct")
-            print utils.GREEN("After freqency min, freq is %d\n" % min_freq)
+            print utils.GREEN("After frequency min, freq is %d\n" % min_freq)
         self.vm_dut.send_expect("quit", "# ")
 
     def test_vm_power_multivms(self):
@@ -269,7 +269,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         cpu_idx = 0
         for cpu in cpus:
             cpu_map = '[%d]: Physical CPU %s' % (cpu_idx, cpu)
-            self.verify(cpu_map in vm_info, "Faile to map host cpu %s" % cpu)
+            self.verify(cpu_map in vm_info, "Failed to map host cpu %s" % cpu)
             cpu_idx += 1
 
         out = vm2_dut.build_dpdk_apps("examples/vm_power_manager/guest_cli")
