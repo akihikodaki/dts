@@ -1621,7 +1621,8 @@
                 "springville",
                 "ironpond",
                 "springfountain",
-                "twinpond"
+                "twinpond",
+		"niantic"
             ],
             "Target": [
                 "ALL"
