@@ -780,7 +780,7 @@ class TestKni(TestCase):
             total_cores = len(self.config['tx_cores'] + self.config[
                               'rx_cores'] + self.config['kernel_cores'])
             if total_cores > self.dut_physical_cores():
-                self.logger.info("Skiping step %s (%d cores needed, got %d)" %
+                self.logger.info("Skipping step %s (%d cores needed, got %d)" %
                               (step['config'], total_cores,
                                self.dut_physical_cores())
                               )
@@ -850,7 +850,7 @@ class TestKni(TestCase):
             total_cores = len(self.config['tx_cores'] + self.config[
                               'rx_cores'] + self.config['kernel_cores'])
             if total_cores > self.dut_physical_cores():
-                self.logger.info("Skiping step %s (%d cores needed, got %d)" %
+                self.logger.info("Skipping step %s (%d cores needed, got %d)" %
                               (step['config'], total_cores,
                                self.dut_physical_cores())
                               )
