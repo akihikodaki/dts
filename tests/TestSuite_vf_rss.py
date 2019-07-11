@@ -245,6 +245,7 @@ class TestVfRss(TestCase):
             self.vf_assign_method = 'pci-assign'
         else:
             self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
 
         self.vm0 = None
         self.host_testpmd = None
