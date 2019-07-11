@@ -316,9 +316,6 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         portsinfo = []
         ori_drivers = []
         
-        if self.nic.startswith("fortville"):
-            return
-        
         for portid in range(len(self.ports)):
             self.dut.send_expect("regs %d regs_%d.bin" % (portid, portid), "EthApp>")
             portinfo = {'portid': portid, 'reg_file': 'regs_%d.bin' % portid}
@@ -338,7 +335,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # get linux interface
             intf = netdev.get_interface_name()
             out = self.dut.send_expect("ethtool -d %s raw off file %s" % (intf, portinfo['reg_file']), "# ")
-            self.verify(("LINKS" in out and "FCTRL" in out), "Failed to dump %s registers" % intf)
+            self.verify(("register" in out and "CTRL" in out), "Failed to dump %s registers" % intf)
 
         for index in range(len(self.ports)):
             # bind to original driver
