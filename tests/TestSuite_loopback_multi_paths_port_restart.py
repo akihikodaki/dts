@@ -33,10 +33,9 @@
 
 """
 DPDK Test suite.
-Benchmark Vhost loopback for 8 RX/TX PATHs.
+Benchmark Vhost loopback for 7 RX/TX PATHs.
 Includes Mergeable, Normal, Vector_RX,Inorder_mergeable,
-Inorder_no_mergeable, VIRTIO1.1_mergeable, VIRTIO1.1_normal Path,
-VIRTIO1.1_inorder_normal Path.
+Inorder_no_mergeable, VIRTIO1.1_mergeable, VIRTIO1.1_normal Path.
 """
 import utils
 import time
@@ -144,7 +143,8 @@ class TestLoopbackPortRestart(TestCase):
         self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
         self.vhost.send_expect("port start all", "testpmd> ", 120)
         self.check_port_link_status_after_port_restart()
-        self.vhost.send_expect("start tx_first 32", "testpmd> ", 120)
+        self.vhost.send_expect("set burst 1", "testpmd> ", 120)
+        self.vhost.send_expect("start tx_first 1", "testpmd> ", 120)
 
     def update_table_info(self, case_info, frame_size, Mpps, Cycle):
         results_row = [frame_size]
@@ -180,7 +180,7 @@ class TestLoopbackPortRestart(TestCase):
 
         self.port_restart()
         Mpps = self.calculate_avg_throughput()
-        self.update_table_info(case_info, frame_size, Mpps, "After Restart")
+        self.update_table_info(case_info, frame_size, Mpps, "After Restart and set burst to 1")
 
     def close_all_testpmd(self):
         """
@@ -196,7 +196,7 @@ class TestLoopbackPortRestart(TestCase):
         self.dut.close_session(self.vhost)
         self.dut.close_session(self.virtio_user)
 
-    def test_perf_vhost_loopback_virtio11_mergeable_mac(self):
+    def test_vhost_loopback_virtio11_mergeable_mac(self):
         """
         performance for [frame_sizes] and restart port on virtio1.1 mergeable path
         """
@@ -209,7 +209,7 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtio11_normal_mac(self):
+    def test_vhost_loopback_virtio11_normal_mac(self):
         """
         performance for [frame_sizes] and restart port ob virtio1.1 normal path
         """
@@ -222,20 +222,7 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtio11_inorder_mac(self):
-        """
-        performance for [frame_sizes] and restart port on virtio1.1 inorder path
-        """
-        pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=0 ",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtio1.1 inorder", frame_size)
-            self.close_all_testpmd()
-        self.result_table_print()
-
-    def test_perf_vhost_loopback_virtiouser_inorder_mergeable_mac(self):
+    def test_vhost_loopback_virtiouser_inorder_mergeable_mac(self):
         """
         performance for [frame_sizes] and restart port on inorder mergeable path
         """
@@ -248,7 +235,7 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtiouser_inorder_mergeable_off_mac(self):
+    def test_vhost_loopback_virtiouser_inorder_mergeable_off_mac(self):
         """
         performance for [frame_sizes] and restart port on inorder normal path
         """
@@ -261,7 +248,7 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtiouser_mergeable_mac(self):
+    def test_vhost_loopback_virtiouser_mergeable_mac(self):
         """
         performance for [frame_sizes] and restart port on virtio mergeable path
         """
@@ -274,7 +261,7 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtiouser_normal_mac(self):
+    def test_vhost_loopback_virtiouser_normal_mac(self):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
@@ -287,12 +274,12 @@ class TestLoopbackPortRestart(TestCase):
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_perf_vhost_loopback_virtiouser_vector_rx_mac(self):
+    def test_vhost_loopback_virtiouser_vector_rx_mac(self):
         """
         performance for frame_sizes and restart port on virtio vector rx
         """
         pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0 ",
-                          "path": "--tx-offloads=0x0 "}
+                          "path": ""}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
