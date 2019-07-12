@@ -43,7 +43,7 @@ import random
 from scapy.all import ESP, IP, Ether, sendp, SecurityAssociation
 from test_case import TestCase
 
-ETHER_STANDARD_MTU = 1518
+ETHER_STANDARD_MTU = 1300
 ETHER_JUMBO_FRAME_MTU = 9000
 
 
@@ -86,7 +86,7 @@ class TestInlineIpsec(TestCase):
 
         self.path = "./examples/ipsec-secgw/build/ipsec-secgw"
         # add print code in IPSEC app
-        sedcmd = r"""sed -i -e 's/if (nb_rx > 0)/if (nb_rx > 0) {/g' -e '/\/\* dequeue and process completed crypto-ops \*\//i\\t\t\t}' -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %hhu packet in rxqueueid=%hhu\\n",nb_rx, queueid);' examples/ipsec-secgw/ipsec-secgw.c"""
+        sedcmd = r"""sed -i -e 's/if (nb_rx > 0)/if (nb_rx > 0) {/g' -e '/\/\* dequeue and process completed crypto-ops \*\//i\\t\t\t}' -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %llu packet in rxqueueid=%llu\\n",(unsigned long long)nb_rx, (unsigned long long)queueid);' examples/ipsec-secgw/ipsec-secgw.c"""
         self.dut.send_expect(sedcmd, "#", 60)
 
         # build sample app
@@ -201,18 +201,22 @@ class TestInlineIpsec(TestCase):
         self.tester.destroy_session(session_send)
         return payload, p.src, p.dst
 
-    def Ipsec_Encryption(self, config, file_name, txItf, rxItf, paysize=32, jumboframe=1518, do_encrypt=False,
+    def Ipsec_Encryption(self, config, file_name, txItf, rxItf, paysize=32, jumboframe=None, do_encrypt=False,
                          verify=True, send_spi=5, receive_spi=1005, count=1, inner_dst='192.168.105.10',
                          sa_src='172.16.1.5', sa_dst='172.16.2.5'):
         """
         verify Ipsec receive package
         """
-        cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 -j %s --config='%s' -f %s" % (
+        if jumboframe is not None:
+            cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 -j 9200 --mtu %s --config='%s' -f %s" % (
             self.portpci_0, self.portpci_1, jumboframe, config, file_name)
+        else:
+            cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
+            self.portpci_0, self.portpci_1, config, file_name)
+
         self.dut.send_expect(cmd, "IPSEC", 60)
 
-        session_receive = self.tester.create_session(
-            name='receive_encryption_package')
+        session_receive = self.tester.create_session(name='receive_encryption_package')
         sa_gcm = r"sa_gcm=SecurityAssociation(ESP,spi=%s,crypt_algo='AES-GCM',crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL',auth_key=None,tunnel_header=IP(src='172.16.1.5',dst='172.16.2.5'))" % receive_spi
 
         session_receive.send_expect("scapy", ">>>", 10)
@@ -271,7 +275,7 @@ class TestInlineIpsec(TestCase):
         test Ipsec Encryption Jumboframe
         """
         config = '(0,0,21),(1,0,21)'
-        paysize = random.randint(ETHER_STANDARD_MTU, ETHER_JUMBO_FRAME_MTU)
+        paysize = random.randint(ETHER_STANDARD_MTU+300, ETHER_JUMBO_FRAME_MTU)
         self.Ipsec_Encryption(config, '/root/dpdk/enc.cfg',
                               self.txItf, self.rxItf, paysize, ETHER_JUMBO_FRAME_MTU)
         self.dut.send_expect("^C", "#", 5)
@@ -303,7 +307,7 @@ class TestInlineIpsec(TestCase):
         test IPSec Decryption Jumboframe
         """
         config = '(0,0,21),(1,0,21)'
-        paysize = random.randint(ETHER_STANDARD_MTU, ETHER_JUMBO_FRAME_MTU)
+        paysize = random.randint(ETHER_STANDARD_MTU+300, ETHER_JUMBO_FRAME_MTU)
         self.Ipsec_Encryption(config, '/root/dpdk/dec.cfg', self.rxItf,
                               self.txItf, paysize, ETHER_JUMBO_FRAME_MTU, do_encrypt=True, count=2)
         self.dut.send_expect("^C", "#", 5)
@@ -338,8 +342,8 @@ class TestInlineIpsec(TestCase):
         """
         test Ipsec Encryption Decryption
         """
-        cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 0x2 -j %s --config='%s' -f %s" % (
-            self.portpci_0, self.portpci_1, '1518', '(0,0,21),(1,0,21)', '/root/dpdk/enc_dec.cfg')
+        cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
+            self.portpci_0, self.portpci_1, '(0,0,21),(1,0,21)', '/root/dpdk/enc_dec.cfg')
         self.dut.send_expect(cmd, "IPSEC", 60)
         session_receive = self.tester.create_session(
             name='receive_encryption_package')
