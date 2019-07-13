@@ -58,24 +58,20 @@ Prerequisites
 
 3. Start softnic with following command line::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-25 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
 
-   Or Start softnic with default hierarchy Qos with following command line::
+   Set the thread id consistent to the service core::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-25 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x2
-    testpmd> set port tm hierarchy default 1
-    testpmd> start
+    thread 2 pipeline PIPELINE0 enable
 
 Test Case 1: softnic performance
 ================================
 1. Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-25 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
@@ -95,10 +91,9 @@ Test Case 2: shaping for pipe
 
 2. Start softnic with the default hierarchy Qos::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-25 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/tm_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
-    testpmd> set port tm hierarchy default 1
     testpmd> start
 
 3. Send per flow traffic with 100% line rate, verify output flow rate is 1/4096 subport rate.
@@ -111,7 +106,7 @@ Test Case 3: NAT
 
 (a). Start softnic::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 23-25 -n 4 \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 \
     --vdev 'net_softnic0,firmware=./drivers/net/softnic/nat_firmware.cli,cpu_id=1,conn_port=8086' \
     -- -i --forward-mode=softnic --portmask=0x2
     testpmd> start
