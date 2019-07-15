@@ -40,8 +40,6 @@ from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
 
-VM_CORES_MASK = 'all'
-
 class TestRuntimeVfQn(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
     def set_up_all(self):
@@ -54,6 +52,7 @@ class TestRuntimeVfQn(TestCase):
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.used_dut_port = self.dut_ports[0]
         self.vf_mac = "00:11:22:33:44:55"
+        self.pmdout = PmdOutput(self.dut)
 
     def set_up(self):
         self.dut.kill_all()
@@ -222,14 +221,15 @@ class TestRuntimeVfQn(TestCase):
         valid_qn = (2, 4, 8,)
         for qn in valid_qn:
             host_eal_param = '-w %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, qn)
-            self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=host_eal_param)
+            self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
             gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-            self.vm0_testpmd.start_testpmd(VM_CORES_MASK, eal_param=gest_eal_param, param='')
+            self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
             guest_cmds = self.testpmd_config_cmd_list(qn)
             self.execute_testpmd_cmd(guest_cmds)
             outstring = self.vm0_testpmd.execute_cmd("start", "testpmd> ")
+            self.logger.info(outstring)
             self.verify("port 0: RX queue number: %d Tx queue number: %d" % (qn, qn) in outstring, "The RX/TX queue number error.")
             self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
             self.vf_mac = self.vm0_testpmd.get_port_mac(self.vm0_dut_ports[0])
@@ -239,13 +239,14 @@ class TestRuntimeVfQn(TestCase):
             guest_cmds1 = self.testpmd_config_cmd_list(qn + 1)
             self.execute_testpmd_cmd(guest_cmds1)
             outstring2 = self.vm0_testpmd.execute_cmd("start", "testpmd> ")
-            time.sleep(2)
+            self.logger.info(outstring2)
             self.verify("port 0: RX queue number: %d Tx queue number: %d" % ((qn + 1), (qn + 1)) in outstring2, "The RX/TX queue number error.")
             self.send_packet(self.vf_mac, self.src_intf, 254)
             outstring3 = self.vm0_testpmd.execute_cmd("stop", "testpmd> ")
-            time.sleep(2)
+            self.logger.info(outstring3)
             self.verify_queue_number(outstring3, qn + 1, 254)
             self.vm0_testpmd.execute_cmd('quit', '# ')
+            self.dut.send_expect("quit", "# ")
 
     def test_reserve_invalid_vf_qn(self):
         """
@@ -254,7 +255,7 @@ class TestRuntimeVfQn(TestCase):
         """
         for invalid_qn in (0, 3, 5, 6, 7, 9, 11, 15, 17, 25,):
             eal_param = '-w %s,queue-num-per-vf=%d --file-prefix=test1 --socket-mem 1024,1024' % (self.pf_pci, invalid_qn)
-            testpmd_out = self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=eal_param)
+            testpmd_out = self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=eal_param)
             self.verify("it must be power of 2 and equal or less than 16" in testpmd_out, "there is no 'Wrong VF queue number = 0' logs.")
             self.dut.send_expect("quit", "# ")
 
@@ -264,20 +265,20 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
-        self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=host_eal_param)
+        self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         for valid_qn in range(1, 17):
             if valid_qn == 1:
-                self.vm0_testpmd.start_testpmd(VM_CORES_MASK, eal_param=gest_eal_param, param=' --rxq=1 --txq=1')
+                self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param=' --rxq=1 --txq=1')
                 self.vm0_testpmd.execute_cmd('set verbose 1')
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
                 self.verify_result(valid_qn, 500)
                 self.vm0_testpmd.execute_cmd('quit', '# ')
             else:
-                self.vm0_testpmd.start_testpmd(VM_CORES_MASK, eal_param=gest_eal_param,
+                self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param,
                                                param=' --rxq=%d --txq=%d' % (valid_qn, valid_qn))
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
@@ -290,7 +291,7 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
-        self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=host_eal_param)
+        self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
@@ -311,11 +312,11 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
-        self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=host_eal_param)
+        self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
 
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, eal_param=gest_eal_param, param='')
+        self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
         for valid_qn in range(1, 17):
             if valid_qn == 1:
                 guest_cmds = self.testpmd_config_cmd_list(1)
@@ -346,7 +347,7 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         host_eal_param = '-w %s,queue-num-per-vf=2 --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
-        self.host_testpmd.start_testpmd(VM_CORES_MASK, param='', eal_param=host_eal_param)
+        self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.execute_cmd("./usertools/dpdk-devbind.py -b i40evf %s" % self.vm_dut_0.ports_info[0]['pci'], expected='# ')
         # wait few seconds for link ready
