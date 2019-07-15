@@ -152,9 +152,13 @@ class TestDynamicQueue(TestCase):
             out = self.dut_testpmd.execute_cmd('stop')
             tx_num = qringsize - 1
 
-            # Check Tx stopped queue only transmits qringsize-1 packets
-            self.verify("TX-packets: %d" % tx_num in out,
-                        "Fail to stop txq at runtime")
+            if self.nic == "cavium_a063":
+                self.verify("TX-packets: 0" in out,
+                            "Fail to stop txq at runtime")
+            else:
+                # Check Tx stopped queue only transmits qringsize-1 packets
+                self.verify("TX-packets: %d" % tx_num in out,
+                            "Fail to stop txq at runtime")
             if chgflag == 1:
                 chg_qringsize = qringsize % 1024 + 256
                 if qringsize == 512:
