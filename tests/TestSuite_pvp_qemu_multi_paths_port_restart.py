@@ -311,6 +311,27 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.result_table_print()
         self.vm.stop()
 
+    def test_perf_pvp_qemu_modern_mergeable_mac_restart_100_times(self):
+        """
+        restart port 100 times on virtio1.0 mergeable path
+        """
+        self.start_vhost_testpmd()
+        self.start_one_vm(modem=1, mergeable=1)
+        self.start_vm_testpmd(path="mergeable")
+
+        case_info = "virtio1.0 mergeable"
+        Mpps, throughput = self.calculate_avg_throughput(64)
+        self.update_table_info(case_info, 64, Mpps, throughput, "Before Restart")
+        for cycle in range(100):
+            self.logger.info('now port restart  %d times' % (cycle+1))
+            self.port_restart()
+            Mpps, throughput = self.calculate_avg_throughput(64)
+            self.update_table_info(case_info, 64, Mpps, throughput, "After port restart")
+
+        self.close_all_testpmd()
+        self.result_table_print()
+        self.vm.stop()
+
     def tear_down(self):
         """
         Run after each test case.
