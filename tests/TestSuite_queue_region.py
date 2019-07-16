@@ -212,7 +212,10 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 33", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 35", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 flowtype 36", "testpmd> ")
-        self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
+        if self.nic in ["fortpark_TLV"]:
+            self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 39", "testpmd> ")
+        else:
+            self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 3 flowtype 43", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 44", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 5 flowtype 45", "testpmd> ")
@@ -223,7 +226,7 @@ class TestQueue_region(TestCase):
         # region  |  queue       |  flowtype  |  packet_type
         #   0     |  1           |  31        |  IPv4_UDP
         #   1     |  3,4         |  32        |  IPv4_TCP_SYN
-        #   2     |  6,7         |  33,41     |  IPv4_TCP, IPv6_UDP
+        #   2     |  6,7         |  33,41/39  |  IPv4_TCP, IPv6_UDP
         #   3     |  8,9         |  43        |  IPv6_TCP
         #   4     |  11,12,13,14 |  35,44     |  IPv4_Other, IPv6_SCTP
         #   5     |  15          |  45        |  IPv6_Other
