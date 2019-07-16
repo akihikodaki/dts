@@ -217,7 +217,7 @@ Start testpmd and send packet without vlan and check VF can receive
 
 Set packet with vlan id 0 and check VF can receive
 
-Set packet with random id 1-4095 and check VF can't receive
+Set packet with random id 1-4095 and check VF can receive
 
 Check PF device doesn't show pvid setting::
 
@@ -254,7 +254,7 @@ Send packet with vlan 0 and check VF can receive
 
 Send packet without vlan and check VF can receive
 
-Send packet with vlan 1 and check VF can't receive
+Send packet with vlan 1 and check VF can receive
 
 Test case: VF vlan insertion
 ============================
