@@ -1,0 +1,407 @@
+# BSD LICENSE
+#
+# Copyright(c) <2019> Intel Corporation.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions
+# are met:
+#
+#   * Redistributions of source code must retain the above copyright
+#     notice, this list of conditions and the following disclaimer.
+#   * Redistributions in binary form must reproduce the above copyright
+#     notice, this list of conditions and the following disclaimer in
+#     the documentation and/or other materials provided with the
+#     distribution.
+#   * Neither the name of Intel Corporation nor the names of its
+#     contributors may be used to endorse or promote products derived
+#     from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+"""
+DPDK Test suite.
+
+Vhost reconnect two VM test suite.
+Becase this suite will use the reconnet feature, the VM will start as
+server mode, so the qemu version should greater than 2.7
+"""
+import re
+import utils
+import time
+from test_case import TestCase
+from settings import HEADER_SIZE
+from virt_common import VM
+from pktgen import PacketGeneratorHelper
+
+
+class TestPVPVhostUserReconnect(TestCase):
+
+    def set_up_all(self):
+
+        # Get and verify the ports
+        self.dut_ports = self.dut.get_ports()
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+
+        # Get the port's socket
+        self.pf = self.dut_ports[0]
+        netdev = self.dut.ports_info[self.pf]['port']
+        self.socket = netdev.get_nic_socket()
+        self.cores = self.dut.get_core_list("1S/2C/1T", socket=self.socket)
+        self.coremask = utils.create_mask(self.cores)
+        self.memory_channel = self.dut.get_memory_channels()
+        self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
+        # set diff arg about mem_socket base on socket number
+        if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
+            self.socket_mem = '1024'
+        else:
+            self.socket_mem = '1024,1024'
+
+        self.reconnect_times = 5
+        self.vm_num = 1
+        self.frame_sizes = [64, 1518]
+        self.virtio_ip = ["1.1.1.2", "1.1.1.3"]
+        self.virtio_mac = ["52:54:00:00:00:01",
+                            "52:54:00:00:00:02"]
+        self.src1 = "192.168.4.1"
+        self.dst1 = "192.168.3.1"
+        self.checked_vm = False
+        self.header_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
+
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
+
+    def set_up(self):
+        """
+        run before each test case.
+        clear the execution ENV
+        """
+        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+        self.dut.send_expect("rm -rf ./vhost-net*", "# ")
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+
+    def launch_testpmd_as_vhost_user(self):
+        """
+        launch the testpmd as vhost user
+        """
+        vdev_info = ""
+        for i in range(self.vm_num):
+            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
+        self.vhostapp_testcmd = self.dut.base_dir + \
+                    "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
+                    " --file-prefix=vhost %s" + \
+                    " -- -i --port-topology=chained --nb-cores=1" + \
+                    " --txd=1024 --rxd=1024"
+        self.vhostapp_testcmd = self.vhostapp_testcmd % (self.target,
+                                self.coremask, self.memory_channel,
+                                self.socket_mem, vdev_info)
+        self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
+        self.vhost_user.send_expect("set fwd mac", "testpmd> ", 40)
+        self.vhost_user.send_expect("start", "testpmd> ", 40)
+
+    def launch_testpmd_as_vhost_user_with_no_pci(self):
+        """
+        launch the testpmd as vhost user
+        """
+        vdev_info = ""
+        for i in range(self.vm_num):
+            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
+        self.vhostapp_testcmd = self.dut.base_dir + \
+                    "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
+                    " --no-pci --file-prefix=vhost %s" + \
+                    " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        self.vhostapp_testcmd = self.vhostapp_testcmd % (self.target,
+                                self.coremask, self.memory_channel,
+                                self.socket_mem, vdev_info)
+        self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
+        self.vhost_user.send_expect("start", "testpmd> ", 40)
+
+    def check_link_status_after_testpmd_start(self, dut_info):
+        """
+        check the link status is up after testpmd start
+        """
+        loop = 1
+        while(loop <= 5):
+            out = dut_info.send_expect("show port info all", "testpmd> ", 120)
+            port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
+            if("down" not in port_status):
+                break
+            time.sleep(3)
+            loop = loop + 1
+
+        self.verify("down" not in port_status, "port can not up after restart")
+
+    def check_qemu_version(self, vm_config):
+        """
+        in this suite, the qemu version should greater 2.7
+        """
+        if self.checked_vm:
+            return
+
+        self.vm_qemu_version = vm_config.qemu_emulator
+        params_number = len(vm_config.params)
+        for i in range(params_number):
+            if vm_config.params[i].keys()[0] == 'qemu':
+                self.vm_qemu_version = vm_config.params[i]['qemu'][0]['path']
+
+        out = self.dut.send_expect("%s --version" % self.vm_qemu_version, "#")
+        result = re.search("QEMU\s*emulator\s*version\s*(\d*.\d*)", out)
+        self.verify(result is not None,
+                'the qemu path may be not right: %s' % self.vm_qemu_version)
+        version = result.group(1)
+        index = version.find('.')
+        self.verify(int(version[:index]) > 2 or
+                    (int(version[:index]) == 2 and int(version[index+1:]) >= 7),
+                    'This qemu version should greater than 2.7 ' + \
+                    'in this suite, please config it in vhost_sample.cfg file')
+        self.checked_vm = True
+
+    def start_vms(self):
+        """
+        start two VM
+        """
+        self.vm_dut = []
+        self.vm = []
+        for i in range(self.vm_num):
+            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
+            vm_params = {}
+            vm_params['driver'] = 'vhost-user'
+            vm_params['opt_path'] = './vhost-net%d' % (i)
+            vm_params['opt_mac'] = '52:54:00:00:00:0%d' % (i+1)
+            vm_params['opt_server'] = 'server'
+            vm_params['opt_settings'] = 'mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024'
+            vm_info.set_vm_device(**vm_params)
+            self.check_qemu_version(vm_info)
+
+            try:
+                vm_dut = None
+                vm_dut = vm_info.start()
+                if vm_dut is None:
+                    raise Exception("Set up VM ENV failed")
+            except Exception as e:
+                print utils.RED("Failure for %s" % str(e))
+            self.verify(vm_dut is not None, "start vm failed")
+            self.vm_dut.append(vm_dut)
+            self.vm.append(vm_info)
+
+    def vm_testpmd_start(self):
+        """
+        start testpmd in vm
+        """
+        vm_testpmd = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
+                        "-- -i --port-topology=chained --txd=1024 --rxd=1024 "
+        for i in range(len(self.vm_dut)):
+            self.vm_dut[i].send_expect(vm_testpmd, "testpmd> ", 20)
+            self.vm_dut[i].send_expect("set fwd mac", "testpmd> ")
+            self.vm_dut[i].send_expect("start", "testpmd> ")
+
+        self.check_link_status_after_testpmd_start(self.vhost_user)
+
+    def stop_all_apps(self):
+        """
+        quit the testpmd in vm and stop all apps
+        """
+        for i in range(len(self.vm_dut)):
+            self.vm_dut[i].send_expect("stop", "testpmd> ", 20)
+            self.vm_dut[i].send_expect("quit", "# ", 20)
+            self.vm[i].stop()
+        self.vhost_user.send_expect("quit", "# ", 20)
+
+    def config_vm_intf(self):
+        """
+        restore vm interfaces and config intf arp
+        """
+        for i in range(len(self.vm_dut)):
+            self.vm_dut[i].restore_interfaces()
+            time.sleep(5)
+            vm_intf = self.vm_dut[i].ports_info[0]['intf']
+            self.vm_dut[i].send_expect("ifconfig %s %s" %
+                                    (vm_intf, self.virtio_ip[i]), "#", 10)
+            self.vm_dut[i].send_expect("ifconfig %s up" % vm_intf, "#", 10)
+
+        self.vm_dut[0].send_expect('arp -s %s %s' %
+                                 (self.virtio_ip[1], self.virtio_mac[1]), '#', 10)
+        self.vm_dut[1].send_expect('arp -s %s %s' %
+                                 (self.virtio_ip[0], self.virtio_mac[0]), '#', 10)
+
+    def start_iperf(self):
+        """
+        start iperf
+        """
+        self.vm_dut[0].send_expect(
+             'iperf -s -p 12345 -i 1 > iperf_server.log &', '', 10)
+        self.vm_dut[1].send_expect(
+            'iperf -c %s -p 12345 -i 1 -t 5 > iperf_client.log &' %
+             self.virtio_ip[0], '', 60)
+        time.sleep(20)
+
+    def iperf_result_verify(self, cycle, tinfo):
+        """
+        verify the Iperf test result
+        """
+        # copy iperf_client file from vm1
+        self.vm_dut[1].session.copy_file_from("%s/iperf_client.log" %
+                                        self.dut.base_dir)
+        fp = open("./iperf_client.log")
+        fmsg = fp.read()
+        fp.close()
+        iperfdata = re.compile('\S*\s*[M|G]bits/sec').findall(fmsg)
+        self.verify(len(iperfdata) != 0, "The iperf data between to vms is 0")
+        if cycle == 0:
+            cinfo = "Before reconnet"
+        else:
+            cinfo = tinfo
+        self.result_table_add(["vm2vm iperf", iperfdata[-1], cinfo])
+
+    def send_and_verify(self, cycle=0, tinfo=""):
+        for frame_size in self.frame_sizes:
+            payload = frame_size - self.header_size
+            flow = '[Ether(dst="%s")/IP(src="%s",dst="%s")/UDP()/("X"*%d)]' % (
+                    self.dst_mac, self.src1, self.dst1, payload)
+            self.tester.scapy_append('wrpcap("reconnect.pcap", %s)' % flow)
+            self.tester.scapy_execute()
+
+            tgenInput = []
+            port = self.tester.get_local_port(self.pf)
+            tgenInput.append((port, port, "reconnect.pcap"))
+
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
+                        None, self.tester.pktgen)
+            traffic_opt = {'delay': 30, }
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+            Mpps = pps / 1000000.0
+            self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
+            pct = Mpps * 100 / \
+                float(self.wirespeed(self.nic, frame_size, 1))
+            if cycle == 0:
+                data_row = [tinfo, frame_size, str(Mpps), str(pct),
+                            "Before relaunch", "1"]
+            elif cycle == 1:
+                data_row = [tinfo, frame_size, str(Mpps), str(pct),
+                            "After relaunch", "1"]
+            self.result_table_add(data_row)
+
+    def test_perf_vhost_user_reconnet_one_vm(self):
+        """
+        test reconnect stability test of one vm
+        """
+        self.header_row = ["Mode", "FrameSize(B)", "Throughput(Mpps)",
+                            "LineRate(%)", "Cycle", "Queue Number"]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 1
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms()
+        self.vm_testpmd_start()
+        self.send_and_verify(vm_cycle, "reconnet one vm")
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user()
+            self.send_and_verify(vm_cycle, "reconnet from vhost")
+
+        # reconnet from qemu
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms()
+            self.vm_testpmd_start()
+            self.send_and_verify(vm_cycle, "reconnet from VM")
+        self.result_table_print()
+        self.stop_all_apps()
+
+    def test_perf_vhost_user_reconnet_two_vms(self):
+        """
+        test reconnect stability test of two vms
+        """
+        self.header_row = ["Mode", "FrameSize(B)", "Throughput(Mpps)",
+                            "LineRate(%)", "Cycle", "Queue Number"]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 2
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms()
+        self.vm_testpmd_start()
+        self.send_and_verify(vm_cycle, "reconnet two vm")
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user()
+            self.send_and_verify(vm_cycle, "reconnet from vhost")
+
+        # reconnet from qemu
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms()
+            self.vm_testpmd_start()
+            self.send_and_verify(vm_cycle, "reconnet from VM")
+        self.result_table_print()
+        self.stop_all_apps()
+
+    def test_perf_vhost_vm2vm_virtio_net_reconnet_two_vms(self):
+        """
+        test the iperf traffice can resume after reconnet
+        """
+        self.header_row = ["Mode", "[M|G]bits/sec", "Cycle"]
+        self.result_table_create(self.header_row)
+        self.vm_num = 2
+        vm_cycle = 0
+        self.launch_testpmd_as_vhost_user_with_no_pci()
+        self.start_vms()
+        self.config_vm_intf()
+        self.start_iperf()
+        self.iperf_result_verify(vm_cycle, 'before reconnet')
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user_with_no_pci()
+            self.start_iperf()
+            self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
+
+        # reconnet from VM
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.vm_dut[0].send_expect('rm iperf_server.log', '# ', 10)
+            self.vm_dut[1].send_expect('rm iperf_client.log', '# ', 10)
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms()
+            self.config_vm_intf()
+            self.start_iperf()
+            self.iperf_result_verify(vm_cycle, 'reconnet from vm')
+        self.result_table_print()
+
+    def tear_down(self):
+        #
+        # Run after each test case.
+        #
+        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+        time.sleep(2)
+
+    def tear_down_all(self):
+        """
+        Run after each test suite.
+        """
+        pass
