@@ -42,8 +42,11 @@ class PmdOutput():
     Module for get all statics value by port in testpmd
     """
 
-    def __init__(self, dut):
+    def __init__(self, dut, session=None):
         self.dut = dut
+        if session is None:
+            session = dut
+        self.session = session
         self.dut.testpmd = self
         self.rx_pkts_prefix = "RX-packets:"
         self.rx_missed_prefix = "RX-missed:"
@@ -79,7 +82,7 @@ class PmdOutput():
 
     def get_pmd_stats(self, portid):
         stats = {}
-        out = self.dut.send_expect("show port stats %d" % portid, "testpmd> ")
+        out = self.session.send_expect("show port stats %d" % portid, "testpmd> ")
         stats["RX-packets"] = self.get_pmd_value(self.rx_pkts_prefix, out)
         stats["RX-missed"] = self.get_pmd_value(self.rx_missed_prefix, out)
         stats["RX-bytes"] = self.get_pmd_value(self.rx_bytes_prefix, out)
@@ -111,7 +114,7 @@ class PmdOutput():
         self.coremask = create_mask(core_list)
         command = "./%s/app/testpmd -c %s -n %d %s -- -i %s" \
             % (self.dut.target, self.coremask, self.dut.get_memory_channels(), eal_param, param)
-        out = self.dut.send_expect(command, "testpmd> ", 120)
+        out = self.session.send_expect(command, "testpmd> ", 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
         sleep(10)
@@ -119,11 +122,14 @@ class PmdOutput():
 
     def execute_cmd(self, pmd_cmd, expected='testpmd> ', timeout=TIMEOUT,
                     alt_session=False):
-        return self.dut.send_expect('%s' % pmd_cmd, expected, timeout=timeout,
+        return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout,
                                     alt_session=alt_session)
 
     def get_output(self, timeout=1):
-        return self.dut.get_session_output(timeout=timeout)
+        if 'dut' in str(self.session):
+            return self.session.get_session_output(timeout=timeout)
+        else:
+            return self.session.get_session_before(timeout=timeout)
 
     def get_value_from_string(self, key_str, regx_str, string):
         """
@@ -137,11 +143,23 @@ class PmdOutput():
         else:
             return res.group(0)
 
+    def get_all_value_from_string(self, key_str, regx_str, string):
+        """
+        Get some values from the given string by the regular expression.
+        """
+        pattern = r"(?<=%s)%s" % (key_str, regx_str)
+        s = re.compile(pattern)
+        res = s.findall(string)
+        if type(res).__name__ == 'NoneType':
+            return ' '
+        else:
+            return res
+
     def get_detail_from_port_info(self, key_str, regx_str, port):
         """
         Get the detail info from the output of pmd cmd 'show port info <port num>'.
         """
-        out = self.dut.send_expect("show port info %d" % port, "testpmd> ")
+        out = self.session.send_expect("show port info %d" % port, "testpmd> ")
         find_value = self.get_value_from_string(key_str, regx_str, out)
         return find_value
 
@@ -167,7 +185,7 @@ class PmdOutput():
         """
         Get the specified port link status now.
         """
-        return self.get_detail_from_port_info("Link status: ", "\d+", port_id)
+        return self.get_detail_from_port_info("Link status: ", "\S+", port_id)
 
     def get_port_link_speed(self, port_id):
         """
@@ -224,4 +242,17 @@ class PmdOutput():
         return vlan_info
 
     def quit(self):
-        self.dut.send_expect("quit", "# ")
+        self.session.send_expect("quit", "# ")
+
+    def wait_link_status_up(self, port_id, timeout=10):
+        """
+        check the link status is up
+        if not, loop wait
+        """
+        for i in range(timeout):
+            out = self.session.send_expect("show port info %s" % str(port_id), "testpmd> ")
+            status = self.get_all_value_from_string("Link status: ", "\S+", out)
+            if 'down' not in status:
+                break
+            sleep(1)
+        return 'down' not in status
