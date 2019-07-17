@@ -704,9 +704,11 @@ class TestGeneric_filter(TestCase):
 
     def test_128_queues(self):
         # testpmd can't support assign queue to received packet, so can't test
+        set_filter_flag = 1
+        packet_flag = 1
         if self.kdriver == "ixgbe":
-	    self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
-	    self.dut.build_install_dpdk(self.target)
+            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+            self.dut.build_install_dpdk(self.target)
             global valports
             total_mbufs = self.request_mbufs(128) * len(valports)
             self.pmdout.start_testpmd(
@@ -730,11 +732,14 @@ class TestGeneric_filter(TestCase):
                 if i == 2:
                     out = self.dut.send_expect(
                         "set stat_qmap rx %s %s %s" % (valports[0], queue[i], (i + 1)), "testpmd> ")
-                    self.verify('Invalid RX queue %s' %
-                                (queue[i]) in out, "set filters error")
+                    if 'Invalid RX queue %s' % (queue[i]) not in out:
+                        set_filter_flag = 0
+                        break
                     out = self.dut.send_expect(
                         "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port %s src_port 1 protocol 0x06 mask 0x1f tcp_flags 0x0 priority 3 queue %s " % (valports[0], (i + 1), queue[i]), "testpmd> ")
-                    self.verify('error' in out, "set filters error")
+                    if 'error' not in out:
+                        set_filter_flag = 0
+                        break
                     continue
                 else:
                     self.dut.send_expect("set stat_qmap rx %s %s %s" %
@@ -753,10 +758,14 @@ class TestGeneric_filter(TestCase):
                 scanner = re.compile(result_scanner, re.DOTALL)
                 m = scanner.search(out)
                 cur_pkt = m.group(1)
-                self.verify(
-                    int(cur_pkt) == frames_to_send, "packet pass assert error")
-
+                if int(cur_pkt) != frames_to_send:
+                    packet_flag = 0
+                    break
             self.dut.send_expect("quit", "#")
+            self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
+            self.dut.build_install_dpdk(self.target)
+            self.verify(set_filter_flag == 1, "set filters error")
+            self.verify(packet_flag == 1, "packet pass assert error")
         else:
             self.verify(False, "%s not support this test" % self.nic)
 
@@ -840,5 +849,6 @@ class TestGeneric_filter(TestCase):
         Run after each test case.
         """
         self.dut.kill_all()
-	self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
-	self.dut.build_install_dpdk(self.target)
+
+    def tear_down_all(self):
+        pass
