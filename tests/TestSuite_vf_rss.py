@@ -46,11 +46,12 @@ from test_case import TestCase
 from pmd_output import PmdOutput
 from virt_common import VM
 
+
 class TestVfRss(TestCase):
 
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
-    def send_packet(self, itf, tran_type):
+    def send_packet(self, itf, tran_type, queue, packet_count=16):
         """
         Sends packets.
         """
@@ -63,28 +64,35 @@ class TestVfRss(TestCase):
         mac = self.vm0_testpmd.get_port_mac(0)
         # send packet with different source and dest ip
         if tran_type == "ipv4-other":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
+        elif tran_type == "ipv4-frag":
+            for i in range(packet_count):
+                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d", frag=1, flags="MF")], iface="%s")' % (
+                    mac, i + 1, i + 2, itf)
+                self.tester.scapy_append(packet)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "ipv4-tcp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv4-udp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv4-sctp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/SCTP(sport=1024,dport=1025,tag=1)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
@@ -94,7 +102,7 @@ class TestVfRss(TestCase):
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "l2_payload":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(src="00:00:00:00:00:%02d",dst="%s")], iface="%s")' % (
                     i + 1, mac, itf)
                 self.tester.scapy_append(packet)
@@ -102,28 +110,35 @@ class TestVfRss(TestCase):
             time.sleep(.5)
 
         elif tran_type == "ipv6-other":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
+        elif tran_type == "ipv6-frag":
+            for i in range(packet_count):
+                packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=44)/IPv6ExtHdrFragment()], iface="%s")' % (
+                    mac, i + 1, i + 2, itf)
+                self.tester.scapy_append(packet)
+            self.tester.scapy_execute()
+            time.sleep(.5)
         elif tran_type == "ipv6-tcp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/TCP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv6-udp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d")/UDP(sport=1024,dport=1024)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
         elif tran_type == "ipv6-sctp":
-            for i in range(16):
+            for i in range(packet_count):
                 packet = r'sendp([Ether(dst="%s")/IPv6(src="3ffe:2501:200:1fff::%d", dst="3ffe:2501:200:3::%d", nh=132)/SCTP(sport=1024,dport=1025,tag=1)], iface="%s")' % (
                     mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
@@ -136,13 +151,14 @@ class TestVfRss(TestCase):
         else:
             print "\ntran_type error!\n"
 
-        #out = self.vm_dut_0.send_expect("stop", "testpmd>")
         out = self.vm_dut_0.get_session_output()
         print '*******************************************'
         print out
-        if  not reta_entries:
-           self.verify('RSS hash=' in out, 'rss faied')
-           return 
+        if not reta_entries:
+            # for test_vfpmd_rss, check every queue can receive packet.
+            for i in range(queue):
+                self.verify('RSS queue={}'.format(hex(i)) in out, 'queue {} did not receive packets'.format(i))
+            return
         lines = out.split("\r\n")
         out = ''
         reta_line = {}
@@ -153,13 +169,12 @@ class TestVfRss(TestCase):
             if len(line) != 0 and line.startswith(("src=",)):
                 for item in line.split("-"):
                     item = item.strip()
-                    if(item.startswith("RSS hash")):
+                    if item.startswith("RSS hash"):
                         name, value = item.split("=", 1)
                         print name + "-" + value
-
-                reta_line[name.strip()] = value.strip()
-                reta_lines.append(reta_line)
-                reta_line = {}
+                        reta_line[name.strip()] = value.strip()
+                        reta_lines.append(reta_line)
+                        reta_line = {}
             elif len(line) != 0 and line.strip().startswith("port "):
                 rexp = r"port (\d)/queue (\d{1,2}): received (\d) packets"
                 m = re.match(rexp, line.strip())
@@ -171,7 +186,6 @@ class TestVfRss(TestCase):
             else:
                 pass
         self.verifyResult()
-             
 
     def verifyResult(self):
         """
@@ -184,15 +198,19 @@ class TestVfRss(TestCase):
             ['packet index', 'hash value', 'hash index', 'queue id', 'actual queue id', 'pass '])
 
         i = 0
+        self.verify(len(reta_lines) > 0, "The testpmd output has no RSS hash!")
         for tmp_reta_line in reta_lines:
             status = "false"
             if self.kdriver == "fm10k":
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 128
-            else:
+            elif self.kdriver == 'i40e' or self.nic in ['sageville', 'sagepond']:
                 # compute the hash result of five tuple into the 7 LSBs value.
+                hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
+            else:
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 512
-            if(reta_entries[hash_index] == int(tmp_reta_line["queue"])):
+
+            if reta_entries[hash_index] == int(tmp_reta_line["queue"]):
                 status = "true"
                 result.insert(i, 0)
             else:
@@ -212,7 +230,8 @@ class TestVfRss(TestCase):
         """
 
         self.verify(
-            self.nic in ["niantic", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "sageville", "fortpark_TLV"],
+            self.nic in ["redrockcanyou", "atwood", "boulderrapid", "fortville_eagle", "fortville_spirit",
+                         "fortville_spirit_single", "fortville_25g", "sageville", "sagepond", "fortpark_TLV"],
             "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Not enough ports available")
@@ -237,6 +256,7 @@ class TestVfRss(TestCase):
         Run before each test case.
         """
         pass
+
     def setup_1pf_1vf_1vm_env(self, driver='default'):
         
         self.used_dut_port_0 = self.dut_ports[0]
@@ -244,7 +264,6 @@ class TestVfRss(TestCase):
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
 
         try:
-
             for port in self.sriov_vfs_port_0:
                 port.bind_driver(self.vf_driver)
 
@@ -254,7 +273,7 @@ class TestVfRss(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci}
+                eal_param = '-b %(vf0)s ' % {'vf0': self.sriov_vfs_port_0[0].pci}
                 self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
 
             # set up VM0 ENV
@@ -301,15 +320,23 @@ class TestVfRss(TestCase):
 
     def test_vf_pmdrss_reta(self):
         
-        # niantic kernel host driver not support this case
-        if self.nic is 'niantic' and not self.host_testpmd:
-            self.logger.warning("niantic kernel host driver not support this case")
-            return
         vm0dutPorts = self.vm_dut_0.get_ports('any')
         localPort = self.tester.get_local_port(vm0dutPorts[0])
         itf = self.tester.get_interface(localPort)
         self.vm0_ports_socket = self.vm_dut_0.get_numa_id(vm0dutPorts[0])
-        iptypes = ['IPV4']
+        iptypes = {
+                   'ipv4-other': 'ip',
+                   'ipv4-frag': 'ip',
+                   'ipv4-udp': 'udp',
+                   'ipv4-tcp': 'tcp',
+                   'ipv4-sctp': 'sctp',
+                   'ipv6-other': 'ip',
+                   'ipv6-frag': 'ip',
+                   'ipv6-udp': 'udp',
+                   'ipv6-tcp': 'tcp',
+                   'ipv6-sctp': 'sctp',
+                 #  'l2_payload': 'ether'
+                   }
 
         self.vm_dut_0.kill_all()
 
@@ -320,33 +347,42 @@ class TestVfRss(TestCase):
             self.vm0_testpmd.start_testpmd(
                 "all", "--rxq=%d --txq=%d %s" % (queue, queue, eal_param), socket=self.vm0_ports_socket)
 
-            for iptype in iptypes:
+            for iptype, rss_type in iptypes.items():
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
                 self.vm_dut_0.send_expect(
                     "set nbcore %d" % (queue + 1), "testpmd> ")
 
                 # configure the reta with specific mappings.
-                if(self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid"]):
+                if self.nic in ["redrockcanyou", "atwood", "boulderrapid"]:
                     for i in range(128):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.vm_dut_0.send_expect(
                             "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+                    self.vm_dut_0.send_expect("port config all rss %s" % rss_type, "testpmd> ")
+                elif self.kdriver == 'i40e' or self.nic in ['sageville', 'sagepond']:
+                    for i in range(64):
+                        reta_entries.insert(i, random.randint(0, queue - 1))
+                        self.vm_dut_0.send_expect(
+                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+                    self.vm_dut_0.send_expect("port config all rss %s" % rss_type, "testpmd> ")
                 else:
                     for i in range(512):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.vm_dut_0.send_expect(
                             "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
+                    self.vm_dut_0.send_expect("port config all rss %s" % rss_type, "testpmd> ")
 
-                self.send_packet(itf, iptype)
+                self.send_packet(itf, iptype, queue)
 
             self.vm_dut_0.send_expect("quit", "# ", 30)
+
     def test_vf_pmdrss(self): 
         vm0dutPorts = self.vm_dut_0.get_ports('any')
         localPort = self.tester.get_local_port(vm0dutPorts[0])
         itf = self.tester.get_interface(localPort)
         self.vm0_ports_socket = self.vm_dut_0.get_numa_id(vm0dutPorts[0])
-        iptypes = {'ipv4-sctp':'ip',
+        iptypes = {
                    'ipv4-other':'ip',
                    'ipv4-udp':'udp',
                    'ipv4-tcp':'tcp',
@@ -367,7 +403,7 @@ class TestVfRss(TestCase):
             self.vm0_testpmd.start_testpmd(
                 "all", "--rxq=%d --txq=%d %s" % (queue, queue, eal_param), socket=self.vm0_ports_socket)
 
-            for iptype,rsstype in iptypes.items():
+            for iptype, rsstype in iptypes.items():
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
                 out = self.vm_dut_0.send_expect("port config all rss %s" % rsstype, "testpmd> ")
@@ -375,9 +411,9 @@ class TestVfRss(TestCase):
                 self.vm_dut_0.send_expect(
                     "set nbcore %d" % (queue + 1), "testpmd> ")
 
-                self.send_packet(itf, iptype)
-
+                self.send_packet(itf, iptype, queue, 128)
             self.vm_dut_0.send_expect("quit", "# ", 30)
+
     def tear_down(self):
         """
         Run after each test case.
