@@ -125,57 +125,7 @@ class TestVF2VFBridge(TestCase):
             port.bind_driver()
             self.pf_port_for_vfs = 0
 
-    def generate_pcap_pkt(self, dst, src, load, pktname='flow.pcap'):
-        """
-        dst:
-            server: dst server object
-             ether: dst mac
-                ip: dst ip
-               udp: dst udp protocol
-               tcp: dst tcp protocal
-        src:
-            server: src server object
-             ether: src mac
-                ip: src ip
-               udp: src udp protocol
-               tcp: src tcp protocal
-        load:
-           content: pay load
-            length: content length
-        """
-        context = '[Ether(dst="%s", src="%s")/IP()/Raw(load=%s)]' % \
-            (str(dst['ether']), str(src['ether']), load['content'])
-        src['server'].send_expect('scapy', '>>> ', 10)
-        src['server'].send_expect(
-            'wrpcap("%s", %s)' % (pktname, context), '>>> ', 10)
-        src['server'].send_expect('quit()', '#', 10)
-
-    def prepare_pktgen(self, vm):
-        vm.session.copy_file_to('./dep/tgen.tgz')
-        vm.send_expect("cd /root", "#", 10)
-        vm.send_expect("tar xvf tgen.tgz", '#', 20)
-
-    def send_stream_pktgen(self, vm, pktname='flow.pcap'):
-        vm.send_expect(
-            "echo 2048 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages", "#", 10)
-        vm.send_expect(" mount -t hugetlbfs nodedev /mnt/huge/", "#", 10)
-        vm.send_expect(
-            "./pktgen -c 0xf -n 2 --proc-type auto -- -P -T -m '1.0' -s 0:%s" %
-                       pktname, "", 100)
-        time.sleep(60)
-        vm.send_expect("set 0 rate 50", "", 20)
-        time.sleep(5)
-        vm.send_expect("set 0 count %d" % SEND_PACKET, "", 20)
-        time.sleep(5)
-        vm.send_expect("start all", "", 20)
-        time.sleep(20)
-
-    def stop_stream_pktgen(self, vm):
-        vm.send_expect("stop all", "", 20)
-        time.sleep(5)
-        vm.send_expect("quit", "#", 20)
-
-    def test_2vf_d2d_pktgen_stream(self):
+    def test_2vf_d2d_testpmd_stream(self):
         self.vm0_ports = self.vm0_dut.get_ports('any')
         self.vm0_pmd = PmdOutput(self.vm0_dut)
         self.vm0_pmd.start_testpmd('all')
@@ -183,59 +133,59 @@ class TestVF2VFBridge(TestCase):
         self.vm0_pmd.execute_cmd("set promisc all off")
         self.vm0_pmd.execute_cmd('start')
 
-        self.vm1_ports = self.vm1_dut.get_ports('any')
-        self.prepare_pktgen(self.vm1_dut)
+        vm0_mac = self.vm0_dut.ports_info[self.vm0_ports[0]]['mac']
 
-        dst = {}
-        dst['server'] = self.vm0_dut
-        dst['ether'] = self.vm0_dut.ports_info[self.vm0_ports[0]]['mac']
-        src = {}
-        src['server'] = self.vm1_dut
-        src['ether'] = self.vm1_dut.ports_info[self.vm1_ports[0]]['mac']
-        load = {}
-        load['content'] = "'X'*46"
-        self.generate_pcap_pkt(dst, src, load)
-        self.vm0_pmd.execute_cmd('clear port stats all')
-        self.send_stream_pktgen(self.vm1_dut)
+        self.vm1_pmd = PmdOutput(self.vm1_dut)
+        self.vm1_pmd.start_testpmd('all')
+        self.vm1_pmd.execute_cmd('set fwd mac')
+        self.vm1_pmd.execute_cmd("set promisc all off")
+        self.vm1_pmd.execute_cmd('set eth-peer 0 %s' % vm0_mac)
+        self.vm1_pmd.execute_cmd('set burst 50')
+        self.vm1_pmd.execute_cmd('start tx_first 2')
+
         recv_num = self.vm0_pmd.get_pmd_stats(0)['RX-packets']
         time.sleep(1)
-        self.stop_stream_pktgen(self.vm1_dut)
         self.vm0_pmd.execute_cmd('stop')
         self.vm0_pmd.execute_cmd('quit', '# ')
+
+        self.vm1_pmd.execute_cmd('stop')
+        self.vm1_pmd.execute_cmd('quit', '# ')
 
         self.verify(recv_num is SEND_PACKET,
                     'Rx port recv error: %d' % recv_num)
 
-    def test_2vf_d2k_pktgen_stream(self):
+    def test_2vf_d2k_testpmd_stream(self):
         self.vm0_dut.restore_interfaces()
         self.vm0_ports = self.vm0_dut.get_ports('any')
         vf0_intf = self.vm0_dut.ports_info[self.vm0_ports[0]]['intf']
 
         self.vm1_ports = self.vm1_dut.get_ports('any')
-        self.prepare_pktgen(self.vm1_dut)
 
-        dst = {}
-        dst['server'] = self.vm0_dut
-        dst['ether'] = self.vm0_dut.ports_info[self.vm0_ports[0]]['mac']
-        src = {}
-        src['server'] = self.vm1_dut
-        src['ether'] = self.vm1_dut.ports_info[self.vm1_ports[0]]['mac']
-        load = {}
-        load['content'] = "'X'*46"
-        self.generate_pcap_pkt(dst, src, load)
+        vm0_mac = self.vm0_dut.ports_info[self.vm0_ports[0]]['mac']
+        filename = "m.pcap"
+
         self.vm0_dut.send_expect(
-            'tcpdump -i %s -s 1000 "ether src %s and ether dst %s"' %
-                                 (vf0_intf, src['ether'], dst['ether']), 'tcpdump', 30)
-        self.send_stream_pktgen(self.vm1_dut)
-        self.stop_stream_pktgen(self.vm1_dut)
+                'tcpdump -i %s ether dst %s -w %s' % (vf0_intf, vm0_mac, filename), 'tcpdump', 30)
 
+        self.vm1_pmd = PmdOutput(self.vm1_dut)
+        self.vm1_pmd.start_testpmd('all')
+        self.vm1_pmd.execute_cmd('set fwd mac')
+        self.vm1_pmd.execute_cmd("set promisc all off")
+        self.vm1_pmd.execute_cmd('set eth-peer 0 %s' % vm0_mac)
+        self.vm1_pmd.execute_cmd('set burst 50')
+        self.vm1_pmd.execute_cmd('start tx_first 2')
+
+        time.sleep(1)
         recv_tcpdump = self.vm0_dut.send_expect('^C', '#', 30)
         time.sleep(5)
-        recv_pattern = re.compile("(\d+) packets captured")
+        recv_pattern = re.compile("(\d+) packet\w{0,1} captured")
         recv_info = recv_pattern.search(recv_tcpdump)
         recv_str = recv_info.group(0).split(' ')[0]
         recv_number = int(recv_str, 10)
         self.vm0_dut.bind_interfaces_linux(self.drivername)
+
+        self.vm1_pmd.execute_cmd('stop')
+        self.vm1_pmd.execute_cmd('quit', '# ')
 
         self.verify(recv_number is SEND_PACKET,
                     'Rx port recv error: %d' % recv_number)
