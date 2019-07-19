@@ -150,27 +150,23 @@ interactive commands of the ``testpmd`` application.
 
     ./usertools/dpdk-devbind.py --bind=igb_uio 00:06.0 00:07.0
 
-6. Reta Configuration.  128 reta entries configuration::
-
-     testpmd command: port config 0 rss reta (hash_index,queue_id)
-
-7. Pmd fwd only receive the packets::
+6. Pmd fwd only receive the packets::
 
      testpmd command: set fwd rxonly
 
-8. Rss received package type configuration two received packet types configuration::
+7. Rss received package type configuration two received packet types configuration::
 
      testpmd command: port config all rss ip/udp/tcp
 
-9. Verbose configuration::
+8. Verbose configuration::
 
      testpmd command: set verbose 8
 
-10. Start packet receive::
+9. Start packet receive::
 
       testpmd command: start
 
-11. Send different hash types' packets with different keywords, then check rx port
+10. Send different hash types' packets with different keywords, then check rx port
     could receive packets by different queues::
 
       sendp([Ether(dst="90:e2:ba:36:99:3c")/IP(src="192.168.0.4", dst="192.168.0.5")], iface="eth3")
@@ -181,6 +177,9 @@ Test Case:  test_reta
 
 This case test hash reta table, the test steps same with test_rss_hash except config hash reta table
 
-Before send packet, config hash reta,512(niantic NICs have 128 reta) reta entries configuration::
+Before send packet, config hash reta,512(NICS with kernel driver i40e has 64 reta) reta entries configuration::
 
   testpmd command: port config 0 rss reta (hash_index,queue_id)
+
+after send packet, based on the testpmd output RSS hash value to calculate hash_index, then check whether the
+actual receive queue is the queue configured in the reta.
