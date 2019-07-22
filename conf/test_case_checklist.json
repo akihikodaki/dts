@@ -2102,7 +2102,8 @@
                 "cavium_a034",
                 "cavium_a011",
                 "cavium_a063",
-                "fortville_25g"
+                "fortville_25g",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
