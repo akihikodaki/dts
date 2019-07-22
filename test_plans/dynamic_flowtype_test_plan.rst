@@ -91,6 +91,8 @@ Prerequisites
 	 
 3. Set rxonly forwarding and enable output
 
+4. Scapy vesrion >= 2.3
+
 
 Test Case: Load dynamic device personalization 
 ================================================
