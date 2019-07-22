@@ -364,12 +364,8 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
-                "fortville_spirit_single",
                 "cavium_a034",
-                "cavium_0011",
-                "fortville_25g"
+                "cavium_0011"
             ],
             "Target": [
                 "ALL"
