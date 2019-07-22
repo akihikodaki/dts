@@ -44,19 +44,13 @@ Prerequisites:
 
 On host:
 
-* Hugepages: at least 10 G hugepages, 6G(for vm on which run pktgen as stream
-  source end) + 2G(for vm on which run testpmd as receive end) + 2G(for host
-  used)
-
 * Guest: two img with os for kvm qemu
 
 * NIC: one pf port
 
-* pktgen-dpdk: copy $DTS/dep/tgen.tgz to guest from which send the stream
-
 On Guest:
 
-* Stream Source end: scapy pcpay and essential tarballs for compile pktgen-dpdk tools
+* Stream Source end: scapy pcpay
 
 
 Set up basic virtual scenario:
@@ -66,13 +60,10 @@ Step 1: generate two vfs on the target pf port (i.e. 0000:85:00.0)::
 
         echo 2 > /sys/bus/pci/devices/0000\:85\:00.0/sriov_numvfs
 
-Step 2: bind the two vfs to pci-stub::
+Step 2: bind the two vfs to vfio-pci::
 
-        echo "8086 10ed" > /sys/bus/pci/drivers/pci-stub/new_id
-        echo 0000:85:10.0 > /sys/bus/pci/devices/0000:85:10.0/driver/unbind
-        echo 0000:85:10.0 > /sys/bus/pci/drivers/pci-stub/bind
-        echo 0000:85:10.2 > /sys/bus/pci/devices/0000:85:10.2/driver/unbind
-        echo 0000:85:10.2 > /sys/bus/pci/drivers/pci-stub/bind
+        modprobe vfio-pci
+        ./dpdk/usertools/dpdk-devbind.py -b vfio-pci 0000:85:02.0 0000:85:02.1
 
 Step 3: passthrough vf 0 to vm0 and start vm0::
 
@@ -82,7 +73,7 @@ Step 3: passthrough vf 0 to vm0 and start vm0::
         -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
         -net nic,vlan=0,macaddr=00:00:00:e2:4f:fb,addr=1f \
         -net user,vlan=0,hostfwd=tcp:10.239.128.125:6064-:22 \
-        -device pci-assign,host=85:10.0,id=pt_0 -cpu host -smp 4 -m 6144 \
+        -device vfio-pci,host=85:10.0,id=pt_0 -cpu host -smp 4 -m 6144 \
         -object memory-backend-file,id=mem,size=6144M,mem-path=/mnt/huge,share=on \
         -numa node,memdev=mem -mem-prealloc -drive file=/home/img/vm0.img -vnc :4
 
@@ -94,16 +85,16 @@ Step 4: passthrough vf 1 to vm1 and start vm1::
         -daemonize -monitor unix:/tmp/vm1_monitor.sock,server,nowait \
         -net nic,vlan=0,macaddr=00:00:00:7b:d5:cb,addr=1f \
         -net user,vlan=0,hostfwd=tcp:10.239.128.125:6126-:22 \
-        -device pci-assign,host=85:10.2,id=pt_0 -cpu host -smp 4 -m 6144 \
+        -device vfio-pci,host=85:10.2,id=pt_0 -cpu host -smp 4 -m 6144 \
         -object memory-backend-file,id=mem,size=6144M,mem-path=/mnt/huge,share=on \
         -numa node,memdev=mem -mem-prealloc -drive file=/home/img/vm1.img -vnc :5
 
 
-Test Case1: test_2vf_d2d_pktgen_stream
-======================================
+Test Case1: test_2vf_d2d_testpmd_stream
+=======================================
 
 both vfs in the two vms using the dpdk driver, send stream from vf1 in vm1 by
-dpdk pktgen to vf in vm0, and verify the vf on vm0 can receive stream.
+dpdk testpmd to vf in vm0, and verify the vf on vm0 can receive stream.
 
 Step 1: run testpmd on vm0::
 
@@ -114,20 +105,18 @@ Step 2: set rxonly and start on vm0::
         set fwd rxonly
         start
 
-Step 3: copy pktgen-dpdk tarball to vm1::
+Step 3: run testpmd on vm1::
 
-        scp tgen.tgz to vm1
-        tar xvf tgen.tgz
+        ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -n 1  -- -i
 
-Step 4: generate pcap file on vm1::
+Step 4: Set forward, specifying that the opposing MAC sends 100 packets on vm1::
 
-        Context: [Ether(dst="52:54:12:45:67:10", src="52:54:12:45:67:11")/IP()/Raw(load='X'\*46)]
+        set fwd mac
+        set eth-peer 0 52:54:12:45:67:10(vm0_mac)
+        set burst 50
+        start tx_first 2
 
-Step 5: send stream by pkt-gen on vm1::
-
-        ./app/app/x86_64-native-linuxapp-gcc/app/pktgen -c 0xf -n 2 --proc-type auto -- -P -T -m '1.0' -s P:flow.pcap
-
-Step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100::
+Step 5: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100::
 
         show port stats 0
         ######################## NIC statistics for port 0  ########################
@@ -137,27 +126,23 @@ Step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets coun
         TX-packets: 0          TX-errors: 0          TX-bytes:  0
         ############################################################################
 
-Test Case2: test_2vf_d2k_pktgen_stream
-======================================
+Test Case2: test_2vf_d2k_testpmd_stream
+=======================================
 
 Step 1: bind vf to kernel driver on vm0
 
-Step 2: start up vf interface and using tcpdump to capture received packets
+Step 2: start up vf interface and using tcpdump to capture received packets::
 
-Step 3: copy pktgen-dpdk tarball to vm1::
+        tcpdump -i vm0_vf ether dst vm0_mac -w m.pcap
 
-        scp tgen.tgz to vm1
-        tar xvf tgen.tgz
+Step 3: Set forward, specifying that the opposing MAC sends 100 packets on vm1::
 
-Step 4: generate pcap file on vm1::
+        set fwd mac
+        set eth-peer 0 52:54:12:45:67:10(vm0_mac)
+        set burst 50
+        start tx_first 2
 
-        Context: [Ether(dst="52:54:12:45:67:10", src="52:54:12:45:67:11")/IP()/Raw(load='X'\*46)]
-
-Step 5: send stream by pkt-gen on vm1::
-
-        ./app/app/x86_64-native-linuxapp-gcc/app/pktgen -c 0xf -n 2 --proc-type auto -- -P -T -m '1.0' -s P:flow.pcap
-
-Step 6: verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100
+Step 4: verify vf 0 receive status on vm0: packet captured equal to send packets count, 100
 
 Test Case3: test_2vf_k2d_scapy_stream
 =====================================
@@ -173,7 +158,9 @@ Step 2: set rxonly and start on vm0::
 
 Step 3: bind vf to kernel driver on vm0
 
-Step 4: using scapy to send packets
+Step 4: using scapy to send packets on vm1::
+
+        sendp([Ether(dst="vm0_mac", src="vm1_mac"") / IP() / Raw(load="X" * 46)], iface="ens4", count=100)
 
 Step 5:verify vf 0 receive status on vm0: Rx-packets equal to send packets count, 100::
 
