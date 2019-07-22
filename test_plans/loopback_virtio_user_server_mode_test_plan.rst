@@ -143,15 +143,15 @@ Test Case 3: loopback reconnect test with virtio 1.1 mergeable path and server m
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 4: loopback reconnect test with virtio 1.1 normal path and server mode
 ================================================================================
@@ -215,15 +215,15 @@ Test Case 4: loopback reconnect test with virtio 1.1 normal path and server mode
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 5: loopback reconnect test with virtio 1.0 mergeable path and server mode
 ===================================================================================
@@ -287,15 +287,15 @@ Test Case 5: loopback reconnect test with virtio 1.0 mergeable path and server m
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 6: loopback reconnect test with virtio 1.0 inorder mergeable path and server mode
 ===========================================================================================
@@ -359,15 +359,15 @@ Test Case 6: loopback reconnect test with virtio 1.0 inorder mergeable path and 
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 7: loopback reconnect test with virtio 1.0 inorder no-mergeable path and server mode
 ==============================================================================================
@@ -431,15 +431,15 @@ Test Case 7: loopback reconnect test with virtio 1.0 inorder no-mergeable path a
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 8: loopback reconnect test with virtio 1.0 normal path and server mode
 ================================================================================
@@ -503,15 +503,15 @@ Test Case 8: loopback reconnect test with virtio 1.0 normal path and server mode
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop
 
 Test Case 9: loopback reconnect test with virtio 1.0 vector_rx path and server mode
 ===================================================================================
@@ -575,12 +575,12 @@ Test Case 9: loopback reconnect test with virtio 1.0 vector_rx path and server m
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+      testpmd>stop
+      testpmd>port stop 0
+      testpmd>port start 0
+      testpmd>start tx_first 32
+      testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+      testpmd>stop

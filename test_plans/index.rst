@@ -81,7 +81,6 @@ The following are the test plans for the DPDK DTS automated test system.
     l3fwdacl_test_plan
     link_flowctrl_test_plan
     link_status_interrupt_test_plan
-    loopback_multi_paths_port_restart_performance_test_plan
     loopback_multi_paths_port_restart_test_plan
     loopback_virtio_user_server_mode_test_plan
     mac_filter_test_plan
@@ -174,16 +173,22 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_dequeue_zero_copy_test_plan
     vxlan_gpe_support_in_i40e_test_plan
     pvp_diff_qemu_version_test_plan
-    pvp_qemu_zero_copy_test_plan
     pvp_share_lib_test_plan
     pvp_vhost_user_built_in_net_driver_test_plan
     pvp_virtio_user_2M_hugepages_test_plan
     pvp_virtio_user_multi_queues_test_plan
-    vhost_gro_test_plan
     virtio_unit_cryptodev_func_test_plan
     virtio_user_for_container_networking_test_plan
     eventdev_perf_test_plan
     eventdev_pipeline_perf_test_plan
+    pvp_qemu_multi_paths_port_restart_test_plan
+    pvp_vhost_user_reconnect_test_plan
+    pvp_virtio_bonding_test_plan
+    pvp_virtio_user_4k_pages_test_plan
+    vdev_primary_secondary_test_plan
+    vhost_1024_ethports_test_plan
+    virtio_pvp_regression_test_plan
+    virtio_user_as_exceptional_path
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
@@ -217,3 +222,6 @@ The following are the test plans for the DPDK DTS automated test system.
     efd_test_plan
     example_build_test_plan
     flow_classify_test_plan
+    dpdk_hugetlbfs_mount_size_test_plan
+    nic_single_core_perf_test_plan
+    power_managerment_throughput_test_plan

@@ -38,12 +38,14 @@ Prerequisites
 =============
 
 1. Hardware:
-    1) nic_single_core_perf test for FVL25G: two dual port FVL25G nics,
+
+    1.1) nic_single_core_perf test for FVL25G: two dual port FVL25G nics,
         all installed on the same socket, pick one port per nic
-    3) nic_single_core_perf test for NNT10G : four 82599 nics,
+    1.2) nic_single_core_perf test for NNT10G: four 82599 nics,
         all installed on the same socket, pick one port per nic
   
-2. Software: 
+2. Software::
+
     dpdk: git clone http://dpdk.org/git/dpdk
     scapy: http://www.secdev.org/projects/scapy/
     dts (next branch): git clone http://dpdk.org/git/tools/dts, 
@@ -51,12 +53,13 @@ Prerequisites
     Trex code: http://trex-tgn.cisco.com/trex/release/v2.26.tar.gz 
                (to be run in stateless Layer 2 mode, see section in
                 Getting Started Guide for more details)
-    python-prettytable: 
+    python-prettytable:
         apt install python-prettytable (for ubuntu os) 
         or dnf install python-prettytable (for fedora os). 
 
 3. Connect all the selected nic ports to traffic generator(IXIA,TREX,
-   PKTGEN) ports(TG ports).
+   PKTGEN) ports(TG ports)::
+
     2 TG 25g ports for FVL25G ports
     4 TG 10g ports for 4 NNT10G ports
     
@@ -86,19 +89,24 @@ Test Case : Single Core Performance Measurement
 6) Result tables for different NICs:
 
    FVL25G:
+
    +------------+---------+-------------+---------+---------------------+
    | Frame Size | TXD/RXD |  Throughput |   Rate  | Expected Throughput |
    +------------+---------+-------------+---------+---------------------+
    |     64     |   512   | xxxxxx Mpps |   xxx % |     xxx    Mpps     |
+   +------------+---------+-------------+---------+---------------------+
    |     64     |   2048  | xxxxxx Mpps |   xxx % |     xxx    Mpps     |
    +------------+---------+-------------+---------+---------------------+
 
    NNT10G:
+
    +------------+---------+-------------+---------+---------------------+
    | Frame Size | TXD/RXD |  Throughput |   Rate  | Expected Throughput |
    +------------+---------+-------------+---------+---------------------+
    |     64     |   128   | xxxxxx Mpps |   xxx % |       xxx  Mpps     |
+   +------------+---------+-------------+---------+---------------------+
    |     64     |   512   | xxxxxx Mpps |   xxx % |       xxx  Mpps     |
+   +------------+---------+-------------+---------+---------------------+
    |     64     |   2048  | xxxxxx Mpps |   xxx % |       xxx  Mpps     |
    +------------+---------+-------------+---------+---------------------+
 

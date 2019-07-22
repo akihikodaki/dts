@@ -49,6 +49,7 @@ Vhost-user uses Unix domain sockets for passing messages. This means the DPDK vh
   When DPDK vhost-user restarts from an normal or abnormal exit (such as a crash), the client mode allows DPDK to establish the connection again. Note
   that QEMU version v2.7 or above is required for this reconnect feature.
   Also, when DPDK vhost-user acts as the client, it will keep trying to reconnect to the server (QEMU) until it succeeds. This is useful in two cases:
+
     * When QEMU is not started yet.
     * When QEMU restarts (for example due to a guest OS reboot).
 

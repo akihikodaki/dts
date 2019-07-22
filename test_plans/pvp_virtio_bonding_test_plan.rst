@@ -50,7 +50,7 @@ Test case 1: vhost-user/virtio-pmd pvp bonding test with mode 0
 ===============================================================
 Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 
-1.  Bind one port to igb_uio,launch vhost by below command::
+1. Bind one port to igb_uio,launch vhost by below command::
 
     ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -112,7 +112,7 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 to 6
 ===================================================================================
 
-1.  Bind one port to igb_uio,launch vhost by below command::
+1. Bind one port to igb_uio,launch vhost by below command::
 
     ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
