@@ -13,16 +13,16 @@ vxlanmagic = "0x8"
 
 VXLAN_PORT=4789
 
-class Vxlan(Packet):
-    name = "Virtual eXtensible Local Area Network"
-    fields_desc = [ByteField("flag", 8),
+class VXLAN(Packet):
+    name = "VXLAN"
+    fields_desc = [ByteField("flags", 8),
                    X3BytesField("reserved1", 0),
                    X3BytesField("vni", 0),
                    ByteField("reserved2", 0)]
 
     def guess_payload_class(self, payload):
         if self.flag == vxlanmagic:
-            return Vxlan
+            return VXLAN
         else:
             return Packet.guess_payload_class(self, payload)
 
@@ -30,5 +30,5 @@ class Vxlan(Packet):
         return self.sprintf("VXLAN (vni=%VXLAN.vni%)")
 
 split_layers(UDP, DNS, sport=53)
-bind_layers(UDP, Vxlan, dport=VXLAN_PORT)
-bind_layers(Vxlan, Ether)
+bind_layers(UDP, VXLAN, dport=VXLAN_PORT)
+bind_layers(VXLAN, Ether)
