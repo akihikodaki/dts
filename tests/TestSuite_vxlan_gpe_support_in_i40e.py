@@ -43,7 +43,7 @@ from pmd_output import PmdOutput
 from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, UDP
 from scapy.layers.l2 import Dot1Q
-from vxlan import Vxlan
+from vxlan import VXLAN
 from scapy.config import conf
 from test_case import TestCase
 from settings import FOLDERS
@@ -110,7 +110,7 @@ class VxlanGpeTestConfig(object):
         outer[UDP].dport = self.outer_udp_dst
 
         if self.outer_udp_dst == VXLAN_GPE_PORT:
-            self.pkt = outer / Vxlan(vni=self.vni) / inner
+            self.pkt = outer / VXLAN(vni=self.vni) / inner
         else:
             self.pkt = outer / ("X" * self.payload_size)
 
@@ -124,7 +124,7 @@ class VxlanGpeTestConfig(object):
         cwd = os.getcwd()
         dir_vxlan_module = cwd + r'/' + FOLDERS['Depends']
         self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
-        self.test_case.tester.scapy_append("from vxlan import Vxlan")
+        self.test_case.tester.scapy_append("from vxlan import VXLAN")
         self.test_case.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.pcap_file)
         self.test_case.tester.scapy_append(
@@ -231,6 +231,10 @@ class TestVxlanGpeSupportInI40e(TestCase):
         # send one VXLAN-GPE type packet
         packet = 'sendp([Ether(dst="%s")/IP(src="18.0.0.1")/UDP(dport=%d, sport=43)/' % (mac, VXLAN_GPE_PORT) + \
                  'VXLAN(flags=12)/IP(src="10.0.0.1")], iface="%s", count=1)' % self.tester_iface
+        cwd = os.getcwd()
+        dir_vxlan_module = cwd + r'/' + FOLDERS['Depends']
+        self.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
+        self.tester.scapy_append("from vxlan import VXLAN")
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
         out = self.dut.get_session_output(timeout=5)
@@ -239,6 +243,8 @@ class TestVxlanGpeSupportInI40e(TestCase):
 
         # delete the VXLAN-GPE packet type, testpmd should treat the packet as a normal UDP packet
         self.pmdout.execute_cmd('port config 0 udp_tunnel_port rm vxlan-gpe %s' % VXLAN_GPE_PORT)
+        self.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
+        self.tester.scapy_append("from vxlan import VXLAN")
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
         out = self.dut.get_session_output(timeout=5)

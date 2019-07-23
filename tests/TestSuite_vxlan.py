@@ -17,7 +17,7 @@ from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import Dot1Q
-from vxlan import Vxlan
+from vxlan import VXLAN
 from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.sendrecv import sniff
 from scapy.config import conf
@@ -178,7 +178,7 @@ class VxlanTestConfig(object):
             outer[UDP].chksum = 1
 
         if self.outer_udp_dst == VXLAN_PORT:
-            self.pkt = outer / Vxlan(vni=self.vni) / inner
+            self.pkt = outer / VXLAN(vni=self.vni) / inner
         else:
             self.pkt = outer / ("X" * self.payload_size)
 
@@ -207,8 +207,8 @@ class VxlanTestConfig(object):
         if payload.guess_payload_class(payload).name == "IP":
             chk_sums['outer_ip'] = hex(payload[IP].chksum)
 
-        if pkts[0].haslayer(Vxlan) == 1:
-            inner = pkts[0][Vxlan]
+        if pkts[0].haslayer('VXLAN') == 1:
+            inner = pkts[0]['VXLAN']
             if inner.haslayer(IP) == 1:
                 chk_sums['inner_ip'] = hex(inner[IP].chksum)
                 if inner[IP].proto == 6:
@@ -240,7 +240,7 @@ class VxlanTestConfig(object):
         cwd = os.getcwd()
         dir_vxlan_module = cwd + r'/' + FOLDERS['Depends']
         self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
-        self.test_case.tester.scapy_append("from vxlan import Vxlan")
+        self.test_case.tester.scapy_append("from vxlan import VXLAN")
         self.test_case.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.pcap_file)
         self.test_case.tester.scapy_append(
@@ -341,29 +341,29 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.tunnel_perf = [
             {'Packet': 'Normal', 'tunnel_filter': 'None',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'None',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'None',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-ivlan',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-ivlan',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-ivlan-tenid',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-ivlan-tenid',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-tenid',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-tenid',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'omac-imac-tenid',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'omac-imac-tenid',
                 'recvqueue': 'Single', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'None',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'None',
                 'recvqueue': 'Multi', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-ivlan',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-ivlan',
                 'recvqueue': 'Multi', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-ivlan-tenid',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-ivlan-tenid',
                 'recvqueue': 'Multi', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac-tenid',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac-tenid',
                 'recvqueue': 'Multi', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter': 'imac',
+            {'Packet': 'VXLAN', 'tunnel_filter': 'imac',
                 'recvqueue': 'Multi', 'Mpps': {}, 'pct': {}},
-            {'Packet': 'Vxlan', 'tunnel_filter':
+            {'Packet': 'VXLAN', 'tunnel_filter':
                 'omac-imac-tenid', 'recvqueue': 'Multi'}
         ]
 

@@ -154,7 +154,7 @@ class TestGeneric_flow_api(TestCase):
         dir_module = cwd + r'/' + 'dep'
         self.tester.scapy_append('sys.path.append("%s")' % dir_module)
         if module == "vxlan":
-            self.tester.scapy_append("from vxlan import Vxlan")
+            self.tester.scapy_append("from vxlan import VXLAN")
         elif module == "nvgre":
             self.tester.scapy_append('from nvgre import NVGRE')
 
@@ -312,7 +312,7 @@ class TestGeneric_flow_api(TestCase):
                 rule_created = 1
 
                 # Enable vxlan packet sending
-                if "Vxlan" in flow_pkt:
+                if "VXLAN" in flow_pkt:
                     self.load_module("vxlan")
                 elif "NVGRE" in flow_pkt:
                     self.load_module("nvgre")
@@ -569,10 +569,10 @@ class TestGeneric_flow_api(TestCase):
                 if 'vni' in flows:
                     vni = self.generate_random_int(0, MAX_VLAN)
                     flow_str += "vni is %d " % vni
-                    pkt += "/Vxlan(vni=%d)" % vni
+                    pkt += "/VXLAN(vni=%d)" % vni
                     extrapacket['vni'] = str(vni)
                 else:
-                    pkt += "/Vxlan()"
+                    pkt += "/VXLAN()"
             elif flow_type == "nvgre":
                 flow_str += "/ nvgre "
                 if 'tni' in flows:
@@ -1516,22 +1516,22 @@ class TestGeneric_flow_api(TestCase):
 
         self.load_module("vxlan")
         self.tester.scapy_append(
-            'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan()/Ether(dst="%s")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.inner_mac, self.tester_itf))
+            'sendp([Ether(dst="%s")/IP()/UDP()/VXLAN()/Ether(dst="%s")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.inner_mac, self.tester_itf))
         self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0], verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
-            'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=5)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.wrong_mac, self.tester_itf))
+            'sendp([Ether(dst="%s")/IP()/UDP()/VXLAN(vni=5)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, self.wrong_mac, self.tester_itf))
         self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
-            'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[5]['vni'], self.wrong_mac, extra_packet[5]['invlan'], self.tester_itf))
+            'sendp([Ether(dst="%s")/IP()/UDP()/VXLAN(vni=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.outer_mac, extra_packet[5]['vni'], self.wrong_mac, extra_packet[5]['invlan'], self.tester_itf))
         self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
         self.load_module("vxlan")
         self.tester.scapy_append(
-            'sendp([Ether(dst="%s")/IP()/UDP()/Vxlan(vni=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.wrong_mac, extra_packet[6]['vni'], self.inner_mac, self.tester_itf))
+            'sendp([Ether(dst="%s")/IP()/UDP()/VXLAN(vni=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)], iface="%s")' % (self.wrong_mac, extra_packet[6]['vni'], self.inner_mac, self.tester_itf))
         self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.wrong_mac)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)

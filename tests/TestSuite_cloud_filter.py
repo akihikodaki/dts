@@ -17,12 +17,12 @@ from packet import Packet, load_pcapfile
 from scapy.layers.inet import UDP, IP
 from scapy.packet import split_layers, bind_layers
 
-from vxlan import Vxlan
+from vxlan import VXLAN
 from vxlan import VXLAN_PORT
 
 CLOUD_PORT = 8472
-split_layers(UDP, Vxlan, dport=VXLAN_PORT)
-bind_layers(UDP, Vxlan, dport=CLOUD_PORT)
+split_layers(UDP, VXLAN, dport=VXLAN_PORT)
+bind_layers(UDP, VXLAN, dport=CLOUD_PORT)
 
 #
 #
@@ -350,7 +350,7 @@ class TestCloudFilter(TestCase):
                 dport = cap_pkt[UDP].dport
                 self.verify(dport == CLOUD_PORT,
                             "Captured packet is not vxlan packet")
-                inner_ip = cap_pkt[Vxlan][IP].dst
+                inner_ip = cap_pkt['VXLAN'][IP].dst
                 self.verify(inner_ip == cloud_cfg.cf_rule['iip'],
                             "Inner ip not matched")
             except:

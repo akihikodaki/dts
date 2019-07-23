@@ -54,7 +54,7 @@ from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import Dot1Q
-from vxlan import Vxlan
+from vxlan import VXLAN
 from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.sendrecv import sniff
 from scapy.config import conf
@@ -310,10 +310,10 @@ class TestVxlanSample(TestCase):
 
             pkts = self.transfer_capture_file()
             self.verify(len(pkts) >= 1, "Failed to capture packets")
-            self.verify(pkts[0].haslayer(Vxlan) == 1,
+            self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
             try:
-                payload = str(pkts[0][UDP][Vxlan][UDP].payload)
+                payload = str(pkts[0][UDP]['VXLAN'][UDP].payload)
                 for i in range(18):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
@@ -344,7 +344,7 @@ class TestVxlanSample(TestCase):
             pkts = self.transfer_capture_file()
             # check packet number and payload
             self.verify(len(pkts) >= 1, "Failed to capture packets")
-            self.verify(pkts[0].haslayer(Vxlan) == 0,
+            self.verify(pkts[0].haslayer('VXLAN') == 0,
                         "Packet not de-encapsulated")
 
             try:
@@ -380,10 +380,10 @@ class TestVxlanSample(TestCase):
 
             # check packet number and payload
             self.verify(len(pkts) >= 1, "Failed to capture packets")
-            self.verify(pkts[0].haslayer(Vxlan) == 1,
+            self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
             try:
-                payload = str(pkts[0][UDP][Vxlan][UDP].payload)
+                payload = str(pkts[0][UDP]['VXLAN'][UDP].payload)
                 for i in range(18):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
@@ -428,7 +428,7 @@ class TestVxlanSample(TestCase):
             pkts = self.transfer_capture_file()
             # check packet number and payload
             self.verify(len(pkts) >= 1, "Failed to capture packets")
-            self.verify(pkts[0].haslayer(Vxlan) == 1,
+            self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
             chksums = vxlan_pkt.get_chksums(pcap='vxlan_cap.pcap')
             print utils.GREEN("Checksum : %s" % chksums)
@@ -466,7 +466,7 @@ class TestVxlanSample(TestCase):
 
             # calculation  checksum, and check it
             for pkt in pkts:
-                inner = pkt[Vxlan]
+                inner = pkt['VXLAN']
                 inner_ip_chksum = inner[IP].chksum
                 del inner.chksum
                 inner[IP] = inner[IP].__class__(str(inner[IP]))
@@ -484,10 +484,10 @@ class TestVxlanSample(TestCase):
 
             length = 0
             for pkt in pkts:
-                self.verify(pkt.haslayer(Vxlan) == 1,
+                self.verify(pkt.haslayer('VXLAN') == 1,
                             "Packet not encapsulated")
                 try:
-                    payload = str(pkt[UDP][Vxlan][TCP].payload)
+                    payload = str(pkt[UDP]['VXLAN'][TCP].payload)
                     self.verify(len(payload) <= self.def_mss,
                                 "TCP payload oversized")
                     length += len(payload)

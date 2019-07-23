@@ -104,7 +104,7 @@ class TestTSO(TestCase):
         cwd = os.getcwd()
         dir_module = cwd + r'/' + 'dep'
         self.tester.scapy_append('sys.path.append("%s")' % dir_module)
-        self.tester.scapy_append("from vxlan import Vxlan")
+        self.tester.scapy_append("from vxlan import VXLAN")
         self.tester.scapy_append('from nvgre import NVGRE')
 
     def tcpdump_start_sniffing(self, ifaces=[]):
@@ -300,7 +300,7 @@ class TestTSO(TestCase):
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
             self.load_module()
             out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
-            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/Vxlan()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/VXLAN()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
             print out
