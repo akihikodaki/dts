@@ -289,6 +289,7 @@ class TestVfVlan(TestCase):
             # if you want insert tx_vlan,
             # please enable rx_vlan at the same time
             if self.kdriver == "i40e":
+                self.vm0_testpmd.execute_cmd('vlan set filter on 0')
                 self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % tx_vlan)
             self.vm0_testpmd.execute_cmd('stop')
             self.vm0_testpmd.execute_cmd('port stop all')
