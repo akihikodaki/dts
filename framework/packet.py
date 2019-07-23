@@ -65,7 +65,7 @@ DTS_PATH = exec_file.replace('/framework/packet.py', '')
 DEP_FOLDER = DTS_PATH + '/dep'
 sys.path.append(DEP_FOLDER)
 
-from vxlan import Vxlan
+from vxlan import VXLAN
 from nvgre import NVGRE, IPPROTO_NVGRE
 from lldp import LLDP, LLDPManagementAddress
 from Dot1BR import Dot1BR
@@ -123,7 +123,7 @@ class scapy(object):
         'icmp': ICMP(),
         'gre': GRE(),
         'raw': Raw(),
-        'vxlan': Vxlan(),
+        'vxlan': VXLAN(),
 
         'inner_mac': Ether(),
         'inner_vlan': Dot1Q(),

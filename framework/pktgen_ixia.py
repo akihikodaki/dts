@@ -141,19 +141,19 @@ class Ixia(SSHConnection):
 
         dump_str1 = "cmds = []\n"
         dump_str2 = "for i in rdpcap('%s', -1):\n" % pcap_path
-        dump_str3 = "    if 'Vxlan' in i.command():\n" + \
+        dump_str3 = "    if 'VXLAN' in i.command():\n" + \
                     "        vxlan_str = ''\n" + \
-                    "        l = len(i[Vxlan])\n" + \
-                    "        vxlan = str(i[Vxlan])\n" + \
+                    "        l = len(i[VXLAN])\n" + \
+                    "        vxlan = str(i[VXLAN])\n" + \
                     "        first = True\n" + \
                     "        for j in range(l):\n" + \
                     "            if first:\n" + \
-                    "                vxlan_str += \"Vxlan(hexval='%02X\" %ord(vxlan[j])\n" + \
+                    "                vxlan_str += \"VXLAN(hexval='%02X\" %ord(vxlan[j])\n" + \
                     "                first = False\n" + \
                     "            else:\n" + \
                     "                vxlan_str += \" %02X\" %ord(vxlan[j])\n" + \
                     "        vxlan_str += \"\')\"\n" + \
-                    "        command = re.sub(r\"Vxlan(.*)\", vxlan_str, i.command())\n" + \
+                    "        command = re.sub(r\"VXLAN(.*)\", vxlan_str, i.command())\n" + \
                     "    else:\n" + \
                     "        command = i.command()\n" + \
                     "    cmds.append(command)\n" + \
@@ -502,7 +502,7 @@ class Ixia(SSHConnection):
                 match = pat.match(header)
                 params = eval('dict(%s)' % match.group(2))
                 method_name = match.group(1)
-                if method_name == 'Vxlan':
+                if method_name == 'VXLAN':
                     method = getattr(self, method_name.lower())
                     method(ixia_port, vm.get('fields_config', {}), **params)
                     break
