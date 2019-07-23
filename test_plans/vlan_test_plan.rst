@@ -76,10 +76,10 @@ The -n command is used to select the number of memory channels. It should match 
 Set the verbose level to 1 to display information for each received packet::
 
   testpmd> set verbose 1
+  testpmd> vlan set filter on
 
-
-Test Case: Enable receipt of VLAN packets and VLAN header stripping
-===================================================================
+Test Case: Enable receipt of VLAN packets and disable VLAN header stripping
+===========================================================================
 
 Setup the ``mac`` forwarding mode::
 
@@ -89,6 +89,7 @@ Setup the ``mac`` forwarding mode::
 Enable the receipt of VLAN packets with VLAN Tag Identifier 1 on port 0::
 
   testpmd> rx_vlan add 1 0
+  testpmd> vlan set strip off 0
   testpmd> start
     rxonly packet forwarding - CRC stripping disabled - packets/burst=32
     nb forwarding cores=1 - nb forwarding ports=10
@@ -107,6 +108,31 @@ Identifier and send 1 packet on port ``A``.
 
 Verify that the VLAN packet was not correctly received on port ``B`` with
 this not matched VLAN Tag.
+
+Test Case: Enable receipt of VLAN packets and VLAN header stripping
+===================================================================
+
+Setup the ``mac`` forwarding mode::
+
+  testpmd> set fwd mac
+  Set mac packet forwarding mode
+
+Enable the receipt of VLAN packets with VLAN Tag Identifier 1 on port 0::
+
+  testpmd> rx_vlan add 1 0
+  testpmd> vlan set strip on 0
+  testpmd> start
+    rxonly packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Configure the traffic generator to send VLAN packets with the Tag Identifier
+ ``1`` and send 1 packet on port ``A``.
+
+Verify that the VLAN packet was correctly received on port ``B`` without VLAN tag ``1``.
 
 Test Case: Disable receipt of VLAN packets
 ==========================================
