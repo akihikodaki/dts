@@ -370,8 +370,10 @@ class TestUnitTestsEal(TestCase):
         """
         Run multiprocess autotest.
         """
-
-        self.dut.send_expect(self.test_app_cmdline + ' -m 64', "R.*T.*E.*>.*>", self.start_test_time)
+        if self.dut.get_os_type() == "freebsd":
+            self.dut.send_expect(self.test_app_cmdline + ' -m 64 --base-virtaddr=0x1000000000', "R.*T.*E.*>.*>", self.start_test_time)
+        else:
+            self.dut.send_expect(self.test_app_cmdline + ' -m 64', "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("multiprocess_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -438,7 +440,7 @@ class TestUnitTestsEal(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
