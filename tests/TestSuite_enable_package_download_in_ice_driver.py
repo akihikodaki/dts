@@ -54,6 +54,9 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.tester_p0_mac = self.tester.get_mac(localPort0)
         self.dut_testpmd = PmdOutput(self.dut)
 
+        self.dut_p0_pci = self.dut.get_port_pci(self.dut_ports[0])
+        self.dut_p1_pci = self.dut.get_port_pci(self.dut_ports[1])
+
         self.pkg_file = '/lib/firmware/intel/ice/ddp/ice.pkg'
         out = self.dut.send_expect("ls %s" % self.pkg_file, "#")
         self.verify("No such file or directory" not in out, "Cannot find %s, please check you system/driver." % self.pkg_file)
@@ -84,13 +87,20 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
             self.dut.send_expect("rm -rf %s" % self.pkg_file, "#")
             self.dut.send_expect("touch %s" % self.pkg_file, "#")
 
-    def start_testpmd(self, flag="true"):
-        out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE))
-        if flag != "true":
-            error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
-                    "ice_load_pkg(): failed to allocate buf of size 0 for package", \
+    def start_testpmd(self, ice_pkg="true", safe_mode_support="false"):
+        if safe_mode_support == "true":
+            self.eal_param="-w %s,safe-mode-support=1 -w %s,safe-mode-support=1" % (self.dut_p0_pci, self.dut_p1_pci)
+        else:
+            self.eal_param=""
+        out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE), eal_param=self.eal_param)
+        if ice_pkg == "false":
+            if safe_mode_support == "true":
+                error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
                     "ice_dev_init(): Failed to load the DDP package,Entering Safe Mode", \
                     "ice_init_rss(): RSS is not supported in safe mode"]
+            if safe_mode_support == "false":
+                error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
+                    "ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode"]
             for error_message in error_messages:
                 self.verify(error_message in out, "There should be error messages in out: %s" % out)
         self.dut_testpmd.execute_cmd('set promisc all off')
@@ -209,7 +219,8 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
 
     def verifyResult(self, tran_type, flag):
         """
-        Verify whether or not the result passes.
+        if flag == true: all packets should enter different queues of port 0
+        else: all packets enter queue 0 of port 0
         """
         if tran_type == "ipv4-other":
             self.tcpdump_stop_sniff()
@@ -235,30 +246,48 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
                 self.verify(len(list(set(queue_list))) == 1 and int(list(set(queue_list))[0]) == 0, \
                             "All packets should enter queue 0, but entered %s" % queue_list)
 
-    def download_the_package(self, flag):
+    def download_the_package(self, ice_pkg="true", safe_mode_support="false"):
         """
-        if flag == true: use the correct ice.pkg file; in rxonly mode, all packets should enter different queues of port 0
-        else: use wrong ice.pkg, all packets enter queue 0 of port 0
+        if ice_pkg == true: use the correct ice.pkg file; in rxonly mode, all packets should enter different queues of port 0
+        else: use wrong ice.pkg
+            if safe_mode_support == true, start testpmd with "safe-mode-suppor=1", all packets enter queue 0 of port 0
+            else safe_mode_support == false, start testpmd without "safe-mode-suppor", no port is loaded in testpmd
         """
-        self.use_correct_ice_pkg(flag=flag)
-        self.start_testpmd(flag=flag)
-        self.dut_testpmd.execute_cmd('set fwd mac')
-        self.dut_testpmd.execute_cmd('start')
-        self.tcpdump_start_sniffing([self.tester_p0, self.tester_p1])
-        self.send_packet(tran_type="ipv4-other", flag=flag)
+        self.use_correct_ice_pkg(ice_pkg)
+        self.start_testpmd(ice_pkg, safe_mode_support)
+        if ice_pkg == "false" and safe_mode_support == "false":
+            out = self.dut_testpmd.execute_cmd('show port info all')
+            self.verify("Infos for port" not in out, "There should be no listed port info.")
+        else:
+            self.dut_testpmd.execute_cmd('set fwd mac')
+            self.dut_testpmd.execute_cmd('start')
+            self.tcpdump_start_sniffing([self.tester_p0, self.tester_p1])
+            self.send_packet(tran_type="ipv4-other", flag=ice_pkg)
 
-        self.dut_testpmd.execute_cmd('stop')
-        self.dut_testpmd.execute_cmd('set fwd rxonly')
-        self.dut_testpmd.execute_cmd('start')
-        for tran_types in ["ipv4-tcp", "ipv4-udp", "ipv4-sctp", "ipv6-tcp", "ipv6-udp", "ipv6-sctp"]:
-            print tran_types
-            self.send_packet(tran_type=tran_types, flag=flag)
+            self.dut_testpmd.execute_cmd('stop')
+            self.dut_testpmd.execute_cmd('set fwd rxonly')
+            self.dut_testpmd.execute_cmd('start')
+            for tran_types in ["ipv4-tcp", "ipv4-udp", "ipv4-sctp", "ipv6-tcp", "ipv6-udp", "ipv6-sctp"]:
+                print tran_types
+                self.send_packet(tran_type=tran_types, flag=ice_pkg)
 
     def test_download_the_package_successfully(self):
-        self.download_the_package(flag="true")
+        """
+        use the correct ice.pkg file; in rxonly mode, all packets should enter different queues of port 0
+        """
+        self.download_the_package(ice_pkg="true", safe_mode_support="false")
 
-    def test_download_the_package_failed(self):
-        self.download_the_package(flag="false")
+    def test_driver_enters_Safe_Mode_successfully(self):
+        """
+        use wrong ice.pkg and start testpmd with "safe-mode-suppor=1", all packets enter queue 0 of port 0
+        """
+        self.download_the_package(ice_pkg="false", safe_mode_support="true")
+
+    def test_driver_enters_Safe_Mode_failed(self):
+        """
+        use wrong ice.pkg and start testpmd without "safe-mode-suppor", no port is loaded in testpmd
+        """
+        self.download_the_package(ice_pkg="false", safe_mode_support="false")
 
     def tear_down(self):
         self.dut_testpmd.quit()
