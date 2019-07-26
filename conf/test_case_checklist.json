@@ -1421,11 +1421,10 @@
                 "ALL"
             ],
             "Target": [
-                "i686-native-linuxapp-gcc",
-                "i686-native-linuxapp-icc"
+                "ALL"
             ],
-            "Bug ID": "",
-            "Comments": "32 bit not support this case/not enough queue"
+            "Bug ID": "DPDK-8410",
+            "Comments": "DPDK-8410, won't fix; skip this case"
         },
         {
             "OS": [
