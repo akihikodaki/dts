@@ -94,8 +94,8 @@ Test case 1: Download the package successfully
    with different IPV4/IPV6 address or TCP/UDP/SCTP ports,
    the packets can be distributed to different rx queues.
 
-Test case 2: failed to download pkg
-===================================
+Test case 2: Driver enters Safe Mode successfully
+=================================================
 
 1. Server power on, then put a new ice.pkg to
    /lib/firmware/intel/ice/ddp/ice.pkg.
@@ -103,8 +103,9 @@ Test case 2: failed to download pkg
 
 2. Start testpmd::
 
-    ./testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
-    --port-topology=chained
+    ./testpmd -c 0x3fe -n 6 \
+    -w PORT0_PCI,safe-mode-support=1 -w PORT1_PCI,safe-mode-support=1 \
+    -- -i --nb-cores=8 --rxq=8 --txq=8 --port-topology=chained
 
    There will be an error reported::
 
@@ -133,3 +134,27 @@ Test case 2: failed to download pkg
 5. Send UPD/TCP/SCTP+IPV4/IPV6 packets with packet generator
    with different IPV4/IPV6 address or TCP/UDP/SCTP ports,
    the packets can be only distributed to rx queue 0.
+
+Test case 3: Driver enters Safe Mode failed
+===========================================
+
+1. Server power on, then put a new ice.pkg to
+   /lib/firmware/intel/ice/ddp/ice.pkg.
+   Make sure the new ice.pkg is different with the original one.
+
+2. Start testpmd::
+
+    ./testpmd -c 0x3fe -n 6 -- -i --nb-cores=8 --rxq=8 --txq=8 \
+    --port-topology=chained
+
+   There will be an error reported::
+
+    ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode
+
+   The driver failed to go to safe mode.
+
+3. Check port info in testpmd::
+
+    testpmd> show port info all
+
+   There is no listed port info.
