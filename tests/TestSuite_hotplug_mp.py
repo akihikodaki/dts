@@ -42,17 +42,20 @@ class TestHotplugMp(TestCase):
         """
         Setup primary process and two secondary processes.
         """
+        self.iova_param = ""
+        if self.drivername in ["igb_uio"]:
+            self.iova_param = "--iova-mode=pa"
         out = self.session_pri.send_expect(
-            "./examples/multi_process/hotplug_mp/%s/hotplug_mp --proc-type=auto"
-            % self.target, "example>")
+            "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
+            % (self.target, self.iova_param), "example>")
         self.verify("Auto-detected process type: PRIMARY" in out,
                     "Failed to setup primary process!")
         for out in [self.session_sec_1.send_expect(
-                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp --proc-type=auto"
-                        % self.target, "example>"),
+                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
+                        % (self.target, self.iova_param), "example>"),
                     self.session_sec_2.send_expect(
-                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp --proc-type=auto"
-                        % self.target, "example>")]:
+                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
+                        % (self.target, self.iova_param), "example>")]:
             self.verify("Auto-detected process type: SECONDARY" in out,
                         "Failed to setup secondary process!")
 
