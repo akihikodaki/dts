@@ -146,11 +146,12 @@ class QEMUKvm(VirtBase):
         self.set_vm_daemon()
         self.set_vm_monitor()
 
+        self.nic_num = 1
         if not self.__default_nic:
             # add default control interface
-            def_nic = {'type': 'nic', 'opt_vlan': '0', 'opt_addr': '1f'}
+            def_nic = {'type': 'nic'}
             self.set_vm_net(**def_nic)
-            def_net = {'type': 'user', 'opt_vlan': '0'}
+            def_net = {'type': 'user'}
             self.set_vm_net(**def_net)
             self.__default_nic = True
 
@@ -469,8 +470,6 @@ class QEMUKvm(VirtBase):
             note:the sub-option will be decided according to the net type.
         """
         if 'type' in options.keys():
-            if 'opt_vlan' not in options.keys():
-                options['opt_vlan'] = '0'
             if options['type'] == 'nic':
                 self.__add_vm_net_nic(**options)
             if options['type'] == 'user':
@@ -511,32 +510,11 @@ class QEMUKvm(VirtBase):
     def __add_vm_net_nic(self, **options):
         """
         type: nic
-        opt_vlan: 0
-            note: Default is 0.
-        opt_macaddr: 00:00:00:00:01:01
-            note: if creating a nic, it`s better to specify a MAC,
-                  else it will get a random number.
         opt_model:["e1000" | "virtio" | "i82551" | ...]
             note: Default is e1000.
-        opt_name: 'nic1'
-        opt_addr: ''
-            note: PCI cards only.
-        opt_vectors:
-            note: This option currently only affects virtio cards.
         """
-        net_boot_line = '-net nic'
+        net_boot_line = '-device '
         separator = ','
-        if 'opt_vlan' in options.keys() and \
-                options['opt_vlan']:
-            net_boot_line += separator + 'vlan=%s' % options['opt_vlan']
-
-        # add MAC info
-        if 'opt_macaddr' in options.keys() and \
-                options['opt_macaddr']:
-            mac = options['opt_macaddr']
-        else:
-            mac = self.generate_unique_mac()
-        net_boot_line += separator + 'macaddr=%s' % mac
 
         if 'opt_model' in options.keys() and \
                 options['opt_model']:
@@ -544,17 +522,14 @@ class QEMUKvm(VirtBase):
         else:
             model = 'e1000'
         self.nic_model = model
-        net_boot_line += separator + 'model=%s' % model
+        net_boot_line += model
 
-        if 'opt_name' in options.keys() and \
-                options['opt_name']:
-            net_boot_line += separator + 'name=%s' % options['opt_name']
-        if 'opt_addr' in options.keys() and \
-                options['opt_addr']:
-            net_boot_line += separator + 'addr=%s' % options['opt_addr']
-        if 'opt_vectors' in options.keys() and \
-                options['opt_vectors']:
-            net_boot_line += separator + 'vectors=%s' % options['opt_vectors']
+        netdev_id = self.nic_num
+        if self.nic_num % 2 == 0:
+            netdev_id = self.nic_num - 1
+        netdev = "netdev=nttsip%d " % netdev_id
+        self.nic_num = self.nic_num + 1
+        net_boot_line += separator + netdev
 
         if self.__string_has_multi_fields(net_boot_line, separator):
             self.__add_boot_line(net_boot_line)
@@ -562,15 +537,16 @@ class QEMUKvm(VirtBase):
     def __add_vm_net_user(self, **options):
         """
         type: user
-        opt_vlan: 0
-            note: default is 0.
         opt_hostfwd: [tcp|udp]:[hostaddr]:hostport-[guestaddr]:guestport
         """
-        net_boot_line = '-net user'
+        net_boot_line = '-netdev user'
         separator = ','
-        if 'opt_vlan' in options.keys() and \
-                options['opt_vlan']:
-            net_boot_line += separator + 'vlan=%s' % options['opt_vlan']
+        netdev_id = self.nic_num
+        if self.nic_num % 2 == 0:
+            netdev_id = self.nic_num - 1
+        self.nic_num = self.nic_num + 1
+        netdev = "id=nttsip%d" % netdev_id
+        net_boot_line += separator + netdev
         if 'opt_hostfwd' in options.keys() and \
                 options['opt_hostfwd']:
             self.__check_net_user_opt_hostfwd(options['opt_hostfwd'])
@@ -651,8 +627,6 @@ class QEMUKvm(VirtBase):
     def __add_vm_net_tap(self, **options):
         """
         type: tap
-        opt_vlan: 0
-            note: default is 0.
         opt_br: br0
             note: if choosing tap, need to specify bridge name,
                   else it will be br0.
@@ -661,8 +635,15 @@ class QEMUKvm(VirtBase):
         opt_downscript: QEMU_IFDOWN_PATH
             note: if not specified, default is self.QEMU_IFDOWN_PATH.
         """
-        net_boot_line = '-net tap'
+        net_boot_line = '-netdev tap'
         separator = ','
+
+        netdev_id = self.nic_num
+        if self.nic_num % 2 == 0:
+            netdev_id = self.nic_num - 1
+        self.nic_num = self.nic_num + 1
+        netdev = "id=nttsip%d" % netdev_id
+        net_boot_line += separator + netdev
 
         # add bridge info
         if 'opt_br' in options.keys() and \
@@ -671,10 +652,6 @@ class QEMUKvm(VirtBase):
         else:
             bridge = self.DEFAULT_BRIDGE
         self.__generate_net_config_script(str(bridge))
-
-        if 'opt_vlan' in options.keys() and \
-                options['opt_vlan']:
-            net_boot_line += separator + 'vlan=%s' % options['opt_vlan']
 
         # add network configure script path
         if 'opt_script' in options.keys() and \
