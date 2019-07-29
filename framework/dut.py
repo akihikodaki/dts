@@ -985,7 +985,12 @@ class Dut(Crb):
             dutpci = self.ports_info[dutPort]['pci']
             if peer is not None:
                 for remotePort in range(len(self.tester.ports_info)):
-                    if self.tester.ports_info[remotePort]['pci'].lower() == peer.lower():
+                    if self.tester.ports_info[remotePort]['type'].lower() == 'trex':
+                        if self.tester.ports_info[remotePort]['intf'].lower() == peer.lower():
+                            hits[remotePort] = True
+                            self.ports_map[dutPort] = remotePort
+                            break
+                    elif self.tester.ports_info[remotePort]['pci'].lower() == peer.lower():
                         hits[remotePort] = True
                         self.ports_map[dutPort] = remotePort
                         break
@@ -1007,34 +1012,34 @@ class Dut(Crb):
                 ipv6 = self.get_ipv6_address(dutPort)
                 if ipv6 == "Not connected":
                     if self.tester.ports_info[remotePort].has_key('ipv4'):
-			out = self.tester.send_ping(
-				dutPort, self.tester.ports_info[remotePort]['ipv4'],
-				self.get_mac_address(dutPort))
-		    else:
-                    	continue
-		else:
-                    if getattr(self, 'send_ping6', None):
-                    	out = self.send_ping6(
-                        	dutPort, self.tester.ports_info[remotePort]['ipv6'],
-                        	self.get_mac_address(dutPort))
+                        out = self.tester.send_ping(
+                            dutPort, self.tester.ports_info[remotePort]['ipv4'],
+                            self.get_mac_address(dutPort))
                     else:
-                    	out = self.tester.send_ping6(
-				remotePort, ipv6, self.get_mac_address(dutPort))
+                        continue
+                else:
+                    if getattr(self, 'send_ping6', None):
+                        out = self.send_ping6(
+                            dutPort, self.tester.ports_info[remotePort]['ipv6'],
+                            self.get_mac_address(dutPort))
+                    else:
+                        out = self.tester.send_ping6(
+                            remotePort, ipv6, self.get_mac_address(dutPort))
 
-                if ('64 bytes from' in out):
-                    self.logger.info("PORT MAP: [dut %d: tester %d]" % (dutPort, remotePort))
-                    self.ports_map[dutPort] = remotePort
-                    hits[remotePort] = True
-                    if self.crb['IP'] == self.crb['tester IP']:
-                        # remove dut port act as tester port
-                        remove_port = self.get_port_info(remotepci)
-                        if remove_port is not None:
-                            remove.append(remove_port)
-                        # skip ping from those port already act as dut port
-                        testerPort = self.tester.get_local_index(dutpci)
-                        if testerPort != -1:
-                            hits[testerPort] = True
-                    break
+                    if ('64 bytes from' in out):
+                        self.logger.info("PORT MAP: [dut %d: tester %d]" % (dutPort, remotePort))
+                        self.ports_map[dutPort] = remotePort
+                        hits[remotePort] = True
+                        if self.crb['IP'] == self.crb['tester IP']:
+                            # remove dut port act as tester port
+                            remove_port = self.get_port_info(remotepci)
+                            if remove_port is not None:
+                                remove.append(remove_port)
+                            # skip ping from those port already act as dut port
+                            testerPort = self.tester.get_local_index(dutpci)
+                            if testerPort != -1:
+                                hits[testerPort] = True
+                        break
 
         for port in remove:
             self.ports_info.remove(port)
