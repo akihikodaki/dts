@@ -42,6 +42,7 @@ from time import sleep
 from exception import VerifyFailure
 from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from pmd_output import PmdOutput
+from pktgen import TRANSMIT_CONT
 from copy import deepcopy
 from prettytable import PrettyTable
 import rst
@@ -112,7 +113,7 @@ class TestNicSingleCorePerf(TestCase):
                              'Expected Throughput', 'Throughput Difference']
         self.test_result = {}
 
-    def test_nic_single_core_perf(self):
+    def test_perf_nic_single_core(self):
         """
         Run nic single core performance 
         """
@@ -181,8 +182,9 @@ class TestNicSingleCorePerf(TestCase):
 
                 # measure throughput
                 stream_ids = self.prepare_stream(frame_size)
+                traffic_opt = {'delay': self.test_duration}
                 _, packets_received = self.tester.pktgen.measure_throughput(
-                    stream_ids = stream_ids, delay = self.test_duration)
+                    stream_ids, traffic_opt)
                 throughput = packets_received / 1000000.0
                 self.throughput[frame_size][nb_desc] = throughput
 
@@ -247,11 +249,6 @@ class TestNicSingleCorePerf(TestCase):
         '''
         create streams for ports, one port two streams, and configure them.
         '''
-        # traffic option
-        options = {
-            'rate': '100%',
-        }
-
         # create pcap file
         payload_size = frame_size - self.headers_size
         self.tester.scapy_append(
@@ -271,6 +268,13 @@ class TestNicSingleCorePerf(TestCase):
                 # this's fine for other NIC too.
                 for k in range(2):
                     # txport -> rxport
+                    pcap = '/tmp/test{}.pcap'.format(k)
+                    options = {
+                        'pcap': pcap,
+                        'stream_config':{
+                            'txmode' : {},
+                            'transmit_mode': TRANSMIT_CONT,
+                            'rate': 100,}}
                     stream_id = self.tester.pktgen.add_stream(
                         txport, rxport, '/tmp/test{}.pcap'.format(k))
                     self.tester.pktgen.config_stream(stream_id, options)
