@@ -241,7 +241,8 @@ class TestL2fwd(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.send_expect("fg", "l2fwd|# ", 5)
+        self.dut.send_expect("^C", "# ", 5)
 
     def tear_down_all(self):
         """
