@@ -186,23 +186,6 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.close_all_session()
         self.result_table_print()
 
-    def test_perf_vhost_single_core_virtio11_inorder(self):
-        """
-        performance for Vhost PVP virtio 1.1 inorder Path.
-        """
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
-        self.vhost_user = self.dut.new_session(suite="user")
-        self.vhost = self.dut.new_session(suite="vhost")
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1 inorder", frame_size)
-            self.close_all_testpmd()
-
-        self.close_all_session()
-        self.result_table_print()
-
     def test_perf_vhost_single_core_inorder_mergeable(self):
         """
         performance for Vhost PVP In_order mergeable Path.
