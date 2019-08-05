@@ -288,7 +288,7 @@ class TestGeneric_flow_api(TestCase):
             if "86dd" in flow_cmd or "0800" in flow_cmd or "index %s" % str(MAX_QUEUE + 1) in flow_cmd:
                 if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville", "powerville"]:
                     self.dut.send_expect(flow_cmd, "error")
-            elif "88cc" in flow_cmd or "type is 0x8100" in flow_cmd:
+            elif "type is 0x8100" in flow_cmd:
                 if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV"]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
@@ -301,7 +301,7 @@ class TestGeneric_flow_api(TestCase):
             if "86dd" in flow_cmd or "0800" in flow_cmd or "index %s" % str(MAX_QUEUE + 1) in flow_cmd:
                 if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville", "powerville"]:
                     self.dut.send_expect(flow_cmd, "error")
-            elif "88cc" in flow_cmd or "type is 0x8100" in flow_cmd:
+            elif "type is 0x8100" in flow_cmd:
                 if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV"]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
@@ -775,6 +775,7 @@ class TestGeneric_flow_api(TestCase):
                 {'create': 'create', 'flows': ['ether', 'lwapp'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ether', 'ppp'], 'actions': ['drop']},
                 {'create': 'create', 'flows': ['dst_mac', 'ether', 'mpls'], 'actions': ['queue']},
+                {'create': 'create', 'flows': ['ether', 'lldp'], 'actions': ['queue']},
             ]
             extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
             rule_num = extrapkt_rulenum['rulenum']
