@@ -1,4 +1,4 @@
-.. Copyright (c) <2017>, Intel Corporation
+.. Copyright (c) <2017-2019>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -49,123 +49,94 @@ Prerequisites
 Each of the 10Gb Ethernet* ports of the DUT is directly connected in
 full-duplex to a different port of the peer traffic generator.
 
-Assume PF port PCI addresses are 0000:04:00.0 and 0000:04:00.1, their
-Interfaces name are p786p1 and p786p2. Assume generated VF PCI address will
-be 0000:04:10.0, 0000:04:10.1.
+Assume PF port PCI addresses is 0000:04:00.0, their
+Interfaces name is p786p0. Assume generated VF PCI address will
+be 0000:04:10.0.
 
 Iommu pass through feature has been enabled in kernel::
 
-   intel_iommu=on iommu=pt
+    intel_iommu=on iommu=pt
+
+Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
+
+    sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/l3fwd-power/main.c
+
+    export RTE_TARGET=x86_64-native-linuxapp-gcc
+    export RTE_SDK=`/root/DPDK`
+    make -C examples/l3fwd-power
 
 Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d
 in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.
 
-Test Case1: VF interrupt pmd in VM with uio
-===========================================
+Test Case1: Check Interrupt for PF with vfio driver on ixgbe and i40e
+=====================================================================
 
-Create one VF per Port in host and add these two VFs into VM::
+1. Bind NIC PF to igb_uio drvier::
 
+    modprobe vfio-pci;
 
-   usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:04:00.0 0000:04:00.1
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.0/max_vfs
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.1/max_vfs
-        usertools/dpdk-devbind.py --force --bind=pci-stub 0000:04:10.0 0000:04:10.1
+    usertools/dpdk-devbind.py --bind=igb-uio 0000:04:00.0
 
-Start VM and start l3fwd-power with one queue per port in VM::
+2. start l3fwd-power with PF::
 
+    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
-   l3fwd-power -c 7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
-Send one packet to VF0 and VF1, check that thread on core1 and core2 waked up::
+    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
 
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
 
-   L3FWD_POWER: lcore 1 is waked up from rx interrupt on port1,rxq0
-   L3FWD_POWER: lcore 2 is waked up from rx interrupt on port1,rxq0
+4. Check if threads on core 2 have returned to sleep mode::
 
-Check the packet has been normally forwarded.
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
 
-After the packet forwarded, thread on core1 and core 2 will return to sleep::
+Test Case2: Check Interrupt for PF with igb_uio driver on ixgbe and i40e
+========================================================================
 
-   L3FWD_POWER: lcore 1 sleeps until interrupt on port0,rxq0 triggers
-   L3FWD_POWER: lcore 2 sleeps until interrupt on port0,rxq0 triggers
+1. Bind NIC PF to igb_uio drvier::
 
-Send packet flows to VF0 and VF1, check that thread on core1 and core2 will
-keep up awake.
+    modprobe uio;
+    insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
 
-Test Case2: VF interrupt pmd in Host with uio
-=============================================
+    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
 
-Create one VF per Port in host and make sure PF interface up
-uses kernel driver to create vf::
+2. start l3fwd-power with PF::
 
+    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.1/sriov_numvf
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.1/sriov_numvf
+3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
-Bind VF device to igb_uio::
+    sendp([Ether(dst='pf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
 
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
 
-   ./usertools/dpdk-devbind.py --bind=igb_uio 0000:04:10.0 0000:04:10.1
+4. Check if threads on core 2 have returned to sleep mode::
 
-Start host and start l3fwd-power with one queue per port in host::
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
 
+Test Case3: Check Interrupt for VF with vfio driver on ixgbe and i40e
+=====================================================================
 
-   l3fwd-power -c 7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+1. Generate NIC VF, then bind it to vfio drvier::
 
-Send one packet to VF0 and VF1, check that thread on core1 and core2 waked up::
+    echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/sriov_numvfs
 
+    modprobe vfio-pci
+    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
 
-   L3FWD_POWER: lcore 1 is waked up from rx interrupt on port1,rxq0
-   L3FWD_POWER: lcore 2 is waked up from rx interrupt on port1,rxq0
+  Notice:  If your PF is kernel driver, make sure PF link is up when your start testpmd on VF.
 
-Check the packet has been normally forwarded.
+2. Start l3fwd-power with VF::
 
-After the packet forwarded, thread on core1 and core 2 will return to sleep::
+    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
 
-   L3FWD_POWER: lcore 1 sleeps until interrupt on port0,rxq0 triggers
-   L3FWD_POWER: lcore 2 sleeps until interrupt on port0,rxq0 triggers
+3. Send packet with packet generator to the pf NIC, check that thread core2 waked up::
 
-Send packet flows to VF0 and VF1, check that thread on core1 and core2 will
-keep up awake.
+    sendp([Ether(dst='vf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
 
-Test Case3: VF interrupt pmd in Host with vfio
-==============================================
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
 
-Create one VF per Port in host and make sure PF interface up
-uses kernel driver to create vf::
+4. Check if threads on core 2 have returned to sleep mode::
 
-
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.1/sriov_numvf
-        echo 1 >/sys/bus/pci/devices/0000\:04\:00.1/sriov_numvf
-
-Bind VF device to host igb_uio::
-
-
-   ./usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0 0000:04:10.1
-
-Start VM and start l3fwd-power with two queues per port in VM::
-
-
-   l3fwd-power -c 1f -n 4 -- -p 0x3 -P \
-      --config="(0,0,1),(0,1,2)(1,0,3),(1,1,4)"
-
-Send packets with increased dest IP to Port0 and Port1, check that thread on
-core1,core2,core3,core4 waked up::
-
-   L3FWD_POWER: lcore 1 is waked up from rx interrupt on port1,rxq0
-   L3FWD_POWER: lcore 2 is waked up from rx interrupt on port1,rxq1
-   L3FWD_POWER: lcore 3 is waked up from rx interrupt on port1,rxq0
-   L3FWD_POWER: lcore 4 is waked up from rx interrupt on port1,rxq1
-
-Check the packet has been normally forwarded.
-
-After the packet forwarded, thread on core1,core2,core3,core4 will return to
-sleep::
-
-   L3FWD_POWER: lcore 1 sleeps until interrupt on port0,rxq0 triggers
-   L3FWD_POWER: lcore 2 sleeps until interrupt on port0,rxq1 triggers
-   L3FWD_POWER: lcore 3 sleeps until interrupt on port1,rxq0 triggers
-   L3FWD_POWER: lcore 4 sleeps until interrupt on port1,rxq1 triggers
-
-Send packet flows to Port0 and Port1, check that thread on core1,core2,core3,
-core4 will keep up awake.
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
