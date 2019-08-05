@@ -70,26 +70,24 @@ Test case: Fortville ethertype
     testpmd> flow validate 0 ingress pattern eth type is 0x88cc / end actions queue index 5 / end
     testpmd> flow create 0 ingress pattern eth type is 0x88cc / end actions queue index 6 / end
 
-   the i40e don't support the 0x88cc eth type packet. so the last two commands
-   failed.
-
 3. send packets::
 
     pkt1 = Ether(dst="ff:ff:ff:ff:ff:ff")/ARP(pdst="192.168.1.1")
     pkt2 = Ether(dst="00:11:22:33:44:55", type=0x88BB)/Raw('x' * 20)
     pkt3 = Ether(dst="00:11:22:33:44:55", type=0x88e5)/Raw('x' * 20)
     pkt4 = Ether(dst="00:11:22:33:44:55", type=0x8864)/Raw('x' * 20)
+    pkt5 = Ether(dst="00:11:22:33:44:55", type=0x88cc)/Raw('x' * 20)
 
-   verify pkt1 to queue 2, and pkt2 to queue 3, pkt3 to queue 4, pkt4 dropped.
+   verify pkt1 to queue 2, and pkt2 to queue 3, pkt3 to queue 4, pkt4 dropped, pkt5 to queue 6.
 
 4. verify rules can be listed and destroyed::
 
     testpmd> flow list 0
     testpmd> flow destroy 0 rule 0
-    verify pkt1 to queue 0, and pkt2 to queue 3, pkt3 to queue 4,
+    verify pkt1 to queue 0, and pkt2 to queue 3, pkt3 to queue 4, pkt4 dropped, pkt5 to queue 6.
     testpmd> flow list 0
     testpmd> flow flush 0
-    verify pkt1 to queue 0, and pkt2 to queue 0, pkt3 to queue 0, pkt4 to queue 0.
+    verify pkt1 to queue 0, and pkt2 to queue 0, pkt3 to queue 0, pkt4 to queue 0, pkt5 to queue 0.
     testpmd> flow list 0
 
 
