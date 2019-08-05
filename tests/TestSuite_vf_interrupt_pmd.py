@@ -36,13 +36,11 @@ Test vf_interrupt_pmd.
 """
 
 import utils
-import string
 import time
 import re
-from pmd_output import PmdOutput
-from qemu_kvm import QEMUKvm
-from test_case import TestCase
 
+from test_case import TestCase
+from packet import Packet
 
 class TestVfInterruptPmd(TestCase):
 
@@ -52,241 +50,132 @@ class TestVfInterruptPmd(TestCase):
         """
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
-        cores = self.dut.get_core_list("1S/4C/1T")
-        self.coremask = utils.create_mask(cores)
-        self.portmask = utils.create_mask(self.dut_ports)
 
-        self.path = "./examples/l3fwd-power/build/l3fwd-power"
+        cores = "1S/4C/1T"
+        self.number_of_ports = 1
+
+        self.dut_ports = self.dut.get_ports()
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        ports = []
+        for port in range(self.number_of_ports):
+            ports.append(self.dut_ports[port])
+
+        self.core_list = self.dut.get_core_list(cores, socket=self.ports_socket)
+        self.core_user = self.core_list[0]
+
+        self.port_mask = utils.create_mask(ports)
+        self.core_mask_user = utils.create_mask(self.core_list[0:1])
 
         testport_0 = self.tester.get_local_port(self.dut_ports[0])
         self.rx_intf_0 = self.tester.get_interface(testport_0)
-        testport_1 = self.tester.get_local_port(self.dut_ports[1])
-        self.rx_intf_1 = self.tester.get_interface(testport_1)
+        self.tester_mac = self.tester.get_mac(testport_0)
 
         self.mac_port_0 = self.dut.get_mac_address(self.dut_ports[0])
-        self.mac_port_1 = self.dut.get_mac_address(self.dut_ports[1])
 
-        self.dut.virt_exit()
-
-    def build_app(self, use_dut):
-        # build sample app
-        out = use_dut.build_dpdk_apps("./examples/l3fwd-power")
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
+        self.prepare_l3fwd_power()
+        self.dut.send_expect('modprobe vfio-pci', '#')
 
     def set_up(self):
         """
         Run before each test case.
         """
-        pass
+        self.dut.restore_interfaces()
 
-    def generate_sriov_vfport(self, use_driver):
+    def prepare_l3fwd_power(self):
         """
-        generate sriov vfs by port
+        Change the DPDK source code and recompile
         """
-        self.used_dut_port_0 = self.dut_ports[0]
-        self.used_dut_port_1 = self.dut_ports[1]
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port_0, 1, driver=use_driver)
-        self.sriov_vfs_port_0 = self.dut.ports_info[
-            self.used_dut_port_0]['vfs_port']
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port_1, 1, driver=use_driver)
-        self.sriov_vfs_port_1 = self.dut.ports_info[
-            self.used_dut_port_1]['vfs_port']
+        self.dut.send_expect(
+                "sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/l3fwd-power/main.c", "#", 10)
 
-    def bind_vfs(self, driver):
-        """
-        bind vfs to driver
-        """
-        for port in self.sriov_vfs_port_0:
-            port.bind_driver(driver)
-        time.sleep(1)
-        for port in self.sriov_vfs_port_1:
-            port.bind_driver(driver)
-        time.sleep(1)
+        out = self.dut.send_expect("make -C examples/l3fwd-power", "#")
+        self.verify("Error" not in out, "compilation error")
 
-    def setup_vm_env(self):
+    def send_and_verify(self, mac, testinterface):
         """
-        Start One VM with one virtio device
+        Send a packet and verify
         """
-        self.dut_testpmd = PmdOutput(self.dut)
-        self.dut_testpmd.start_testpmd(
-            "Default", "--rxq=4 --txq=4 --port-topology=chained")
-        self.dut_testpmd.execute_cmd("start")
+        pkt = Packet(pkt_type='UDP')
+        pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
+        pkt.send_pkt(tx_port=testinterface)
 
-        vf0_prop_1 = {'opt_host': self.sriov_vfs_port_0[0].pci}
-        vf0_prop_2 = {'opt_host': self.sriov_vfs_port_1[0].pci}
-        self.vm0 = QEMUKvm(self.dut, 'vm0', 'vf_interrupt_pmd')
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_1)
-        self.vm0.set_vm_device(driver='pci-assign', **vf0_prop_2)
+        out1 = self.dut.get_session_output(timeout=2)
+        self.verify(
+                "lcore %s is waked up from rx interrupt on port 0" % self.core_user in out1, "Wake up failed")
+        self.verify(
+                "lcore %s sleeps until interrupt triggers" % self.core_user in out1, "lcore 1 not sleeps")
+
+    def set_NIC_link(self):
+        """
+        When starting l3fwd-power on vf, ensure that PF link is up
+        """
+        self.used_dut_port = self.dut_ports[0]
+        self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
+
+        self.dut.send_expect("ifconfig %s up" % self.host_intf, '#', 3)
+
+    def begin_l3fwd_power(self):
+        """
+        begin l3fwd-power
+        """
+        cmd_vhost_net = "./examples/l3fwd-power/build/l3fwd-power -n %d -c %s" % (
+                self.dut.get_memory_channels(), self.core_mask_user) + \
+                        " -- -P -p 1 --config='(0,0,%s)'" % self.core_user
         try:
-            self.vm0_dut = self.vm0.start()
-            if self.vm0_dut is None:
-                raise Exception("Set up VM ENV failed")
+            self.logger.info("Launch l3fwd_sample sample:")
+            self.out = self.dut.send_expect(cmd_vhost_net, "L3FWD_POWER", 60)
+            if "Error" in self.out:
+                raise Exception("Launch l3fwd-power sample failed")
             else:
-                self.verify(self.vm0_dut.ports_info[
-                            0]['intf'] != 'N/A', "Not interface")
+                self.logger.info("Launch l3fwd-power sample finished")
         except Exception as e:
-            self.destroy_vm_env()
-            self.logger.error("Failure for %s" % str(e))
+            self.logger.error("ERROR: Failed to launch  l3fwd-power sample: %s" % str(e))
 
-        self.vm0_vf0_mac = self.vm0_dut.get_mac_address(0)
-        self.vm0_vf1_mac = self.vm0_dut.get_mac_address(1)
-        self.vm0_dut.send_expect("systemctl stop NetworkManager", "# ", 60)
-
-    def destroy_vm_env(self):
+    def test_nic_interrupt_VF_vfio_pci(self, driver='default'):
         """
-        destroy vm environment
+        Check Interrupt for VF with vfio driver
         """
-        if getattr(self, 'vm0', None):
-            self.vm0_dut.kill_all()
-            self.vm0_dut_ports = None
-            # destroy vm0
-            self.vm0.stop()
-            self.vm0 = None
+        self.set_NIC_link()
 
-        if getattr(self, 'used_dut_port_0', None) != None:
-            self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_0)
-            self.used_dut_port_0 = None
+        # generate VF and bind to vfio-pci
+        self.used_dut_port_0 = self.dut_ports[0]
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 1, driver=driver)
+        self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
 
-        if getattr(self, 'used_dut_port_1', None) != None:
-            self.dut.destroy_sriov_vfs_by_port(self.used_dut_port_1)
-            self.used_dut_port_1 = None
+        for port in self.sriov_vfs_port_0:
+            port.bind_driver('vfio-pci')
 
-        self.env_done = False
+        self.begin_l3fwd_power()
+        pattern = re.compile(r"(([A-Fa-f0-9]{2}:){5}[A-Fa-f0-9]{2})")
+        self.vf_mac = pattern.search(self.out).group()
 
-    def change_port_conf(self, use_dut, lsc_enable=True, rxq_enable=True):
+        self.send_and_verify(self.vf_mac, self.rx_intf_0)
+
+    def test_nic_interrupt_PF_vfio_pci(self):
         """
-        change interrupt enable
+        Check Interrupt for PF with vfio-pci driver
         """
-        sed_cmd_fmt = "/intr_conf.*=.*{/,/\}\,$/c\    .intr_conf = {\\n\\t\\t.lsc = %d,\\n\\t\\t.rxq = %d,\\n\\t},"
-        lsc = 1
-        rxq = 1
-        if lsc_enable:
-            lsc = 0
-        if rxq_enable:
-            rxq = 1
-        sed_cmd_str = sed_cmd_fmt % (lsc, rxq)
-        out = use_dut.send_expect(
-            "sed -i '%s' examples/l3fwd-power/main.c" % sed_cmd_str, "# ", 60)
+        self.dut.ports_info[0]['port'].bind_driver(driver='vfio-pci')
 
-    def scapy_send_packet(self, mac, testinterface, queuenum=1):
-        """
-        Send a packet to port
-        """
-        if queuenum == 1:
-            self.tester.scapy_append(
-                'sendp([Ether(dst="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s")' % (mac, testinterface))
-        elif queuenum == 2:
-            for dst in range(16):
-                self.tester.scapy_append(
-                    'sendp([Ether(dst="%s")/IP(dst="127.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")' % (mac, dst, testinterface))
-        else:
-            for dst in range(256):
-                self.tester.scapy_append(
-                    'sendp([Ether(dst="%s")/IP(dst="127.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")' % (mac, dst, testinterface))
-        self.tester.scapy_execute()
+        self.begin_l3fwd_power()
 
-    def test_vf_VM_uio(self):
-        """
-        verify VF interrupt pmd in VM with uio
-        """
-        self.verify(self.drivername in ['igb_uio'], "NOT Support")
-        self.generate_sriov_vfport('igb_uio')
-        self.bind_vfs('pci-stub')
-        self.setup_vm_env()
-        self.change_port_conf(self.vm0_dut, lsc_enable=True, rxq_enable=False)
-        self.build_app(self.vm0_dut)
+        self.send_and_verify(self.mac_port_0, self.rx_intf_0)
 
-        cmd = self.path + \
-            " -c f -n %d -- -p 0x3 -P --config='(0,0,1),(1,0,2)'" % (
-                self.vm0_dut.get_memory_channels())
-        self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
-        self.scapy_send_packet(self.vm0_vf0_mac, self.rx_intf_0)
-        self.scapy_send_packet(self.vm0_vf1_mac, self.rx_intf_1)
-        out = self.vm0_dut.get_session_output(timeout=30)
-        self.destroy_vm_env()
-        self.dut.send_expect("quit", "# ", 60)
-        self.verify(
-            "lcore 1 is waked up from rx interrupt on port 0" in out, "lcore 1 not waked up")
-        self.verify(
-            "lcore 1 sleeps until interrupt triggers" in out, "lcore 1 not sleeps")
-        self.verify(
-            "lcore 2 is waked up from rx interrupt on port 1" in out, "lcore 2 not waked up")
-        self.verify(
-            "lcore 2 sleeps until interrupt triggers" in out, "lcore 2 not sleeps")
-
-    def test_vf_host_uio(self):
+    def test_nic_interrupt_PF_igb_uio(self):
         """
-        verify VF interrupt pmd in Host with uio
+        Check Interrupt for PF with igb_uio driver
         """
-        self.verify(self.drivername in ['igb_uio'], "NOT Support")
-        self.dut.restore_interfaces()
-        self.generate_sriov_vfport('ixgbe')
-        self.bind_vfs('igb_uio')
-        self.change_port_conf(self.dut, lsc_enable=True, rxq_enable=False)
-        self.build_app(self.dut)
+        self.dut.ports_info[0]['port'].bind_driver(driver='igb_uio')
 
-        cmd = self.path + " -c %s -n %d -- -p %s -P --config='(0,0,1),(1,0,2)'" % (
-            self.coremask, self.dut.get_memory_channels(), self.portmask)
-        self.dut.send_expect(cmd, "L3FWD_POWER", 60)
-        self.scapy_send_packet(self.mac_port_0, self.rx_intf_0)
-        self.scapy_send_packet(self.mac_port_1, self.rx_intf_1)
-        out = self.dut.get_session_output(timeout=60)
-        self.dut.send_expect("^C", "# ", 60)
-        self.verify(
-            "lcore 1 is waked up from rx interrupt on port 0" in out, "lcore 1 not waked up")
-        self.verify(
-            "lcore 1 sleeps until interrupt triggers" in out, "lcore 1 not sleeps")
-        self.verify(
-            "lcore 2 is waked up from rx interrupt on port 1" in out, "lcore 2 not waked up")
-        self.verify(
-            "lcore 2 sleeps until interrupt triggers" in out, "lcore 2 not sleeps")
+        self.begin_l3fwd_power()
 
-    def test_vf_host_vfio(self):
-        """
-        verify VF interrupt pmd in Host with vfio
-        """
-        self.verify(self.drivername in ['vfio-pci'], "NOT Support")
-        self.dut.restore_interfaces()
-        self.generate_sriov_vfport('ixgbe')
-        self.bind_vfs('vfio-pci')
-        self.change_port_conf(self.dut, lsc_enable=True, rxq_enable=False)
-        self.build_app(self.dut)
-
-        cmd = self.path + " -c %s -n %d -- -p %s -P --config='(0,0,1),(0,1,2)(1,0,3),(1,1,4)'" % (
-            self.coremask, self.dut.get_memory_channels(), self.portmask)
-        self.dut.send_expect(cmd, "L3FWD_POWER", 60)
-        self.scapy_send_packet(self.mac_port_0, self.rx_intf_0, 2)
-        self.scapy_send_packet(self.mac_port_1, self.rx_intf_1, 2)
-        out = self.dut.get_session_output(timeout=60)
-        self.dut.send_expect("^C", "# ", 60)
-        print out
-        self.verify(
-            "lcore 1 is waked up from rx interrupt on port 0" in out, "lcore 1 not waked up")
-        self.verify(
-            "lcore 1 sleeps until interrupt triggers" in out, "lcore 1 not sleeps")
-        self.verify(
-            "lcore 2 is waked up from rx interrupt on port 0" in out, "lcore 2 not waked up")
-        self.verify(
-            "lcore 2 sleeps until interrupt triggers" in out, "lcore 2 not sleeps")
-        self.verify(
-            "lcore 3 is waked up from rx interrupt on port 1" in out, "lcore 2 not waked up")
-        self.verify(
-            "lcore 3 sleeps until interrupt triggers" in out, "lcore 2 not sleeps")
-        self.verify(
-            "lcore 4 is waked up from rx interrupt on port 1" in out, "lcore 2 not waked up")
-        self.verify(
-            "lcore 4 sleeps until interrupt triggers" in out, "lcore 2 not sleeps")
+        self.send_and_verify(self.mac_port_0, self.rx_intf_0)
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.virt_exit()
-        self.dut.kill_all()
-        time.sleep(2)
+        self.dut.send_expect("^c", "#", 20)
 
     def tear_down_all(self):
         """
