@@ -451,6 +451,23 @@ class TrexPacketGenerator(PacketGenerator):
         from trex_stl_lib.api import STLClient
         # set trex class
         self.STLClient = STLClient
+        # get configuration from pktgen config file
+        self._get_traffic_option()
+
+    def _get_traffic_option(self):
+        ''' get configuration from pktgen config file '''
+        # set trex coremask
+        _core_mask = self.conf.get("core_mask")
+        if _core_mask:
+            if '0x' in _core_mask:
+                self.core_mask = \
+                    [int(item[2:], 16) for item in _core_mask.split(',')]
+            else:
+                self.core_mask = self.STLClient.CORE_MASK_PIN \
+                    if _core_mask.upper() == 'CORE_MASK_PIN' else \
+                    None
+        else:
+            self.core_mask = None
 
     def _connect(self):
         self._conn = self.STLClient(server=self.conf["server"])
@@ -792,10 +809,9 @@ class TrexPacketGenerator(PacketGenerator):
         warmup = int(self.conf["warmup"]) if self.conf.has_key("warmup") \
                                           else 25
         # set trex coremask
-        wait_interval, core_mask = (
-                        warmup+30, int(self.conf["core_mask"], 16)) \
-                            if self.conf.has_key("core_mask") \
-                            else (warmup+5, 0x3)
+        wait_interval = warmup+30 \
+                        if self.conf.has_key("core_mask") \
+                        else warmup+5
 
         try:
             ###########################################
@@ -806,7 +822,7 @@ class TrexPacketGenerator(PacketGenerator):
                 'ports':    self._traffic_ports,
                 'mult':     rate_percent,
                 'duration': duration,
-                'core_mask':core_mask,
+                'core_mask': self.core_mask,
                 'force':    True,}
             self.logger.info("begin traffic ......")
             self._conn.start(**run_opt)
