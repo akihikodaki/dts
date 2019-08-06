@@ -87,8 +87,10 @@ class TestRxTx_Offload(TestCase):
         Run at the start of each test suite.
         New rx tx offload API Prerequisites
         """
+        # Support i40e/ixgbe NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "niantic"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "niantic", "twinpond", "sagepond", "sageville"], "NIC Unsupported: " + str(self.nic))
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
@@ -115,6 +117,18 @@ class TestRxTx_Offload(TestCase):
         Run before each test case.
         """
         pass
+
+
+    def verify_link_up(self, max_delay=10):
+        ports = self.dut.get_ports(self.nic)
+        for port_id in range(len(ports)):
+            out = self.dut.send_expect("show port info %s" % port_id, "testpmd> ")
+            port_time_up = 0
+            while (port_time_up <= max_delay) and ("Link status: down" in out):
+                time.sleep(1)
+                out = self.dut.send_expect("show port info %s" % port_id, "testpmd> ")
+                port_time_up += 1
+            self.verify("Link status: down" not in out, "Port %s Link down, please check your link" % port_id)
 
     def check_port_capability(self, rxtx):
         """
@@ -147,6 +161,7 @@ class TestRxTx_Offload(TestCase):
 
         result_config = self.dut.send_expect("port start 0", "testpmd> ")
         self.verify("Fail" not in result_config, "Fail to configure port")
+        self.verify_link_up(20)
 
         if rxtx == "rx":
             outstring = self.dut.send_expect("show port 0 rx_offload configuration", "testpmd> ")
@@ -173,6 +188,7 @@ class TestRxTx_Offload(TestCase):
 
         result_config = self.dut.send_expect("port start 0", "testpmd> ")
         self.verify("Fail" not in result_config, "Fail to configure port")
+        self.verify_link_up(20)
 
         acl_offloads = []
         if rxtx == "rx":
@@ -204,6 +220,7 @@ class TestRxTx_Offload(TestCase):
         Send packet and get the queue which packet enter.
         """
         self.dut.send_expect("start", "testpmd> ")
+        self.verify_link_up(20)
         self.tester.scapy_foreground()
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
@@ -221,6 +238,7 @@ class TestRxTx_Offload(TestCase):
         Sends packets and check the flag.
         """
         self.dut.send_expect("start", "testpmd>")
+        self.verify_link_up(20)
         self.tester.scapy_foreground()
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
@@ -245,6 +263,7 @@ class TestRxTx_Offload(TestCase):
         self.verify("Fail" not in result_config, "Fail to configure port")
 
         self.dut.send_expect("start", "testpmd> ")
+        self.verify_link_up(20)
         self.tester.scapy_foreground()
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
@@ -369,8 +388,8 @@ class TestRxTx_Offload(TestCase):
         """
         Set Rx offload by queue.
         """
-        # Only support NNT
-        self.verify(self.nic in ["niantic"], "%s nic not support rx offload setting by queue." % self.nic)
+        # Only support ixgbe NICs
+        self.verify(self.nic in ["niantic", "twinpond", "sagepond", "sageville"], "%s nic not support rx offload setting by queue." % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -425,10 +444,9 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single"]):
+                         "fortville_spirit_single", "fortpark_TLV"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
-            #self.dut.send_expect("port start 0", "testpmd> ")
         self.check_port_config("tx", "NULL")
         self.start_tcpdump(self.tester_itf0)
         self.dut.send_expect("start", "testpmd> ")
@@ -469,12 +487,12 @@ class TestRxTx_Offload(TestCase):
                          "fortville_spirit_single", "fortpark_TLV"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
-            self.dut.send_expect("port start 0", "testpmd> ")
         offload = ["vlan_insert"]
         self.check_port_config("tx", offload)
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("tx_vlan set 0 1", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
+        self.verify_link_up(20)
         self.start_tcpdump(self.tester_itf0)
         self.dut.send_expect("start", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ")
@@ -531,7 +549,7 @@ class TestRxTx_Offload(TestCase):
         """
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         capabilities = self.check_port_capability("tx")
-        # Disable per queue capability first, if it is FVL.
+        # Disable per queue capability first, if it is FVL/Fortpark.
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
                          "fortville_spirit_single", "fortpark_TLV"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
@@ -550,9 +568,9 @@ class TestRxTx_Offload(TestCase):
         """
         Set Rx offload by queue.
         """
-        # Only support FVL
+        # Only support i40e NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single",], "%s nic not support rx offload setting by queue." % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support rx offload setting by queue." % self.nic)
         # Check offload configuration by port and by queue.
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         offload = ["mbuf_fast_free"]
