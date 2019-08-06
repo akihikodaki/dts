@@ -101,7 +101,7 @@ class TestNicSingleCorePerf(TestCase):
             self.expected_throughput = self.get_suite_cfg()[
                 'expected_throughput'][self.nic]
 
-        # initilize throughput attribution
+        # initialize throughput attribution
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
@@ -182,7 +182,7 @@ class TestNicSingleCorePerf(TestCase):
 
                 # measure throughput
                 stream_ids = self.prepare_stream(frame_size)
-                traffic_opt = {'delay': self.test_duration}
+                traffic_opt = {'duration': self.test_duration}
                 _, packets_received = self.tester.pktgen.measure_throughput(
                     stream_ids, traffic_opt)
                 throughput = packets_received / 1000000.0
@@ -193,7 +193,7 @@ class TestNicSingleCorePerf(TestCase):
 
                 self.verify(throughput,
                     "No traffic detected, please check your configuration")
-                self.logger.info("Trouthput of " +
+                self.logger.info("Throughput of " +
                     "framesize: {}, rxd/txd: {} is :{} Mpps".format(
                         frame_size, nb_desc, throughput))
 
