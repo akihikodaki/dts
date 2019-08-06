@@ -651,7 +651,10 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "niantic",
+                "twinpond",
+                "sagepond",
+                "sageville"
             ],
             "Target": [
                 "ALL"
