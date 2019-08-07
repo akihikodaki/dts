@@ -50,7 +50,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
     max_queue = 16
 
     def set_up_all(self):
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g", "fortville_spirit_single"],
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g", "fortville_spirit_single", "fortpark_TLV"],
                     "Only supported by Fortville")
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) > 1, "Insufficient ports")
