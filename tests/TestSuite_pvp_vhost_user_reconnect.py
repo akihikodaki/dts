@@ -40,8 +40,8 @@ import re
 import utils
 import time
 from test_case import TestCase
-from settings import HEADER_SIZE
 from virt_common import VM
+from packet import Packet, save_packets
 from pktgen import PacketGeneratorHelper
 
 
@@ -76,8 +76,11 @@ class TestPVPVhostUserReconnect(TestCase):
         self.src1 = "192.168.4.1"
         self.dst1 = "192.168.3.1"
         self.checked_vm = False
-        self.header_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
 
+        self.out_path = '/tmp/%s' % self.suite_name
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
 
@@ -266,15 +269,14 @@ class TestPVPVhostUserReconnect(TestCase):
 
     def send_and_verify(self, cycle=0, tinfo=""):
         for frame_size in self.frame_sizes:
-            payload = frame_size - self.header_size
-            flow = '[Ether(dst="%s")/IP(src="%s",dst="%s")/UDP()/("X"*%d)]' % (
-                    self.dst_mac, self.src1, self.dst1, payload)
-            self.tester.scapy_append('wrpcap("reconnect.pcap", %s)' % flow)
-            self.tester.scapy_execute()
+            pkt = Packet(pkt_type = 'UDP', pkt_len = frame_size)
+            pkt.config_layers([('ether', {'dst': '%s' % self.dst_mac}),
+                            ('ipv4', {'dst': '%s' % self.dst1, 'src': '%s' % self.src1})])
+            save_packets([pkt], "%s/reconnect.pcap" % self.out_path)
 
             tgenInput = []
             port = self.tester.get_local_port(self.pf)
-            tgenInput.append((port, port, "reconnect.pcap"))
+            tgenInput.append((port, port, "%s/reconnect.pcap" % self.out_path))
 
             self.tester.pktgen.clear_streams()
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
