@@ -111,6 +111,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         command_line_client = command_client % (
                         self.core_mask_l3fwd, self.dut.get_memory_channels(),
                         vdev_info, port_info, config_info)
+        self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
         time.sleep(10)
         out = self.vhost.get_session_before()
