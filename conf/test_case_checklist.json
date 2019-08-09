@@ -839,8 +839,7 @@
                 "kawela_4",
                 "springville",
                 "ironpond",
-                "springfountain",
-                "twinpond"
+                "springfountain"
             ],
             "Target": [
                 "ALL"
@@ -875,8 +874,7 @@
                 "ironpond",
                 "springfountain",
                 "cavium_a034",
-                "cavium_a011",
-                "twinpond"
+                "cavium_a011"
             ],
             "Target": [
                 "ALL"
