@@ -40,6 +40,8 @@ from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
 
+RSS_KEY = '6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E'
+
 class TestRuntimeVfQn(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
     def set_up_all(self):
@@ -185,6 +187,7 @@ class TestRuntimeVfQn(TestCase):
     def testpmd_config_cmd_list(self, qn):
         cmd_list = [['stop'],
                     ['port stop all'],
+                    ['port config 0 rss-hash-key ipv4 %s' % RSS_KEY],
                     ['port config all txq %d' % qn],
                     ['port config all rxq %d' % qn],
                     ['port start all']]
@@ -275,6 +278,7 @@ class TestRuntimeVfQn(TestCase):
                 self.vm0_testpmd.execute_cmd('set verbose 1')
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
+                self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 %s' % RSS_KEY)
                 self.verify_result(valid_qn, 500)
                 self.vm0_testpmd.execute_cmd('quit', '# ')
             else:
@@ -282,6 +286,7 @@ class TestRuntimeVfQn(TestCase):
                                                param=' --rxq=%d --txq=%d' % (valid_qn, valid_qn))
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
+                self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 %s' % RSS_KEY)
                 self.verify_result(valid_qn, 500)
                 self.vm0_testpmd.execute_cmd('quit', '# ')
 
