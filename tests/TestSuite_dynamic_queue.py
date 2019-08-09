@@ -33,7 +33,7 @@ class TestDynamicQueue(TestCase):
             self.dut_testpmd.start_testpmd(
                 "all", "--port-topology=chained --txq=%s --rxq=%s"
                 % (self.PF_QUEUE, self.PF_QUEUE))
-        elif (self.nic in ["cavium_a063"]):
+        elif (self.nic in ["cavium_a063", "cavium_a064"]):
             eal_opts = ""
             for port in self.dut_ports:
                 eal_opts += "-w %s,max_pools=256 "%(self.dut.get_port_pci(self.dut_ports[port]))
@@ -152,7 +152,7 @@ class TestDynamicQueue(TestCase):
             out = self.dut_testpmd.execute_cmd('stop')
             tx_num = qringsize - 1
 
-            if self.nic == "cavium_a063":
+            if (self.nic in ["cavium_a063", "cavium_a064"]):
                 self.verify("TX-packets: 0" in out,
                             "Fail to stop txq at runtime")
             else:
