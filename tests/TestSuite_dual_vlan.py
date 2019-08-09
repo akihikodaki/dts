@@ -339,7 +339,7 @@ class TestDualVlan(TestCase):
         """
         Enable/Disable VLAN packets strip on queue
         """
-        self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063"], "%s NIC not support queue vlan strip " % self.nic)
+        self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063", "cavium_a064"], "%s NIC not support queue vlan strip " % self.nic)
 
         self.mode_config(filter="off")
         self.mode_config(qinq="off")
