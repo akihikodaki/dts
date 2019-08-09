@@ -168,7 +168,7 @@ class TestLinkFlowctrl(TestCase):
         tgenInput = []
         tgenInput.append((tester_tx_port, tester_rx_port, "test.pcap"))
 
-        if (self.nic in ["cavium_a063"]):
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
              self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 autoneg %s %d " % (
                              flow_control,
                              flow_control,
@@ -277,7 +277,7 @@ class TestLinkFlowctrl(TestCase):
         PAUSE Frames must not be received by testpmd
         """
 
-        if (self.nic in ["cavium_a063"]):
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             pause_frames = [self.build_pause_frame(0),
                             self.build_pause_frame(1)]
         else:
@@ -296,7 +296,7 @@ class TestLinkFlowctrl(TestCase):
         PAUSE Frames must not be received by testpmd
         """
 
-        if (self.nic in ["cavium_a063"]):
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             pause_frames = [self.build_pause_frame(0),
                             self.build_pause_frame(1)]
         else:
