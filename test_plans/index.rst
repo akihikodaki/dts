@@ -189,7 +189,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vdev_primary_secondary_test_plan
     vhost_1024_ethports_test_plan
     virtio_pvp_regression_test_plan
-    virtio_user_as_exceptional_path
+    virtio_user_as_exceptional_path_test_plan
 
     unit_tests_cmdline_test_plan
     unit_tests_crc_test_plan
@@ -226,3 +226,7 @@ The following are the test plans for the DPDK DTS automated test system.
     dpdk_hugetlbfs_mount_size_test_plan
     nic_single_core_perf_test_plan
     power_managerment_throughput_test_plan
+    ethtool_stats_test_plan
+    iavf_test_plan
+    packet_capture_test_plan
+    packet_ordering_test_plan
