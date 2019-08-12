@@ -265,7 +265,10 @@ class TestShutdownApi(TestCase):
         """
         RX_OFFLOAD_KEEP_CRC = 0x10000
 
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        else:
+            self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
         crc_keep_temp = []
