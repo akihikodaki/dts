@@ -149,7 +149,7 @@ class TestPmdrssreta(TestCase):
         i = 0
         for tmp_reta_line in reta_lines:
             status = "false"
-            if(self.nic in ["cavium_a063"]):
+            if(self.nic in ["cavium_a063", "cavium_a064"]):
                 # compute the hash result using simple XOR.
                 hash_index_tmp = 0
                 index_tmp = tmp_reta_line["RSS hash"].strip("0x")
@@ -233,7 +233,7 @@ class TestPmdrssreta(TestCase):
                 self.verify("error" not in out, "Configuration of RSS hash failed: Invalid argument")
 
                 # configure the reta with specific mappings.
-                if(self.nic in ["cavium_a063"]):
+                if(self.nic in ["cavium_a063", "cavium_a064"]):
                     for i in range(64):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
@@ -259,7 +259,7 @@ class TestPmdrssreta(TestCase):
             self.dut.send_expect("quit", "# ", 30)
 
     def test_rss_key_size(self):
-        nic_rss_key_size = {"fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "redrockcanyou": 40, "atwood": 40,  "boulderrapid": 40, "fortpark_TLV": 52, "hi1822": 40, "cavium_a063": 48}
+        nic_rss_key_size = {"fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "redrockcanyou": 40, "atwood": 40,  "boulderrapid": 40, "fortpark_TLV": 52, "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48}
         self.verify(self.nic in nic_rss_key_size.keys(), "Not supporte rss key on %s" % self.nic)
 
         dutPorts = self.dut.get_ports(self.nic)
