@@ -41,9 +41,11 @@ from test_case import TestCase
 from settings import HEADER_SIZE
 from virt_common import VM
 from packet import Packet, send_packets, save_packets
+from pmd_output import PmdOutput
+from pktgen import PacketGeneratorHelper
 
 
-class TestVhostUserOneCopyOneVm(TestCase):
+class TestVhostMultiQueueQemu(TestCase):
 
     def set_up_all(self):
         # Get and verify the ports
@@ -69,6 +71,14 @@ class TestVhostUserOneCopyOneVm(TestCase):
         self.number_of_ports = 1
         self.header_row = ["FrameSize(B)", "Throughput(Mpps)", "LineRate(%)", "Cycle"]
         self.memory_channel = self.dut.get_memory_channels()
+        self.pmd_out = PmdOutput(self.dut)
+
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -76,7 +86,7 @@ class TestVhostUserOneCopyOneVm(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT vhost-switch", "#")
+        self.dut.send_expect("killall -s INT testpmd", "#")
 
         self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         self.vm_testpmd_vector = self.target + "/app/testpmd -c %s -n 3" + \
@@ -135,33 +145,25 @@ class TestVhostUserOneCopyOneVm(TestCase):
         for frame_size in self.frame_sizes:
             info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
             self.logger.info(info)
-            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
+            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
             tgenInput = []
 
             pkt1 = Packet()
-            pkt1.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
+            pkt1.assign_layers(['ether', 'ipv4', 'raw'])
             pkt1.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.1'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
-            pkt2 = Packet()
-            pkt2.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt2.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.20'}),
-                              ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
-            pkt3 = Packet()
-            pkt3.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt3.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.7'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
-            pkt4 = Packet()
-            pkt4.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
-            pkt4.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.8'}),
-                               ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+                               ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
 
-            pkt = [pkt1, pkt2, pkt3, pkt4]
-            save_packets(pkt, "/root/multiqueue_2.pcap")
+            pkt = [pkt1]
+            save_packets(pkt, "%s/multiqueue.pcap" % self.out_path)
 
             port = self.tester.get_local_port(self.pf)
-            tgenInput.append((port, port, "multiqueue_2.pcap"))
+            tgenInput.append((port, port, "%s/multiqueue.pcap" % self.out_path))
 
-            _, pps = self.tester.traffic_generator_throughput(tgenInput, delay=30)
+            fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, fields_config, self.tester.pktgen)
+            traffic_opt = {'delay': 5}
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
             pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size,
                                      self.number_of_ports))
@@ -263,6 +265,9 @@ class TestVhostUserOneCopyOneVm(TestCase):
 
         self.dut.send_expect("stop", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
+        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
+        self.verify(res is True, 'There has port link is down')
+
 
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
         self.send_and_verify("vhost queue = virtio queue")
@@ -301,6 +306,8 @@ class TestVhostUserOneCopyOneVm(TestCase):
         self.dut.send_expect("port start all", "testpmd>", 20)
         self.dut.send_expect("start", "testpmd>")
         self.dut.send_expect("clear port stats all", "testpmd>")
+        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
+        self.verify(res is True, 'There has port link is down')
 
         self.send_and_verify("vhost queue = virtio queue")
 
@@ -313,6 +320,7 @@ class TestVhostUserOneCopyOneVm(TestCase):
         Clear vhost-switch and qemu to avoid blocking the following TCs
         """
         self.vm.stop()
+        self.dut.kill_all()
         time.sleep(2)
 
     def tear_down_all(self):
