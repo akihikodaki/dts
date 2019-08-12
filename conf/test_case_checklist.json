@@ -266,7 +266,8 @@
                 "springville",
                 "fortville_25g",
                 "fortpark_TLV",
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -286,7 +287,8 @@
                 "fortville_spirit_single",
                 "fortville_25g",
                 "fortpark_TLV",
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -495,7 +497,8 @@
                 "fortpark_TLV",
                 "sagepond",
                 "sageville",
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2101,7 +2104,8 @@
                 "cavium_a011",
                 "cavium_a063",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2193,7 +2197,8 @@
                 "fortpark",
                 "fortpark_TLV",
                 "cavium_a063",
-                "fortpark_TLV_vf"
+                "fortpark_TLV_vf",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2243,7 +2248,8 @@
                 "ALL"
             ],
             "NIC": [
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2258,7 +2264,8 @@
                 "ALL"
             ],
             "NIC": [
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2273,7 +2280,8 @@
                 "ALL"
             ],
             "NIC": [
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2288,7 +2296,8 @@
                 "ALL"
             ],
             "NIC": [
-                "cavium_a063"
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
