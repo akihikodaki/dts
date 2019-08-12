@@ -365,7 +365,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt1, rss_queue)
             self.send_and_check(self.pkt7, rss_queue)
             self.send_and_check(self.pkt8, rss_queue)
-        elif(self.nic in ["cavium_a063"]):
+        elif(self.nic in ["cavium_a063", "cavium_a064"]):
             rss_queue = ["1", "4", "7"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
