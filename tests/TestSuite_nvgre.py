@@ -162,7 +162,7 @@ class NvgreTestConfig(object):
         """
         Return nvgre packet type
         """
-        if "cavium_a063" in nic:
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             if self.outer_ip_proto !=47:
                 if self.outer_l3_type == 'IPv4':
                     return 'L3_IPV4'
@@ -361,7 +361,7 @@ class TestNvgre(TestCase):
         nvgre Prerequisites
         """
         # this feature only enable in FVL now
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063", "cavium_a064"]:
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
