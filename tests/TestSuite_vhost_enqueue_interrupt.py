@@ -122,6 +122,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         command_line_client = command_client % (
                         self.core_mask_l3fwd, self.mem_channels,
                         self.queues, config_info)
+        self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
         time.sleep(10)
         out = self.vhost.get_session_before()
@@ -142,8 +143,8 @@ class TestVhostEnqueueInterrupt(TestCase):
                                 self.verify_info[i]['queue'])
             elif status == "sleeps":
                 info = "lcore %s sleeps until interrupt triggers" % self.verify_info[i]["core"]
-            self.logger.info(info)
             self.verify(info in out, "The CPU status not right for %s" % info)
+            self.logger.info(info)
 
     def send_and_verify(self):
         """
