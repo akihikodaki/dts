@@ -199,7 +199,7 @@ class TestVlanEthertypeConfig(TestCase):
                              dutRxPortId, "testpmd> ", 20)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic == "cavium_a063":
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -231,7 +231,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic == "cavium_a063":
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -263,7 +263,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ", 20)
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic == "cavium_a063":
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
@@ -292,7 +292,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if self.nic == "cavium_a063":
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]
