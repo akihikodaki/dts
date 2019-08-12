@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) <2019> Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,8 @@ Test PVP vhost single core performance using virtio_user on 8 tx/rx path.
 
 import utils
 from test_case import TestCase
-from settings import HEADER_SIZE
+from packet import Packet, save_packets
+from pktgen import PacketGeneratorHelper
 
 
 class TestPVPMultiPathVhostPerformance(TestCase):
@@ -48,8 +49,6 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.core_config = "1S/5C/1T"
         self.number_of_ports = 1
-        self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + \
-            HEADER_SIZE['udp']
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
@@ -58,10 +57,17 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.core_list_host = self.core_list[3:5]
         self.core_mask_user = utils.create_mask(self.core_list_user)
         self.core_mask_host = utils.create_mask(self.core_list_host)
-        if self.dut.cores[len(self.dut.cores) - 1]['socket'] == '0':
+        if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
             self.socket_mem = '1024'
         else:
             self.socket_mem = '1024,1024'
+
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -78,7 +84,6 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         Send packet with packet generator and verify
         """
-        payload_size = frame_size - self.headers_size
         tgen_input = []
         for port in xrange(self.number_of_ports):
             rx_port = self.tester.get_local_port(
@@ -87,14 +92,16 @@ class TestPVPMultiPathVhostPerformance(TestCase):
                 self.dut_ports[(port) % self.number_of_ports])
             destination_mac = self.dut.get_mac_address(
                 self.dut_ports[(port) % self.number_of_ports])
-            self.tester.scapy_append(
-                'wrpcap("l2fwd_%d.pcap", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' %
-                (port, destination_mac, payload_size))
 
-            tgen_input.append((tx_port, rx_port, "l2fwd_%d.pcap" % port))
+            pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
+            pkt.config_layer('ether', {'dst': '%s' % destination_mac})
+            save_packets([pkt], "%s/multi_path_%d.pcap" % (self.out_path, port))
+            tgen_input.append((tx_port, rx_port, "%s/multi_path_%d.pcap" % (self.out_path, port)))
 
-        self.tester.scapy_execute()
-        _, pps = self.tester.traffic_generator_throughput(tgen_input)
+        self.tester.pktgen.clear_streams()
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
+        traffic_opt = {'delay': 5}
+        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
         Mpps = pps / 1000000.0
         self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
 
