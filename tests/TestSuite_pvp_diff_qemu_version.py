@@ -45,6 +45,7 @@ from scapy.utils import wrpcap
 from test_case import TestCase
 from settings import HEADER_SIZE
 from virt_common import VM
+from pktgen import PacketGeneratorHelper
 
 
 class TestVhostPVPDiffQemuVersion(TestCase):
@@ -73,6 +74,13 @@ class TestVhostPVPDiffQemuVersion(TestCase):
                         " in region 'suite' like packet_sizes=[64, 128, 256]")
         res = self.verify_qemu_version_config()
         self.verify(res is True, "The path of qemu version in config file not right")
+
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -221,14 +229,19 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             payload = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
             flow = '[Ether(dst="%s")/Dot1Q(vlan=%s)/IP(src="%s",dst="%s")/("X"*%d)]' % (
                 self.virtio1_mac, vlan_id1, self.src1, self.dst1, payload)
-            self.tester.scapy_append('wrpcap("pvp_diff_qemu_version.pcap", %s)' % flow)
+            self.tester.scapy_append('wrpcap("%s/pvp_diff_qemu_version.pcap", %s)' % (
+                                self.out_path, flow))
             self.tester.scapy_execute()
 
             tgenInput = []
             port = self.tester.get_local_port(self.pf)
-            tgenInput.append((port, port, "pvp_diff_qemu_version.pcap"))
-            _, pps = self.tester.traffic_generator_throughput(
-                tgenInput, delay=30)
+            tgenInput.append((port, port, "%s/pvp_diff_qemu_version.pcap" % self.out_path))
+
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, None, self.tester.pktgen)
+            # set traffic option
+            traffic_opt = {'delay': 5, 'duration': 20}
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
             pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
             self.verify(Mpps != 0, "can not received data of frame size %d" % frame_size)
