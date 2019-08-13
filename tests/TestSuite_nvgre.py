@@ -162,7 +162,7 @@ class NvgreTestConfig(object):
         """
         Return nvgre packet type
         """
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if nic in ["cavium_a063", "cavium_a064"]:
             if self.outer_ip_proto !=47:
                 if self.outer_l3_type == 'IPv4':
                     return 'L3_IPV4'
