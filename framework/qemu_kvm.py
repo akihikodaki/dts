@@ -813,8 +813,6 @@ class QEMUKvm(VirtBase):
             opts['opt_settings'] = options['opt_settings']
         if 'opt_legacy' in options.keys() and options['opt_legacy']:
             opts['opt_legacy'] = options['opt_legacy']
-        if 'opt_settings' in options.keys() and options['opt_settings']:
-            opts['opt_settings'] = options['opt_settings']
         self.__add_vm_virtio_net_pci(**opts)
 
     def __add_vm_virtio_cuse_pci(self, **options):
