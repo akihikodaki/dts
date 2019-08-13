@@ -44,6 +44,7 @@ from config import VIRTCONF
 from exception import StartVMFailedException
 import xml.etree.ElementTree as ET
 from xml.etree.ElementTree import ElementTree
+from xml.dom import minidom
 
 
 class LibvirtKvm(VirtBase):
@@ -102,7 +103,8 @@ class LibvirtKvm(VirtBase):
         """
         arch = self.host_session.send_expect('uname -m', '# ')
         if arch == 'aarch64':
-            out = self.host_session.send_expect('service libvirtd status', "# ")
+            out = self.host_session.send_expect(
+                'service libvirtd status', "# ")
             if 'active (running)' not in out:
                 return False
             return True
@@ -214,12 +216,11 @@ class LibvirtKvm(VirtBase):
         os = self.domain.find('os')
         if 'loader' in options.keys():
             loader = ET.SubElement(
-            os, 'loader', {'readonly': 'yes', 'type': 'pflash'})
+                os, 'loader', {'readonly': 'yes', 'type': 'pflash'})
             loader.text = options['loader']
         if 'nvram' in options.keys():
             nvram = ET.SubElement(os, 'nvram')
             nvram.text = options['nvram']
-
 
     def set_vm_default_aarch64(self):
         os = ET.SubElement(self.domain, 'os')
@@ -231,7 +232,7 @@ class LibvirtKvm(VirtBase):
         ET.SubElement(features, 'acpi')
 
         ET.SubElement(self.domain, 'cpu',
-            {'mode': 'host-passthrough', 'check': 'none'})
+                      {'mode': 'host-passthrough', 'check': 'none'})
 
     def set_vm_default_x86_64(self):
         os = ET.SubElement(self.domain, 'os')
@@ -252,7 +253,6 @@ class LibvirtKvm(VirtBase):
         set_default_func = getattr(self, 'set_vm_default_' + arch)
         if callable(set_default_func):
             set_default_func()
-            
 
         # qemu-kvm for emulator
         device = ET.SubElement(self.domain, 'devices')
@@ -338,13 +338,14 @@ class LibvirtKvm(VirtBase):
 
         if 'opt_controller' in options:
             controller = ET.SubElement(devices, 'controller',
-                {'type': bus,
-                'index': hex(self.controllerindex)[2:],
-                'model': options['opt_controller']})
+                                       {'type': bus,
+                                        'index': hex(self.controllerindex)[2:],
+                                        'model': options['opt_controller']})
             self.controllerindex += 1
-            ET.SubElement(controller, 'address',
+            ET.SubElement(
+                controller, 'address',
                 {'type': 'pci', 'domain': '0x0000', 'bus': hex(self.pciindex),
-                'slot': '0x00', 'function': '0x00'})
+                 'slot': '0x00', 'function': '0x00'})
             self.pciindex += 1
 
     def add_vm_serial_port(self, **options):
@@ -356,18 +357,26 @@ class LibvirtKvm(VirtBase):
                 else:
                     serial_type = 'unix'
                 if serial_type == 'pty':
-                    serial = ET.SubElement(devices, 'serial', {'type': serial_type})
+                    serial = ET.SubElement(
+                        devices, 'serial', {'type': serial_type})
                     ET.SubElement(serial, 'target', {'port': '0'})
                 elif serial_type == 'unix':
-                    serial = ET.SubElement(devices, 'serial', {'type': serial_type})
+                    serial = ET.SubElement(
+                        devices, 'serial', {'type': serial_type})
                     self.serial_path = "/tmp/%s_serial.sock" % self.vm_name
-                    ET.SubElement(serial, 'source', {'mode': 'bind', 'path': self.serial_path})
+                    ET.SubElement(
+                        serial,
+                        'source',
+                        {'mode': 'bind', 'path': self.serial_path})
                     ET.SubElement(serial, 'target', {'port': '0'})
                 else:
-                    print utils.RED("Serial type %s is not supported!" % serial_type)
+                    print utils.RED(
+                        "Serial type %s is not supported!" % serial_type)
                     return False
-                console = ET.SubElement(devices, 'console', {'type': serial_type})
-                ET.SubElement(console, 'target', {'type': 'serial', 'port': '0'})
+                console = ET.SubElement(
+                    devices, 'console', {'type': serial_type})
+                ET.SubElement(
+                    console, 'target', {'type': 'serial', 'port': '0'})
 
     def add_vm_login(self, **options):
         """
@@ -396,14 +405,14 @@ class LibvirtKvm(VirtBase):
             bus = m.group(1)
             slot = m.group(2)
             func = m.group(3)
-            dom  = '0'
+            dom = '0'
             return (bus, slot, func, dom)
         m = re.match(pci_regex_domain, pci_address)
         if m is not None:
             bus = m.group(2)
             slot = m.group(3)
             func = m.group(4)
-            dom  = m.group(1)
+            dom = m.group(1)
             return (bus, slot, func, dom)
         return None
 
@@ -427,7 +436,6 @@ class LibvirtKvm(VirtBase):
             print utils.RED("Missing opt_host for device option!!!")
             return False
 
-
         pci = self.__parse_pci(pci_addr)
         if pci is None:
             return False
@@ -449,8 +457,8 @@ class LibvirtKvm(VirtBase):
             return False
         bus, slot, func, dom = pci
         ET.SubElement(hostdevice, 'address', {
-              'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
-              'slot': '0x%s' % slot, 'function': '0x%s' % func})
+            'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
+            'slot': '0x%s' % slot, 'function': '0x%s' % func})
         # save host and guest pci address mapping
         pci_map = {}
         pci_map['hostpci'] = pci_addr
@@ -570,11 +578,15 @@ class LibvirtKvm(VirtBase):
 
     def _start_vm(self):
         xml_file = "/tmp/%s.xml" % self.vm_name
-        try:
+        if os.path.exists(xml_file):
             os.remove(xml_file)
-        except:
-            pass
         self.root.write(xml_file)
+        with open(xml_file, 'rb') as fp:
+            content = fp.read()
+        doc = minidom.parseString(content)
+        vm_content = doc.toprettyxml(indent='    ')
+        with open(xml_file, 'wb') as fp:
+            fp.write(vm_content)
         self.host_session.copy_file_to(xml_file)
         time.sleep(2)
 
