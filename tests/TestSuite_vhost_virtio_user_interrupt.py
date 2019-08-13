@@ -96,6 +96,7 @@ class TestVirtioUserInterrupt(TestCase):
                     " -P --config='(0,0,%s)' --parse-ptype "
         cmd_l3fwd = cmd_l3fwd % (self.mem_channel, self.core_mask_l3fwd,
                     path, self.core_interrupt)
+        self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
         time.sleep(10)
         out = self.l3fwd.get_session_before()
@@ -108,6 +109,9 @@ class TestVirtioUserInterrupt(TestCase):
         """
         start testpmd on vhost side
         """
+        if len(pci) == 0:
+            pci_info = self.dut.ports_info[self.dut_ports[0]]['pci']
+            pci = '-w %s' % pci_info
         cmd_vhost_user = self.dut.target + "/app/testpmd -n %d -c %s " + \
               "--socket-mem 1024,1024 --legacy-mem %s " + \
               "--file-prefix=vhost " + \
@@ -143,8 +147,8 @@ class TestVirtioUserInterrupt(TestCase):
         elif status == "sleeps":
             info = "lcore %s sleeps until interrupt triggers"
         info = info % self.core_interrupt
-        self.logger.info(info)
         self.verify(info in out, "The CPU status not right for %s" % info)
+        self.logger.info(info)
 
     def check_virtio_side_link_status(self, status):
         out = self.virtio.send_expect("show port info 0", "testpmd> ", 20)
