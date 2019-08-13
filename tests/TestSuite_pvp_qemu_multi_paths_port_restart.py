@@ -41,9 +41,10 @@ port restart test with each path
 import utils
 import time
 import re
-from settings import HEADER_SIZE
 from virt_common import VM
 from test_case import TestCase
+from packet import Packet, save_packets
+from pktgen import PacketGeneratorHelper
 
 
 class TestPVPQemuMultiPathPortRestart(TestCase):
@@ -64,6 +65,13 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.vm_dut = None
         self.virtio1_mac = "52:54:00:00:00:01"
+
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -195,16 +203,18 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start to send packet and get the throughput
         """
-        payload = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
-        flow = '[Ether(dst="%s")/IP(src="192.168.4.1",dst="192.168.3.1")/("X"*%d)]' % (
-            self.dst_mac, payload)
-        self.tester.scapy_append('wrpcap("pvp_multipath.pcap", %s)' % flow)
-        self.tester.scapy_execute()
+        pkt = Packet(pkt_type='IP_RAW', pkt_len=frame_size)
+        pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
+        save_packets([pkt], "%s/pvp_multipath.pcap" % (self.out_path))
 
         tgenInput = []
         port = self.tester.get_local_port(self.dut_ports[0])
-        tgenInput.append((port, port, "pvp_multipath.pcap"))
-        _, pps = self.tester.traffic_generator_throughput(tgenInput, delay=30)
+        tgenInput.append((port, port, "%s/pvp_multipath.pcap" % self.out_path))
+        self.tester.pktgen.clear_streams()
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, None, self.tester.pktgen)
+        # set traffic option
+        traffic_opt = {'delay': 5}
+        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
         Mpps = pps / 1000000.0
         self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
         throughput = Mpps * 100 / \
