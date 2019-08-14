@@ -601,14 +601,18 @@ class Ixia(SSHConnection):
                     "set chasId [ixGetChassisID %s]" % self.tclServerIP, "% ")
         self.chasId = int(out.strip())
 
-        self.send_expect("ixClearOwnership [list %s]" % string.join(
+        out = self.send_expect("ixClearOwnership [list %s]" % string.join(
             ['[list %d %d %d]' % (self.chasId, item['card'], item['port'])
                 for item in self.ports], ' '),
             "% ", 10)
-        self.send_expect("ixTakeOwnership [list %s] force" % string.join(
+        if out.strip()[-1] != '0':
+            return False
+        out = self.send_expect("ixTakeOwnership [list %s] force" % string.join(
             ['[list %d %d %d]' % (self.chasId, item['card'], item['port'])
                 for item in self.ports], ' '),
             "% ", 10)
+        if out.strip()[-1] != '0':
+            return False
 
         return True
 
