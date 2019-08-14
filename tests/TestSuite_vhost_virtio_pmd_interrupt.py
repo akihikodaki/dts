@@ -38,10 +38,11 @@ import utils
 import time
 from virt_common import VM
 from test_case import TestCase
-from etgen import IxiaPacketGenerator
+from packet import Packet, save_packets
+from pktgen import PacketGeneratorHelper
 
 
-class TestVhostVirtioPmdInterrupt(TestCase, IxiaPacketGenerator):
+class TestVhostVirtioPmdInterrupt(TestCase):
 
     def set_up_all(self):
         """
@@ -62,6 +63,13 @@ class TestVhostVirtioPmdInterrupt(TestCase, IxiaPacketGenerator):
         self.logger.info("Please comfirm the kernel of vm greater than 4.8.0 "
                         "and enable vfio-noiommu in kernel")
 
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
+
     def set_up(self):
         """
         Run before each test case.
@@ -73,25 +81,6 @@ class TestVhostVirtioPmdInterrupt(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.vm_dut = None
-
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len,
-                            options, version, flags, ihl, ttl, id):
-        """
-        Configure IP protocol.
-        """
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        if self.fix_ip is False:
-            self.add_tcl_cmd('ip config -destIpAddrMode ipRandom')
-        else:
-            self.add_tcl_cmd('ip config -destIpAddr "%s"' % dst)
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol %d" % proto)
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
 
     def get_core_list(self):
         """
@@ -160,6 +149,7 @@ class TestVhostVirtioPmdInterrupt(TestCase, IxiaPacketGenerator):
                          "-c %s -n 4 --log-level='user1,7' -- -p 1 -P " + \
                          "--config '%s' --no-numa  --parse-ptype "
         command_line_client = command_client % (core_mask_l3fwd, config_info)
+        self.vm_dut.get_session_output(timeout=2)
         self.vm_dut.send_expect(command_line_client, "POWER", 40)
         time.sleep(10)
         out = self.vm_dut.get_session_output()
@@ -229,13 +219,30 @@ class TestVhostVirtioPmdInterrupt(TestCase, IxiaPacketGenerator):
             self.verify(change == self.queues,
                         "There has cores not change the status")
 
+    def set_fields(self):
+        """
+        set ip protocol field behavior
+        """
+        fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
+        return fields_config
+
     def send_packets(self):
         tgen_input = []
-        self.tester.scapy_append('a=[Ether(dst="%s")/IP(src="0.240.74.101",proto=255)/UDP()/("X"*18)]' % (self.dst_mac))
-        self.tester.scapy_append('wrpcap("interrupt.pcap", a)')
-        self.tester.scapy_execute()
-        tgen_input.append((self.tx_port, self.tx_port, "interrupt.pcap"))
-        _, pps = self.tester.traffic_generator_throughput(tgen_input)
+        if self.fix_ip is True:
+            pkt = Packet(pkt_type='UDP')
+        else:
+            pkt = Packet(pkt_type='IP_RAW')
+        pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
+        save_packets([pkt], "%s/interrupt.pcap" % self.out_path)
+        tgen_input.append((self.tx_port, self.tx_port, "%s/interrupt.pcap" % self.out_path))
+        self.tester.pktgen.clear_streams()
+        vm_config = self.set_fields()
+        if self.fix_ip is True:
+            vm_config = None
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, vm_config, self.tester.pktgen)
+        # set traffic option
+        traffic_opt = {'delay': 5, 'duration': 20}
+        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
 
     def send_and_verify(self):
         """
