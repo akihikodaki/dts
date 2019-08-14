@@ -402,7 +402,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             port = self.ports[index]
             ori_rx_pkts, ori_tx_pkts = self.strip_portstats(port)
             _, rx_max, _, tx_max = self.strip_ringparam(index)
-            self.dut.send_expect("ringparam %d %d %d" % (index, rx_max, tx_max), "EthApp>")
+            self.dut.send_expect("ringparam %d %d %d" % (index, tx_max, rx_max), "EthApp>")
             rx_ring, _, tx_ring, _ = self.strip_ringparam(index)
             self.verify(rx_ring == rx_max, "Userspace tool failed to set Rx ring parameter")
             self.verify(tx_ring == tx_max, "Userspace tool failed to set Tx ring parameter")
