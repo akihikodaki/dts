@@ -107,17 +107,12 @@ class TestRxTx_Offload(TestCase):
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.pmdout = PmdOutput(self.dut)
         self.cores = "1S/4C/1T"
-        self.jumbo_pkt1 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.2", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
-        self.jumbo_pkt2 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.3", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
-        self.vlan_pkt1 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
-        self.vlan_pkt2 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
 
     def set_up(self):
         """
         Run before each test case.
         """
         pass
-
 
     def verify_link_up(self, max_delay=10):
         ports = self.dut.get_ports(self.nic)
@@ -153,20 +148,20 @@ class TestRxTx_Offload(TestCase):
                 i = i + 1
         return offload_keys
 
-    def check_port_config(self, rxtx, offload):
+    def check_port_config(self, rxtx, offload, port_id=0):
         """
         Check configuration per port.
         """
         global offloads
 
-        result_config = self.dut.send_expect("port start 0", "testpmd> ")
+        result_config = self.dut.send_expect("port start %d" % port_id, "testpmd> ")
         self.verify("Fail" not in result_config, "Fail to configure port")
         self.verify_link_up(20)
 
         if rxtx == "rx":
-            outstring = self.dut.send_expect("show port 0 rx_offload configuration", "testpmd> ")
+            outstring = self.dut.send_expect("show port %d rx_offload configuration" % port_id, "testpmd> ")
         elif rxtx == "tx":
-            outstring = self.dut.send_expect("show port 0 tx_offload configuration", "testpmd> ")
+            outstring = self.dut.send_expect("show port %d tx_offload configuration" % port_id, "testpmd> ")
 
         result_scanner = r"Port : (.*?)\n"
         scanner = re.compile(result_scanner, re.DOTALL)
@@ -255,6 +250,47 @@ class TestRxTx_Offload(TestCase):
             self.verify("PKT_RX_VLAN_STRIPPED" not in outstring, "Fail to configure offload by queue.")
         self.dut.send_expect("stop", "testpmd>")
 
+    def checksum_valid_flags(self, packet, direction, flags):
+        """
+        Sends packets and check the checksum valid-flags.
+        """
+        self.dut.send_expect("start", "testpmd>")
+        self.tester.scapy_foreground()
+        self.tester.scapy_append(packet)
+        self.tester.scapy_execute()
+        out = self.dut.get_session_output(timeout=1)
+        lines = out.split("\r\n")
+
+        # collect the rx checksum result
+        if (direction == "rx"):
+            for line in lines:
+                line = line.strip()
+                if len(line) != 0 and line.startswith("rx") and ("flags" in line):
+                    if ("ipv4" in flags):
+                        self.verify("PKT_RX_IP_CKSUM_BAD" in line, "ipv4 checksum flag is wrong!")
+                    else:
+                        self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "ipv4 checksum flag is wrong!")
+                    if ("udp" in flags) or ("tcp" in flags):
+                        self.verify("PKT_RX_L4_CKSUM_BAD" in line, "L4 checksum flag is wrong!")
+                    else:
+                        self.verify(("PKT_RX_L4_CKSUM_GOOD" in line) or ("PKT_RX_L4_CKSUM_UNKNOWN" in line), "L4 checksum flag is wrong!")
+        # collect the tx checksum result
+        if (direction == "tx"):
+            for line in lines:
+                line = line.strip()
+                if len(line) != 0 and line.startswith("tx") and ("flags" in line):
+                    if ("ipv4" in flags):
+                        self.verify("PKT_TX_IP_CKSUM" in line, "There is no ipv4 tx checksum flag!")
+                    if ("udp" in flags):
+                        self.verify("PKT_TX_UDP_CKSUM" in line, "There is no udp tx checksum flag!")
+                    if ("tcp") in flags:
+                        self.verify("PKT_TX_TCP_CKSUM" in line, "There is no tcp tx checksum flag!")
+                    if ("sctp") in flags:
+                        self.verify("PKT_TX_SCTP_CKSUM" in line, "There is no sctp tx checksum flag!")
+                    if (flags == []):
+                        self.verify(("PKT_TX_L4_NO_CKSUM" in line) and ("PKT_TX_IP_CKSUM" not in line), "The tx checksum flag is wrong!")
+        self.dut.send_expect("stop", "testpmd>")
+
     def verify_result(self, packet, expect_rxpkts, expect_queue):
         """
         verify if the packet is to the expected queue
@@ -294,6 +330,10 @@ class TestRxTx_Offload(TestCase):
         """
         Set Rx offload by port.
         """
+        # Define jumboframe packets
+        self.jumbo_pkt1 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.2", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.jumbo_pkt2 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1",src="192.168.0.3", len=8981)/Raw(load="P"*8961)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --max-pkt-len=9000")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
@@ -337,9 +377,24 @@ class TestRxTx_Offload(TestCase):
         """
         Set Rx offload by port in cmdline.
         """
+        # Define rx checksum packets
+        self.rxcksum_pkt1 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/TCP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.rxcksum_pkt2 = r'sendp([Ether(dst="%s")/IP(chksum=0x0)/TCP(chksum=0xf)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.rxcksum_pkt3 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/UDP(chksum=0xf)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.rxcksum_pkt4 = r'sendp([Ether(dst="%s")/IP(chksum=0x0)/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        flags = []
+
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --enable-rx-cksum")
+        self.dut.send_expect("set fwd csum", "testpmd> ")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
         offload = ['ipv4_cksum', 'udp_cksum', 'tcp_cksum']
         self.check_port_config("rx", offload)
+
+        # Check the rx checksum flags
+        self.checksum_valid_flags(self.rxcksum_pkt1, "rx", [])
+        self.checksum_valid_flags(self.rxcksum_pkt2, "rx", ["ipv4","tcp"])
+        self.checksum_valid_flags(self.rxcksum_pkt3, "rx", ["udp"])
+        self.checksum_valid_flags(self.rxcksum_pkt4, "rx", ["ipv4"])
 
         # Disable the rx cksum per_port
         self.dut.send_expect("port stop 0", "testpmd> ")
@@ -390,6 +445,9 @@ class TestRxTx_Offload(TestCase):
         """
         # Only support ixgbe NICs
         self.verify(self.nic in ["niantic", "twinpond", "sagepond", "sageville"], "%s nic not support rx offload setting by queue." % self.nic)
+        # Define the vlan packets
+        self.vlan_pkt1 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.vlan_pkt2 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -542,6 +600,54 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("stop", "testpmd> ")
         out = self.get_tcpdump_package()
         self.verify("vlan 1" in out, "There is no vlan insert.")
+
+    def test_txoffload_port_checksum(self):
+        """
+        Set Tx offload cksum.
+        """
+        # Define tx checksum packets
+        self.txcksum_ipv4 = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.txcksum_tcp = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/TCP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.txcksum_udp = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+        self.txcksum_sctp = r'sendp([Ether(dst="%s")/IP(dst="192.168.0.1")/SCTP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
+
+        flags = []
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
+        self.dut.send_expect("set fwd csum", "testpmd> ")
+        self.dut.send_expect("set verbose 1", "testpmd> ")
+
+        # Check the tx checksum flags
+        self.checksum_valid_flags(self.txcksum_ipv4, "tx", [])
+        self.checksum_valid_flags(self.txcksum_tcp, "tx", [])
+        self.checksum_valid_flags(self.txcksum_udp, "tx", [])
+        self.checksum_valid_flags(self.txcksum_sctp, "tx", [])
+
+        # Disable the tx cksum per_port
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port config 1 tx_offload ipv4_cksum on", "testpmd> ")
+        self.dut.send_expect("port start 1", "testpmd> ")
+        offload = ['ipv4_cksum']
+        self.check_port_config("tx", offload, 1)
+        self.checksum_valid_flags(self.txcksum_ipv4, "tx", ["ipv4"])
+
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port config 1 tx_offload tcp_cksum on", "testpmd> ")
+        self.dut.send_expect("port start 1", "testpmd> ")
+        offload = ['ipv4_cksum', 'tcp_cksum']
+        self.check_port_config("tx", offload, 1)
+        self.checksum_valid_flags(self.txcksum_tcp, "tx", ["ipv4","tcp"])
+
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port config 1 tx_offload udp_cksum on", "testpmd> ")
+        offload = ['ipv4_cksum', 'tcp_cksum', 'udp_cksum']
+        self.check_port_config("tx", offload, 1)
+        self.checksum_valid_flags(self.txcksum_udp, "tx", ["ipv4","udp"])
+
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port config 1 tx_offload sctp_cksum on", "testpmd> ")
+        offload = ['ipv4_cksum', 'tcp_cksum', 'udp_cksum', 'sctp_cksum']
+        self.check_port_config("tx", offload, 1)
+        self.checksum_valid_flags(self.txcksum_sctp, "tx", ["ipv4","sctp"])
 
     def test_txoffload_port_all(self):
         """
