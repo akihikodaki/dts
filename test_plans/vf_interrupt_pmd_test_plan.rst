@@ -71,11 +71,11 @@ in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.
 Test Case1: Check Interrupt for PF with vfio driver on ixgbe and i40e
 =====================================================================
 
-1. Bind NIC PF to igb_uio drvier::
+1. Bind NIC PF to vfio-pci drvier::
 
     modprobe vfio-pci;
 
-    usertools/dpdk-devbind.py --bind=igb-uio 0000:04:00.0
+    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
 
 2. start l3fwd-power with PF::
 
@@ -99,7 +99,7 @@ Test Case2: Check Interrupt for PF with igb_uio driver on ixgbe and i40e
     modprobe uio;
     insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
 
-    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:00.0
+    usertools/dpdk-devbind.py --bind=igb_uio 0000:04:00.0
 
 2. start l3fwd-power with PF::
 
@@ -138,5 +138,56 @@ Test Case3: Check Interrupt for VF with vfio driver on ixgbe and i40e
     L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
 
 4. Check if threads on core 2 have returned to sleep mode::
+
+    L3FWD_POWER: lcore 2 sleeps until interrupt triggers
+
+Test Case4: VF interrupt pmd in VM with vfio-pci
+================================================
+
+1. Generate NIC VF, then bind it to vfio drvier::
+
+    echo 1 > /sys/bus/pci/devices/0000\:04\:00.0/sriov_numvfs
+
+    modprobe vfio-pci
+    usertools/dpdk-devbind.py --bind=vfio-pci 0000:04:10.0(vf_pci)
+
+2. passthrough VF 0 to VM0 and start VM0::
+
+    taskset -c 4,5,6,7 qemu-system-x86_64 \
+    -name vm0 -enable-kvm -pidfile /tmp/.vm0.pid -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
+    -device e1000,netdev=nttsip1  -netdev user,id=nttsip1,hostfwd=tcp:10.240.176.207:6000-:22 \
+    -device vfio-pci,host=0000:04:02.0,id=pt_0 -cpu host -smp 4 -m 10240 \
+    -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -vnc :11 \
+    -drive file=/home/image/ubuntu16-0.img,format=qcow2,if=virtio,index=0,media=disk
+
+3. Modify the DPDK-l3fwd-power source code and recompile the l3fwd-power::
+
+    sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/l3fwd-power/main.c
+
+    export RTE_TARGET=x86_64-native-linuxapp-gcc
+    export RTE_SDK=`/root/DPDK`
+    make -C examples/l3fwd-power
+
+4. Bind VF 0 to the vfio-pci driver::
+
+    modprobe -r vfio_iommu_type1
+    modprobe -r vfio
+    modprobe vfio enable_unsafe_noiommu_mode=1
+    modprobe vfio-pci
+
+    usertools/dpdk-devbind.py -b vfio-pci 0000:00:04.0
+
+5. start l3fwd-power in VM::
+
+    examples/l3fwd-power/build/l3fwd-power -l 1-3 -n 4 -- -P -p 0x01  --config '(0,0,2)'
+
+6. Send packet with packet generator to the VM, check that thread core2 waked up::
+
+    sendp([Ether(dst='vf_mac')/IP()/UDP()/Raw(load='XXXXXXXXXXXXXXXXXX')], iface="tester_intf")
+
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port 0 queue 0
+
+7. Check if threads on core 2 have returned to sleep mode::
 
     L3FWD_POWER: lcore 2 sleeps until interrupt triggers
