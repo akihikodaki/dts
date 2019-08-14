@@ -42,10 +42,10 @@ import time
 import re
 from settings import HEADER_SIZE
 from test_case import TestCase
-from etgen import IxiaPacketGenerator
+from pktgen import PacketGeneratorHelper
 
 
-class TestPVPVirtioMultiQueues(TestCase, IxiaPacketGenerator):
+class TestPVPVirtioMultiQueues(TestCase):
 
     def set_up_all(self):
         """
@@ -79,6 +79,13 @@ class TestPVPVirtioMultiQueues(TestCase, IxiaPacketGenerator):
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
 
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
+        # create an instance to set stream field setting
+        self.pktgen_helper = PacketGeneratorHelper()
+
     def set_up(self):
         """
         Run before each test case.
@@ -91,21 +98,6 @@ class TestPVPVirtioMultiQueues(TestCase, IxiaPacketGenerator):
 
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
-
-    def ip(self, port, frag, src, proto, tos, dst, chksum, len, options, version, flags, ihl, ttl, id):
-        """
-        Configure IP protocol.
-        """
-        self.add_tcl_cmd("protocol config -name ip")
-        self.add_tcl_cmd('ip config -sourceIpAddr "%s"' % src)
-        self.add_tcl_cmd('ip config -destIpAddrMode ipRandom')
-        self.add_tcl_cmd("ip config -ttl %d" % ttl)
-        self.add_tcl_cmd("ip config -totalLength %d" % len)
-        self.add_tcl_cmd("ip config -fragment %d" % frag)
-        self.add_tcl_cmd("ip config -ipProtocol %d" % proto)
-        self.add_tcl_cmd("ip config -identifier %d" % id)
-        self.add_tcl_cmd("stream config -framesize %d" % (len + 18))
-        self.add_tcl_cmd("ip set %d %d %d" % (self.chasId, port['card'], port['port']))
 
     def start_vhost_testpmd(self):
         """
@@ -166,6 +158,13 @@ class TestPVPVirtioMultiQueues(TestCase, IxiaPacketGenerator):
 
         self.vhost_user.send_expect("start", "testpmd> ", 60)
 
+    def set_fields(self):
+        """
+        set ip protocol field behavior
+        """
+        fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
+        return fields_config
+
     def send_and_verify(self, case_info):
         """
         start to send packets and calculate avg throughput
@@ -175,11 +174,17 @@ class TestPVPVirtioMultiQueues(TestCase, IxiaPacketGenerator):
             tgen_input = []
             port = self.tester.get_local_port(self.dut_ports[0])
             self.tester.scapy_append('a=[Ether(dst="%s")/IP(src="0.240.74.101",proto=255)/UDP()/("X"*%d)]' % (self.dst_mac, payload_size))
-            self.tester.scapy_append('wrpcap("multiqueue.pcap", a)')
+            self.tester.scapy_append('wrpcap("%s/multiqueue.pcap" , a)' % self.out_path)
             self.tester.scapy_execute()
 
-            tgen_input.append((port, port, "multiqueue.pcap"))
-            _, pps = self.tester.traffic_generator_throughput(tgen_input)
+            tgen_input.append((port, port, "%s/multiqueue.pcap" % self.out_path))
+
+            vm_config = self.set_fields()
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, vm_config, self.tester.pktgen)
+            # set traffic option
+            traffic_opt = {'delay': 5, 'duration': 20}
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
             self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
             throughput = Mpps * 100 / \
