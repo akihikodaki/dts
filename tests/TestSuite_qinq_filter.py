@@ -38,7 +38,6 @@ Test the support of VLAN Offload Features by Poll Mode Drivers.
 """
 
 from test_case import TestCase
-from scapy.all import *
 import utils
 import time
 
