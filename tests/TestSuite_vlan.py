@@ -73,14 +73,10 @@ class TestVlan(TestCase):
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % portMask)
 
         self.dut.send_expect("set verbose 1", "testpmd> ")
-        out = self.dut.send_expect("set fwd mac", "testpmd> ")
-
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g", "hi1822", "fastlinq_ql41000", "fastlinq_ql45000"]:
-            self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
-            self.dut.send_expect("set promisc all off",  "testpmd> ")
-
+        self.dut.send_expect("set fwd mac", "testpmd> ")
+        self.dut.send_expect("set promisc all off",  "testpmd> ")
+        self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ")
-        self.verify('Set mac packet forwarding mode' in out, "set fwd rxonly error")
         self.vlan = 51
 
         if self.kdriver == "fm10k":
@@ -128,9 +124,9 @@ class TestVlan(TestCase):
         """
         pass
 
-    def test_vlan_enable_receipt(self):
+    def test_vlan_enable_receipt_strip_off(self):
         """
-        Enable receipt of VLAN packets
+        Enable receipt of VLAN packets and strip off
         """
 
         if self.kdriver == "fm10k":
@@ -140,6 +136,7 @@ class TestVlan(TestCase):
         self.dut.send_expect("vlan set strip off  %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
+        self.verify("strip off" in out, "Wrong strip:" + out)
 
         self.vlan_send_packet(self.vlan)
         out = self.get_tcpdump_package()
@@ -157,8 +154,6 @@ class TestVlan(TestCase):
         """
         Disable receipt of VLAN packets
         """
-        self.dut.send_expect("vlan set filter on %s" % dutRxPortId, "testpmd> ")
-
         self.dut.send_expect("rx_vlan rm %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
         self.vlan_send_packet(self.vlan)
@@ -166,11 +161,12 @@ class TestVlan(TestCase):
         out = self.get_tcpdump_package()
         self.verify(len(out) == 0, "Received unexpected packet, filter not work!!!")
         self.verify(self.vlan not in out, "Wrong vlan:" + str(out))
+        self.dut.send_expect("stop", "testpmd> ")
 
-        out = self.dut.send_expect("stop", "testpmd> ")
-
-    def test_vlan_strip_config_on(self):
-
+    def test_vlan_enable_receipt_strip_on(self):
+        """
+        Enable receipt of VLAN packets and strip on
+        """
         self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ", 20)
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
@@ -181,23 +177,7 @@ class TestVlan(TestCase):
         out = self.get_tcpdump_package()
         self.verify(len(out), "Forwarded vlan packet not received!!!")
         self.verify(self.vlan not in out, "Wrong vlan:" + str(out))
-        out = self.dut.send_expect("stop", "testpmd> ", 120)
-
-    def test_vlan_strip_config_off(self):
-
-        if self.kdriver == "fm10k":
-            print utils.RED("fm10k not support this case\n")
-            return
-        self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ", 20)
-        self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ", 20)
-        out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ", 20)
-        self.verify("strip off" in out, "Wrong strip:" + out)
-        self.dut.send_expect("set nbport 2", "testpmd> ")
-        self.dut.send_expect("start", "testpmd> ", 120)
-        self.vlan_send_packet(self.vlan)
-        out = self.get_tcpdump_package()
-        self.verify(self.vlan in out, "Vlan not found:" + str(out))
-        out = self.dut.send_expect("stop", "testpmd> ", 120)
+        self.dut.send_expect("stop", "testpmd> ", 120)
 
     def test_vlan_enable_vlan_insertion(self):
         """
@@ -208,10 +188,6 @@ class TestVlan(TestCase):
             netobj.add_vlan(vlan_id = self.vlan)
             netobj.add_txvlan(vlan_id = self.vlan)
 
-        port = self.tester.get_local_port(dutTxPortId)
-        intf = self.tester.get_interface(port)
-
-        self.dut.send_expect("set nbport 2", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> ")
