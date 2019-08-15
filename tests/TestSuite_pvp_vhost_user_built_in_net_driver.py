@@ -39,6 +39,7 @@ import re
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pktgen import PacketGeneratorHelper
+from pmd_output import PmdOutput
 
 
 class TestPVPVhostUserBuiltInNetDriver(TestCase):
@@ -51,15 +52,13 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.core_config = "1S/4C/1T"
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) ==
-                            self.ports_socket])
+        self.core_list = self.dut.get_core_list(
+            self.core_config, socket=self.ports_socket)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        self.verify(self.cores_num >= 4,
+        self.verify(len(self.core_list) >= 4,
                     "There has not enought cores to test this suite %s" %
                     self.suite_name)
 
-        self.core_list = self.dut.get_core_list(
-            self.core_config, socket=self.ports_socket)
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
         self.core_mask_virtio_user = utils.create_mask(self.core_list_virtio_user)
@@ -72,6 +71,11 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
                         " in region 'suite' like packet_sizes=[64, 128, 256]")
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
+
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
 
@@ -85,6 +89,7 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.dut.send_expect("killall -s INT testpmd", "# ")
         self.vhost_switch = self.dut.new_session(suite="vhost-switch")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
+        self.pmd_out = PmdOutput(self.dut, self.virtio_user)
         # Prepare the result table
         self.virtio_mac = "00:11:22:33:44:10"
         self.vlan_id = 1000
@@ -125,15 +130,16 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
             rx_port = self.tester.get_local_port(self.dut_ports[0])
             tx_port = self.tester.get_local_port(self.dut_ports[0])
             self.tester.scapy_append(
-                'wrpcap("vhost.pcap", [Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/("X"*%d)])' %
-                (self.virtio_mac, self.vlan_id, payload_size))
-            tgen_input.append((tx_port, rx_port, "vhost.pcap"))
+                'wrpcap("%s/vhost.pcap", [Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/("X"*%d)])' %
+                (self.out_path, self.virtio_mac, self.vlan_id, payload_size))
+            tgen_input.append((tx_port, rx_port, "%s/vhost.pcap" % self.out_path))
 
             self.tester.scapy_execute()
             self.tester.pktgen.clear_streams()
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
                             None, self.tester.pktgen)
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+            trans_options={'delay':5, 'duration': 20}
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=trans_options)
             Mpps = pps / 1000000.0
             self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
             throughput = Mpps * 100 / \
@@ -187,6 +193,8 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start tx_first", "testpmd> ", 120)
+        res = self.pmd_out.wait_link_status_up('all')
+        self.verify(res is True, 'There has port link is down')
 
     def close_all_apps(self):
         """

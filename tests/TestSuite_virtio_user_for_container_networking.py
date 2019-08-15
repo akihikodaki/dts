@@ -53,8 +53,6 @@ class TestVirtioUserForContainer(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.mem_channels = self.dut.get_memory_channels()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) ==
-                            self.ports_socket])
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for testing')
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
 
@@ -67,6 +65,10 @@ class TestVirtioUserForContainer(TestCase):
                         " in region 'suite' like packet_sizes=[64, 128, 256]")
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
+        self.out_path = '/tmp'
+        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
+        if 'No such file or directory' in out:
+            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
 
@@ -89,11 +91,11 @@ class TestVirtioUserForContainer(TestCase):
 
     def get_core_mask(self):
         core_config = '1S/%dC/1T' % (self.nb_cores*2 + 2)
-        self.verify(self.cores_num >= (self.nb_cores*2 + 2),
-                    'There has not enought cores to test this case %s' %
-                    self.running_case)
         core_list = self.dut.get_core_list(
             core_config, socket=self.ports_socket)
+        self.verify(len(core_list) >= (self.nb_cores*2 + 2),
+                    'There has not enought cores to test this case %s' %
+                    self.running_case)
         core_list_vhost_user = core_list[0:self.nb_cores+1]
         core_list_virtio_user = core_list[self.nb_cores+1:self.nb_cores*2+2]
         self.core_mask_vhost_user = utils.create_mask(core_list_vhost_user)
@@ -109,9 +111,9 @@ class TestVirtioUserForContainer(TestCase):
             rx_port = self.tester.get_local_port(self.dut_ports[0])
             tx_port = self.tester.get_local_port(self.dut_ports[0])
             self.tester.scapy_append(
-                'wrpcap("vhost.pcap", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' %
-                (self.virtio_mac, payload_size))
-            tgen_input.append((tx_port, rx_port, "vhost.pcap"))
+                'wrpcap("%s/vhost.pcap", [Ether(dst="%s")/IP()/UDP()/("X"*%d)])' %
+                (self.out_path, self.virtio_mac, payload_size))
+            tgen_input.append((tx_port, rx_port, "%s/vhost.pcap" % self.out_path))
 
             self.tester.scapy_execute()
             self.tester.pktgen.clear_streams()
