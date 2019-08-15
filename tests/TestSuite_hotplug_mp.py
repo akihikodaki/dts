@@ -309,5 +309,6 @@ class TestHotplugMp(TestCase):
         """
         Run after each test suite.
         """
+        self.dut.bind_interfaces_linux(self.drivername)
         self.dut.close_session(self.dut)
         self.dut.kill_all()
