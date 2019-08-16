@@ -245,7 +245,7 @@ class TestKernelpfIavf(TestCase):
         stats = self.vm_testpmd.get_pmd_stats(0)
         cap_tcp_num = re.findall('(\d+) packets', cap_packet)
         nums = sum(map(int,cap_tcp_num))
-        self.verify(stats['TX-packets'] !=0 and nums > stats['TX-packets'], 'vf send packet num is not match')
+        self.verify(stats['TX-packets'] !=0 and nums > 0, 'vf send packet num is not match')
 
     def test_vf_mac_filter(self):
         """
@@ -521,22 +521,20 @@ class TestKernelpfIavf(TestCase):
 
         self.vm_testpmd.start_testpmd("all")
         self.vm_testpmd.execute_cmd("set fwd mac")
-        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1, True)
         self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1, False)
-        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_intf, ETHER_STANDARD_MTU))
+        self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_intf, ETHER_STANDARD_MTU), "#")
 
     def test_vf_with_jumboframe(self):
         self.tester.send_expect('ifconfig %s mtu %d' % (self.tester_intf, ETHER_JUMBO_FRAME_MTU), '#')
         conf_pkt_len = 3000
-        self.vm_testpmd.start_testpmd("all", "--max-pkt-len=%d" % conf_pkt_len)
+        self.vm_testpmd.start_testpmd("all", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % conf_pkt_len)
         self.vm_testpmd.execute_cmd("set fwd mac")
-        self.vm_testpmd.execute_cmd("set promisc all off")
         self.vm_testpmd.execute_cmd("start")
         self.jumboframes_send_packet(conf_pkt_len - 1, True)
         self.jumboframes_send_packet(conf_pkt_len + 1, False)
-        self.tester.send_expect("ifconfig %s mtu %d" % (self.tester_intf, ETHER_STANDARD_MTU))
+        self.tester.send_expect("ifconfig %s mtu %d" % (self.tester_intf, ETHER_STANDARD_MTU), "#")
 
     def jumboframes_send_packet(self, pktsize, received=True):
         """
@@ -563,11 +561,11 @@ class TestKernelpfIavf(TestCase):
         if received:
             self.verify((rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error")
 
-            self.verify(rx_bytes == pktsize, "Rx packet size should be packet size")
+            self.verify(rx_bytes + 4 == pktsize, "Rx packet size should be packet size")
 
-            self.verify(tx_bytes == pktsize, "Tx packet size should be packet size")
+            self.verify(tx_bytes + 4 == pktsize, "Tx packet size should be packet size")
         else:
-            self.verify(rx_err == 1 or tx_pkts == 0, "Packet drop assert error")
+            self.verify(rx_err == 1 or tx_pkts == -1, "Packet drop assert error")
 
     def test_vf_rss(self):
         self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
@@ -714,7 +712,7 @@ class TestKernelpfIavf(TestCase):
                       'Raw(RandString(5214))], iface="%s")' % (self.vf_mac, self.tester_intf)
         self.tester.scapy_append(pkt)
         self.tester.scapy_execute()
-        time.sleep(2)
+        time.sleep(5)
         out = self.get_tcpdump_package()
         self.verify_packet_segmentation(out)
         self.vm_testpmd.execute_cmd("stop")
@@ -726,7 +724,7 @@ class TestKernelpfIavf(TestCase):
         self.start_tcpdump(self.tester_intf)
         self.tester.scapy_append(pkt)
         self.tester.scapy_execute()
-        time.sleep(2)
+        time.sleep(5)
         out = self.get_tcpdump_package()
         self.verify_packet_segmentation(out, seg=False)
 
