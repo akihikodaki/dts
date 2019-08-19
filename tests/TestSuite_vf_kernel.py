@@ -517,7 +517,8 @@ class TestVfKernel(TestCase):
         vm0_intf1 = self.vm0_dut.ports_info[1]['intf']
         self.vm0_dut.send_expect("ifconfig %s up" % self.vm0_intf0, "#")
         out = self.vm0_dut.send_expect("ifconfig %s" % self.vm0_intf0, "#")
-        self.verify('mtu 1500' in out, "modify MTU failed")
+        result = re.search('mtu\W1500', out, flags=re.I)
+        self.verify(result is not None, "modify MTU failed")
         self.tester.send_expect("ifconfig %s mtu 3000" % self.tester_intf, "#")
 
         self.dut_testpmd.execute_cmd('stop')
