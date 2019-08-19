@@ -66,7 +66,7 @@ class TestScatter(TestCase):
         if self.nic in ["magnolia_park", "niantic", "sageville", "fortpark", "fortville_eagle",
                         "fortville_spirit", "fortville_spirit_single", "fortville_25g",
                         "redrockcanyou", "atwood", "boulderrapid",
-                        "ironpond", "twinpond", "springfountain", "fortpark_TLV", "sagepond"]:
+                        "ironpond", "twinpond", "springfountain", "fortpark_TLV", "sagepond", "carlsville"]:
             self.mbsize = 2048
         else:
             self.mbsize = 1024
