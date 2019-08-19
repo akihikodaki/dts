@@ -152,7 +152,8 @@ class TestL2fwd(TestCase):
             rx_port = self.tester.get_local_port(self.dut_ports[1])
             tgen_input.append((tx_port, rx_port))
 
-            result = self.tester.check_random_pkts(tgen_input, allow_miss=False)
+            self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
+            result = self.tester.check_random_pkts(tgen_input, allow_miss=False, params = [('ether', {'dst': '%s'%(self.dst_mac)})])
             self.verify(result != False, "Packet integrity check failed")
 
             self.quit_l2fwd()
