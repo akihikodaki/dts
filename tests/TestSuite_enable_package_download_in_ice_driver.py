@@ -54,9 +54,6 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.tester_p0_mac = self.tester.get_mac(localPort0)
         self.dut_testpmd = PmdOutput(self.dut)
 
-        self.dut_p0_pci = self.dut.get_port_pci(self.dut_ports[0])
-        self.dut_p1_pci = self.dut.get_port_pci(self.dut_ports[1])
-
         self.pkg_file = '/lib/firmware/intel/ice/ddp/ice.pkg'
         out = self.dut.send_expect("ls %s" % self.pkg_file, "#")
         self.verify("No such file or directory" not in out, "Cannot find %s, please check you system/driver." % self.pkg_file)
@@ -88,10 +85,10 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
             self.dut.send_expect("touch %s" % self.pkg_file, "#")
 
     def start_testpmd(self, ice_pkg="true", safe_mode_support="false"):
+        self.eal_param = ""
         if safe_mode_support == "true":
-            self.eal_param="-w %s,safe-mode-support=1 -w %s,safe-mode-support=1" % (self.dut_p0_pci, self.dut_p1_pci)
-        else:
-            self.eal_param=""
+            for i in range(len(self.dut_ports)):
+                self.eal_param = self.eal_param + "-w %s,safe-mode-support=1 " % self.dut.ports_info[i]['pci']
         out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE), eal_param=self.eal_param)
         if ice_pkg == "false":
             if safe_mode_support == "true":
