@@ -338,7 +338,7 @@ class TestVlanEthertypeConfig(TestCase):
         It need be tested in nonvector mode.
         """
         self.verify(
-            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single"], "%s NIC not support QinQ " % self.nic)
+            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "carlsville"], "%s NIC not support QinQ " % self.nic)
         rx_mode = load_global_setting(DPDK_RXMODE_SETTING)
         self.verify(rx_mode == 'novector',
                     "The case must by tested in novector mode")
