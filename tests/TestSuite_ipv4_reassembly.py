@@ -134,7 +134,7 @@ class TestIpReassembly(TestCase):
 
         packet = Ether() / IP() / TCP() / ("X" * self.test_config.payload_size)
         packet[Ether].src = self.test_config.mac_src
-        packet[Ether].dst = self.test_config.mac_dst
+        packet[Ether].dst = self.destination_mac
         packet[IP].src = src_ip
         packet[IP].dst = self.test_config.dst_ip
         packet[IP].id = identifier
@@ -366,6 +366,9 @@ class TestIpReassembly(TestCase):
 
         self.tester.send_expect('export PS1="# "', '#')
         self.compile_example_app()
+        dut_ports = self.dut.get_ports(self.nic)
+        dut_port = dut_ports[0]
+        self.destination_mac = self.dut.get_mac_address(dut_port)
 
     def test_send_1K_frames_split_in_4_and_1K_maxflows(self):
         """
