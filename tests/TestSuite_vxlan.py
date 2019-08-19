@@ -262,7 +262,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         vxlan Prerequisites
         """
         # this feature only enable in FVL now
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
