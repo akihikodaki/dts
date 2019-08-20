@@ -46,7 +46,6 @@ from pmd_output import PmdOutput
 from scapy.utils import struct, socket, wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
 from scapy.layers.l2 import Dot1Q, ARP, GRE
-from scapy.sendrecv import sendp
 from settings import DPDK_RXMODE_SETTING
 from settings import load_global_setting
 
@@ -145,11 +144,10 @@ class TestVlanEthertypeConfig(TestCase):
             out = self.tester.send_expect("hexdump -ve '%s' '%s' |sed 's/8100000181000002/%s/' |xxd -r -p > '%s'" % (
                 fmt, self.tpid_ori_file, replace, self.tpid_new_file), "# ")
 
-        self.tester.send_expect("scapy", ">>> ")
-        self.tester.send_expect(
-            "pkt=rdpcap('%s')" % self.tpid_new_file, ">>> ")
-        self.tester.send_expect("sendp(pkt, iface='%s')" % self.txItf, ">>> ")
-        self.tester.send_expect("quit()", "# ")
+        self.tester.scapy_foreground()
+        self.tester.scapy_append("pkt=rdpcap('%s')" % self.tpid_new_file)
+        self.tester.scapy_append("sendp(pkt, iface='%s')" % self.txItf)
+        self.tester.scapy_execute()
 
     def check_vlan_packets(self, vlan, tpid, rxItf, result=True):
 
