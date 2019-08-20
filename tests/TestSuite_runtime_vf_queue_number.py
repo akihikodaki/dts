@@ -273,13 +273,14 @@ class TestRuntimeVfQn(TestCase):
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         for valid_qn in range(1, 17):
+            count = valid_qn * 20
             if valid_qn == 1:
                 self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param=' --rxq=1 --txq=1')
                 self.vm0_testpmd.execute_cmd('set verbose 1')
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
                 self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 %s' % RSS_KEY)
-                self.verify_result(valid_qn, 500)
+                self.verify_result(valid_qn, count)
                 self.vm0_testpmd.execute_cmd('quit', '# ')
             else:
                 self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param,
@@ -287,7 +288,7 @@ class TestRuntimeVfQn(TestCase):
                 self.vm0_testpmd.execute_cmd("set promisc all off", "testpmd> ")
                 self.vm0_testpmd.execute_cmd("set fwd mac", "testpmd> ")
                 self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 %s' % RSS_KEY)
-                self.verify_result(valid_qn, 500)
+                self.verify_result(valid_qn, count)
                 self.vm0_testpmd.execute_cmd('quit', '# ')
 
     def test_set_invalid_vf_qn_in_testpmd(self):
@@ -323,19 +324,20 @@ class TestRuntimeVfQn(TestCase):
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
         for valid_qn in range(1, 17):
+            count = valid_qn * 20
             if valid_qn == 1:
                 guest_cmds = self.testpmd_config_cmd_list(1)
                 guest_cmds.insert(0, ['set fwd mac'])
                 guest_cmds.insert(0, ['set promisc all off'])
                 guest_cmds.insert(0, ['set verbose 1'])
                 self.execute_testpmd_cmd(guest_cmds)
-                self.verify_result(valid_qn, 500)
+                self.verify_result(valid_qn, count)
             else:
                 guest_cmds = self.testpmd_config_cmd_list(valid_qn)
                 guest_cmds.insert(0, ['set fwd mac'])
                 guest_cmds.insert(0, ['set promisc all off'])
                 self.execute_testpmd_cmd(guest_cmds)
-                self.verify_result(valid_qn, 500)
+                self.verify_result(valid_qn, count)
         self.vm0_testpmd.execute_cmd('quit', '# ')
 
     def test_set_invalid_vf_qn_with_testpmd_func_cmd(self):
