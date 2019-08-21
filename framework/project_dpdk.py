@@ -229,7 +229,7 @@ class DPDKdut(Dut):
         if("Error" in out or "No rule to make" in out):
             self.logger.error("ERROR - try without '-j'")
             # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s %s" % (target, extra_options), "# ", 120)
+            out = self.send_expect("make install T=%s %s" % (target, extra_options), "# ", build_time*4)
 
         assert ("Error" not in out), "Compilation error..."
         assert ("No rule to make" not in out), "No rule to make error..."
