@@ -1441,6 +1441,9 @@ class QEMUKvm(VirtBase):
             if getattr(self, 'net_nic_pci', None) is None:
                 self.__get_vmnet_pci()
             if self.control_command("network") == "Success":
+                pos = self.hostfwd_addr.find(':')
+                ssh_key = '[' + self.hostfwd_addr[:pos] + ']' + self.hostfwd_addr[pos:]
+                os.system('ssh-keygen -R %s' % ssh_key)
                 network_ready = True
                 break
 
