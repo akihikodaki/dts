@@ -1786,6 +1786,36 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "dynamic_config_enable_promiscuous": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "dynamic_config_default_mode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "dynamic_config_allmulticast": [
         {
             "OS": [
