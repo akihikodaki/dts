@@ -85,7 +85,7 @@ class TestVfPortStartStop(TestCase):
         self.tester_tx_pci = self.tester.ports_info[self.tester_tx_port]['pci']
         port = self.tester.ports_info[self.tester_tx_port]['port']
         self.tester_port_driver = port.get_nic_driver()
-        self.tester.send_expect("./dpdk-devbind.py --bind=igb_uio %s" % self.tester_tx_pci, "#")
+        self.tester.send_expect("./dpdk-devbind.py --force --bind=igb_uio %s" % self.tester_tx_pci, "#")
 
         src_mac = self.tester.get_mac(self.tester_tx_port) 
         if src_mac == 'N/A':
@@ -245,7 +245,7 @@ class TestVfPortStartStop(TestCase):
         self.pktgen_kill()
         if getattr(self, 'tester_port_driver', None) and \
            getattr(self, 'tester_tx_pci', None):
-            self.tester.send_expect("./dpdk_nic_bind.py --bind=%s %s" \
+            self.tester.send_expect("./dpdk-devbind.py --bind=%s %s" \
                 %(self.tester_port_driver, self.tester_tx_pci), "#")
             tx_interface = self.tester.get_interface(self.tester_tx_port)
             self.tester.send_expect("ifconfig %s up" % tx_interface, "#")
