@@ -173,8 +173,6 @@ class TestTX_preparation(TestCase):
         self.dut_testpmd.execute_cmd('start')
 
         self.send_packet_verify()
-        self.dut_testpmd.execute_cmd('stop')
-        self.dut_testpmd.quit() 
  
     def test_tx_preparation_TSO(self):
         """
@@ -185,16 +183,13 @@ class TestTX_preparation(TestCase):
         self.dut_testpmd.execute_cmd('start')
 
         self.send_packet_verify(1)
-        self.dut_testpmd.execute_cmd('stop')
-        self.dut_testpmd.quit()
-
 
     def tear_down(self):
         """
         Run after each test case. 
-        """ 
-        pass
-
+        """
+        self.dut_testpmd.execute_cmd('stop')
+        self.dut_testpmd.quit()
         
     def tear_down_all(self):
         """
