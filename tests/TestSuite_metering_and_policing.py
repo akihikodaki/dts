@@ -45,6 +45,22 @@ from dut import Dut
 
 
 class TestMeteringAndPolicing(TestCase):
+    scapyCmds = []
+
+    def start_scapy(self):
+        self.tester.scapy_foreground()
+        self.tester.send_expect('scapy', '>>> ', 10)
+        self.scapy_status = True
+
+    def end_scapy(self):
+        self.tester.send_expect("exit()", "#")
+        self.scapy_status = False
+
+    def scapy_execute(self, timeout=60):
+        for cmd in self.scapyCmds:
+            self.tester.send_expect(cmd, ">>> ", timeout)
+
+        self.scapyCmds = []
 
     def copy_config_files_to_dut(self):
         """
@@ -219,10 +235,10 @@ class TestMeteringAndPolicing(TestCase):
             if protocol == "UDP":
                 proto_str = "nh=17"
 
-        self.tester.scapy_append(
+        self.scapyCmds.append(
             'sendp([Ether(dst="%s")/%s(src="%s",dst="%s",%s)/%s(sport=%d,dport=%d)/Raw(load="P"*%d)], iface="%s")'
             % (self.dut_p0_mac, tag, src_ip, dst_ip, proto_str, protocol, fwd_port, fwd_port, pktsize, source_port))
-        self.tester.scapy_execute()
+        self.scapy_execute()
 
     def send_packet_and_check(self, ip_ver, protocol, fwd_port, pktsize, expect_port):
         """
@@ -296,6 +312,7 @@ class TestMeteringAndPolicing(TestCase):
         self.dut_p0_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.port_id = len(self.dut_ports)
         self.copy_config_files_to_dut()
+        self.start_scapy()
 
     def set_up(self):
         """
@@ -653,4 +670,5 @@ class TestMeteringAndPolicing(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        if self.scapy_status:
+            self.end_scapy()
