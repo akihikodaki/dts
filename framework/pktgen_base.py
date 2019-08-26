@@ -256,20 +256,20 @@ class PacketGenerator(object):
     def measure_rfc2544(self, stream_ids=[], options={}):
         """ check loss rate with rate percent dropping """
         loss_rate_table = []
-        rate_percent = float(100)
+        rate_percent = options.get('rate') or float(100)
         permit_loss_rate = options.get('pdr') or 0
         self.logger.info("allow loss rate: %f " % permit_loss_rate)
         rate_step = options.get('drop_step') or 1
         result = self._measure_loss(stream_ids, options)
         status = self._check_loss_rate(result, permit_loss_rate)
-        loss_rate_table.append(
-                    [options.get('rate') or rate_percent, result])
+        loss_rate_table.append([rate_percent, result])
         # if first time loss rate is ok, ignore left flow
         if status:
             # return data is the same with dts/etgen format
             # In fact, multiple link peer have multiple loss rate value,
             # here only pick one
-            return result.values()[0]
+            tx_num, rx_num = result.values()[0][1:]
+            return rate_percent, tx_num, rx_num
         _options = deepcopy(options)
         while not status and rate_percent > 0:
             rate_percent = rate_percent - rate_step
@@ -288,7 +288,10 @@ class PacketGenerator(object):
         # use last result as return data to keep the same with dts/etgen format
         # In fact, multiple link peer have multiple loss rate value,
         # here only pick one
-        return loss_rate_table[-1][1].values()[0]
+        last_result = loss_rate_table[-1]
+        rate_percent = last_result[0]
+        tx_num, rx_num = last_result[1].values()[0][1:]
+        return rate_percent, tx_num, rx_num
 
     def measure_rfc2544_with_pps(self, stream_ids=[], options={}):
         """
