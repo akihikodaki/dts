@@ -82,6 +82,7 @@ class TestIPsecGW(TestCase):
         out =self.dut.build_dpdk_apps("./examples/ipsec-secgw")
         self.verify("Error"not in out,"Compilation error")
         self.verify("No such"not in out,"Compilation error")
+
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         cc.bind_qat_device(self, self.vf_driver)
 
@@ -89,12 +90,15 @@ class TestIPsecGW(TestCase):
             "config": None,
             "P": "",
             "p": "0x3",
-            "f": "local_conf/ipsec_test.cfg",
+            "f": "conf/ipsec_ep0.cfg",
             "u": "0x1"
         }
 
         self._pcap_idx = 0
         self.pcap_filename = ''
+
+        conf_file = r'conf/ipsec_ep0.cfg'
+        self.dut.session.copy_file_to(conf_file)
 
     def set_up(self):
         pass
@@ -706,6 +710,8 @@ class TestIPsecGW(TestCase):
         self.verify(result, "FAIL")
 
     def _get_ipsec_gw_opt_str(self, override_ipsec_gw_opts={}):
+        if "librte_ipsec" in self.get_suite_cfg().keys() and self.get_suite_cfg()["librte_ipsec"]:
+            override_ipsec_gw_opts={"l": ""}
         return cc.get_opt_str(self, self._default_ipsec_gw_opts,
                               override_ipsec_gw_opts)
 
@@ -728,8 +734,6 @@ class TestIPsecGW(TestCase):
         expected_dst_ip = case_cfgs["expected_dst_ip"]
         expected_src_ip = case_cfgs["expected_src_ip"]
         expected_spi = case_cfgs["expected_spi"]
-        expected_length = case_cfgs["expected_length"]
-        #expected_data = case_cfgs["expected_data"]
 
         pkt = Packet()
         if len(dst_ip)<=15:
@@ -786,14 +790,6 @@ class TestIPsecGW(TestCase):
             if pkt_spi != expected_spi:
                 self.logger.error("SPI does not match. Pkt:{0}, Expected:{1}".format(
                                   pkt_spi, expected_spi))
-                result = False
-                break
-
-            pkt_len = len(payload_str)/2
-            self.logger.debug(pkt_len)
-            if pkt_len != int(expected_length):
-                self.logger.error("Packet length does not match. Pkt:{0}, Expected:{1}".format(
-                    pkt_len, expected_length))
                 result = False
                 break
 
