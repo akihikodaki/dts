@@ -41,7 +41,7 @@ based on RRC. The customer already uses Mellanox 100G NICs. Mellanox 100G NICs
 support a proper x16 PCIe interface so the host sees a single netdev and that
 netdev corresponds directly to the 100G Ethernet port. They indicated that in
 their current system they bond multiple 100G NICs together, using DPDK bonding
-API in their application. They are interested in looking at an alternatve source
+API in their application. They are interested in looking at an alternative source
 for the 100G NIC and are in conversation with Silicom who are shipping a 100G
 RRC based NIC (something like Boulder Rapids). The issue they have with RRC NIC
 is that the NIC presents as two PCIe interfaces (netdevs) instead of one. If the
@@ -140,9 +140,9 @@ steps
     testpmd> show bonding config 3
     testpmd> show bonding config 4
 
-#. start all ports to check ports start action::
+#. start top level bond port to check ports start action::
 
-    testpmd> port start all
+    testpmd> port start 4
     testpmd> start
 
 #. close testpmd::
@@ -194,9 +194,9 @@ steps
     testpmd> add bonding slave 3 4
     testpmd> show bonding config 4
 
-#. start all bonded device ports::
+#. start top level bond port::
 
-    testpmd> port start all
+    testpmd> port start 4
     testpmd> start
 
 #. send 100 tcp packets to portA 0 and portA 1::
@@ -260,9 +260,9 @@ steps
     testpmd> add bonding slave 5 6
     testpmd> show bonding config 6
 
-#. start all ports::
+#. start top level bond port::
 
-    testpmd> port start all
+    testpmd> port start 6
     testpmd> start
 
 #. send 100 packets to portA 0/portA 0a/portA 1/portA 1a separately::
@@ -317,9 +317,9 @@ steps
     testpmd> add bonding slave 3 4
     testpmd> show bonding config 4
 
-#. start all ports::
+#. start top level bond port::
 
-    testpmd> port start all
+    testpmd> port start 4
     testpmd> start
 
 #. send 100 packets to portA 0 and portA 1::
@@ -385,9 +385,9 @@ steps
     testpmd> add bonding slave 5 6
     testpmd> show bonding config 6
 
-#. start all ports::
+#. start top level bond port::
 
-    testpmd> port start all
+    testpmd> port start 6
     testpmd> start
 
 #. send 100 packets to portA 0/portA 0a/portA 1/portA 1a separately::
