@@ -242,6 +242,19 @@ class TestIPsecGW(TestCase):
         result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
         self.verify(result, "FAIL")
 
+    def test_qat_null_ipv4_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_null_ipv4_transport")
+        self.pcap_filename = "test_qat_null_ipv4_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+
     def test_qat_aes_128_cbc_ipv6_tunnel(self):
         if cc.is_test_skip(self):
             return
@@ -332,6 +345,67 @@ class TestIPsecGW(TestCase):
         result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
         self.verify(result, "FAIL")
 
+    def test_qat_null_ipv6_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_null_ipv6_transport")
+        self.pcap_filename = "test_qat_null_ipv6_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+
+    def test_qat_3des_cbc_ipv4_tunnel(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_3des_cbc_ipv4_tunnel")
+        self.pcap_filename = "test_qat_3des_cbc_ipv4_tunnel"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_qat_3des_cbc_ipv6_tunnel(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_3des_cbc_ipv6_tunnel")
+        self.pcap_filename = "test_qat_3des_cbc_ipv6_tunnel"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_qat_3des_cbc_ipv4_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_3des_cbc_ipv4_transport")
+        self.pcap_filename = "test_qat_3des_cbc_ipv4_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_qat_3des_cbc_ipv6_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test qat_3des_cbc_ipv6_transport")
+        self.pcap_filename = "test_qat_3des_cbc_ipv6_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
     def test_sw_aes_128_cbc_ipv4_tunnel(self):
         if cc.is_test_skip(self):
             return
@@ -415,6 +489,18 @@ class TestIPsecGW(TestCase):
 
         self.logger.info("Test sw_aes_gcm_ipv4_transport")
         self.pcap_filename = "test_sw_aes_gcm_ipv4_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_sw_null_ipv4_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_null_ipv4_transport")
+        self.pcap_filename = "test_sw_null_ipv4_transport"
         ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
         self.logger.debug(ipsec_gw_opt_str)
 
@@ -511,6 +597,18 @@ class TestIPsecGW(TestCase):
         result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
         self.verify(result, "FAIL")
 
+    def test_sw_null_ipv6_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_null_ipv6_transport")
+        self.pcap_filename = "test_sw_null_ipv6_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
     def test_sw_aes_128_ctr_ipv4_tunnel(self):
         if cc.is_test_skip(self):
             return
@@ -553,6 +651,54 @@ class TestIPsecGW(TestCase):
 
         self.logger.info("Test sw_aes_128_ctr_ipv6_transport")
         self.pcap_filename = "test_sw_aes_128_ctr_ipv6_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_sw_3des_cbc_ipv4_tunnel(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_3des_cbc_ipv4_tunnel")
+        self.pcap_filename = "test_sw_3des_cbc_ipv4_tunnel"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_sw_3des_cbc_ipv6_tunnel(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_3des_cbc_ipv6_tunnel")
+        self.pcap_filename = "test_sw_3des_cbc_ipv6_tunnel"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_sw_3des_cbc_ipv4_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_3des_cbc_ipv4_transport")
+        self.pcap_filename = "test_sw_3des_cbc_ipv4_transport"
+        ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
+        self.logger.debug(ipsec_gw_opt_str)
+
+        result = self._execute_ipsec_gw_test(ipsec_gw_opt_str)
+        self.verify(result, "FAIL")
+
+    def test_sw_3des_cbc_ipv6_transport(self):
+        if cc.is_test_skip(self):
+            return
+
+        self.logger.info("Test sw_3des_cbc_ipv6_transport")
+        self.pcap_filename = "test_sw_3des_cbc_ipv6_transport"
         ipsec_gw_opt_str = self._get_ipsec_gw_opt_str()
         self.logger.debug(ipsec_gw_opt_str)
 
