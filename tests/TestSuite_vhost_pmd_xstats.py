@@ -34,20 +34,17 @@ DPDK Test suite.
 
 vhost pmd xstats test suite.
 """
-import os
-import string
 import re
 import time
 import utils
 import datetime
 import copy
 from test_case import TestCase
-from exception import VerifyFailure
 from settings import HEADER_SIZE
-from etgen import IxiaPacketGenerator
 from qemu_kvm import QEMUKvm
 from packet import Packet
-
+ETHER_JUMBO_FRAME_MTU = 9000
+DEFAULT_JUMBO_FRAME_MTU = 1500
 
 class TestVhostPmdXstats(TestCase):
 
@@ -61,6 +58,8 @@ class TestVhostPmdXstats(TestCase):
         self.dut.unbind_interfaces_linux(self.unbind_ports)
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
+        txport = self.tester.get_local_port(self.dut_ports[0])
+        self.txItf = self.tester.get_interface(txport)
 
         self.scapy_num = 0
         self.dmac = self.dut.get_mac_address(self.dut_ports[0])
@@ -124,8 +123,6 @@ class TestVhostPmdXstats(TestCase):
         Send a packet to port
         """
         self.scapy_num += 1
-        txport = self.tester.get_local_port(self.dut_ports[0])
-        self.txItf = self.tester.get_interface(txport)
         pkt = Packet(pkt_type='TCP', pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': dmac, })
         pkt.send_pkt(tx_port=self.txItf, count=num)
@@ -166,10 +163,13 @@ class TestVhostPmdXstats(TestCase):
         for cat in categories:
             scope = re.search(r'(?<=rx_)\w+(?=_packets)', cat).group(0)
             pktsize = int(re.search(r'(?<=rx_size_)\d+', cat).group(0))
+            if pktsize > 1518:
+                self.tester.send_expect('ifconfig %s mtu %d' % (self.txItf, ETHER_JUMBO_FRAME_MTU), '# ')
 
             self.scapy_send_packet(pktsize, self.dmac, 10000)
             self.send_verify(scope, 10000)
             self.clear_port_xstats(scope)
+        self.tester.send_expect('ifconfig %s mtu %d' % (self.txItf, DEFAULT_JUMBO_FRAME_MTU), '# ')
 
     def clear_port_xstats(self, scope):
 
