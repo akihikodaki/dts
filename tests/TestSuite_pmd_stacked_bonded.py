@@ -138,7 +138,10 @@ class TestBondingStacked(TestCase):
         cmds = [
             ["port stop all", ''],
             ["set portlist " + ",".join([str(port) for port in portList]), ''],
-            ["port start all", ' ', 15]]
+            # start top level bond port only, and let it propagate the start
+            # action to slave bond ports and its the real nics.
+            ["port start {}".format(master_bond_port), ' ', 15]
+        ]
         self.bond_inst.d_console(cmds)
         # blank space command is used to skip LSC event to avoid core dumped issue
         time.sleep(5)
