@@ -92,6 +92,21 @@ Test Case: Packet Checking
    which will be forwarded by the DUT. The test checks if the packets are correctly forwarded and
    if both RX and TX packet sizes match by `show port all stats`
 
+Test Case: Packet Checking in scalar mode
+=========================================
+
+The linuxapp is started with the following parameters:
+
+::
+  -c 0x6 -n 4 -w <devid>,scalar_enable=1  -- -i --portmask=<portmask>
+
+
+This test is applicable for Marvell devices. The tester sends 1 packet at a
+time with different sizes (64, 65, 128, 256, 512, 1024, 1280 and 1518 bytes),
+using scapy, which will be forwarded by the DUT. The test checks if the packets
+are correctly forwarded and if both RX and TX packet sizes match.
+
+
 Test Case: Descriptors Checking
 ===============================
 

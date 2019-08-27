@@ -386,6 +386,29 @@ class TestPmd(TestCase):
         self.dut.send_expect("quit", "# ", 30)
         sleep(5)
 
+    def test_packet_checking_scalar_mode(self):
+        """
+        Packet forwarding checking test
+        """
+
+        self.dut.kill_all()
+
+        port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
+
+        eal_opts = ""
+        for port in self.dut_ports:
+            eal_opts += "-w %s,scalar_enable=1 "%(self.dut.get_port_pci(self.dut_ports[port]))
+
+
+        self.pmdout.start_testpmd("1S/2C/1T", "--portmask=%s" % port_mask, eal_param = eal_opts, socket=self.ports_socket)
+        self.dut.send_expect("start", "testpmd> ")
+        for size in self.frame_sizes:
+            self.send_packet(size, scalar_test=True)
+
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ", 30)
+        sleep(5)
+
     def stop_and_get_l4csum_errors(self):
         """
         Stop forwarding and get Bad-l4csum number from stop statistic
@@ -406,7 +429,7 @@ class TestPmd(TestCase):
         stats = self.pmdout.get_pmd_stats(portid)
         return stats
 
-    def send_packet(self, frame_size, checksum_test=False):
+    def send_packet(self, frame_size, checksum_test=False, scalar_test=False):
         """
         Send 1 packet to portid
         """
@@ -428,10 +451,14 @@ class TestPmd(TestCase):
         if checksum_test:
             checksum = 'chksum=0x1'
 
+        if scalar_test:
+            pkt_count = 1
+        else:
+            pkt_count = 4
         self.tester.scapy_foreground()
         self.tester.scapy_append('nutmac="%s"' % mac)
-        self.tester.scapy_append('sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/UDP(%s)/Raw(load="\x50"*%s)], iface="%s", count=4)' % (
-            load_size, checksum, padding, interface))
+        self.tester.scapy_append('sendp([Ether(dst=nutmac, src="52:00:00:00:00:00")/IP(len=%s)/UDP(%s)/Raw(load="\x50"*%s)], iface="%s", count=%s)' % (
+            load_size, checksum, padding, interface, pkt_count))
 
         out = self.tester.scapy_execute()
         time.sleep(.5)
@@ -452,11 +479,11 @@ class TestPmd(TestCase):
         self.verify(self.pmdout.check_tx_bytes(p0tx_pkts, p1rx_pkts),
                     "packet pass assert error, %d RX packets, %d TX packets" % (p1rx_pkts, p0tx_pkts))
 
-        self.verify(p1rx_bytes == (frame_size - 4)*4,
-                    "packet pass assert error, expected %d RX bytes, actual %d" % ((frame_size - 4)*4, p1rx_bytes))
+        self.verify(p1rx_bytes == (frame_size - 4)*pkt_count,
+                    "packet pass assert error, expected %d RX bytes, actual %d" % ((frame_size - 4)*pkt_count, p1rx_bytes))
 
-        self.verify(self.pmdout.check_tx_bytes(p0tx_bytes, (frame_size - 4)*4),
-                    "packet pass assert error, expected %d TX bytes, actual %d" % ((frame_size - 4)*4, p0tx_bytes))
+        self.verify(self.pmdout.check_tx_bytes(p0tx_bytes, (frame_size - 4)*pkt_count),
+                    "packet pass assert error, expected %d TX bytes, actual %d" % ((frame_size - 4)*pkt_count, p0tx_bytes))
 
         return out
 

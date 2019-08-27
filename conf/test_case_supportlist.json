@@ -1635,5 +1635,21 @@
             "Bug ID": "",
             "Comments": "This case currently support for niantic "
         }
+    ],
+    "packet_checking_scalar_mode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a064",
+                "cavium_a063"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for cavium_a063 and cavium_a064 "
+        }
     ]
 }
