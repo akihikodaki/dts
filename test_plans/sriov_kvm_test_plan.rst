@@ -41,16 +41,17 @@ communications.
 The testpmd application is used to configure traffic mirroring, PF VM receive
 mode, PFUTA hash table and control traffic to a VF for inter-VM communication.
 
-The 82599 supports four separate mirroring rules, each associated with a
-destination pool. Each rule is programmed with one of the four mirroring types:
+The Niantic and Fortville supports some separate mirroring rules, each associated with a
+destination pool. Each rule is programmed with one of the five mirroring types:
 
-1. Pool mirroring: reflect all the packets received to a pool from the network.
-2. Uplink port mirroring: reflect all the traffic received from the network.
-3. Downlink port mirroring: reflect all the traffic transmitted to the
+1. Pool up mirroring: reflect all the packets received from the pool ingress traffic.
+2. Pool down mirroring(Fortville only): reflect all the traffic transmitted from the
+   pool.
+3. Uplink port mirroring: reflect all the traffic received from the ingress traffic.
+4. Downlink port mirroring: reflect all the traffic transmitted to the
    network.
-4. VLAN mirroring: reflect all the traffic received from the network
+5. VLAN mirroring: reflect all the traffic received from the network
    in a set of given VLANs (either from the network or from local VMs).
-
 
 Prerequisites for all 2VMs cases/Mirror 2VMs cases
 ==================================================
@@ -133,14 +134,14 @@ will be forwarded to VF1 and then send out::
 Send 10 packets with VF0 mac address and make sure the packets will be
 forwarded by VF1.
 
-Test Case2: Mirror Traffic between 2VMs with Pool mirroring
+Test Case2: Mirror Traffic between 2VMs with Pool up mirroring
 ===========================================================
 
 Set up common 2VM prerequisites.
 
 Add one mirror rule that will mirror VM0 income traffic to VM1::
 
-    PF testpmd-> set port 0 mirror-rule 0 pool-mirror 0x1 dst-pool 1 on
+    PF testpmd-> set port 0 mirror-rule 0 pool-mirror-up 0x1 dst-pool 1 on
 
 Send 10 packets to VM0 and verify the packets has been mirrored to VM1 and
 forwarded the packet.
@@ -149,8 +150,30 @@ After test need reset mirror rule::
 
     PF testpmd-> reset port 0 mirror-rule 0
 
+Test Case3: Mirror Traffic between 2VMs with Pool down mirroring(Niantic not support)
+=====================================================================================
 
-Test Case3: Mirror Traffic between 2VMs with Uplink mirroring
+Set up common 2VM prerequisites.
+
+Add one mirror rule that will mirror VM0 outcome traffic to VM1::
+
+    PF testpmd-> set port 0 mirror-rule 0 pool-mirror-down 0x1 dst-pool 1 on
+
+Make sure VM1 in receive only mode, VM0 send 32 packets, and verify the VM0
+packets has been mirrored to VM1::
+
+    VF1 testpmd-> set fwd rxonly
+    VF1 testpmd-> start
+    VF0 testpmd-> start tx_first
+
+Note: don't let VF1 fwd packets since downlink mirror will mirror back the
+packets to received packets, which will be an infinite loop.
+
+After test need reset mirror rule::
+
+    PF testpmd-> reset port 0 mirror-rule 0
+
+Test Case4: Mirror Traffic between 2VMs with Uplink mirroring
 =============================================================
 
 Set up common 2VM prerequisites.
@@ -166,7 +189,7 @@ After test need reset mirror rule::
 
     PF testpmd-> reset port 0 mirror-rule 0
 
-Test Case4: Mirror Traffic between 2VMs with Downlink mirroring
+Test Case5: Mirror Traffic between 2VMs with Downlink mirroring
 ===============================================================
 
 Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
@@ -174,12 +197,11 @@ Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
     VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
     VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
 
-
 Add one mirror rule that will mirror VM0 outcome traffic to VM1::
 
     PF testpmd-> set port 0 mirror-rule 0 downlink-mirror dst-pool 1 on
 
-Make sure VM1 in receive only mode, VM0 send 16 packets, and verify the VM0
+Make sure VM1 in receive only mode, VM0 send 32 packets, and verify the VM0
 packets has been mirrored to VM1::
 
     VF1 testpmd-> set fwd rxonly
@@ -193,120 +215,129 @@ After test need reset mirror rule::
 
     PF testpmd-> reset port 0 mirror-rule 0
 
-Test Case5: Mirror Traffic between VMs with Vlan mirroring
+Test Case6: Mirror Traffic between 2VMs with Vlan mirroring
 ==========================================================
 
 Set up common 2VM prerequisites.
 
-Add rx vlan-id 0 on VF0, add one mirror rule that will mirror VM0 income
-traffic with specified vlan to VM1::
+Generate a random number N of 1-4095, Add rx vlan-id N on VF0, add one mirror rule
+that will mirror VM0 income traffic with specified vlan to VM1::
 
-    PF testpmd-> rx_vlan add 0 port 0 vf 0x1
-    PF testpmd-> set port 0 mirror-rule 0 vlan-mirror 0 dst-pool 1 on
+    PF testpmd-> rx_vlan add N port 0 vf 0x1
+    PF testpmd-> set port 0 mirror-rule 0 vlan-mirror n dst-pool 1 on
 
-Send 10 packets with vlan-id0/vm0 MAC to VM0 and verify the packets has been
+Send 10 packets with vlan-id N and VM0 MAC to VM0 and verify the packets has been
 mirrored to VM1 and forwarded the packet.
 
-After test need reset mirror rule::
-
-    PF testpmd-> reset port 0 mirror-rule 0
-
-Test Case6: Mirror Traffic between 2VMs with Vlan & Pool mirroring
-==================================================================
-
-Set up common 2VM prerequisites.
-
-Add rx vlan-id 3 of VF1, and 2 mirror rules, one is VM0 income traffic to VM1,
-one is VM1 vlan income traffic to VM0::
-
-    PF testpmd-> rx_vlan add 3 port 0 vf 0x2
-    PF testpmd-> set port 0 mirror-rule 0 pool-mirror 0x1 dst-pool 1 on
-    PF testpmd-> set port 0 mirror-rule 1 vlan-mirror 3 dst-pool 0 on
-
-Send 2 flows one by one, first 10 packets with VM0 mac, and the second 100
-packets with VM1 vlan and mac, and verify the first 10 packets has been
-mirrored first to VM1, second 100 packets go to VM0 and the packets have been
-forwarded.
+Note: don't let VF1 fwd packets since vlan downlink mirror will mirror back the
+packets to received packets, which will be an infinite loop.
 
 After test need reset mirror rule::
 
     PF testpmd-> reset port 0 mirror-rule 0
-    PF testpmd-> reset port 0 mirror-rule 1
 
-Test Case7: Mirror Traffic between 2VMs with Uplink & Downlink mirroring
-========================================================================
+Test Case7: Mirror Traffic between 2VMs with up link mirroring & down link mirroring
+==================================================================================
 
 Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 
     VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
     VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
 
-Add 2 mirror rules that will mirror VM0 outcome and income traffic to VM1::
+When mirroring only between two Vfs, pool up (or down) mirroring and up (or down) link mirroring lead
+to the same behavior, so we randomly choose one way to mirror in both up and down directions.
+up link mirroring as below:
+   1. Pool up mirroring (Case 2)
+   2. Uplink port mirroring(Case 4)
+down link mirroring as below:
+   1. Pool down mirroring(Fortville only, Case 3)
+   2. Downlink port mirroring(Case 5)
 
-    PF testpmd-> set port 0 mirror-rule 0 downlink-mirror dst-pool 1 on
-    PF testpmd-> set port 0 mirror-rule 0 uplink-mirror dst-pool 1 on
+And 2 mirror rules, one is randomly selected up link mirroring, one is randomly selected
+down link mirroring(Niantic use Downlink port mirroring). The 2 mirror rules will mirroring
+VM0 income and outcome traffic to VM1.
 
-Make sure VM1 in receive only mode, VM0 first send 16 packets, and verify the
-VM0 packets has been mirrored to VM1::
+Make sure VM1 in receive only mode, Send 10 packets to VF0 with VF0 MAC,verify that all VF0
+received packets and transmitted packets will mirror to VF1, VF1 will receive 20 packets::
 
-    VF1 testpmd-> set fwd rxonly
-    VF1 testpmd-> start
-    VF0 testpmd-> start tx_first
-
-Note: don't let VF1 fwd packets since downlink mirror will mirror back the
-packets to received packets, which will be an infinite loop.
-
-Send 10 packets to VF0 with VF0 MAC from ixia, verify that all VF0 received
-packets and transmitted packets will mirror to VF1::
-
-    VF0 testpmd-> stop
+    VF0 testpmd-> set fwd mac
     VF0 testpmd-> start
+    VF1 testpmd-> set fwd rxonly
+    VF1 testpmd-> start
+
+Note: don't let VF1 fwd packets since vlan downlink mirror will mirror back the
+packets to received packets, which will be an infinite loop.
 
 After test need reset mirror rule::
 
     PF testpmd-> reset port 0 mirror-rule 0
+    PF testpmd-> reset port 0 mirror-rule 1
 
-Test Case8: Mirror Traffic between 2VMs with Vlan & Pool & Uplink & Downlink mirroring
-======================================================================================
+Test Case8: Mirror Traffic between 2VMs with Vlan & with up link mirroring & down link mirroring
+=============================================================================================
 
 Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 
     VF0 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
     VF1 ./x86_64-default-linuxapp-gcc/app/testpmd -c f -n 4 --  -i
 
+When mirroring only between two Vfs, pool up (or down) mirroring and up (or down) link mirroring lead
+to the same behavior, so we randomly choose one way to mirror in both up and down directions.
+up link mirroring as below:
+   1. Pool up mirroring (Case 2)
+   2. Uplink port mirroring(Case 4)
+down link mirroring as below:
+   1. Pool down mirroring(Fortville only, Case 3)
+   2. Downlink port mirroring(Case 5)
 
-Add rx vlan-id 0 on VF0 and add 4 mirror rules::
+And 2 mirror rules, one is randomly selected up link mirroring, one is randomly selected
+down link mirroring(Niantic use Downlink port mirroring). The 2 mirror rules will mirroring
+VM0 income and outcome traffic to VM1.
 
-    PF testpmd-> reset port 0 mirror-rule 1
-    PF testpmd-> set port 0 mirror-rule 0 downlink-mirror dst-pool 1 on
-    PF testpmd-> set port 0 mirror-rule 1 uplink-mirror dst-pool 1 on
-    PF testpmd-> rx_vlan add 0 port 0 vf 0x2
-    PF testpmd-> set port 0 mirror-rule 2 vlan-mirror 0 dst-pool 0 on
-    PF testpmd-> set port 0 mirror-rule 3 pool-mirror 0x1 dst-pool 1 on
+Generate a random number N of 1-4095, Add rx vlan-id N and a mirror rule::
 
-Make sure VM1 in receive only mode, VM0 first send 16 packets, and verify the
-VM0 packets has been mirrored to VM1, VF1, RX, 16packets (downlink mirror)::
+    PF testpmd-> rx_vlan add N port 0 vf 0x2
+    PF testpmd-> set port 0 mirror-rule 2 vlan-mirror N dst-pool 0 on
+
+Note: Because of Hardware limitation, downlink-mirror and pool-mirror-down cannot coexist,
+uplink-mirror and pool-mirror-up cannot coexist in Fortville.
+
+Fortville: Make sure VM0 in receive only mode::
 
     VF1 testpmd-> set fwd rxonly
     VF1 testpmd-> start
-    VF0 testpmd-> start tx_first
-
-Note: don't let VF1 fwd packets since downlink mirror will mirror back the
-packets to received packets, which will be an infinite loop.
-
-Send 1 packet to VF0 with VF0 MAC from ixia, check if VF0 RX 1 packet and TX 1
-packet, and VF1 has 2 packets mirror from VF0(uplink mirror/downlink/pool)::
-
-    VF0 testpmd-> stop
     VF0 testpmd-> set fwd mac
     VF0 testpmd-> start
 
-Send 1 packet with VM1 vlan id and mac, and verify that VF0 have 1 RX packet, 1
-TX packet, and VF1 have 2 packets(downlink mirror)::
+Send 1 packet with VM1 vlan id N and mac, and verify that VF0 have 1 RX packet(vlan mirror),
+and VF1 have 2 RX packets(RX and down link mirror).
 
-    VF0 testpmd-> stop
+Send 1 packet to VF0 with VF0 MAC, check if VF0 RX 1 packet and TX 1 packet,
+and VF1 has 1 packets mirror from VF0(uplink mirror) at least.
+
+Niantic add rules as below::
+
+   PF testpmd> set port 0 mirror-rule 0 pool-mirror-up 0x1 dst-pool 1 on
+   PF testpmd> rx_vlan add N port 0 vf 0x2
+   PF testpmd> set port 0 mirror-rule 2 vlan-mirror N dst-pool 0 on
+   PF testpmd> set port 0 mirror-rule 1 downlink-mirror dst-pool 1 on
+   PF testpmd> set port 0 mirror-rule 3 uplink-mirror dst-pool 1 on
+
+Note: don't let VF0 fwd packets since downlink vlan mirror will mirror back the
+packets to received packets, which will be an infinite loop.
+
+Make sure VM0 in receive only mode, VM0 first send 32 packets, and verify the
+VM0 packets has been mirrored to VM1, VF1 RX 32 packets (down link mirror)::
+
+    VF1 testpmd-> set fwd rxonly
+    VF1 testpmd-> start
     VF0 testpmd-> set fwd rxonly
-    VF0 testpmd-> start
+    VF0 testpmd-> start tx_first
+
+Send 1 packet with VM1 vlan id N and mac, and verify that VF0 have 1 RX packet(vlan mirror).
+
+Send 1 packet to VF0 with VF0 MAC, check if VF0 RX 1 packet and TX 1 packet,
+and VF1 has 2 packets mirror from VF0(up link mirror).
 
 After test need reset mirror rule::
 
@@ -314,7 +345,6 @@ After test need reset mirror rule::
     PF testpmd-> reset port 0 mirror-rule 1
     PF testpmd-> reset port 0 mirror-rule 2
     PF testpmd-> reset port 0 mirror-rule 3
-
 
 Test Case9: Add Multi exact MAC address on VF
 =============================================
