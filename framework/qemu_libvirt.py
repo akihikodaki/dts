@@ -48,6 +48,21 @@ from xml.dom import minidom
 
 
 class LibvirtKvm(VirtBase):
+    DEFAULT_BRIDGE = 'br0'
+    QEMU_IFUP = "#!/bin/sh\n\n" + \
+                "set -x\n\n" + \
+                "switch=%(switch)s\n\n" + \
+                "if [ -n '$1' ];then\n" + \
+                "   tunctl -t $1\n" + \
+                "   ip link set $1 up\n" + \
+                "   sleep 0.5s\n" + \
+                "   brctl addif $switch $1\n" + \
+                "   exit 0\n" + \
+                "else\n" + \
+                "   echo 'Error: no interface specified'\n" + \
+                "   exit 1\n" + \
+                "fi"
+    QEMU_IFUP_PATH = '/etc/qemu-ifup'
 
     def __init__(self, dut, name, suite):
         # initialize virtualization base module
@@ -56,6 +71,7 @@ class LibvirtKvm(VirtBase):
         # initialize qemu emulator, example: qemu-system-x86_64
         self.qemu_emulator = self.get_qemu_emulator()
 
+        self.logger = dut.logger
         # disk and pci device default index
         self.diskindex = 'a'
         self.controllerindex = 0
@@ -258,9 +274,6 @@ class LibvirtKvm(VirtBase):
         device = ET.SubElement(self.domain, 'devices')
         ET.SubElement(device, 'emulator').text = self.qemu_emulator
 
-        # graphic device
-        ET.SubElement(device, 'graphics', {
-                      'type': 'vnc', 'port': '-1', 'autoport': 'yes'})
         # qemu guest agent
         self.add_vm_qga(None)
 
@@ -348,6 +361,38 @@ class LibvirtKvm(VirtBase):
                  'slot': '0x00', 'function': '0x00'})
             self.pciindex += 1
 
+    def add_vm_daemon(self, **options):
+        pass
+
+    def add_vm_vnc(self, **options):
+        """
+        Add VM display option
+        """
+        disable = options.get('disable')
+        if disable and disable == 'True':
+            return
+        else:
+            displayNum = options.get('displayNum')
+            port = \
+                displayNum if displayNum else \
+                self.virt_pool.alloc_port(self.vm_name, port_type="display")
+        ip = self.host_dut.get_ip_address()
+        # set main block
+        graphics = {
+            'type': 'vnc',
+            'port': port,
+            'autoport': 'yes',
+            'listen': ip,
+            'keymap': 'en-us', }
+
+        devices = self.domain.find('devices')
+        graphics = ET.SubElement(devices, 'graphics', graphics)
+        # set sub block
+        listen = {
+            'type': 'address',
+            'address': ip, }
+        ET.SubElement(graphics, 'listen', listen)
+
     def add_vm_serial_port(self, **options):
         if 'enable' in options.keys():
             if options['enable'].lower() == 'yes':
@@ -370,8 +415,8 @@ class LibvirtKvm(VirtBase):
                         {'mode': 'bind', 'path': self.serial_path})
                     ET.SubElement(serial, 'target', {'port': '0'})
                 else:
-                    print utils.RED(
-                        "Serial type %s is not supported!" % serial_type)
+                    msg = "Serial type %s is not supported!" % serial_type
+                    self.logger.error(msg)
                     return False
                 console = ET.SubElement(
                     devices, 'console', {'type': serial_type})
@@ -417,7 +462,166 @@ class LibvirtKvm(VirtBase):
         return None
 
     def set_vm_device(self, driver='pci-assign', **opts):
+        opts['driver'] = driver
         self.add_vm_device(**opts)
+
+    def __generate_net_config_script(self, switch=DEFAULT_BRIDGE):
+        """
+        Generate a script for qemu emulator to build a tap device
+        between host and guest.
+        """
+        qemu_ifup = self.QEMU_IFUP % {'switch': switch}
+        file_name = os.path.basename(self.QEMU_IFUP_PATH)
+        tmp_file_path = '/tmp/%s' % file_name
+        self.host_dut.create_file(qemu_ifup, tmp_file_path)
+        self.host_session.send_expect(
+            'mv -f ~/%s %s' % (file_name, self.QEMU_IFUP_PATH), '# ')
+        self.host_session.send_expect(
+            'chmod +x %s' % self.QEMU_IFUP_PATH, '# ')
+
+    def __parse_opt_setting(self, opt_settings):
+        if '=' not in opt_settings:
+            msg = 'wrong opt_settings setting'
+            raise Exception(msg)
+        setting = [item.split('=') for item in opt_settings.split(',')]
+        return dict(setting)
+
+    def __get_pci_addr_config(self, pci):
+        pci = self.__parse_pci(pci)
+        if pci is None:
+            msg = 'Invalid guestpci for host device pass-through !!!'
+            self.logger.error(msg)
+            return False
+        bus, slot, func, dom = pci
+        config = {
+            'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
+            'slot': '0x%s' % slot, 'function': '0x%s' % func}
+        return config
+
+    def __write_config(self, parent, configs):
+        for config in configs:
+            node_name = config[0]
+            opt = config[1]
+            node = ET.SubElement(parent, node_name, opt)
+            if len(config) == 3:
+                self.__write_config(node, config[2])
+
+    def __set_vm_bridge_interface(self, **options):
+        mac = options.get('opt_mac')
+        opt_br = options.get('opt_br')
+        if not mac or not opt_br:
+            msg = "Missing some bridge device option !!!"
+            self.logger.error(msg)
+            return False
+        _config = [
+            ['mac', {'address': mac}],
+            ['source', {'bridge': opt_br, }],
+            ['model', {'type': 'virtio', }]]
+        config = [['interface', {'type': 'bridge'}, _config]]
+        # set xml file
+        parent = self.domain.find('devices')
+        self.__write_config(parent, config)
+
+    def __add_vm_virtio_user_pci(self, **options):
+        mac = options.get('opt_mac')
+        mode = options.get('opt_server') or 'client'
+        # unix socket path of character device
+        sock_path = options.get('opt_path')
+        queue = options.get('opt_queue')
+        settings = options.get('opt_settings')
+        # pci address in virtual machine
+        pci = options.get('opt_host')
+        if not mac or not sock_path:
+            msg = "Missing some vhostuser device option !!!"
+            self.logger.error(msg)
+            return False
+        node_name = 'interface'
+        # basic options
+        _config = [
+            ['mac', {'address': mac}],
+            ['source', {'type': 'unix',
+                        'path': sock_path,
+                        'mode': mode, }],
+            ['model', {'type': 'virtio', }]]
+        # append pci address
+        if pci:
+            _config.append(['address', self.__get_pci_addr_config(pci)])
+        if queue or settings:
+            drv_config = {'name': 'vhost'}
+            if settings:
+                _sub_opt = self.__parse_opt_setting(settings)
+                drv_opt = {}
+                guest_opt = {}
+                host_opt = {}
+                for key, value in _sub_opt.iteritems():
+                    if key.startswith('host_'):
+                        host_opt[key[5:]] = value
+                        continue
+                    if key.startswith('guest_'):
+                        guest_opt[key[6:]] = value
+                        continue
+                    drv_opt[key] = value
+                drv_config.update(drv_opt)
+                sub_drv_config = []
+                if host_opt:
+                    sub_drv_config.append(['host', host_opt])
+                if guest_opt:
+                    sub_drv_config.append(['guest', guest_opt])
+            # The optional queues attribute controls the number of queues to be
+            # used for either Multiqueue virtio-net or vhost-user network
+            # interfaces. Each queue will potentially be handled by a different
+            # processor, resulting in much higher throughput. virtio-net since
+            # 1.0.6 (QEMU and KVM only) vhost-user since 1.2.17(QEMU and KVM
+            # only).
+            if queue:
+                drv_config.update({'queues': queue, })
+            # set driver config
+            if sub_drv_config:
+                _config.append(['driver', drv_config, sub_drv_config])
+            else:
+                _config.append(['driver', drv_config])
+        config = [[node_name, {'type': 'vhostuser'}, _config]]
+        # set xml file
+        parent = self.domain.find('devices')
+        self.__write_config(parent, config)
+
+    def __add_vm_pci_assign(self, **options):
+        devices = self.domain.find('devices')
+        # add hostdev config block
+        config = {
+            'mode': 'subsystem',
+            'type': 'pci',
+            'managed': 'yes'}
+        hostdevice = ET.SubElement(devices, 'hostdev', config)
+        # add hostdev/source config block
+        pci_addr = options.get('opt_host')
+        if not pci_addr:
+            msg = "Missing opt_host for device option!!!"
+            self.logger.error(msg)
+            return False
+        pci = self.__parse_pci(pci_addr)
+        if pci is None:
+            return False
+        bus, slot, func, dom = pci
+        source = ET.SubElement(hostdevice, 'source')
+        config = {
+            'domain': '0x%s' % dom,
+            'bus': '0x%s' % bus,
+            'slot': '0x%s' % slot,
+            'function': '0x%s' % func}
+        ET.SubElement(source, 'address', config)
+        # add hostdev/source/address config block
+        guest_pci_addr = options.get('guestpci')
+        if not guest_pci_addr:
+            guest_pci_addr = '0000:%s:00.0' % hex(self.pciindex)[2:]
+            self.pciindex += 1
+        config = self.__get_pci_addr_config(guest_pci_addr)
+        ET.SubElement(hostdevice, 'address', config)
+        # save host and guest pci address mapping
+        pci_map = {}
+        pci_map['hostpci'] = pci_addr
+        pci_map['guestpci'] = guest_pci_addr
+        self.pci_maps.append(pci_map)
 
     def add_vm_device(self, **options):
         """
@@ -425,45 +629,21 @@ class LibvirtKvm(VirtBase):
             pf_idx: device index of pass-through device
             guestpci: assigned pci address in vm
         """
-        devices = self.domain.find('devices')
-        hostdevice = ET.SubElement(devices, 'hostdev', {
-                                   'mode': 'subsystem', 'type': 'pci',
-                                   'managed': 'yes'})
-
-        if 'opt_host' in options.keys():
-            pci_addr = options['opt_host']
-        else:
-            print utils.RED("Missing opt_host for device option!!!")
-            return False
-
-        pci = self.__parse_pci(pci_addr)
-        if pci is None:
-            return False
-        bus, slot, func, dom = pci
-
-        source = ET.SubElement(hostdevice, 'source')
-        ET.SubElement(source, 'address', {
-                      'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
-                      'slot': '0x%s' % slot,
-                      'function': '0x%s' % func})
-        if 'guestpci' in options.keys():
-            guest_pci_addr = options['guestpci']
-        else:
-            guest_pci_addr = '0000:%s:00.0' % hex(self.pciindex)[2:]
-            self.pciindex += 1
-        pci = self.__parse_pci(guest_pci_addr)
-        if pci is None:
-            print utils.RED('Invalid guestpci for host device pass-through!!!')
-            return False
-        bus, slot, func, dom = pci
-        ET.SubElement(hostdevice, 'address', {
-            'type': 'pci', 'domain': '0x%s' % dom, 'bus': '0x%s' % bus,
-            'slot': '0x%s' % slot, 'function': '0x%s' % func})
-        # save host and guest pci address mapping
-        pci_map = {}
-        pci_map['hostpci'] = pci_addr
-        pci_map['guestpci'] = guest_pci_addr
-        self.pci_maps.append(pci_map)
+        driver_table = {
+            'vhost-user':
+                self.__add_vm_virtio_user_pci,
+            'bridge':
+                self.__set_vm_bridge_interface,
+            'pci-assign':
+                self.__add_vm_pci_assign,
+        }
+        driver = options.get('driver')
+        if not driver or driver not in driver_table.keys():
+            driver = 'pci-assign'
+            msg = 'use {0} configuration as default driver'.format(driver)
+            self.logger.warning(msg)
+        func = driver_table.get(driver)
+        func(**options)
 
     def add_vm_net(self, **options):
         """
@@ -473,6 +653,8 @@ class LibvirtKvm(VirtBase):
         if 'type' in options.keys():
             if options['type'] == 'nic':
                 self.__add_vm_net_nic(**options)
+            elif options['type'] == 'tap':
+                self.__add_vm_net_tap(**options)
 
     def __add_vm_net_nic(self, **options):
         """
@@ -514,6 +696,30 @@ class LibvirtKvm(VirtBase):
             ET.SubElement(qemu, 'qemu:arg', {'value': 'user,hostfwd='
                                              'tcp:%s:%d-:22' % (dut_ip, port)})
 
+    def __add_vm_net_tap(self, **options):
+        """
+        type: tap
+        opt_br: br0
+            note: if choosing tap, need to specify bridge name,
+                  else it will be br0.
+        opt_script: QEMU_IFUP_PATH
+            note: if not specified, default is self.QEMU_IFUP_PATH.
+        """
+        _config = [['target', {'dev': 'tap0'}]]
+        # add bridge info
+        opt_br = options.get('opt_br')
+        bridge = opt_br if opt_br else self.DEFAULT_BRIDGE
+        _config.append(['source', {'bridge': bridge}])
+        self.__generate_net_config_script(str(bridge))
+        # add network configure script path
+        opt_script = options.get('opt_script')
+        script_path = opt_script if opt_script else self.QEMU_IFUP_PATH
+        _config.append(['script', {'path': script_path}])
+        config = [['interface', {'type': 'bridge'}, _config]]
+        # set xml file
+        parent = self.domain.find('devices')
+        self.__write_config(parent, config)
+
     def add_vm_virtio_serial_channel(self, **options):
         """
         Options:
@@ -524,7 +730,8 @@ class LibvirtKvm(VirtBase):
         channel = ET.SubElement(devices, 'channel', {'type': 'unix'})
         for opt in ['path', 'name']:
             if opt not in options.keys():
-                print "invalid virtio serial channel setting"
+                msg = "invalid virtio serial channel setting"
+                self.logger.error(msg)
                 return
 
         ET.SubElement(
