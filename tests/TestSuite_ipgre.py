@@ -63,7 +63,7 @@ class TestIpgre(TestCase):
         """
         self.printFlag = self._enable_debug
         ports = self.dut.get_ports()
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"],
+        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"],
                     "GRE tunnel packet type only support by fortville and carlsville")
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
