@@ -365,6 +365,8 @@ class TestNvgre(TestCase):
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
+        elif self.nic in ["columbiaville_25g","columbiaville_100g"]:
+           print "CVL support default none VECTOR"
         else:
             self.verify(False, "%s not support NVGRE case" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -616,19 +618,73 @@ class TestNvgre(TestCase):
         # verify saved pcap checksum same to expected checksum
         for key in chksums_default:
             self.verify(chksums[key] == chksums_default[key], "%s not matched to %s" % (key, chksums_default[key]))
+    def test_nvgre_ipv6(self):
+        """
+        verify nvgre packet with ipv6
+        """
+        # check no nvgre packet
+        self.nvgre_detect(outer_l3_type = "IPv6", outer_ip_proto=0xFF)
+        # check nvgre + IPv6 inner packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", inner_l4_type='None')
+        # check nvgre + TCP inner packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", inner_l4_type='TCP')
+        # check nvgre + SCTP inner packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", inner_l4_type='SCTP')
+        # check nvgre + UDP inner packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", inner_l4_type='UDP')
+        # check nvgre + vlan outer packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", outer_vlan=1)
+        # check vlan nvgre + vlan inner and outer packet
+        self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", outer_vlan=1, inner_vlan=1)
 
+    def test_nvgre_ipv6_checksum_offload(self):
+        # check nvgre packet + inner IPv6 + inner L4  invalid
+        self.nvgre_checksum(inner_l3_type = "IPv6", inner_l4_invalid=1)
+        # check nvgre packet + outer IPv6 + inner L4  invalid
+        self.nvgre_checksum(outer_l3_type = "IPv6", inner_l4_invalid=1)
+        # check nvgre packet + inner + outer ipv6 + inner L4  invalid
+        self.nvgre_checksum(outer_l3_type = "IPv6", inner_l3_type= "IPv6", inner_l4_invalid=1)
+        # check nvgre packet + inner IPv6 + tcp checksum invalid
+        self.nvgre_checksum(inner_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='TCP')
+        #check nvgre packet + inner IPv6 + sctp checksum invalid
+        self.nvgre_checksum(inner_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='SCTP')
+        #check nvgre packet + inner IPv6 + UDP checksum invalid
+        self.nvgre_checksum(inner_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='UDP')
+        # check nvgre packet + outer IPv6 + inner tcp checksum invalid
+        self.nvgre_checksum(outer_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='TCP')
+        #check nvgre packet + outer IPv6 + inner sctp checksum invalid
+        self.nvgre_checksum(outer_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='SCTP')
+        #check nvgre packet + outer IPv6 + inner UDP checksum invalid
+        self.nvgre_checksum(outer_l3_type = "IPv6", inner_l4_invalid=1, inner_l4_type='UDP')
+        # check vlan nvgre packet + inner vlan + inner udp checksum invalid
+        self.nvgre_checksum(inner_l3_type="IPv6", inner_vlan=1, inner_l4_invalid=1, inner_l4_type='UDP')
+        # check vlan nvgre packet + outer vlan + inner udp checksum invalid
+        self.nvgre_checksum(outer_l3_type="IPv6", outer_vlan=1, inner_l4_invalid=1, inner_l4_type='UDP')
+        # check vlan nvgre packet + outer vlan + inner tcp checksum invalid
+        self.nvgre_checksum(outer_l3_type="IPv6", outer_vlan=1, inner_l4_invalid=1, inner_l4_type='TCP')
+        # check vlan nvgre packet + inner vlan + inner tcp checksum invalid
+        self.nvgre_checksum(inner_l3_type="IPv6", inner_vlan=1, inner_l4_invalid=1, inner_l4_type='TCP')
+        # check vlan nvgre packet + inner vlan + inner sctp checksum invalid
+        self.nvgre_checksum(inner_l3_type="IPv6", inner_vlan=1, inner_l4_invalid=1, inner_l4_type='SCTP')
+        # check vlan nvgre packet + outer vlan + inner sctp checksum invalid
+        self.nvgre_checksum(outer_l3_type="IPv6", outer_vlan=1, inner_l4_invalid=1, inner_l4_type='SCTP')
+ 
     def test_nvgre_ipv4(self):
         """
         verify nvgre packet with ipv4
         """
         # packet type detect must used without VECTOR pmd
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-        if src_vec_model == 'y':
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+           print "CVL support default none VECTOR"
+           src_vec_model = 'n'
+        else:
+           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+           src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]  
+           if src_vec_model == 'y':
+              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
                                 + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+              self.dut.skip_setup = False
+              self.dut.build_install_dpdk(self.target)
 
         # check no nvgre packet
         self.nvgre_detect(outer_ip_proto=0xFF)
@@ -642,13 +698,17 @@ class TestNvgre(TestCase):
         self.nvgre_detect(outer_vlan=1)
         # check vlan nvgre + vlan inner packet
         self.nvgre_detect(outer_vlan=1, inner_vlan=1)
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-        if src_vec_model != dst_vec_model:
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+           print "CVL support default none VECTOR"
+           src_vec_model = 'n'
+        else:
+           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+           dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+           if src_vec_model != dst_vec_model:
+              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
                                 + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+              self.dut.skip_setup = False
+              self.dut.build_install_dpdk(self.target)
     def test_tunnel_filter(self):
 
         # verify tunnel filter feature
