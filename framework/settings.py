@@ -107,6 +107,7 @@ NICS = {
     'fastlinq_ql45000_vf': '1077:1664',
     'fastlinq_ql41000': '1077:8070',
     'fastlinq_ql41000_vf': '1077:8090',
+    'carlsville': '8086:15ff',
 }
 
 DRIVERS = {
@@ -168,6 +169,7 @@ DRIVERS = {
     'fastlinq_ql41000': 'qede',
     'fastlinq_ql45000_vf': 'qede',
     'fastlinq_ql41000_vf': 'qede',
+    'carlsville': 'i40e',
 }
 
 """
