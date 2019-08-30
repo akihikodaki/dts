@@ -413,7 +413,7 @@ class TestPmdrssHash(TestCase):
         Run at the start of each test suite.
         """
 
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
                     "fortville_spirit_single", "redrockcanyou", "atwood",
                     "boulderrapid", "fortpark_TLV", "fortville_25g", "niantic", "carlsville"],
                     "NIC Unsupported: " + str(self.nic))
@@ -613,7 +613,7 @@ class TestPmdrssHash(TestCase):
     def test_dynamic_rss_bond_config(self):
         
         # setup testpmd and finish bond config
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
                     "fortpark_TLV", "fortville_25g", "carlsville"],
                     "NIC Unsupported: " + str(self.nic))
 
