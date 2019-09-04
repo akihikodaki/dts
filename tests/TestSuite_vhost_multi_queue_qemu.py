@@ -79,13 +79,14 @@ class TestVhostMultiQueueQemu(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
 
         self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
@@ -98,9 +99,9 @@ class TestVhostMultiQueueQemu(TestCase):
         Launch the vhost sample with different parameters
         """
         testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem 1024,1024" + \
-                       " --vdev 'net_vhost0,iface=vhost-net,queues=%d' -- -i --rxq=%d --txq=%d --nb-cores=2"
+                       " --vdev 'net_vhost0,iface=%s/vhost-net,queues=%d' -- -i --rxq=%d --txq=%d --nb-cores=2"
         self.coremask = utils.create_mask(self.cores)
-        testcmd_start = testcmd % (self.coremask, self.memory_channel, self.queue_number, self.queue_number, self.queue_number)
+        testcmd_start = testcmd % (self.coremask, self.memory_channel, self.base_dir, self.queue_number, self.queue_number, self.queue_number)
 
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
@@ -113,7 +114,7 @@ class TestVhostMultiQueueQemu(TestCase):
         self.vm = VM(self.dut, 'vm0', 'vhost_sample')
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = self.base_dir + '/vhost-net'
         vm_params['opt_mac'] = self.virtio1_mac
         vm_params['opt_queue'] = self.queue_number
         vm_params['opt_settings'] = 'mrg_rxbuf=on,mq=on,vectors=%d' % (2*self.queue_number + 2)
@@ -281,9 +282,9 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.queue_number = 2
         testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem 1024,1024" + \
-                       " --vdev 'net_vhost0,iface=vhost-net,queues=2' -- -i --rxq=1 --txq=1 --nb-cores=1"
+                       " --vdev 'net_vhost0,iface=%s/vhost-net,queues=2' -- -i --rxq=1 --txq=1 --nb-cores=1"
         self.coremask = utils.create_mask(self.cores)
-        testcmd_start = testcmd % (self.coremask, self.memory_channel)
+        testcmd_start = testcmd % (self.coremask, self.memory_channel, self.base_dir)
 
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
