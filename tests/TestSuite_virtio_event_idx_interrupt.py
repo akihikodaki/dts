@@ -59,6 +59,7 @@ class TestVirtioIdxInterrupt(TestCase, IxiaPacketGenerator):
                             == self.ports_socket])
         self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -68,7 +69,7 @@ class TestVirtioIdxInterrupt(TestCase, IxiaPacketGenerator):
         self.flag = None
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost")
 
     def ip(self, port, frag, src, proto, tos, dst, chksum, len, options,
@@ -104,9 +105,9 @@ class TestVirtioIdxInterrupt(TestCase, IxiaPacketGenerator):
         self.get_core_mask()
         command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
                 "--socket-mem 2048,2048 --legacy-mem --file-prefix=vhost " + \
-                "--vdev 'net_vhost,iface=vhost-net,queues=%d' -- -i " + \
+                "--vdev 'net_vhost,iface=%s/vhost-net,queues=%d' -- -i " + \
                 "--nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d"
-        command_line = command_line % (self.core_mask, self.mem_channels,
+        command_line = command_line % (self.core_mask, self.mem_channels, self.base_dir,
                         self.queues, self.nb_cores, self.queues, self.queues)
         self.vhost.send_expect(command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
@@ -118,7 +119,7 @@ class TestVirtioIdxInterrupt(TestCase, IxiaPacketGenerator):
         self.vm = VM(self.dut, 'vm0', 'vhost_sample')
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = "00:11:22:33:44:55"
         opt_args = "mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on"
         if self.queues > 1:
