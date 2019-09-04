@@ -69,6 +69,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -78,7 +79,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.verify_info = []
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.vm_dut = None
 
@@ -117,10 +118,10 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
         command_client = self.dut.target + "/app/testpmd -c %s -n %d " + \
                         "--socket-mem 1024,1024 --legacy-mem " + \
-                        "--vdev 'net_vhost0,iface=vhost-net,queues=%d' " + \
+                        "--vdev 'net_vhost0,iface=%s/vhost-net,queues=%d' " + \
                         "-- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip"
         command_line_client = command_client % (
-                        self.core_mask, self.mem_channels,
+                        self.core_mask, self.mem_channels, self.base_dir,
                         self.queues, self.nb_cores, self.queues, self.queues)
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
@@ -175,7 +176,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.vm.load_config()
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = "00:11:22:33:44:55"
         vm_params['opt_queue'] = self.queues
         opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d" % (2*self.queues+2)
