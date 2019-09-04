@@ -91,13 +91,14 @@ class TestVirtioPVPRegression(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.vhost = self.dut.new_session(suite="vhost-user")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
     def packet_params_set(self):
         self.frame_sizes = [64, 1518]
@@ -205,7 +206,7 @@ class TestVirtioPVPRegression(TestCase):
         self.vm = VM(self.dut, 'vm0', self.suite_name)
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = self.virtio1_mac
         vm_params['opt_server'] = 'server'
         vm_params['opt_queue'] = self.queues_number
@@ -249,11 +250,11 @@ class TestVirtioPVPRegression(TestCase):
         """
         command_line_client = self.dut.target + "/app/testpmd -n %d -c %s \
             --socket-mem %s --file-prefix=vhost -w %s \
-            --vdev 'eth_vhost0,iface=vhost-net,queues=%d,client=1' -- \
+            --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,client=1' -- \
             -i --nb-cores=%d --rxq=%d --txq=%d  --txd=1024 --rxd=1024"
         command_line_client = command_line_client % (
                         self.memory_channel, self.coremask, self.socket_mem,
-                        self.dut.ports_info[self.pf]['pci'],
+                        self.dut.ports_info[self.pf]['pci'], self.base_dir,
                         self.queues_number, self.queues_number, self.queues_number,
                         self.queues_number)
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
@@ -346,7 +347,7 @@ class TestVirtioPVPRegression(TestCase):
         self.vm.stop()
         self.dut.send_expect("killall -I testpmd", '#', 20)
         self.dut.send_expect('killall -s INT qemu-system-x86_64', '# ')
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
     def pvp_regression_run(self, case_info, modem, virtio_path):
         """
