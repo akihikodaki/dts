@@ -278,7 +278,7 @@ class TestL3fwd(TestCase):
                 cnt += 1
         return pcaps
 
-    def prepare_steam(self, pcaps):
+    def prepare_stream(self, pcaps):
         """
         create streams for ports, one port one stream
         """
@@ -322,7 +322,7 @@ class TestL3fwd(TestCase):
                 # crete traffic flow
                 pcaps = self.create_pcap_file(frame_size, l3_proto)
                 # send the traffic and Measure test
-                tgenInput = self.prepare_steam(pcaps)
+                tgenInput = self.prepare_stream(pcaps)
 
                 vm_config = self.set_fields()
                 # clear streams before add new streams
@@ -376,7 +376,7 @@ class TestL3fwd(TestCase):
                     # crete traffic flow
                     pcaps = self.create_pcap_file(frame_size, l3_proto)
                     # send the traffic and Measure test
-                    tgenInput = self.prepare_steam(pcaps)
+                    tgenInput = self.prepare_stream(pcaps)
 
                     vm_config = self.set_fields()
                     # clear streams before add new streams

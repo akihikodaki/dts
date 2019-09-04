@@ -200,7 +200,7 @@ class TestVfL3fwd(TestCase):
                 cnt += 1
         return pcaps
 
-    def prepare_steam(self, pcaps):
+    def prepare_stream(self, pcaps):
         """
         create streams for ports,one port one stream
         """
@@ -235,7 +235,7 @@ class TestVfL3fwd(TestCase):
                     cmdline = cmdline + " --max-pkt-len %d" % frame_size
                 l3fwd_session.send_expect(cmdline, "L3FWD:", 120)
                 # send the traffic and Measure test
-                tgenInput = self.prepare_steam(pcaps)
+                tgenInput = self.prepare_stream(pcaps)
 
                 vm_config = self.set_fields()
                 # clear streams before add new streams
