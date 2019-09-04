@@ -58,7 +58,7 @@ class TestQueue_region(TestCase):
         Queue region Prerequisites
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "fortpark_TLV"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "carlsville"], "NIC Unsupported: " + str(self.nic))
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
