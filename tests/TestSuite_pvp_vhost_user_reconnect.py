@@ -83,6 +83,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -91,7 +92,7 @@ class TestPVPVhostUserReconnect(TestCase):
         """
         self.dut.send_expect("killall -s INT testpmd", "# ")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
-        self.dut.send_expect("rm -rf ./vhost-net*", "# ")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "# ")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
 
     def launch_testpmd_as_vhost_user(self):
@@ -100,7 +101,7 @@ class TestPVPVhostUserReconnect(TestCase):
         """
         vdev_info = ""
         for i in range(self.vm_num):
-            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
+            vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,client=1,queues=1' " % (i, self.base_dir, i)
         self.vhostapp_testcmd = self.dut.base_dir + \
                     "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
                     " --file-prefix=vhost %s" + \
@@ -119,7 +120,7 @@ class TestPVPVhostUserReconnect(TestCase):
         """
         vdev_info = ""
         for i in range(self.vm_num):
-            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
+            vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,client=1,queues=1' " % (i, self.base_dir, i)
         self.vhostapp_testcmd = self.dut.base_dir + \
                     "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
                     " --no-pci --file-prefix=vhost %s" + \
@@ -180,7 +181,7 @@ class TestPVPVhostUserReconnect(TestCase):
             vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = './vhost-net%d' % (i)
+            vm_params['opt_path'] = '%s/vhost-net%d' % (self.base_dir, i)
             vm_params['opt_mac'] = '52:54:00:00:00:0%d' % (i+1)
             vm_params['opt_server'] = 'server'
             vm_params['opt_settings'] = 'mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024'
