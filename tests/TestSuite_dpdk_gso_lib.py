@@ -97,12 +97,13 @@ class TestDPDKGsoLib(TestCase):
             self.socket_mem = '1024,1024'
 
         self.prepare_dpdk()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         #
         # Run before each test case.
         # Clean the execution ENV
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
@@ -113,10 +114,10 @@ class TestDPDKGsoLib(TestCase):
         # mode = 3: TSO
         # mode = others: NO DPDK GSO/TSO
         self.testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" \
-            + " --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --tx-offloads=0x00 "\
+            + " --vdev 'net_vhost0,iface=%s/vhost-net,queues=1' -- -i --tx-offloads=0x00 "\
                 + " --txd=1024 --rxd=1024"
         self.testcmd_start = self.testcmd % (
-            self.core_mask_vhost, self.memory_channel, self.socket_mem)
+            self.core_mask_vhost, self.memory_channel, self.socket_mem, self.base_dir)
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
@@ -246,7 +247,7 @@ class TestDPDKGsoLib(TestCase):
         self.vm1.load_config()
         vm_params_1 = {}
         vm_params_1['driver'] = 'vhost-user'
-        vm_params_1['opt_path'] = './vhost-net'
+        vm_params_1['opt_path'] = self.base_dir + '/vhost-net'
         vm_params_1['opt_mac'] = self.virtio_mac1
         # tcp and udp traffic
         if(mode == 0):
