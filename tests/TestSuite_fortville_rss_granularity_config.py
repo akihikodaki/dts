@@ -52,6 +52,7 @@ import random
 import re
 import utils
 import dut
+from pmd_output import PmdOutput
 
 testQueues = [16]
 reta_entries = []
@@ -85,6 +86,7 @@ class TestFortvilleRssGranularityConfig(TestCase):
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         self.itf = self.tester.get_interface(localPort)
+        self.pmdout = PmdOutput(self.dut)
 
     def set_up(self):
         """
@@ -207,6 +209,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz ipv4-tcp enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss tcp", "testpmd> ")
             self.send_packet(self.itf, "ipv4-tcp")
@@ -278,6 +283,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz ipv4-udp enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss udp", "testpmd> ")
             self.send_packet(self.itf, "ipv4-udp")
@@ -350,6 +358,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz ipv6-tcp enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss tcp", "testpmd> ")
             self.send_packet(self.itf, "ipv6-tcp")
@@ -422,6 +433,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz ipv6-udp enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss udp", "testpmd> ")
             self.send_packet(self.itf, "ipv6-udp")
@@ -495,6 +509,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz l2_payload enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss ether", "testpmd> ")
             self.send_packet(self.itf, "l2_payload")
@@ -550,6 +567,9 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz ipv4-other enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
+            res = self.pmdout.wait_link_status_up("all")
+            self.verify(res is True, "link is donw")
+
             self.dut.send_expect(
                 "port config all rss all", "testpmd> ")
             self.send_packet(self.itf, "ipv4-other")

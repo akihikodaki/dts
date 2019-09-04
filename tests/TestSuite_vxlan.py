@@ -561,6 +561,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
+        res = self.pmdout.wait_link_status_up("all")
+        self.verify(res is True, "link is donw")
 
         # check normal packet
         self.send_and_detect(outer_udp_dst=1234)
@@ -618,6 +620,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
+        res = self.pmdout.wait_link_status_up("all")
+        self.verify(res is True, "link is donw")
 
         # check normal ipv6 packet
         self.send_and_detect(outer_ip6_src="FE80:0:0:0:0:0:0:0",
@@ -678,6 +682,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
+        res = self.pmdout.wait_link_status_up("all")
+        self.verify(res is True, "link is donw")
+
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
@@ -752,6 +759,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
+        time.sleep(10) #lwj
 
         # check normal ipv6 packet
         self.send_and_check(outer_ip6_src="FE80:0:0:0:0:0:0:0",
@@ -1161,6 +1169,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
+        res = self.pmdout.wait_link_status_up("all")
+        self.verify(res is True, "link is donw")
 
     def csum_set_sw(self, proto, port):
         self.dut.send_expect("port stop all", "testpmd>")
@@ -1169,6 +1179,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
+        res = self.pmdout.wait_link_status_up("all")
+        self.verify(res is True, "link is donw")
+
 
     def tunnel_filter_add(self, *args):
         # tunnel_filter add port_id outer_mac inner_mac ip inner_vlan
