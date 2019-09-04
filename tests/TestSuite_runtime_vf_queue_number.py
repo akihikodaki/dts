@@ -41,6 +41,7 @@ from test_case import TestCase
 from pmd_output import PmdOutput
 
 RSS_KEY = '6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E'
+PACKET_COUNT = 100
 
 class TestRuntimeVfQn(TestCase):
     supported_vf_driver = ['pci-stub', 'vfio-pci']
@@ -48,7 +49,7 @@ class TestRuntimeVfQn(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports')
         self.src_intf = self.tester.get_interface(self.tester.get_local_port(0))
-        self.src_mac =  self.tester.get_mac(self.tester.get_local_port(0))
+        self.src_mac = self.tester.get_mac(self.tester.get_local_port(0))
         self.dst_mac = self.dut.get_mac_address(0)
         self.vm0 = None
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
@@ -187,10 +188,10 @@ class TestRuntimeVfQn(TestCase):
     def testpmd_config_cmd_list(self, qn):
         cmd_list = [['stop'],
                     ['port stop all'],
-                    ['port config 0 rss-hash-key ipv4 %s' % RSS_KEY],
                     ['port config all txq %d' % qn],
                     ['port config all rxq %d' % qn],
-                    ['port start all']]
+                    ['port start all'],
+                    ['port config 0 rss-hash-key ipv4 %s' % RSS_KEY]]
         return cmd_list
 
     def verify_result(self, queue_num, pkt_num):
@@ -236,18 +237,18 @@ class TestRuntimeVfQn(TestCase):
             self.verify("port 0: RX queue number: %d Tx queue number: %d" % (qn, qn) in outstring, "The RX/TX queue number error.")
             self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
             self.vf_mac = self.vm0_testpmd.get_port_mac(self.vm0_dut_ports[0])
-            self.send_packet(self.vf_mac, self.src_intf, 100)
+            self.send_packet(self.vf_mac, self.src_intf, PACKET_COUNT)
             outstring1 = self.vm0_testpmd.execute_cmd("stop", "testpmd> ")
-            self.verify_queue_number(outstring1, qn, 100)
+            self.verify_queue_number(outstring1, qn, PACKET_COUNT)
             guest_cmds1 = self.testpmd_config_cmd_list(qn + 1)
             self.execute_testpmd_cmd(guest_cmds1)
             outstring2 = self.vm0_testpmd.execute_cmd("start", "testpmd> ")
             self.logger.info(outstring2)
             self.verify("port 0: RX queue number: %d Tx queue number: %d" % ((qn + 1), (qn + 1)) in outstring2, "The RX/TX queue number error.")
-            self.send_packet(self.vf_mac, self.src_intf, 254)
+            self.send_packet(self.vf_mac, self.src_intf, PACKET_COUNT)
             outstring3 = self.vm0_testpmd.execute_cmd("stop", "testpmd> ")
             self.logger.info(outstring3)
-            self.verify_queue_number(outstring3, qn + 1, 254)
+            self.verify_queue_number(outstring3, qn + 1, PACKET_COUNT)
             self.vm0_testpmd.execute_cmd('quit', '# ')
             self.dut.send_expect("quit", "# ")
 
@@ -273,7 +274,7 @@ class TestRuntimeVfQn(TestCase):
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         for valid_qn in range(1, 17):
-            count = valid_qn * 20
+            count = valid_qn * 10
             if valid_qn == 1:
                 self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param=' --rxq=1 --txq=1')
                 self.vm0_testpmd.execute_cmd('set verbose 1')
@@ -324,7 +325,7 @@ class TestRuntimeVfQn(TestCase):
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
         for valid_qn in range(1, 17):
-            count = valid_qn * 20
+            count = valid_qn * 10
             if valid_qn == 1:
                 guest_cmds = self.testpmd_config_cmd_list(1)
                 guest_cmds.insert(0, ['set fwd mac'])
