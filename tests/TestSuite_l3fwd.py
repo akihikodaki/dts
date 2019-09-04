@@ -48,61 +48,17 @@ class TestL3fwd(TestCase):
 
     path = "./examples/l3fwd/build/"
     cmdline_2_ports = {
-        "1S/1C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0})'",
-        "1S/1C/2T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1})'",
-        "1S/2C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0})'",
-        "1S/4C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P0,1,C{1.3.0}), (P1,1,C{1.4.0})'"}
+        "1S/1C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0})'",
+        "1S/1C/2T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1})'",
+        "1S/2C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0})'",
+        "1S/4C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P0,1,C{1.3.0}), (P1,1,C{1.4.0})'"}
 
     cmdline_4_ports = {
-        "1S/1C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0}), (P2,0,C{1.1.0}), (P3,0,C{1.1.0})'",
-        "1S/2C/2T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1}), (P2,0,C{1.2.0}), (P3,0,C{1.2.1})'",
-        "1S/4C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,1,C{1.3.0}), (P3,1,C{1.4.0})'",
-        "1S/8C/1T": "%s -c %s -n %d -- -p %s -P --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,0,C{1.3.0}), (P3,0,C{1,4,0}),\
+        "1S/1C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0}), (P2,0,C{1.1.0}), (P3,0,C{1.1.0})'",
+        "1S/2C/2T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1}), (P2,0,C{1.2.0}), (P3,0,C{1.2.1})'",
+        "1S/4C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,1,C{1.3.0}), (P3,1,C{1.4.0})'",
+        "1S/8C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,0,C{1.3.0}), (P3,0,C{1,4,0}),\
         (P0,1,C{1.5.0}), (P1,1,C{1.6.0}), (P2,1,C{1.7.0}), (P3,1,C{1,8,0})'"}
-
-    ipv4_em_table = [
-        "{{IPv4(10,100,0,1), IPv4(1,2,3,4), 1, 10, IPPROTO_UDP}, P0}",
-        "{{IPv4(10,101,0,1), IPv4(1,2,3,4), 1, 10, IPPROTO_UDP}, P0}",
-        "{{IPv4(11,100,0,1), IPv4(1,2,3,4), 1, 11, IPPROTO_UDP}, P1}",
-        "{{IPv4(11,101,0,1), IPv4(1,2,3,4), 1, 11, IPPROTO_UDP}, P1}",
-        "{{IPv4(12,100,0,1), IPv4(1,2,3,4), 1, 12, IPPROTO_UDP}, P2}",
-        "{{IPv4(12,101,0,1), IPv4(1,2,3,4), 1, 12, IPPROTO_UDP}, P2}",
-        "{{IPv4(13,100,0,1), IPv4(1,2,3,4), 1, 13, IPPROTO_UDP}, P3}",
-        "{{IPv4(13,101,0,1), IPv4(1,2,3,4), 1, 13, IPPROTO_UDP}, P3}",
-    ]
-
-    ipv4_lpm_table = [
-        "{IPv4(10,100,0,0), 24, P0}",
-        "{IPv4(10,101,0,0), 24, P0}",
-        "{IPv4(11,100,0,0), 24, P1}",
-        "{IPv4(11,101,0,0), 24, P1}",
-        "{IPv4(12,100,0,0), 24, P2}",
-        "{IPv4(12,101,0,0), 24, P2}",
-        "{IPv4(13,100,0,0), 24, P3}",
-        "{IPv4(13,101,0,0), 24, P3}",
-    ]
-
-    ipv6_em_table = [
-        "{{{0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 10, IPPROTO_UDP}, P0}",
-        "{{{0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 10, IPPROTO_UDP}, P0}",
-        "{{{0x2a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 11, IPPROTO_UDP}, P1}",
-        "{{{0x2a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 11, IPPROTO_UDP}, P1}",
-        "{{{0x2b, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 12, IPPROTO_UDP}, P2}",
-        "{{{0x2b, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 12, IPPROTO_UDP}, P2}",
-        "{{{0x2c, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 13, IPPROTO_UDP}, P3}",
-        "{{{0x2c, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0c, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, {0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1e, 0x67, 0xff, 0xfe, 0x0d, 0xb6, 0x0a}, 1, 13, IPPROTO_UDP}, P3}",
-    ]
-
-    ipv6_lpm_table = [
-        "{{0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P0}",
-        "{{0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P0}",
-        "{{0x2a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P1}",
-        "{{0x2a, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P1}",
-        "{{0x2b, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P2}",
-        "{{0x2b, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P2}",
-        "{{0x2c, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P3}",
-        "{{0x2c, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x03, 0x1b, 0x21, 0xff, 0xfe, 0x91, 0x38, 0x05}, 64,P3}",
-    ]
 
     def set_up_all(self):
         """
@@ -136,8 +92,6 @@ class TestL3fwd(TestCase):
                              + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
         self.dut.send_expect("sed -i -e 's/define RTE_TEST_TX_DESC_DEFAULT.*$/"
                              + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
-        self.method_table = {"ipv4_l3fwd_lpm": TestL3fwd.ipv4_lpm_table, "ipv4_l3fwd_em": TestL3fwd.ipv4_em_table,
-                             "ipv6_l3fwd_lpm": TestL3fwd.ipv6_lpm_table, "ipv6_l3fwd_em": TestL3fwd.ipv6_em_table}
 
         self.pat = re.compile("P([0123])")
         self.test_results = {'header': [], 'data': []}
@@ -174,13 +128,6 @@ class TestL3fwd(TestCase):
         Prepare long prefix match table, replace P(x) port pattern
         """
         l3fwd_method = l3_proto + "_l3fwd_" + mode
-        l3fwdStr = "static struct %s_route %s_route_array[] = {\\\n" % (l3fwd_method, l3fwd_method)
-        for idx in range(len(self.method_table[l3fwd_method])):
-            self.method_table[l3fwd_method][idx] = self.pat.sub(self.portRepl, self.method_table[l3fwd_method][idx])
-            l3fwdStr = l3fwdStr + '' * 4 + self.method_table[l3fwd_method][idx] + ",\\\n"
-        l3fwdStr = l3fwdStr + "};"
-        self.dut.send_expect(r"sed -i '/%s_route_array\[\].*{/,/^\}\;/c\\%s' examples/l3fwd/l3fwd_%s.c"
-                             % (l3fwd_method, l3fwdStr, mode), "# ")
         self.dut.send_expect("make clean -C examples/l3fwd", "# ")
         if "lpm" in l3fwd_method:
             out = self.dut.build_dpdk_apps("./examples/l3fwd", "USER_FLAGS=-DAPP_LOOKUP_METHOD=1")
@@ -256,10 +203,7 @@ class TestL3fwd(TestCase):
         if l3_proto == 'ipv4':
             payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
         else:
-            # l3_proto == 'ipv6'
             payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6'] - HEADER_SIZE['udp']
-            if frame_size == 64:
-                payload_size = frame_size + 2 - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6'] - HEADER_SIZE['udp']
 
         pcaps = {}
         for _port in valports:
@@ -313,12 +257,20 @@ class TestL3fwd(TestCase):
         # perpare commandline and core mask
         rtCmdLines, core_mask = self.perpare_commandline(len(valports))
 
-        for cores in rtCmdLines.keys():
-            # Start L3fwd appliction
-            command_line = rtCmdLines[cores] % (TestL3fwd.path + l3_proto + "_l3fwd_" + mode, core_mask[cores],
-                                                self.dut.get_memory_channels(), utils.create_mask(valports))
-            self.dut.send_expect(command_line, "L3FWD:", 120)
-            for frame_size in self.frame_sizes:
+        for frame_size in self.frame_sizes:
+            if l3_proto == "ipv6" and frame_size == 64:
+                frame_size += 2
+            for cores in rtCmdLines.keys():
+                # Start L3fwd appliction
+                command_line = rtCmdLines[cores] % (TestL3fwd.path + l3_proto + "_l3fwd_" + mode, core_mask[cores],
+                                                    self.dut.get_memory_channels(), utils.create_mask(valports))
+                if self.nic == "niantic":
+                    command_line += " --parse-ptype"
+                if frame_size > 1518:
+                    command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
+                self.dut.send_expect(command_line, "L3FWD:", 120)
+                self.logger.info("Executing l3fwd using %s mode, %d ports, %s and %d frame size"
+                                 % (mode, len(valports), cores, frame_size))
                 # crete traffic flow
                 pcaps = self.create_pcap_file(frame_size, l3_proto)
                 # send the traffic and Measure test
@@ -337,14 +289,12 @@ class TestL3fwd(TestCase):
                 pps /= 1000000.0
                 linerate = self.wirespeed(self.nic, frame_size, len(valports))
                 percentage = pps * 100 / linerate
-                if mode == "ipv6" and frame_size == 64:
-                    frame_size += 2
                 data_row = [frame_size, mode, cores, str(pps), str(percentage)]
                 self.result_table_add(data_row)
                 self.test_results['data'].append(data_row)
-            # Stop L3fwd
-            self.dut.send_expect("^C", "#")
-            time.sleep(1)
+                # Stop L3fwd
+                self.dut.send_expect("^C", "#")
+                time.sleep(1)
         # Print result
         self.result_table_print()
 
@@ -360,6 +310,8 @@ class TestL3fwd(TestCase):
         rtCmdLines, core_mask = self.perpare_commandline(len(valports))
 
         for frame_size in self.frame_sizes:
+            if mode == "ipv6" and frame_size == 64:
+                frame_size += 2
             for cores in rtCmdLines.keys():
                 # in order to save time, only some of the cases will be run.
                 if cores in ["1S/2C/1T", "1S/4C/1T"]:
@@ -390,8 +342,6 @@ class TestL3fwd(TestCase):
                     # statistical result
                     linerate = self.wirespeed(self.nic, frame_size, len(valports))
                     zero_loss_throughput = (linerate * zero_loss_rate) / 100
-                    if mode == "ipv6" and frame_size == 64:
-                        frame_size += 2
                     data_row = [frame_size, mode, cores, str(zero_loss_throughput), str(zero_loss_rate)]
                     self.result_table_add(data_row)
                     self.test_results['data'].append(data_row)
