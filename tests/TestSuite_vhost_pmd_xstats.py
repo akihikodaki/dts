@@ -69,6 +69,7 @@ class TestVhostPmdXstats(TestCase):
         out = self.dut.build_dpdk_apps("./examples/vhost")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """ 
@@ -76,7 +77,7 @@ class TestVhostPmdXstats(TestCase):
         Launch vhost sample using default params
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall vhost-switch", "#")
         dut_arch = self.dut.send_expect("uname -m", "#")
         self.dut.send_expect("killall qemu-system-%s" % dut_arch, "#")
@@ -106,7 +107,7 @@ class TestVhostPmdXstats(TestCase):
         self.vm = QEMUKvm(self.dut, 'vm0', 'vhost_pmd_xstats')
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = self.base_dir + '/vhost-net'
         vm_params['opt_mac'] = self.virtio1_mac
         self.vm.set_vm_device(**vm_params)
 
@@ -142,8 +143,8 @@ class TestVhostPmdXstats(TestCase):
         """
         prepare all of the conditions for start
         """
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %s --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i --nb-cores=1" %
-                             (self.target, self.coremask, self.dut.get_memory_channels()), "testpmd>", 60)
+        self.dut.send_expect("./%s/app/testpmd -c %s -n %s --vdev 'net_vhost0,iface=%s/vhost-net,queues=1' -- -i --nb-cores=1" %
+                             (self.target, self.coremask, self.dut.get_memory_channels(), self.base_dir), "testpmd>", 60)
         self.start_onevm()
         self.vm_testpmd_start()
         self.dut.send_expect("set fwd mac", "testpmd>", 60)
