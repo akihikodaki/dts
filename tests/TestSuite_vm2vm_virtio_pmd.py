@@ -58,6 +58,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.memory_channel = self.dut.get_memory_channels()
         self.vm_num = 2
         self.dump_pcap = "/root/pdump-rx.pcap"
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -68,7 +69,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.result_table_create(self.table_header)
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost")
         self.vm_dut = []
         self.vm = []
@@ -93,12 +94,12 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
             "--socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost " + \
-            "--vdev 'net_vhost0,iface=vhost-net0,queues=1' " + \
-            "--vdev 'net_vhost1,iface=vhost-net1,queues=1' " + \
+            "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " + \
+            "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " + \
             "-- -i --nb-cores=1 --txd=1024 --rxd=1024"
 
         self.command_line = self.command_line % (
-                            self.coremask, self.memory_channel)
+                            self.coremask, self.memory_channel, self.base_dir, self.base_dir)
         self.vhost.send_expect(self.command_line, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
@@ -151,7 +152,7 @@ class TestVM2VMVirtioPMD(TestCase):
             vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = './vhost-net%d' % i
+            vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
             vm_params['opt_mac'] = "52:54:00:00:00:0%d" % (i+1)
             vm_params['opt_settings'] = setting_args
             vm_info.set_vm_device(**vm_params)
