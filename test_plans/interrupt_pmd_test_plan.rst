@@ -55,7 +55,7 @@ Assume generated VF PCI address will be 0000:08:10.0, 0000:08:10.1.
 
 Iommu pass through feature has been enabled in kernel::
 
-   intel_iommu=on iommu=pt
+    intel_iommu=on iommu=pt
 
 Support igb_uio and vfio driver, if used vfio, kernel need 3.6+ and enable vt-d
 in bios. When used vfio, requested to insmod two drivers vfio and vfio-pci.
@@ -65,45 +65,39 @@ Test Case1: PF interrupt pmd with different queue
 
 Run l3fwd-power with one queue per port::
 
-   l3fwd-power -c 7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
 
 Send one packet to Port0 and Port1, check that thread on core1 and core2
 waked up::
 
-
-   L3FWD_POWER: lcore 1 is waked up from rx interrupt on port1,rxq0
-   L3FWD_POWER: lcore 2 is waked up from rx interrupt on port1,rxq0
+    L3FWD_POWER: lcore 1 is waked up from rx interrupt on port1,rxq0
+    L3FWD_POWER: lcore 2 is waked up from rx interrupt on port1,rxq0
 
 Check the packet has been normally forwarded.
 
 After the packet forwarded, thread on core1 and core 2 will return to sleep::
 
-
-   L3FWD_POWER: lcore 1 sleeps until interrupt on port0,rxq0 triggers
-   L3FWD_POWER: lcore 2 sleeps until interrupt on port0,rxq0 triggers
+    L3FWD_POWER: lcore 1 sleeps until interrupt on port0,rxq0 triggers
+    L3FWD_POWER: lcore 2 sleeps until interrupt on port0,rxq0 triggers
 
 Send packet flows to Port0 and Port1, check that thread on core1 and core2 will
 keep up awake.
 
 Run l3fwd-power with random number queue per port, if is 4::
 
-        l3fwd-power -c 7 -n 4 -- -p 0x3 -P --config="0,0,0),(0,1,1),\
-                        (0,2,2),(0,3,3),(0,4,4)"
+    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="0,0,0),(0,1,1),\
+       (0,2,2),(0,3,3),(0,4,4)"
 
 Send packet with increased dest IP to Port0, check that all threads waked up
 
 Send packet flows to Port0 and Port1, check that thread on core1 and core2 will
 keep up awake.
 
-Run l3fwd-power with 32 queues per port::
+Run l3fwd-power with 15 queues per port::
 
-        l3fwd-power -c ffffffff -n 4 -- -p 0x3 -P --config="(0,0,0),(0,1,1),\
-                        (0,2,2),(0,3,3),(0,4,4),(0,5,5),(0,6,6),(0,7,7),(0,8,8),
-                        (0,9,9),(0,10,10),(0,11,11),(0,12,12),(0,13,13),(0,14,14),\
-                        (0,15,15),\
-                        (1,0,16),(1,1,17),(1,2,18),(1,3,19),(1,4,20),(1,5,21),(1,6,22),\
-                        (1,7,23),(1,8,24),(1,9,25),(1,10,26),(1,11,27),(1,12,28),\
-                        (1,13,29),(1,14,30),\(1,15,31)"
+    l3fwd-power -c 0xffffff -n 4 -- -p 0x3 -P --config="(0,0,0),(0,1,1),\
+        (0,2,2),(0,3,3),(0,4,4),(0,5,5),(0,6,6),(0,7,7),(1,0,8),\
+        (1,1,9),(1,2,10),(1,3,11),(1,4,12),(1,5,13),(1,6,14)"
 
 Send packet with increased dest IP to Port0, check that all threads waked up
 
@@ -115,7 +109,7 @@ Test Case2: PF lsc interrupt with vfio
 
 Run l3fwd-power with one queue per port::
 
-   l3fwd-power -c 7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
+    l3fwd-power -c 0x7 -n 4 -- -p 0x3 -P --config="(0,0,1),(1,0,2)"
 
 Plug out Port0 cable, check that link down interrupt captured and handled by
 pmd driver.
