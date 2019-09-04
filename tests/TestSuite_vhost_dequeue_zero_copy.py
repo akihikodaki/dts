@@ -80,6 +80,7 @@ class TestVhostDequeueZeroCopy(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -88,7 +89,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         # Clean the execution ENV
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         # Prepare the result table
         self.table_header = ["FrameSize(B)", "Throughput(Mpps)",
                             "% linerate", "Queue number", "Cycle"]
@@ -120,11 +121,11 @@ class TestVhostDequeueZeroCopy(TestCase):
         command_client = self.dut.target + "/app/testpmd " + \
                          " -n %d -c %s --socket-mem 1024,1024 " + \
                          " --legacy-mem --file-prefix=vhost " + \
-                         " --vdev 'eth_vhost0,iface=vhost-net,queues=%d,dequeue-zero-copy=1' " + \
+                         " --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,dequeue-zero-copy=1' " + \
                          " -- -i --nb-cores=%d --rxq=%d --txq=%d " + \
                          "--txd=1024 --rxd=1024 %s"
         command_line_client = command_client % (
-            self.mem_channels, self.core_mask,
+            self.mem_channels, self.core_mask, self.base_dir,
             self.queue_number, self.nb_cores,
             self.queue_number, self.queue_number, txfreet_args)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
@@ -173,7 +174,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.vm.load_config()
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = self.virtio1_mac
         opt_args = "mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
         if self.queue_number > 1:
