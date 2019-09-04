@@ -62,12 +62,13 @@ class TestVdevPrimarySecondary(TestCase):
         cores = self.dut.get_core_list("1S/12C/1T", socket=self.ports_socket)
         self.coremask = utils.create_mask(cores)
         self.verify(len(self.coremask) >= 6, "The machine has too few cores.")
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
         Run before each test case.
         """
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
@@ -81,7 +82,7 @@ class TestVdevPrimarySecondary(TestCase):
         for i in range(self.queues):
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = './vhost-net%d' % i
+            vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
             vm_params['opt_mac'] = "%s%d" % (self.virtio_mac, i+2)
             vm_params['opt_queue'] = self.queues
             vm_params['opt_server'] = 'server'
@@ -103,10 +104,10 @@ class TestVdevPrimarySecondary(TestCase):
         launch testpmd
         """
         cmd = "./%s/app/testpmd -l 1-6 -n %d --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost" + \
-              " --vdev 'net_vhost0,iface=vhost-net0,queues=%d,client=1'" + \
-              " --vdev 'net_vhost1,iface=vhost-net1,queues=%d,client=1'" + \
+              " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" + \
+              " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" + \
               " -- -i --nb-cores=4 --rxq=%d --txq=%d --txd=1024 --rxd=1024"
-        start_cmd = cmd % (self.target, self.mem_channels, self.queues, self.queues, self.queues, self.queues)
+        start_cmd = cmd % (self.target, self.mem_channels, self.base_dir, self.queues, self.base_dir, self.queues, self.queues, self.queues)
         self.dut.send_expect(start_cmd, "testpmd> ", 120)
         self.dut.send_expect("set fwd txonly", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
