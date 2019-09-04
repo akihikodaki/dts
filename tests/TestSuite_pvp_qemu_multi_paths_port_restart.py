@@ -72,6 +72,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -93,14 +94,14 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         start testpmd on vhost
         """
         self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         command_client = self.dut.target + "/app/testpmd " + \
                          " -n %d -c %s --socket-mem 1024,1024 " + \
                          " --legacy-mem --file-prefix=vhost " + \
-                         " --vdev 'net_vhost0,iface=vhost-net,queues=1' " + \
+                         " --vdev 'net_vhost0,iface=%s/vhost-net,queues=1' " + \
                          " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         command_line_client = command_client % (
-            self.dut.get_memory_channels(), self.core_mask)
+            self.dut.get_memory_channels(), self.core_mask, self.base_dir)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
@@ -133,7 +134,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.vm = VM(self.dut, 'vm0', 'vhost_sample')
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = self.virtio1_mac
         if modem == 1 and mergeable == 0:
             vm_params['opt_settings'] = "disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024"
