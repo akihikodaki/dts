@@ -81,13 +81,14 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.vhost = self.dut.new_session(suite="vhost-user")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -I qemu-system-x86_64", '#', 20)
 
@@ -176,7 +177,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.vm = VM(self.dut, 'vm0', 'pvp_diff_qemu_version')
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = './vhost-net'
+        vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = self.virtio1_mac
         if(modem == 1):
             vm_params['opt_settings'] = "disable-modern=false,mrg_rxbuf=on"
@@ -202,10 +203,10 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         command_line_client = self.dut.target + "/app/testpmd -n %d -c %s \
             --socket-mem 1024,1024 --file-prefix=vhost \
-            --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
+            --vdev 'eth_vhost0,iface=%s/vhost-net,queues=1' -- \
             -i --nb-cores=1 --txd=1024 --rxd=1024"
         command_line_client = command_line_client % (
-                              self.memory_channel, self.coremask)
+                              self.memory_channel, self.coremask, self.base_dir)
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
@@ -260,7 +261,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.vhost.send_expect("quit", "#", 20)
         self.vm.stop()
         self.dut.send_expect("killall -I testpmd", '#', 20)
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
     def test_perf_vhost_pvp_diffrent_qemu_version_mergeable_mac(self):
         """
