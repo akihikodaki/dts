@@ -93,8 +93,8 @@ class NvgreTestConfig(object):
         self.outer_ip_dst = '192.168.1.2'
         self.outer_ip_invalid = 0
 
-        self.outer_ip6_src = 'N/A'
-        self.outer_ip6_dst = 'N/A'
+        self.outer_ip6_src = 'FE80:0:0:0:0:0:0:0'
+        self.outer_ip6_dst = 'FE80:0:0:0:0:0:0:1'
         self.outer_ip6_invalid = 0
         """
         gre info
@@ -150,8 +150,8 @@ class NvgreTestConfig(object):
         self.inner_ip_dst = '192.168.2.2'
         self.inner_ip_invalid = 0
 
-        self.inner_ip6_src = 'N/A'
-        self.inner_ip6_dst = 'N/A'
+        self.inner_ip6_src = 'FE80:0:0:0:0:0:0:0'
+        self.inner_ip6_dst = 'FE80:0:0:0:0:0:0:1'
         self.inner_ip6_invalid = 0
 
         self.inner_l4_type = 'UDP'
@@ -622,6 +622,19 @@ class TestNvgre(TestCase):
         """
         verify nvgre packet with ipv6
         """
+         # packet type detect must used without VECTOR pmd
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+           print "CVL support default none VECTOR"
+           src_vec_model = 'n'
+        else:
+           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+           src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+           if src_vec_model == 'y':
+              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                  + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+              self.dut.skip_setup = False
+              self.dut.build_install_dpdk(self.target)
+
         # check no nvgre packet
         self.nvgre_detect(outer_l3_type = "IPv6", outer_ip_proto=0xFF)
         # check nvgre + IPv6 inner packet
@@ -636,6 +649,17 @@ class TestNvgre(TestCase):
         self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", outer_vlan=1)
         # check vlan nvgre + vlan inner and outer packet
         self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", outer_vlan=1, inner_vlan=1)
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+           print "CVL support default none VECTOR"
+           src_vec_model = 'n'
+        else:
+           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+           dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+           if src_vec_model != dst_vec_model:
+              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                  + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+              self.dut.skip_setup = False
+              self.dut.build_install_dpdk(self.target)
 
     def test_nvgre_ipv6_checksum_offload(self):
         # check nvgre packet + inner IPv6 + inner L4  invalid
@@ -682,7 +706,7 @@ class TestNvgre(TestCase):
            src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]  
            if src_vec_model == 'y':
               self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+                                  + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
               self.dut.skip_setup = False
               self.dut.build_install_dpdk(self.target)
 
@@ -693,7 +717,7 @@ class TestNvgre(TestCase):
         # check nvgre + udp inner packet
         self.nvgre_detect(inner_l4_type='TCP')
         # check nvgre + SCTP inner packet
-        # self.nvgre_detect(inner_l4_type='SCTP')
+        self.nvgre_detect(inner_l4_type='SCTP')
         # check nvgre + vlan inner packet
         self.nvgre_detect(outer_vlan=1)
         # check vlan nvgre + vlan inner packet
@@ -706,7 +730,7 @@ class TestNvgre(TestCase):
            dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
            if src_vec_model != dst_vec_model:
               self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+                                  + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
               self.dut.skip_setup = False
               self.dut.build_install_dpdk(self.target)
     def test_tunnel_filter(self):
