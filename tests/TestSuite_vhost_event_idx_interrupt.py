@@ -52,6 +52,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.queues = 1
         self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == 0])
         self.prepare_l3fwd_power()
+        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -61,7 +62,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.verify_info = []
         self.dut.send_expect("killall -s INT l3fwd-power", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost-l3fwd")
         self.vm_dut = []
         self.vm = []
@@ -101,7 +102,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         # config the vdev info, if have 2 vms, it shoule have 2 vdev info
         vdev_info = ""
         for i in range(self.vm_num):
-            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,queues=%d,client=1' " % (i, i, self.queues)
+            vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,queues=%d,client=1' " % (i, self.base_dir, i, self.queues)
 
         port_info = "0x1" if self.vm_num == 1 else "0x3"
 
@@ -167,7 +168,7 @@ class TestVhostEventIdxInterrupt(TestCase):
             vm_info.load_config()
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = './vhost-net%d' % i
+            vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
             vm_params['opt_mac'] = "00:11:22:33:44:5%d" % i
             vm_params['opt_server'] = 'server'
             if self.queues > 1:
