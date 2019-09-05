@@ -41,7 +41,7 @@ from packet import Packet, save_packets
 from pktgen import PacketGeneratorHelper
 
 
-class TestPVPVirtioWith2Mhuge(TestCase):
+class TestPvpVirtioUser4kPages(TestCase):
 
     def set_up_all(self):
         """
@@ -134,9 +134,9 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         command_line_client = "%s/app/testpmd -c %s -n %d " + \
                               "--file-prefix=vhost  -m 1024 --no-huge " + \
                               "--vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i " + \
-                              "--no-numa --socket-num=0"
+                              "--no-numa --socket-num=%d"
         command_line_client = command_line_client % (self.target,
-                            self.core_mask_vhost_user, self.mem_channels)
+                            self.core_mask_vhost_user, self.mem_channels, self.ports_socket)
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
