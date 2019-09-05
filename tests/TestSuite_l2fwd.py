@@ -196,7 +196,10 @@ class TestL2fwd(TestCase):
 
 #                self.dut.send_expect(command_line, "memory mapped", 60)
                 self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
-
+                # wait 5 second after l2fwd boot up. 
+                # It is aimed to make sure trex detect link up status.
+                if self.tester.is_pktgen:
+                    time.sleep(5)
                 info = "Executing l2fwd using %s queues, frame size %d and %s setup.\n" % \
                        (queues['queues'], frame_size, self.core_config)
 
