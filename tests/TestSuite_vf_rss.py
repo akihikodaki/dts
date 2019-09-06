@@ -157,6 +157,9 @@ class TestVfRss(TestCase):
         if not reta_entries:
             # for test_vfpmd_rss, check every queue can receive packet.
             for i in range(queue):
+                if self.kdriver == 'ixgbe' and i > 1:
+                    self.logger.info('NIC with kernel driver ixgbe only enable queue 0 and queue 1 as default')
+                    break
                 self.verify('RSS queue={}'.format(hex(i)) in out, 'queue {} did not receive packets'.format(i))
             return
         lines = out.split("\r\n")
@@ -362,6 +365,9 @@ class TestVfRss(TestCase):
                             "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
                     self.vm_dut_0.send_expect("port config all rss %s" % rss_type, "testpmd> ")
                 elif self.kdriver == 'i40e' or self.nic in ['sageville', 'sagepond']:
+                    if self.nic in ['sageville', 'sagepond'] and rss_type == 'sctp':
+                        self.logger.info('sageville and sagepond do not support rsstype sctp')
+                        continue
                     for i in range(64):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.vm_dut_0.send_expect(
@@ -407,6 +413,9 @@ class TestVfRss(TestCase):
             for iptype, rsstype in iptypes.items():
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
+                if self.nic in ['sageville', 'sagepond'] and rsstype == 'sctp':
+                    self.logger.info('sageville and sagepond do not support rsstype sctp')
+                    continue
                 out = self.vm_dut_0.send_expect("port config all rss %s" % rsstype, "testpmd> ")
                 self.verify("Operation not supported" not in out, "Operation not supported")
                 self.vm_dut_0.send_expect(
