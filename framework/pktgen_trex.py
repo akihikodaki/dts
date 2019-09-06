@@ -221,7 +221,8 @@ class TrexConfigStream(object):
         from trex_stl_lib.api import (
                     STLTXCont, STLTXSingleBurst, STLTXMultiBurst,
                     STLPktBuilder, STLProfile, STLVM,
-                    STLStream, STLFlowLatencyStats)
+                    STLStream, STLStreamDstMAC_PKT,
+                    STLFlowLatencyStats)
 
         # set trex class
         self.STLStream = STLStream
@@ -232,6 +233,7 @@ class TrexConfigStream(object):
         self.STLTXSingleBurst = STLTXSingleBurst
         self.STLTXMultiBurst = STLTXMultiBurst
         self.STLFlowLatencyStats = STLFlowLatencyStats
+        self.STLStreamDstMAC_PKT = STLStreamDstMAC_PKT
 
     def _set_var_default_value(self, config):
         default = {
@@ -332,8 +334,10 @@ class TrexConfigStream(object):
             raise Exception(msg)
 
         pkt = self.STLPktBuilder(pkt=_pkt, vm=vm)
-        _stream = self.STLStream(packet=pkt, mode=mode_inst, isg=isg,
-                            flow_stats=flow_stats)
+        _stream = self.STLStream(
+            packet=pkt, mode=mode_inst, isg=isg,
+            flow_stats=flow_stats,
+            mac_dst_override_mode=self.STLStreamDstMAC_PKT)
 
         return _stream
 
