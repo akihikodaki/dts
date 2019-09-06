@@ -205,6 +205,9 @@ class TestDualVlan(TestCase):
         temp.append("on") if (caseDef & stripCase) != 0 else temp.append("off")
         temp.append("on") if (caseDef & filterCase) != 0 else temp.append("off")
         temp.append("on") if (caseDef & qinqCase) != 0 else temp.append("off")
+        if (self.nic in ["cavium_a063", "cavium_a064"]) and temp[2] == "on":
+            ## Skip QinQ for cavium devices as it is not supported.
+            return
         self.mode_config(strip=temp[0], filter=temp[1], qinq=temp[2])
 
         if (caseDef & txCase) != 0:

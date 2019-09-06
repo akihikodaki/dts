@@ -510,9 +510,7 @@
                 "fortpark_TLV",
                 "sagepond",
                 "sageville",
-                "cavium_a063",
-                "cavium_a064",
-		"carlsville"
+                "carlsville"
             ],
             "Target": [
                 "ALL"
