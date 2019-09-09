@@ -45,21 +45,23 @@ class TestPtype_Mapping(TestCase):
         Run at the start of each test suite.
         """
         self.verify(self.nic in ['fortville_eagle', 'fortville_spirit',
-            'fortville_spirit_single', 'fortville_25g', 'fortpark_TLV', 'carlsville'],
+            'fortville_spirit_single', 'fortville_25g', 'fortpark_TLV', 'carlsville', 'cavium_a063', 'cavium_a064'],
             'ptype mapping test can not support %s nic' % self.nic)
         ports = self.dut.get_ports()
-        self.verify(len(ports) >= 1, "Insufficient ports for testing")  
+        self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
         self.dut_port = valports[0]
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
-        self.dut.send_expect("sed -i -e '" +\
-            "/printf(\" - VLAN tci=0x%x\", mb->vlan_tci);" +\
-            "/a\\\\t\\tprintf(\" - pktype: 0x%x\", mb->packet_type);'" +\
-            " app/test-pmd/util.c", "# ", 30, verify = True)
 
-        self.dut.build_install_dpdk(self.dut.target)
-        
+        if self.nic not in ["cavium_a063", "cavium_a064"]:
+            self.dut.send_expect("sed -i -e '" +\
+                "/printf(\" - VLAN tci=0x%x\", mb->vlan_tci);" +\
+                "/a\\\\t\\tprintf(\" - pktype: 0x%x\", mb->packet_type);'" +\
+                " app/test-pmd/util.c", "# ", 30, verify = True)
+
+            self.dut.build_install_dpdk(self.dut.target)
+
 
     def set_up(self):
         """
@@ -83,16 +85,17 @@ class TestPtype_Mapping(TestCase):
             else:
                 pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
-            pkt.send_pkt(tx_port=self.tester_iface)
+            pkt.send_pkt(tx_port=self.tester_iface,count=4)
             out = self.dut.get_session_output(timeout=2)
-            self.verify(sw_ptype in out,
-                "Failed to detect correct ptype value")
+            if sw_ptype != None:
+                self.verify(sw_ptype in out,
+                    "Failed to detect correct ptype value")
             for pkt_layer_name in pkt_names:
                 if pkt_layer_name not in out:
                     print utils.RED("Fail to detect %s" % pkt_layer_name)
                     raise VerifyFailure("Failed to detect %s" % pkt_layer_name)            
             print utils.GREEN("Detected %s successfully" % pkt_type)
-    
+
     def strip_ptype(self, table, hw_ptype):
         """
         Strip software packet type from packet mapping table.
@@ -113,35 +116,73 @@ class TestPtype_Mapping(TestCase):
         """
         Get ptype mapping table and run ptype test.
         """
-        out = self.dut_testpmd.execute_cmd('ptype mapping get 0 0')
-        time.sleep(3)
-        self.verify("255" in out,
-            "Failed to get 255 items ptype mapping table!!!")
-        out = self.dut_testpmd.execute_cmd('ptype mapping get 0 1')
-        time.sleep(3)
-        self.verify("166" in out,
-            "Failed to get 166 items ptype mapping table!!!")
-        sw_ptype = self.strip_ptype(out, hw_ptype)
-        if hw_ptype == 38:
+        if self.nic in ["cavium_a063", "cavium_a064"]:
+            out = self.dut_testpmd.execute_cmd('show port 0 ptypes')
+            ptype_list = ["L2_ETHER", "L3_IPV4", "INNER_L3_IPV6", "INNER_L4_UDP", "TUNNEL_GRE", "TUNNEL_NVGRE", "TUNNEL_GENEVE", "TUNNEL_VXLAN"]
+            for ptype in ptype_list :
+                self.verify( ptype in out, "Failed to get ptype: %s"%(ptype))
             pktType = {
-                "MAC_IP_IPv6_UDP_PKT":  
-                    ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN",
-                     "TUNNEL_IP", "INNER_L3_IPV6_EXT_UNKNOWN",
+                "MAC_IP_IPv6_UDP_PKT":
+                    ["L2_ETHER", "L3_IPV4",
+                     "TUNNEL_IP", "INNER_L3_IPV6",
                      "INNER_L4_UDP"]
             }
-        elif hw_ptype == 75:
+            self.run_test(None, pktType, check_ptype)
             pktType = {
-                "MAC_IP_NVGRE_MAC_VLAN_IP_PKT": 
-                    ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN",
-                     "TUNNEL_GRENAT", "INNER_L2_ETHER_VLAN",
-                     "INNER_L3_IPV4_EXT_UNKNOWN", "INNER_L4_NONFRAG"]
-            }       
-        self.run_test(sw_ptype, pktType, check_ptype)
-    
+                "MAC_IP_NVGRE_MAC_VLAN_IP_UDP_PKT":
+                    ["L2_ETHER", "L3_IPV4",
+                     "TUNNEL_NVGRE", "INNER_L2_ETHER_VLAN",
+                     "INNER_L3_IPV4", "INNER_L4_UDP"]
+            }
+            self.run_test(None, pktType, check_ptype)
+            pktType = {
+                "MAC_IP_UDP_VXLAN_MAC_IP_UDP_PKT":
+                    ["L2_ETHER", "L3_IPV4",
+                     "TUNNEL_VXLAN",
+                     "INNER_L3_IPV4", "INNER_L4_UDP"]
+            }
+            self.run_test(None, pktType, check_ptype)
+            pktType = {
+                "MAC_IP_UDP_GENEVE_MAC_IP_UDP_PKT":
+                    ["L2_ETHER", "L3_IPV4",
+                     "TUNNEL_GENEVE",
+                     "INNER_L3_IPV4", "INNER_L4_UDP"]
+            }
+            self.run_test(None, pktType, check_ptype)
+        else:
+            out = self.dut_testpmd.execute_cmd('ptype mapping get 0 0')
+            time.sleep(3)
+            self.verify("255" in out,
+                "Failed to get 255 items ptype mapping table!!!")
+            out = self.dut_testpmd.execute_cmd('ptype mapping get 0 1')
+            time.sleep(3)
+            self.verify("166" in out,
+                "Failed to get 166 items ptype mapping table!!!")
+            sw_ptype = self.strip_ptype(out, hw_ptype)
+            sw_ptype = None
+            if hw_ptype == 38:
+                pktType = {
+                    "MAC_IP_IPv6_UDP_PKT":
+                        ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN",
+                         "TUNNEL_IP", "INNER_L3_IPV6_EXT_UNKNOWN",
+                         "INNER_L4_UDP"]
+                }
+            elif hw_ptype == 75:
+                pktType = {
+                    "MAC_IP_NVGRE_MAC_VLAN_IP_UDP_PKT":
+                        ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN",
+                         "TUNNEL_GRENAT", "INNER_L2_ETHER_VLAN",
+                         "INNER_L3_IPV4_EXT_UNKNOWN", "INNER_L4_NONFRAG"]
+                }
+            self.run_test(sw_ptype, pktType, check_ptype)
+
     def ptype_mapping_test(self, check_ptype = None):
-    
-        self.run_ptype_test(hw_ptype = 38, check_ptype = check_ptype)
-        self.run_ptype_test(hw_ptype = 75, check_ptype = check_ptype)
+
+        if self.nic in ["cavium_a063", "cavium_a064"]:
+            self.run_ptype_test(hw_ptype = None, check_ptype = check_ptype)
+        else:
+            self.run_ptype_test(hw_ptype = 38, check_ptype = check_ptype)
+            self.run_ptype_test(hw_ptype = 75, check_ptype = check_ptype)
 
 
     def test_ptype_mapping_get(self):
@@ -149,7 +190,7 @@ class TestPtype_Mapping(TestCase):
         Get hardware defined ptype to software defined ptype mapping items.
         """
         self.ptype_mapping_test()
-     
+
     def test_ptype_mapping_reset(self):
         """
         Reset packet mapping table after changing table.
@@ -230,7 +271,8 @@ class TestPtype_Mapping(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i '/printf(\" - pktype: 0x%x\", " +\
-            "mb->packet_type);/d' app/test-pmd/util.c", "# ", 30, verify = True)
-        self.dut.build_install_dpdk(self.dut.target)
+        if self.nic not in ["cavium_a063", "cavium_a064"]:
+            self.dut.send_expect("sed -i '/printf(\" - pktype: 0x%x\", " +\
+                "mb->packet_type);/d' app/test-pmd/util.c", "# ", 30, verify = True)
+            self.dut.build_install_dpdk(self.dut.target)
         self.dut.kill_all()
