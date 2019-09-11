@@ -806,6 +806,14 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
 
         self.tester_bond = "bond0"
 
+        for port in self.dut_ports:
+            tester_port = self.tester.get_local_port(port)
+            intf = self.tester.get_interface(tester_port)
+            driver = self.tester.ports_info[tester_port]['port'].get_nic_driver()
+            if driver == "i40e":
+                self.tester.send_expect("ethtool --set-priv-flags %s link-down-on-close on"
+                        % intf, "# ", 10)
+
     def set_up(self):
         """
         Run before each test case.
