@@ -445,6 +445,7 @@ class TestUniPacket(TestCase):
 
         for packet in nsh_packets:
             self.tester.scapy_foreground()
+            self.tester.scapy_append("from scapy.contrib.nsh import *")
             self.tester.scapy_append("sendp([%s],iface='%s')" % (nsh_packets[packet], self.tester_iface))
             self.tester.scapy_execute()
             out = self.dut.get_session_output(timeout=2)
