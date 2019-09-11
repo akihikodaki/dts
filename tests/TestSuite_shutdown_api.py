@@ -280,7 +280,8 @@ class TestShutdownApi(TestCase):
             crc_keep == RX_OFFLOAD_KEEP_CRC, "CRC keeping not enabled properly")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
-        self.dut.send_expect("port config all crc-strip on", "testpmd> ")
+        for i in range(len(self.dut.get_ports())):
+            self.dut.send_expect("port config %s rx_offload keep_crc off" % i, "testpmd> ")
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
