@@ -72,7 +72,7 @@ class TestFlowClassifySoftnic(TestCase):
         file = 'flow_classify_softnic.tar.gz'
         src_file = r'./dep/%s' % file
         dst1 = '/tmp'
-        dst2 = '/root/dpdk/drivers/net/softnic'
+        dst2 = os.path.join(self.dut.base_dir, 'drivers/net/softnic')
         self.dut.session.copy_file_to(src_file, dst1)
         self.dut.send_expect("tar xf %s/%s -C %s" % (dst1, file, dst2), "#", 30)
 
