@@ -1612,7 +1612,6 @@ class IxiaPacketGenerator(PacketGenerator):
             tx_port = stream.get('tx_port')
             rx_port = stream.get('rx_port')
             pcap_file = stream.get('pcap_file')
-            rate_percent = stream.get('rate')
             # save port id list
             if tx_port not in self._traffic_ports:
                 self._traffic_ports.append(tx_port)
@@ -1634,6 +1633,7 @@ class IxiaPacketGenerator(PacketGenerator):
                 config['fields_config'] = self._vm_conf
             # get stream rate percent
             stream_config = options.get('stream_config')
+            rate_percent = stream_config.get('rate')
             # set port list input parameter of ixia class
             ixia_option = [tx_port, rx_port, pcap_file, options]
             port_config[tx_port].append(ixia_option)
