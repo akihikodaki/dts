@@ -46,12 +46,12 @@ class TestPVPShareLib(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.core_config = "1S/4C/1T"
         self.dut_ports = self.dut.get_ports()
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+        self.core_config = "1S/4C/1T"
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket)
-        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.verify(len(self.core_list) >= 4,
                     "There has not enought cores to test this suite %s" %
                     self.suite_name)
