@@ -243,15 +243,15 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        build_time = 120
+        build_time = 180
         # compile
-        out = self.send_expect("make -j %d install T=%s CC=gcc48" % (self.number_of_cores,
+        out = self.send_expect("make -j %d install T=%s" % (self.number_of_cores,
                                                                      target),
                                "#", build_time)
         if("Error" in out or "No rule to make" in out):
             self.logger.error("ERROR - try without '-j'")
             # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s CC=gcc48" % target,
+            out = self.send_expect("make install T=%s" % target,
                                    "#", build_time)
 
         assert ("Error" not in out), "Compilation error..."
@@ -386,7 +386,7 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_c.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_resource_tar.res.o' , "#")
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
-        return self.send_expect("make -j %d -C %s %s CC=gcc48" % (self.number_of_cores,
+        return self.send_expect("make -j %d -C %s %s" % (self.number_of_cores,
                                                                   folder, extra_options),
                                 "# ", 180)
 
