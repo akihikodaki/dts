@@ -158,7 +158,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -235,7 +235,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -313,7 +313,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -391,7 +391,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -469,7 +469,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -547,7 +547,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -628,7 +628,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -709,7 +709,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -790,7 +790,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -871,7 +871,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -952,7 +952,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1033,7 +1033,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1121,7 +1121,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1207,7 +1207,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1294,7 +1294,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1381,7 +1381,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1467,7 +1467,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1554,7 +1554,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
                 test_cycle['Mpps'][frame_size] = float('%.3f' % pps)
                 test_cycle['pct'][frame_size] = float('%.3f' % pct)
 
-            self.dut.send_expect("^C", "# ", 5)
+            self.dut.send_expect("^C", "# ", 50)
             sleep(5)
 
         for n in range(len(self.test_cycles)):
@@ -1601,6 +1601,6 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("^C", "# ", 5)
+        self.dut.send_expect("^C", "# ", 50)
         self.dut.unbind_eventdev_port(port_to_unbind=self.eventdev_device_bus_id)
         self.dut.kill_all()
