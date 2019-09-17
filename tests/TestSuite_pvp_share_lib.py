@@ -141,6 +141,7 @@ class TestPVPShareLib(TestCase):
         command_line_client = command_line_client % (self.target,
                         self.core_mask_vhost_user, self.mem_channels, driver)
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
+        self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
     def start_testpmd_as_virtio(self):
