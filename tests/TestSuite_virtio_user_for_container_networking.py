@@ -117,8 +117,9 @@ class TestVirtioUserForContainer(TestCase):
 
             self.tester.scapy_execute()
             self.tester.pktgen.clear_streams()
+            vm_config = {'mac':{'dst':{'range': 1, 'step': 1, 'action': 'inc'},},}
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                        None, self.tester.pktgen)
+                        vm_config, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
             self.verify(Mpps > 0, '%s can not receive packets of frame size %d' % (self.running_case, frame_size))
