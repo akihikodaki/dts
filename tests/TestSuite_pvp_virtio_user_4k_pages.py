@@ -150,6 +150,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         command_line_user = command_line_user % (self.target,
                 self.mem_channels, self.core_mask_virtio_user)
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
+        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
     def prepare_tmpfs_for_4k(self):
