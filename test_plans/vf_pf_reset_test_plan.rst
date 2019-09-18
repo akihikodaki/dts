@@ -1,4 +1,4 @@
-.. Copyright (c) <2015-2017>, Intel Corporation
+.. Copyright (c) <2015-2019>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -34,6 +34,7 @@
 VF PF Reset Tests
 =================
 
+   The scenario is kernel PF + DPDK VF
 
 Prerequisites
 =============
@@ -51,13 +52,18 @@ Prerequisites
      testpmd> port reset (port_id|all)
      "Reset all ports or port_id"
 
+3. Enable pf private flags::
+
+     ethtool --set-priv-flags ens5f0 link-down-on-close on
+     ethtool --set-priv-flags ens5f1 link-down-on-close on
+
 
 Test Case 1: vf reset -- create two vfs on one pf
 =================================================
 
-1. Got the pci device id of DUT, for example::
+1. Get the pci device id of DUT, for example::
 
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f0 drv=i40e
      0000:81:00.1 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f1 drv=i40e
@@ -65,7 +71,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 2. Create 2 VFs from 1 PF,and set the VF MAC address at PF0::
 
      echo 2 > /sys/bus/pci/devices/0000\:81\:00.0/sriov_numvfs
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f0 drv=i40e
      0000:81:02.0 'XL710/X710 Virtual Function' unused=
@@ -75,7 +81,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 
 3. Bind the VFs to dpdk driver::
 
-     ./tools/dpdk-devbind.py -b vfio-pci 81:02.0 81:02.1
+     ./usertools/dpdk-devbind.py -b vfio-pci 81:02.0 81:02.1
 
 4. Set the VLAN id of VF1 and VF2::
 
@@ -85,7 +91,7 @@ Test Case 1: vf reset -- create two vfs on one pf
 5. Run testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     --portmask=0x3
      testpmd> set fwd mac
      testpmd> start
      testpmd> set allmulti all on
@@ -95,7 +101,7 @@ Test Case 1: vf reset -- create two vfs on one pf
      Promiscuous mode: disabled
      Allmulticast mode: enabled
 
-   the status are not different from the default value.
+   The status are not different from the default value.
 
 6. Get mac address of one VF and use it as dest mac, using scapy to
    send 1000 random packets from tester, verify the packets can be received
@@ -105,21 +111,19 @@ Test Case 1: vf reset -- create two vfs on one pf
      >>>sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=1)/IP()/Raw('x'*40)], \
      iface="ens3f0",count=1000)
 
-7. Reset pf::
+7. Set pf down::
 
-     ifconfig ens5f0 promisc
+     ifconfig ens5f0 down
 
-   or::
-
-     ifconfig ens5f0 -promisc
-
-8. Vf receive a pf reset message::
-
-     Event type: RESET interrupt on port 0
-     Event type: RESET interrupt on port 1
-
-   if don't reset the vf, send the same 1000 packets with scapy from tester,
+   Send the same 1000 packets with scapy from tester,
    the vf cannot receive any packets, including vlan=0 and vlan=1
+
+8. Set pf up::
+
+     ifconfig ens5f0 up
+
+   Send the same 1000 packets with scapy from tester, verify the packets can be
+   received by one VF and can be forward to another VF correctly.
 
 9. Reset the vfs, run the command::
 
@@ -128,8 +132,8 @@ Test Case 1: vf reset -- create two vfs on one pf
      testpmd> port reset 1
      testpmd> start
 
-   or just run the command "port reset all"
-   send the same 1000 packets with scapy from tester, verify the packets can be
+   or just run the command "port reset all".
+   Send the same 1000 packets with scapy from tester, verify the packets can be
    received by one VF and can be forward to another VF correctly,
    check the port info::
 
@@ -145,7 +149,8 @@ Test Case 1: vf reset -- create two vfs on one pf
      Promiscuous mode: disabled
      Allmulticast mode: enabled
 
-   the info status is consistent to the status before reset.
+   The info status is consistent to the status before reset.
+
 
 Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
 =========================================================================
@@ -156,11 +161,11 @@ Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  \
      --socket-mem 1024,1024 -w 81:02.0 --file-prefix=test1  \
-     -- -i --crc-strip --eth-peer=0,00:11:22:33:44:12  \
+     -- -i --eth-peer=0,00:11:22:33:44:12  \
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf0 -n 4  \
      --socket-mem 1024,1024 -w 81:02.1 --file-prefix=test2  \
-     -- -i --crc-strip
+     -- -i
 
 3. Set fwd mode on vf0::
 
@@ -180,7 +185,7 @@ Test Case 2: vf reset -- create two vfs on one pf, run testpmd separately
    vf0 can forward the packets to vf1.
 
 6. Reset pf, don't reset vf0 and vf1, send the packets,
-   vf0 and vf1 cannot receive any packets.
+   vf0 can forward the packet to vf1.
 
 7. Reset vf0 and vf1, send the packets,
    vf0 can forward the packet to vf1.
@@ -203,7 +208,7 @@ Test Case 3: vf reset -- create one vf on each pf
 3. Start one testpmd on two vf ports::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     --portmask=0x3
 
 4. Start forwarding::
 
@@ -218,7 +223,7 @@ Test Case 3: vf reset -- create one vf on each pf
    vfs can fwd the packets normally.
 
 6. Reset pf0 and pf1, don't reset vf0 and vf1, send the packets,
-   vfs cannot receive any packets.
+   vfs can fwd the packets normally.
 
 7. Reset vf0 and vf1, send the packets,
    vfs can fwd the packets normally.
@@ -230,7 +235,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     --portmask=0x3
      testpmd> set fwd mac
 
 2. Add vlan on both ports::
@@ -239,7 +244,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
      testpmd> rx_vlan add 1 1
      testpmd> start
 
-   send packets with scapy from tester::
+   Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -251,7 +256,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
      iface="ens3f0",count=1000)
 
    vfs can receive the packets and forward it.
-   send packets with scapy from tester::
+   Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=2)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -259,7 +264,7 @@ Test Case 4: vlan rx restore -- vf reset all ports
    vf0 cannot receive any packets.
 
 3. Reset pf, don't reset vf, send the packets in step2 from tester,
-   the vfs cannot receive any packets.
+   vfs can receive the packets and forward it.
 
 4. Reset both vfs::
 
@@ -267,9 +272,9 @@ Test Case 4: vlan rx restore -- vf reset all ports
      testpmd> port reset all
      testpmd> start
 
-   send the packets in step2 from tester
+   Send the packets in step2 from tester,
    vfs can receive the packets and forward it.
-   send packets with scapy from tester::
+   Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=2)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -283,7 +288,7 @@ test Case 5: vlan rx restore -- vf reset one port
 1. Execute the step1-step3 of test case 1, then start the testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i  \
-     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     --portmask=0x3
      testpmd> set fwd mac
 
 2. Add vlan on both ports::
@@ -292,7 +297,7 @@ test Case 5: vlan rx restore -- vf reset one port
      testpmd> rx_vlan add 1 1
      testpmd> start
 
-   send packets with scapy from tester::
+   Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -315,15 +320,15 @@ test Case 5: vlan rx restore -- vf reset one port
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=1)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
 
-   vf0 can receive the packets, but vf1 can't transmit the packets.
-   send packets from tester::
+   vfs can receive and forward the packets.
+   Send packets from tester::
 
      sendp([Ether(dst="00:11:22:33:44:12")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
      sendp([Ether(dst="00:11:22:33:44:12")/Dot1Q(vlan=1)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
 
-   vf1 cannot receive the packets.
+   vfs can receive and forward the packets.
 
 4. Reset vf1::
 
@@ -365,13 +370,13 @@ Test Case 6: vlan rx restore -- create one vf on each pf
      iface="ens3f0",count=1000)
 
    vfs can forward the packets normally.
-   send packets with scapy from tester::
+   Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=2)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
 
    vf0 cannot receive any packets.
-   remove vlan 0 on vf1::
+   Remove vlan 0 on vf1::
 
      testpmd> rx_vlan rm 0 1
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
@@ -383,10 +388,14 @@ Test Case 6: vlan rx restore -- create one vf on each pf
 
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
+
+   vf0 can receive the packets, but vf1 can't transmit the packets.
+   Send packets from tester::
+
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=1)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
 
-   the vfs cannot receive any packets.
+   vfs can forward the packets normally.
 
 4. Reset both vfs, send packets from tester::
 
@@ -397,7 +406,7 @@ Test Case 6: vlan rx restore -- create one vf on each pf
      iface="ens3f0",count=1000)
 
    vf0 can receive the packets, but vf1 can't transmit the packets.
-   send packets from tester::
+   Send packets from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/Dot1Q(vlan=1)/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -413,9 +422,9 @@ Test Case 7: vlan tx restore
 2. Run testpmd::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 -- -i \
-     --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     --portmask=0x3
 
-2. Add tx vlan offload on VF1 port, take care the first param is port,
+3. Add tx vlan offload on VF1 port, take care the first param is port,
    start forwarding::
 
      testpmd> set fwd mac
@@ -426,18 +435,18 @@ Test Case 7: vlan tx restore
      testpmd> tx_vlan set 1 51
      testpmd> start
 
-3. Send packets with scapy from tester::
+4. Send packets with scapy from tester::
 
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*18)], \
      iface="ens3f0",count=1)
 
-4. Listening the port ens3f0::
+5. Listening the port ens3f0::
 
      tcpdump -i ens3f0 -n -e -x -v
 
   check the packet received, the packet is configured with vlan 51
 
-5. Reset the pf, then reset the two vfs,
+6. Reset the pf, then reset the two vfs,
    send the same packet with no vlan tag,
    check packets received by tester, the packet is configured with vlan 51.
 
@@ -457,7 +466,7 @@ test Case 8: MAC address restore
 3. Start testpmd on two vf ports::
 
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4  \
-     -- -i --portmask=0x3 --tx-offloads=0x8fff --crc-strip
+     -- -i --portmask=0x3
 
 4. Add MAC address to the vf0 ports::
 
@@ -466,6 +475,7 @@ test Case 8: MAC address restore
 
 5. Start forwarding::
 
+     testpmd> set promisc all off
      testpmd> set fwd mac
      testpmd> start
 
@@ -479,7 +489,7 @@ test Case 8: MAC address restore
   vfs can forward both of the two type packets.
 
 7. Reset pf0 and pf1, don't reset vf0 and vf1, send the two packets,
-   vf0 and vf1 cannot receive any packets.
+   vfs can forward both of the two type packets.
 
 8. Reset vf0 and vf1, send the two packets,
    vfs can forward both of the two type packets.
@@ -491,7 +501,7 @@ test Case 9: vf reset (two vfs passed through to one VM)
 1. Create 2 VFs from 1 PF,and set the VF MAC address at PF0::
 
      echo 2 > /sys/bus/pci/devices/0000\:81\:00.0/sriov_numvfs
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f0 drv=i40e
      0000:81:02.0 'XL710/X710 Virtual Function' unused=
@@ -500,14 +510,14 @@ test Case 9: vf reset (two vfs passed through to one VM)
 2. Detach VFs from the host, bind them to pci-stub driver::
 
      modprobe pci-stub
-     ./tools/dpdk_nic_bind.py --bind=pci_stub 81:02.0 81:02.1
+     ./usertools/dpdk-devbind.py -b pci_stub 81:02.0 81:02.1
 
    or using the following way::
 
      virsh nodedev-detach pci_0000_81_02_0;
      virsh nodedev-detach pci_0000_81_02_1;
 
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f0 drv=i40e
      0000:81:02.0 'XL710/X710 Virtual Function' if= drv=pci-stub unused=
@@ -525,9 +535,9 @@ test Case 9: vf reset (two vfs passed through to one VM)
 4. Login vm0, got VFs pci device id in vm0, assume they are 00:05.0 & 00:05.1,
    bind them to igb_uio driver,and then start testpmd::
 
-     ./tools/dpdk_nic_bind.py --bind=igb_uio 00:05.0 00:05.1
+     ./usertools/dpdk-devbind.py -b igb_uio 00:05.0 00:05.1
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x0f -n 4 \
-     -w 00:05.0 -w 00:05.1 -- -i --portmask=0x3 --tx-offloads=0x8fff
+     -w 00:05.0 -w 00:05.1 -- -i --portmask=0x3
 
 5. Add MAC address to the vf0 ports, set it in mac forward mode::
 
@@ -546,7 +556,7 @@ test Case 9: vf reset (two vfs passed through to one VM)
    vfs can forward both of the two type packets.
 
 7. Reset pf0 and pf1, don't reset vf0 and vf1, send the two packets,
-   vf0 and vf1 cannot receive any packets.
+   vfs can forward both of the two type packets.
 
 8. Reset vf0 and vf1, send the two packets,
    vfs can forward both of the two type packets.
@@ -558,7 +568,7 @@ test Case 10: vf reset (two vfs passed through to two VM)
 1. Create 2 VFs from 1 PF,and set the VF MAC address at PF::
 
      echo 2 > /sys/bus/pci/devices/0000\:81\:00.0/sriov_numvfs
-     ./dpdk_nic_bind.py --st
+     ./usertools/dpdk-devbind.py -s
 
      0000:81:00.0 'Ethernet Controller X710 for 10GbE SFP+' if=ens5f0 drv=i40e
      0000:81:02.0 'XL710/X710 Virtual Function' unused=
@@ -601,14 +611,14 @@ test Case 10: vf reset (two vfs passed through to two VM)
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:05.0
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 4  \
-     -- -i --crc-strip --eth-peer=0,vf1port_macaddr  \
+     -- -i --eth-peer=0,vf1port_macaddr  \
 
    login vm1, got VF1 pci device id in vm1, assume it's 00:06.0,
    bind the port to igb_uio, then start testpmd on vf1 port::
 
      ./tools/dpdk_nic_bind.py --bind=igb_uio 00:06.0
      ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xf0 -n 4  \
-     -- -i --crc-strip
+     -- -i
 
 5. Add vlan on vf0 in vm0, and set fwd mode::
 
@@ -632,7 +642,7 @@ test Case 10: vf reset (two vfs passed through to two VM)
   vf0 can forward the packets to vf1.
 
 7. Reset pf, don't reset vf0 and vf1, send the two packets,
-   vf0 and vf1 cannot receive any packets.
+   vf0 can forward both of the two type packets to VF1.
 
 8. Reset vf0 and vf1, send the two packets,
    vf0 can forward both of the two type packets to VF1.
