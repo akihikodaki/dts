@@ -78,6 +78,10 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        
+        # set memory size
+        self.verify(self.sockets > 0, 'cpu socket should not be zero')
+        self.mem_size = ','.join(['2048']*self.sockets)
 
     def set_up(self):
         """
@@ -99,6 +103,13 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.table_header.append("Queue Num")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
+
+    @property
+    def sockets(self):
+        sockets = [
+            cpu.get('socket') for cpu in self.dut.get_all_cores()
+            if cpu.get('socket')]
+        return len(set(sockets))
 
     def prepare_vhost_switch(self):
         cmd_info = self.dut.send_expect("grep 'define MAX_QUEUES' %s" %
@@ -158,12 +169,12 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         command_line_client = "./examples/vhost/build/app/vhost-switch " + \
-                              "-c %s -n %d --socket-mem 2048,2048 -- " + \
+                              "-c %s -n %d --socket-mem %s -- " + \
                               "-p 0x1 --mergeable 0 --vm2vm 1 " + \
                               "--builtin-net-driver  --socket-file ./vhost-net" + \
                               "> ./vhost.out &"
         command_line_client = command_line_client % (self.core_mask_vhost_user,
-                                            self.mem_channels)
+                                                     self.mem_channels, self.mem_size)
         self.vhost_switch.send_expect(command_line_client, "# ", 120)
         time.sleep(15)
         try:
@@ -185,11 +196,12 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         start testpmd on virtio
         """
         command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            "--no-pci --socket-mem 2048,2048 --file-prefix=virtio-user " + \
+                            "--no-pci --socket-mem %s --file-prefix=virtio-user " + \
                             "--vdev=net_virtio_user0,mac=%s,path=./vhost-net,queues=1 " + \
                             "-- -i --rxq=1 --txq=1"
         command_line_user = command_line_user % (self.target,
-            self.mem_channels, self.core_mask_virtio_user, self.virtio_mac)
+                                                 self.mem_channels, self.core_mask_virtio_user,
+                                                 self.mem_size, self.virtio_mac)
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start tx_first", "testpmd> ", 120)
