@@ -170,7 +170,7 @@ class PacketGenerator(object):
         bps_rx = []
         pps_rx = []
         self._prepare_transmission(stream_ids=stream_ids)
-        self._start_transmission(stream_ids)
+        self._start_transmission(stream_ids, options)
 
         delay = options.get('delay') or 5
         time.sleep(delay)
