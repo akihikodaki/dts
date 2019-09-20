@@ -194,6 +194,7 @@ class PacketGeneratorHelper(object):
             pcap = config[2]
             _options = deepcopy(self.default_opt)
             _options['pcap'] = pcap
+            _options['stream_config']['rate'] = ratePercent
             # if vm is set
             if vm_config:
                 _options['fields_config'] = \
