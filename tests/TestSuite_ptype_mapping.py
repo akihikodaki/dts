@@ -169,7 +169,7 @@ class TestPtype_Mapping(TestCase):
                 }
             elif hw_ptype == 75:
                 pktType = {
-                    "MAC_IP_NVGRE_MAC_VLAN_IP_UDP_PKT":
+                    "MAC_IP_NVGRE_MAC_VLAN_IP_PKT":
                         ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN",
                          "TUNNEL_GRENAT", "INNER_L2_ETHER_VLAN",
                          "INNER_L3_IPV4_EXT_UNKNOWN", "INNER_L4_NONFRAG"]
