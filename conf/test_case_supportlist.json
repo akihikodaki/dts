@@ -1651,5 +1651,69 @@
             "Bug ID": "",
             "Comments": "This case currently support for cavium_a063 and cavium_a064 "
         }
+    ],
+    "dcb_4tc_queue_map_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
+    ],
+    "dcb_8tc_queue_map_i40e": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
+    ],
+    "dcb_4tc_queue_map_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for niantic"
+        }
+    ],
+    "dcb_8tc_queue_map_ixgbe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for niantic"
+        }
     ]
 }
