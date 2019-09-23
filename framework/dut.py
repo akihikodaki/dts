@@ -208,7 +208,7 @@ class Dut(Crb):
         self.restore_interfaces()
         # rescan ports after interface up
         self.rescan_ports()
-        # load port infor from config file
+        # load port information from config file
         self.load_portconf()
         self.mount_procfs()
         # auto detect network topology
@@ -933,8 +933,8 @@ class Dut(Crb):
 
     def load_portconf(self):
         """
-        Load port configurations for ports_info. If manually configured infor
-        not same as auto scanned, still use infor in configuration file.
+        Load port configurations for ports_info. If manually configured info
+        not same as auto scanned, still use information in configuration file.
         """
         for port in self.ports_info:
             pci_bus = port['pci']
@@ -1097,6 +1097,6 @@ class Dut(Crb):
         """
         Recover all resource before crb exit
         """
-        self.logger.logger_exit()
         self.enable_tester_ipv6()
         self.close()
+        self.logger.logger_exit()
