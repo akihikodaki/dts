@@ -41,14 +41,14 @@ Fortville support GRE packet detecting, checksum computing and filtering.
 Prerequisites
 =============
 
-Fortville nic should be on the DUT.
+Fortville/carlsville/columbiaville nic should be on the DUT.
 
 Test Case 1: GRE ipv4 packet detect
 ===================================
 
 Start testpmd and enable rxonly forwarding mode::
 
-    testpmd -c ffff -n 4 -- -i --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -77,7 +77,7 @@ Test Case 2: GRE ipv6 packet detect
 
 Start testpmd and enable rxonly forwarding mode::
 
-    testpmd -c ffff -n 4 -- -i --tx-offloads=0x8fff
+    testpmd -c ffff -n 4 -- -i --enable-hw-vlan
     testpmd> set fwd rxonly
     testpmd> set verbose 1
     testpmd> start
@@ -124,7 +124,7 @@ Test Case 3: GRE packet filter
 
 Start testpmd with multi queues::
 
-    testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4 --tx-offloads=0x8fff
+    testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4
     testpmd> set fwd rxonly
     testpmd> set nbcore 4
     testpmd> set verbose 1
@@ -161,7 +161,7 @@ Test Case 4: GRE packet chksum offload
 
 Start testpmd with hardware checksum offload enabled::
 
-    testpmd -c ff -n 3 -- -i --tx-offloads=0x8fff --enable-rx-cksum  --port-topology=loop
+    testpmd -c ff -n 3 -- -i --enable-rx-cksum  --port-topology=loop
     testpmd> set verbose 1
     testpmd> set fwd csum
     testpmd> csum set ip hw 0
