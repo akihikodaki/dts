@@ -36,7 +36,6 @@ from pprint import pformat
 
 from ssh_connection import SSHConnection
 from settings import SCAPY2IXIA
-from logger import getLogger
 from utils import (convert_int2ip, convert_ip2int,
                    convert_mac2long, convert_mac2str)
 
@@ -52,15 +51,15 @@ class Ixia(SSHConnection):
     IXIA performance measurement class.
     """
 
-    def __init__(self, tester, ixiaPorts):
+    def __init__(self, tester, ixiaPorts, logger):
         self.tester = tester
         self.NAME = PKTGEN_IXIA
-        self.logger = getLogger(self.NAME)
         super(Ixia, self).__init__(
                             self.get_ip_address(),
                             self.NAME,
                             self.tester.get_username(),
                             self.get_password())
+        self.logger = logger
         super(Ixia, self).init_log(self.logger)
 
         self.tcl_cmds = []
@@ -79,8 +78,8 @@ class Ixia(SSHConnection):
         else:
             self.enable100g = 'disable'
 
-        self.logger.info(self.ixiaVersion)
-        self.logger.info(self.ports)
+        self.logger.debug(self.ixiaVersion)
+        self.logger.debug(self.ports)
 
         self.tclServerIP = ixiaPorts[ixiaRef]["IP"]
 
@@ -758,7 +757,7 @@ class Ixia(SSHConnection):
             sendNumber += self.get_frames_sent()
             time.sleep(0.5)
 
-        self.logger.info("send :%f" % sendNumber)
+        self.logger.debug("send :%f" % sendNumber)
 
         assert sendNumber != 0
 
@@ -766,7 +765,7 @@ class Ixia(SSHConnection):
         for port in rxPortlist:
             self.stat_get_stat_all_stats(port)
             revNumber += self.get_frames_received()
-        self.logger.info("rev  :%f" % revNumber)
+        self.logger.debug("rev  :%f" % revNumber)
 
         return float(sendNumber - revNumber) / sendNumber, sendNumber, revNumber
 
@@ -943,8 +942,8 @@ class Ixia(SSHConnection):
             out = self.send_expect("stat cget -oversize", '%', 10)
             oversize += int(out.strip())
 
-        self.logger.info("Rate: %f Mpps" % (rate * 1.0 / 1000000))
-        self.logger.info("Mbps rate: %f Mbps" % (bpsRate * 1.0 / 1000000))
+        self.logger.debug("Rate: %f Mpps" % (rate * 1.0 / 1000000))
+        self.logger.debug("Mbps rate: %f Mbps" % (bpsRate * 1.0 / 1000000))
 
         self.hook_transmission_func()
 
@@ -1233,7 +1232,7 @@ class Ixia(SSHConnection):
                 self.stat_get_stat_all_stats(port)
                 txPackets = self.get_frames_sent()
             rxPackets += self.get_frames_received()
-        self.logger.info("Received packets :%s" % rxPackets)
+        self.logger.debug("Received packets :%s" % rxPackets)
 
         return rxPackets
 
@@ -1399,7 +1398,7 @@ class IxiaPacketGenerator(PacketGenerator):
 
     def _connect(self, tester, conf):
         # initialize ixia class
-        self._conn = Ixia(tester, conf)
+        self._conn = Ixia(tester, conf, self.logger)
         for p in self._conn.get_ports():
             self._ports.append(p)
 
@@ -1445,7 +1444,7 @@ class IxiaPacketGenerator(PacketGenerator):
         '''
         for name, _port_obj in self._conn.ports.iteritems():
             _pci = _port_obj.info['pci_addr']
-            self.logger.info((_pci, pci))
+            self.logger.debug((_pci, pci))
             if _pci == pci:
                 return True
         else:
@@ -1535,8 +1534,8 @@ class IxiaPacketGenerator(PacketGenerator):
             "Tx Port %d stats: " % (tx_port_id),
             "tx_port: %d,  tx_bps: %f, tx_pps: %f " % (
                                             tx_port_id, tx_bps, tx_pps)]
-        self.logger.info(pformat(port_stats))
-        self.logger.info(os.linesep.join(msg))
+        self.logger.debug(pformat(port_stats))
+        self.logger.debug(os.linesep.join(msg))
         # rx bps/pps
         rx_port_id = stream["rx_port"]
         port_stats = stats.get(rx_port_id)
@@ -1550,8 +1549,8 @@ class IxiaPacketGenerator(PacketGenerator):
             "rx_port: %d,  rx_bps: %f, rx_pps: %f" % (
                                         rx_port_id, rx_bps, rx_pps)]
 
-        self.logger.info(pformat(port_stats))
-        self.logger.info(os.linesep.join(msg))
+        self.logger.debug(pformat(port_stats))
+        self.logger.debug(os.linesep.join(msg))
 
         return rx_bps, rx_pps
 
@@ -1566,13 +1565,13 @@ class IxiaPacketGenerator(PacketGenerator):
             self.logger.error(msg)
             return None
         msg = "Tx Port %d stats: " % (port_id)
-        self.logger.info(msg)
+        self.logger.debug(msg)
         opackets = port_stats["opackets"]
         # rx packet
         port_id = stream.get("rx_port")
         port_stats = stats[port_id]
         msg = "Rx Port %d stats: " % (port_id)
-        self.logger.info(msg)
+        self.logger.debug(msg)
         ipackets = port_stats["ipackets"]
 
         return opackets, ipackets
@@ -1699,8 +1698,8 @@ class IxiaPacketGenerator(PacketGenerator):
         ''' ixia traffic statistics '''
         stats = self._conn.get_stats(self._traffic_ports, mode)
         stream = self._get_stream(stream_id)
-        self.logger.info(pformat(stream))
-        self.logger.info(pformat(stats))
+        self.logger.debug(pformat(stream))
+        self.logger.debug(pformat(stats))
         if mode == 'throughput':
             return self._throughput_stats(stream, stats)
         elif mode == 'loss':
