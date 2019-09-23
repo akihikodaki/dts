@@ -89,8 +89,8 @@ class TestVM2VMVirtioNetPerf(TestCase):
             "-- -i --nb-cores=1 --txd=1024 --rxd=1024"
 
         self.command_line = self.command_line % (
-                            self.coremask, self.memory_channel, self.base_dir, self.base_dir, 
-                            zerocopy_arg, zerocopy_arg)
+                            self.coremask, self.memory_channel, self.base_dir,
+                            zerocopy_arg, self.base_dir, zerocopy_arg)
         self.vhost.send_expect(self.command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
