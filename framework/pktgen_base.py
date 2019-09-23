@@ -29,7 +29,6 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os
 import time
 import logging
 from abc import abstractmethod
@@ -45,11 +44,6 @@ from settings import PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN
 TRANSMIT_CONT = 'continuous'
 TRANSMIT_M_BURST = 'multi_burst'
 TRANSMIT_S_BURST = 'single_burst'
-# set logger
-FORMAT = '%(message)s'
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger(os.path.basename(__file__)[:-3].upper())
-logger.setLevel(logging.INFO)
 
 
 class PacketGenerator(object):
@@ -83,7 +77,7 @@ class PacketGenerator(object):
                 if tester_pci == gen_pci:
                     msg = "gen port {0} map test port {1}".format(
                                                         port_id, port_idx)
-                    self.logger.info(msg)
+                    self.logger.debug(msg)
                     return port_idx
             else:
                 port = -1
@@ -105,7 +99,7 @@ class PacketGenerator(object):
             tester_pci = info['pci']
             port = self._get_gen_port(tester_pci)
             msg = "test port {0} map gen port {1}".format(port_id, port)
-            self.logger.info(msg)
+            self.logger.debug(msg)
         except:
             port = -1
 
@@ -348,8 +342,6 @@ class PacketGenerator(object):
             result = self.measure_rfc2544_with_pps(stream_ids, traffic_opt)
         else:
             result = None
-
-        self.logger.info(result)
 
         return result
 
