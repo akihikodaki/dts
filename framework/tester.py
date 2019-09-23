@@ -874,5 +874,5 @@ class Tester(Crb):
         """
         Close all resource before crb exit
         """
-        self.logger.logger_exit()
         self.close()
+        self.logger.logger_exit()
