@@ -133,6 +133,7 @@ The following are the test plans for the DPDK DTS automated test system.
     compressdev_qat_pmd_test_plan
     compressdev_zlib_pmd_test_plan
     enable_package_download_in_ice_driver_test_plan
+    multicast_test_plan
 
     veb_switch_test_plan
     vf_daemon_test_plan
@@ -151,7 +152,6 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_multi_queue_qemu_test_plan
     vhost_pmd_xstats_test_plan
     vhost_qemu_mtu_test_plan
-    vhost_tso_test_plan
     vhost_user_live_migration_test_plan
     vm_power_manager_test_plan
     vmdq_test_plan
@@ -230,3 +230,8 @@ The following are the test plans for the DPDK DTS automated test system.
     iavf_test_plan
     packet_capture_test_plan
     packet_ordering_test_plan
+    bbdev_test_plan
+    performance_thread_test_plan
+
+    fips_cryptodev_test_plan
+    flow_filtering_test_plan

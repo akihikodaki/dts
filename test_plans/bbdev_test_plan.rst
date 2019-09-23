@@ -67,12 +67,14 @@ Prerequisites
 =============
 
 1. OS and Hardware
+
    (a) An AVX2 supporting machine
    (b) Windriver TS 2 or CentOS 7 operating systems
        (Fedora 25 and Ubuntu 16.04 is ok.)
    (c) Intel ICC compiler installed
 
 2. FlexRAN SDK Libraries
+
    To build DPDK with the *turbo_sw* PMD the user is required to download
    the export controlled ``FlexRAN SDK`` Libraries.
    An account at Intel Resource Design Center needs to be registered from
@@ -84,6 +86,7 @@ Prerequisites
    You can refer to the file dpdk/doc/guides/bbdevs/turbo_sw.rst.
 
 3. PMD setting
+
    Current BBDEV framework is en-suited with two vdev PMD drivers:
    null and turbo_sw.
    1) Null PMD is similar to cryptodev Null PMD, which is an empty driver to
@@ -101,6 +104,7 @@ Prerequisites
    They are both located in the build configuration file ``common_base``.
 
 4. Test tool
+
    A test suite for BBDEV is packaged with the framework to ease the
    validation needs for various functions and use cases.
    The tool to use for validation and testing is called: test-bbdev,

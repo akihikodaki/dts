@@ -135,7 +135,7 @@ Send 10 packets with VF0 mac address and make sure the packets will be
 forwarded by VF1.
 
 Test Case2: Mirror Traffic between 2VMs with Pool up mirroring
-===========================================================
+==============================================================
 
 Set up common 2VM prerequisites.
 
@@ -216,7 +216,7 @@ After test need reset mirror rule::
     PF testpmd-> reset port 0 mirror-rule 0
 
 Test Case6: Mirror Traffic between 2VMs with Vlan mirroring
-==========================================================
+===========================================================
 
 Set up common 2VM prerequisites.
 
@@ -237,7 +237,7 @@ After test need reset mirror rule::
     PF testpmd-> reset port 0 mirror-rule 0
 
 Test Case7: Mirror Traffic between 2VMs with up link mirroring & down link mirroring
-==================================================================================
+====================================================================================
 
 Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 
@@ -247,9 +247,12 @@ Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 When mirroring only between two Vfs, pool up (or down) mirroring and up (or down) link mirroring lead
 to the same behavior, so we randomly choose one way to mirror in both up and down directions.
 up link mirroring as below:
+
    1. Pool up mirroring (Case 2)
    2. Uplink port mirroring(Case 4)
+
 down link mirroring as below:
+
    1. Pool down mirroring(Fortville only, Case 3)
    2. Downlink port mirroring(Case 5)
 
@@ -274,7 +277,7 @@ After test need reset mirror rule::
     PF testpmd-> reset port 0 mirror-rule 1
 
 Test Case8: Mirror Traffic between 2VMs with Vlan & with up link mirroring & down link mirroring
-=============================================================================================
+================================================================================================
 
 Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 
@@ -284,9 +287,12 @@ Run testpmd on VM0 and VM1 and start traffic forward on the VM hosts::
 When mirroring only between two Vfs, pool up (or down) mirroring and up (or down) link mirroring lead
 to the same behavior, so we randomly choose one way to mirror in both up and down directions.
 up link mirroring as below:
+
    1. Pool up mirroring (Case 2)
    2. Uplink port mirroring(Case 4)
+
 down link mirroring as below:
+
    1. Pool down mirroring(Fortville only, Case 3)
    2. Downlink port mirroring(Case 5)
 
