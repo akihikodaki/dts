@@ -35,13 +35,8 @@ import time
 import logging
 from pprint import pformat
 
-from pktgen_base import (PacketGenerator, PKTGEN_TREX,
+from pktgen_base import (PacketGenerator, PKTGEN_TREX, PKTGEN,
                          TRANSMIT_CONT, TRANSMIT_M_BURST, TRANSMIT_S_BURST)
-
-FORMAT = '%(message)s'
-logging.basicConfig(format=FORMAT)
-logger = logging.getLogger(os.path.basename(__file__)[:-3].upper())
-logger.setLevel(logging.INFO)
 
 
 class TrexConfigVm(object):
@@ -492,7 +487,7 @@ class TrexPacketGenerator(PacketGenerator):
         '''
         for name, _port_obj in self._conn.ports.iteritems():
             _pci = _port_obj.info['pci_addr']
-            self.logger.info((_pci, pci))
+            self.logger.debug((_pci, pci))
             if _pci == pci:
                 return True
         else:
@@ -585,9 +580,7 @@ class TrexPacketGenerator(PacketGenerator):
                     app_param_temp = app_param_temp + " --cfg " + self.conf[key]
                 elif key == 'core_num':
                     app_param_temp = app_param_temp + " -c " + self.conf[key]
-            self.control_session = \
-                        self.tester.create_session('trex_control_session')
-
+            self.control_session = self.tester.create_session(PKTGEN)
             self.control_session.send_expect(
                ';'.join(['cd ' + self.conf['trex_root_path'],
                 './' + self.trex_app + " " + app_param_temp]),
@@ -628,7 +621,7 @@ class TrexPacketGenerator(PacketGenerator):
         if port_id not in ports:
             return None
         features = self._conn.ports[port_id].get_formatted_info()
-        self.logger.info(pformat(features))
+        self.logger.debug(pformat(features))
 
         return features
 
@@ -637,7 +630,7 @@ class TrexPacketGenerator(PacketGenerator):
         features = self._get_port_features(port_id)
         if not features or features.get('fc_supported') == 'no':
             msg = "trex port <{0}> not support flow control".format(port_id)
-            self.logger.warning(msg)
+            self.logger.debug(msg)
             return False
         else:
             return True
@@ -669,8 +662,8 @@ class TrexPacketGenerator(PacketGenerator):
             "Tx Port %d stats: " % (tx_port_id),
             "tx_port: %d,  tx_bps: %f, tx_pps: %f " % (
                                             tx_port_id, tx_bps, tx_pps)]
-        self.logger.info(pformat(port_stats))
-        self.logger.info(os.linesep.join(msg))
+        self.logger.debug(pformat(port_stats))
+        self.logger.debug(os.linesep.join(msg))
         # rx bps/pps
         rx_port_id = stream["rx_port"]
         port_stats = self.runtime_stats.get(rx_port_id)
@@ -684,8 +677,8 @@ class TrexPacketGenerator(PacketGenerator):
             "rx_port: %d,  rx_bps: %f, rx_pps: %f" % (
                                         rx_port_id, rx_bps, rx_pps)]
 
-        self.logger.info(pformat(port_stats))
-        self.logger.info(os.linesep.join(msg))
+        self.logger.debug(pformat(port_stats))
+        self.logger.debug(os.linesep.join(msg))
 
         return rx_bps, rx_pps
 
@@ -699,13 +692,13 @@ class TrexPacketGenerator(PacketGenerator):
             self.logger.error(msg)
             return None
         msg = "Tx Port %d stats: " % (port_id)
-        self.logger.info(msg)
+        self.logger.debug(msg)
         opackets = port_stats["opackets"]
         # rx packet
         port_id = stream.get("rx_port")
         port_stats = stats[port_id]
         msg = "Rx Port %d stats: " % (port_id)
-        self.logger.info(msg)
+        self.logger.debug(msg)
         ipackets = port_stats["ipackets"]
 
         return opackets, ipackets
@@ -813,13 +806,14 @@ class TrexPacketGenerator(PacketGenerator):
                 'core_mask':core_mask,
                 'force':    True,}
             self.logger.info("begin traffic ......")
+            self.logger.debug(run_opt)
             self._conn.start(**run_opt)
             ###########################################
             if sample_delay:
                 time.sleep(sample_delay) # wait
                 # get ports runtime statistics
                 self.runtime_stats = self._conn.get_stats()
-                self.logger.info(pformat(self.runtime_stats))
+                self.logger.debug(pformat(self.runtime_stats))
             ###########################################
             # Block until traffic on specified port(s) has ended
             wait_opt = {'ports':  self._traffic_ports}
@@ -840,8 +834,8 @@ class TrexPacketGenerator(PacketGenerator):
         '''
         stats = self._conn.get_stats()
         stream = self._get_stream(stream_id)
-        self.logger.info(pformat(stream))
-        self.logger.info(pformat(stats))
+        self.logger.debug(pformat(stream))
+        self.logger.debug(pformat(stats))
         if mode == 'throughput':
             return self._throughput_stats(stream, stats)
         elif mode == 'loss':
@@ -855,7 +849,7 @@ class TrexPacketGenerator(PacketGenerator):
         if self._conn is not None:
             self._disconnect()
         if self.control_session is not None:
-            self.tester.send_expect('pkill -f _t-rex-64', '# ')
+            self.tester.alt_session.send_expect('pkill -f _t-rex-64', '# ')
             time.sleep(5)
             self.tester.destroy_session(self.control_session)
             self.control_session = None
