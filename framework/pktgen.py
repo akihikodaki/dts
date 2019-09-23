@@ -29,7 +29,7 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-import os, sys
+import os
 from copy import deepcopy
 
 from scapy.all import conf
@@ -37,13 +37,6 @@ from scapy.packet import NoPayload
 from scapy.packet import Packet as scapyPacket
 from scapy.fields import ConditionalField
 from scapy.utils import rdpcap
-
-# import dts libs
-cwd = os.getcwd()
-sys.path.append(cwd + '/nics')
-sys.path.append(cwd + '/framework')
-sys.path.append(cwd + '/tests')
-sys.path.append(cwd + '/dep')
 
 # dts libs
 from utils import (convert_int2ip, convert_ip2int,
