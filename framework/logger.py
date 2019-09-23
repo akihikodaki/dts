@@ -64,6 +64,9 @@ logging.DTS_IXIA_OUTPUT = logging.DEBUG + 5
 logging.DTS_VIRTDUT_CMD = logging.INFO + 6
 logging.DTS_VIRTDUT_OUTPUT = logging.DEBUG + 6
 
+logging.DTS_PKTGEN_CMD = logging.INFO + 7
+logging.DTS_PKTGEN_OUTPUT = logging.DEBUG + 7
+
 logging.addLevelName(logging.DTS_DUT_CMD, 'DTS_DUT_CMD')
 logging.addLevelName(logging.DTS_DUT_OUTPUT, 'DTS_DUT_OUTPUT')
 logging.addLevelName(logging.DTS_DUT_RESULT, 'DTS_DUT_RESULT')
@@ -84,8 +87,8 @@ logging.addLevelName(logging.SUITE_DUT_OUTPUT, 'SUITE_DUT_OUTPUT')
 logging.addLevelName(logging.SUITE_TESTER_CMD, 'SUITE_TESTER_CMD')
 logging.addLevelName(logging.SUITE_TESTER_OUTPUT, 'SUITE_TESTER_OUTPUT')
 
-logging.addLevelName(logging.DTS_IXIA_CMD, 'DTS_IXIA_CMD')
-logging.addLevelName(logging.DTS_IXIA_OUTPUT, 'DTS_IXIA_OUTPUT')
+logging.addLevelName(logging.DTS_PKTGEN_CMD, 'DTS_PKTGEN_CMD')
+logging.addLevelName(logging.DTS_PKTGEN_OUTPUT, 'DTS_PKTGEN_OUTPUT')
 
 date_fmt = '%d/%m/%Y %H:%M:%S'
 RESET_COLOR = '\033[0m'
@@ -149,6 +152,12 @@ class BaseLoggerAdapter(logging.LoggerAdapter):
     def dts_virtdut_output(self, msg, *args, **kwargs):
         self.log(logging.DTS_VIRTDUT_OUTPUT, msg, *args, **kwargs)
 
+    def dts_pktgen_cmd(self, msg, *args, **kwargs):
+        self.log(logging.DTS_PKTGEN_CMD, msg, *args, **kwargs)
+
+    def dts_pktgen_output(self, msg, *args, **kwargs):
+        self.log(logging.DTS_PKTGEN_OUTPUT, msg, *args, **kwargs)
+
 
 class ColorHandler(logging.StreamHandler):
     """
@@ -167,6 +176,8 @@ class ColorHandler(logging.StreamHandler):
         logging.SUITE_TESTER_CMD: '',  # SYSTEM
         logging.DTS_IXIA_CMD: '',  # SYSTEM
         logging.DTS_IXIA_OUTPUT: '',  # SYSTEM
+        logging.DTS_PKTGEN_CMD: '',  # SYSTEM
+        logging.DTS_PKTGEN_OUTPUT: '',  # SYSTEM
         logging.DTS_VIRTDUT_CMD: '',  # SYSTEM
         logging.DTS_VIRTDUT_OUTPUT: '',  # SYSTEM
         logging.WARN: '\033[01;33m',  # BOLD YELLOW
@@ -228,7 +239,7 @@ class DTSLOG(BaseLoggerAdapter):
         fh.setFormatter(logging.Formatter(message_fmt, date_fmt))
         ch.setFormatter(logging.Formatter(stream_fmt, date_fmt))
 
-        fh.setLevel(logging.DEBUG)   # file hander default level
+        fh.setLevel(logging.DEBUG)   # file handler default level
         global verbose
         if verbose is True:
             ch.setLevel(logging.DEBUG)
@@ -310,6 +321,9 @@ class DTSLOG(BaseLoggerAdapter):
         elif crb.startswith('ixia'):
             self.info_lvl = logging.DTS_IXIA_CMD
             self.debug_lvl = logging.DTS_IXIA_OUTPUT
+        elif crb.startswith('pktgen'):
+            self.info_lvl = logging.DTS_PKTGEN_CMD
+            self.debug_lvl = logging.DTS_PKTGEN_OUTPUT
         elif crb.startswith('virtdut'):
             self.info_lvl = logging.DTS_VIRTDUT_CMD
             self.debug_lvl = logging.DTS_VIRTDUT_OUTPUT
@@ -342,6 +356,9 @@ class DTSLOG(BaseLoggerAdapter):
         elif crb == 'ixia':
             self.info_lvl = logging.DTS_IXIA_CMD
             self.debug_lvl = logging.DTS_IXIA_OUTPUT
+        elif crb == 'pktgen':
+            self.info_lvl = logging.DTS_PKTGEN_CMD
+            self.debug_lvl = logging.DTS_PKTGEN_OUTPUT
         elif crb == 'virtdut':
             self.info_lvl = logging.DTS_VIRTDUT_CMD
             self.debug_lvl = logging.DTS_VIRTDUT_OUTPUT
@@ -428,7 +445,7 @@ class LogParser(object):
             # only handle case log
             m = self.case_pattern.match(line.values()[0])
             if m:
-                # not determine case will start from begining
+                # not determine case will start from beginning
                 if case_name is None:
                     begin = self.loglist.index(line)
                 # start from the determined case
