@@ -63,7 +63,9 @@ class TestIpgre(TestCase):
         """
         self.printFlag = self._enable_debug
         ports = self.dut.get_ports()
-        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"],
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortville_25g", "carlsville",
+                                 "columbiaville_25g", "columbiaville_100g"],
                     "GRE tunnel packet type only support by fortville and carlsville")
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
@@ -90,7 +92,7 @@ class TestIpgre(TestCase):
         """
         pass
 
-    def check_packet_transmission(self, pkt_types, layer_configs=None):
+    def check_packet_transmission(self, pkt_types, layer_configs=None, queue=None, add_filter=0):
         time.sleep(1)
         for pkt_type in pkt_types.keys():
             pkt_names = pkt_types[pkt_type]
@@ -115,6 +117,14 @@ class TestIpgre(TestCase):
             else:
                 print utils.GREEN("Detected %s successfully" % pkt_type)
 	        time.sleep(1)
+            if queue == None: # no filter
+                pass
+            else:
+                if add_filter: # remove filter
+                    self.verify(("Receive queue=0x%s" % queue) in out, "Failed to enter the right queue.")
+                else:
+                    self.verify(("Receive queue=0x%s" % queue) not in out, "Failed to enter the right queue.")
+
 
     def save_ref_packet(self, pkt_types, layer_configs=None):
         for pkt_type in pkt_types.keys():
@@ -186,7 +196,7 @@ class TestIpgre(TestCase):
         config_layers =  {'ether': {'src': self.outer_mac_src},
                           'ipv4': {'proto': 'gre'}}
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-rx-cksum" % self.target
+        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
         self.dut.send_expect( testpmd_cmd, 
                               "testpmd>", 
                               20)
@@ -278,12 +288,16 @@ class TestIpgre(TestCase):
         # Send packet inner ip address matched and check packet received by queue 3
         pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":  ["TUNNEL_GRENAT",  "INNER_L4_UDP"]}
         config_layers = {'ether': {'src': self.outer_mac_src},
-                         'ipv4': {'dst': "0.0.0.0", 'proto': 'gre'}}
-        self.check_packet_transmission(pkt_types, config_layers)
+                         'ipv4': {'proto': 'gre',
+                                  'src': self.outer_ip_src,
+                                  'dst': self.outer_ip_dst},
+                         'inner_ipv4':{'dst': "0.0.0.0"}}
+        self.check_packet_transmission(pkt_types, config_layers, "3", 1)
 
         # Remove tunnel filter and check same packet received by queue 0
         cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
         self.dut.send_expect( cmd, "testpmd>")
+        self.check_packet_transmission(pkt_types, config_layers, "3")
         
         # Add GRE filter that forward outer ip address 0.0.0.0 to queue 3
         cmd = "tunnel_filter add 0 %s %s 0.0.0.0 1 ipingre oip 0 3"%(outer_mac, inner_mac)
@@ -293,11 +307,13 @@ class TestIpgre(TestCase):
         pkt_types = {"MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT": ["TUNNEL_GRENAT", "INNER_L4_UDP"]}
         config_layers = {'ether': {'src': self.outer_mac_src},
                          'ipv4': {'dst': "0.0.0.0", 'proto': 'gre'}}
-        self.check_packet_transmission(pkt_types, config_layers)
+        self.check_packet_transmission(pkt_types, config_layers, "3", 1)
 
         # Add GRE filter that forward outer ip address 0.0.0.0 to queue 3
-        cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre iip 0 3"%(outer_mac, inner_mac)
+        cmd = "tunnel_filter rm 0 %s %s 0.0.0.0 1 ipingre oip 0 3"%(outer_mac, inner_mac)
         self.dut.send_expect( cmd, "testpmd>")
+        self.check_packet_transmission(pkt_types, config_layers, "3")
+
         time.sleep(2)
         self.dut.send_expect("quit", "#")
 
@@ -437,14 +453,12 @@ class TestIpgre(TestCase):
     def tear_down(self):
         """
         Run after each test case.
-        Nothing to do.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         Nothing to do.
         """
-        self.dut.kill_all()
         pass
