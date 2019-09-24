@@ -817,6 +817,9 @@ class LibvirtKvm(VirtBase):
         while count:
             out = self.__control_session('ifconfig')
             if "10.0.2" in out:
+                pos = self.vm_ip.find(':')
+                ssh_key = '[' + self.vm_ip[:pos] + ']' + self.vm_ip[pos:]
+                os.system('ssh-keygen -R %s' % ssh_key)
                 return True
             time.sleep(6)
             count -= 1
