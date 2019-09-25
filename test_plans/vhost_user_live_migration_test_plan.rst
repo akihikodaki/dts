@@ -44,7 +44,7 @@ HW setup
 1. Connect three ports to one switch, these three ports are from Host, Backup
    host and tester. Ensure the tester can send packets out, then host/backup server ports
    can receive these packets.
-2. Better to have 2 similar machine with the same OS.
+2. Better to have 2 similar machine with the same CPU and OS.
 
 NFS configuration
 
@@ -52,181 +52,393 @@ NFS configuration
 
 2. Start nfs service and export nfs to backup host IP::
 
-     host# service rpcbind start
-     host# service nfs-server start
-     host# service nfs-mountd start
-     host# systemctrl stop firewalld.service
-     host# vim /etc/exports
-     host# /home/vm-image backup-host-ip(rw,sync,no_root_squash)
+    host# service rpcbind start
+    host# service nfs-server start
+    host# service nfs-mountd start
+    host# systemctrl stop firewalld.service
+    host# vim /etc/exports
+    host# /home/osimg/live_mig backup-host-ip(rw,sync,no_root_squash)
 
 3. Mount host nfs folder on backup host::
 
-     backup# mount -t nfs -o nolock,vers=4  host-ip:/home/vm-image /mnt/nfs
+    backup# mount -t nfs -o nolock,vers=4  host-ip:/home/osimg/live_mig /mnt/nfs
+
+Test Case 1: migrate with virtio-pmd
+====================================
 
 On host server side:
 
-1. Create enough hugepages for vhost-switch and qemu backend memory::
+1. Create enough hugepages for testpmd and qemu backend memory::
 
-     host# echo 4096 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
-     host# mount -t hugetlbfs hugetlbfs /mnt/huge
+    host server# mkdir /mnt/huge
+    host server# mount -t hugetlbfs hugetlbfs /mnt/huge
 
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
-     #./tools/dpdk-devbind.py -b igb_uio 83:00.1
-     #./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
-
-     testpmd>start
+    host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
-     taskset -c 22-23 qemu-system-x86_64 -name vm1host \
-     -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-     -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/qxu10/img/vm1.img \
-     -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
-     -chardev socket,id=char0,path=./vhost-net \
-     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
-     -monitor telnet::3333,server,nowait \
-     -serial telnet:localhost:5432,server,nowait \
-     -daemonize
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -vnc :10 -daemonize
 
 On the backup server, run the vhost testpmd on the host and launch VM:
 
 4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
-      backup server# echo 4096 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
-      backup server# mount -t hugetlbfs hugetlbfs /mnt/huge
-      backup server#./tools/dpdk-devbind.py -b igb_uio 81:00.1
-      backup server#./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
-      testpmd>start
+    backup server # mkdir /mnt/huge
+    backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
+    backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # testpmd>start
 
-5. Launch VM on the backup server, and the script is similar to host, but note the 2 differences:
+5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
-   1. need add " -incoming tcp:0:4444 " for live migration.
-   2. need make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -incoming tcp:0:4444 \
+    -vnc :10 -daemonize
 
-        Backup server #
-        qemu-system-x86_64 -name vm2 \
-        -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
-        -numa node,memdev=mem -mem-prealloc -smp 4 -cpu host -drive file=/mnt/nfs/vm1.img \
-        -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
-        -chardev socket,id=char0,path=./vhost-net \
-        -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-        -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
-        -monitor telnet::3333,server,nowait \
-        -serial telnet:localhost:5432,server,nowait \
-        -incoming tcp:0:4444 \
-        -daemonize
+6. SSH to host VM and scp the DPDK folder from host to VM::
 
+    host server# ssh -p 5555 127.0.0.1
+    host server# scp -P 5555 -r <dpdk_folder>/ 127.0.0.1:/root
 
-Test Case 1: migrate with virtio-pmd
+7. Run testpmd in VM::
+
+    host VM# cd /root/<dpdk_folder>
+    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# modprobe uio
+    host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
+    host VM# ./tools/dpdk_nic_bind.py --bind=igb_uio 00:03.0
+    host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+    host VM# screen -S vm
+    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# testpmd>set fwd rxonly
+    host VM# testpmd>set verbose 1
+    host VM# testpmd>start
+
+8. Send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9) from tester port::
+
+    tester# scapy
+    tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
+    tester# sendp(p, iface="p5p1", inter=1, loop=1)
+
+9. Check the virtio-pmd can receive the packet, then detach the session for retach on backup server::
+
+    host VM# testpmd>port 0/queue 0: received 1 packets
+    host VM# ctrl+a+d
+
+10. Start Live migration, ensure the traffic is continuous::
+
+    host server # telnet localhost 3333
+    host server # (qemu)migrate -d tcp:backup server:4444
+    host server # (qemu)info migrate
+    host server # Check if the migrate is active and not failed.
+
+11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
+
+    host server # (qemu)info migrate
+    host server # (qemu)Migration status: completed
+
+12. After live migration, go to the backup server and check if the virtio-pmd can continue to receive packets::
+
+    backup server # ssh -p 5555 127.0.0.1
+    backup VM # screen -r vm
+
+Test Case 2: migrate with virtio-pmd zero-copy enabled
+======================================================
+
+On host server side:
+
+1. Create enough hugepages for testpmd and qemu backend memory::
+
+    host server# mkdir /mnt/huge
+    host server# mount -t hugetlbfs hugetlbfs /mnt/huge
+
+2. Bind host port to igb_uio and start testpmd with vhost port,note not start vhost port before launching qemu::
+
+    host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+
+3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
+
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -vnc :10 -daemonize
+
+On the backup server, run the vhost testpmd on the host and launch VM:
+
+4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
+
+    backup server # mkdir /mnt/huge
+    backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
+    backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+
+5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
+
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -incoming tcp:0:4444 \
+    -vnc :10 -daemonize
+
+6. SSH to host VM and scp the DPDK folder from host to VM::
+
+    host server# ssh -p 5555 127.0.0.1
+    host server# scp -P 5555 -r <dpdk_folder>/ 127.0.0.1:/root
+
+7. Run testpmd in VM::
+
+    host VM# cd /root/<dpdk_folder>
+    host VM# make -j 110 install T=x86_64-native-linuxapp-gcc
+    host VM# modprobe uio
+    host VM# insmod ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
+    host VM# ./tools/dpdk_nic_bind.py --bind=igb_uio 00:03.0
+    host VM# echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
+    host VM# screen -S vm
+    host VM# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+    host VM# testpmd>set fwd rxonly
+    host VM# testpmd>set verbose 1
+    host VM# testpmd>start
+
+8. Start vhost testpmd on host and send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9) from tester port::
+
+    host# testpmd>start
+    tester# scapy
+    tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
+    tester# sendp(p, iface="p5p1", inter=1, loop=1)
+
+9. Check the virtio-pmd can receive packets, then detach the session for retach on backup server::
+
+    host VM# testpmd>port 0/queue 0: received 1 packets
+    host VM# ctrl+a+d
+
+10. Start Live migration, ensure the traffic is continuous::
+
+    host server # telnet localhost 3333
+    host server # (qemu)migrate -d tcp:backup server:4444
+    host server # (qemu)info migrate
+    host server # Check if the migrate is active and not failed.
+
+11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
+
+    host server # (qemu)info migrate
+    host server # (qemu)Migration status: completed
+
+12. After live migration, go to the backup server start vhost testpmd and check if the virtio-pmd can continue to receive packets::
+
+    backup server # testpmd>start
+    backup server # ssh -p 5555 127.0.0.1
+    backup VM # screen -r vm
+
+Test Case 3: migrate with virtio-net
 ====================================
-Make sure all Prerequisites has been done
 
-6. SSH to VM and scp the DPDK folder from host to VM::
+On host server side:
 
-     host # ssh -p 5555 localhost, then input password to log in.
-     host # scp  -P 5555 -r <dpdk_folder>/  localhost:/root, then input password to let the file transfer.
+1. Create enough hugepages for testpmd and qemu backend memory::
 
-7. Telnet the serial port and run testpmd in VM::
+    host server# mkdir /mnt/huge
+    host server# mount -t hugetlbfs hugetlbfs /mnt/huge
 
-     host # telnet localhost 5432
-     Input Enter, then log in to VM
-     If need leave the session, input "CTRL" + "]", then quit the telnet session.
-     On the Host server VM, run below commands to launch testpmd
-     host vm #
-     cd /root/dpdk
-     modprobe uio
-     insmod ./x86_64-native-linuxapp-gcc/kmod/igb_uio.ko
-     ./tools/dpdk_nic_bind.py --bind=igb_uio 00:03.0
-     echo 1024 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages
-     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x3 -n 4 -- -i
+2. Bind host port to igb_uio and start testpmd with vhost port::
 
-     > set fwd rxonly
-     > set verbose 1
-     > start tx_first
+    host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# testpmd>start
 
-8. Check host vhost pmd connect with VM’s virtio device::
+3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
-     testpmd> host testpmd message for connection
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -vnc :10 -daemonize
 
-9. Send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9)
-   from tester port::
+On the backup server, run the vhost testpmd on the host and launch VM:
 
-     tester# scapy
-     tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
-     tester# sendp(p, iface="p5p1", inter=1, loop=1)
+4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
-     Then check the host VM can receive the packet:
-     host VM# testpmd> port 0/queue 0: received 1 packets
+    backup server # mkdir /mnt/huge
+    backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
+    backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # testpmd>start
 
-10. Start Live migration, ensure the traffic is continuous at the HOST VM side::
+5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
-      host server # telnet localhost 3333
-      (qemu)migrate -d tcp:backup server:4444
-      e.g: migrate -d tcp:10.239.129.176:4444
-      (qemu)info migrate
-      Check if the migrate is active and not failed.
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -incoming tcp:0:4444 \
+    -vnc :10 -daemonize
 
-11. Check host vm can receive packet before migration done
+6. SSH to host VM and let the virtio-net link up::
 
-12. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
+    host server# ssh -p 5555 127.0.0.1
+    host vm # ifconfig eth0 up
+    host VM# screen -S vm
+    host VM# tcpdump -i eth0
 
-      host# (qemu)info migrate
-      host# (qemu)
-      Migration status: completed
+7. Send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9) from tester port::
 
-13. After live migration, go to the backup server and check if the virtio-pmd can continue to receive packets.::
+    tester# scapy
+    tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
+    tester# sendp(p, iface="p5p1", inter=1, loop=1)
 
-      Backup server # telnet localhost 5432
+8. Check the virtio-net can receive the packet, then detach the session for retach on backup server::
 
-    Log in then see the same screen from the host server, and check if the virtio-pmd can continue receive the packets.
+    host VM# testpmd>port 0/queue 0: received 1 packets
+    host VM# ctrl+a+d
 
-Test Case 2: migrate with virtio-net
-====================================
+9. Start Live migration, ensure the traffic is continuous::
 
-Make sure all Prerequisites has been done.
+    host server # telnet localhost 3333
+    host server # (qemu)migrate -d tcp:backup server:4444
+    host server # (qemu)info migrate
+    host server # Check if the migrate is active and not failed.
 
-6. Telnet the serial port and run testpmd in VM::
+10. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
 
-     host # telnet localhost 5432
-     Input Enter, then log in to VM
+    host server # (qemu)info migrate
+    host server # (qemu)Migration status: completed
 
-   If need leave the session, input "CTRL" + "]", then quit the telnet session.
+11. After live migration, go to the backup server and check if the virtio-net can continue to receive packets::
 
-7. Let the virtio-net link up::
+    backup server # ssh -p 5555 127.0.0.1
+    backup VM # screen -r vm
 
-     host vm # ifconfig eth1 up
+Test Case 4: adjust virtio-net queue numbers while migrating with virtio-net
+============================================================================
 
-8. Send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9)
-   from tester port::
+On host server side:
 
-     tester# scapy
-     tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
-     tester# sendp(p, iface="p5p1", inter=1, loop=1)
+1. Create enough hugepages for testpmd and qemu backend memory::
 
-9. Check the host VM can receive the packet::
+    host server# mkdir /mnt/huge
+    host server# mount -t hugetlbfs hugetlbfs /mnt/huge
 
-     host VM# tcpdump -i eth1
+2. Bind host port to igb_uio and start testpmd with vhost port::
 
-10. Start Live migration, ensure the traffic is continuous at the HOST VM side::
+    host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    host server# testpmd>start
 
-      host server # telnet localhost 3333
-      (qemu)migrate -d tcp:backup server:4444
-      e.g: migrate -d tcp:10.239.129.176:4444
-      (qemu)info migrate
-      Check if the migrate is active and not failed.
+3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
-11. Check host vm can receive packet before migration done.
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=4 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,mq=on,vectors=10 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -vnc :10 -daemonize
 
-12. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
+On the backup server, run the vhost testpmd on the host and launch VM:
 
-      host# (qemu)info migrate
-      host# (qemu)
-      Migration status: completed
+4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
-13. After live migration, go to the backup server and check if the virtio-pmd can continue to receive packets.::
+    backup server # mkdir /mnt/huge
+    backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
+    backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
+    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    backup server # testpmd>start
 
-      Backup server # telnet localhost 5432
+5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
-    Log in then see the same screen from the host server, and check if the virtio-net can continue receive the packets.
+    qemu-system-x86_64 -name vm1 \
+    -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -smp 2 -cpu host -drive file=/home/osimg/live_mig/ubuntu16.img \
+    -net nic,model=e1000,addr=1f -net user,hostfwd=tcp:127.0.0.1:5555-:22 \
+    -chardev socket,id=char0,path=./vhost-net \
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=4 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,mq=on,vectors=10 \
+    -monitor telnet::3333,server,nowait \
+    -serial telnet:localhost:5432,server,nowait \
+    -incoming tcp:0:4444 \
+    -vnc :10 -daemonize
+
+6. SSH to host VM and let the virtio-net link up::
+
+    host server# ssh -p 5555 127.0.0.1
+    host vm # ifconfig eth0 up
+    host VM# screen -S vm
+    host VM# tcpdump -i eth0
+
+7. Send continuous packets with the physical port's mac(e.g: 90:E2:BA:69:C9:C9) from tester port::
+
+    tester# scapy
+    tester# p = Ether(dst="90:E2:BA:69:C9:C9")/IP()/UDP()/Raw('x'*20)
+    tester# sendp(p, iface="p5p1", inter=1, loop=1)
+
+8. Check the virtio-net can receive the packet, then detach the session for retach on backup server::
+
+    host VM# testpmd>port 0/queue 0: received 1 packets
+    host VM# ctrl+a+d
+
+9. Start Live migration, ensure the traffic is continuous::
+
+    host server # telnet localhost 3333
+    host server # (qemu)migrate -d tcp:backup server:4444
+    host server # (qemu)info migrate
+    host server # Check if the migrate is active and not failed.
+
+10. Change virtio-net queue numbers from 1 to 4 while migrating::
+
+    host server # ethtool -L ens3 combined 4
+
+11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
+
+    host server # (qemu)info migrate
+    host server # (qemu)Migration status: completed
+
+12. After live migration, go to the backup server and check if the virtio-net can continue to receive packets::
+
+    backup server # ssh -p 5555 127.0.0.1
+    backup VM # screen -r vm
