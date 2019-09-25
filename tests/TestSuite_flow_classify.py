@@ -46,6 +46,16 @@ from settings import HEADER_SIZE
 
 class TestFlowClassify(TestCase):
 
+    def is_existed_on_crb(self, check_path, crb='dut'):
+        alt_session = self.dut.alt_session \
+                      if crb == 'dut' else \
+                      self.tester.alt_session
+        alt_session.send_expect("ls %s > /dev/null 2>&1" % check_path, "# ")
+        cmd = "echo $?"
+        output = alt_session.send_expect(cmd, "# ")
+        ret = True if output and output.strip() == "0" else False
+        return ret
+
     def get_cores_mask(self, config='all'):
         sockets = [self.dut.get_numa_id(index) for index in self.dut_ports]
         socket_count = Counter(sockets)
@@ -291,7 +301,7 @@ class TestFlowClassify(TestCase):
                                    'examples',
                                    'flow_classify',
                                    'ipv4_rules_file.txt'])
-        if not os.path.exists(rule_config):
+        if not self.is_existed_on_crb(rule_config):
             raise VerifyFailure("rules file doesn't existed")
         core = "1S/1C/1T"
         option = r" -c {0} -n 4 --file-prefix=test -- --rule_ipv4={1}".format(
@@ -390,7 +400,7 @@ class TestFlowClassify(TestCase):
             elif flow_type == 'single_stream':
                 if rule_priority is None and captured_pkts != 0:
                     msg = "invalid stream hasn't been filtered out"
-                elif rule_priority is None and captured_pkts != total_packets:
+                elif rule_priority and captured_pkts != total_packets:
                     msg = "expect {0} ".format(total_packets) + \
                           "captured {0}".format(captured_pkts)
                 else:
