@@ -39,6 +39,8 @@ import time
 import re
 import signal
 import subprocess
+import shutil
+import socket
 from pprint import pformat
 
 from scapy.utils import rdpcap
@@ -56,7 +58,7 @@ from packet import Packet
 # refactor. New refactor methods have much more longer time consumption than
 # old methods.
 
-# Saved back groud sniff process id
+# Saved back ground sniff process id
 SNIFF_PIDS = {}
 
 
@@ -128,10 +130,9 @@ def load_sniff_packets(index=''):
 
 class parsePacket(object):
 
-    def __init__(self, filename, skip_flag=False):
+    def __init__(self, filename):
         self.pcapFile = filename
         self.packetLayers = dict()
-        self.skip = skip_flag
 
     def parse_packet_layer(self, pkt_object):
         if pkt_object is None:
@@ -159,14 +160,9 @@ class parsePacket(object):
         cnt = 0
         for packet in pcap_pkts_origin:
             self.parse_packet_layer(packet)
-            flag = 'LLDP' not in self.packetLayers.keys() \
-                   if self.skip else \
-                   True
-            src_ether = self.packetLayers["Ethernet"]['src']
-            if src_ether == '00:00:00:00:00:00' and flag:
-                if number == cnt:
-                    break
-                cnt += 1
+            if number == cnt:
+                break
+            cnt += 1
             self.packetLayers.clear()
 
     def parse_pcap(self, number=0):
@@ -192,25 +188,94 @@ class parsePacket(object):
 
 class TestPacketCapture(TestCase):
 
-    def is_existed_on_dut(self, check_path):
-        self.dut.alt_session.send_expect("ls %s" % check_path, "# ")
+    def get_dts_node_ip(self):
+        ip_addr = None
+        try:
+            socket_inst = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            socket_inst.connect(('8.8.8.8', 80))
+            ip_addr = socket_inst.getsockname()[0]
+        except Exception as e:
+            msg = "Can't get dts running node ip address" 
+            self.logger.warning(msg)
+            return ip_addr
+        return ip_addr
+
+    @property
+    def is_dts_on_tester(self):
+        if not self.dts_ip:
+            return False
+        # get tester ip to check if dts run on tester
+        tester_ip = self.tester.get_ip_address()
+        return self.dts_ip == tester_ip
+
+    @property
+    def is_dts_on_dut(self):
+        if not self.dts_ip:
+            return False
+        # get dut ip to check if dts run on dut
+        dut_ip = self.dut.get_ip_address()
+        return self.dts_ip == dut_ip
+
+    @property
+    def is_dut_on_tester(self):
+        # get dut/tester ip to check if they are in one platform
+        tester_ip = self.tester.get_ip_address()
+        dut_ip = self.dut.get_ip_address()
+        return tester_ip == dut_ip
+
+    @property
+    def target_dir(self):
+        # get absolute directory of target source code
+        target_dir = '/root' + self.dut.base_dir[1:] \
+                     if self.dut.base_dir.startswith('~') else \
+                     self.dut.base_dir
+        return target_dir
+
+    def __create_log_dir(self, log_dir):
+        # create a log directory on dts running node
+        if not os.path.exists(log_dir):
+            os.makedirs(log_dir)
+        # create a log directory on dut node
+        if not self.is_dts_on_dut and \
+           not self.is_existed_on_crb(log_dir):
+            cmd = "mkdir -p {0}".format(log_dir)
+            self.dut.alt_session.send_expect(cmd, "# ")
+        # create a log directory on tester node
+        if not self.is_dts_on_tester and \
+           not self.is_existed_on_crb(log_dir, crb='tester'):
+            cmd = "mkdir -p {0}".format(log_dir)
+            self.tester.alt_session.send_expect(cmd, "# ")
+
+    def __clear_log_dir(self, log_dir):
+        if os.path.exists(log_dir):
+            shutil.rmtree(log_dir)
+        os.makedirs(log_dir)
+        if not self.is_dts_on_dut:
+            self.dut.alt_session.send_expect(
+                "rm -fr {0}/*".format(log_dir), "# ", 10)
+        if not self.is_dts_on_tester:
+            self.tester.alt_session.send_expect(
+                "rm -fr {0}/*".format(log_dir), "# ", 10)
+
+    def is_existed_on_crb(self, check_path, crb='dut'):
+        alt_session = self.dut.alt_session \
+                      if crb == 'dut' else \
+                      self.tester.alt_session
+        alt_session.send_expect("ls %s > /dev/null 2>&1" % check_path, "# ")
         cmd = "echo $?"
-        output = self.dut.alt_session.send_expect(cmd, "# ")
+        output = alt_session.send_expect(cmd, "# ")
         ret = True if output and output.strip() == "0" else False
         return ret
 
     def get_dut_iface_with_kernel_driver(self):
         # only physical nic support PROMISC
-        cmd = "ip link show | grep PROMISC | awk {'print $2'}"
+        cmd = "ip link show | grep BROADCAST,MULTICAST | awk {'print $2'}"
         out = self.dut.alt_session.send_expect(cmd, "# ")
         pat = "(.*):"
         ifaces = [intf for intf in re.findall(pat, out, re.M) if intf]
-        # get dut/tester ip to check if they are in a platform
-        tester_ip = self.tester.get_ip_address()
-        dut_ip = self.dut.get_ip_address()
         for link_port in range(len(self.dut_ports)):
             # if they are in a platform, ignore interface used by tester
-            if tester_ip == dut_ip:
+            if not self.is_dut_on_tester:
                 tester_port = self.tester.get_local_port(link_port)
                 intf = self.tester.get_interface(tester_port)
                 if intf in ifaces:
@@ -265,10 +330,10 @@ class TestPacketCapture(TestCase):
         self.tcpdump = "tcpdump -i {0} " + param + " -w {1} >/dev/null 2>&1 &"
 
     def check_pcap_lib(self):
-        pcap_lib_dir = os.sep.join([self.dut.base_dir,
+        pcap_lib_dir = os.sep.join([self.target_dir,
                                     self.target,
                                     "lib/librte_pmd_pcap.a"])
-        return self.is_existed_on_dut(pcap_lib_dir)
+        return self.is_existed_on_crb(pcap_lib_dir)
 
     def get_packet_types(self):
         packet_types = ["TCP",
@@ -435,8 +500,6 @@ class TestPacketCapture(TestCase):
         time.sleep(4)
 
     def start_testpmd(self):
-        self.dut.alt_session.send_expect(
-            "rm -fr {0}/*".format(self.pdump_log), "# ", 10)
         param_opt = "--port-topology=chained"
         eal_param = '--file-prefix=test'
         self.testpmd.start_testpmd("Default", param=param_opt,
@@ -453,23 +516,14 @@ class TestPacketCapture(TestCase):
     def start_tcpdump_iface(self, option):
         if option["rx"][0] is not None and option["tx"][0] is not None and \
            option["rx"][0] == option["tx"][0]:
-            if self.is_existed_on_dut(self.rxtx_pcap):
-                self.dut.alt_session.send_expect(
-                    "rm -f %s" % self.rxtx_pcap, "# ")
             cmd = self.tcpdump.format(self.rxtx_iface, self.rxtx_pcap)
             self.session_ex.send_expect(cmd, "# ")
         else:
             if option["rx"][0] is not None:
-                if self.is_existed_on_dut(self.rx_pcap):
-                    self.dut.alt_session.send_expect(
-                        "rm -f %s" % self.rx_pcap, "# ")
                 cmd = self.tcpdump.format(self.rx_iface, self.rx_pcap)
                 self.session_ex.send_expect(cmd, "# ")
 
             if option["tx"][0] is not None:
-                if self.is_existed_on_dut(self.tx_pcap):
-                    self.dut.alt_session.send_expect(
-                        "rm -f %s" % self.tx_pcap, "# ")
                 cmd = self.tcpdump.format(self.tx_iface, self.tx_pcap)
                 self.session_ex.send_expect(cmd, "# ")
         time.sleep(4)
@@ -483,10 +537,8 @@ class TestPacketCapture(TestCase):
         msg = ('pdump option string length should be less than {}'
                ).format(length_limit)
         self.verify(len(option) < length_limit, msg)
-        self.dut.alt_session.send_expect(
-            "rm -fr {0}/*".format(self.pdump_log), "# ", 20)
         cmd = ';'.join([
-            "cd %s" % self.dut.base_dir,
+            "cd %s" % self.target_dir,
             self.dpdk_pdump + " '%s' >/dev/null 2>&1 &" % (option[0])])
         self.session_ex.send_expect(cmd, "# ", 15)
         time.sleep(6)
@@ -494,12 +546,12 @@ class TestPacketCapture(TestCase):
     def check_pdump_ready(self, option):
         rx_dump_pcap = option["rx"][0]
         if rx_dump_pcap:
-            self.verify(self.is_existed_on_dut(rx_dump_pcap),
+            self.verify(self.is_existed_on_crb(rx_dump_pcap),
                         "{1} {0} is not ready".format(rx_dump_pcap,
                                                       self.tool_name))
         tx_dump_pcap = option["tx"][0]
         if tx_dump_pcap:
-            self.verify(self.is_existed_on_dut(tx_dump_pcap),
+            self.verify(self.is_existed_on_crb(tx_dump_pcap),
                         "{1} {0} is not ready".format(tx_dump_pcap,
                                                       self.tool_name))
 
@@ -520,12 +572,13 @@ class TestPacketCapture(TestCase):
         # check send tx packet by port 0
         # send packet to dut and compare dpdk-pdump dump pcap with
         # scapy pcap file
-        intf = self.tester.get_interface(self.tester.get_local_port(port_1))
-        # prepare to catch replay packet in out port
-        recPkt = os.path.join('/tmp', "sniff_%s.pcap" % intf)
-        if os.path.exists(recPkt):
-            os.remove(recPkt)
-        index = sniff_packets(intf, count=1, timeout=20, pcap=recPkt)
+        if self.is_dts_on_tester:
+            intf = self.tester.get_interface(self.tester.get_local_port(port_1))
+            # prepare to catch replay packet in out port
+            recPkt = os.path.join('/tmp', "sniff_%s.pcap" % intf)
+            if os.path.exists(recPkt):
+                os.remove(recPkt)
+            index = sniff_packets(intf, count=1, timeout=20, pcap=recPkt)
         pkt = Packet(pkt_type=pkt_type)
         if pkt_type == 'VLAN_UDP':
             pkt.config_layer('dot1q', {'vlan': 20})
@@ -539,24 +592,29 @@ class TestPacketCapture(TestCase):
         # send out test packet
         tester_port = self.tester.get_local_port(port_0)
         intf = self.tester.get_interface(tester_port)
-        pkt.send_pkt(tx_port=intf)
+        pkt.send_pkt(
+            crb= None if self.is_dts_on_tester else self.tester,
+            tx_port=intf)
         # load pcap file caught by out port
         time.sleep(1)
-        load_sniff_packets(index)
-        # compare pcap file received by out port with scapy reference
-        # packet pcap file
-        warning = self.compare_pkts(refPkt, recPkt, pkt_type)
-        msg = "tcpdump rx Receive Packet error: {0}".format(warning)
-        self.verify(not warning, msg)
+        # when dts doesn't run on tester, ignore this testing content
+        if self.is_dts_on_tester:
+            load_sniff_packets(index)
+            # compare pcap file received by out port with scapy reference
+            # packet pcap file
+            warning = self.compare_pkts(refPkt, recPkt, pkt_type)
+            msg = "tcpdump rx Receive Packet error: {0}".format(warning)
+            self.verify(not warning, msg)
         # check send tx packet by port 1
         # send packet to dut and compare dpdk-pdump dump pcap
         # with scapy pcap file
-        intf = self.tester.get_interface(self.tester.get_local_port(port_0))
-        # prepare to catch replay packet in out port
-        recPkt = os.path.join('/tmp', "sniff_%s.pcap" % intf)
-        if os.path.exists(recPkt):
-            os.remove(recPkt)
-        index = sniff_packets(intf, count=1, timeout=20, pcap=recPkt)
+        if self.is_dts_on_tester:
+            intf = self.tester.get_interface(self.tester.get_local_port(port_0))
+            # prepare to catch replay packet in out port
+            recPkt = os.path.join('/tmp', "sniff_%s.pcap" % intf)
+            if os.path.exists(recPkt):
+                os.remove(recPkt)
+            index = sniff_packets(intf, count=1, timeout=20, pcap=recPkt)
         pkt = Packet(pkt_type=pkt_type)
         if pkt_type == 'VLAN_UDP':
             pkt.config_layer('dot1q', {'vlan': 20})
@@ -570,15 +628,19 @@ class TestPacketCapture(TestCase):
         # send out test packet
         tester_port = self.tester.get_local_port(port_1)
         intf = self.tester.get_interface(tester_port)
-        pkt.send_pkt(tx_port=intf)
+        pkt.send_pkt(
+            crb= None if self.is_dts_on_tester else self.tester,
+            tx_port=intf)
         # load pcap file caught by out port
         time.sleep(1)
-        load_sniff_packets(index)
-        # compare pcap file received by out port
-        # with scapy reference packet pcap file
-        warning = self.compare_pkts(refPkt, recPkt, pkt_type)
-        msg = "tcpdump tx Receive Packet error: {0}".format(warning)
-        self.verify(not warning, msg)
+        # when dts doesn't run on tester, ignore this testing content
+        if self.is_dts_on_tester:
+            load_sniff_packets(index)
+            # compare pcap file received by out port
+            # with scapy reference packet pcap file
+            warning = self.compare_pkts(refPkt, recPkt, pkt_type)
+            msg = "tcpdump tx Receive Packet error: {0}".format(warning)
+            self.verify(not warning, msg)
 
     def check_pdump_pcaps(self, pkt_type, number, **kwargs):
         rx_dump_pcap = kwargs["rx"][0]
@@ -624,8 +686,23 @@ class TestPacketCapture(TestCase):
             msg = "pdump tx {0} packet content is correct".format(pkt_type)
             self.logger.info(msg)
 
+    def sync_dut_dump_file(self):
+        if self.is_dts_on_dut:
+            return
+        # copy rx pdump data from dut
+        if os.path.exists(self.rx_pcap):
+            os.remove(self.rx_pcap)
+        if self.is_existed_on_crb(self.rx_pcap):
+            self.dut.session.copy_file_from(self.rx_pcap, self.rx_pcap)
+        # copy tx pdump data from dut
+        if os.path.exists(self.tx_pcap):
+            os.remove(self.tx_pcap)
+        if self.is_existed_on_crb(self.tx_pcap):
+            self.dut.session.copy_file_from(self.tx_pcap, self.tx_pcap)
+
     def packet_capture_test_packets(self, option):
         self.clear_ASLR()
+        self.__clear_log_dir(self.pdump_log)
         self.start_testpmd()
         self.start_dpdk_pdump(option)
         if self.dev_iface_flag:
@@ -636,17 +713,7 @@ class TestPacketCapture(TestCase):
             time.sleep(2)
         if self.dev_iface_flag:
             self.stop_tcpdump_iface()
-        if self.dut.get_ip_address() != self.tester.get_ip_address():
-            # copy rx pdump data from dut
-            if self.is_existed_on_dut(self.rx_pcap):
-                if os.path.exists(self.rx_pcap):
-                    os.remove(self.rx_pcap)
-                self.dut.session.copy_file_from(self.rx_pcap, self.rx_pcap)
-            # copy tx pdump data from dut
-            if self.is_existed_on_dut(self.tx_pcap):
-                if os.path.exists(self.tx_pcap):
-                    os.remove(self.tx_pcap)
-                self.dut.session.copy_file_from(self.tx_pcap, self.tx_pcap)
+        self.sync_dut_dump_file()
         self.stop_dpdk_pdump()
         self.stop_testpmd()
         self.reset_ASLR()
@@ -771,6 +838,8 @@ class TestPacketCapture(TestCase):
         '''
         Run at the start of each test suite.
         '''
+        # get dts running node ip address
+        self.dts_ip = self.get_dts_node_ip()
         self.verify(self.target == "x86_64-native-linuxapp-gcc",
                     "only support x86_64-native-linuxapp-gcc")
         self.dut_ports = self.dut.get_ports()
@@ -781,29 +850,30 @@ class TestPacketCapture(TestCase):
         # compile dpdk app with SW CONFIG_RTE_LIBRTE_PMD_PCAP open
         self.dut_skip_compile = self.dut.skip_setup
         # used for save log
-        self.pdump_log = os.sep.join(["/root", 'pdumpLog'])
-        if not self.is_existed_on_dut(self.pdump_log):
-            cmd = "mkdir -p {0}".format(self.pdump_log)
-            self.dut.alt_session.send_expect(cmd, "# ")
+        self.pdump_log = os.sep.join(["/tmp", 'pdumpLog'])
+        self.__create_log_dir(self.pdump_log)
+        self.pcap_SW = "CONFIG_RTE_LIBRTE_PMD_PCAP"
+        self.SW_file = os.path.join(self.target_dir, 'config/common_base')
         if not (self.dut_skip_compile and self.check_pcap_lib()):
-            self.pcap_SW = "CONFIG_RTE_LIBRTE_PMD_PCAP"
-            cmd = "sed -i -e 's/{0}=n$/{0}=y/' config/common_base".format(
-                self.pcap_SW)
+            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}".format(
+                self.pcap_SW, self.SW_file)
             self.dut.alt_session.send_expect(cmd, "# ", 30)
             self.dut.skip_setup = False
             self.dut.build_install_dpdk(self.target)
-        self.session_ex = self.dut.new_session()
         # secondary process (dpdk-pdump)
-        self.pdump_dir = self.dut.base_dir + os.sep + \
-            "%s/build/app/pdump/" % self.target
+        self.pdump_dir = os.sep.join([
+            self.target_dir,
+            "%s/build/app/pdump/" % self.target])
         cmd = "ls {0} -F | grep '*'".format(self.pdump_dir)
         exe_files = self.dut.alt_session.send_expect(cmd, "# ").splitlines()
         if len(exe_files) == 1:
             self.tool_name = exe_files[0][:-1]
         else:
             self.verify(False, "tool name exception !")
-        self.dut_dpdk_pdump_dir = self.dut.base_dir + os.sep + \
-            "%s/app/%s" % (self.target, self.tool_name)
+        self.dut_dpdk_pdump_dir = os.sep.join([
+            self.target_dir,
+            "%s/app/%s" % (self.target, self.tool_name)])
+        self.session_ex = self.dut.new_session(self.tool_name)
         self.dpdk_pdump = self.dut_dpdk_pdump_dir + \
             " -v --file-prefix=test -- --pdump "
         self.send_pcap = os.sep.join([self.pdump_log, "scapy_%s_%s_%d.pcap"])
@@ -840,7 +910,7 @@ class TestPacketCapture(TestCase):
         if not self.exit_flag:
             self.stop_dpdk_pdump()
             self.dut.alt_session.send_expect("killall testpmd", "# ")
-            self.dut.alt_session.send_expect("killall tcpdump", "# ")
+            self.tester.alt_session.send_expect("killall tcpdump", "# ")
             self.reset_ASLR()
         if self.dev_iface_flag:
             self.stop_tcpdump_iface()
@@ -850,20 +920,19 @@ class TestPacketCapture(TestCase):
         '''
         Run after each test suite.
         '''
-        if self.session_ex:
+        if hasattr(self, 'session_ex') and self.session_ex:
             self.reset_ASLR()
             self.session_ex.close()
             self.session_ex = None
         # Restore the config file and recompile the package.
-        if not (self.dut_skip_compile and self.check_pcap_lib()):
-            ###################################################################
+        if self.check_pcap_lib():
             self.dut.alt_session.send_expect(
                 ("sed -i -e 's/{0}=y$/{0}=n/' "
-                 "config/common_base").format(self.pcap_SW), "# ", 120)
+                 "{1}").format(self.pcap_SW, self.SW_file),
+                "# ", 120)
             # temporary disable skip_setup
             skip_setup = self.dut.skip_setup
             self.dut.skip_setup = True
             self.dut.build_install_dpdk(self.target)
             self.dut.skip_setup = skip_setup
-            ###################################################################
         self.dut.kill_all()
