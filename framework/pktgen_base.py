@@ -145,14 +145,14 @@ class PacketGenerator(object):
         if not self.__streams:
             return
         for stream in self.__streams:
-            stream['rate'] = rate_percent
+            stream['options']['stream_config']['rate'] = rate_percent
 
     def _set_stream_pps(self, pps):
         ''' set all streams' pps '''
         if not self.__streams:
             return
         for stream in self.__streams:
-            stream['pps'] = pps
+            stream['options']['stream_config']['pps'] = pps
 
     def reset_streams(self):
         self.__streams = []
@@ -265,12 +265,15 @@ class PacketGenerator(object):
             tx_num, rx_num = result.values()[0][1:]
             return rate_percent, tx_num, rx_num
         _options = deepcopy(options)
+        if 'rate' in _options:
+            _options.pop('rate')
         while not status and rate_percent > 0:
             rate_percent = rate_percent - rate_step
             if rate_percent <= 0:
                 msg = "rfc2544 run under zero rate"
                 self.logger.warning(msg)
                 break
+            self._clear_streams()
             # set stream rate percent to custom value
             self._set_stream_rate_percent(rate_percent)
             # run loss rate testing
