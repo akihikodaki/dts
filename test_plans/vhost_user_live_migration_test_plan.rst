@@ -94,7 +94,7 @@ On host server side:
 
 On the backup server, run the vhost testpmd on the host and launch VM:
 
-4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
+4. Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
@@ -148,20 +148,20 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
 10. Start Live migration, ensure the traffic is continuous::
 
-    host server # telnet localhost 3333
-    host server # (qemu)migrate -d tcp:backup server:4444
-    host server # (qemu)info migrate
-    host server # Check if the migrate is active and not failed.
+     host server # telnet localhost 3333
+     host server # (qemu)migrate -d tcp:backup server:4444
+     host server # (qemu)info migrate
+     host server # Check if the migrate is active and not failed.
 
 11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
 
-    host server # (qemu)info migrate
-    host server # (qemu)Migration status: completed
+     host server # (qemu)info migrate
+     host server # (qemu)Migration status: completed
 
 12. After live migration, go to the backup server and check if the virtio-pmd can continue to receive packets::
 
-    backup server # ssh -p 5555 127.0.0.1
-    backup VM # screen -r vm
+     backup server # ssh -p 5555 127.0.0.1
+     backup VM # screen -r vm
 
 Test Case 2: migrate with virtio-pmd zero-copy enabled
 ======================================================
@@ -193,7 +193,7 @@ On host server side:
 
 On the backup server, run the vhost testpmd on the host and launch VM:
 
-4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
+4. Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
@@ -247,21 +247,21 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
 10. Start Live migration, ensure the traffic is continuous::
 
-    host server # telnet localhost 3333
-    host server # (qemu)migrate -d tcp:backup server:4444
-    host server # (qemu)info migrate
-    host server # Check if the migrate is active and not failed.
+     host server # telnet localhost 3333
+     host server # (qemu)migrate -d tcp:backup server:4444
+     host server # (qemu)info migrate
+     host server # Check if the migrate is active and not failed.
 
 11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
 
-    host server # (qemu)info migrate
-    host server # (qemu)Migration status: completed
+     host server # (qemu)info migrate
+     host server # (qemu)Migration status: completed
 
 12. After live migration, go to the backup server start vhost testpmd and check if the virtio-pmd can continue to receive packets::
 
-    backup server # testpmd>start
-    backup server # ssh -p 5555 127.0.0.1
-    backup VM # screen -r vm
+     backup server # testpmd>start
+     backup server # ssh -p 5555 127.0.0.1
+     backup VM # screen -r vm
 
 Test Case 3: migrate with virtio-net
 ====================================
@@ -294,7 +294,7 @@ On host server side:
 
 On the backup server, run the vhost testpmd on the host and launch VM:
 
-4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
+4. Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
@@ -343,13 +343,13 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
 10. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
 
-    host server # (qemu)info migrate
-    host server # (qemu)Migration status: completed
+     host server # (qemu)info migrate
+     host server # (qemu)Migration status: completed
 
 11. After live migration, go to the backup server and check if the virtio-net can continue to receive packets::
 
-    backup server # ssh -p 5555 127.0.0.1
-    backup VM # screen -r vm
+     backup server # ssh -p 5555 127.0.0.1
+     backup VM # screen -r vm
 
 Test Case 4: adjust virtio-net queue numbers while migrating with virtio-net
 ============================================================================
@@ -382,7 +382,7 @@ On host server side:
 
 On the backup server, run the vhost testpmd on the host and launch VM:
 
-4.  Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
+4. Set huge page, bind one port to igb_uio and run testpmd on the backup server, the command is very similar to host::
 
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
@@ -431,14 +431,14 @@ On the backup server, run the vhost testpmd on the host and launch VM:
 
 10. Change virtio-net queue numbers from 1 to 4 while migrating::
 
-    host server # ethtool -L ens3 combined 4
+     host server # ethtool -L ens3 combined 4
 
 11. Query stats of migrate in monitor, check status of migration, when the status is completed, then the migration is done::
 
-    host server # (qemu)info migrate
-    host server # (qemu)Migration status: completed
+     host server # (qemu)info migrate
+     host server # (qemu)Migration status: completed
 
 12. After live migration, go to the backup server and check if the virtio-net can continue to receive packets::
 
-    backup server # ssh -p 5555 127.0.0.1
-    backup VM # screen -r vm
+     backup server # ssh -p 5555 127.0.0.1
+     backup VM # screen -r vm

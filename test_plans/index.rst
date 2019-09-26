@@ -158,6 +158,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_l3fwd_test_plan
     softnic_test_plan
     vm_hotplug_test_plan
+    mdd_test_plan
 
     virtio_1.0_test_plan
     vhost_enqueue_interrupt_test_plan

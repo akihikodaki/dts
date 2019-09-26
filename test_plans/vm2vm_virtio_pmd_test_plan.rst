@@ -326,10 +326,10 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 11. Relaunch testpmd on VM2, send ten 64B packets from virtio-pmd on VM2::
 
-    ./testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024
-    testpmd>set fwd mac
-    testpmd>set burst 1
-    testpmd>start tx_first 10
+     ./testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024
+     testpmd>set fwd mac
+     testpmd>set burst 1
+     testpmd>start tx_first 10
 
 12. Check payload is correct in each dumped packets.
 
@@ -408,10 +408,10 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 11. Relaunch testpmd On VM2, send ten 64B packets from virtio-pmd on VM2::
 
-    ./testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600
-    testpmd>set fwd mac
-    testpmd>set burst 1
-    testpmd>start tx_first 10
+     ./testpmd -c 0x3 -n 4 -- -i --txd=1024 --rxd=1024 --max-pkt-len=9600
+     testpmd>set fwd mac
+     testpmd>set burst 1
+     testpmd>start tx_first 10
 
 12. Check payload is correct in each dumped packets.
 
