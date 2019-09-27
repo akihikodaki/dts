@@ -103,17 +103,78 @@ class PmdOutput():
     def get_pmd_cmd(self):
         return self.command
 
-    def start_testpmd(self, cores, param='', eal_param='', socket=0):
+    def split_eal_param(self, eal_param):
+        """
+        split eal param from test suite
+        :param eal_param:
+        :return:
+        """
+        re_w_pci_str = '-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s'
+        re_file_prefix_str = '--file-prefix=.+?\s'
+        re_b_pci_str = '-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s'
+        eal_param = eal_param + ' '
+        # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ']
+        w_pci_str_list = re.findall(re_w_pci_str, eal_param)
+        # file_prefix_str eg: ['--file-prefix=dpdk ']
+        file_prefix_str = re.findall(re_file_prefix_str, eal_param)
+        b_pci_str_list = re.findall(re_b_pci_str, eal_param)
+        has_pci_option = {}
+        pci_list = []
+        if w_pci_str_list:
+            for pci_str in w_pci_str_list:
+                # has pci options
+                if ',' in pci_str:
+                    pci_option = pci_str.split(',')
+                    pci = pci_option[0].split(' ')[-1]
+                    has_pci_option[pci] = pci_option[1].strip()
+                    pci_list.append(pci)
+                else:
+                    pci_list.append(pci_str.split('-w')[-1].strip())
 
-        if type(cores) == list:
-            core_list = cores
-        elif cores == "Default":
-            core_list = self.dut.get_core_list(self.default_cores)
+        b_pci_list = []
+        if b_pci_str_list:
+            for b_pci in b_pci_str_list:
+                tmp = b_pci.split('-b')[1].strip()
+                b_pci_list.append(tmp)
+
+        file_prefix = ''
+        if file_prefix_str:
+            tmp = file_prefix_str[0].split('=')
+            file_prefix = tmp[1].strip()
+
+        other_eal_str = re.sub(re_w_pci_str, '', eal_param)
+        other_eal_str = re.sub(re_b_pci_str, '', other_eal_str)
+        other_eal_str = re.sub(re_file_prefix_str, '', other_eal_str)
+
+        no_pci = False
+        if '--no-pci' in other_eal_str:
+            no_pci = True
+            other_eal_str = other_eal_str.replace('--no-pci','')
+
+        return pci_list, has_pci_option, b_pci_list, file_prefix, no_pci, other_eal_str
+
+    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, **config):
+        config['cores'] = cores
+        if eal_param == '':
+            # use configured ports
+            config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
+            all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
         else:
-            core_list = self.dut.get_core_list(cores, socket=socket)
-        self.coremask = create_mask(core_list)
-        command = "./%s/app/testpmd -c %s -n %d %s -- -i %s" \
-            % (self.dut.target, self.coremask, self.dut.get_memory_channels(), eal_param, param)
+            w_pci_list, port_options, b_pci_list, file_prefix, no_pci, other_eal_str = self.split_eal_param(eal_param)
+            if no_pci:
+                config['no_pci'] = no_pci
+            elif not w_pci_list and not b_pci_list:
+                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
+                config['prefix'] = file_prefix
+            else:
+                config['ports'] = w_pci_list
+                config['port_options'] = port_options
+                config['b_ports'] = b_pci_list
+                config['prefix'] = file_prefix
+            part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
+            all_eal_param = part_eal_param + ' ' + other_eal_str
+
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, all_eal_param, param)
         out = self.session.send_expect(command, "testpmd> ", 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
