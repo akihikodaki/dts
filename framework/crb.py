@@ -35,6 +35,7 @@ import os
 from settings import TIMEOUT, IXIA
 from ssh_connection import SSHConnection
 from logger import getLogger
+from config import PortConf, PORTCONF
 
 """
 CRB (customer reference board) basic functions and handlers
@@ -278,6 +279,37 @@ class Crb(object):
         pattern = re.compile(rexp)
         match = pattern.findall(out)
         self.pci_devices_info = []
+
+        obj_str = str(self)
+        if 'VirtDut' in obj_str:
+            # there is no port.cfg in VM, so need to scan all pci in VM.
+            pass
+        else:
+            # only scan configured pcis
+            portconf = PortConf(PORTCONF)
+            portconf.load_ports_config(self.crb['IP'])
+            configed_pcis = portconf.get_ports_config()
+            if configed_pcis:
+                if 'tester' in str(self):
+                    tester_pci_in_cfg = []
+                    for item in configed_pcis.values():
+                        for pci_info in match:
+                            if item['peer'] == pci_info[0]:
+                                tester_pci_in_cfg.append(pci_info)
+                    match = tester_pci_in_cfg[:]
+                else:
+                    dut_pci_in_cfg = []
+                    for key in configed_pcis.keys():
+                        for pci_info in match:
+                            if key == pci_info[0]:
+                                dut_pci_in_cfg.append(pci_info)
+                    match = dut_pci_in_cfg[:]
+                # keep the original pci sequence
+                match = sorted(match)
+            else:
+                # INVALID CONFIG FOR NO PCI ADDRESS!!! eg: port.cfg for freeBSD
+                pass
+
         for i in range(len(match)):
             #check if device is cavium and check its linkspeed, append only if it is 10G
             if "177d:" in match[i][1]:
@@ -434,31 +466,63 @@ class Crb(object):
             f.write(contents)
         self.session.copy_file_to(fileName, password=self.get_password())
 
+    def get_dpdk_pids(self, prefix_list, alt_session):
+        """
+        get all dpdk applications on CRB.
+        """
+        file_directorys = ['/var/run/dpdk/%s/config' % file_prefix for file_prefix in prefix_list]
+        pids = []
+        pid_reg = r'p(\d+)'
+        for config_file in file_directorys:
+            cmd = 'lsof -Fp %s' % config_file
+            out = self.send_expect(cmd, "# ", 20, alt_session)
+            if len(out):
+                lines = out.split('\r\n')
+                for line in lines:
+                    m = re.match(pid_reg, line)
+                    if m:
+                        pids.append(m.group(1))
+            for pid in pids:
+                self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
+                self.get_session_output(timeout=2)
+
+        hugepage_info = ['/var/run/dpdk/%s/hugepage_info' % file_prefix for file_prefix in prefix_list]
+        for hugepage in hugepage_info:
+            cmd = 'lsof -Fp %s' % hugepage
+            out = self.send_expect(cmd, "# ", 20, alt_session)
+            if len(out) and "No such file or directory" not in out:
+                self.logger.warning("There are some dpdk process not free hugepage")
+                self.logger.warning("**************************************")
+                self.logger.warning(out)
+                self.logger.warning("**************************************")
+
+        # remove directory
+        directorys = ['/var/run/dpdk/%s' % file_prefix for file_prefix in prefix_list]
+        for directory in directorys:
+            cmd = 'rm -rf %s' % directory
+            self.send_expect(cmd, "# ", 20, alt_session)
+
     def kill_all(self, alt_session=True):
         """
         Kill all dpdk applications on CRB.
         """
-        pids = []
-        pid_reg = r'p(\d+)'
-        cmd = 'lsof -Fp /var/run/dpdk/rte/config'
-        out = self.send_expect(cmd, "# ", 20, alt_session)
-        if len(out):
-            lines = out.split('\r\n')
-            for line in lines:
-                m = re.match(pid_reg, line)
-                if m:
-                    pids.append(m.group(1))
-        for pid in pids:
-            self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
-            self.get_session_output(timeout=2)
-
-        cmd = 'lsof -Fp /var/run/dpdk/rte/hugepage_info'
-        out = self.send_expect(cmd, "# ", 20, alt_session)
-        if len(out) and "No such file or directory" not in out:
-            self.logger.warning("There are some dpdk process not free hugepage")
-            self.logger.warning("**************************************")
-            self.logger.warning(out)
-            self.logger.warning("**************************************")
+        if 'tester' in str(self):
+            self.logger.info('kill_all: called by tester')
+            pass
+        else:
+            if self.prefix_list:
+                self.logger.info('kill_all: called by dut and prefix list has value.')
+                self.get_dpdk_pids(self.prefix_list, alt_session)
+                # init prefix_list
+                self.prefix_list = []
+            else:
+                self.logger.info('kill_all: called by dut and has no prefix list.')
+                session = self.create_session('dut_session')
+                out = session.send_command("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", timeout=0.5)
+                # the last directory is expect string, eg: [PEXPECT]#
+                if out != '':
+                    dir_list = out.split('\r\n')
+                    self.get_dpdk_pids(dir_list[:-1], alt_session)
 
     def close(self):
         """
