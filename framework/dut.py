@@ -75,6 +75,160 @@ class Dut(Crb):
         self.virt_pool = None
         # hypervisor pid list, used for cleanup
         self.virt_pids = []
+        self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        self.prefix_list = []
+
+    def filter_cores_from_crb_cfg(self):
+        # get core list from crbs.cfg
+        core_list = []
+        all_core_list = [str(core['core']) for core in self.cores]
+        core_list_str = self.crb['dut_cores']
+        if core_list_str == '':
+            core_list = all_core_list
+        split_by_comma = core_list_str.split(',')
+        range_cores = []
+        for item in split_by_comma:
+            if '-' in item:
+                tmp = item.split('-')
+                range_cores.extend([str(i) for i in range(int(tmp[0]), int(tmp[1]) + 1)])
+            else:
+                core_list.append(item)
+        core_list.extend(range_cores)
+
+        abnormal_core_list = []
+        for core in core_list:
+            if core not in all_core_list:
+                abnormal_core_list.append(core)
+
+        if abnormal_core_list:
+            self.logger.info('those %s cores are out of range system, all core list of system are %s' % (abnormal_core_list, all_core_list))
+            raise Exception('configured cores out of range system')
+
+        core_list = [core for core in self.cores if str(core['core']) in core_list]
+        self.cores = core_list
+        self.number_of_cores = len(self.cores)
+
+    def create_eal_parameters(self, fixed_prefix=False, socket=-1, **config):
+        """
+        generate eal parameters character string
+        :param config:
+        :return: eal_str eg:'-c 0xf -w 0000:88:00.0 -w 0000:88:00.1 --file-prefix=dpdk_1112_20190809143420'
+        """
+        default_cores = '1S/2C/1T'
+        blank = ' '
+        os_type = self.get_os_type()
+        if config:
+            # deal with cores
+            if config.has_key('cores'):
+                if config['cores'] == '' or config['cores'] == 'Default':
+                    core_list = self.get_core_list(default_cores)
+                elif type(config['cores']) == list:
+                    core_list = config['cores']
+                else:
+                    core_list = self.get_core_list(config['cores'], socket=socket)
+            else:
+                core_list = self.get_core_list(default_cores)
+
+            # deal with ports
+            w_pci_list = []
+            if config.has_key('ports') and len(config['ports']) != 0:
+                for port in config['ports']:
+                    if type(port) == int:
+                        if config.has_key('port_options') and port in config['port_options'].keys():
+                            port_option = config['port_options'][port]
+                            w_pci_list.append('-w %s,%s' % (self.ports_info[port]['pci'], port_option))
+                        else:
+                            w_pci_list.append('-w %s' % self.ports_info[port]['pci'])
+                    else:
+                        if config.has_key('port_options') and port in config['port_options'].keys():
+                            port_option = config['port_options'][port]
+                            w_pci_list.append('-w %s,%s' % (self.ports_info[config['ports'].index(port)]['pci'], port_option))
+                        else:
+                            w_pci_list = ['-w %s' % pci for pci in config['ports']]
+            w_pci_str = ' '.join(w_pci_list)
+
+            # deal with black ports
+            b_pci_list = []
+            if config.has_key('b_ports') and len(config['b_ports']) != 0:
+                for port in config['b_ports']:
+                    if type(port) == int:
+                        b_pci_list.append('-b %s' % self.ports_info[port]['pci'])
+                    else:
+                        b_pci_list = ['-b %s' % pci for pci in config['b_ports']]
+            b_ports_str = ' '.join(b_pci_list)
+
+            # deal with no-pci
+            if config.has_key('no_pci'):
+                if config['no_pci'] == True:
+                    no_pci = '--no-pci'
+                else:
+                    no_pci = ''
+            else:
+                no_pci = ''
+
+            # deal with file prefix
+            if config.has_key('prefix') and config['prefix'] != '':
+                if fixed_prefix == True:
+                    file_prefix = config['prefix']
+                else:
+                    file_prefix = config['prefix'] + '_' + self.prefix_subfix
+            else:
+                file_prefix = 'dpdk' + '_' + self.prefix_subfix
+            self.prefix_list.append(file_prefix)
+
+            # deal with vdev
+            if config.has_key('vdevs') and len(config['vdevs']) != 0:
+                vdev = '--vdev ' + ' --vdev '.join(config['vdevs'])
+            else:
+                vdev = ''
+
+            if os_type == 'freebsd':
+                eal_str = '-l ' + ','.join(map(str, core_list)) \
+                          + blank + '-n %d' % self.get_memory_channels() \
+                          + blank + w_pci_str \
+                          + blank + b_ports_str \
+                          + blank + no_pci \
+                          + blank + vdev
+            else:
+                eal_str = '-l ' + ','.join(map(str, core_list)) \
+                          + blank + '-n %d' % self.get_memory_channels() \
+                          + blank + w_pci_str \
+                          + blank + b_ports_str \
+                          + blank + '--file-prefix=' + file_prefix \
+                          + blank + no_pci \
+                          + blank + vdev
+        else:
+            # get pci from ports_info
+            pci_list = []
+            if len(self.ports_info) != 0:
+                for port_info in self.ports_info:
+                    pci_list.append('-w %s' % port_info['pci'])
+            self.logger.info(pci_list)
+            pci_str = ' '.join(pci_list)
+            # default cores '1S/2C/1T'
+            core_list = self.get_core_list(default_cores)
+            file_prefix = 'dpdk' + '_' + self.prefix_subfix
+            self.prefix_list.append(file_prefix)
+            if os_type == 'freebsd':
+                eal_str = '-l ' + ','.join(map(str, core_list)) \
+                          + blank + '-n %d' % self.get_memory_channels() \
+                          + blank + pci_str
+            else:
+                eal_str = '-l ' + ','.join(map(str, core_list)) \
+                          + blank + '-n %d' % self.get_memory_channels() \
+                          + blank + pci_str \
+                          + blank + '--file-prefix=' + file_prefix
+
+        return eal_str
+
+    def get_eal_of_prefix(self, prefix=None):
+
+        if prefix:
+            file_prefix = [prefix_name for prefix_name in self.prefix_list if prefix in prefix_name]
+        else:
+            file_prefix = 'dpdk' + '_' + self.prefix_subfix
+
+        return file_prefix
 
     def init_host_session(self, vm_name):
         """
@@ -199,6 +353,7 @@ class Dut(Crb):
             self.send_expect('alias sed=gsed', '# ')
 
         self.init_core_list()
+        self.filter_cores_from_crb_cfg()
         self.pci_devices_information()
         # make sure ipv6 enable before scan
         self.enable_tester_ipv6()
