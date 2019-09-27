@@ -266,7 +266,7 @@ class CrbsConf(UserConf):
                'pass': '', 'tester IP': '', 'tester pass': '',
                IXIA: None, 'memory channels': 4,
                PKTGEN: None,
-               'bypass core0': True}
+               'bypass core0': True, 'dut_cores': ''}
 
     def __init__(self, crbs_conf=CRBCONF):
         self.config_file = crbs_conf
@@ -322,6 +322,8 @@ class CrbsConf(UserConf):
                     crb['board'] = value
                 elif key == 'dut_arch':
                     crb['dut arch'] = value
+                elif key == 'dut_cores':
+                    crb['dut_cores'] = value
 
             self.crbs_cfg.append(crb)
         return self.crbs_cfg
