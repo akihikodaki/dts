@@ -588,3 +588,104 @@ for each of the RX, WT and TX thread are also supported,
 providing flexibility to balance the work.
 The EAL coremask/corelist is constrained to contain
 the default mastercore 1 and the RX, WT and TX cores only.
+
+Test Case: Two Subports, different pipe profiles, different number of pipes I
+=============================================================================
+1. Configure the profile.cfg file with two subports, two different pipe
+   profiles and different number of pipes::
+
+    [subport 0]
+    number of pipes per subport = 2048
+    pipe 0-2047 = 0       ; These pipes are configured with pipe profile 0
+    [subport 1]
+    number of pipes per subport = 512
+    pipe 0-511 = 1        ; These pipes are configured with pipe profile 1
+
+    [pipe profile 0]
+    tb rate = 305175               ; Bytes per second
+    tb size = 1000000              ; Bytes
+    tc 0 rate = 305175             ; Bytes per second
+    tc 1 rate = 305175             ; Bytes per second
+    ......
+
+    [pipe profile 1]
+    tb rate = 1220700              ; Bytes per second
+    tb size = 1000000              ; Bytes
+
+    tc 0 rate = 1220700            ; Bytes per second
+    tc 1 rate = 1220700            ; Bytes per second
+    ......
+
+2. This example uses a single packet flow configuration
+   which creates one RX thread on lcore 5 reading from port 0
+   and a worker thread on lcore 7 writing to port 1::
+
+    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+
+3. The generator settings:
+   Set IP dst address mode is random, and the mask is "255.255.255.0".
+   Frame size=70bytes.
+   Flow1: outer vlan id=0 inner vlan random mask 0XXXXXXXXXXX (2048 pipes)
+   Flow2: outer vlan id=1 inner vlan random mask 000XXXXXXXXX (512 pipes)
+   Each flow 50% max rate.
+
+4. Check the result:
+   Only send flow1, the received packets by ixia port 1: 6.967mpps.
+   Only send flow2, the received packets by ixia port 1: 6.967mpps.
+   Send two flows at the same time, the received packets by ixia port 1: 13.888 mpps.
+
+Test Case: Two Subports, different pipe profiles, different number of pipes II
+==============================================================================
+1. Configure the profile.cfg file the same with last case I.
+
+2. This example uses a single packet flow configuration
+   which creates one RX thread on lcore 5 reading from port 0
+   and a worker thread on lcore 7 writing to port 1::
+
+    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+
+3. The generator settings:
+   Set IP dst address mode is random, and the mask is "255.255.255.0".
+   Frame size=70bytes.
+   Flow1: outer vlan id=0 inner vlan random mask 0XXXXXXXXXXX (2048 pipes)
+   Flow2: outer vlan id=1 inner vlan random mask 0000XXXXXXXX (256 pipes)
+   Each flow 50% max rate.
+
+4. Check the result:
+   Only send flow1, the received packets by ixia port 1: 6.967mpps.
+   Only send flow2, the received packets by ixia port 1: 3.838mpps.
+   Send two flows at the same time, the received packets by ixia port 1: 10.805mpps.
+
+Test Case: Redistribution of unused pipe BW to other pipes within the same subport
+==================================================================================
+1. Use default profile_ov.cfg, Set::
+
+    CONFIG_RTE_SCHED_SUBPORT_TC_OV=y
+
+2. This example uses a single packet flow configuration
+   which creates one RX thread on lcore 5 reading from port 0
+   and a worker thread on lcore 7 writing to port 1::
+
+    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+
+3. The generator settings:
+   Configure 4 flows:
+   Frame size=70bytes.
+   Outer vlan ID = 0
+   Flow 1: Inner vlan ID = 0
+   Flow 2: Inner vlan ID = 1
+   Flow 3: Inner vlan ID = 2
+   Flow 4: Inner vlan ID = 3
+   IP dst address = 100.0.0.12
+   Each flow’s Max rate = 25%
+   Send four flows at the same time, the TX rate by ixia port0 is 13.888mpps,
+   the received packets by ixia port1: 0.092mpps.
+
+4. Disable the first flow, the TX rate by ixia port0 is 10.416mpps,
+   the received packets by ixia port1 is still 0.092mpps.
+
+5. Configure only one flow with max rate = 100%
+   Set inner vlan ID count mode "increment", repeat count=32, step=1.
+   Send the flow, the receive rate is 0.092mpps.
+   Then set inner vlan ID count mode "increment", repeat count=16, step=1.
+   Send the flow, the receive rate is still 0.092mpps.
