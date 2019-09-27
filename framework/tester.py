@@ -75,6 +75,11 @@ class Tester(Crb):
         self.re_run_time = 0
         self.pktgen = None
         self.ixia_packet_gen = None
+        self.tmp_file = '/tmp/tester/'
+        out = self.send_expect('ls -d %s' % self.tmp_file, '# ', verify=True)
+        if out == 2:
+            self.send_expect('mkdir -p %s' % self.tmp_file, '# ')
+
 
     def init_ext_gen(self):
         """
@@ -639,12 +644,12 @@ class Tester(Crb):
         else:
             return None
 
-    def parallel_transmit_ptks(self, send_f=None, intf='', pkts=[], interval=0.01):
+    def parallel_transmit_ptks(self, pkt=None, intf='', send_times=1, interval=0.01):
         """
         Callable function for parallel processes
         """
         print GREEN("Transmitting and sniffing packets, please wait few minutes...")
-        send_f(intf=intf, pkts=pkts, interval=interval)
+        return pkt.send_pkt_bg(crb=self, tx_port=intf, count=send_times, loop=0, interval=interval)
 
     def check_random_pkts(self, portList, pktnum=2000, interval=0.01, allow_miss=True, seq_check=False, params=None):
         """
@@ -653,79 +658,49 @@ class Tester(Crb):
         # load functions in packet module
         module = __import__("packet")
         pkt_c = getattr(module, "Packet")
-        send_f = getattr(module, "send_packets")
         compare_f = getattr(module, "compare_pktload")
         strip_f = getattr(module, "strip_pktload")
-        save_f = getattr(module, "save_packets")
         tx_pkts = {}
         rx_inst = {}
         # packet type random between tcp/udp/ipv6
         random_type = ['TCP', 'UDP', 'IPv6_TCP', 'IPv6_UDP']
-        pkt_minlen = {'TCP': 64, 'UDP': 64, 'IPv6_TCP': 74, 'IPv6_UDP': 64}
-        # at least wait 2 seconds
-        timeout = int(pktnum * (interval + 0.01)) + 2
         for txport, rxport in portList:
-            pkts = []
             txIntf = self.get_interface(txport)
             rxIntf = self.get_interface(rxport)
             print GREEN("Preparing transmit packets, please wait few minutes...")
-            for num in range(pktnum):
-                # chose random packet
-                pkt_type = random.choice(random_type)
-                pkt = pkt_c(pkt_type=pkt_type,
-                            pkt_len=random.randint(pkt_minlen[pkt_type], 1514),
-                            ran_payload=True)
-                # config packet if has parameters
-                if params and len(portList) == len(params):
-                    for param in params:
-                        layer, config = param
-                        pkt.config_layer(layer, config)
-                # hardcode src/dst port for some protocol may cause issue
-                if "TCP" in pkt_type:
-                    pkt.config_layer('tcp', {'src': 65535, 'dst': 65535})
-                else:
-                    pkt.config_layer('udp', {'src': 65535, 'dst': 65535})
-                # sequence saved in layer3 source ip
-                if "IPv6" in pkt_type:
-                    ip_str = convert_int2ip(num, 6)
-                    pkt.config_layer('ipv6', {'src': ip_str})
-                else:
-                    ip_str = convert_int2ip(num, 4)
-                    pkt.config_layer('ipv4', {'src': ip_str})
+            pkt = pkt_c()
+            pkt.generate_random_pkts(pktnum=pktnum, random_type=random_type, ip_increase=True, random_payload=True,
+                                     options={"layers_config": params})
 
-                pkts.append(pkt)
-            tx_pkts[txport] = pkts
+            tx_pkts[txport] = pkt
+            # sniff packets
+            inst = module.start_tcpdump(self, rxIntf, count=pktnum,
+                                        filters=[{'layer': 'network', 'config': {'srcport': '65535'}},
+                                                 {'layer': 'network', 'config': {'dstport': '65535'}}])
 
-            # send and sniff packets
-            save_f(pkts=pkts, filename="/tmp/%s_tx.pcap" % txIntf)
-            inst = self.tcpdump_sniff_packets(intf=rxIntf, count=pktnum, timeout=timeout, filters=
-                [{'layer': 'network', 'config': {'srcport': '65535'}},
-                 {'layer': 'network', 'config': {'dstport': '65535'}}])
             rx_inst[rxport] = inst
-
-        # Transmit packet simultaneously
-        processes = []
+        filenames = []
         for txport, _ in portList:
             txIntf = self.get_interface(txport)
-            processes.append(Process(target = self.parallel_transmit_ptks,
-                             args=(send_f, txIntf, tx_pkts[txport], interval)))
-
-        for transmit_proc in processes:
-            transmit_proc.start()
-
-        for transmit_proc in processes:
-            transmit_proc.join()
-
+            filenames.append(self.parallel_transmit_ptks(pkt=tx_pkts[txport], intf=txIntf, send_times=1, interval=interval))
         # Verify all packets
+        sleep(interval * pktnum + 1)
+        flag = True
+        while flag:
+            for i in filenames:
+                flag = self.send_expect('ps -ef |grep %s|grep -v grep' % i, expected='# ')
+                if flag:
+                    print('wait for the completion of sending pkts...')
+                    sleep(1.5)
+                    continue
         prev_id = -1
         for txport, rxport in portList:
-            recv_pkts = self.load_tcpdump_sniff_packets(rx_inst[rxport])
-
+            p = module.stop_and_load_tcpdump_packets(rx_inst[rxport])
+            recv_pkts = p.pktgen.pkts
             # only report when received number not matched
-            if len(tx_pkts[txport]) > len(recv_pkts):
-                print ("Pkt number not matched,%d sent and %d received\n" \
-                       % (len(tx_pkts[txport]), len(recv_pkts)))
-
+            if len(tx_pkts[txport].pktgen.pkts) > len(recv_pkts):
+                print ("Pkt number not matched,%d sent and %d received\n" % (
+                len(tx_pkts[txport].pktgen.pkts), len(recv_pkts)))
                 if allow_miss is False:
                     return False
 
@@ -733,9 +708,9 @@ class Tester(Crb):
             print GREEN("Comparing sniffed packets, please wait few minutes...")
             for idx in range(len(recv_pkts)):
                 try:
-                    l3_type = recv_pkts[idx].strip_element_layer2('type')
-                    sip = recv_pkts[idx].strip_element_layer3('src')
-                except:
+                    l3_type = p.strip_element_layer2('type', p_index=idx)
+                    sip = p.strip_element_layer3('dst', p_index=idx)
+                except Exception as e:
                     continue
                 # ipv4 packet
                 if l3_type == 2048:
@@ -753,10 +728,10 @@ class Tester(Crb):
                     else:
                         prev_id = t_idx
 
-                if compare_f(tx_pkts[txport][t_idx], recv_pkts[idx], "L4") is False:
+                if compare_f(tx_pkts[txport].pktgen.pkts[t_idx], recv_pkts[idx], "L4") is False:
                     print "Pkt received index %d not match original " \
                           "index %d" % (idx, t_idx)
-                    print "Sent: %s" % strip_f(tx_pkts[txport][t_idx], "L4")
+                    print "Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[t_idx], "L4")
                     print "Recv: %s" % strip_f(recv_pkts[idx], "L4")
                     return False
 
@@ -776,70 +751,24 @@ class Tester(Crb):
             instance.__dict__ = self.ixia_packet_gen.__dict__
             instance.__dict__.update(current_attrs)
 
-    def sendpkt_bg(self, localPort, dst_mac):
-        """
-        loop to Send packet in background, should call stop_sendpkt_bg to stop it.
-        """
-        itf = self.get_interface(localPort)
-        src_mac = self.get_mac(localPort)
-        script_str = "from scapy.all import *\n" + \
-                     "sendp([Ether(dst='%s', src='%s')/IP(len=46)], iface='%s', loop=1)\n" % (dst_mac, src_mac, itf)
-
-        self.send_expect("rm -fr send_pkg_loop.py", "# ")
-        f = open("send_pkt_loop.py", "w")
-        f.write(script_str)
-        f.close()
-
-        self.proc = subprocess.Popen(['python', 'send_pkt_loop.py'])
-
-    def stop_sendpkt_bg(self):
-        """
-        stop send_pkt_loop in background
-        """
-        if self.proc:
-            self.proc.kill()
-            self.proc = None
-
-    def tcpdump_sniff_packets(self, intf, count=0, timeout=5, filters=[]):
+    def tcpdump_sniff_packets(self, intf, count=0, filters=None, lldp_forbid=True):
         """
         Wrapper for packet module sniff_packets
         """
         # load functions in packet module
-        module = __import__("packet")
-        sniff_f = getattr(module, "sniff_packets")
+        packet = __import__("packet")
+        inst = packet.start_tcpdump(self, intf=intf, count=count, filters=filters, lldp_forbid=lldp_forbid)
+        return inst
 
-        target=[]
-        target.append(self.get_ip_address())
-        target.append(self.get_username())
-        target.append(self.get_password())
-        return sniff_f(intf, count, timeout, filters, target)
-
-    def load_tcpdump_sniff_pcap(self, index=''):
-        """
-        Wrapper for packet module load_sniff_pcap
-        """
-        # load functions in packet module
-        module = __import__("packet")
-        load_pcap_f = getattr(module, "load_sniff_pcap")
-
-        target=[]
-        target.append(self.get_ip_address())
-        target.append(self.get_username())
-        target.append(self.get_password())
-        pcap = load_pcap_f(index, target)
-        self.session.copy_file_from(pcap)
-
-        return pcap.split(os.sep)[-1]
-
-    def load_tcpdump_sniff_packets(self, index=''):
+    def load_tcpdump_sniff_packets(self, index='', timeout=1):
         """
         Wrapper for packet module load_pcapfile
         """
         # load functions in packet module
         packet = __import__("packet")
-        file = self.load_tcpdump_sniff_pcap(index)
+        p = packet.stop_and_load_tcpdump_packets(index, timeout=timeout)
 
-        return packet.load_pcapfile(file)
+        return p
 
     def kill_all(self, killall=False):
         """
