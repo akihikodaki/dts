@@ -232,7 +232,7 @@ class TestVmHotplug(TestCase):
     def start_tcpdump(self, iface_list):
         for iface in iface_list:
             self.tester.send_expect("rm -rf tcpdump%s.out" % iface, "#")
-            self.tester.send_expect("tcpdump -i %s 2>tcpdump%s.out &" % (iface, iface), "#")
+            self.tester.send_expect("tcpdump -c 1500 -i %s -vv -n 2>tcpdump%s.out &" % (iface, iface), "#")
         time.sleep(1)
 
     def get_tcpdump_package(self, iface_list):
