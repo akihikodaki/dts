@@ -73,6 +73,8 @@ class VirtDut(DPDKdut):
         self.ports_info = None
         self.ports_map = []
         self.virttype = virttype
+        self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
+        self.prefix_list = []
 
     def init_log(self):
         if hasattr(self.host_dut, "test_classname"):
