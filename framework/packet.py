@@ -33,35 +33,19 @@
 Generic packet create, transmit and analyze module
 Base on scapy(python program for packet manipulation)
 """
-import os
-import time
-import sys
-import re
-import signal
-import random
-import subprocess
-import shlex        # separate command line for pipe
-from uuid import uuid4
-from settings import FOLDERS
 
-import struct
 from socket import AF_INET6
-from scapy.all import conf
-from scapy.utils import wrpcap, rdpcap, hexstr
-from scapy.layers.inet import Ether, IP, TCP, UDP, ICMP
-from scapy.layers.inet6 import IPv6, IPv6ExtHdrRouting, IPv6ExtHdrFragment
-from scapy.layers.l2 import Dot1Q, ARP, GRE
+from scapy.all import *
 from scapy.layers.sctp import SCTP, SCTPChunkData
-from scapy.sendrecv import sniff
-from scapy.route import *
-from scapy.packet import bind_layers, Raw
-from scapy.sendrecv import sendp
-from scapy.arch import get_if_hwaddr
-from pexpect import pxssh
 
 # load extension layers
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/framework/packet.py', '')
+# exec_file might be .pyc file, if so, remove 'c'.
+TMP_PATH = DTS_PATH[:-1] + '/output/tmp/pcap/' if exec_file.endswith('.pyc') else DTS_PATH + '/output/tmp/pcap/'
+
+if not os.path.exists(TMP_PATH):
+    os.system('mkdir -p %s' % TMP_PATH)
 DEP_FOLDER = DTS_PATH + '/dep'
 sys.path.append(DEP_FOLDER)
 
@@ -70,9 +54,8 @@ from nvgre import NVGRE, IPPROTO_NVGRE
 from lldp import LLDP, LLDPManagementAddress
 from Dot1BR import Dot1BR
 
-# get tester logger
-from logger import getLogger
-logger = getLogger('tester')
+from utils import convert_ip2int
+from utils import convert_int2ip
 
 # for saving command history
 from utils import get_backtrace_object
@@ -150,7 +133,16 @@ class scapy(object):
 
     def __init__(self):
         self.pkt = None
-        pass
+        self.pkts = []
+
+    def append_pkts(self):
+        self.pkts.append(self.pkt)
+
+    def update_pkts(self):
+        if not self.pkts:  # update pkt to a null pkt list.
+            self.pkts.append(self.pkt)
+        else:
+            self.pkts[-1] = self.pkt
 
     def assign_pkt(self, pkt):
         self.pkt = pkt
@@ -179,14 +171,14 @@ class scapy(object):
         if type is not None:
             pkt_layer.type = type
 
-    def strip_vlan(self, element):
+    def strip_vlan(self, element, p_index=0):
         value = None
 
-        if self.pkt.haslayer('Dot1Q') is 0:
+        if self.pkts[p_index].haslayer('Dot1Q') is 0:
             return None
 
         if element == 'vlan':
-            value = int(str(self.pkt[Dot1Q].vlan))
+            value = int(str(self.pkts[p_index][Dot1Q].vlan))
         return value
 
     def etag(self, pkt_layer, ECIDbase=0, prio=0, type=None):
@@ -197,19 +189,19 @@ class scapy(object):
         if type is not None:
             pkt_layer.type = type
 
-    def strip_etag(self, element):
+    def strip_etag(self, element, p_index=0):
         value = None
 
-        if self.pkt.haslayer('Dot1BR') is 0:
+        if self.pkts[p_index].haslayer('Dot1BR') is 0:
             return None
 
         if element == 'ECIDbase':
-            value = int(str(self.pkt[Dot1BR].ECIDbase))
+            value = int(str(self.pkts[p_index][Dot1BR].ECIDbase))
         return value
 
-    def strip_layer2(self, element):
+    def strip_layer2(self, element, p_index=0):
         value = None
-        layer = self.pkt.getlayer(0)
+        layer = self.pkts[p_index].getlayer(0)
         if layer is None:
             return None
 
@@ -222,9 +214,9 @@ class scapy(object):
 
         return value
 
-    def strip_layer3(self, element):
+    def strip_layer3(self, element, p_index=0):
         value = None
-        layer = self.pkt.getlayer(1)
+        layer = self.pkts[p_index].getlayer(1)
         if layer is None:
             return None
 
@@ -237,9 +229,9 @@ class scapy(object):
 
         return value
 
-    def strip_layer4(self, element):
+    def strip_layer4(self, element, p_index=0):
         value = None
-        layer = self.pkt.getlayer(2)
+        layer = self.pkts[p_index].getlayer(2)
         if layer is None:
             return None
 
@@ -252,7 +244,8 @@ class scapy(object):
 
         return value
 
-    def ipv4(self, pkt_layer, frag=0, src="127.0.0.1", proto=None, tos=0, dst="127.0.0.1", chksum=None, len=None, version=4, flags=None, ihl=None, ttl=64, id=1, options=None):
+    def ipv4(self, pkt_layer, frag=0, src="127.0.0.1", proto=None, tos=0, dst="127.0.0.1", chksum=None, len=None,
+             version=4, flags=None, ihl=None, ttl=64, id=1, options=None):
         pkt_layer.frag = frag
         pkt_layer.src = src
         if proto is not None:
@@ -287,7 +280,7 @@ class scapy(object):
         pkt_layer.src = src
         pkt_layer.dst = dst
 
-    def tcp(self, pkt_layer, src=53, dst=53, flags=None, len=None, chksum=None):
+    def tcp(self, pkt_layer, src=53, dst=53, flags=0, len=None, chksum=None):
         pkt_layer.sport = src
         pkt_layer.dport = dst
         if flags is not None:
@@ -328,66 +321,6 @@ class scapy(object):
     def vxlan(self, pkt_layer, vni=0):
         pkt_layer.vni = vni
 
-    def read_pcap(self, file):
-        pcap_pkts = []
-        try:
-            pcap_pkts = rdpcap(file)
-        except:
-            pass
-
-        return pcap_pkts
-
-    def write_pcap(self, file):
-        try:
-            wrpcap(file, self.pkt)
-        except:
-            pass
-
-    def send_pcap_pkt(self, crb=None, file='', intf='', count=1):
-        if intf == '' or file == '' or crb is None:
-            print "Invalid option for send packet by scapy"
-            return
-
-        content = 'pkts=rdpcap(\"%s\");sendp(pkts, iface=\"%s\", count=\"%s\" );exit()' % (file, intf, count)
-        cmd_file = '/tmp/scapy_%s.cmd' % intf
-
-        crb.create_file(content, cmd_file)
-        crb.send_expect("scapy -c scapy_%s.cmd &" % intf, "# ")
-
-    def print_summary(self):
-        # save command into test case history
-        history_list = get_backtrace_object('test_case.py', 'test_history')
-        if type(history_list) is list:
-            history_list.append({"command": "p=%s" % self.pkt.command(), "name": "Scapy", "output": ""})
-
-        logger.info("%s" % self.pkt.command())
-
-    def send_pkt(self, intf='', count=1):
-        self.print_summary()
-
-        if intf != '':
-            # wait few seconds for link ready
-            countdown = 600
-            while countdown:
-                link_st = subprocess.check_output("ip link show %s" % intf,
-                                                  stderr=subprocess.STDOUT,
-                                                  shell=True)
-                if "LOWER_UP" in link_st:
-                    break
-                else:
-                    time.sleep(0.01)
-                    countdown -= 1
-                    continue
-
-            # fix fortville can't receive packets with 00:00:00:00:00:00
-            if self.pkt.getlayer(0).src == "00:00:00:00:00:00":
-                self.pkt.getlayer(0).src = get_if_hwaddr(intf)
-            sendp(self.pkt, iface=intf, count=count)
-
-            # save command into test case history
-            history_list = get_backtrace_object('test_case.py', 'test_history')
-            if type(history_list) is list:
-                history_list.append({"command": "sendp(p, iface=\"%s\")" % intf, "name": "Scapy", "output": ""})
 
 class Packet(object):
 
@@ -413,10 +346,11 @@ class Packet(object):
         'IPv6_SCTP': {'layers': ['ether', 'ipv6', 'sctp', 'raw'], 'cfgload': True},
     }
 
-    def __init__(self, **options):
+    def __init__(self, pkt_str=None, **options):
         """
         pkt_type: description of packet type
                   defined in def_packet
+        args: specify a packet with a string explicitly, will ignore options
         options: special option for Packet module
                  pkt_len: length of network packet
                  ran_payload: whether payload of packet is random
@@ -424,14 +358,41 @@ class Packet(object):
                  pkt_gen: packet generator type
                           now only support scapy
         """
-        self.pkt_layers = []
-        self.pkt_len = 64
         self.pkt_opts = options
+        self.pkt_layers = []
 
+        if 'pkt_gen' in self.pkt_opts.keys():
+            if self.pkt_opts['pkt_gen'] == 'scapy':
+                self.pktgen = scapy()
+            else:
+                print "Not support other pktgen yet!!!"
+        else:
+            self.pktgen = scapy()
+
+        if pkt_str is not None and type(pkt_str) == str:
+            self._scapy_str_to_pkt(pkt_str)
+        elif len(options) == 0:
+            pass
+        else:
+            self._add_pkt(self.pkt_opts)
+        if self.pktgen.pkt is not None:
+            self.pktgen.append_pkts()
+
+    def __len__(self):
+        return len(self.pktgen.pkts)
+
+    def __getitem__(self, item):
+        return self.pktgen.pkts[item]
+
+    def _add_pkt(self, options):
+        """
+        :param options: packt configuration, dictionary type
+        :return:
+        """
+        self.pkt_len = 64
         self.pkt_type = "UDP"
-
-        if 'pkt_type' in self.pkt_opts.keys():
-            self.pkt_type = self.pkt_opts['pkt_type']
+        if 'pkt_type' in options.keys():
+            self.pkt_type = options['pkt_type']
 
         if self.pkt_type in self.def_packet.keys():
             self.pkt_layers = self.def_packet[self.pkt_type]['layers']
@@ -441,21 +402,8 @@ class Packet(object):
         else:
             self._load_pkt_layers()
 
-        if 'pkt_len' in self.pkt_opts.keys():
-            self.pkt_len = self.pkt_opts['pkt_len']
-
-        if 'pkt_file' in self.pkt_opts.keys():
-            self.uni_name = self.pkt_opts['pkt_file']
-        else:
-            self.uni_name = '/tmp/' + str(uuid4()) + '.pcap'
-
-        if 'pkt_gen' in self.pkt_opts.keys():
-            if self.pkt_opts['pkt_gen'] == 'scapy':
-                self.pktgen = scapy()
-            else:
-                print "Not support other pktgen yet!!!"
-        else:
-            self.pktgen = scapy()
+        if 'pkt_len' in options.keys():
+            self.pkt_len = options['pkt_len']
 
         self._load_assign_layers()
 
@@ -483,32 +431,227 @@ class Packet(object):
             raw_confs['payload'] = payload
             self.config_layer('raw', raw_confs)
 
-    def send_pkt(self, crb=None, tx_port='', auto_cfg=True, count=1):
-        if tx_port == '':
-            print "Invalid Tx interface"
-            return
+    def _scapy_str_to_pkt(self, scapy_str):
+        """
 
-        self.tx_port = tx_port
+        :param scapy_str: packet str, eg. 'Ether()/IP()/UDP()'
+        :return: None
+        """
+        layer_li = [re.sub('\(.*?\)', '', i) for i in scapy_str.split('/')]
+        self.pkt_type = '_'.join(layer_li)
+        self._load_pkt_layers()
+        pkt = eval(scapy_str)
+        self.pktgen.assign_pkt(pkt)
 
-        # check with port type
-        if 'ixia' in self.tx_port:
-            print "Not Support Yet"
+    def append_pkt(self, args=None, **kwargs):
+        """
+        :param args: take str type as pkt to append
+        :param kwargs: take dictory type as pkt to append
+        :return: None
+        """
+        if isinstance(args, str):
+            self._scapy_str_to_pkt(args)
+        elif isinstance(kwargs, dict):
+            self.pkt_opts = kwargs
+            if hasattr(self, 'configured_layer_raw'):
+                delattr(self, 'configured_layer_raw')
+            self._add_pkt(kwargs)
+        self.pktgen.append_pkts()
 
-        if crb is not None:
-            self.pktgen.write_pcap(self.uni_name)
-            crb.session.copy_file_to(self.uni_name)
-            pcap_file = self.uni_name.split('/')[2]
-            self.pktgen.send_pcap_pkt(
-                crb=crb, file=pcap_file, intf=self.tx_port, count=count)
+    def generate_random_pkts(self, dstmac=None, pktnum=100, random_type=None, ip_increase=True, random_payload=False,
+                             options=None):
+        """
+        # generate random packets
+        :param dstmac: specify the dst mac
+        :param pktnum: packet number to generate
+        :param random_type: specify random packet type
+        :param ip_increase: auto increase ip value
+        :param random_payload: if True, generate random packets with random payload
+        :param options: packet layer configuration
+        :return: None
+        """
+
+        random_type = ['TCP', 'UDP', 'IPv6_TCP', 'IPv6_UDP'] if random_type is None else random_type
+        options = {'ip': {'src': '192.168.0.1', 'dst': '192.168.1.1'},
+                   'layers_config': []} if options is None else options
+        # give a default value to ip
+        try:
+            src_ip_num = convert_ip2int(options['ip']['src'])
+        except:
+            src_ip_num = 0
+        try:
+            dst_ip_num = convert_ip2int(options['ip']['dst'])
+        except:
+            dst_ip_num = 0
+
+        for i in range(pktnum):
+            # random the packet type
+            self.pkt_type = random.choice(random_type)
+            self.pkt_layers = self.def_packet[self.pkt_type]['layers']
+            self.check_layer_config()
+            self.pktgen.add_layers(self.pkt_layers)
+            # hardcode src/dst port for some protocol may cause issue
+            if "TCP" in self.pkt_type:
+                self.config_layer('tcp', {'src': 65535, 'dst': 65535})
+            if "UDP" in self.pkt_type:
+                self.config_layer('udp', {'src': 65535, 'dst': 65535})
+            if options.has_key('layers_config'):
+                self.config_layers(options['layers_config'])
+            if dstmac:
+                self.config_layer('ether', {'dst': '%s' % dstmac})
+            # generate auto increase dst ip packet
+            if ip_increase:
+                if 'v6' in self.pkt_type:
+                    dstip = convert_int2ip(dst_ip_num, ip_type=6)
+                    srcip = convert_int2ip(src_ip_num, ip_type=6)
+                    self.config_layer('ipv6', config={'dst': '%s' % (dstip), 'src': '%s' % srcip})
+                else:
+                    dstip = convert_int2ip(dst_ip_num, ip_type=4)
+                    srcip = convert_int2ip(src_ip_num, ip_type=4)
+                    self.config_layer('ipv4', config={'dst': '%s' % (dstip), 'src': '%s' % srcip})
+                dst_ip_num += 1
+            # generate random payload of packet
+            if random_payload and self.def_packet[self.pkt_type]['cfgload']:
+                # TCP packet has a default flags S, packet should not load data, so set it to A if has payload
+                if 'TCP' in self.pkt_type:
+                    self.config_layer('tcp', {'src': 65535, 'dst': 65535, 'flags': 'A'})
+
+                payload_len = random.randint(64, 100)
+                payload = []
+                for _ in range(payload_len):
+                    payload.append("%02x" % random.randrange(0, 255))
+                self.config_layer('raw', config={'payload': payload})
+            self.pktgen.append_pkts()
+
+    def save_pcapfile(self, crb=None, filename='saved_pkts.pcap'):
+        """
+
+        :param crb: session or crb object
+        :param filename: location and name for packets to be saved
+        :return: None
+        """
+        # save pkts to pcap file to local path, then copy to remote tester tmp directory,
+        if crb:
+            trans_path = crb.tmp_file
+            file_name = filename
+            if os.path.isabs(filename):  # check if the given filename with a abs path
+                file_dir = os.path.dirname(filename)
+                out = crb.send_expect('ls -d %s' % file_dir, '# ', verify=True)
+                if not isinstance(out, str):
+                    raise Exception('%s may not existed on %s' % (file_dir, crb.name))
+                wrpcap(filename, self.pktgen.pkts)
+                trans_path = os.path.abspath(filename)
+                file_name = filename.split(os.path.sep)[-1]
+            # write packets to local tmp path $dts/ouput/tmp/pcap/
+            wrpcap(TMP_PATH + file_name, self.pktgen.pkts)
+            # copy to remote tester tmp path /tmp/tester
+            crb.session.copy_file_to(TMP_PATH + file_name, trans_path)
         else:
-            self.pktgen.send_pkt(intf=self.tx_port, count=count)
+            wrpcap(filename, self.pktgen.pkts)
 
-    def check_layer_config(self, layer, config):
+    def read_pcapfile(self, filename, crb=None):
+        """
+
+        :param filename: packet to be read from
+        :param crb: session or crb object
+        :return: scapy type packet
+        """
+        # read pcap file from local or remote, then append to pkts list
+        # if crb, read pakcet from remote server, else read from local location
+        if crb:
+            out = crb.send_expect('ls -d %s' % filename, '# ', verify=True)
+            if not isinstance(out, str):
+                raise Exception('%s may not existed on %s' % (filename, crb.name))
+            crb.session.copy_file_from(filename, TMP_PATH)
+            p = rdpcap(TMP_PATH + filename.split(os.path.sep)[-1])
+        else:
+            p = rdpcap(filename)
+        if len(p) == 0:
+            return None
+        self.pktgen.assign_pkt(p[-1])
+        for i in p:
+            self.pktgen.pkts.append(i)
+        return p
+
+    def _send_pkt(self, crb, tx_port='', count=1, send_bg=False, loop=0, inter=0, timeout=15):
+        """
+
+        :param crb: session or crb object
+        :param tx_port: ether to send packet
+        :param count: send times
+        :param send_bg: send packet background
+        :param loop: send packet in a loop
+        :param inter: interval time
+        :return: None
+        """
+        # save pkts to local pcap file, then copy to remote tester tmp directory
+
+        time_stamp = str(time.time())
+        pcap_file = 'scapy_{}.pcap'.format(tx_port) + time_stamp
+        self.save_pcapfile(crb, pcap_file)
+        scapy_cmd = 'scapy_{}.cmd'.format(tx_port) + time_stamp
+        cmd_str = 'from scapy.all import *\np=rdpcap("%s")\nprint("packet ready for sending...")\nfor i in p:\n\tprint(i.command())\nsendp(p, iface="%s", count=%d, loop=%d, inter=%0.3f)' % (
+            crb.tmp_file + pcap_file, tx_port, count, loop, inter)
+        # write send cmd file to local tmp directory then copy to remote tester tmp folder
+        with open(TMP_PATH + scapy_cmd, 'w') as f:
+            f.write(cmd_str)
+        crb.session.copy_file_to(TMP_PATH + scapy_cmd, crb.tmp_file)
+
+        if send_bg:  # if send_bg create a new session to execute send action
+            session_prefix = 'scapy_bg_session'
+            scapy_session = crb.create_session(session_prefix + time_stamp)
+            scapy_session.send_command('python %s' % crb.tmp_file + scapy_cmd)
+        else:
+            crb.send_expect('python %s' % crb.tmp_file + scapy_cmd, '# ', timeout=timeout)
+        return crb.tmp_file + scapy_cmd
+
+    def send_pkt(self, crb, tx_port='', count=1, interval=0, timeout=15):
+        self._send_pkt(crb, tx_port, count, inter=interval, timeout=timeout)
+
+    def send_pkt_bg(self, crb, tx_port='', count=-1, loop=1, interval=0, timeout=3):
+        return self._send_pkt(crb, tx_port=tx_port, count=count, send_bg=True, loop=loop, inter=interval,
+                              timeout=timeout)
+
+    def stop_send_pkt_bg(self, crb, filenames):
+        # stop sending action
+        pids = []
+        if isinstance(filenames, list):
+            for file in filenames:
+                out = crb.send_expect('ps -ef |grep %s|grep -v grep' % file, expected='# ')
+                try:
+                    pids.append(re.search('\d+', out).group())
+                except AttributeError as e:
+                    print(e, ' :%s not killed' % file)
+        else:
+            out = crb.send_expect('ps -ef |grep %s|grep -v grep' % filenames, expected='# ')
+            try:
+                pids.append(re.search('\d+', out).group())
+            except AttributeError as e:
+                print(e, ' :%s not killed' % filenames)
+        pid = ' '.join(pids)
+        if pid:
+            crb.send_expect('kill -9 %s' % pid, expected='# ')
+        for i in crb.sessions:
+            if i.name.startswith('scapy_bg_session'):
+                crb.destroy_session(i)
+
+    def check_layer_config(self):
         """
         check the format of layer configuration
         every layer should has different check function
         """
-        pass
+        for layer in self.pkt_layers:
+            found = False
+            l_type = layer.lower()
+
+            for types in LayersTypes.values():
+                if l_type in types:
+                    found = True
+                    break
+
+            if found is False:
+                self.pkt_layers.remove(l_type)
+                print "INVAILD LAYER TYPE [%s]" % l_type.upper()
 
     def assign_layers(self, layers=None):
         """
@@ -532,6 +675,8 @@ class Packet(object):
                 print "INVAILD LAYER TYPE [%s]" % l_type.upper()
 
         self.pktgen.add_layers(self.pkt_layers)
+        if layers:
+            self.pktgen.update_pkts()
 
     def _load_pkt_layers(self):
         name2type = {
@@ -590,9 +735,9 @@ class Packet(object):
             else:
                 self.config_layer('raw', {'payload': ['00'] * 18})
 
-        if "MAC_IP_IPv6" in self.pkt_type or\
-           "MAC_IP_NVGRE" in self.pkt_type or \
-           "MAC_IP_UDP_VXLAN" in self.pkt_type:
+        if "MAC_IP_IPv6" in self.pkt_type or \
+                "MAC_IP_NVGRE" in self.pkt_type or \
+                "MAC_IP_UDP_VXLAN" in self.pkt_type:
             if "IPv6_SCTP" in self.pkt_type:
                 self.config_layer('ipv6', {'nh': 132})
             if "IPv6_ICMP" in self.pkt_type:
@@ -601,6 +746,8 @@ class Packet(object):
                 self.config_layer('raw', {'payload': ['00'] * 40})
             else:
                 self.config_layer('raw', {'payload': ['00'] * 18})
+        if 'TCP' in self.pkt_type:
+            self.config_layer('tcp', {'flags': 0})
 
     def config_layer(self, layer, config={}):
         """
@@ -613,22 +760,23 @@ class Packet(object):
             print "INVALID LAYER ID %s" % layer
             return False
 
-        if self.check_layer_config(layer, config) is False:
+        if self.check_layer_config() is False:
             return False
 
         if 'inner' in layer:
             layer = layer[6:]
 
         pkt_layer = self.pktgen.pkt.getlayer(idx)
-        layer_conf = getattr(self, "_config_layer_%s" % layer)
+        layer_conf = getattr(self.pktgen, layer)
         setattr(self, 'configured_layer_%s' % layer, True)
 
-        return layer_conf(pkt_layer, config)
+        layer_conf(pkt_layer, **config)
 
     def config_layers(self, layers=None):
         """
         Configure packet with multi configurations
         """
+        layers = [] if layers is None else layers  # None object is not Iterable
         for layer in layers:
             name, config = layer
             if name not in self.pkt_layers:
@@ -638,65 +786,28 @@ class Packet(object):
                 print "[%s] failed to configure!!!" % name
                 raise
 
-    def _config_layer_ether(self, pkt_layer, config):
-        return self.pktgen.ether(pkt_layer, **config)
-
-    def _config_layer_mac(self, pkt_layer, config):
-        return self.pktgen.ether(pkt_layer, **config)
-
-    def _config_layer_vlan(self, pkt_layer, config):
-        return self.pktgen.vlan(pkt_layer, **config)
-
-    def _config_layer_etag(self, pkt_layer, config):
-        return self.pktgen.etag(pkt_layer, **config)
-
-    def _config_layer_ipv4(self, pkt_layer, config):
-        return self.pktgen.ipv4(pkt_layer, **config)
-
-    def _config_layer_ipv6(self, pkt_layer, config):
-        return self.pktgen.ipv6(pkt_layer, **config)
-
-    def _config_layer_udp(self, pkt_layer, config):
-        return self.pktgen.udp(pkt_layer, **config)
-
-    def _config_layer_tcp(self, pkt_layer, config):
-        return self.pktgen.tcp(pkt_layer, **config)
-
-    def _config_layer_sctp(self, pkt_layer, config):
-        return self.pktgen.sctp(pkt_layer, **config)
-
-    def _config_layer_gre(self, pkt_layer, config):
-        return self.pktgen.gre(pkt_layer, **config)
-
-    def _config_layer_raw(self, pkt_layer, config):
-        return self.pktgen.raw(pkt_layer, **config)
-
-    def _config_layer_vxlan(self, pkt_layer, config):
-        return self.pktgen.vxlan(pkt_layer, **config)
-
-    def strip_layer_element(self, layer, element):
+    def strip_layer_element(self, layer, element, p_index=0):
         """
         Strip packet layer elements
         return the status of configure result
         """
         strip_element = getattr(self, "strip_element_%s" % layer)
+        return strip_element(element, p_index)
 
-        return strip_element(element)
+    def strip_element_layer2(self, element, p_index=0):
+        return self.pktgen.strip_layer2(element, p_index)
 
-    def strip_element_layer2(self, element):
-        return self.pktgen.strip_layer2(element)
+    def strip_element_layer3(self, element, p_index=0):
+        return self.pktgen.strip_layer3(element, p_index)
 
-    def strip_element_layer3(self, element):
-        return self.pktgen.strip_layer3(element)
+    def strip_element_vlan(self, element, p_index=0):
+        return self.pktgen.strip_vlan(element, p_index)
 
-    def strip_element_vlan(self, element):
-        return self.pktgen.strip_vlan(element)
+    def strip_element_etag(self, element, p_index=0):
+        return self.pktgen.strip_etag(element, p_index)
 
-    def strip_element_etag(self, element):
-        return self.pktgen.strip_etag(element)
-
-    def strip_element_layer4(self, element):
-        return self.pktgen.strip_layer4(element)
+    def strip_element_layer4(self, element, p_index=0):
+        return self.pktgen.strip_layer4(element, p_index)
 
 
 def IncreaseIP(addr):
@@ -723,27 +834,6 @@ def IncreaseIPv6(addr):
     ipv6 = socket.inet_ntop(AF_INET6, struct.pack(
         '!8H', addr[0], addr[1], addr[2], addr[3], addr[4], addr[5], addr[6], addr[7]))
     return ipv6
-
-
-def send_packets(intf, pkts=None, interval=0.01):
-    send_pkts = []
-    try:
-        for pkt in pkts:
-            send_pkts.append(pkt.pktgen.pkt)
-        sendp(send_pkts, iface=intf, inter=interval, verbose=False)
-    except:
-        pass
-
-
-def save_packets(pkts=None, filename=None):
-    save_pkts = []
-    try:
-        for pkt in pkts:
-            save_pkts.append(pkt.pktgen.pkt)
-        if filename:
-            wrpcap(filename, save_pkts)
-    except:
-        pass
 
 
 def get_ether_type(eth_type=""):
@@ -809,48 +899,46 @@ def get_filter_cmd(filters=[]):
         return ""
 
 
-def sniff_packets(intf, count=0, timeout=5, filters=[], target=[]):
+def start_tcpdump(crb, intf, count=0, filters=None, lldp_forbid=True):
     """
-    sniff all packets for certain port in certain seconds
+    sniff all packets from certain port
     """
+    filters = [] if filters is None else filters
+    out = crb.send_expect("ls -d %s" % crb.tmp_file, "# ", verify=True)
+    if out == 2:
+        crb.send_expect("mkdir -p %s" % crb.tmp_file, "# ")
+    filename = '{}sniff_{}.pcap'.format(crb.tmp_file, intf)
+    # delete old pcap file
+    crb.send_expect('rm -rf %s' % filename, '# ')
+
     param = ""
     direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
-
-    try:
-        tcpdump_help_session=pxssh.pxssh()
-        tcpdump_help_session.login(server=target[0], username=target[1],
-                                   password=target[2], original_prompt='[$#>]',
-                                   login_timeout=20)
-        tcpdump_help_session.sendline('tcpdump -h')
-        tcpdump_help_session.prompt()
-        tcpdump_help=tcpdump_help_session.before
-        tcpdump_help_session.logout()
-    except pxssh.ExceptionPxssh as e:
-        print ('pxssh failed on login.')
-        print (e)
+    tcpdump_session = crb.create_session('tcpdump_session' + str(time.time()))
+    setattr(tcpdump_session, 'tmp_file', crb.tmp_file)
+    tcpdump_help = tcpdump_session.send_command('tcpdump -h')
 
     for line in tcpdump_help.split('\n'):
         m = re.match(direct_param, line)
         if m:
-            opt = re.search("-Q", m.group(2));
+            opt = re.search("-Q", m.group(2))
             if opt:
                 param = "-Q" + " in"
             else:
-                opt = re.search("-P", m.group(2));
+                opt = re.search("-P", m.group(2))
                 if opt:
                     param = "-P" + " in"
 
     if len(param) == 0:
         print "tcpdump not support direction choice!!!"
 
-    if LLDP_FILTER not in filters:
+    if lldp_forbid and (LLDP_FILTER not in filters):
         filters.append(LLDP_FILTER)
 
     filter_cmd = get_filter_cmd(filters)
 
     sniff_cmd = 'tcpdump -i %(INTF)s %(FILTER)s %(IN_PARAM)s -w %(FILE)s'
     options = {'INTF': intf, 'COUNT': count, 'IN_PARAM': param,
-               'FILE': '/tmp/sniff_%s.pcap' % intf,
+               'FILE': filename,
                'FILTER': filter_cmd}
     if count:
         sniff_cmd += ' -c %(COUNT)d'
@@ -858,77 +946,27 @@ def sniff_packets(intf, count=0, timeout=5, filters=[], target=[]):
     else:
         cmd = sniff_cmd % options
 
-    try:
-        tcpdump_session=pxssh.pxssh()
-        tcpdump_session.login(server=target[0], username=target[1],
-                              password=target[2], original_prompt='[$#>]',
-                              login_timeout=20)
-        tcpdump_session.sendline(cmd)
-        pipe = tcpdump_session
-    except pxssh.ExceptionPxssh as e:
-        print ('pxssh failed on login.')
-        print (e)
+    tcpdump_session.send_command(cmd)
 
     index = str(time.time())
-    SNIFF_PIDS[index] = (pipe, intf, timeout)
+    SNIFF_PIDS[index] = (tcpdump_session, intf, filename)
     time.sleep(1)
     return index
 
 
-def load_sniff_pcap(index='', target=[]):
+def stop_and_load_tcpdump_packets(index='', timeout=1):
     """
-    Stop sniffer and return pcap file
+    Stop sniffer and return packet object
     """
-    child_exit = False
     if index in SNIFF_PIDS.keys():
-        pipe, intf, timeout = SNIFF_PIDS[index]
-        time_elapse = int(time.time() - float(index))
-        while time_elapse < timeout:
-            if pipe.prompt(timeout=1):
-                child_exit = True
-                break
-
-            time_elapse += 1
-
-        if not child_exit:
-            try:
-                # Stop Tcpdump on the target server
-                tcpdump_quit_session=pxssh.pxssh()
-                tcpdump_quit_session.login(server=target[0], username=target[1],
-                                           password=target[2], original_prompt='[$#>]',
-                                           login_timeout=20)
-                tcpdump_quit_session.sendline('kill -2 $(pidof tcpdump)')
-                tcpdump_quit_session.prompt()
-                tcpdump_quit_session.logout()
-                child_exit = True
-            except pxssh.ExceptionPxssh as e:
-                print ('pxssh failed on login.')
-                print (e)
-
-        # Close the Tcpdump_session
-        pipe.prompt()
-        pipe.logout()
-
-        # wait pcap file ready
-        time.sleep(1)
-        return "/tmp/sniff_%s.pcap" % intf
-
-    return ""
-
-
-def load_pcapfile(filename=""):
-    pkts = []
-    try:
-        cap_pkts = rdpcap(filename)
-        for pkt in cap_pkts:
-            # packet gen should be scapy
-            packet = Packet()
-            packet.pktgen.assign_pkt(pkt)
-            pkts.append(packet)
-    except:
-        pass
-
-    return pkts
+        pipe, intf, filename = SNIFF_PIDS.pop(index)
+        pipe.get_session_before(timeout)
+        pipe.send_command('^C')
+        pipe.copy_file_from(filename, TMP_PATH)
+        p = Packet()
+        p.read_pcapfile(TMP_PATH + filename.split(os.sep)[-1])
+        pipe.close()
+        return p
 
 
 def compare_pktload(pkt1=None, pkt2=None, layer="L2"):
@@ -940,8 +978,8 @@ def compare_pktload(pkt1=None, pkt2=None, layer="L2"):
     elif layer == "L4":
         l_idx = 2
     try:
-        load1 = hexstr(str(pkt1.pktgen.pkt.getlayer(l_idx)))
-        load2 = hexstr(str(pkt2.pktgen.pkt.getlayer(l_idx)))
+        load1 = hexstr(str(pkt1.getlayer(l_idx)))
+        load2 = hexstr(str(pkt2.getlayer(l_idx)))
     except:
         # return pass when scapy failed to extract packet
         return True
@@ -952,7 +990,7 @@ def compare_pktload(pkt1=None, pkt2=None, layer="L2"):
         return False
 
 
-def strip_pktload(pkt=None, layer="L2"):
+def strip_pktload(pkt=None, layer="L2", p_index=0):
     if layer == "L2":
         l_idx = 0
     elif layer == "L3":
@@ -962,30 +1000,36 @@ def strip_pktload(pkt=None, layer="L2"):
     else:
         l_idx = 0
     try:
-        load = hexstr(str(pkt.pktgen.pkt.getlayer(l_idx)), onlyhex=1)
+        load = hexstr(str(pkt.pktgen.pkts[p_index].getlayer(l_idx)), onlyhex=1)
     except:
         # return pass when scapy failed to extract packet
         load = ""
 
     return load
 
+
 ###############################################################################
 ###############################################################################
 if __name__ == "__main__":
-    pkt = Packet(pkt_type='UDP')
-    pkt.send_pkt(tx_port='lo')
+
+    pkt = Packet('Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x0,NSP=0x000002,NSI=0xff)')
+    sendp(pkt, iface='lo')
+    pkt.config_layer('ipv4', {'dst': '192.168.8.8'})
+    pkt.append_pkt(pkt_type='IPv6_TCP', pkt_len=100)
+    pkt.append_pkt(pkt_type='TCP', pkt_len=100)
+    pkt.config_layer('tcp', config={'flags': 'A'})
+    pkt.append_pkt("Ether(dst='11:22:33:44:55:11')/IP(dst='192.168.5.2')/TCP(flags=0)/Raw(load='bbbb')")
+    pkt.generate_random_pkts('11:22:33:44:55:55', random_type=['TCP', 'IPv6_TCP'], random_payload=True, pktnum=10)
+    sendp(pkt, iface='lo')
 
     pkt = Packet(pkt_type='UDP', pkt_len=1500, ran_payload=True)
-    pkt.send_pkt(tx_port='lo')
-    pkt = Packet(pkt_type='IPv6_TCP')
-    pkt.send_pkt(tx_port='lo')
+    sendp(pkt, iface='lo')
     pkt = Packet(pkt_type='IPv6_SCTP')
-    pkt.send_pkt(tx_port='lo')
+    sendp(pkt, iface='lo')
     pkt = Packet(pkt_type='VLAN_UDP')
     pkt.config_layer('vlan', {'vlan': 2})
-    pkt.send_pkt(tx_port='lo')
+    sendp(pkt, iface='lo')
 
-    pkt = Packet()
     pkt.assign_layers(['ether', 'vlan', 'ipv4', 'udp',
                        'vxlan', 'inner_mac', 'inner_ipv4', 'inner_udp', 'raw'])
     pkt.config_layer('ether', {'dst': '00:11:22:33:44:55'})
@@ -994,13 +1038,12 @@ if __name__ == "__main__":
     pkt.config_layer('udp', {'src': 4789, 'dst': 4789, 'chksum': 0x1111})
     pkt.config_layer('vxlan', {'vni': 2})
     pkt.config_layer('raw', {'payload': ['58'] * 18})
-    pkt.send_pkt(tx_port='lo')
+    sendp(pkt, iface='lo')
 
-    pkt = Packet()
     pkt.assign_layers(['ether', 'vlan', 'ipv4', 'udp',
                        'vxlan', 'inner_mac', 'inner_ipv4', 'inner_udp', 'raw'])
     # config packet
     pkt.config_layers([('ether', {'dst': '00:11:22:33:44:55'}), ('ipv4', {'dst': '1.1.1.1'}),
                        ('vxlan', {'vni': 2}), ('raw', {'payload': ['01'] * 18})])
 
-    pkt.send_pkt(tx_port='lo')
+    sendp(pkt, iface='lo')
