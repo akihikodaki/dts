@@ -86,8 +86,8 @@ class TestVlan(TestCase):
     def get_tcpdump_package(self):
         pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
         vlans = []
-        for packet in pkts:
-            vlan = packet.strip_element_vlan("vlan")
+        for i in range(len(pkts)):
+            vlan = pkts.strip_element_vlan("vlan", p_index=i)
             vlans.append(vlan)
         return vlans
 
@@ -116,7 +116,7 @@ class TestVlan(TestCase):
             pkt.config_layer('ether', {'dst': self.dmac, 'src': self.smac})
             pkt.config_layer('vlan', {'vlan': vid})
 
-        pkt.send_pkt(tx_port=self.txItf, count=4)
+        pkt.send_pkt(self.tester, tx_port=self.txItf, count=4)
 
     def set_up(self):
         """

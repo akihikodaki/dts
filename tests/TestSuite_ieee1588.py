@@ -91,12 +91,13 @@ class TestIeee1588(TestCase):
 
         self.tester.send_expect(
             "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20)
-
+        self.send_session = self.tester.create_session('send_session')
+        setattr(self.send_session, 'tmp_file', self.tester.tmp_file)
         pkt = Packet(pkt_type='TIMESYNC')
-        pkt.config_layer('ether', {'dst': mac, })
-        pkt.send_pkt(tx_port=itf)
-
+        pkt.config_layer('ether', {'dst': mac})
+        pkt.send_pkt(self.send_session, tx_port=itf)
         time.sleep(1)
+        self.send_session.close()
         out = self.tester.get_session_output(timeout=20)
 
         self.tester.send_expect("^C", "# ", 20)

@@ -95,11 +95,10 @@ class Testddp_mpls(TestCase):
             self.vm0_dut_ports = self.vm0_dut.get_ports('any')
             self.vm0_testpmd = PmdOutput(self.vm0_dut)
             self.env_done = True
-        eal_param = '-b %(vf0)s' % {'vf0': self.sriov_vfs_port[0].pci}
 
         self.dut_testpmd.start_testpmd(
             "Default","--port-topology=chained --txq=%s --rxq=%s" 
-            % (PF_MAX_QUEUE, PF_MAX_QUEUE), eal_param=eal_param)
+            % (PF_MAX_QUEUE, PF_MAX_QUEUE))
         self.vm0_testpmd.start_testpmd(
             VM_CORES_MASK,"--port-topology=chained --txq=%s --rxq=%s" 
             % (VF_MAX_QUEUE, VF_MAX_QUEUE))

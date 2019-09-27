@@ -41,6 +41,7 @@ import utils
 from pmd_output import PmdOutput
 from test_case import TestCase
 from virt_common import VM
+from packet import Packet
 
 VM_CORES_MASK = 'all'
 
@@ -75,6 +76,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
     def set_up(self):
         pass
+
     def setup_1pf_2vf_1vm_env(self,driver="default"):
 
         self.used_dut_port = self.dut_ports[0]
@@ -90,9 +92,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                                       'vf1': self.sriov_vfs_port[1].pci}
-                self.host_testpmd.start_testpmd("Default", eal_param=eal_param)
+                self.host_testpmd.start_testpmd("Default")
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'runtime_vf_queue_number_kernel')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
@@ -131,15 +131,11 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
         self.setup_1pf_2vf_1vm_env_flag = 0
 
-    def send_packet2different_queue(self, dts, src, iface, count):
-        self.tester.scapy_foreground()
-        for i in range(1,count+1):
-            j = (i//255)%255
-            k = i%255
-            pkt = 'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.%d.%d",dst="192.168.13.%d")/("test"*10)],iface="%s")' % (
-                dts, src, j,k,k, iface)
-            self.tester.scapy_append(pkt)
-        self.tester.scapy_execute()
+    def send_packet2different_queue(self, dst, src, iface, count):
+        pkt = Packet()
+        pkt.generate_random_pkts(pktnum=count, random_type=['IP_RAW'],
+                                 options={'layers_config': [('ether', {'dst': '%s' % dst, 'src': '%s' % src})]})
+        pkt.send_pkt(self.tester, tx_port=iface)
 
     def check_result(self, nr_queue, out, out2, pkts_num, count, misc):
         if nr_queue == 1:
@@ -189,7 +185,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
             self.vm0_testpmd.execute_cmd('set verbose 1')
             self.vm0_testpmd.execute_cmd('set promisc all off')
-	    #set rss-hash-key to a fixed value instead of default random value on vf
+        #set rss-hash-key to a fixed value instead of default random value on vf
 	    self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E')
             time.sleep(1)
             self.vm0_testpmd.execute_cmd('set fwd mac')
@@ -297,6 +293,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
     def tear_down(self):
         self.vm0_testpmd.execute_cmd('quit', '# ')
+        self.dut.kill_all()
 
     def tear_down_all(self):
         self.logger.info("tear_down_all")

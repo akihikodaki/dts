@@ -108,7 +108,7 @@ class TestVfInterruptPmd(TestCase):
         """
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
-        pkt.send_pkt(tx_port=testinterface)
+        pkt.send_pkt(self.tester, tx_port=testinterface)
 
         self.out2 = use_dut.get_session_output(timeout=2)
 

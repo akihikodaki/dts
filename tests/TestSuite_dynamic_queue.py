@@ -63,14 +63,10 @@ class TestDynamicQueue(TestCase):
         Generate packets and send them to dut
         """
         mac = self.dut.get_mac_address(0)
-        for i in range(self.PF_QUEUE * 4):
-            j = i /256
-            k = i % 256
-            pkt = Packet(pkt_type='IP_RAW')
-            pkt.config_layer('ether', {'dst': mac})
-            pkt.config_layer(
-                'ipv4', {'dst': '192.168.%d.%d' % (j, k), 'src': '191.168.0.1'})
-            pkt.send_pkt(tx_port=self.tester_intf)
+        pktnum = self.PF_QUEUE * 4
+        pkt = Packet()
+        pkt.generate_random_pkts(mac, pktnum=pktnum, random_type=['IP_RAW'])
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
 
     def rxq_setup_test(self, chgflag=0):
         """

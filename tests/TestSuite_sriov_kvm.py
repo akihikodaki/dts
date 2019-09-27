@@ -359,10 +359,8 @@ class TestSriovKvm(TestCase):
             if driver == 'igb_uio':
                 # start testpmd with the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                                       'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", "--rxq=4 --txq=4", eal_param=eal_param)
+                    "1S/2C/2T", "--rxq=4 --txq=4")
                 self.host_testpmd.execute_cmd('set fwd rxonly')
                 self.host_testpmd.execute_cmd('start')
 
@@ -439,13 +437,8 @@ class TestSriovKvm(TestCase):
             if driver == 'igb_uio':
                 # start testpmd with the four VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0) -b %(vf1)s -b %(vf2)s -b %(vf3)s' % \
-                    {'vf0': self.sriov_vfs_pci[0],
-                     'vf1': self.sriov_vfs_pci[1],
-                     'vf2': self.sriov_vfs_pci[2],
-                     'vf3': self.sriov_vfs_pci[3]}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", eal_param=eal_param)
+                    "1S/2C/2T")
 
             self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
             self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)

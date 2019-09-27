@@ -192,6 +192,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         self.close_testpmd_and_session()
         self.dut.send_expect("killall -s INT l3fwd-power", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """

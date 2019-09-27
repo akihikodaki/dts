@@ -175,7 +175,7 @@ class TestLinkStatusInterrupt(TestCase):
         self.txItf = self.tester.get_interface(txport)
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': self.dmac})
-        pkt.send_pkt(tx_port=self.txItf, count=num)
+        pkt.send_pkt(self.tester, tx_port=self.txItf, count=num)
 
     def tear_down(self):
         """

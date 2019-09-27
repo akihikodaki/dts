@@ -38,6 +38,7 @@ import re
 import utils
 import time
 from test_case import TestCase
+import packet
 
 class TestL3fwdacl(TestCase):
 
@@ -268,10 +269,10 @@ class TestL3fwdacl(TestCase):
 
         dst_filter = {'layer': 'ether', 'config': {'dst': 'not ff:ff:ff:ff:ff:ff'}}
         filters = [dst_filter]
-        inst = self.tester.tcpdump_sniff_packets(rx_interface, timeout=5, filters=filters)
-
-        self.tester.scapy_append('sendp([%s],iface="%s")' % (ethernet_str, tx_interface))
-        self.tester.scapy_execute()
+        inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filters)
+        pkt = packet.Packet()
+        pkt.append_pkt(ethernet_str)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -298,11 +299,11 @@ class TestL3fwdacl(TestCase):
         ethernet_str = self.create_ipv6_rule_string(rule, "Ether")
 
         fil = [{'layer': 'ether', 'config': {'dst': 'not ff:ff:ff:ff:ff:ff'}}]
-        inst = self.tester.tcpdump_sniff_packets(rx_interface, timeout=5, filters=fil)
+        inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=fil)
+        pkt = packet.Packet()
+        pkt.append_pkt(ethernet_str)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
 
-        self.tester.scapy_append('sendp([%s],iface="%s")' % (ethernet_str, tx_interface))
-        self.tester.scapy_execute()
-        time.sleep(3)
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -316,10 +317,10 @@ class TestL3fwdacl(TestCase):
 
         dst_filter = {'layer': 'ether', 'config': {'dst': 'not ff:ff:ff:ff:ff:ff'}}
         filters = [dst_filter]
-        inst = self.tester.tcpdump_sniff_packets(rx_interface, timeout=5, filters=filters)
-        self.tester.scapy_append('sendp([%s],iface="%s")' % (etherStr, tx_interface))
-        self.tester.scapy_execute()
-
+        inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filters)
+        pkt = packet.Packet()
+        pkt.append_pkt(etherStr)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -332,20 +333,20 @@ class TestL3fwdacl(TestCase):
         etherStr = self.create_ipv6_rule_string(rule, "Ether")
 
         fil = [{'layer': 'ether', 'config': {'dst': 'not ff:ff:ff:ff:ff:ff'}}]
-        inst = self.tester.tcpdump_sniff_packets(rx_interface, timeout=5, filters=fil)
-
-        self.tester.scapy_append('sendp([%s],iface="%s")' % (etherStr, tx_interface))
-        self.tester.scapy_execute()
-        time.sleep(3)
+        inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=fil)
+        pkt = packet.Packet()
+        pkt.append_pkt(etherStr)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
 
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
     def remove_dhcp_from_revpackets(self, inst):
-        pkts = self.tester.load_tcpdump_sniff_packets(inst)
+        p = self.tester.load_tcpdump_sniff_packets(inst)
+        pkts = p.pktgen.pkts
         i = 0
         while len(pkts) != 0 and i <= len(pkts) - 1:
-            if pkts[i].pktgen.pkt.haslayer('DHCP'):
+            if pkts[i].haslayer('DHCP'):
                 pkts.remove(pkts[i])
                 i = i - 1
             i = i + 1

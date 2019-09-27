@@ -90,12 +90,9 @@ class TestVfDaemon(TestCase):
         for port in self.sriov_vfs_port:
             port.bind_driver(self.vf_driver)
         time.sleep(1)
-        eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                               'vf1': self.sriov_vfs_port[1].pci}
-
         self.dut_testpmd = PmdOutput(self.dut)
         self.dut_testpmd.start_testpmd(
-            "Default", "--rxq=4 --txq=4 --port-topology=chained", eal_param=eal_param)
+            "Default", "--rxq=4 --txq=4 --port-topology=chained")
         self.dut_testpmd.execute_cmd("start")
         time.sleep(5)
 
@@ -166,8 +163,8 @@ class TestVfDaemon(TestCase):
             pkt.config_layer('vlan', {'vlan': vlan_id})
         pkt.config_layer('ether', {'dst': dst_mac})
 
-        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=30)
-        pkt.send_pkt(tx_port=self.tester_intf, count=num)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf, count=num)
         return inst
 
     def strip_mac(self, inst, element = "src"):     
@@ -176,8 +173,8 @@ class TestVfDaemon(TestCase):
         """
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
         macs = []
-        for pkt in pkts:
-            mac = pkt.strip_element_layer2(element)
+        for i in range(len(pkts)):
+            mac = pkts.strip_element_layer2(element, p_index=i)
             macs.append(mac)
         return macs
 
@@ -187,8 +184,8 @@ class TestVfDaemon(TestCase):
         """
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
         vlans = []
-        for pkt in pkts:
-            vlan = pkt.strip_element_vlan("vlan")
+        for i in range(len(pkts)):
+            vlan = pkts.strip_element_vlan("vlan", p_index=i)
             vlans.append(vlan)
         return vlans
         
@@ -434,7 +431,7 @@ class TestVfDaemon(TestCase):
         self.dut_testpmd.execute_cmd('set tx loopback 0 off')
         time.sleep(5)
 
-        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=10)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf)
 
         self.vm1_testpmd.execute_cmd('set burst 5')
         self.vm1_testpmd.execute_cmd('start tx_first')
@@ -450,7 +447,7 @@ class TestVfDaemon(TestCase):
         self.dut_testpmd.execute_cmd('set tx loopback 0 on')
         time.sleep(3)
 
-        inst = self.tester.tcpdump_sniff_packets(self.tester_intf, timeout=10)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf)
 
         self.vm1_testpmd.execute_cmd('stop')
         self.vm1_testpmd.execute_cmd('start tx_first')

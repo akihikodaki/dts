@@ -42,7 +42,7 @@ import time
 import utils
 from virt_common import VM
 from test_case import TestCase
-from packet import load_pcapfile
+from packet import Packet
 
 
 class TestVM2VMVirtioPMD(TestCase):
@@ -211,11 +211,12 @@ class TestVM2VMVirtioPMD(TestCase):
         vm_dut.send_expect('quit', '#', 60)
         time.sleep(2)
         vm_dut.session.copy_file_from(src="%s" % self.dump_pcap, dst="%s" % self.dump_pcap)
-        pkts = load_pcapfile(self.dump_pcap)
+        pkt = Packet()
+        pkts = pkt.read_pcapfile(self.dump_pcap)
         self.verify(len(pkts) == 10, "The vm0 do not capture all the packets")
-        data = str(pkts[0].pktgen.pkt['Raw'])
+        data = str(pkts[0]['Raw'])
         for i in range(1, 10):
-            value = str(pkts[i].pktgen.pkt['Raw'])
+            value = str(pkts[i]['Raw'])
             self.verify(data == value, "the payload in receive packets has been changed")
 
     def stop_all_apps(self):

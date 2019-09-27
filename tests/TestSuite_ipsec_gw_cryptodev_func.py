@@ -35,7 +35,7 @@ import binascii
 import time
 import utils
 from test_case import TestCase
-from packet import Packet, save_packets
+import packet
 
 from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
 from cryptography.hazmat.primitives.ciphers.aead import AESCCM, AESGCM
@@ -723,7 +723,7 @@ class TestIPsecGW(TestCase):
         self.logger.info("IPsec-gw cmd: " + cmd_str)
         self.dut.send_expect(cmd_str, "IPSEC:", 30)
         time.sleep(3)
-        inst = self.tester.tcpdump_sniff_packets(self.rx_interface, timeout=25)
+        inst = self.tester.tcpdump_sniff_packets(self.rx_interface)
 
         PACKET_COUNT = 65
         payload = 256 * ['11']
@@ -735,7 +735,7 @@ class TestIPsecGW(TestCase):
         expected_src_ip = case_cfgs["expected_src_ip"]
         expected_spi = case_cfgs["expected_spi"]
 
-        pkt = Packet()
+        pkt = packet.Packet()
         if len(dst_ip)<=15:
             pkt.assign_layers(["ether", "ipv4", "udp", "raw"])
             pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"})
@@ -746,38 +746,37 @@ class TestIPsecGW(TestCase):
             pkt.config_layer("ipv6", {"src": src_ip, "dst": dst_ip})
         pkt.config_layer("udp", {"dst": 0})
         pkt.config_layer("raw", {"payload": payload})
-        pkt.send_pkt(tx_port=self.tx_interface, count=PACKET_COUNT)
+        pkt.send_pkt(crb=self.tester, tx_port=self.tx_interface, count=PACKET_COUNT)
 
         pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
 
-        pcap_filename = "output/{0}.pcap".format(self.pcap_filename)
-        self.logger.info("Save pkts to {0}".format(pcap_filename))
-        save_packets(pkt_rec, pcap_filename)
+        pcap_filename = "{0}.pcap".format(self.pcap_filename)
+        self.logger.info("Save pkts to {0}".format(packet.TMP_PATH + pcap_filename))
+        pkt_rec.save_pcapfile(self.tester, pcap_filename)
         self._pcap_idx = self._pcap_idx + 1
 
         if len(pkt_rec) == 0:
             self.logger.error("IPsec forwarding failed")
             result = False
-
-        for pkt_r in pkt_rec:
-            pkt_src_ip = pkt_r.pktgen.strip_layer3("src")
+        for i in range(len(pkt_rec)):
+            pkt_src_ip = pkt_rec.pktgen.strip_layer3("src", p_index=i)
             if pkt_src_ip != expected_src_ip:
-                pkt_r.pktgen.pkt.show()
+                pkt_rec[i].show()
                 self.logger.error("SRC IP does not match. Pkt:{0}, Expected:{1}".format(
                                    pkt_src_ip, expected_src_ip))
                 result = False
                 break
 
-            pkt_dst_ip = pkt_r.pktgen.strip_layer3("dst")
+            pkt_dst_ip = pkt_rec.pktgen.strip_layer3("dst", p_index=i)
             self.logger.debug(pkt_dst_ip)
             if pkt_dst_ip != expected_dst_ip:
-                pkt_r.pktgen.pkt.show()
+                pkt_rec[i].show()
                 self.logger.error("DST IP does not match. Pkt:{0}, Expected:{1}".format(
                                   pkt_dst_ip, expected_dst_ip))
                 result = False
                 break
 
-            packet_hex = pkt_r.pktgen.pkt["ESP"].getfieldval("data")
+            packet_hex = pkt_rec[i]["ESP"].getfieldval("data")
             if packet_hex is None:
                 self.logger.error("NO Payload !")
                 result = False
@@ -785,7 +784,7 @@ class TestIPsecGW(TestCase):
             payload_str = binascii.b2a_hex(packet_hex)
             self.logger.debug(payload_str)
 
-            pkt_spi = hex(pkt_r.pktgen.pkt["ESP"].getfieldval("spi"))
+            pkt_spi = hex(pkt_rec[i]["ESP"].getfieldval("spi"))
             self.logger.debug(pkt_spi)
             if pkt_spi != expected_spi:
                 self.logger.error("SPI does not match. Pkt:{0}, Expected:{1}".format(

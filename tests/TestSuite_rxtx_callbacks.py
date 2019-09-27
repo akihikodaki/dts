@@ -90,8 +90,8 @@ class TestRxtxCallbacks(TestCase):
     def get_tcpdump_package(self,inst):
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
         dsts = []
-        for packet in pkts:
-            dst = packet.strip_element_layer2("dst")
+        for i in range(len(pkts)):
+            dst = pkts.strip_element_layer2("dst", p_index=i)
             dsts.append(dst)
         return dsts
 

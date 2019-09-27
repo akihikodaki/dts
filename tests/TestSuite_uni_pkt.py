@@ -81,7 +81,7 @@ class TestUniPacket(TestCase):
         for pkt_type in pkt_types.keys():
             pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
-            pkt.send_pkt(tx_port=self.tester_iface, count=4)
+            pkt.send_pkt(self.tester, tx_port=self.tester_iface, count=4)
             out = self.dut.get_session_output(timeout=2)
             for pkt_layer_name in pkt_names:
                 if pkt_layer_name not in out:
@@ -111,10 +111,10 @@ class TestUniPacket(TestCase):
         for l2_type in self.L2_types.keys():
             pkt_name = self.L2_types[l2_type]
             pkt = Packet(pkt_type=l2_type)
-            pkt.send_pkt(tx_port=self.tester_iface)
+            pkt.send_pkt(self.tester, tx_port=self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             if pkt_name in out:
-                print utils.GREEN("Detected L2 %s successfully" % l2_type)
+                print(utils.GREEN("Detected L2 %s successfully" % l2_type))
             else:
                 raise VerifyFailure("Failed to detect L2 %s" % l2_type)
 
@@ -347,7 +347,7 @@ class TestUniPacket(TestCase):
                 pkt.config_layers([('ipv6',{'nh':47}), ('inner_ipv6', {'nh': 58})])
             else:
                 pkt.config_layers([('ipv6',{'nh':47}),('inner_ipv6', {'nh': 132})])
-            pkt.send_pkt(tx_port=self.tester_iface)
+            pkt.send_pkt(self.tester, tx_port=self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             for pkt_layer_name in pkts[1]:
                 if pkt_layer_name not in out:
@@ -445,7 +445,6 @@ class TestUniPacket(TestCase):
 
         for packet in nsh_packets:
             self.tester.scapy_foreground()
-            self.tester.scapy_append("from scapy.contrib.nsh import *")
             self.tester.scapy_append("sendp([%s],iface='%s')" % (nsh_packets[packet], self.tester_iface))
             self.tester.scapy_execute()
             out = self.dut.get_session_output(timeout=2)

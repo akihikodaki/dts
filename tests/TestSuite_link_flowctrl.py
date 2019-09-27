@@ -453,4 +453,5 @@ class TestLinkFlowctrl(TestCase):
         """
         Run after each test case.
         """
+        self.dut.kill_all()
         self.dut.send_expect("quit", "# ")

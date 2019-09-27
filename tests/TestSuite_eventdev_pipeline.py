@@ -113,8 +113,8 @@ class TestEventdevPipeline(TestCase):
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
         i = 0
         while len(pkts) != 0 and i <= len(pkts) - 1:
-            if pkts[i].pktgen.pkt.haslayer('DHCP'):
-                pkts.remove(pkts[i])
+            if pkts[i].haslayer('DHCP'):
+                pkts.pktgen.pkts.pop(i)
                 i = i - 1
             i = i + 1
         return pkts
@@ -152,7 +152,7 @@ class TestEventdevPipeline(TestCase):
         time.sleep(5)
 
         filt = [{'layer': 'ether', 'config': {'src': '%s' % self.s_mac}}]
-        inst = self.tester.tcpdump_sniff_packets(self.rx_interface, timeout=15, filters=filt)
+        inst = self.tester.tcpdump_sniff_packets(self.rx_interface, filters=filt)
         self.tester.scapy_append('pkt=rdpcap("pipeline.pcap")')
         self.tester.scapy_append('sendp(pkt, iface="%s")' % self.tx_interface)
         self.tester.scapy_execute()
@@ -169,13 +169,13 @@ class TestEventdevPipeline(TestCase):
             packet_index = 0
             for i in range(len(self.pkts)):
                 pay_load = "0000%.2d" % (packet_index)
-                if self.pkts[i].pktgen.pkt['IP'].src == src_ip:
-                    print self.pkts[i].pktgen.pkt.show
+                if self.pkts[i]['IP'].src == src_ip:
+                    print(self.pkts[i].show)
                     # get the start index load info of each queue
                     if packet_index == 0:
-                        packet_index = int(self.pkts[i].pktgen.pkt['Raw'].load[-2:])
+                        packet_index = int(self.pkts[i]['Raw'].load[-2:])
                         pay_load = "0000%.2d" % (packet_index)
-                    self.verify(self.pkts[i].pktgen.pkt['Raw'].load == pay_load,
+                    self.verify(self.pkts[i]['Raw'].load == pay_load,
                             "The packets not ordered")
                     packet_index = packet_index + 1
 

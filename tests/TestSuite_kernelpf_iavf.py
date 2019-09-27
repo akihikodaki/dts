@@ -423,7 +423,7 @@ class TestKernelpfIavf(TestCase):
             pkt.config_layer('vlan', {'vlan': vlan})
             pkt.config_layer('ether', {'dst': self.vf_mac})
 
-        pkt.send_pkt(tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
         out = self.vm_dut.get_session_output(timeout=2)
 
         return out
@@ -546,7 +546,7 @@ class TestKernelpfIavf(TestCase):
         pkt = Packet(pkt_type='UDP', pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': self.vf_mac, 'src': self.tester_mac})
         self.vm_testpmd.execute_cmd("clear port stats all")
-        pkt.send_pkt(tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
 
         time.sleep(1)
 

@@ -160,7 +160,7 @@ class TestEtag(TestCase):
                 if pkt_configs:
                     for layer in pkt_configs.keys():
                         pkt.config_layer(layer, pkt_configs[layer])
-            pkt.send_pkt(tx_port=self.src_intf)
+            pkt.send_pkt(self.tester, tx_port=self.src_intf)
             
             # check vm testpmd packet received information
             if 'vm' in pkt_types[pkt_type].keys():

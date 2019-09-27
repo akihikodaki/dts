@@ -229,7 +229,7 @@ class TestJumboframes(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """

@@ -10,6 +10,7 @@ from utils import RED, GREEN
 from net_device import NetDevice
 from crb import Crb
 from scapy.all import *
+from scapy.layers.sctp import SCTP, SCTPChunkData
 VM_CORES_MASK = 'all'
 
 class TestVfPortStartStop(TestCase):
@@ -22,7 +23,9 @@ class TestVfPortStartStop(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.vm0 = None
         self.filename = "/tmp/vf.pcap"
-
+        self.tester_tx_port = self.tester.get_local_port(self.dut_ports[0])
+        self.tester_tintf = self.tester.get_interface(self.tester_tx_port)
+        self.send_pks_session = None
         # set vf assign method and vf driver
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         if self.vf_driver is None:
@@ -38,71 +41,23 @@ class TestVfPortStartStop(TestCase):
 
         self.setup_1pf_2vf_1vm_env_flag = 0
 
-    def pktgen_prerequisites(self):
-        """
-        igb_uio.ko should be put in ~ before you using pktgen
-        """
-        out = self.tester.send_expect("ls", "#")
-        self.verify("igb_uio.ko" in out, "No file igb_uio.ko, please add it in ~")
-        self.tester.send_expect("modprobe uio", "#", 70)
-        out = self.tester.send_expect("lsmod | grep igb_uio", "#")
-        if "igb_uio" in out:
-            self.tester.send_expect("rmmod -f igb_uio", "#", 70)
-        self.tester.send_expect("insmod ~/igb_uio.ko", "#", 60)
-        out = self.tester.send_expect("lsmod | grep igb_uio", "#")
-        assert ("igb_uio" in out), "Failed to insmod igb_uio"
-
-        total_huge_pages = self.tester.get_total_huge_pages()
-        if total_huge_pages == 0:
-            self.tester.mount_huge_pages()
-            self.tester.set_huge_pages(2048)
-
-    def pktgen_kill(self):
-        """
-        Kill all pktgen on tester.
-        """
-        pids = []
-        pid_reg = r'p(\d+)'
-        out = self.tester.alt_session.send_expect("lsof -Fp /var/run/.pg_config", "#", 20)
-        if len(out):
-            lines = out.split('\r\n')
-            for line in lines:
-                m = re.match(pid_reg, line)
-                if m:
-                    pids.append(m.group(1))
-        for pid in pids:
-            self.tester.alt_session.send_expect('kill -9 %s' % pid, '# ', 20)
-
     def send_and_verify(self, dst_mac, testpmd):
         """
         Generates packets by pktgen
         """
         self.testpmd_reset_status(testpmd)
 
-        self.pktgen_prerequisites()
-        # bind ports
-        self.tester_tx_port = self.tester.get_local_port(self.dut_ports[0])
-        self.tester_tx_pci = self.tester.ports_info[self.tester_tx_port]['pci']
-        port = self.tester.ports_info[self.tester_tx_port]['port']
-        self.tester_port_driver = port.get_nic_driver()
-        self.tester.send_expect("./dpdk-devbind.py --force --bind=igb_uio %s" % self.tester_tx_pci, "#")
-
-        src_mac = self.tester.get_mac(self.tester_tx_port) 
+        src_mac = self.tester.get_mac(self.tester_tx_port)
         if src_mac == 'N/A':
             src_mac = "02:00:00:00:01"
-
-        self.create_pcap_file(self.filename, dst_mac, src_mac)
-
-        self.tester.send_expect("./pktgen -c 0x1f -n 2  --proc-type auto --socket-mem 128,128 --file-prefix pg -- -P -T -m '1.0' -s 0:%s" % self.filename, "Pktgen >", 100)
-        time.sleep(1)
-        self.tester.send_expect("start all", "Pktgen>")
+        self.send_pkts(self.filename, dst_mac, src_mac)
         time.sleep(1)
         self.check_port_start_stop(testpmd)
-        # quit pktgen
-        self.tester.send_expect("stop all", "Pktgen>")
-        self.tester.send_expect("quit", "# ")
+        self.tester.send_expect('killall -s INT scapy', '# ')
+        self.tester.destroy_session(self.send_pks_session)
+        self.send_pks_session = None
 
-    def create_pcap_file(self, filename, dst_mac, src_mac):
+    def send_pkts(self, filename, dst_mac, src_mac):
         """
         Generates a valid PCAP file with the given configuration.
         """
@@ -115,8 +70,13 @@ class TestVfPortStartStop(TestCase):
         pkts = []
         for key in def_pkts.keys():
             pkts.append(def_pkts[key])
-
         wrpcap(filename, pkts)
+
+        sendp_fmt = "sendp(pk, iface='%s', loop=1)" % (self.tester_tintf)
+        self.send_pks_session = self.tester.create_session("scapy1")
+        self.send_pks_session.send_expect("scapy", ">>>")
+        self.send_pks_session.send_expect("pk=rdpcap('%s')" % filename, ">>>")
+        self.send_pks_session.send_command(sendp_fmt)
 
     def testpmd_reset_status(self, testpmd):
         """
@@ -175,9 +135,7 @@ class TestVfPortStartStop(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                                       'vf1': self.sriov_vfs_port[1].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                self.host_testpmd.start_testpmd("1S/2C/2T")
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_port_start_stop')
@@ -242,13 +200,9 @@ class TestVfPortStartStop(TestCase):
 
     def tear_down_all(self):
 
-        self.pktgen_kill()
-        if getattr(self, 'tester_port_driver', None) and \
-           getattr(self, 'tester_tx_pci', None):
-            self.tester.send_expect("./dpdk-devbind.py --bind=%s %s" \
-                %(self.tester_port_driver, self.tester_tx_pci), "#")
-            tx_interface = self.tester.get_interface(self.tester_tx_port)
-            self.tester.send_expect("ifconfig %s up" % tx_interface, "#")
+        if self.send_pks_session:
+            self.tester.send_expect('killall -s INT scapy', '# ')
+            self.tester.destroy_session(self.send_pks_session)
 
         if getattr(self, 'vm0', None):
             self.vm0.stop()

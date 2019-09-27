@@ -40,7 +40,7 @@ import utils
 from test_case import TestCase
 from virt_common import VM
 from pmd_output import PmdOutput
-from packet import Packet, save_packets
+from packet import Packet
 from pktgen import PacketGeneratorHelper
 
 
@@ -69,7 +69,6 @@ class TestPVPVirtIOBonding(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
         """
@@ -87,7 +86,7 @@ class TestPVPVirtIOBonding(TestCase):
         """
         vdev_info = ""
         for i in range(self.queues):
-            vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,client=1,queues=1' " % (i, self.base_dir, i)
+            vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
         params = "--port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024"
         eal_param = "--socket-mem 2048,2048 --legacy-mem --file-prefix=vhost %s " % vdev_info
         self.vhost_testpmd = PmdOutput(self.dut)
@@ -168,7 +167,7 @@ class TestPVPVirtIOBonding(TestCase):
         tx_port = self.tester.get_local_port(self.dut_ports[0])
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
-        save_packets([pkt], "%s/bonding.pcap" % self.out_path)
+        pkt.save_pcapfile(self.tester, "%s/bonding.pcap" % self.out_path)
         tgen_input.append((tx_port, rx_port, "%s/bonding.pcap" % self.out_path))
         self.tester.pktgen.clear_streams()
         streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
@@ -196,7 +195,7 @@ class TestPVPVirtIOBonding(TestCase):
         for i in range(self.queues):
             vm_params['opt_server'] = 'server'
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = '%s/vhost-net%d' % (self.base_dir, i)
+            vm_params['opt_path'] = './vhost-net%d' % i
             vm_params['opt_mac'] = "%s%d" % (virtio_mac, i+1)
             self.vm.set_vm_device(**vm_params)
         self.set_vm_vcpu()

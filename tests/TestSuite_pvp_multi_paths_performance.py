@@ -36,7 +36,7 @@ Test PVP performance using virtio_user on 8 tx/rx path.
 
 import utils
 from test_case import TestCase
-from packet import Packet, save_packets
+from packet import Packet
 from pktgen import PacketGeneratorHelper
 
 
@@ -98,7 +98,7 @@ class TestPVPMultiPathPerformance(TestCase):
 
             pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
             pkt.config_layer('ether', {'dst': '%s' % destination_mac})
-            save_packets([pkt], "%s/multi_path_%d.pcap" % (self.out_path, port))
+            pkt.save_pcapfile(self.tester, "%s/multi_path_%d.pcap" % (self.out_path, port))
             tgen_input.append((tx_port, rx_port, "%s/multi_path_%d.pcap" % (self.out_path, port)))
 
         self.tester.pktgen.clear_streams()

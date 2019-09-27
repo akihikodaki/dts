@@ -148,7 +148,7 @@ class TestQueue_region(TestCase):
             pkt = Packet()
             pkt.assign_layers(['ether', 'raw'])
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac, 'type': ethertype})
-        pkt.send_pkt(tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
 
     def send_packet_up(self, mac, pkt_type="udp", prio=0):
         """
@@ -173,7 +173,7 @@ class TestQueue_region(TestCase):
             pkt.assign_layers(['ether', 'vlan', 'ipv6', 'udp', 'raw'])
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
             pkt.config_layer('vlan', {'vlan': 0, 'prio': prio})
-        pkt.send_pkt(tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
 
     def get_and_compare_rules(self, out, QueueRegion_num, FlowType_num, UP_num):
         """

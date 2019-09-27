@@ -90,13 +90,13 @@ class TestLoadbalancer(TestCase):
             for i in range(len(dutPorts)):
                 dstport = self.tester.get_local_port(dutPorts[i])
                 pkt_count = 10
-                inst = self.tester.tcpdump_sniff_packets(intf=self.tester.get_interface(rx_port), timeout=10, count=pkt_count)
+                inst = self.tester.tcpdump_sniff_packets(intf=self.tester.get_interface(rx_port), count=pkt_count)
 
-                pkt = Packet()
+                pkt = Packet(pkt_type='UDP', pkt_len=64)
                 dst_mac = self.dut.get_mac_address(dutPorts[i])
-                pkt.config_layer('ether', {'dst': dst_mac})
-                pkt.config_layer('ipv4', {'src': "0.0.0.1", 'dst': trafficFlow[flow][1]})
-                pkt.send_pkt(tx_port=self.tester.get_interface(dstport), count=10)
+                pkt.config_layer('ether', {'dst': '%s' % dst_mac})
+                pkt.config_layer('ipv4', {'src': "0.0.0.1", 'dst': '%s' % (trafficFlow[flow][1])})
+                pkt.send_pkt(self.tester, tx_port=self.tester.get_interface(dstport), count=10)
                 # Wait for the sniffer to finish.
                 time.sleep(5)
 
@@ -104,8 +104,8 @@ class TestLoadbalancer(TestCase):
                 len_pkts = len(pkts)
 
                 self.verify(len_pkts == pkt_count, "Packet number is wrong")
-                for packet in pkts:
-                    result = str(packet.pktgen.pkt.show)
+                for i in range(len_pkts):
+                    result = str(pkts[i].show)
                     self.verify("Ether" in result, "No packet received")
                     self.verify("src=0.0.0.1" + " dst=" + trafficFlow[flow][1] in result, "Wrong IP address")
                     self.verify("dst=%s" % dst_mac in result, "No packet received or packet missed")

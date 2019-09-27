@@ -174,7 +174,7 @@ class TestVfJumboFrame(TestCase):
 
         pkt = Packet(pkt_type='UDP', pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': mac})
-        pkt.send_pkt(tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
 
         time.sleep(1)
 

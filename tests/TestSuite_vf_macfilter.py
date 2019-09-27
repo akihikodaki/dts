@@ -67,12 +67,10 @@ class TestVfMacFilter(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
-                                                       'vf1': self.sriov_vfs_port_1[0].pci}
                 if (self.nic in ["niantic", "sageville", "sagepond"]):
-                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
-                    self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/2C/2T")
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_macfilter')
@@ -158,7 +156,7 @@ class TestVfMacFilter(TestCase):
         
         print "\nfirst send packets to the PF set MAC, expected result is RX packets=TX packets\n"
         result1 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
-	print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')   
+        print "\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all')
         self.verify(result1 != False, "VF0 failed to forward packets to VF1")
         
         print "\nSecondly, negative test, send packets to a wrong MAC, expected result is RX packets=0\n"
@@ -259,6 +257,7 @@ class TestVfMacFilter(TestCase):
 
         if self.setup_2pf_2vf_1vm_env_flag == 1:
             self.destroy_2pf_2vf_1vm_env()
+        self.dut.kill_all()
 
     def tear_down_all(self):
 

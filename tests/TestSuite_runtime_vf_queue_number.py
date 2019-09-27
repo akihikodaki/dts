@@ -39,6 +39,7 @@ import re
 from qemu_kvm import QEMUKvm
 from test_case import TestCase
 from pmd_output import PmdOutput
+from packet import Packet
 
 RSS_KEY = '6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E'
 PACKET_COUNT = 100
@@ -128,15 +129,9 @@ class TestRuntimeVfQn(TestCase):
         """
         Sends packets.
         """
-        self.tester.scapy_foreground()
-        time.sleep(2)
-        for i in range(integer):
-            quotient = i // 254
-            remainder = i % 254
-            packet = r'sendp([Ether(dst="%s", src=get_if_hwaddr("%s"))/IP(src="10.0.0.1", dst="192.168.%d.%d")], iface="%s")' % (vf_mac, itf, quotient, remainder + 1, itf)
-            self.tester.scapy_append(packet)
-        self.tester.scapy_execute()
-        time.sleep(2)
+        pkt = Packet()
+        pkt.generate_random_pkts(vf_mac, pktnum=integer, random_type=['IP_RAW'])
+        pkt.send_pkt(self.tester, tx_port=itf)
 
     def verify_queue_number(self, outstring, qn, pkt_count):
         total_rx = []

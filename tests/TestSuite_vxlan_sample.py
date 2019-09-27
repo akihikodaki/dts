@@ -48,7 +48,7 @@ from etgen import IxiaPacketGenerator
 from qemu_kvm import QEMUKvm
 from TestSuite_vxlan import VxlanTestConfig
 from pmd_output import PmdOutput
-from packet import IncreaseIP, IncreaseIPv6
+from packet import Packet
 
 from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
@@ -106,7 +106,6 @@ class TestVxlanSample(TestCase):
 
         # params for tep_termination
         self.cores = self.dut.get_core_list("1S/4C/1T", socket=self.socket)
-        self.capture_file = "/tmp/vxlan_cap.pcap"
         self.def_mss = 256
 
         # performance measurement, checksum based on encap
@@ -266,32 +265,18 @@ class TestVxlanSample(TestCase):
         self.send_and_verify(vm_id=0, vf_id=0, pkt_type="vxlan_tcp_tso")
 
     def start_capture(self, itf, pkt_smac="", pkt_dmac="", count=1):
-        self.tester.send_expect("rm -f %s" % self.capture_file, "# ")
-        self.tester.scapy_background()
+        self.inst = None
+        filter_param = []
         if pkt_smac != "":
-            self.tester.scapy_append(
-                'p = sniff(filter="ether src %s",' % pkt_smac +
-                'iface="%s", count=%d, timeout=5)' % (itf, count))
+            filter_param = [{'layer': 'ether', 'config': {'src': '%s' % pkt_smac}}]
         if pkt_dmac != "":
-            self.tester.scapy_append(
-                'p = sniff(filter="ether dst %s",' % pkt_dmac +
-                'iface="%s", count=%d, timeout=5)' % (itf, count))
-        self.tester.scapy_append(
-            'wrpcap(\"%s\", p)' % self.capture_file)
-        self.tester.scapy_foreground()
+            filter_param = [{'layer': 'ether', 'config': {'dst': '%s' % pkt_dmac}}]
+        self.inst = self.tester.tcpdump_sniff_packets(itf, count, filters=filter_param)
 
     def transfer_capture_file(self):
         # copy capture file from tester
-        if os.path.isfile('vxlan_cap.pcap'):
-            os.remove('vxlan_cap.pcap')
-        self.tester.session.copy_file_from(self.capture_file)
-
-        if os.path.isfile('vxlan_cap.pcap'):
-            self.verify(os.path.getsize('vxlan_cap.pcap') != 0, "Packets receive error")
-            pkts = rdpcap('vxlan_cap.pcap')
-        else:
-            pkts = []
-        return pkts
+        pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
+        return pkts.pktgen.pkts
 
     def send_and_verify(self, vm_id, vf_id, pkt_type):
         params = {}
@@ -430,7 +415,10 @@ class TestVxlanSample(TestCase):
             self.verify(len(pkts) >= 1, "Failed to capture packets")
             self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
-            chksums = vxlan_pkt.get_chksums(pcap='vxlan_cap.pcap')
+            pk_new = Packet()
+            pk_new.pktgen.assign_pkt(pkts)
+            pk_new.pktgen.update_pkts()
+            chksums = vxlan_pkt.get_chksums(pk_new)
             print utils.GREEN("Checksum : %s" % chksums)
             for key in chksums_ref:
                 if 'inner' in key:  # only check inner packet chksum

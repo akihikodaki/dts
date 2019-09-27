@@ -71,9 +71,7 @@ class TestVfOffload(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
-                                                       'vf1': self.sriov_vfs_port_1[0].pci}
-                self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                self.host_testpmd.start_testpmd("1S/2C/2T")
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_offload')

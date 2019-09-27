@@ -101,11 +101,11 @@ class TestQueueStartStop(TestCase):
         pkt = Packet(pkt_type="UDP", pkt_len=pktSize)
         inst = self.tester.tcpdump_sniff_packets(rxitf)
         pkt.config_layer('ether', {'dst': dmac})
-        pkt.send_pkt(tx_port=txitf, count=4)
+        pkt.send_pkt(self.tester, tx_port=txitf, count=4)
         sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         if received:
-            res = strip_pktload(sniff_pkts[0], layer="L4")
+            res = strip_pktload(sniff_pkts, layer="L4")
             self.verify("58 58 58 58 58 58 58 58" in res, "receive queue not work as expected")
         else:
             self.verify(len(sniff_pkts) == 0, "stop queue not work as expected")

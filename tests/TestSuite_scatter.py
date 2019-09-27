@@ -85,12 +85,12 @@ class TestScatter(TestCase):
         inst = self.tester.tcpdump_sniff_packets(self.intf)
         pkt = Packet(pkt_type="IP_RAW", pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': dmac})
-        pkt.send_pkt(tx_port=self.intf)
+        pkt.send_pkt(self.tester, tx_port=self.intf)
         sniff_pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         res = ""
         if len(sniff_pkts):
-            res = strip_pktload(sniff_pkts[0], layer="L4")
+            res = strip_pktload(sniff_pkts, layer="L4")
         return res
 
     def set_up(self):

@@ -88,7 +88,7 @@ class TestMacFilter(TestCase):
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'src': '52:00:00:00:00:00', 'dst': destMac})
-        pkt.send_pkt(tx_port=itf, count=4)
+        pkt.send_pkt(self.tester, tx_port=itf, count=4)
 
     def test_add_remove_mac_address(self):
         """

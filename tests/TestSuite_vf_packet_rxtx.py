@@ -6,6 +6,7 @@ import time
 from virt_common import VM
 from test_case import TestCase
 from pmd_output import PmdOutput
+from packet import Packet
 
 VM_CORES_MASK = 'all'
 
@@ -64,12 +65,10 @@ class TestVfPacketRxtx(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port_0[0].pci,
-                                                       'vf1': self.sriov_vfs_port_1[0].pci}
                 if (self.nic in ["niantic", "sageville", "sagepond"]):
-                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
-                    self.host_testpmd.start_testpmd("1S/5C/1T", "", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/5C/1T")
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
@@ -189,13 +188,10 @@ class TestVfPacketRxtx(TestCase):
 
             if driver == 'igb_uio':
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s -b %(vf2)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                                                  'vf1': self.sriov_vfs_port[1].pci,
-                                                                  'vf2': self.sriov_vfs_port[2].pci}
                 if (self.nic in ["niantic", "sageville", "sagepond"]):
-                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
-                    self.host_testpmd.start_testpmd("1S/2C/2T", eal_param=eal_param)
+                    self.host_testpmd.start_testpmd("1S/2C/2T")
 
             # set up VM0 ENV
             self.vm0 = VM(self.dut, 'vm0', 'vf_packet_rxtx')
@@ -290,7 +286,8 @@ class TestVfPacketRxtx(TestCase):
 
         dst_mac = pmd0_vf0_mac
         self.vm0_testpmd.execute_cmd('clear port stats all')
-        self.tester.sendpkt_bg(tx_port, dst_mac)
+        pkt = Packet("Ether(dst='%s', src='%s')/IP(len=46)" % (dst_mac, self.tester.get_mac(tx_port)))
+        filename = pkt.send_pkt_bg(crb=self.tester, tx_port=self.tester.get_interface(tx_port), loop=1)
 
         #vf port stop/start can trigger reset action
         for num in range(1000):
@@ -299,7 +296,7 @@ class TestVfPacketRxtx(TestCase):
             self.vm1_testpmd.execute_cmd('port start all')
             time.sleep(0.1)
 
-        self.tester.stop_sendpkt_bg()
+        pkt.stop_send_pkt_bg(self.tester, filename)
 
         pmd0_vf0_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         pmd0_vf1_stats = self.vm0_testpmd.get_pmd_stats(port_id_1)

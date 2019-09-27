@@ -12,7 +12,7 @@ import os
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE
-from packet import Packet, load_pcapfile
+from packet import Packet
 
 from scapy.layers.inet import UDP, IP
 from scapy.packet import split_layers, bind_layers
@@ -195,7 +195,7 @@ class CloudFilterConfig(object):
 
         self.pkt.config_layer('ether', ether_cfg)
         self.pkt.config_layer('raw', {'payload': ['01'] * 18})
-        self.pkt.send_pkt(tx_port=self.case.tester_intf)
+        self.pkt.send_pkt(crb=self.case.tester, tx_port=self.case.tester_intf)
 
 
 class TestCloudFilter(TestCase):
@@ -311,7 +311,6 @@ class TestCloudFilter(TestCase):
         if dpdk:
             cloud_cfg.transmit_packet()
             out = self.pmdout.get_output()
-            print out
             queue = cloud_cfg.cf_rule['queue']
             self.verify("queue %d" %
                         queue in out, "Vxlan not received in queue %d" % queue)
@@ -341,11 +340,11 @@ class TestCloudFilter(TestCase):
             time.sleep(2)
             # copy pcap to tester and then analyze
             self.dut.session.copy_file_from(tmp_file)
-            pkts = load_pcapfile(
-                filename="cloud_filter_%s.pcap" % self.vf_intf)
+            pkt = Packet()
+            pkt.read_pcapfile(filename="cloud_filter_%s.pcap" % self.vf_intf)
             self.verify(
-                len(pkts) == 1, "%d packet recevied on kernel VF" % len(pkts))
-            cap_pkt = pkts[0].pktgen.pkt
+                len(pkt) == 1, "%d packet recevied on kernel VF" % len(pkt))
+            cap_pkt = pkt[0]
             try:
                 dport = cap_pkt[UDP].dport
                 self.verify(dport == CLOUD_PORT,

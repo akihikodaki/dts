@@ -40,7 +40,7 @@ import utils
 from test_case import TestCase
 from settings import HEADER_SIZE
 from virt_common import VM
-from packet import Packet, send_packets, save_packets
+from packet import Packet
 from pmd_output import PmdOutput
 from pktgen import PacketGeneratorHelper
 
@@ -154,8 +154,7 @@ class TestVhostMultiQueueQemu(TestCase):
             pkt1.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.1'}),
                                ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
 
-            pkt = [pkt1]
-            save_packets(pkt, "%s/multiqueue.pcap" % self.out_path)
+            pkt1.save_pcapfile(self.tester, "%s/multiqueue.pcap" % self.out_path)
 
             port = self.tester.get_local_port(self.pf)
             tgenInput.append((port, port, "%s/multiqueue.pcap" % self.out_path))
@@ -185,7 +184,7 @@ class TestVhostMultiQueueQemu(TestCase):
             self.logger.info(info)
             self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
-
+            pkts = Packet()
             pkt1 = Packet()
             pkt1.assign_layers(['ether', 'ipv4', 'udp', 'raw'])
             pkt1.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.1'}),
@@ -203,11 +202,13 @@ class TestVhostMultiQueueQemu(TestCase):
             pkt4.config_layers([('ether', {'dst': '%s' % self.virtio1_mac}), ('ipv4', {'dst': '1.1.1.8'}),
                                ('udp', {'src': 4789, 'dst': 4789}), ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
 
-            pkt = [pkt1, pkt2, pkt3, pkt4] * 10
-            send_packets(self.tx_interface, pkt)
+            pkt = [pkt1, pkt2, pkt3, pkt4]
+            for i in pkt:
+                pkts.pktgen.pkts.append(i.pktgen.pkt)
+            pkts.send_pkt(self.tester, tx_port=self.tx_interface, count=10)
 
             out = self.dut.send_expect("show port stats 0", "testpmd> ", 120)
-            print out
+            print(out)
             rx_packet = re.search("RX-packets:\s*(\d*)", out)
             rx_num = int(rx_packet.group(1))
             tx_packet = re.search("TX-packets:\s*(\d*)", out)

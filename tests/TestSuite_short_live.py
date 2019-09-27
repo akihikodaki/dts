@@ -102,7 +102,7 @@ class TestShortLiveApp(TestCase):
         if (txPort == rxPort):
             count = 2
 
-        inst = self.tester.tcpdump_sniff_packets(rxitf, count=count, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(rxitf, count=count)
 
         pktlen = pktSize - 14
         padding = pktlen - 20
@@ -112,7 +112,7 @@ class TestShortLiveApp(TestCase):
         time.sleep(3)
 
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
-        out = str(pkts[0].pktgen.pkt.show)
+        out = str(pkts[0].show)
         self.logger.info('SCAPY Result:\n' + out + '\n\n\n')
         if received:
             self.verify(('PPP' in out) and 'src=%s'% Dut_tx_mac in out, "Receive test failed")

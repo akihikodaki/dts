@@ -120,12 +120,12 @@ class TestFloatingVEBSwitching(TestCase):
             pkt = Packet(pkt_type='VLAN_UDP')
             pkt.config_layer('ether', {'dst': vf_mac})
             pkt.config_layer('vlan', {'vlan': 1})
-            pkt.send_pkt(tx_port=itf)
+            pkt.send_pkt(self.tester, tx_port=itf)
             time.sleep(.5)
         else:
             pkt = Packet(pkt_type='UDP')
             pkt.config_layer('ether', {'dst': vf_mac})
-            pkt.send_pkt(tx_port=itf)
+            pkt.send_pkt(self.tester, tx_port=itf)
             time.sleep(.5)
    
     # Test cases.

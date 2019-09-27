@@ -247,7 +247,7 @@ class VirtioCryptodevIpsecTest(TestCase):
     def send_and_dump_pkg(self):
         status = True
 
-        inst = self.tester.tcpdump_sniff_packets(self.rx_interface, timeout=25)
+        inst = self.tester.tcpdump_sniff_packets(self.rx_interface)
 
         PACKET_COUNT = 65
         payload = 256 * ['11']
@@ -261,21 +261,19 @@ class VirtioCryptodevIpsecTest(TestCase):
         pkt.config_layer("ipv4", {"src": src_ip, "dst": dst_ip})
         pkt.config_layer("udp", {"dst": 0})
         pkt.config_layer("raw", {"payload": payload})
-        pkt.send_pkt(tx_port=self.tx_interface, count=PACKET_COUNT)
+        pkt.send_pkt(self.tester, tx_port=self.tx_interface, count=PACKET_COUNT)
 
         pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
         self.logger.info("dump: {} packets".format(len(pkt_rec)))
         if len(pkt_rec) != PACKET_COUNT:
             self.logger.info("dump pkg: {}, the num of pkg dumped is incorrtct!".format(len(pkt_rec)))
             status = False
-
-        for pkt_r in pkt_rec:
-            #pkt_r.pktgen.pkt.show()
-            if src_ip != pkt_r.pktgen.strip_layer3("src") or dst_ip != pkt_r.pktgen.strip_layer3("dst"):
+        for i in range(len(pkt_rec)):
+            if src_ip != pkt_rec.pktgen.strip_layer3("src", p_index=i) or dst_ip != pkt_rec.pktgen.strip_layer3("dst", p_index=i):
                 self.logger.info("the ip of pkg dumped is incorrtct!")
                 status = False
 
-            dump_text = binascii.b2a_hex(pkt_r.pktgen.pkt["Raw"].getfieldval("load"))
+            dump_text = binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load"))
             if dump_text != ''.join(payload):
                 self.logger.info("the text of pkg dumped is incorrtct!")
                 status = False

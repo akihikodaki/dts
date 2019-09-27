@@ -588,7 +588,7 @@ class TestIavf(TestCase):
             self.tester.scapy_execute()
             rec_pkt = self.tester.load_tcpdump_sniff_packets(inst)
             # collect checksum values for received packet
-            chksum = rec_pkt[0].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%").split(";")
+            chksum = rec_pkt[0].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%").split(";")
             chksum = list(set(chksum))
             chksum.remove("??")
             corrected_checksum_values[packet] = chksum

@@ -26,6 +26,7 @@ from scapy.route import *
 from test_case import TestCase
 from settings import HEADER_SIZE, FOLDERS
 from etgen import IxiaPacketGenerator
+import packet
 
 #
 #
@@ -48,6 +49,7 @@ class VxlanTestConfig(object):
         self.init()
         for name in kwargs:
             setattr(self, name, kwargs[name])
+        self.pkt_obj = packet.Packet()
 
     def init(self):
         self.packets_config()
@@ -56,8 +58,8 @@ class VxlanTestConfig(object):
         """
         Default vxlan packet format
         """
-        self.pcap_file = '/root/vxlan.pcap'
-        self.capture_file = '/root/vxlan_capture.pcap'
+        self.pcap_file = packet.TMP_PATH + 'vxlan.pcap'
+        self.capture_file = packet.TMP_PATH + 'vxlan_capture.pcap'
         self.outer_mac_src = '00:00:10:00:00:00'
         self.outer_mac_dst = '11:22:33:44:55:66'
         self.outer_vlan = 'N/A'
@@ -186,29 +188,28 @@ class VxlanTestConfig(object):
 
         return self.pkt
 
-    def get_chksums(self, pcap=None):
+    def get_chksums(self, pkt=None):
         """
         get chksum values of Outer and Inner packet L3&L4
         Skip outer udp for it will be calculated by software
         """
         chk_sums = {}
-        if pcap is None:
-            pkts = rdpcap(self.pcap_file)
+        if pkt is None:
+            pkt = rdpcap(self.pcap_file)
         else:
-            pkts = rdpcap(pcap)
+            pkt = pkt.pktgen.pkt
 
         time.sleep(1)
-
-        if pkts[0].guess_payload_class(pkts[0]).name == "802.1Q":
-            payload = pkts[0][Dot1Q]
+        if pkt[0].guess_payload_class(pkt[0]).name == "802.1Q":
+            payload = pkt[0][Dot1Q]
         else:
-            payload = pkts[0]
+            payload = pkt[0]
 
         if payload.guess_payload_class(payload).name == "IP":
             chk_sums['outer_ip'] = hex(payload[IP].chksum)
 
-        if pkts[0].haslayer('VXLAN') == 1:
-            inner = pkts[0]['VXLAN']
+        if pkt[0].haslayer('VXLAN') == 1:
+            inner = pkt[0]['VXLAN']
             if inner.haslayer(IP) == 1:
                 chk_sums['inner_ip'] = hex(inner[IP].chksum)
                 if inner[IP].proto == 6:
@@ -236,16 +237,10 @@ class VxlanTestConfig(object):
         """
         Send vxlan pcap file by iface
         """
-        # load vxlan module to scapy
-        cwd = os.getcwd()
-        dir_vxlan_module = cwd + r'/' + FOLDERS['Depends']
-        self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
-        self.test_case.tester.scapy_append("from vxlan import VXLAN")
-        self.test_case.tester.scapy_append(
-            'pcap = rdpcap("%s")' % self.pcap_file)
-        self.test_case.tester.scapy_append(
-            'sendp(pcap, iface="%s")' % iface)
-        self.test_case.tester.scapy_execute()
+        del self.pkt_obj.pktgen.pkts[:]
+        self.pkt_obj.pktgen.assign_pkt(self.pkt)
+        self.pkt_obj.pktgen.update_pkts()
+        self.pkt_obj.send_pkt(crb=self.test_case.tester, tx_port=iface)
 
     def pcap_len(self):
         """
@@ -262,12 +257,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         vxlan Prerequisites
         """
         # this feature only enable in FVL now
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV"]:
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
-        elif self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
         else:
             self.verify(False, "%s not support this vxlan" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -448,20 +441,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         config.outer_mac_dst = self.dut_port_mac
         config.create_pcap()
 
-        # remove tempory files
-        config.capture_file = "/tmp/sniff_%s.pcap" % self.recv_iface
-        self.tester.send_expect("rm -rf %s" % config.capture_file, "# ")
         # save the capture packet into pcap format
-        self.tester.scapy_background()
-
-        inst = self.tester.tcpdump_sniff_packets(self.recv_iface, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.recv_iface)
         config.send_pcap(self.tester_iface)
-        self.tester.load_tcpdump_sniff_packets(inst)
+        pkt = self.tester.load_tcpdump_sniff_packets(inst)
         time.sleep(5)
 
         # extract the checksum offload from saved pcap file
-        chksums = config.get_chksums(pcap=config.capture_file)
-        os.remove(config.capture_file)
+        chksums = config.get_chksums(pkt=pkt)
         self.logger.info("chksums" + str(chksums))
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
@@ -535,19 +522,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         verify vxlan packet detection
         """
-        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
-           src_vec_model = 'n'
-        else:
-           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-           src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-           if src_vec_model == 'y':
-              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                  + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
-              self.dut.skip_setup = False
-              self.dut.build_install_dpdk(self.target)
+        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+        src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
+        if src_vec_model == 'y':
+            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+            self.dut.skip_setup = False
+            self.dut.build_install_dpdk(self.target)
 
-        
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
@@ -561,8 +543,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        res = self.pmdout.wait_link_status_up("all")
-        self.verify(res is True, "link is donw")
 
         # check normal packet
         self.send_and_detect(outer_udp_dst=1234)
@@ -579,33 +559,26 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
-        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
-           src_vec_model = 'n'
-        else:
-           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-           dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-           if src_vec_model != dst_vec_model:
-              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                  + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
-              self.dut.skip_setup = False
-              self.dut.build_install_dpdk(self.target)
+
+        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+        dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+        if src_vec_model != dst_vec_model:
+            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+            self.dut.skip_setup = False
+            self.dut.build_install_dpdk(self.target)
 
     def test_vxlan_ipv6_detect(self):
         """
         verify vxlan packet detection with ipv6 header
         """
-        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
-           src_vec_model = 'n'
-        else:
-           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-           src_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-           if src_vec_model == 'y':
-              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                  + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
-              self.dut.skip_setup = False
-              self.dut.build_install_dpdk(self.target)
+        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+        src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
+        if src_vec_model == 'y':
+            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+            self.dut.skip_setup = False
+            self.dut.build_install_dpdk(self.target)
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
@@ -620,8 +593,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        res = self.pmdout.wait_link_status_up("all")
-        self.verify(res is True, "link is donw")
 
         # check normal ipv6 packet
         self.send_and_detect(outer_ip6_src="FE80:0:0:0:0:0:0:0",
@@ -642,17 +613,14 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
-        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
-           src_vec_model = 'n'
-        else:
-           out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-           dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-           if src_vec_model != dst_vec_model:
-              self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                  + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
-              self.dut.skip_setup = False
-              self.dut.build_install_dpdk(self.target)
+
+        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+        dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+        if src_vec_model != dst_vec_model:
+            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+            self.dut.skip_setup = False
+            self.dut.build_install_dpdk(self.target)
 
     def test_vxlan_ipv4_checksum_offload(self):
         """
@@ -682,9 +650,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.dut.send_expect("csum parse-tunnel on %d" %
                              self.recv_port, "testpmd>", 10)
-        res = self.pmdout.wait_link_status_up("all")
-        self.verify(res is True, "link is donw")
-
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
@@ -759,7 +724,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        time.sleep(10) #lwj
 
         # check normal ipv6 packet
         self.send_and_check(outer_ip6_src="FE80:0:0:0:0:0:0:0",
@@ -1169,8 +1133,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
-        res = self.pmdout.wait_link_status_up("all")
-        self.verify(res is True, "link is donw")
 
     def csum_set_sw(self, proto, port):
         self.dut.send_expect("port stop all", "testpmd>")
@@ -1179,9 +1141,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("port start all", "testpmd>")
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
-        res = self.pmdout.wait_link_status_up("all")
-        self.verify(res is True, "link is donw")
-
 
     def tunnel_filter_add(self, *args):
         # tunnel_filter add port_id outer_mac inner_mac ip inner_vlan

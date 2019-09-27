@@ -46,6 +46,7 @@ from test_case import TestCase
 from pmd_output import PmdOutput
 from test_capabilities import DRIVER_TEST_LACK_CAPA
 from pktgen import PacketGeneratorHelper
+import packet
 
 
 class TestChecksumOffload(TestCase):
@@ -110,7 +111,7 @@ class TestChecksumOffload(TestCase):
 
         for packet_type in packets_expected.keys():
             self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
-            out = self.tester.send_expect("p.show2()", ">>>")
+            out = self.tester.send_command("p.show2()", timeout=1)
             chksums = checksum_pattern.findall(out)
             chksum[packet_type] = chksums
 
@@ -122,15 +123,11 @@ class TestChecksumOffload(TestCase):
         """
         Sends packets and check the checksum valid-flags.
         """
-        self.tester.scapy_foreground()
         self.dut.send_expect("start", "testpmd>")
-        mac = self.dut.get_mac_address(self.dut_ports[0])
         tx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        self.tester.scapy_foreground()
-
         for packet_type in packets_sent.keys():
-            self.tester.scapy_append('sendp([%s], iface="%s", count=4)' % (packets_sent[packet_type], tx_interface))
-            self.tester.scapy_execute()
+            self.pkt = packet.Packet(pkt_str=packets_sent[packet_type])
+            self.pkt.send_pkt(self.tester, tx_interface, count=4)
             out = self.dut.get_session_output(timeout=1)
             lines = out.split("\r\n")
 
@@ -173,33 +170,21 @@ class TestChecksumOffload(TestCase):
         rx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
 
         sniff_src = self.dut.get_mac_address(self.dut_ports[0])
-        checksum_pattern = re.compile("chksum.*=.*(0x[0-9a-z]+)")
-
-        chksum = dict()
         result = dict()
 
-        self.tester.send_expect("scapy", ">>> ")
-
-        for packet_type in packets_expected.keys():
-            self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
-            out = self.tester.send_expect("p.show2()", ">>>")
-            chksums = checksum_pattern.findall(out)
-            chksum[packet_type] = chksums
-
-        self.tester.send_expect("exit()", "#")
+        chksum = self.get_chksum_values(packets_expected)
 
         inst = self.tester.tcpdump_sniff_packets(intf=rx_interface, count=len(packets_sent)*4,
                 filters=[{'layer': 'ether', 'config': {'src': sniff_src}}])
 
+        self.pkt = packet.Packet()
         for packet_type in packets_sent.keys():
-            self.tester.scapy_append('sendp([%s], iface="%s", count=4)' % (packets_sent[packet_type], tx_interface))
+            self.pkt.append_pkt(packets_sent[packet_type])
+        self.pkt.send_pkt(crb=self.tester, tx_port=tx_interface, count=4)
 
-        self.tester.scapy_execute()
         p = self.tester.load_tcpdump_sniff_packets(inst)
         nr_packets = len(p)
-        reslist = [p[i].pktgen.pkt.sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
-        out = string.join(reslist, ",")
-        packets_received = out.split(',')
+        packets_received = [p[i].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
         self.verify(len(packets_sent)*4 == len(packets_received), "Unexpected Packets Drop")
 
         for packet_received in packets_received:
@@ -271,8 +256,6 @@ class TestChecksumOffload(TestCase):
                     'IP/SCTP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="10.0.0.1")/SCTP()/("X"*48)' % mac,
                     'IPv6/UDP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="::1")/UDP()/("X"*46)' % mac,
                     'IPv6/TCP': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="::1")/TCP()/("X"*46)' % mac}
-
-        result = dict()
 
         self.checksum_enablehw(self.dut_ports[0])
 

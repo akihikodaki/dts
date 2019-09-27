@@ -126,7 +126,7 @@ class TestVhostPmdXstats(TestCase):
         self.scapy_num += 1
         pkt = Packet(pkt_type='TCP', pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': dmac, })
-        pkt.send_pkt(tx_port=self.txItf, count=num)
+        pkt.send_pkt(self.tester, tx_port=self.txItf, count=num)
 
     def send_verify(self, scope, mun):
         """

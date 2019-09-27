@@ -168,37 +168,36 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 expPkts = 1
                 val = 2
 
-            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf)
             # send packet
             for times in range(burst):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
                 pkt = Packet(pkt_type='UDP', pkt_len=pkt_size)
-                pkt.config_layer('ether', {'dst': self.dmac})
+                pkt.config_layer('ether', {'dst': '%s' % self.dmac})
                 pkt.config_layer('ipv4', {'dst': '100.10.0.1', 'src': '1.2.3.4', 'flags': val})
-                pkt.send_pkt(tx_port=self.txItf)
+                pkt.send_pkt(self.tester, tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
             pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == expPkts, "in functional_check_ipv4(): failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
-                for pkt in pkts:
-                    # packet index should be same
-                    pkt_id = pkt.strip_element_layer3("id")
+                for i in range(len(pkts)):
+                    pkt_id = pkts.strip_element_layer3('id', p_index=i)
                     if idx == 1:
                         prev_idx = pkt_id
                     self.verify(prev_idx == pkt_id, "Fragmented packets index not match")
                     prev_idx = pkt_id
 
                     # last flags should be 0
-                    flags = pkt.strip_element_layer3("flags")
+                    flags = pkts.strip_element_layer3("flags", p_index=i)
                     if idx == expPkts:
                         self.verify(flags == 0, "Fragmented last packet flags not match")
                     else:
                         self.verify(flags == 1, "Fragmented packets flags not match")
 
                     # fragment offset should be correct
-                    frag = pkt.strip_element_layer3("frag")
+                    frag = pkts.strip_element_layer3("frag", p_index=i)
                     self.verify((frag == ((idx - 1) * 185)), "Fragment packet frag not match")
                     idx += 1
 
@@ -218,37 +217,36 @@ l3fwd_ipv4_route_array[] = {\\\n"
                 expPkts = 1
                 val = 2
 
-            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf, timeout=5)
+            inst = self.tester.tcpdump_sniff_packets(intf=self.rxItf)
             # send packet
             for times in range(burst):
                 pkt_size = pkt_sizes[pkt_sizes.index(size) + times]
                 pkt = Packet(pkt_type='IPv6_UDP', pkt_len=pkt_size)
-                pkt.config_layer('ether', {'dst': self.dmac})
+                pkt.config_layer('ether', {'dst': '%s' % self.dmac})
                 pkt.config_layer('ipv6', {'dst': '101:101:101:101:101:101:101:101', 'src': 'ee80:ee80:ee80:ee80:ee80:ee80:ee80:ee80'})
-                pkt.send_pkt(tx_port=self.txItf)
+                pkt.send_pkt(self.tester, tx_port=self.txItf)
 
             # verify normal packet just by number, verify fragment packet by all elements
             pkts = self.tester.load_tcpdump_sniff_packets(inst)
             self.verify(len(pkts) == expPkts, "In functional_check_ipv6(): failed on forward packet size " + str(size))
             if flag == 'frag':
                 idx = 1
-                for pkt in pkts:
-                    # packet index should be same
-                    pkt_id = pkt.strip_element_layer4("id")
+                for i in range(len(pkts)):
+                    pkt_id = pkts.strip_element_layer4('id', p_index=i)
                     if idx == 1:
                         prev_idx = pkt_id
                     self.verify(prev_idx == pkt_id, "Fragmented packets index not match")
                     prev_idx = pkt_id
 
                     # last flags should be 0
-                    flags = pkt.strip_element_layer4("m")
+                    flags = pkts.strip_element_layer4("m", p_index=i)
                     if idx == expPkts:
                         self.verify(flags == 0, "Fragmented last packet flags not match")
                     else:
                         self.verify(flags == 1, "Fragmented packets flags not match")
 
                     # fragment offset should be correct
-                    frag = pkt.strip_element_layer4("offset")
+                    frag = pkts.strip_element_layer4("offset", p_index=i)
                     self.verify((frag == int((idx - 1) * 181)), "Fragment packet frag not match")
                     idx += 1
 

@@ -173,8 +173,8 @@ class TestVfVlan(TestCase):
 
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'dst': self.vf1_mac})
-        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
-        pkt.send_pkt(tx_port=self.tester_intf1)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf1)
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
 
         self.verify(len(pkts), "Not receive expected packet")
@@ -194,7 +194,7 @@ class TestVfVlan(TestCase):
             pkt.config_layer('vlan', {'vlan': vlan})
             pkt.config_layer('ether', {'dst': self.vf0_mac})
 
-        pkt.send_pkt(tx_port=self.tester_intf0)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf0)
         out = self.vm_dut_0.get_session_output(timeout=2)
 
         return out
@@ -258,7 +258,7 @@ class TestVfVlan(TestCase):
             "ip link set %s vf 0 vlan 0" % (self.host_intf0), "# ")
 
     def tx_and_check(self, tx_vlan=1):
-        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0, timeout=5)
+        inst = self.tester.tcpdump_sniff_packets(self.tester_intf0)
         self.vm0_testpmd.execute_cmd('set burst 1')
         self.vm0_testpmd.execute_cmd('start tx_first')
         self.vm0_testpmd.execute_cmd('stop')
@@ -266,8 +266,8 @@ class TestVfVlan(TestCase):
         # strip sniffered vlans
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
         vlans = []
-        for pkt in pkts:
-            vlan = pkt.strip_element_vlan("vlan")
+        for i in range(len(pkts)):
+            vlan = pkts.strip_element_vlan("vlan", p_index=i)
             vlans.append(vlan)
 
         self.verify(

@@ -760,7 +760,6 @@ class TestL2fwdCrypto(TestCase):
             payload = self.__format_hex_to_list(test_vector["input"])
 
             inst = self.tester.tcpdump_sniff_packets(self.rx_interface,
-                                                     timeout=5,
                                                      filters=[{'layer': 'ether',
                                                      'config': {'dst': '52:00:00:00:00:01'}}])
 
@@ -770,12 +769,12 @@ class TestL2fwdCrypto(TestCase):
             pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst":"52:00:00:00:00:01"})
             pkt.config_layer("ipv4", {"src": "192.168.1.1", "dst": "192.168.1.2"})
             pkt.config_layer("raw", {"payload": payload})
-            pkt.send_pkt(tx_port=self.tx_interface, count=PACKET_COUNT)
+            pkt.send_pkt(self.tester, tx_port=self.tx_interface, count=PACKET_COUNT)
 
             pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
             self.logger.info("Receive pkgs: {}".format(len(pkt_rec)))
-            for pkt_r in pkt_rec:
-                packet_hex = pkt_r.pktgen.pkt["Raw"].getfieldval("load")
+            for i in range(len(pkt_rec)):
+                packet_hex = pkt_rec[i]["Raw"].getfieldval("load")
                 if packet_hex == None:
                     result = False
                     self.logger.info("no payload !")
@@ -796,9 +795,9 @@ class TestL2fwdCrypto(TestCase):
                 hash_length = len(test_vector["output_hash"])/2
                 if hash_length != 0:
                     if test_vector["auth_algo"] == "null":
-                        hash_text = binascii.b2a_hex(pkt_r.pktgen.pkt["Raw"].getfieldval("load"))
+                        hash_text = binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load"))
                     else:
-                        hash_text = binascii.b2a_hex(pkt_r.pktgen.pkt["Padding"].getfieldval("load"))
+                        hash_text = binascii.b2a_hex(pkt_rec[i]["Padding"].getfieldval("load"))
                     if str.lower(hash_text) == str.lower(test_vector["output_hash"]):
                         self.logger.info("Hash Matched")
                     else:

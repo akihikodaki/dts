@@ -38,7 +38,7 @@ import utils
 import time
 from virt_common import VM
 from test_case import TestCase
-from packet import Packet, save_packets
+from packet import Packet
 from pktgen import PacketGeneratorHelper
 
 
@@ -234,7 +234,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         else:
             pkt = Packet(pkt_type='IP_RAW')
         pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
-        save_packets([pkt], "%s/interrupt.pcap" % self.out_path)
+        pkt.save_pcapfile(self.tester, "%s/interrupt.pcap" % self.out_path)
         tgen_input.append((self.tx_port, self.tx_port, "%s/interrupt.pcap" % self.out_path))
         self.tester.pktgen.clear_streams()
         vm_config = self.set_fields()

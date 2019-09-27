@@ -114,9 +114,9 @@ class TestNetmapCompat(TestCase):
 
     def get_tcpdump_package(self):  
         pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
-        dsts = []  
-        for packet in pkts:  
-            dst = packet.strip_element_layer2("dst")  
+        dsts = []
+        for i in range(len(pkts)):
+            dst = pkts.strip_element_layer2("dst", p_index=i)
             dsts.append(dst)
         return dsts  
          

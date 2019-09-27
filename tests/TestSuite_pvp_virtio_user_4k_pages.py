@@ -37,7 +37,7 @@ vhost/virtio-user pvp with 4K pages.
 import utils
 import time
 from test_case import TestCase
-from packet import Packet, save_packets
+from packet import Packet
 from pktgen import PacketGeneratorHelper
 
 
@@ -108,7 +108,7 @@ class TestPvpVirtioUser4kPages(TestCase):
             tx_port = self.tester.get_local_port(self.dut_ports[0])
             pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
             pkt.config_layer('ether', {'dst': '%s' % self.dst_mac})
-            save_packets([pkt], "%s/vhost.pcap" % self.out_path)
+            pkt.save_pcapfile(self.tester, "%s/vhost.pcap" % self.out_path)
             tgen_input.append((tx_port, rx_port, "%s/vhost.pcap" % self.out_path))
 
             self.tester.pktgen.clear_streams()
@@ -138,7 +138,6 @@ class TestPvpVirtioUser4kPages(TestCase):
         command_line_client = command_line_client % (self.target,
                             self.core_mask_vhost_user, self.mem_channels, self.ports_socket)
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
     def start_testpmd_as_virtio(self):

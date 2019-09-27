@@ -85,7 +85,7 @@ class TestPtype_Mapping(TestCase):
             else:
                 pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
-            pkt.send_pkt(tx_port=self.tester_iface,count=4)
+            pkt.send_pkt(self.tester, tx_port=self.tester_iface,count=4)
             out = self.dut.get_session_output(timeout=2)
             if sw_ptype != None:
                 self.verify(sw_ptype in out,

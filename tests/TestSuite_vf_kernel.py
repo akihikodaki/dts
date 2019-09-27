@@ -119,12 +119,8 @@ class TestVfKernel(TestCase):
         time.sleep(1)
 
         self.dut_testpmd = PmdOutput(self.dut)
-        eal_param = ''
-        for sriov_vf in self.sriov_vfs_port:
-            eal_param += " -b %s" % sriov_vf.pci
         self.dut_testpmd.start_testpmd(
-            "Default", "--rxq=4 --txq=4 --port-topology=chained",
-            eal_param=eal_param)
+            "Default", "--rxq=4 --txq=4 --port-topology=chained")
         # dpdk-2208
         # since there is no forward engine on DPDK PF to forward or drop packet in packet pool,
         # so finally the pool will be full, then no more packet will be
@@ -412,12 +408,12 @@ class TestVfKernel(TestCase):
         if vlan_id == '':
             pkt = Packet(pkt_type='TCP', pkt_len=pkt_lens)
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
-            pkt.send_pkt(tx_port=self.tester_intf, count=num)
+            pkt.send_pkt(self.tester, tx_port=self.tester_intf, count=num)
         else:
             pkt = Packet(pkt_type='VLAN_UDP', pkt_len=pkt_lens)
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
             pkt.config_layer('vlan', {'vlan': vlan_id})
-            pkt.send_pkt(tx_port=self.tester_intf, count=num)
+            pkt.send_pkt(self.tester, tx_port=self.tester_intf, count=num)
 
     def test_vlan(self):
         """
@@ -873,8 +869,7 @@ class TestVfKernel(TestCase):
 
         # Link down DPDK VF0 and expect no impact on other VFs
         self.vm0_testpmd.quit()
-        eal_param = '-b %(vf0)s' % ({'vf0': self.vm0_dut.ports_info[0]['pci']})
-        self.vm0_testpmd.start_testpmd("Default", eal_param=eal_param)
+        self.vm0_testpmd.start_testpmd("Default")
         self.vm0_testpmd.execute_cmd('set promisc all on')
         self.vm0_testpmd.execute_cmd('set fwd rxonly')
         self.vm0_testpmd.execute_cmd('set verbose 1')
