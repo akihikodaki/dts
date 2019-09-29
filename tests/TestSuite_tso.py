@@ -44,6 +44,7 @@ import os
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pktgen import PacketGeneratorHelper
+from packet import load_pcapfile, save_packets
 
 DEFAULT_MUT = 1500
 TSO_MTU = 9000
@@ -116,8 +117,8 @@ class TestTSO(TestCase):
         """
 
         for iface in ifaces:
-            command = ('tcpdump -w tcpdump_{0}.pcap -i {0} 2>tcpdump_{0}.out &').format(iface)
-            del_cmd = ('rm -f tcpdump_{0}.pcap').format(iface)
+            command = ('tcpdump -w /tmp/tcpdump_{0}.pcap -i {0} 2>tcpdump_{0}.out &').format(iface)
+            del_cmd = ('rm -f /tmp/tcpdump_{0}.pcap').format(iface)
             self.tester.send_expect(del_cmd, '#')
             self.tester.send_expect(command, '#')
 
@@ -145,7 +146,7 @@ class TestTSO(TestCase):
         will add a known MAC address for the test to look for.
         """
 
-        command = ('tcpdump -A -nn -e -v -r tcpdump_{iface}.pcap 2>/dev/null | ' +
+        command = ('tcpdump -A -nn -e -v -r /tmp/tcpdump_{iface}.pcap 2>/dev/null | ' +
                    'grep -c "seq"')
         return self.tcpdump_command(command.format(**locals()))
 
@@ -161,8 +162,34 @@ class TestTSO(TestCase):
         """
         Get the length of loading_sizes
         """
-        scanner = ('tcpdump  -vv -r tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"')
+        scanner = ('tcpdump  -vv -r /tmp/tcpdump_{iface}.pcap 2>/dev/null | grep "seq"  | grep "length"')
         return self.tcpdump_scanner(scanner.format(**locals()))
+
+    def get_chksum_value_and_verify(self, dump_pcap, save_file, Nic_list):
+        self.pks = load_pcapfile(dump_pcap)
+        for i in range(len(self.pks)):
+            self.pks = load_pcapfile(dump_pcap)
+            pks = self.pks[i]
+            out = pks.pktgen.pkt.show
+            chksum_list = re.findall(r'chksum=(0x\w+)', str(out))
+            pks.pktgen.pkt['IP'].chksum=None
+            if "VXLAN" in str(out):
+                pks.pktgen.pkt['UDP'].chksum=None
+                pks.pktgen.pkt['VXLAN']['IP'].chksum=None
+                pks.pktgen.pkt['VXLAN']['TCP'].chksum=None
+            elif "GRE" in str(out):
+                pks.pktgen.pkt['GRE']['IP'].chksum=None
+                pks.pktgen.pkt['GRE']['TCP'].chksum=None
+            save_packets(self.pks, save_file)
+            self.pks1 = load_pcapfile(save_file)
+            out1 = self.pks1[i].pktgen.pkt.show
+            chksum_list1 = re.findall(r'chksum=(0x\w+)', str(out1))
+            self.tester.send_expect("rm -rf %s" % save_file, "#")
+            if self.nic in Nic_list and "VXLAN" in str(out):
+                self.verify(chksum_list[0] == chksum_list1[0] and chksum_list[2] == chksum_list1[2] and chksum_list[3] == chksum_list1[3], \
+                            "The obtained chksum value is incorrect.")
+            else:
+                self.verify(chksum_list == chksum_list1, "The obtained chksum value is incorrect.")
 
     def test_tso(self):
         """
@@ -210,7 +237,7 @@ class TestTSO(TestCase):
         for loading_size in self.loading_sizes:
             # IPv4 tcp test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
@@ -232,7 +259,7 @@ class TestTSO(TestCase):
         for loading_size in self.loading_sizes:
             # IPv6 tcp test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
@@ -258,6 +285,10 @@ class TestTSO(TestCase):
         tx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
         rx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[1]))
 
+        Nic_list = ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g"]
+        save_file = "/tmp/save.pcap"
+        dump_pcap = "/tmp/tcpdump_%s.pcap" % rx_interface
+
         mac = self.dut.get_mac_address(self.dut_ports[0])
 
         cores = self.dut.get_core_list("1S/2C/2T")
@@ -276,6 +307,10 @@ class TestTSO(TestCase):
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        if self.nic in Nic_list:
+            self.logger.warning("Warning: fvl serise not support outer udp.")
+        else:
+            self.dut.send_expect("csum set outer-udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120)
 
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
@@ -283,6 +318,10 @@ class TestTSO(TestCase):
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        if self.nic in Nic_list:
+            self.logger.warning("Warning: fvl serise not support outer udp.")
+        else:
+            self.dut.send_expect("csum set outer-udp hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120)
 
         self.dut.send_expect("tunnel_tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
@@ -299,7 +338,7 @@ class TestTSO(TestCase):
             # Vxlan test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
             self.load_module()
-            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/VXLAN()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
@@ -317,12 +356,13 @@ class TestTSO(TestCase):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
                     self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
+            self.get_chksum_value_and_verify(dump_pcap, save_file, Nic_list)
 
         for loading_size in self.loading_sizes:
             # Nvgre test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
             self.load_module()
-            out = self.dut.send_expect("clear port info all", "testpmd> ", 120)
+            out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
@@ -340,6 +380,7 @@ class TestTSO(TestCase):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
                     self.verify(int(tx_outlist[num]) == loading_size% 800, "the packet segmentation incorrect, %s" % tx_outlist)
+            self.get_chksum_value_and_verify(dump_pcap, save_file, Nic_list)
 
     def test_perf_TSO_2ports(self):
         """
