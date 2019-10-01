@@ -139,7 +139,7 @@ class TestTX_preparation(TestCase):
         for packet_type in pkts.keys():
             self.start_tcpdump(self.tester_intf)
             self.tester.scapy_append(
-                'sendp([%s], iface="%s")' % (pkts[packet_type], self.tester_intf))
+                'sendp([%s], iface="%s", count=4)' % (pkts[packet_type], self.tester_intf))
             self.tester.scapy_execute()
             out = self.get_tcpdump_package()
             if packet_type == 'IPv6/cksum UDP':
