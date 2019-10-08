@@ -44,12 +44,30 @@ def build_dpdk_with_cryptodev(test_case):
     if "kasumi_lib_path" in test_case.get_suite_cfg():
         kasumi_lib_path = test_case.get_suite_cfg()["kasumi_lib_path"]
 
+    fip_cflags_path = "'-I/opt/openssl-fips-2.0.16/include/'"
+    if "fip_cflags_path" in test_case.get_suite_cfg():
+        fip_cflags_path = test_case.get_suite_cfg()["fip_cflags_path"]
+
+    fip_ldflags_path = "'-L/opt/openssl-fips-2.0.16/'"
+    if "fip_ldflags_path" in test_case.get_suite_cfg():
+        fip_cflags_path = test_case.get_suite_cfg()["fip_ldflags_path"]
+
+    fip_library_path = "/opt/openssl-fips-2.0.16/"
+    if "fip_library_path" in test_case.get_suite_cfg():
+        fip_cflags_path = test_case.get_suite_cfg()["fip_library_path"]
+
     test_case.dut.send_expect(
         "export LIBSSO_SNOW3G_PATH={}".format(snow3g_lib_path), "#")
     test_case.dut.send_expect(
         "export LIBSSO_ZUC_PATH={}".format(zuc_lib_path), "#")
     test_case.dut.send_expect(
         "export LIBSSO_KASUMI_PATH={}".format(kasumi_lib_path), "#")
+    test_case.dut.send_expect(
+        "export EXTRA_CFLAGS={}".format(fip_cflags_path), "#")
+    test_case.dut.send_expect(
+        "export EXTRA_LDFLAGS={}".format(fip_ldflags_path), "#")
+    test_case.dut.send_expect(
+        "export LD_LIBRARY_PATH={}".format(fip_library_path), "#")
 
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", "# ")
