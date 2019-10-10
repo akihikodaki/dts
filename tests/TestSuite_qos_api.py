@@ -114,8 +114,8 @@ class TestQosApi(TestCase):
         set DCB
         """
         self.dut.send_expect('port stop all', 'testpmd> ')
-        self.dut.send_expect('port config 0 dcb vt off %s pfc off' % n, 'testpmd> ')
-        self.dut.send_expect('port config 1 dcb vt off %s pfc off' % n, 'testpmd> ')
+        for i in range(len(self.dut.ports_info)):
+            self.dut.send_expect('port config %s dcb vt off %s pfc off' % (i, n), 'testpmd> ')
         self.dut.send_expect('port start all', 'testpmd> ')
 
     def scapy_send_packet_verify(self, n):
