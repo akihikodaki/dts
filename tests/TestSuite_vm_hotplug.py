@@ -36,7 +36,7 @@ DPDK Test suite.
 Test some vm hotplug function with vfio
 
 """
-
+import os
 import re
 import time
 from qemu_kvm import QEMUKvm
@@ -138,6 +138,9 @@ class TestVmHotplug(TestCase):
             except Exception, EnvironmentError:
                 pass
             if '10.0.2' in out:
+                pos = self.vm0.hostfwd_addr.find(':')
+                ssh_key = '[' + self.vm0.hostfwd_addr[:pos] + ']' + self.vm0.hostfwd_addr[pos:]
+                os.system('ssh-keygen -R %s' % ssh_key)
                 break
             time.sleep(1)
             cur_time = time.time()
@@ -276,8 +279,12 @@ class TestVmHotplug(TestCase):
     def check_vf_device(self, has_device=True, device=1):
         time.sleep(1)
         sign = 'Connection'
-        if self.nic.startswith('fortville'):
+        lis1 = ['fortville_spirit', 'fortville_eagle']
+        lis2 = ['fortpark_TLV', 'fortville_25g']
+        if self.nic in lis1:
             sign = 'Ethernet'
+        elif self.nic in lis2:
+            sign = 'Device'
         out = self.vm_session.send_expect('./usertools/dpdk-devbind.py -s | grep %s' % sign, '#')
         time.sleep(2)
         if has_device:
