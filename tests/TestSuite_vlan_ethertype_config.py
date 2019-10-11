@@ -146,7 +146,7 @@ class TestVlanEthertypeConfig(TestCase):
 
         self.tester.scapy_foreground()
         self.tester.scapy_append("pkt=rdpcap('%s')" % self.tpid_new_file)
-        self.tester.scapy_append("sendp(pkt, iface='%s')" % self.txItf)
+        self.tester.scapy_append("sendp(pkt, iface='%s', count=4)" % self.txItf)
         self.tester.scapy_execute()
 
     def check_vlan_packets(self, vlan, tpid, rxItf, result=True):
