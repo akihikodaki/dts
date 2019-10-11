@@ -108,7 +108,7 @@ class TestNetmapCompat(TestCase):
         txport = self.tester.get_local_port(self.dut_ports[0])
         mac = self.dut.get_mac_address(self.dut_ports[0])
         txItf = self.tester.get_interface(txport)
-        self.tester.scapy_append('sendp([Ether(dst="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s")' % (mac, txItf))
+        self.tester.scapy_append('sendp([Ether(dst="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s", count=4)' % (mac, txItf))
         self.tester.scapy_execute()
 
 
