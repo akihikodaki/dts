@@ -770,7 +770,7 @@ class TestGeneric_flow_api(TestCase):
         """
         supported by i40e, ixgbe and igb
         """
-        self.verify(self.nic in ["niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
+        self.verify(self.nic in ["niantic", "columbiaville_25g","columbiaville_100g","kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
                                  "powerville", "fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"], "%s nic not support ethertype filter" % self.nic)
 
@@ -782,7 +782,7 @@ class TestGeneric_flow_api(TestCase):
 
         # i40e,ixgbe and igb support different packet types.
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","columbiaville_25g","columbiaville_100g"]):
 
             basic_flow_actions = [
                 {'create': 'validate', 'flows': ['ether', 'arp'], 'actions': ['queue']},
@@ -979,12 +979,12 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by i40e and ixgbe
         """
-        self.verify(self.nic in ["niantic", "twinville", "sagepond", "sageville",
+        self.verify(self.nic in ["niantic", "columbiaville_25g","columbiaville_100g","twinville", "sagepond", "sageville",
                                  "fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"],
                     "%s nic not support fdir ipv4 filter" % self.nic)
         # i40e
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                          "fortville_spirit_single", "fortpark_TLV"]):
             self.setup_env()
             # start testpmd on pf
@@ -1088,12 +1088,12 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by i40e and ixgbe
         """
-        self.verify(self.nic in ["niantic", "twinville", "sagepond", "sageville",
+        self.verify(self.nic in ["niantic", "twinville", "sagepond", "sageville","columbiaville_25g","columbiaville_100g",
                                  "fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortpark_TLV"],
                     "%s nic not support fdir ipv6 filter" % self.nic)
         # i40e
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                          "fortville_spirit_single", "fortpark_TLV"]):
             self.setup_env()
             self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
@@ -1495,7 +1495,7 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by ixgbe
         """
-        self.verify(self.nic in ["twinville", "sagepond", "sageville"], "%s nic not support fdir vxlan filter" % self.nic)
+        self.verify(self.nic in ["twinville", "sagepond", "sageville","columbiaville_25g","columbiaville_100g"], "%s nic not support fdir vxlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--pkt-filter-mode=perfect-tunnel --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -1537,7 +1537,7 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by i40e
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                                  "fortville_spirit_single", "fortpark_TLV"],
                     "%s nic not support tunnel vxlan filter" % self.nic)
 
@@ -1601,7 +1601,7 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by i40e
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                                  "fortville_spirit_single", "fortpark_TLV"],
                     "%s nic not support tunnel nvgre filter" % self.nic)
 
