@@ -183,8 +183,11 @@ class PmdOutput():
 
     def execute_cmd(self, pmd_cmd, expected='testpmd> ', timeout=TIMEOUT,
                     alt_session=False):
-        return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout,
+        if 'dut' in str(self.session):
+            return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout,
                                     alt_session=alt_session)
+        else:
+            return self.session.send_expect('%s' % pmd_cmd, expected, timeout=timeout)
 
     def get_output(self, timeout=1):
         if 'dut' in str(self.session):
