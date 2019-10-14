@@ -444,9 +444,8 @@ class TestUniPacket(TestCase):
                              }
 
         for packet in nsh_packets:
-            self.tester.scapy_foreground()
-            self.tester.scapy_append("sendp([%s],iface='%s')" % (nsh_packets[packet], self.tester_iface))
-            self.tester.scapy_execute()
+            pk=Packet(nsh_packets[packet])
+            pk.send_pkt(self.tester, self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             self.verify(nsh_detect_message[packet] in out, "Packet Detection Error for : %s" % packet)
             print utils.GREEN("Detected packet %s Successfully" % packet)
