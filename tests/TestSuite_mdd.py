@@ -128,7 +128,7 @@ class TestMDD(TestCase):
         time.sleep(2)
         self.vm0_testpmd.execute_cmd('clear port stats all')
         self.vm0_testpmd.execute_cmd('show port stats all')
-        pkt.send_pkt(tx_port=self.tester_intf, count=send_pks_num)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf, count=send_pks_num)
         time.sleep(2)
 
     def result_verify(self, pkt_fwd=True):
