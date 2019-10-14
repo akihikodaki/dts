@@ -53,6 +53,8 @@ from vxlan import VXLAN
 from nvgre import NVGRE, IPPROTO_NVGRE
 from lldp import LLDP, LLDPManagementAddress
 from Dot1BR import Dot1BR
+from nsh import NSH
+from mpls import MPLS
 
 from utils import convert_ip2int
 from utils import convert_int2ip
@@ -64,7 +66,7 @@ from utils import get_backtrace_object
 PACKETGEN = "scapy"
 
 LayersTypes = {
-    "L2": ['ether', 'vlan', 'etag', '1588', 'arp', 'lldp'],
+    "L2": ['ether', 'vlan', 'etag', '1588', 'arp', 'lldp', 'mpls', 'nsh'],
     # ipv4_ext_unknown, ipv6_ext_unknown
     "L3": ['ipv4', 'ipv4ihl', 'ipv6', 'ipv4_ext', 'ipv6_ext', 'ipv6_ext2', 'ipv6_frag'],
     "L4": ['tcp', 'udp', 'frag', 'sctp', 'icmp', 'nofrag'],
@@ -107,6 +109,8 @@ class scapy(object):
         'gre': GRE(),
         'raw': Raw(),
         'vxlan': VXLAN(),
+        'nsh': NSH(),
+        'mpls': MPLS(),
 
         'inner_mac': Ether(),
         'inner_vlan': Dot1Q(),
@@ -320,6 +324,30 @@ class scapy(object):
 
     def vxlan(self, pkt_layer, vni=0):
         pkt_layer.vni = vni
+
+    def nsh(self, pkt_layer, ver=0, oam=0, critical=0, reserved=0, len=0, mdtype=1, nextproto=3,
+            nsp=0x0, nsi=1, npc= 0x0, nsc= 0x0, spc= 0x0, ssc= 0x0):
+        pkt_layer.Ver = ver
+        pkt_layer.OAM = oam
+        pkt_layer.Critical = critical
+        pkt_layer.Reserved = reserved
+        if len != 0:
+            pkt_layer.Len = len
+        pkt_layer.MDType = mdtype
+        pkt_layer.NextProto = nextproto
+        pkt_layer.NSP = nsp
+        pkt_layer.NSI = nsi
+        if mdtype == 1:
+            pkt_layer.NPC = npc
+            pkt_layer.NSC = nsc
+            pkt_layer.SPC = spc
+            pkt_layer.SSC = ssc
+
+    def mpls(self, pkt_layer, label=0, cos=0, s=0, ttl=64):
+        pkt_layer.label = label
+        pkt_layer.cos = cos
+        pkt_layer.s = s
+        pkt_layer.ttl = ttl
 
 
 class Packet(object):
@@ -700,6 +728,8 @@ class Packet(object):
             'GRE': 'gre',
             'VXLAN': 'vxlan',
             'PKT': 'raw',
+            'MPLS': 'mpls',
+            'NSH': 'nsh',
         }
 
         layers = self.pkt_type.split('_')
