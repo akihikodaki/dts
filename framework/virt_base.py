@@ -65,6 +65,8 @@ class VirtBase(object):
         self.host_dut = dut
         self.vm_name = vm_name
         self.suite = suite_name
+        # indicate whether the current vm is migration vm
+        self.migration_vm = False
 
         # create self used host session, need close it later
         self.host_session = self.host_dut.new_session(self.vm_name)
@@ -330,6 +332,8 @@ class VirtBase(object):
         """
         try:
             if self.vm_status is ST_PAUSE:
+                # flag current vm is migration vm
+                self.migration_vm = True
                 # connect backup vm dut and it just inherited from host
                 vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
         except Exception as vm_except:
@@ -419,9 +423,13 @@ class VirtBase(object):
         vm_dut.host_dut = self.host_dut
         vm_dut.host_session = self.host_session
         vm_dut.init_log()
+        vm_dut.migration_vm = self.migration_vm
 
         read_cache = False
         skip_setup = self.host_dut.skip_setup
+        # if current vm is migration vm, skip compile dpdk
+        if self.migration_vm:
+	        skip_setup = True
         base_dir = self.host_dut.base_dir
         vm_dut.set_speedup_options(read_cache, skip_setup)
 

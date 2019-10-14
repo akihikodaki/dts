@@ -58,6 +58,7 @@ class VirtDut(DPDKdut):
         self.hyper = hyper
         self.cpu_topo = cpu_topo
         self.dut_id = dut_id
+        self.migration_vm = False
 
         self.vm_ip = crb['IP']
         self.NAME = 'virtdut' + LOG_NAME_SEP + '%s' % self.vm_ip
@@ -188,10 +189,13 @@ class VirtDut(DPDKdut):
         self.update_ports()
 
         # restore dut ports to kernel
-        if self.virttype != 'XEN':
-            self.restore_interfaces()
-        else:
-            self.restore_interfaces_domu()
+        # if current vm is migration vm, skip restore dut ports
+        # because there maybe have some app have run
+        if not self.migration_vm:
+            if self.virttype != 'XEN':
+                self.restore_interfaces()
+            else:
+                self.restore_interfaces_domu()
         # rescan ports after interface up
         self.rescan_ports()
 
