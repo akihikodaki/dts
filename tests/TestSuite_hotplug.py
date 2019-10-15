@@ -83,7 +83,6 @@ class TestPortHotPlug(TestCase):
         self.dut.send_expect("port stop %s" % port,"Stopping ports",60)
         # sleep 10 seconds for fortville update link stats
         time.sleep(10)
-        self.dut.send_expect("port close %s" % port,"Closing ports...",60)
         self.dut.send_expect("port detach %s" % port,"is detached",60)
 
     def test_after_attach(self):
