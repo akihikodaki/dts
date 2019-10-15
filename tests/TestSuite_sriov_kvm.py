@@ -11,6 +11,7 @@ Test userland 10Gb PMD.
 import re
 import pdb
 import time
+import random
 
 from virt_common import VM
 from test_case import TestCase
@@ -23,7 +24,6 @@ VM_CORES_MASK = 'all'
 
 
 class TestSriovKvm(TestCase):
-
     supported_vf_driver = ['pci-stub', 'vfio-pci']
 
     def set_up_all(self):
@@ -39,8 +39,6 @@ class TestSriovKvm(TestCase):
 
         self.vm0 = None
         self.vm1 = None
-        self.vm2 = None
-        self.vm3 = None
 
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         if self.vf_driver is None:
@@ -51,11 +49,8 @@ class TestSriovKvm(TestCase):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
-        self.setup_2vm_2pf_env_flag = 0
         self.setup_2vm_2vf_env_flag = 0
         self.setup_2vm_prerequisite_flag = 0
-        self.setup_4vm_4vf_env_flag = 0
-        self.setup_4vm_prerequisite_flag = 0
         self.setup_2vm_2vf_env()
 
     def set_up(self):
@@ -114,7 +109,8 @@ class TestSriovKvm(TestCase):
         try:
             dut_dest_port = dut_ports[dest_port]
         except Exception as e:
-            print e
+            print
+            e
 
         # using api get_local_port() to get the correct tester port.
         tester_port = self.tester.get_local_port(dut_dest_port)
@@ -258,16 +254,15 @@ class TestSriovKvm(TestCase):
                 'srcport=%d' % ret_ether_ip['udp']['src_port'])
             if not ret_ether_ip.get('vlan'):
                 send_cmd = 'sendp([Ether(dst=nutmac, src=srcmac)/' + \
-                    'IP(dst=destip, src=srcip, len=%s)/' % pktlen + \
-                    'UDP(sport=srcport, dport=destport)/' + \
-                    'Raw(load="\x50"*%s)], ' % padding + \
-                    'iface="%s", count=%d)' % (itf, count)
+                           'IP(dst=destip, src=srcip, len=%s)/' % pktlen + \
+                           'UDP(sport=srcport, dport=destport)/' + \
+                           'Raw(load="\x50"*%s)], ' % padding + \
+                           'iface="%s", count=%d)' % (itf, count)
             else:
                 send_cmd = 'sendp([Ether(dst=nutmac, src=srcmac)/Dot1Q(vlan=vlanvalue)/' + \
                            'IP(dst=destip, src=srcip, len=%s)/' % pktlen + \
                            'UDP(sport=srcport, dport=destport)/' + \
-                           'Raw(load="\x50"*%s)], iface="%s", count=%d)' % (
-                               padding, itf, count)
+                           'Raw(load="\x50"*%s)], iface="%s", count=%d)' % (padding, itf, count)
             self.tester.scapy_append(send_cmd)
 
             self.tester.scapy_execute()
@@ -292,46 +287,6 @@ class TestSriovKvm(TestCase):
                         p0rx_pkts < count * loop,
                         "Data received by port, but should not.")
         return count * loop
-
-    def setup_2vm_2pf_env(self):
-        p0 = self.dut_ports[0]
-        p1 = self.dut_ports[1]
-
-        self.port0 = self.dut.ports_info[p0]['port']
-        self.port0.unbind_driver()
-        self.port0_pci = self.dut.ports_info[p0]['pci']
-
-        self.port1 = self.dut.ports_info[p1]['port']
-        self.port1.unbind_driver()
-        self.port1_pci = self.dut.ports_info[p1]['pci']
-
-        vf0_prop = {'opt_host': self.port0_pci}
-        vf1_prop = {'opt_host': self.port1_pci}
-
-        # set up VM0 ENV
-        self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
-        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
-        self.vm_dut_0 = self.vm0.start()
-
-        # set up VM1 ENV
-        self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
-        self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
-        self.vm_dut_1 = self.vm1.start()
-
-        self.setup_2vm_2vf_env_flag = 1
-
-    def destroy_2vm_2pf_env(self):
-        self.vm0.stop()
-        self.port0.bind_driver('igb_uio')
-        self.vm0 = None
-
-        self.vm1.stop()
-        self.port1.bind_driver('igb_uio')
-        self.vm1 = None
-
-        self.dut.virt_exit()
-
-        self.setup_2vm_2vf_env_flag = 0
 
     def setup_2vm_2vf_env(self, driver='igb_uio'):
         self.used_dut_port = self.dut_ports[0]
@@ -359,8 +314,10 @@ class TestSriovKvm(TestCase):
             if driver == 'igb_uio':
                 # start testpmd with the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
+                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
+                                                       'vf1': self.sriov_vfs_port[1].pci}
                 self.host_testpmd.start_testpmd(
-                    "1S/2C/2T", "--rxq=4 --txq=4")
+                    "1S/2C/2T", "--rxq=4 --txq=4", eal_param=eal_param)
                 self.host_testpmd.execute_cmd('set fwd rxonly')
                 self.host_testpmd.execute_cmd('start')
 
@@ -409,101 +366,6 @@ class TestSriovKvm(TestCase):
             port.bind_driver('igb_uio')
 
         self.setup_2vm_2vf_env_flag = 0
-
-    def setup_4vm_4vf_env(self, driver='igb_uio'):
-        self.used_dut_port = self.dut_ports[0]
-
-        self.dut.generate_sriov_vfs_by_port(
-            self.used_dut_port, 4, driver=driver)
-        self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['port']
-
-        try:
-            for port in self.sriov_vfs_port:
-                port.bind_driver('pci-stub')
-
-            time.sleep(1)
-
-            vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
-            vf1_prop = {'opt_host': self.sriov_vfs_port[1].pci}
-            vf2_prop = {'opt_host': self.sriov_vfs_port[2].pci}
-            vf3_prop = {'opt_host': self.sriov_vfs_port[3].pci}
-
-            for port_id in self.dut_ports:
-                if port_id == self.used_dut_port:
-                    continue
-                port = self.dut.ports_info[port_id]['port']
-                port.bind_driver()
-
-            if driver == 'igb_uio':
-                # start testpmd with the four VFs on the host
-                self.host_testpmd = PmdOutput(self.dut)
-                self.host_testpmd.start_testpmd(
-                    "1S/2C/2T")
-
-            self.vm0 = VM(self.dut, 'vm0', 'sriov_kvm')
-            self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
-            self.vm_dut_0 = self.vm0.start()
-            if self.vm_dut_0 is None:
-                raise Exception("Set up VM0 ENV failed!")
-
-            self.vm1 = VM(self.dut, 'vm1', 'sriov_kvm')
-            self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
-            self.vm_dut_1 = self.vm1.start()
-            if self.vm_dut_1 is None:
-                raise Exception("Set up VM1 ENV failed!")
-
-            self.vm2 = VM(self.dut, 'vm2', 'sriov_kvm')
-            self.vm2.set_vm_device(driver=self.vf_assign_method, **vf2_prop)
-            self.vm_dut_2 = self.vm2.start()
-            if self.vm_dut_2 is None:
-                raise Exception("Set up VM2 ENV failed!")
-
-            self.vm3 = VM(self.dut, 'vm3', 'sriov_kvm')
-            self.vm3.set_vm_device(driver=self.vf_assign_method, **vf3_prop)
-            self.vm_dut_3 = self.vm3.start()
-            if self.vm_dut_3 is None:
-                raise Exception("Set up VM3 ENV failed!")
-
-            self.setup_4vm_4vf_env_flag = 1
-        except Exception as e:
-            self.destroy_4vm_4vf_env()
-            raise Exception(e)
-
-    def destroy_4vm_4vf_env(self):
-        if getattr(self, 'vm0', None):
-            self.vm0.stop()
-            self.vm0 = None
-
-        if getattr(self, 'vm1', None):
-            self.vm1.stop()
-            self.vm1 = None
-
-        if getattr(self, 'vm2', None):
-            self.vm2.stop()
-            self.vm2 = None
-
-        if getattr(self, 'vm3', None):
-            self.vm3.stop()
-            self.vm3 = None
-
-        if getattr(self, 'host_testpmd', None):
-            self.host_testpmd.execute_cmd('stop')
-            self.host_testpmd.execute_cmd('quit', '# ')
-            self.host_testpmd = None
-
-        self.dut.virt_exit()
-
-        if getattr(self, 'used_dut_port', None) != None:
-            self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
-            port = self.ports_info[self.used_dut_port]['port']
-            port.bind_driver('igb_uio')
-            self.used_dut_port = None
-
-        for port_id in self.dut_ports:
-            port = self.dut.ports_info[port_id]['port']
-            port.bind_driver('igb_uio')
-
-        self.setup_4vm_4vf_env_flag = 0
 
     def transform_integer(self, value):
         try:
@@ -557,7 +419,7 @@ class TestSriovKvm(TestCase):
         rule_id = self.make_port_new_ruleid(port)
 
         mirror_rule_cmd = "set port %d mirror-rule %d %s %s" % \
-            (port, rule_id, mirror_name, rule_detail)
+                          (port, rule_id, mirror_name, rule_detail)
         out = self.dut.send_expect("%s" % mirror_rule_cmd, "testpmd> ")
         self.verify('Bad arguments' not in out, "Set port %d %s failed!" %
                     (port, mirror_name))
@@ -615,22 +477,26 @@ class TestSriovKvm(TestCase):
             for rule_id in self.port_mirror_ref[port][:]:
                 self.reset_port_mirror_rule(port, rule_id)
 
-    def setup_two_vm_common_prerequisite(self):
-        self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
-        self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
-        self.vm0_testpmd.execute_cmd('set fwd rxonly')
+    def setup_two_vm_common_prerequisite(self, fwd0="rxonly", fwd1="mac"):
+
+        if self.setup_2vm_prerequisite_flag == 1:
+            self.vm0_testpmd.execute_cmd('stop')
+            self.vm1_testpmd.execute_cmd('stop')
+        else:
+            self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
+            self.vm0_testpmd = PmdOutput(self.vm_dut_0)
+            self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
+            self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
+            self.vm1_testpmd = PmdOutput(self.vm_dut_1)
+            self.vm1_testpmd.start_testpmd(VM_CORES_MASK)
+            self.setup_2vm_prerequisite_flag = 1
+
+        self.vm0_testpmd.execute_cmd('set fwd %s' % fwd0)
         self.vm0_testpmd.execute_cmd('set promisc all off')
         self.vm0_testpmd.execute_cmd('start')
-
-        self.vm1_dut_ports = self.vm_dut_1.get_ports('any')
-        self.vm1_testpmd = PmdOutput(self.vm_dut_1)
-        self.vm1_testpmd.start_testpmd(VM_CORES_MASK)
-        self.vm1_testpmd.execute_cmd('set fwd mac')
+        self.vm1_testpmd.execute_cmd('set fwd %s' % fwd1)
         self.vm1_testpmd.execute_cmd('set promisc all off')
         self.vm1_testpmd.execute_cmd('start')
-
-        self.setup_2vm_prerequisite_flag = 1
 
     def destroy_two_vm_common_prerequisite(self):
         self.vm0_testpmd = None
@@ -642,21 +508,6 @@ class TestSriovKvm(TestCase):
         self.dut.virt_exit()
 
         self.setup_2vm_prerequisite_flag = 0
-
-    def stop_test_setup_two_vm_pf_env(self):
-        self.setup_2vm_2pf_env()
-
-        out = self.vm_dut_0.send_expect("ifconfig", '# ')
-        print out
-        out = self.vm_dut_0.send_expect("lspci -nn | grep -i eth", '# ')
-        print out
-
-        out = self.vm_dut_1.send_expect("ifconfig", '# ')
-        print out
-        out = self.vm_dut_1.send_expect("lspci -nn | grep -i eth", '# ')
-        print out
-
-        self.destroy_2vm_2pf_env()
 
     def test_two_vms_intervm_communication(self):
         if self.setup_2vm_prerequisite_flag == 1:
@@ -706,78 +557,144 @@ class TestSriovKvm(TestCase):
             ret_stats[key] = end_stats[key] - start_stats[key]
         return ret_stats
 
-    def test_two_vms_pool_mirror(self):
+    def test_two_vms_pool_up_mirrors(self):
+        """
+        Test Case2: Mirror Traffic between 2VMs with Pool up mirroring
+        """
         port_id_0 = 0
         packet_num = 10
 
+        # set Pool up mirror rule
         rule_id = self.set_port_pool_mirror(port_id_0, '0x1 dst-pool 1 on')
+
+        # get vm1 port stats
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # send 10 packets
         self.send_packet(
             self.vm_dut_0, self.vm0_dut_ports, port_id_0, count=packet_num)
+
+        # get vm1 port stats
         vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
+        # verify vm1 receive packets
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+        self.verify(vm1_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['TX-packets'] == packet_num,
+                    "Pool up mirror failed between VM0 and VM1!")
 
-        self.verify(vm1_ret_stats['RX-packets'] == packet_num and
-                    vm1_ret_stats['TX-packets'] == packet_num,
-                    "Pool mirror failed between VM0 and VM1!")
-
-        self.reset_port_mirror_rule(port_id_0, rule_id)
-
-    def test_two_vms_uplink_mirror(self):
+    def test_two_vms_pool_down_mirrors(self):
+        """
+        Test Case3: Mirror Traffic between 2VMs with Pool down mirroring
+        """
         port_id_0 = 0
-        packet_num = 10
+        mirror_name = "pool-mirror-down"
+        packet_num = 32
 
-        rule_id = self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
-        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-        self.send_packet(
-            self.vm_dut_0, self.vm0_dut_ports, port_id_0, count=packet_num)
-        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+        # set up common 2VM prerequisites
+        self.setup_two_vm_common_prerequisite(fwd0="mac", fwd1="rxonly")
 
-        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+        # set Pool down mirror rule
+        rule_id = self.set_port_mirror_rule(port_id_0, mirror_name, '0x1 dst-pool 1 on')
 
-        self.verify(vm1_ret_stats['RX-packets'] == packet_num and
-                    vm1_ret_stats['TX-packets'] == packet_num,
-                    "Uplink mirror failed between VM0 and VM1!")
-
-        self.reset_port_mirror_rule(port_id_0, rule_id)
-
-    def test_two_vms_downlink_mirror(self):
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm1_testpmd.execute_cmd('stop')
-
-        port_id_0 = 0
-
-        rule_id = self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
-
-        self.vm1_testpmd.execute_cmd('set fwd rxonly')
-        self.vm1_testpmd.execute_cmd('start')
-        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+        # get vm port stats
         vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # send packets
+        self.vm0_testpmd.execute_cmd('stop')
         self.vm0_testpmd.execute_cmd('start tx_first')
+
+        # get vm port stats
         vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
+        # verify vm1 receive packets
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(self.vm0_testpmd.check_tx_bytes(vm1_ret_stats['RX-packets'],  vm0_ret_stats['TX-packets']),
+        self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'] and vm1_ret_stats['RX-packets'] == packet_num,
+                    "Pool down mirror failed between VM0 and VM1!")
+
+    def test_two_vms_uplink_mirror(self):
+        """
+        Test Case4: Mirror Traffic between 2VMs with Uplink mirroring
+        """
+        port_id_0 = 0
+        packet_num = 10
+
+        # set uplink mirror rule
+        rule_id = self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
+
+        # get vm1 port stats
+        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # send packets
+        self.send_packet(
+            self.vm_dut_0, self.vm0_dut_ports, port_id_0, count=packet_num)
+
+        # get vm1 port stats
+        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # verify vm1 receive packets
+        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+
+        self.verify(vm1_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['TX-packets'] == packet_num,
+                    "Uplink mirror failed between VM0 and VM1!")
+
+    def test_two_vms_downlink_mirror(self):
+        """
+        Test Case5: Mirror Traffic between 2VMs with Downlink mirroring
+        """
+        port_id_0 = 0
+        packet_num = 32
+
+        # set downlink mirror rule
+        rule_id = self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
+
+        # set up common 2VM prerequisites
+        self.setup_two_vm_common_prerequisite(fwd0="mac", fwd1="rxonly")
+
+        # get vms port stats
+        vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # send packets
+        self.vm0_testpmd.execute_cmd('stop')
+        self.vm0_testpmd.execute_cmd('start tx_first')
+
+        # get vms port stats
+        vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # verify vm1 receive packets
+        vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
+        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+
+        self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'] and vm1_ret_stats['RX-packets'] == packet_num,
                     "Downlink mirror failed between VM0 and VM1!")
 
-        self.reset_port_mirror_rule(port_id_0, rule_id)
-
     def test_two_vms_vlan_mirror(self):
-        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
+        """
+        Test Case6: Mirror Traffic between 2VMs with Vlan mirroring
+        """
         port_id_0 = 0
-        vlan_id = 0
+        vlan_id = random.randint(1, 4095)
         vf_mask = '0x1'
         packet_num = 10
 
-        self.host_testpmd.execute_cmd(
-            'rx_vlan add %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
-        rule_id = self.set_port_vlan_mirror(port_id_0, '0 dst-pool 1 on')
+        # set up common 2VM prerequisites
+        self.setup_two_vm_common_prerequisite(fwd0="mac", fwd1="rxonly")
 
+        # add rx vlan on VF0
+        self.host_testpmd.execute_cmd('rx_vlan add %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
+
+        # set vlan mirror rule
+        rule_id = self.set_port_vlan_mirror(port_id_0, '%d dst-pool 1 on' % vlan_id)
+
+        # get vm port stats
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # send packets
         ether_ip = {}
         ether_ip['vlan'] = {'vlan': '%d' % vlan_id}
         self.send_packet(
@@ -786,16 +703,17 @@ class TestSriovKvm(TestCase):
             port_id_0,
             count=packet_num,
             **ether_ip)
+
+        # get vm port stats
         vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
+        # reset pf vlan
+        self.host_testpmd.execute_cmd('rx_vlan rm %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
+
+        # verify vm1 receive packets
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(vm1_ret_stats['RX-packets'] == packet_num and
-                    vm1_ret_stats['TX-packets'] == packet_num,
-                    "Vlan mirror failed between VM0 and VM1!")
-        self.host_testpmd.execute_cmd(
-            'rx_vlan rm %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
-        self.reset_port_mirror_rule(port_id_0, rule_id)
+        self.verify(vm1_ret_stats['RX-packets'] == packet_num * 2, "Vlan mirror failed between VM0 and VM1!")
 
     def test_two_vms_vlan_and_pool_mirror(self):
         self.vm0_testpmd.execute_cmd('vlan set strip on 0')
@@ -832,7 +750,7 @@ class TestSriovKvm(TestCase):
             self.vm1_dut_ports,
             port_id_0,
             count=10 *
-            packet_num,
+                  packet_num,
             **ether_ip)
         vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
 
@@ -845,133 +763,131 @@ class TestSriovKvm(TestCase):
         self.reset_port_all_mirror_rule(port_id_0)
 
     def test_two_vms_uplink_and_downlink_mirror(self):
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm1_testpmd.execute_cmd('stop')
-
+        """
+        Test Case7: Mirror Traffic between 2VMs with up link mirroring & down link mirroring
+        """
         port_id_0 = 0
         packet_num = 10
 
+        # set up common 2VM prerequisites
+        self.setup_two_vm_common_prerequisite(fwd0="mac", fwd1="rxonly")
+
+        # set mirror rule
         self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
         self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
 
-        self.vm1_testpmd.execute_cmd('set fwd rxonly')
-        self.vm1_testpmd.execute_cmd('start')
+        # get vm1 port stats
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-        vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
-        self.vm0_testpmd.execute_cmd('start tx_first')
-        vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+
+        # send packets
+        self.send_packet(self.vm_dut_0, self.vm0_dut_ports, port_id_0, count=packet_num)
+
+        # get vm1 port stats
         vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
-        vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
+        # verify vm1 receive packets
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
-
-        self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'],
-                    "Downlink mirror failed between VM0 and VM1 " +
-                    "when set uplink and downlink mirror!")
-
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm0_testpmd.execute_cmd('set fwd mac')
-        self.vm0_testpmd.execute_cmd('start')
-
-        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-        self.send_packet(
-            self.vm_dut_0,
-            self.vm0_dut_ports,
-            port_id_0,
-            count=packet_num)
-        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-
-        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
-
-        self.verify(vm1_ret_stats['RX-packets'] == 2 * packet_num,
-                    "Uplink and down link mirror failed between VM0 and VM1 " +
-                    "when set uplink and downlink mirror!")
-
-        self.reset_port_all_mirror_rule(port_id_0)
+        try:
+            self.verify(vm1_ret_stats['RX-packets'] == packet_num * 2, "failed")
+        except:
+            self.reset_port_all_mirror_rule(port_id_0)
+            raise ("Set uplink and downlink mirror failed!")
 
     def test_two_vms_vlan_and_pool_and_uplink_and_downlink(self):
-        self.vm0_testpmd.execute_cmd('vlan set strip on 0')
-        self.vm1_testpmd.execute_cmd('vlan set strip on 0')
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm1_testpmd.execute_cmd('stop')
-
+        """
+        Test Case8: Mirror Traffic between 2VMs with Vlan & with up link mirroring & down link mirroring
+        """
         port_id_0 = 0
-        vlan_id = 3
+        vlan_id = random.randint(1, 4095)
         vf_mask = '0x2'
         packet_num = 1
 
-        self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
-        self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
-        self.host_testpmd.execute_cmd("rx_vlan add %d port %d vf %s" %
-                                      (vlan_id, port_id_0, vf_mask))
-        self.set_port_vlan_mirror(port_id_0, '%d dst-pool 0 on' % vlan_id)
+        # set up common 2VM prerequisites
+        self.setup_two_vm_common_prerequisite(fwd0="mac", fwd1="rxonly")
+
+        # set mirror rule
         self.set_port_pool_mirror(port_id_0, '0x1 dst-pool 1 on')
+        self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
 
-        self.vm1_testpmd.execute_cmd('set fwd rxonly')
-        self.vm1_testpmd.execute_cmd('start')
-        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+        if self.nic.startswith('niantic'):
+            self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
+
+            # get vm port stats
+            vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+            vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+
+            # send packets
+            self.vm0_testpmd.execute_cmd('stop')
+            self.vm0_testpmd.execute_cmd('set fwd rxonly')
+            self.vm0_testpmd.execute_cmd('start tx_first')
+
+            # get vm port stats
+            vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+            vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+            # verify vm1 receive packets
+            vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
+            vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+
+            self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'], "uplink &downlink mirror failed between VM0 and VM1")
+
+        # set vlan mirror rule
+        self.host_testpmd.execute_cmd("rx_vlan add %d port %d vf %s" % (vlan_id, port_id_0, vf_mask))
+        self.set_port_vlan_mirror(port_id_0, '%d dst-pool 0 on' % vlan_id)
+
+        # get vm port stats
         vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
-        self.vm0_testpmd.execute_cmd('start tx_first')
-        vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
-        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-
-        vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
-        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
-
-        self.verify(vm1_ret_stats['RX-packets'] == vm0_ret_stats['TX-packets'],
-                    "Downlink mirror failed between VM0 and VM1 " +
-                    "when set vlan, pool, uplink and downlink mirror!")
-
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm0_testpmd.execute_cmd('set fwd mac')
-        self.vm0_testpmd.execute_cmd('start')
-        vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-        self.send_packet(
-            self.vm_dut_0,
-            self.vm0_dut_ports,
-            port_id_0,
-            count=packet_num)
-        vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
-        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
-        vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
-        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
-
-        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num) and
-                    self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], packet_num) and
-                    self.vm0_testpmd.check_tx_bytes(vm1_ret_stats['RX-packets'], 2 * packet_num),
-                    "Uplink and downlink mirror failed between VM0 and VM1 " +
-                    "when set vlan, pool, uplink and downlink mirror!")
-
-        self.vm0_testpmd.execute_cmd('stop')
-        self.vm0_testpmd.execute_cmd('set fwd mac')
-        self.vm0_testpmd.execute_cmd('start')
-
+        # send packets
         ether_ip = {}
         ether_ip['vlan'] = {'vlan': '%d' % vlan_id}
-        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
-        vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         self.send_packet(
             self.vm_dut_1,
             self.vm1_dut_ports,
             port_id_0,
             count=packet_num,
             **ether_ip)
+        # get vm port stats
         vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
 
+        # verify vm1 receive packets
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], packet_num) and
-                    self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['TX-packets'], packet_num) and
-                    vm1_ret_stats['RX-packets'] == 2 * packet_num,
-                    "Vlan and downlink mirror failed between VM0 and VM1 " +
-                    "when set vlan, pool, uplink and downlink mirror!")
-        self.host_testpmd.execute_cmd("rx_vlan rm %d port %d vf %s" %
-                                      (vlan_id, port_id_0, vf_mask))
-        self.reset_port_all_mirror_rule(port_id_0)
+        try:
+            if self.nic.startswith('niantic'):
+                self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['RX-packets'] == packet_num,
+                            "vlan mirror failed between VM0 and VM1")
+            else:
+                self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['RX-packets'] == 2 * packet_num,
+                            "vlan&downlink mirror failed between VM0 and VM1")
+        except:
+            self.host_testpmd.execute_cmd("rx_vlan rm %d port %d vf %s" % (vlan_id, port_id_0, vf_mask))
+            raise ("vlan mirror or downlink mirror failed between VM0 and VM1")
+
+        # get vm port stats
+        vm0_start_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+        vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+        # send packets
+        self.send_packet(
+            self.vm_dut_0,
+            self.vm0_dut_ports,
+            port_id_0,
+            count=packet_num)
+        # get vm port stats
+        vm0_end_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
+        vm1_end_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
+
+        # reset pf vlan
+        self.host_testpmd.execute_cmd("rx_vlan rm %d port %d vf %s" % (vlan_id, port_id_0, vf_mask))
+
+        # verify vm1 receive packets
+        vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
+        vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
+        self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm0_ret_stats['TX-packets'] == packet_num and
+                    vm1_ret_stats['RX-packets'] == packet_num, "uplink mirror failed between VM0 and VM1")
 
     def test_two_vms_add_multi_exact_mac_on_vf(self):
         port_id_0 = 0
@@ -1004,9 +920,9 @@ class TestSriovKvm(TestCase):
                         "when add multi exact MAC address on VF!")
 
     def test_two_vms_enalbe_or_disable_one_uta_mac_on_vf(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         port_id_0 = 0
@@ -1052,9 +968,9 @@ class TestSriovKvm(TestCase):
                     "when enable or disable one uta MAC address on VF!")
 
     def test_two_vms_add_multi_uta_mac_on_vf(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         port_id_0 = 0
@@ -1082,9 +998,9 @@ class TestSriovKvm(TestCase):
                         "when add multi uta MAC address on VF!")
 
     def test_two_vms_add_or_remove_uta_mac_on_vf(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         port_id_0 = 0
@@ -1119,9 +1035,9 @@ class TestSriovKvm(TestCase):
                             "when add or remove multi uta MAC address on VF!")
 
     def test_two_vms_pause_rx_queues(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         port_id_0 = 0
@@ -1153,9 +1069,9 @@ class TestSriovKvm(TestCase):
                             "when enable or pause RX queues on VF!")
 
     def test_two_vms_pause_tx_queuse(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         self.vm0_testpmd.execute_cmd("stop")
@@ -1190,9 +1106,9 @@ class TestSriovKvm(TestCase):
                             "when enable or pause TX queues on VF!")
 
     def test_two_vms_prevent_rx_broadcast_on_vf(self):
-        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" %self.nic)
+        self.verify(self.nic.startswith('fortville') == False, "NIC is [%s], skip this case" % self.nic)
         if self.nic.startswith('fortville'):
-            self.dut.logger.warning("NIC is [%s], skip this case" %self.nic)
+            self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
         port_id_0 = 0
@@ -1254,8 +1170,12 @@ class TestSriovKvm(TestCase):
                 error, "Execute command '%s' successfully, it should be failed!" % command)
 
     def tear_down(self):
-        self.vm0_testpmd.execute_cmd('quit', '# ')
-        self.vm1_testpmd.execute_cmd('quit', '# ')
+        port_id_0 = 0
+        self.reset_port_all_mirror_rule(port_id_0)
+        self.vm0_testpmd.execute_cmd('clear port stats all')
+        self.vm1_testpmd.execute_cmd('clear port stats all')
+        self.vm0_testpmd.execute_cmd('stop')
+        self.vm1_testpmd.execute_cmd('stop')
         time.sleep(1)
 
     def tear_down_all(self):
@@ -1263,22 +1183,10 @@ class TestSriovKvm(TestCase):
             self.destroy_two_vm_common_prerequisite()
         if self.setup_2vm_2vf_env_flag == 1:
             self.destroy_2vm_2vf_env()
-
-        if self.setup_2vm_2pf_env_flag == 1:
-            self.destroy_2vm_2pf_env()
-
-        if self.setup_4vm_prerequisite_flag == 1:
-            self.destroy_four_vm_common_prerequisite()
-        if self.setup_4vm_4vf_env_flag == 1:
-            self.destroy_4vm_4vf_env()
         if getattr(self, 'vm0', None):
             self.vm0.stop()
         if getattr(self, 'vm1', None):
             self.vm1.stop()
-        if getattr(self, 'vm2', None):
-            self.vm2.stop()
-        if getattr(self, 'vm3', None):
-            self.vm3.stop()
 
         self.dut.virt_exit()
 
