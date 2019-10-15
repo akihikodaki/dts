@@ -109,9 +109,9 @@ class PmdOutput():
         :param eal_param:
         :return:
         """
-        re_w_pci_str = '-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s'
+        re_w_pci_str = '\s?-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-w\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
         re_file_prefix_str = '--file-prefix=.+?\s'
-        re_b_pci_str = '-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s'
+        re_b_pci_str = '\s?-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-b\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
         eal_param = eal_param + ' '
         # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ']
         w_pci_str_list = re.findall(re_w_pci_str, eal_param)
