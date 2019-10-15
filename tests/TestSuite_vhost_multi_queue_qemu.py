@@ -256,6 +256,8 @@ class TestVhostMultiQueueQemu(TestCase):
         self.vm_dut.send_expect("start", "testpmd>")
 
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
+        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
+        self.verify(res is True, 'There has port link is down')
         self.send_and_verify("vhost queue > virtio queue")
 
         self.vm_dut.send_expect("stop", "testpmd>", 20)
@@ -298,6 +300,8 @@ class TestVhostMultiQueueQemu(TestCase):
         self.vm_dut.send_expect("set fwd mac", "testpmd>", 20)
         self.vm_dut.send_expect("start", "testpmd>")
         self.dut.send_expect("clear port stats all", "testpmd> ", 120)
+        res = self.pmd_out.wait_link_status_up('all', timeout = 15)
+        self.verify(res is True, 'There has port link is down')
 
         self.send_and_verify("vhost queue < virtio queue")
 
