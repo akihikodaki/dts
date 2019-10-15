@@ -44,7 +44,7 @@ import os
 from test_case import TestCase
 from settings import HEADER_SIZE
 from pktgen import PacketGeneratorHelper
-from packet import load_pcapfile, save_packets
+from packet import Packet
 
 DEFAULT_MUT = 1500
 TSO_MTU = 9000
@@ -154,7 +154,7 @@ class TestTSO(TestCase):
         """
         Execute scanner to return results
         """
-        scanner_result = self.tester.send_expect(scanner, '#')
+        scanner_result = self.tester.send_expect(scanner, '#', 60)
         fially_result = re.findall(r'length( \d+)', scanner_result)
         return list(fially_result)
 
@@ -166,23 +166,24 @@ class TestTSO(TestCase):
         return self.tcpdump_scanner(scanner.format(**locals()))
 
     def get_chksum_value_and_verify(self, dump_pcap, save_file, Nic_list):
-        self.pks = load_pcapfile(dump_pcap)
+        packet = Packet()
+        self.pks = packet.read_pcapfile(dump_pcap, self.tester)
         for i in range(len(self.pks)):
-            self.pks = load_pcapfile(dump_pcap)
+            self.pks = packet.read_pcapfile(dump_pcap, self.tester)
             pks = self.pks[i]
-            out = pks.pktgen.pkt.show
+            out = pks.show
             chksum_list = re.findall(r'chksum=(0x\w+)', str(out))
-            pks.pktgen.pkt['IP'].chksum=None
+            pks['IP'].chksum=None
             if "VXLAN" in str(out):
-                pks.pktgen.pkt['UDP'].chksum=None
-                pks.pktgen.pkt['VXLAN']['IP'].chksum=None
-                pks.pktgen.pkt['VXLAN']['TCP'].chksum=None
+                pks['UDP'].chksum=None
+                pks['VXLAN']['IP'].chksum=None
+                pks['VXLAN']['TCP'].chksum=None
             elif "GRE" in str(out):
-                pks.pktgen.pkt['GRE']['IP'].chksum=None
-                pks.pktgen.pkt['GRE']['TCP'].chksum=None
-            save_packets(self.pks, save_file)
-            self.pks1 = load_pcapfile(save_file)
-            out1 = self.pks1[i].pktgen.pkt.show
+                pks['GRE']['IP'].chksum=None
+                pks['GRE']['TCP'].chksum=None
+            packet.save_pcapfile(self.tester, filename=save_file)
+            self.pks1 = packet.read_pcapfile(save_file, self.tester)
+            out1 = self.pks1[i].show
             chksum_list1 = re.findall(r'chksum=(0x\w+)', str(out1))
             self.tester.send_expect("rm -rf %s" % save_file, "#")
             if self.nic in Nic_list and "VXLAN" in str(out):
