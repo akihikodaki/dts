@@ -108,7 +108,7 @@ class TestMulticast(TestCase):
                 for rx_port in trafficFlow[flow][1].split(","):
                     sniff_src = "not 00:00:00:00:00:00"
 
-                    inst = self.tester.tcpdump_sniff_packets(intf=self.tester.get_interface(eval(rx_port)), timeout=5,
+                    inst = self.tester.tcpdump_sniff_packets(intf=self.tester.get_interface(eval(rx_port)),
                         count=1, filters=[{"layer": "ether", "config": {"src": sniff_src}}] )
                     dmac = self.dut.get_mac_address(TGs[int(trafficFlow[flow][0][2])])
 
@@ -119,8 +119,8 @@ class TestMulticast(TestCase):
                     time.sleep(5)  # Wait for the sniffer to finish.
 
                     pkts = self.tester.load_tcpdump_sniff_packets(inst)
-                    for packet in pkts:
-                        result = str(packet.pktgen.pkt.show)
+                    for i in range(len(pkts)):
+                        result = str(pkts[i].show)
 
                         print result
                         self.verify("Ether" in result, "No packet received")
