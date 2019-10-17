@@ -36,7 +36,7 @@ import struct
 import socket
 from socket import htonl
 
-from packet import Packet
+from packet import Packet, TMP_PATH
 from scapy.sendrecv import sendp
 from scapy.utils import wrpcap
 
@@ -181,14 +181,14 @@ class PmdBonding(object):
         # create packet
         streams = []
         # keep a copy of pcap for debug
-        savePath = os.sep.join([self.target_source,
+        savePath = os.sep.join([TMP_PATH,
                                 "pkt_{0}.pcap".format(pkt_name)])
         pkt_type = pkt_config.get('type')
         pkt_layers = pkt_config.get('pkt_layers')
         pkt = Packet(pkt_type=pkt_type.upper())
         for layer in pkt_layers.keys():
             pkt.config_layer(layer, pkt_layers[layer])
-        pkt.pktgen.write_pcap(savePath)
+        pkt.save_pcapfile(filename=savePath)
         streams.append(pkt.pktgen.pkt)
 
         return streams
@@ -228,14 +228,14 @@ class PmdBonding(object):
         streams = []
         for values in pkt_configs:
             # keep a copy of pcap for debug
-            savePath = os.sep.join([self.target_source,
+            savePath = os.sep.join([TMP_PATH,
                                     "pkt_{0}.pcap".format(stm_name)])
             pkt_type = values.get('type')
             pkt_layers = values.get('pkt_layers')
             pkt = Packet(pkt_type=pkt_type.upper())
             for layer in pkt_layers.keys():
                 pkt.config_layer(layer, pkt_layers[layer])
-            pkt.pktgen.write_pcap(savePath)
+            pkt.save_pcapfile(filename=savePath)
             streams.append(pkt.pktgen.pkt)
 
         return streams
