@@ -813,7 +813,7 @@ class TestGeneric_flow_api(TestCase):
                 {'create': 'create', 'flows': ['ether', 'lldp'], 'actions': ['queue']},
             ]
             extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
-            self.sendpkt(pktstr='Ether(dst="%s",type="0x88E5")/Raw("x" * 20)' % self.pf_mac)
+            self.sendpkt(pktstr='Ether(dst="%s",type=0x88E5)/Raw("x" * 20)' % self.pf_mac)
 
             self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.pf_mac)
             rule_num = extrapkt_rulenum['rulenum']
