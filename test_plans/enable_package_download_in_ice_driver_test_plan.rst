@@ -62,7 +62,7 @@ Hardware::
 Test case 1: Download the package successfully
 ==============================================
 
-1. Put the ice.pkg to /lib/firmware/intel/ice/ddp/ice.pkg,
+1. Put the correct ice.pkg to /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg,
    then reboot the server.
 
 2. Start the testpmd::
@@ -98,7 +98,7 @@ Test case 2: Driver enters Safe Mode successfully
 =================================================
 
 1. Server power on, then put a new ice.pkg to
-   /lib/firmware/intel/ice/ddp/ice.pkg.
+   /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg.
    Make sure the new ice.pkg is different with the original one.
 
 2. Start testpmd::
@@ -139,7 +139,7 @@ Test case 3: Driver enters Safe Mode failed
 ===========================================
 
 1. Server power on, then put a new ice.pkg to
-   /lib/firmware/intel/ice/ddp/ice.pkg.
+   /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg.
    Make sure the new ice.pkg is different with the original one.
 
 2. Start testpmd::
@@ -151,10 +151,4 @@ Test case 3: Driver enters Safe Mode failed
 
     ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode
 
-   The driver failed to go to safe mode.
-
-3. Check port info in testpmd::
-
-    testpmd> show port info all
-
-   There is no listed port info.
+   The driver failed to go to safe mode and testpmd failed to start.
