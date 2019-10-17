@@ -189,6 +189,7 @@ class Dut(Crb):
                           + blank + b_ports_str \
                           + blank + no_pci \
                           + blank + vdev
+		self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
@@ -213,6 +214,7 @@ class Dut(Crb):
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
                           + blank + pci_str
+		self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
