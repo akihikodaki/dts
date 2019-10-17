@@ -54,9 +54,12 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.tester_p0_mac = self.tester.get_mac(localPort0)
         self.dut_testpmd = PmdOutput(self.dut)
 
-        self.pkg_file = '/lib/firmware/intel/ice/ddp/ice.pkg'
-        out = self.dut.send_expect("ls %s" % self.pkg_file, "#")
-        self.verify("No such file or directory" not in out, "Cannot find %s, please check you system/driver." % self.pkg_file)
+        self.pkg_file1 = '/lib/firmware/intel/ice/ddp/ice.pkg'
+        self.pkg_file2 = '/lib/firmware/updates/intel/ice/ddp/ice.pkg'
+        out = self.dut.send_expect("ls %s" % self.pkg_file1, "#")
+        self.verify("No such file or directory" not in out, "Cannot find %s, please check you system/driver." % self.pkg_file1)
+        out = self.dut.send_expect("ls %s" % self.pkg_file2, "#")
+        self.verify("No such file or directory" not in out, "Cannot find %s, please check you system/driver." % self.pkg_file2)
         self.backup_recover_ice_pkg("backup")
 
     def set_up(self):
@@ -64,25 +67,28 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
 
     def backup_recover_ice_pkg(self, flag="backup"):
         """
-        if backup == true: backup /lib/firmware/intel/ice/ddp/ice.pkg to ~/ice.pkg_backup
-        else: recover ~/ice.pkg_backup to /lib/firmware/intel/ice/ddp/ice.pkg
+        if backup == true: backup /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg to /opt/ice.pkg_backup
+        else: recover /opt/ice.pkg_backup to /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg
         """
         backup_file = '/opt/ice.pkg_backup'
         if flag == "backup":
-            self.dut.send_expect("\cp %s %s" % (self.pkg_file, backup_file), "#")
+            self.dut.send_expect("\cp %s %s" % (self.pkg_file1, backup_file), "#")
         else:
-            self.dut.send_expect("\cp %s %s" % (backup_file, self.pkg_file), "#")
+            self.dut.send_expect("\cp %s %s" % (backup_file, self.pkg_file1), "#")
+            self.dut.send_expect("\cp %s %s" % (backup_file, self.pkg_file2), "#")
 
     def use_correct_ice_pkg(self, flag="true"):
         """
-        if flag == true: use /lib/firmware/intel/ice/ddp/ice.pkg
-        else: touch a wrong /lib/firmware/intel/ice/ddp/ice.pkg
+        if flag == true: use correct /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg
+        else: touch a wrong /lib/firmware/intel/ice/ddp/ice.pkg and /lib/firmware/updates/intel/ice/ddp/ice.pkg
         """
         if flag == "true":
             self.backup_recover_ice_pkg("recover")
         else:
-            self.dut.send_expect("rm -rf %s" % self.pkg_file, "#")
-            self.dut.send_expect("touch %s" % self.pkg_file, "#")
+            self.dut.send_expect("rm -rf %s" % self.pkg_file1, "#")
+            self.dut.send_expect("touch %s" % self.pkg_file1, "#")
+            self.dut.send_expect("rm -rf %s" % self.pkg_file2, "#")
+            self.dut.send_expect("touch %s" % self.pkg_file2, "#")
 
     def start_testpmd(self, ice_pkg="true", safe_mode_support="false"):
         self.eal_param = ""
@@ -252,21 +258,18 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         """
         self.use_correct_ice_pkg(ice_pkg)
         self.start_testpmd(ice_pkg, safe_mode_support)
-        if ice_pkg == "false" and safe_mode_support == "false":
-            out = self.dut_testpmd.execute_cmd('show port info all')
-            self.verify("Infos for port" not in out, "There should be no listed port info.")
-        else:
-            self.dut_testpmd.execute_cmd('set fwd mac')
-            self.dut_testpmd.execute_cmd('start')
-            self.tcpdump_start_sniffing([self.tester_p0, self.tester_p1])
-            self.send_packet(tran_type="ipv4-other", flag=ice_pkg)
 
-            self.dut_testpmd.execute_cmd('stop')
-            self.dut_testpmd.execute_cmd('set fwd rxonly')
-            self.dut_testpmd.execute_cmd('start')
-            for tran_types in ["ipv4-tcp", "ipv4-udp", "ipv4-sctp", "ipv6-tcp", "ipv6-udp", "ipv6-sctp"]:
-                print tran_types
-                self.send_packet(tran_type=tran_types, flag=ice_pkg)
+        self.dut_testpmd.execute_cmd('set fwd mac')
+        self.dut_testpmd.execute_cmd('start')
+        self.tcpdump_start_sniffing([self.tester_p0, self.tester_p1])
+        self.send_packet(tran_type="ipv4-other", flag=ice_pkg)
+
+        self.dut_testpmd.execute_cmd('stop')
+        self.dut_testpmd.execute_cmd('set fwd rxonly')
+        self.dut_testpmd.execute_cmd('start')
+        for tran_types in ["ipv4-tcp", "ipv4-udp", "ipv4-sctp", "ipv6-tcp", "ipv6-udp", "ipv6-sctp"]:
+            print tran_types
+            self.send_packet(tran_type=tran_types, flag=ice_pkg)
 
     def test_download_the_package_successfully(self):
         """
@@ -284,7 +287,13 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         """
         use wrong ice.pkg and start testpmd without "safe-mode-suppor", no port is loaded in testpmd
         """
-        self.download_the_package(ice_pkg="false", safe_mode_support="false")
+        self.use_correct_ice_pkg(flag="false")
+        cmd = "./%s/app/testpmd -c 0x7 -n 4 -- -i --nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.target, self.PF_QUEUE, self.PF_QUEUE)
+        out = self.dut.send_expect(cmd, "#", 60)
+        error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
+                "ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode"]
+        for error_message in error_messages:
+            self.verify(error_message in out, "There should be '%s' in out: %s" % (error_message, out))
 
     def tear_down(self):
         self.dut_testpmd.quit()
