@@ -1740,7 +1740,7 @@ test_vectors = {
         "aad": [0],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [12],
         "output_cipher": "*",
         "output_hash": "*"
     },
