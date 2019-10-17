@@ -195,7 +195,7 @@ def get_subclasses(module, clazz):
     Get module attribute name and attribute.
     """
     for subclazz_name, subclazz in inspect.getmembers(module):
-        if hasattr(subclazz, '__bases__') and clazz in subclazz.__bases__:
+        if hasattr(subclazz, '__bases__') and subclazz.__bases__ and clazz in subclazz.__bases__:
             yield (subclazz_name, subclazz)
 
 
