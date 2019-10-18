@@ -154,6 +154,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vhost_qemu_mtu_test_plan
     vhost_user_live_migration_test_plan
     vm_power_manager_test_plan
+    power_pbf_test_plan
     vmdq_test_plan
     vf_l3fwd_test_plan
     softnic_test_plan
