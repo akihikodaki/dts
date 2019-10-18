@@ -312,7 +312,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
         # send and sniff packet
         rx_inst = self.tester.tcpdump_sniff_packets(rx_intf)
         self.send_pcap_pkt_by_scapy(self.tester, tgen_input[0][2], tx_intf)
-        pkts = self.tester.load_tcpdump_sniff_packets(rx_inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(rx_inst, timeout=2)
         self.verify(len(pkts) == pkt_cnt, "Packet not forwarded as expected")
 
         return
