@@ -444,8 +444,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # save the capture packet into pcap format
         inst = self.tester.tcpdump_sniff_packets(self.recv_iface)
         config.send_pcap(self.tester_iface)
-        pkt = self.tester.load_tcpdump_sniff_packets(inst)
-        time.sleep(5)
+        pkt = self.tester.load_tcpdump_sniff_packets(inst, timeout=3)
 
         # extract the checksum offload from saved pcap file
         chksums = config.get_chksums(pkt=pkt)
