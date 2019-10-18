@@ -122,6 +122,8 @@ class TestQueue_region(TestCase):
             pkt = Packet(pkt_type='TCP')
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
             pkt.config_layer('tcp', {'flags': flags})
+            if flags == 'S':
+                pkt.pktgen.pkt.__delitem__('Raw')
         elif (pkt_type == "sctp"):
             pkt = Packet(pkt_type='SCTP')
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
@@ -135,6 +137,9 @@ class TestQueue_region(TestCase):
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
         elif (pkt_type == "ipv6_tcp"):
             pkt = Packet(pkt_type='IPv6_TCP')
+            pkt.config_layer('tcp',{'flags':flags})
+            if flags == 'S':
+                pkt.pktgen.pkt.__delitem__('Raw')
             pkt.config_layer('ether', {'dst': mac, 'src': self.tester_mac})
         elif (pkt_type == "ipv6_sctp"):
             pkt = Packet(pkt_type='IPv6_SCTP')
@@ -262,7 +267,7 @@ class TestQueue_region(TestCase):
         # not assign ipv4-tcp SYN packet to any queue region, the packet to queue region 0.
         if(self.nic in ["fortpark_TLV"]):
             queue_region = ["1"]
-            queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
+            queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp", flags="S")
         else:
             queue_region = ["8", "9"]
             queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp")
