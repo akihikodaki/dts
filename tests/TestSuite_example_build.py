@@ -57,7 +57,9 @@ class TestExamplebuild(TestCase):
         """
         Verify example applications compile successfully
         """
-        self.dut.send_expect('export PQOS_INSTALL_PATH=/root/intel-cmt-cat-master/lib', '#')
+        out = self.dut.send_expect('ls /root/intel-cmt-cat-master/lib', '#')
+        if "No such file or directory" not in out:
+            self.dut.send_expect('export PQOS_INSTALL_PATH=/root/intel-cmt-cat-master/lib', '#')
         out = self.dut.build_dpdk_apps("./examples", '#')
         verify_info = ['error','Error','Stop','terminate','failed','No such file','no input files','not found','No rule']
         for failed_info in verify_info:
