@@ -87,6 +87,11 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         self.scapyCmds.append(packet)
         self.dut.send_expect("start", "testpmd>")
+
+        self.pmd_output = PmdOutput(self.dut)
+        res = self.pmd_output.wait_link_status_up('all', timeout=15)
+        self.verify(res is True, 'there have port link is down')
+
         self.scapy_execute()
         time.sleep(.5)
         out = self.dut.get_session_output()
