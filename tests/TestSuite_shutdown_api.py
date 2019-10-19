@@ -116,7 +116,7 @@ class TestShutdownApi(TestCase):
             pkg = 'Ether(src="%s", dst="%s")/IP()/Raw(load="P" * %d)' % (smac, dmac, padding)
 
         self.tester.scapy_foreground()
-        self.tester.scapy_append('sendp(%s, iface="%s")' % (pkg, itf))
+        self.tester.scapy_append('sendp(%s, iface="%s", count=4)' % (pkg, itf))
         self.tester.scapy_execute()
         time.sleep(3)
 
@@ -131,8 +131,8 @@ class TestShutdownApi(TestCase):
         p1rx_pkts -= gp1rx_pkts
         p1rx_bytes -= gp1rx_bytes
 
-        rx_bytes_exp = pktSize
-        tx_bytes_exp = pktSize
+        rx_bytes_exp = pktSize*4
+        tx_bytes_exp = pktSize*4
 
         if self.kdriver == "fm10k":
             # RRC will always strip rx/tx crc
@@ -144,11 +144,11 @@ class TestShutdownApi(TestCase):
                 tx_bytes_exp -= 4
         else:
             # some NIC will always include tx crc
-            rx_bytes_exp -= 4
-            tx_bytes_exp -= 4
+            rx_bytes_exp -= 16
+            tx_bytes_exp -= 16
             if vlan_strip is True:
                 # vlan strip default is off
-                tx_bytes_exp -= 4
+                tx_bytes_exp -= 16
          
         # fortville nic enable send lldp packet function when port setup
         # now the tx-packets size is lldp_size(110) * n + forward packe size
@@ -548,6 +548,16 @@ class TestShutdownApi(TestCase):
         Run after each test case.
         """
         self.dut.kill_all()
+        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        ports_num = len(self.ports)
+        # link up test, to avoid failing further tests if link was down
+        for i in range(ports_num):
+            ## sometimes output text messingup testpmd prompt so trimmed prompt
+            self.dut.send_expect("set link-up port %d" % i, ">")
+        # start ports, to avodi failing further tests if ports are stoped
+        self.dut.send_expect("port start all", "testpmd> ", 100)
+        self.dut.send_expect("quit", "# ")
+
 
     def tear_down_all(self):
         """
