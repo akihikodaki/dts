@@ -179,7 +179,7 @@ class TestUnitTestsEal(TestCase):
         self.dut.send_expect("./%s/app/test" % self.target,
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_readwrite_lf_autotest",
-                                   "RTE>>", self.run_cmd_time)
+                                   "RTE>>", self.run_cmd_time*3)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
 
