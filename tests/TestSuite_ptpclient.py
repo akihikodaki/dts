@@ -98,7 +98,10 @@ class TestPtpClient(TestCase):
         ptp client test case.
         """
         # use the first port on that self.nic
-        self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
+        if self.nic in ["cavium_a063", "cavium_a064"]:
+            self.tester.send_expect("ptp4l -i %s -2 -m &" % self.itf0, "ptp4l")
+        else:
+            self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
         self.dut.send_expect("./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 0 -p 0x1 " + "&", "Delta between master and slave", 60)
@@ -125,7 +128,10 @@ class TestPtpClient(TestCase):
         d_time = self.dut.send_expect("date '+%Y-%m-%d %H:%M'","# ")
         self.verify(d_time == '2000-01-01 00:00', "set the time error")
 
-        self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
+        if self.nic in ["cavium_a063", "cavium_a064"]:
+            self.tester.send_expect("ptp4l -i %s -2 -m &" % self.itf0, "ptp4l")
+        else:
+            self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
         self.dut.send_expect("./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 1 -p 0x1" + "&", "Delta between master and slave", 60)
@@ -151,6 +157,10 @@ class TestPtpClient(TestCase):
         # some times, when using data cmdline get dut system time, after kill ptpclient example.
         # the output will include kill process info, at that time need get system time again.
         if len(dut_out) != len(tester_out):
+            dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
+        ## In rare cases minute may change while getting time. So get time again
+        if dut_out != tester_out:
+            tester_out = self.tester.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
             dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
 
         self.verify(tester_out == dut_out, "the DUT time synchronous error")
