@@ -2350,5 +2350,20 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+     "set_promiscuousmode": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
