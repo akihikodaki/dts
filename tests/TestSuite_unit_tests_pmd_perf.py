@@ -113,6 +113,7 @@ class TestUnitTestsPmdPerf(TestCase):
             match_regex = "Result: (\d+) cycles per packet"
             m = re.compile(r"%s" % match_regex, re.S)
             result = m.search(out)
+            self.verify(result, "Failed to get result")
             self.logger.info("Mode %s latency is %s" % (mode, result.group(1)))
 
         self.dut.send_expect("quit", "# ")
@@ -143,6 +144,7 @@ class TestUnitTestsPmdPerf(TestCase):
                 match_regex = "Result: (\d+) cycles per packet"
                 m = re.compile(r"%s" % match_regex, re.S)
                 result = m.search(out)
+                self.verify(result, "Failed to get result")
                 table_row.append(result.group(1))
 
             self.dut.send_expect("quit", "# ")
@@ -154,7 +156,7 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
