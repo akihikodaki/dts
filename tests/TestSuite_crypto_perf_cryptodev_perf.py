@@ -75,6 +75,10 @@ class PerfTestsCryptodev(TestCase):
             cc.build_dpdk_with_cryptodev(self)
 
         cc.bind_qat_device(self, "vfio-pci")
+        src_files = ['dep/test_aes_cbc.data', 'dep/test_aes_gcm.data']
+        self.dut_file_dir = '/tmp'
+        for file in src_files:
+            self.dut.session.copy_file_to(file, self.dut_file_dir)
 
     def tear_down_all(self):
         cc.clear_dpdk_config(self)
@@ -90,6 +94,109 @@ class PerfTestsCryptodev(TestCase):
 
     def tear_down(self):
         self.dut.kill_all()
+
+    def _run_func(self, eal_opt_str, crypto_func_opt_str, case_name):
+        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
+                                          eal_opt_str,
+                                          crypto_func_opt_str)
+        self.logger.info(cmd_str)
+        try:
+            out = self.dut.send_expect(cmd_str+">%s/%s.txt" % (self.dut_file_dir, case_name), "#", 600)
+        except Exception as ex:
+            self.logger.error(ex)
+            raise ex
+        out = self.dut.send_expect("cat %s/%s.txt | grep fail" % (self.dut_file_dir, case_name), "#")
+        return out
+
+    def test_verify_aesni_mb(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_aesni_mb")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_verify_qat(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_qat")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_verify_openssl_qat(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_openssl_qat")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_verify_openssl(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_openssl")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_latency_qat(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_qat")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_latency_auth_qat(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_auth_qat")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_latency_aead_qat(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_aead_qat")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_latency_aesni_gcm(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_aesni_gcm")
+        self.verify(len(out) == 0, "Test function failed")
+
+    def test_latency_auth_aesni_mb(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str,crypto_func_opt_str,"test_latency_auth_aesni_mb")
+        self.verify(len(out) ==0 , "Test function failed")
+
+    def test_latency_aesni_mb(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+        out = self._run_func(eal_opt_str,crypto_func_opt_str,"test_latency_aesni_mb")
+        self.verify(len(out) ==0 , "Test function failed")
 
     def test_qat_aes_cbc_sha1_hmac(self):
         if cc.is_test_skip(self):
