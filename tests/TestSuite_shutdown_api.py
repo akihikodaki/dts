@@ -94,6 +94,10 @@ class TestShutdownApi(TestCase):
         """
         Send packages according to parameters.
         """
+        # check the ports are UP before sending packets
+        res = self.pmdout.wait_link_status_up('all')
+        self.verify(res is True, 'there have port link is down')
+
         port0_stats = self.get_stats(txPort)
         gp0tx_pkts, gp0tx_bytes = [port0_stats['TX-packets'], port0_stats['TX-bytes']]
         port1_stats = self.get_stats(rxPort)
@@ -188,6 +192,7 @@ class TestShutdownApi(TestCase):
         Stop and Restar.
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s  --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("start", "testpmd> ")
@@ -244,6 +249,7 @@ class TestShutdownApi(TestCase):
         testcorelist = self.dut.get_core_list("1S/8C/1T", socket=self.ports_socket)
 
         self.pmdout.start_testpmd(testcorelist, "--portmask=%s  --port-topology=loop" % utils.create_mask([self.ports[0]]), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
         fwdcoremask = utils.create_mask(testcorelist[-3:])
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
@@ -269,6 +275,7 @@ class TestShutdownApi(TestCase):
             self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
         else:
             self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --disable-crc-strip" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         Rx_offloads = re.compile('Rx offloads=(.*?)\s+?').findall(out, re.S)
         crc_keep_temp = []
@@ -306,6 +313,7 @@ class TestShutdownApi(TestCase):
             return
 
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         out = self.tester.send_expect(
             "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(self.ports[0])), "# ")
@@ -356,6 +364,7 @@ class TestShutdownApi(TestCase):
 
         jumbo_size = 2048
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all max-pkt-len %d" % jumbo_size, "testpmd> ")
         out = self.dut.send_expect("vlan set strip off all", "testpmd> ")
@@ -402,6 +411,7 @@ class TestShutdownApi(TestCase):
         Enable/Disable RSS.
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config rss ip", "testpmd> ")
@@ -415,6 +425,7 @@ class TestShutdownApi(TestCase):
         Change numbers of rxd and txd.
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all rxd 1024", "testpmd> ")
@@ -434,6 +445,7 @@ class TestShutdownApi(TestCase):
         Change the Number of rxd/txd.
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all rxd 1024", "testpmd> ")
@@ -464,6 +476,7 @@ class TestShutdownApi(TestCase):
         Change RX/TX thresholds
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("port config all txfreet 32", "testpmd> ")
@@ -500,6 +513,7 @@ class TestShutdownApi(TestCase):
         stress_iterations = 10
 
         self.pmdout.start_testpmd("Default", "--portmask=%s  --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
 
         tgenInput = []
         for port in self.ports:
@@ -525,6 +539,7 @@ class TestShutdownApi(TestCase):
             return
 
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
 
