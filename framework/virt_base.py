@@ -31,6 +31,7 @@
 import os
 import sys
 import traceback
+import threading
 from random import randint
 from itertools import imap
 
@@ -47,6 +48,8 @@ ST_NOTSTART = "NOTSTART"
 ST_PAUSE = "PAUSE"
 ST_RUNNING = "RUNNING"
 ST_UNKNOWN = "UNKNOWN"
+VM_IMG_LIST = []
+mutex_vm_list = threading.Lock()
 
 class VirtBase(object):
     """
@@ -388,6 +391,20 @@ class VirtBase(object):
         """
         NotImplemented
 
+    def get_vm_img(self):
+        """
+        get current vm img name from params
+        get format like: 10.67.110.11:TestVhostMultiQueueQemu:/home/img/Ub1604.img
+        """
+        param_len = len(self.params)
+        for i in range(param_len):
+            if 'disk' in self.params[i].keys():
+                value = self.params[i]['disk'][0]
+                if 'file' in value.keys():
+                    host_ip = self.host_dut.get_ip_address()
+                    return host_ip + ':' + self.host_dut.test_classname + ':' + value['file']
+        return None
+
     def instantiate_vm_dut(self, set_target=True, cpu_topo='', bind_dev=True, autodetect_topo=True):
         """
         Instantiate the Dut class for VM.
@@ -427,9 +444,11 @@ class VirtBase(object):
 
         read_cache = False
         skip_setup = self.host_dut.skip_setup
+        vm_img = self.get_vm_img()
         # if current vm is migration vm, skip compile dpdk
-        if self.migration_vm:
-	        skip_setup = True
+        # if VM_IMG_list include the vm_img, it means the vm have complie the dpdk ok, skip it
+        if self.migration_vm or vm_img in VM_IMG_LIST:
+            skip_setup = True
         base_dir = self.host_dut.base_dir
         vm_dut.set_speedup_options(read_cache, skip_setup)
 
@@ -448,6 +467,12 @@ class VirtBase(object):
         except:
             raise exception.VirtDutInitException(vm_dut)
             return None
+
+        # after prerequisites and set_target, the dpdk compile is ok, add this vm img to list
+        if vm_img not in VM_IMG_LIST:
+            mutex_vm_list.acquire()
+            VM_IMG_LIST.append(vm_img)
+            mutex_vm_list.release()
 
         self.vm_dut = vm_dut
         return vm_dut
