@@ -57,6 +57,7 @@ import random
 Normal_mtu = 1500
 Max_mtu = 9000
 TSO_value = 1460
+count = 4
 
 
 class TestTX_preparation(TestCase):
@@ -139,7 +140,7 @@ class TestTX_preparation(TestCase):
         for packet_type in pkts.keys():
             self.start_tcpdump(self.tester_intf)
             self.tester.scapy_append(
-                'sendp([%s], iface="%s", count=4)' % (pkts[packet_type], self.tester_intf))
+                'sendp([%s], iface="%s", count=%d)' % (pkts[packet_type], self.tester_intf, count))
             self.tester.scapy_execute()
             out = self.get_tcpdump_package()
             if packet_type == 'IPv6/cksum UDP':
@@ -156,11 +157,11 @@ class TestTX_preparation(TestCase):
                     segnum = LrgLength / TSO_value 
                     LastLength = LrgLength % TSO_value
                     num = out.count('length %s' %TSO_value)
-                    self.verify("length %s" %TSO_value in out and num == segnum,
+                    self.verify("length %s" %TSO_value in out and num == segnum * count,
                         "Failed to verify TSO correctness for large packets!!!")
                     if LastLength != 0 :
                         num = out.count('length %s' %LastLength)
-                        self.verify("length %s" %LastLength in out and num == 1 , 
+                        self.verify("length %s" %LastLength in out and num == count,
                         "Failed to verify TSO correctness for large packets!!!")
     
 
