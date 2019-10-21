@@ -97,7 +97,7 @@ class TestL2fwdJobstats(TestCase):
             txItf = self.tester.get_interface(txport)
             self.tester.scapy_append(
                 'sendp([Ether(dst="02:00:00:00:00", src="%s")/IP()/UDP()/Raw(\'X\'*18)], iface="%s",count=%s)' % (mac, txItf, count))
-            self.tester.scapy_execute(timeout=90)
+            self.tester.scapy_execute(timeout=120)
 
     def tear_down(self):
         """
