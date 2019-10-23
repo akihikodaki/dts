@@ -272,7 +272,7 @@ class TestL3fwdacl(TestCase):
         inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filters)
         pkt = packet.Packet()
         pkt.append_pkt(ethernet_str)
-        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -302,7 +302,7 @@ class TestL3fwdacl(TestCase):
         inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=fil)
         pkt = packet.Packet()
         pkt.append_pkt(ethernet_str)
-        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
 
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
@@ -320,7 +320,7 @@ class TestL3fwdacl(TestCase):
         inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=filters)
         pkt = packet.Packet()
         pkt.append_pkt(etherStr)
-        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
 
@@ -336,7 +336,7 @@ class TestL3fwdacl(TestCase):
         inst = self.tester.tcpdump_sniff_packets(rx_interface, filters=fil)
         pkt = packet.Packet()
         pkt.append_pkt(etherStr)
-        pkt.send_pkt(crb=self.tester, tx_port=tx_interface)
+        pkt.send_pkt(crb=self.tester, tx_port=tx_interface, timeout=30)
 
         out = self.remove_dhcp_from_revpackets(inst)
         return len(out)
