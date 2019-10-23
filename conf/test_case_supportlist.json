@@ -286,7 +286,9 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-		"carlsville"
+		"carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
