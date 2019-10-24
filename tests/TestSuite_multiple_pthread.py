@@ -130,7 +130,7 @@ class TestMultiplePthread(TestCase):
         self.result_table_create(header_row)
         self.out_view['data'] = []
 
-        cmdline = './x86_64-native-linuxapp-gcc/app/testpmd --lcores="%s" -n 4 -- -i' % lcores
+        cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i' % (self.target, lcores)
         # start application
         self.dut.send_expect(cmdline, "testpmd", 60)
 
@@ -206,25 +206,25 @@ class TestMultiplePthread(TestCase):
         """
         Test an random parameter from an defined table which has a couple of invalid lcore parameters.
         """
-        cmdline_list = ["./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,,3''2--3' -n 4 -- -i",
-                        "./x86_64-native-linuxapp-gcc/app/testpmd --lcores='2,,,3''2--3' -n 4 -- -i"]
+        cmdline_list = ["./%s/app/testpmd --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='2,,3''2--3' -n 4 -- -i",
+                        "./%s/app/testpmd --lcores='2,,,3''2--3' -n 4 -- -i"]
 
         cmdline = random.sample(cmdline_list, 1)
-        out = self.dut.send_expect(cmdline[0], "#", 60)
+        out = self.dut.send_expect(cmdline[0] % self.target, "#", 60)
         self.verify("invalid parameter" in out, "it's a valid parameter")
 
     def tear_down(self):
