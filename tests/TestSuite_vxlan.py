@@ -261,6 +261,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.compile_switch = 'CONFIG_RTE_LIBRTE_I40E_INC_VECTOR'
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
+        elif self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            print "CVL support default none VECTOR"
         else:
             self.verify(False, "%s not support this vxlan" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -521,13 +523,17 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         verify vxlan packet detection
         """
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
-        if src_vec_model == 'y':
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            print "CVL support default none VECTOR"
+            src_vec_model = 'n'
+        else:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
+            if src_vec_model == 'y':
+                self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                    + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+                self.dut.skip_setup = False
+                self.dut.build_install_dpdk(self.target)
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
@@ -558,26 +564,34 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
-
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-        if src_vec_model != dst_vec_model:
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+        
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            print "CVL support default none VECTOR"
+            src_vec_model = 'n'
+        else:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+            if src_vec_model != dst_vec_model:
+                self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                    + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+                self.dut.skip_setup = False
+                self.dut.build_install_dpdk(self.target)
 
     def test_vxlan_ipv6_detect(self):
         """
         verify vxlan packet detection with ipv6 header
         """
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
-        if src_vec_model == 'y':
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            print "CVL support default none VECTOR"
+            src_vec_model = 'n'
+        else:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            src_vec_model = re.search("%s=." % self.compile_switch, out).group()[-1]
+            if src_vec_model == 'y':
+                self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                    + "%s=n/' config/common_base" % self.compile_switch, "# ", 30)
+                self.dut.skip_setup = False
+                self.dut.build_install_dpdk(self.target)
 
         pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
@@ -613,13 +627,17 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         out = self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
 
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
-        if src_vec_model != dst_vec_model:
-            self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
-                                + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
-            self.dut.skip_setup = False
-            self.dut.build_install_dpdk(self.target)
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            print "CVL support default none VECTOR"
+            src_vec_model = 'n'
+        else:
+            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
+            dst_vec_model = re.findall("%s=." % self.compile_switch, out)[0][-1]
+            if src_vec_model != dst_vec_model:
+                self.dut.send_expect("sed -i -e 's/%s=.*$/" % self.compile_switch
+                                    + "%s=%s/' config/common_base" % (self.compile_switch, src_vec_model), "# ", 30)
+                self.dut.skip_setup = False
+                self.dut.build_install_dpdk(self.target)
 
     def test_vxlan_ipv4_checksum_offload(self):
         """
