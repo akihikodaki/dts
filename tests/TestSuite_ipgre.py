@@ -459,6 +459,7 @@ class TestIpgre(TestCase):
         Run after each test case.
         Nothing to do.
         """
+        self.dut.kill_all()
         pass
 
     def tear_down_all(self):
