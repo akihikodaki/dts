@@ -342,7 +342,7 @@ class TestL3fwdacl(TestCase):
         return len(out)
 
     def remove_dhcp_from_revpackets(self, inst):
-        p = self.tester.load_tcpdump_sniff_packets(inst)
+        p = self.tester.load_tcpdump_sniff_packets(inst,timeout=5)
         pkts = p.pktgen.pkts
         i = 0
         while len(pkts) != 0 and i <= len(pkts) - 1:
