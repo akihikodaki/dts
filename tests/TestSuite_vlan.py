@@ -116,7 +116,7 @@ class TestVlan(TestCase):
             pkt.config_layer('ether', {'dst': self.dmac, 'src': self.smac})
             pkt.config_layer('vlan', {'vlan': vid})
 
-        pkt.send_pkt(self.tester, tx_port=self.txItf, count=4)
+        pkt.send_pkt(self.tester, tx_port=self.txItf, count=4, timeout=30)
 
     def set_up(self):
         """
