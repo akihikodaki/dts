@@ -237,7 +237,7 @@ class TestGeneric_filter(TestCase):
         out = self.dut.send_expect("stop", "testpmd> ")
 
         self.verify_result(out, tx_pkts="1", expect_queue="0")
-        self.dut.send_expect("quit", "#")
+        self.dut.send_expect("quit", "#", timeout=30)
 
     def test_priority_filter(self):
         """
@@ -364,7 +364,7 @@ class TestGeneric_filter(TestCase):
                 self.filter_send_packet("fivetuple")
                 out = self.dut.send_expect("stop", "testpmd> ")
                 self.verify_result(out, tx_pkts="1", expect_queue="0")
-            self.dut.send_expect("quit", "#")
+            self.dut.send_expect("quit", "#", timeout=30)
         else:
             self.verify(False, "%s nic not support syn filter" % self.nic)
 
@@ -761,7 +761,7 @@ class TestGeneric_filter(TestCase):
                 if int(cur_pkt) != frames_to_send:
                     packet_flag = 0
                     break
-            self.dut.send_expect("quit", "#")
+            self.dut.send_expect("quit", "#", timeout=30)
             self.dut.send_expect("sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64/' drivers/net/ixgbe/ixgbe_ethdev.h", "# ",30)
             self.dut.build_install_dpdk(self.target)
             self.verify(set_filter_flag == 1, "set filters error")
