@@ -174,7 +174,7 @@ class TestVfJumboFrame(TestCase):
 
         pkt = Packet(pkt_type='UDP', pkt_len=pktsize)
         pkt.config_layer('ether', {'dst': mac})
-        pkt.send_pkt(self.tester, tx_port=self.tester_intf)
+        pkt.send_pkt(self.tester, tx_port=self.tester_intf, timeout=30)
 
         time.sleep(1)
 
@@ -219,9 +219,6 @@ class TestVfJumboFrame(TestCase):
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1)
         self.jumboframes_send_packet(ETHER_STANDARD_MTU)
 
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.quit()
-
     def test_vf_normal_withjumbo(self):
         """
         When jumbo frame supported, this case is to verify that the normal size
@@ -239,9 +236,6 @@ class TestVfJumboFrame(TestCase):
 
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1)
         self.jumboframes_send_packet(ETHER_STANDARD_MTU)
-
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.quit()
 
     def test_vf_jumbo_nojumbo(self):
         """
@@ -269,9 +263,6 @@ class TestVfJumboFrame(TestCase):
         else:
             self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1, False)
 
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.quit()
-
     def test_vf_jumbo_withjumbo(self):
         """
         When jumbo frame supported, this case is to verify that jumbo frame
@@ -290,9 +281,6 @@ class TestVfJumboFrame(TestCase):
         self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1)
         self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU - 1)
         self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU)
-
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.quit()
 
     def test_vf_jumbo_overjumbo(self):
         """
@@ -315,14 +303,12 @@ class TestVfJumboFrame(TestCase):
         else:
             self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU + 1, False)
 
-        self.vm_testpmd.execute_cmd("stop")
-        self.vm_testpmd.quit()
-
     def tear_down(self):
         """
         Run after each test case.
         """
-        pass
+        self.vm_testpmd.execute_cmd("stop")
+        self.vm_testpmd.quit()
 
     def tear_down_all(self):
         """
