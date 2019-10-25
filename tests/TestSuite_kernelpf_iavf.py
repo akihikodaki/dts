@@ -144,7 +144,7 @@ class TestKernelpfIavf(TestCase):
         self.sriov_vfs_port = self.dut.ports_info[
             self.used_dut_port]['vfs_port']
         out = self.dut.send_expect('ethtool %s' % self.host_intf, '#')
-        self.speed = re.findall('Supported link modes:   (\d*)', out)[0]
+        self.speed = re.findall('Speed: (\d*)', out)[0]
         if set_vf_mac is True:
             self.vf_mac = "00:01:23:45:67:89"
             self.dut.send_expect("ip link set %s vf 0 mac %s" %
