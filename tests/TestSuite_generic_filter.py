@@ -634,8 +634,12 @@ class TestGeneric_filter(TestCase):
     def test_jumbo_frame_size(self):
         
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"], "%s nic not support this test" % self.nic)
-        self.pmdout.start_testpmd(
-            "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600" % portMask)
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            self.pmdout.start_testpmd(
+                "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200" % portMask)
+        else:
+            self.pmdout.start_testpmd(
+                "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9600" % portMask)
         port = self.tester.get_local_port(valports[0])
         txItf = self.tester.get_interface(port)
 
