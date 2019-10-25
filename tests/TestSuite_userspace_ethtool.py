@@ -259,7 +259,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         # only detect physical link disconnect status
         verify_pass = True
         verify_msg = ''
-        if self.nic.startswith("fortville") == False:  
+        if self.nic.startswith("fortville") == False or self.nic.startswith("columbiaville"):  
             # check link status dump function
             for port in self.ports:
                 tester_port = self.tester.get_local_port(port)
