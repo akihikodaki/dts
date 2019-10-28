@@ -250,6 +250,8 @@ class TestTelemetry(TestCase):
                                             socket=socket)
         self.testpmd_status = 'running'
         self.testpmd.execute_cmd('start')
+	if not self.change_flag:
+            self.change_run_fileprefix(output)
         return output
 
     def close_telemetry_server(self):
@@ -441,6 +443,22 @@ class TestTelemetry(TestCase):
     #
     # test content
     #
+    def get_file_prefix(self, out):
+        m = re.search('socket /var/run/dpdk/(.+?)/', out)
+        if m:
+            self.file_prefix = m.group(1) if m.group(1) != "rte" else None
+
+    def change_run_fileprefix(self, out):
+        self.get_file_prefix(out)
+        if self.file_prefix:
+            self.dut_session2 = self.dut.new_session()
+            cmd1 = "sed -i 's/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/.*\/telemetry\")/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
+                self.file_prefix, os.path.join(self.target_dir, 'usertools/dpdk-telemetry-client.py'))
+            cmd = "sed -i 's/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/.*\/telemetry\")/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
+                self.file_prefix, os.path.join(self.target_dir, 'dpdk_telemetry_client.py'))
+            self.dut_session2.send_expect(cmd1, "# ", 3)
+            self.dut_session2.send_expect(cmd, "# ", 3)
+            self.change_flag = True
 
     def verify_basic_script(self):
         '''
@@ -553,6 +571,7 @@ class TestTelemetry(TestCase):
         self.init_test_binary_files()
         self.nic_grp = self.get_ports_by_nic_type()
         self.used_ports = []
+        self.change_flag = False
 
     def set_up(self):
         """
