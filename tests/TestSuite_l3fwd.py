@@ -277,6 +277,8 @@ class TestL3fwd(TestCase):
                 tgenInput = self.prepare_stream(pcaps)
 
                 vm_config = self.set_fields()
+                if l3_proto == "ipv6":
+                    vm_config = None
                 # clear streams before add new streams
                 self.tester.pktgen.clear_streams()
                 # run packet generator
@@ -310,7 +312,7 @@ class TestL3fwd(TestCase):
         rtCmdLines, core_mask = self.perpare_commandline(len(valports))
 
         for frame_size in self.frame_sizes:
-            if mode == "ipv6" and frame_size == 64:
+            if l3_proto == "ipv6" and frame_size == 64:
                 frame_size += 2
             for cores in rtCmdLines.keys():
                 # in order to save time, only some of the cases will be run.
@@ -331,6 +333,8 @@ class TestL3fwd(TestCase):
                     tgenInput = self.prepare_stream(pcaps)
 
                     vm_config = self.set_fields()
+                    if l3_proto == "ipv6":
+                        vm_config = None
                     # clear streams before add new streams
                     self.tester.pktgen.clear_streams()
                     # run packet generator
