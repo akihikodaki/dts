@@ -314,8 +314,7 @@ class TestSriovKvm(TestCase):
             if driver == 'igb_uio':
                 # start testpmd with the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                eal_param = '-b %(vf0)s -b %(vf1)s' % {'vf0': self.sriov_vfs_port[0].pci,
-                                                       'vf1': self.sriov_vfs_port[1].pci}
+                eal_param = '-w %s ' % self.dut.ports_info[0]['pci']
                 self.host_testpmd.start_testpmd(
                     "1S/2C/2T", "--rxq=4 --txq=4", eal_param=eal_param)
                 self.host_testpmd.execute_cmd('set fwd rxonly')
@@ -638,7 +637,7 @@ class TestSriovKvm(TestCase):
         # verify vm1 receive packets
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
-        self.verify(vm1_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['TX-packets'] == packet_num,
+        self.verify(vm1_ret_stats['RX-packets'] >= packet_num and vm1_ret_stats['TX-packets'] >= packet_num,
                     "Uplink mirror failed between VM0 and VM1!")
 
     def test_two_vms_downlink_mirror(self):
@@ -809,7 +808,7 @@ class TestSriovKvm(TestCase):
         self.set_port_pool_mirror(port_id_0, '0x1 dst-pool 1 on')
         self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
 
-        if self.nic.startswith('niantic'):
+        if self.nic.startswith('niantic') or self.nic.startswith('sage'):
             self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
 
             # get vm port stats
@@ -857,7 +856,7 @@ class TestSriovKvm(TestCase):
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
         try:
-            if self.nic.startswith('niantic'):
+            if self.nic.startswith('niantic') or self.nic.startswith('sage'):
                 self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['RX-packets'] == packet_num,
                             "vlan mirror failed between VM0 and VM1")
             else:
@@ -886,8 +885,8 @@ class TestSriovKvm(TestCase):
         # verify vm1 receive packets
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
-        self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm0_ret_stats['TX-packets'] == packet_num and
-                    vm1_ret_stats['RX-packets'] == packet_num, "uplink mirror failed between VM0 and VM1")
+        self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['RX-packets'] == packet_num,
+                    "uplink mirror failed between VM0 and VM1")
 
     def test_two_vms_add_multi_exact_mac_on_vf(self):
         port_id_0 = 0
