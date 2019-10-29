@@ -116,6 +116,10 @@ class TestTX_preparation(TestCase):
         """
         Send packet to portid and output
         """
+        self.pmd_output = PmdOutput(self.dut)
+        res = self.pmd_output.wait_link_status_up("all", 30)
+        self.verify(res is True, "there have port link is down")
+
         LrgLength = random.randint(Normal_mtu, Max_mtu-100)
         pkts = {'IPv4/cksum TCP': 'Ether(dst="%s")/IP()/TCP(flags=0x10)\
                     /Raw(RandString(50))' % self.dmac,

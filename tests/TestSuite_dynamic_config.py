@@ -40,6 +40,8 @@ import utils
 import time
 
 from test_case import TestCase
+from pmd_output import PmdOutput
+
 
 #
 #
@@ -100,6 +102,9 @@ class TestDynamicConfig(TestCase):
         """
         Send 1 packet to portid
         """
+        self.pmd_output = PmdOutput(self.dut)
+        res = self.pmd_output.wait_link_status_up("all", 30)
+        self.verify(res is True, "there have port link is down")
 
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
 
