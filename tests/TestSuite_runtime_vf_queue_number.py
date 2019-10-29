@@ -341,8 +341,21 @@ class TestRuntimeVfQn(TestCase):
         Test case 6: set invalid VF queue number with testpmd function command
         :return:
         """
-        # There is a bug of this test case, so the function hasn't been implemented.
-        pass
+        expect_str = ["Warning: Either rx or tx queues should be non zero",
+                      "Fail: input rxq (17) can't be greater than max_rx_queues (16) of port 0",
+                      "Fail: input txq (17) can't be greater than max_tx_queues (16) of port 0"]
+        host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
+        self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
+        gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
+        self.vm0_testpmd = PmdOutput(self.vm_dut_0)
+        self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
+        for invalid_qn in [0, 17]:
+            self.vm0_testpmd.execute_cmd('port stop all')
+            rxq_output = self.vm0_testpmd.execute_cmd('port config all rxq %d' % invalid_qn)
+            txq_output = self.vm0_testpmd.execute_cmd('port config all txq %d' % invalid_qn)
+            self.verify(rxq_output or txq_output in expect_str, "The output is not expect.")
+            self.vm0_testpmd.execute_cmd('port start all')
+        self.vm0_testpmd.execute_cmd('quit', '# ')
 
     def test_reserve_vf_qn(self):
         """
