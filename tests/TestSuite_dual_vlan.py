@@ -149,7 +149,7 @@ class TestDualVlan(TestCase):
         """
 
         for mode in modeName:
-            if self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
+            if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
                 # fortville NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
@@ -166,7 +166,7 @@ class TestDualVlan(TestCase):
 
         out = self.dut.send_expect("show port info %s" % dutRxPortId, "testpmd> ")
         for mode in modeName:
-            if self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g","fortpark_TLV", "carlsville"]:
+            if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g","fortpark_TLV", "carlsville"]:
                 # fortville NIC vlan filter can't close, if want close need remove rx_vlan
                 if mode == "filter":
                     if modeName[mode] == "off":
