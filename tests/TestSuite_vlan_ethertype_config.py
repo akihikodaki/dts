@@ -344,7 +344,7 @@ class TestVlanEthertypeConfig(TestCase):
         random_vlan = random.randint(1, MAX_VLAN - 1)
         rx_vlans = [1, random_vlan, MAX_VLAN]
         self.dut.send_expect(
-            "vlan set qinq on %d" % dutRxPortId, "testpmd> ", 20)
+            "vlan set extend on %d" % dutRxPortId, "testpmd> ", 20)
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
