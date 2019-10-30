@@ -148,7 +148,7 @@ class TestQinqFilter(TestCase):
                                --portmask=%s --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' % (self.target, self.coreMask, self.portMask),
                                "testpmd> ", 30)
-        self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
@@ -169,7 +169,7 @@ class TestQinqFilter(TestCase):
                                --portmask=%s --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' % (self.target, self.coreMask, self.portMask),
                                "testpmd> ", 30)
-        self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -206,7 +206,7 @@ class TestQinqFilter(TestCase):
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.target, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
                                "testpmd> ", 30)
-        self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -275,7 +275,7 @@ class TestQinqFilter(TestCase):
                                --rxq=4 --txq=4  --disable-rss' 
                                % (self.target, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
                                "testpmd> ", 30)
-        self.dut.send_expect("vlan set qinq on %s" % dutRxPortId, "testpmd> ")
+        self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
