@@ -505,7 +505,7 @@ class TestFortvilleRssGranularityConfig(TestCase):
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
 
             self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect("vlan set qinq on 0", "testpmd> ")
+            self.dut.send_expect("vlan set extend on 0", "testpmd> ")
             self.dut.send_expect(
                 "set_hash_global_config  0 toeplitz l2_payload enable", "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
