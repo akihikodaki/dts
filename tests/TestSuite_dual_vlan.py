@@ -176,8 +176,8 @@ class TestDualVlan(TestCase):
                         self.dut.send_expect("rx_vlan rm %s %s" % (outvlan, dutRxPortId), "testpmd> ")
                         continue
 
-            if mode == "qinq":
-                self.verify("qinq(extend) %s" % modeName[mode] in out, "%s setting error" % mode)
+            if mode == "extend":
+                self.verify("extend %s" % modeName[mode] in out, "%s setting error" % mode)
                 continue
             elif mode == "stripq":
                 continue
@@ -208,7 +208,7 @@ class TestDualVlan(TestCase):
         if (self.nic in ["cavium_a063", "cavium_a064"]) and temp[2] == "on":
             ## Skip QinQ for cavium devices as it is not supported.
             return
-        self.mode_config(strip=temp[0], filter=temp[1], qinq=temp[2])
+        self.mode_config(strip=temp[0], filter=temp[1], extend=temp[2])
 
         if (caseDef & txCase) != 0:
             self.dut.send_expect('stop', "testpmd> ")
@@ -280,7 +280,7 @@ class TestDualVlan(TestCase):
         """
         self.mode_config(filter="on")
         self.mode_config(strip="off")
-        self.mode_config(qinq="off")
+        self.mode_config(extend="off")
         self.vlan_send_packet(outvlan)
         out = self.get_tcpdump_package()
         print out
@@ -305,7 +305,7 @@ class TestDualVlan(TestCase):
 
         self.mode_config(filter="on")
         self.mode_config(strip="off")
-        self.mode_config(qinq="off")
+        self.mode_config(extend="off")
 
         self.dut.send_expect("rx_vlan add %s %s" % (outvlan, dutRxPortId), "testpmd> ")
         self.vlan_send_packet(outvlan)
@@ -323,7 +323,7 @@ class TestDualVlan(TestCase):
         """
 
         self.mode_config(filter="off")
-        self.mode_config(qinq="off")
+        self.mode_config(extend="off")
         self.mode_config(strip="on")
         if self.nic in [ "columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
             self.dut.send_expect('rx_vlan add %s %s' % (outvlan, dutRxPortId), "testpmd> ")
@@ -345,7 +345,7 @@ class TestDualVlan(TestCase):
         self.verify(self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "cavium_a063", "cavium_a064", "carlsville"], "%s NIC not support queue vlan strip " % self.nic)
 
         self.mode_config(filter="off")
-        self.mode_config(qinq="off")
+        self.mode_config(extend="off")
         self.mode_config(strip="off")
         self.mode_config(stripq="off")
         if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
@@ -372,7 +372,7 @@ class TestDualVlan(TestCase):
         Enable/Disable VLAN packets inserting
         """
         self.mode_config(filter="off")
-        self.mode_config(qinq="off")
+        self.mode_config(extend="off")
 
         # hartwell need to set CTRL.VME for vlan insert
         if(self.nic == "hartwell"):
@@ -406,7 +406,7 @@ class TestDualVlan(TestCase):
         """
         self.verify(self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "hartwell", "carlsville"], "%s NIC not support tcpid " % self.nic)
 
-        self.mode_config(filter="on", strip="on", qinq="on")
+        self.mode_config(filter="on", strip="on", extend="on")
         # nic only support inner model, except fortville nic
         self.dut.send_expect("vlan set inner tpid 1234 %s" % dutRxPortId, "testpmd> ")
         self.vlan_send_packet(outvlan, invlan)
