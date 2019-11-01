@@ -2365,5 +2365,53 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+     "tunnel_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_25g",
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
+        }
+    ],
+     "tunnel_filter_invalid": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_25g",
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
+        }
+    ],
+     "GRE_packet_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_25g",
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
+        }
     ]
 }
