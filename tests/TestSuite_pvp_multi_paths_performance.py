@@ -83,40 +83,41 @@ class TestPVPMultiPathPerformance(TestCase):
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
 
-    def send_and_verify(self, case_info, frame_size):
+    def send_and_verify(self, case_info):
         """
         Send packet with packet generator and verify
         """
-        tgen_input = []
-        for port in xrange(self.number_of_ports):
-            rx_port = self.tester.get_local_port(
-                self.dut_ports[port % self.number_of_ports])
-            tx_port = self.tester.get_local_port(
-                self.dut_ports[(port) % self.number_of_ports])
-            destination_mac = self.dut.get_mac_address(
-                self.dut_ports[(port) % self.number_of_ports])
+        for frame_size in self.frame_sizes:
+            tgen_input = []
+            for port in xrange(self.number_of_ports):
+                rx_port = self.tester.get_local_port(
+                    self.dut_ports[port % self.number_of_ports])
+                tx_port = self.tester.get_local_port(
+                    self.dut_ports[(port) % self.number_of_ports])
+                destination_mac = self.dut.get_mac_address(
+                    self.dut_ports[(port) % self.number_of_ports])
 
-            pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
-            pkt.config_layer('ether', {'dst': '%s' % destination_mac})
-            pkt.save_pcapfile(self.tester, "%s/multi_path_%d.pcap" % (self.out_path, port))
-            tgen_input.append((tx_port, rx_port, "%s/multi_path_%d.pcap" % (self.out_path, port)))
+                pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
+                pkt.config_layer('ether', {'dst': '%s' % destination_mac})
+                pkt.save_pcapfile(self.tester, "%s/multi_path_%d.pcap" % (self.out_path, port))
+                tgen_input.append((tx_port, rx_port, "%s/multi_path_%d.pcap" % (self.out_path, port)))
 
-        self.tester.pktgen.clear_streams()
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
-        # set traffic option
-        traffic_opt = {'delay': 5}
-        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-        Mpps = pps / 1000000.0
-        self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
+            self.tester.pktgen.clear_streams()
+            streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
+            # set traffic option
+            traffic_opt = {'delay': 5}
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+            Mpps = pps / 1000000.0
+            self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
 
-        throughput = Mpps * 100 / \
-                     float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
+            throughput = Mpps * 100 / \
+                         float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
 
-        results_row = [frame_size]
-        results_row.append(case_info)
-        results_row.append(Mpps)
-        results_row.append(throughput)
-        self.result_table_add(results_row)
+            results_row = [frame_size]
+            results_row.append(case_info)
+            results_row.append(Mpps)
+            results_row.append(throughput)
+            self.result_table_add(results_row)
 
     def start_vhost_testpmd(self):
         """
@@ -172,11 +173,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1_mergeable on", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virtio_1.1_mergeable on")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_virtio11_normal(self):
@@ -185,11 +185,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=0",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virtio_1.1_normal", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virtio_1.1_normal")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_inorder_mergeable(self):
@@ -198,11 +197,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("inoder mergeable on", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("inoder mergeable on")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_inorder_no_mergeable(self):
@@ -211,11 +209,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
                         "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("inoder mergeable off", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("inoder mergeable off")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_mergeable(self):
@@ -224,11 +221,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virito mergeable", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virito mergeable")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_normal(self):
@@ -237,11 +233,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virito normal", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virito normal")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_vector_rx(self):
@@ -250,11 +245,10 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
                             "path": "--tx-offloads=0x0 "}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_testpmd(virtio_pmd_arg)
-            self.send_and_verify("virito vector rx", frame_size)
-            self.close_all_testpmd()
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virito vector rx")
+        self.close_all_testpmd()
         self.result_table_print()
 
     def tear_down(self):
