@@ -40,6 +40,7 @@ import re
 from test_case import TestCase
 import scapy.layers.inet
 from scapy.utils import rdpcap
+from packet import Packet
 
 
 class TestEventdevPipeline(TestCase):
@@ -50,7 +51,7 @@ class TestEventdevPipeline(TestCase):
         """
         self.works = 4
         self.packet_num = 96
-        self.core_config = "1S/7C/1T"
+        self.core_config = "1S/8C/1T"
         self.build_eventdev_app()
 
         self.dut_ports = self.dut.get_ports()
@@ -59,18 +60,17 @@ class TestEventdevPipeline(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket)
-        self.core_list_rx = self.core_list[0:1]
-        self.core_list_tx = self.core_list[1:2]
-        self.core_list_sd = self.core_list[2:3]
-        self.core_list_wk = self.core_list[3:7]
+        self.verify(len(self.core_list) >= 8, 'sever no enough cores to run this suite')
+        self.core_list_rx = self.core_list[1:2]
+        self.core_list_tx = self.core_list[2:3]
+        self.core_list_sd = self.core_list[3:4]
+        self.core_list_wk = self.core_list[4:8]
         self.core_mask_rx = utils.create_mask(self.core_list_rx)
         self.core_mask_tx = utils.create_mask(self.core_list_tx)
         self.core_mask_sd = utils.create_mask(self.core_list_sd)
         self.core_mask_wk = utils.create_mask(self.core_list_wk)
 
-        self.core_list = ",".join(self.core_list)
-        pre = int(self.core_list[0]) - 1
-        self.core_list = str(pre) + "," + self.core_list
+        self.taskset_core_list = ",".join(self.core_list)
 
         self.rx_port = self.tester.get_local_port(self.dut_ports[0])
         self.tx_port = self.rx_port
@@ -82,7 +82,7 @@ class TestEventdevPipeline(TestCase):
         """
         Run before each test case.
         """
-        self.dut.send_expect("killall -s INT eventdev_pipeline", "#")
+        pass
 
     def build_eventdev_app(self):
         self.app_command = "examples/eventdev_pipeline"
@@ -95,12 +95,14 @@ class TestEventdevPipeline(TestCase):
         """
         run eventdev_pipeline command
         """
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
+                    ports=[self.dut.ports_info[0]['pci']])
         command_line = "taskset -c %s " + self.app_command + \
-                       "/build/app/eventdev_pipeline " + \
+                       "/build/app/eventdev_pipeline %s " + \
                        "--vdev event_sw0 -- -r%s -t%s -e%s -w %s -s1 -n0 -c32 -W1000 %s -D"
         command_line = command_line % (
-                    self.core_list, self.core_mask_rx, self.core_mask_tx,
-                    self.core_mask_sd, self.core_mask_wk, cmd_type)
+                    self.taskset_core_list, eal_params, self.core_mask_rx,
+                    self.core_mask_tx, self.core_mask_sd, self.core_mask_wk, cmd_type)
         self.dut.send_expect(command_line, "Port 0", 30)
 
         out = self.dut.get_session_output()
@@ -109,8 +111,8 @@ class TestEventdevPipeline(TestCase):
         self.verify("executing scheduler" in out, "lcore of scheduler not right")
         self.verify("executing worker" in out, "lcore of worker not right")
 
-    def remove_dhcp_from_revpackets(self, inst):
-        pkts = self.tester.load_tcpdump_sniff_packets(inst)
+    def remove_dhcp_from_revpackets(self, inst, timeout=3):
+        pkts = self.tester.load_tcpdump_sniff_packets(inst, timeout)
         i = 0
         while len(pkts) != 0 and i <= len(pkts) - 1:
             if pkts[i].haslayer('DHCP'):
@@ -119,7 +121,7 @@ class TestEventdevPipeline(TestCase):
             i = i + 1
         return pkts
 
-    def send_ordered_packet(self):
+    def send_ordered_packet(self, count=1):
         """
         send the packets with ordered of src-ip info
         worker dequeue depth of 32, so the packet number is multiple of 32 is better
@@ -129,37 +131,58 @@ class TestEventdevPipeline(TestCase):
         if has eight flow, the pcap has 8 couples with diff 5 tuple, and each couple load info from
         000001 to 000012
         """
+        pkt = Packet()
         for queue in range(self.queues):
-            src_ip = "11.12.13.%d" % (queue+1)
-            pay_load = "000001"
-            flow_info = 'flow1 = [Ether(dst="%s",src="%s")/IP(src="%s")/UDP(sport=123, dport=12)/("%s")]'
-            self.tester.scapy_append(flow_info % (self.d_mac, self.s_mac, src_ip, pay_load))
-            for i in range(1, self.packet_num/self.queues):
-                pay_load = "0000%.2d" % (i+1)
-                self.tester.scapy_append('flow_temp = [Ether(dst="%s", src="%s")/IP(src="%s")/UDP(sport=123, dport=12)/("%s")]'
-                                        % (self.d_mac, self.s_mac, src_ip, pay_load))
-                if i == 1:
-                    self.tester.scapy_append('flow2 = flow_temp')
-                else:
-                    self.tester.scapy_append('flow2 = flow2 + flow_temp')
-            if queue == 0:
-                self.tester.scapy_append('flow = flow1 + flow2')
-            else:
-                self.tester.scapy_append('flow = flow + flow1 + flow2')
-
-        self.tester.scapy_append('wrpcap("pipeline.pcap", flow)')
-        self.tester.scapy_execute()
-        time.sleep(5)
+            config_opt = [('ether', {'dst': self.d_mac, 'src': self.s_mac, 'src': self.s_mac}),
+                        ('ipv4', {'src': '11.12.13.%d' % (queue+1), 'dst': '11.12.1.1'}),
+                        ('udp', {'src': 123, 'dst': 12})]
+            # if only one queue, create self.packet_num with same 5 tuple
+            # if multi queue, create self.packet_num with diff 5 tuple,
+            # each tuple have (self.packet_num//self.queues) pkts
+            pkt_num = self.packet_num//self.queues
+            pkt.generate_random_pkts(pktnum=pkt_num, random_type=['UDP'], ip_increase=False,
+                                random_payload=False, options={'layers_config': config_opt})
+            # config raw info in pkts
+            for i in range(pkt_num):
+                payload = "0000%.2d" % (i+1)
+                pkt.pktgen.pkts[i + pkt_num*queue]['Raw'].load = payload
 
         filt = [{'layer': 'ether', 'config': {'src': '%s' % self.s_mac}}]
         inst = self.tester.tcpdump_sniff_packets(self.rx_interface, filters=filt)
-        self.tester.scapy_append('pkt=rdpcap("pipeline.pcap")')
-        self.tester.scapy_append('sendp(pkt, iface="%s")' % self.tx_interface)
-        self.tester.scapy_execute()
-        time.sleep(5)
+        pkt.send_pkt(crb=self.tester, tx_port=self.tx_interface, count=count, timeout=300)
         self.pkts = self.remove_dhcp_from_revpackets(inst)
 
-    def check_packet_order(self):
+    def check_load_balance_behavior(self, case_info):
+        """
+        check the load-balance bahavior by the workload of every worker
+        the send pkts number is 96*100, and each worker received pkts number should
+        smaller than 2760 and greather than 2040
+        """
+        self.send_ordered_packet(count=100)
+        # exit the eventdev_pipeline app
+        # and get the output info
+        self.dut.send_expect('^c', 'Signal')
+        out = self.dut.get_session_output(timeout=3)
+        work_rx = []
+        for wk in self.core_list_wk:
+            one_info = re.search('worker\s*%s\s*thread done.\s*RX=(\d*)\s*TX=(\d*)' % str(wk), out)
+            self.verify(one_info is not None and len(one_info.groups()) == 2
+                        and int(one_info.group(1)) > 0,
+                        "%s can not get the worker rx and tx packets info from output" % case_info)
+            work_info = {'work': int(wk), 'rx': int(one_info.group(1)), 'tx': int(one_info.group(2))}
+            work_rx.append(work_info)
+        # get all received pkts
+        all_rx = 0
+        for wk in work_rx:
+            all_rx += wk['rx']
+        ave_rx = all_rx//len(work_rx)
+        for wk in work_rx:
+            self.verify(wk['rx'] <= ave_rx + ave_rx*0.15 and wk['rx'] >= ave_rx - ave_rx*0.15,
+                '%s : the work thread rx is not balance, all_rx: %d, work %d rx is %d' % (
+                case_info, all_rx, wk['work'], wk['rx']))
+            self.logger.info('%s : worker thread %d received %d pkts' % (case_info, wk['work'], wk['rx']))
+
+    def check_packet_order(self, case_info):
         """
         observe the packets sended by scapy, check the packets order
         """
@@ -176,7 +199,7 @@ class TestEventdevPipeline(TestCase):
                         packet_index = int(self.pkts[i]['Raw'].load[-2:])
                         pay_load = "0000%.2d" % (packet_index)
                     self.verify(self.pkts[i]['Raw'].load == pay_load,
-                            "The packets not ordered")
+                            "%s : The packets not ordered" % case_info)
                     packet_index = packet_index + 1
 
     def test_keep_packet_order_with_ordered_stage(self):
@@ -185,32 +208,83 @@ class TestEventdevPipeline(TestCase):
         according to the tcpdump may be capture the packets whitch not belong current
         flow, so set different src_mac of flow to identify the packets
         """
+        self.logger.info('check keep packet order about single-flow')
         self.lanuch_eventdev_pipeline("-o")
         self.queues = 1
         self.s_mac = "00:00:00:00:00:00"
-        self.check_packet_order()
+        self.check_packet_order('single-flow')
+        self.logger.info('check keep packet order about multi-flow')
         self.s_mac = "00:00:00:00:00:01"
         self.queues = 8
-        self.check_packet_order()
+        self.check_packet_order('multi-flow')
 
     def test_keep_packet_order_with_default_stage(self):
         """
         keep the packets order with atomic stage in single-flow and multi-flow
         """
+        self.logger.info('check keep packet order about single-flow')
         self.lanuch_eventdev_pipeline(" ")
         self.queues = 1
         self.s_mac = "00:00:00:00:00:02"
-        self.check_packet_order()
+        self.check_packet_order('single-flow')
+        self.logger.info('check keep packet order about multi-flow')
         self.s_mac = "00:00:00:00:00:03"
         self.queues = 8
-        self.check_packet_order()
+        self.check_packet_order('multi-flow')
+
+    def test_check_load_balance_behavior_with_default_type(self):
+        """
+        Check load-balance behavior with default type in single-flow and multi-flow situations
+        """
+        self.logger.info('check load balance about single-flow')
+        self.lanuch_eventdev_pipeline(" ")
+        self.queues = 1
+        self.s_mac = "00:00:00:00:00:04"
+        self.check_load_balance_behavior('single-flow')
+
+        self.logger.info('check load balance about multi-flow')
+        self.lanuch_eventdev_pipeline(" ")
+        self.queues = 8
+        self.s_mac = "00:00:00:00:00:05"
+        self.check_load_balance_behavior('multi-flow')
+
+    def test_check_load_balance_behavior_with_order_type(self):
+        """
+        Check load-balance behavior with order type stage in single-flow and multi-flow situations
+        """
+        self.logger.info('check load balance about single-flow')
+        self.lanuch_eventdev_pipeline("-o")
+        self.queues = 1
+        self.s_mac = "00:00:00:00:00:06"
+        self.check_load_balance_behavior('single-flow')
+
+        self.logger.info('check load balance about multi-flow')
+        self.lanuch_eventdev_pipeline("-o")
+        self.queues = 8
+        self.s_mac = "00:00:00:00:00:07"
+        self.check_load_balance_behavior('multi-flow')
+
+    def test_check_load_balance_behavior_with_parallel_type(self):
+        """
+        Check load-balance behavior with parallel type stage in single-flow and multi-flow situations
+        """
+        self.logger.info('check load balance about single-flow')
+        self.lanuch_eventdev_pipeline("-p")
+        self.queues = 1
+        self.s_mac = "00:00:00:00:00:08"
+        self.check_load_balance_behavior('single-flow')
+
+        self.logger.info('check load balance about multi-flow')
+        self.lanuch_eventdev_pipeline("-p")
+        self.queues = 8
+        self.s_mac = "00:00:00:00:00:09"
+        self.check_load_balance_behavior('multi-flow')
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.send_expect("^c", "#", 10)
-        self.dut.send_expect("killall -s INT eventdev_pipeline", "#")
+        self.dut.kill_all()
         time.sleep(5)
 
     def tear_down_all(self):
