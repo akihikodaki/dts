@@ -335,7 +335,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # get linux interface
             intf = netdev.get_interface_name()
             out = self.dut.send_expect("ethtool -d %s raw off file %s" % (intf, portinfo['reg_file']), "# ")
-            self.verify(("register" in out and "CTRL" in out), "Failed to dump %s registers" % intf)
+            if "register" not in out or "CTRL" not in out:
+                portinfo['net_dev'].bind_driver(portinfo['ori_driver'])
+                raise VerifyFailure("Failed to dump %s registers" % intf)
 
         for index in range(len(self.ports)):
             # bind to original driver
