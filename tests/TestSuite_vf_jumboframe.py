@@ -193,7 +193,7 @@ class TestVfJumboFrame(TestCase):
             if self.kdriver == "ixgbe":
                 self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
             else:
-                self.verify(rx_bytes == pktsize, "Tx packet size should be equal to packet size")
+                self.verify(rx_bytes == pktsize, "Rx packet size should be equal to packet size")
 
             if self.kdriver == "igb":
                 self.verify(tx_bytes == pktsize, "Tx packet size should be packet size")
