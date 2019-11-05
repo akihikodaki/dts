@@ -120,7 +120,7 @@ class Dut(Crb):
         if config:
             # deal with cores
             if config.has_key('cores'):
-                if config['cores'] == '' or config['cores'] == 'Default':
+                if config['cores'] == '' or config['cores'].lower() == 'default':
                     core_list = self.get_core_list(default_cores)
                 elif type(config['cores']) == list:
                     core_list = config['cores']
@@ -144,7 +144,7 @@ class Dut(Crb):
                             port_option = config['port_options'][port]
                             w_pci_list.append('-w %s,%s' % (self.ports_info[config['ports'].index(port)]['pci'], port_option))
                         else:
-                            w_pci_list = ['-w %s' % pci for pci in config['ports']]
+                            w_pci_list.append('-w %s' % self.ports_info[config['ports'].index(port)]['pci'])
             w_pci_str = ' '.join(w_pci_list)
 
             # deal with black ports
