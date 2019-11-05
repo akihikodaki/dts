@@ -85,9 +85,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.send_expect(
                 "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
         self.dut.send_expect(
-                "sed -i '/if (promiscuous_on/i\#if 0' ./examples/l3fwd-power/main.c", "#", 10)
-        self.dut.send_expect(
-                "sed -i '/rte_spinlock_init(&(locks/i\#endif' ./examples/l3fwd-power/main.c", "#", 10)
+                "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/l3fwd-power/main.c", "#", 10)
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
