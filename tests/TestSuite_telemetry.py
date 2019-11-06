@@ -451,13 +451,12 @@ class TestTelemetry(TestCase):
     def change_run_fileprefix(self, out):
         self.get_file_prefix(out)
         if self.file_prefix:
-            self.dut_session2 = self.dut.new_session()
             cmd1 = "sed -i 's/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/.*\/telemetry\")/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
                 self.file_prefix, os.path.join(self.target_dir, 'usertools/dpdk-telemetry-client.py'))
-            cmd = "sed -i 's/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/.*\/telemetry\")/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
+            cmd2 = "sed -i 's/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/.*\/telemetry\")/self.socket.send_fd.connect(\"\/var\/run\/dpdk\/{0}\/telemetry\")/g' {1}".format(
                 self.file_prefix, os.path.join(self.target_dir, 'dpdk_telemetry_client.py'))
-            self.dut_session2.send_expect(cmd1, "# ", 3)
-            self.dut_session2.send_expect(cmd, "# ", 3)
+            self.d_a_console(cmd1)
+            self.d_a_console(cmd2)
             self.change_flag = True
 
     def verify_basic_script(self):
