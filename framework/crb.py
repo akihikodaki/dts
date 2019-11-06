@@ -517,8 +517,7 @@ class Crb(object):
                 self.prefix_list = []
             else:
                 self.logger.info('kill_all: called by dut and has no prefix list.')
-                session = self.create_session('dut_session')
-                out = session.send_command("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", timeout=0.5)
+                out = self.send_command("ls -l /var/run/dpdk |awk '/^d/ {print $NF}'", timeout=0.5, alt_session=True)
                 # the last directory is expect string, eg: [PEXPECT]#
                 if out != '':
                     dir_list = out.split('\r\n')
