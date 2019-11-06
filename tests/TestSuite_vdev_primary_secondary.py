@@ -118,14 +118,18 @@ class TestVdevPrimarySecondary(TestCase):
         example_cmd_secondary = "./examples/multi_process/symmetric_mp/build/symmetric_mp -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
         final_cmd_first = example_cmd_auto % (self.mem_channels, self.queues)
         final_cmd_secondary = example_cmd_secondary % (self.mem_channels, self.queues)
-        self.vhost_first.send_expect(final_cmd_first, " ", 120)
-        self.vhost_secondary.send_expect(final_cmd_secondary, " ", 120)
+        self.vhost_first.send_expect(final_cmd_first, "Lcore", 120)
+        time.sleep(3)
+        self.vhost_secondary.send_expect(final_cmd_secondary, "Lcore", 120)
 
 
     def prepare_symmetric_mp(self):
         self.vm_dut.send_expect("cp ./examples/multi_process/symmetric_mp/main.c .", "#")
         self.vm_dut.send_expect(
                 "sed -i '/.offloads = DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/multi_process/symmetric_mp/main.c", "#")
+        self.vm_dut.send_expect(
+                "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/multi_process/symmetric_mp/main.c", "#")
+        self.vm_dut.send_expect(
         out = self.vm_dut.build_dpdk_apps('./examples/multi_process/symmetric_mp')
         self.verify("Error" not in out, "compilation symmetric_mp error")
 
