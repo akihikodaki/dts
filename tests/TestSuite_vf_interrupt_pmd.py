@@ -212,18 +212,23 @@ class TestVfInterruptPmd(TestCase):
 
         self.VF0_bind_vfio_pci()
 
+        cores = "1S/1C/1T"
+        core_list = self.vm0_dut.get_core_list(cores)
+        core_user = core_list[0]
+        core_mask_user = utils.create_mask(core_list)
+
         cmd = self.path + \
-              " -l 1-3 -n %d -- -P  -p 0x01 --config='(0,0,2)'" % (
-                  self.vm0_dut.get_memory_channels())
+              " -c %s -n %d -- -P  -p 0x01 --config='(0,0,%s)'" % (
+                  core_mask_user, self.vm0_dut.get_memory_channels(), core_user)
         self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
         time.sleep(1)
         self.send_packet(self.vf0_mac, self.rx_intf_0, self.vm0_dut)
         self.destroy_vm_env()
 
         self.verify(
-            "lcore 2 is waked up from rx interrupt on port 0" in self.out2, "Wake up failed")
+            "lcore %s is waked up from rx interrupt on port 0" % core_user in self.out2, "Wake up failed")
         self.verify(
-            "lcore 2 sleeps until interrupt triggers"  in self.out2, "lcore 2 not sleeps")
+            "lcore %s sleeps until interrupt triggers" % core_user in self.out2, "lcore %s not sleeps" % core_user)
 
     def test_nic_interrupt_VF_vfio_pci(self, driver='default'):
         """
