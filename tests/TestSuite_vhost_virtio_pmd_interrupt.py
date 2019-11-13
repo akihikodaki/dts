@@ -102,6 +102,8 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.vm_dut.send_expect("cp ./examples/l3fwd-power/main.c /tmp/", "#")
         self.vm_dut.send_expect(
                 "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
+        self.vm_dut.send_expect(
+                "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/l3fwd-power/main.c", "#", 10)
         out = self.vm_dut.build_dpdk_apps('examples/l3fwd-power')
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
