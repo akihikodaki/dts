@@ -110,7 +110,7 @@ class PmdOutput():
         :return:
         """
         re_w_pci_str = '\s?-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-w\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
-        re_file_prefix_str = '--file-prefix=.+?\s'
+        re_file_prefix_str = '--file-prefix[=\s+].+\s'
         re_b_pci_str = '\s?-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-b\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
         eal_param = eal_param + ' '
         # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ']
@@ -139,8 +139,8 @@ class PmdOutput():
 
         file_prefix = ''
         if file_prefix_str:
-            tmp = file_prefix_str[0].split('=')
-            file_prefix = tmp[1].strip()
+            tmp = re.split('(=|\s+)', file_prefix_str[-1].strip())
+            file_prefix = tmp[-1].strip()
 
         other_eal_str = re.sub(re_w_pci_str, '', eal_param)
         other_eal_str = re.sub(re_b_pci_str, '', other_eal_str)
