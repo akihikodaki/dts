@@ -69,7 +69,6 @@ class TestMultiprocess(TestCase):
         executions.append({'nprocs': 4, 'cores': '1S/2C/2T', 'pps': 0})
         executions.append({'nprocs': 4, 'cores': '1S/4C/1T', 'pps': 0})
         executions.append({'nprocs': 8, 'cores': '1S/4C/2T', 'pps': 0})
-        self.dut.alt_session.send_expect("cd dpdk", "# ", 5)
 
         # start new session to run secondary
         self.session_secondary = self.dut.new_session()

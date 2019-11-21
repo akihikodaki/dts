@@ -298,7 +298,6 @@ class TestVhostUserLiveMigration(TestCase):
         vm_dut.send_expect('screen -S %s' % self.screen_name, '# ', 120)
 
         vm_testpmd = self.target + '/app/testpmd -c 0x3 -n 4 -- -i'
-        vm_dut.send_expect('cd %s' % self.base_dir, "# ")
         vm_dut.send_expect(vm_testpmd, 'testpmd> ', 120)
         vm_dut.send_expect('set fwd rxonly', 'testpmd> ', 30)
         vm_dut.send_expect('set promisc all off', 'testpmd> ', 30)

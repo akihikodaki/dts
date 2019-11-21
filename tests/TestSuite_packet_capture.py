@@ -500,9 +500,7 @@ class TestPacketCapture(TestCase):
         if not self.is_dut_on_tester:
             self.tester.alt_session.send_expect(
                 "rm -fr {0}/*".format(self.pdump_log), "# ", 20)
-        cmd = ';'.join([
-            "cd %s" % self.target_dir,
-            self.dpdk_pdump + " '%s' >/dev/null 2>&1 &" % (option[0])])
+        cmd = self.dpdk_pdump + " '%s' >/dev/null 2>&1 &" % (option[0])
         self.session_ex.send_expect(cmd, "# ", 15)
         time.sleep(6)
 
