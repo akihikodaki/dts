@@ -399,9 +399,7 @@ class Packet(object):
 
         if pkt_str is not None and type(pkt_str) == str:
             self._scapy_str_to_pkt(pkt_str)
-        elif len(options) == 0:
-            pass
-        else:
+        elif len(options) != 0:
             self._add_pkt(self.pkt_opts)
         if self.pktgen.pkt is not None:
             self.pktgen.append_pkts()
@@ -485,6 +483,45 @@ class Packet(object):
                 delattr(self, 'configured_layer_raw')
             self._add_pkt(kwargs)
         self.pktgen.append_pkts()
+
+    def update_pkt_str(self, pkt):
+        self._scapy_str_to_pkt(pkt)
+        self.pktgen.append_pkts()
+
+    def update_pkt_dict(self, pkt):
+        self.pkt_opts = pkt
+        if hasattr(self, 'configured_layer_raw'):
+            delattr(self, 'configured_layer_raw')
+        self._add_pkt(pkt)
+        self.pktgen.append_pkts()
+
+    def update_pkt(self, pkts):
+        """
+        update pkts to packet object
+        :param pkts: pkts to update
+        :type str|dict|list
+        :return: None
+        """
+        self.pktgen = scapy()
+        self.pkt_layers = []
+        if isinstance(pkts, str):
+            self.update_pkt_str(pkts)
+        elif isinstance(pkts, dict):
+            self.update_pkt_dict(pkts)
+        elif isinstance(pkts, list):
+            for i in pkts:
+                if isinstance(i, str):
+                    try:
+                        self.update_pkt_str(i)
+                    except:
+                        print("warning: packet %s update failed" % i)
+                elif isinstance(i, dict):
+                    try:
+                        self.update_pkt_dict(i)
+                    except:
+                        print("warning: packet %s update failed" % i)
+                else:
+                    print("packet {} is not acceptable".format(i))
 
     def generate_random_pkts(self, dstmac=None, pktnum=100, random_type=None, ip_increase=True, random_payload=False,
                              options=None):
