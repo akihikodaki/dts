@@ -42,7 +42,7 @@ from test_case import TestCase
 from plotting import Plotting
 from settings import HEADER_SIZE
 from dut import Dut
-
+from pmd_output import PmdOutput
 
 class TestMeteringAndPolicing(TestCase):
     scapyCmds = []
@@ -244,7 +244,11 @@ class TestMeteringAndPolicing(TestCase):
         """
         Send packet and check the stats. If expect_port == -1, the packet should be dropped.
         """
-        time.sleep(3)
+        # check the ports are UP before sending packets
+        self.pmd_out = PmdOutput(self.dut)
+        res = self.pmd_out.wait_link_status_up('all', 30)
+        self.verify(res is True, 'there have port link is down')
+
         rx_before = []
         tx_before = []
         for i in range(0, len(self.dut_ports)):

@@ -141,6 +141,12 @@ class TestShortLiveApp(TestCase):
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
+
+        # check the ports are UP before sending packets
+        self.pmd_out = PmdOutput(self.dut)
+        res = self.pmd_out.wait_link_status_up('all', 30)
+        self.verify(res is True, 'there have port link is down')
+
         self.check_forwarding([0, 1], self.nic)
 
     def test_start_up_time(self):
@@ -166,6 +172,12 @@ class TestShortLiveApp(TestCase):
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
+
+            # check the ports are UP before sending packets
+            self.pmd_out = PmdOutput(self.dut)
+            res = self.pmd_out.wait_link_status_up('all', 30)
+            self.verify(res is True, 'there have port link is down')
+
             self.check_forwarding([0, 1], self.nic)
 
             # kill with different Signal
