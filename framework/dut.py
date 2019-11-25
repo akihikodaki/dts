@@ -120,12 +120,13 @@ class Dut(Crb):
         if config:
             # deal with cores
             if config.has_key('cores'):
-                if config['cores'] == '' or config['cores'].lower() == 'default':
-                    core_list = self.get_core_list(default_cores)
-                elif type(config['cores']) == list:
+                if type(config['cores']) == list:
                     core_list = config['cores']
-                else:
-                    core_list = self.get_core_list(config['cores'], socket=socket)
+                elif isinstance(config['cores'], str):
+                    if config['cores'] == '' or config['cores'].lower() == 'default':
+                        core_list = self.get_core_list(default_cores)
+                    else:
+                        core_list = self.get_core_list(config['cores'], socket=socket)
             else:
                 core_list = self.get_core_list(default_cores)
 
