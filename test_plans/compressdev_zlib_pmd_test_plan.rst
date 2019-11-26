@@ -65,14 +65,50 @@ Start test application and run zlib pmd unit test::
 
 Verify all test cases passed in the test.
 
-Test Case: Compressdev ZLIB PMD test
----------------------------------------------------------
+Test Case: Compressdev ZLIB PMD fixed function test
+-------------------------------------------------------------
 Run Compressdev zlib pmd test with below sample commands::
 
     ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
     --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
     --compress-level level --num-iter number --huffman-enc fixed
 
-Perform the test with huffman-enc fixed and dynamic accordingly.
+Perform the test with fixed huffman-enc.
 
 Test all the file types in calgary corpus, all files should pass the test.
+
+Test Case: Compressdev ZLIB PMD dynamic function test
+-------------------------------------------------------------
+Run Compressdev zlib pmd test with below sample commands::
+
+    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
+    --compress-level level --num-iter number --huffman-enc dynamic
+
+Perform the test with dynamic huffman-enc.
+
+Test all the file types in calgary corpus, all files should pass the test.
+
+Test Case: Compressdev ZLIB PMD fixed performance test
+----------------------------------------------------------------------------
+Run Compressdev zlib pmd performance test with below sample commands::
+
+    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
+    --compress-level level --seg-sz size --num-iter number --huffman-enc fixed
+
+Perform the test with fixed huffman-enc and calgary file.
+
+Run the test with seg-sz 1k, 2k, 4k, 8k, 16k and 32k respectively.
+
+Test Case: Compressdev ZLIB PMD dynamic performance test
+---------------------------------------------------------------------------
+Run Compressdev zlib pmd performance test with below sample commands::
+
+    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
+    --compress-level level --seg-sz size --num-iter number --huffman-enc dynamic
+
+Perform the test with dynamic huffman-enc and calgary file.
+
+Run the test with seg-sz 1k, 2k, 4k, 8k, 16k and 32k respectively.
