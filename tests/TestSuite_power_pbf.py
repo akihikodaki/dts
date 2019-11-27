@@ -543,9 +543,10 @@ class TestPowerPbf(TestCase):
         raise Exception(msg)
 
     def verify_power_driver(self):
+        expected_drv = 'acpi-cpufreq'
         power_drv = self.get_sys_power_driver()
-        msg = "power pstate should work with intel_pstate driver"
-        self.verify(power_drv == 'intel_pstate', msg)
+        msg = "power pbf should work with {} driver".format(expected_drv)
+        self.verify(power_drv == expected_drv, msg)
     #
     # Test cases.
     #
