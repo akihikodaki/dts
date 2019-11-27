@@ -128,8 +128,7 @@ class TestVdevPrimarySecondary(TestCase):
         self.vm_dut.send_expect(
                 "sed -i '/.offloads = DEV_RX_OFFLOAD_CHECKSUM,/d' ./examples/multi_process/symmetric_mp/main.c", "#")
         self.vm_dut.send_expect(
-                "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/multi_process/symmetric_mp/main.c", "#")
-        self.vm_dut.send_expect(
+                "sed -i 's/ETH_MQ_RX_RSS,/ETH_MQ_RX_NONE,/g' ./examples/multi_process/symmetric_mp/main.c", "#")
         out = self.vm_dut.build_dpdk_apps('./examples/multi_process/symmetric_mp')
         self.verify("Error" not in out, "compilation symmetric_mp error")
 
