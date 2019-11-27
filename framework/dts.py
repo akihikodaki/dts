@@ -421,11 +421,9 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
 
                 if suite_obj.execute_setup_all():
                     suite_obj.execute_test_cases()
-                    suite_obj.execute_tear_downall()
 
                 # save suite cases result
                 result.copy_suite(suite_obj.get_result())
-                save_all_results()
 
                 log_handler.info("\nTEST SUITE ENDED: " + test_classname)
                 dts_log_execution(duts, tester, log_handler)
@@ -435,8 +433,6 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
         except KeyboardInterrupt:
             # stop/save result/skip execution
             log_handler.error(" !!! STOPPING DTS")
-            suite_obj.execute_tear_downall()
-            save_all_results()
             break
         except Exception as e:
             settings.report_error("GENERIC_ERR")
