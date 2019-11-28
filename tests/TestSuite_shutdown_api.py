@@ -201,7 +201,10 @@ class TestShutdownApi(TestCase):
         self.check_forwarding(received=False)
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         time.sleep(5)
-        self.check_ports(status=False)
+        if self.nic in ["columbiaville_25g", "columbiaville_100g"]:
+            self.check_ports(status=True)
+        else:
+            self.check_ports(status=False)
         self.dut.send_expect("port start all", "testpmd> ", 100)
         time.sleep(5)
         self.check_ports(status=True)
