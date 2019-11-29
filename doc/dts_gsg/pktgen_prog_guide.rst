@@ -145,7 +145,7 @@ define a stream transmit behavior.
 
 basic content including::
 
-   'rate':  0 ~ 100 int type
+   'rate':  0 ~ 100 int type, port line rate should set it.
    'transmit_mode': TRANSMIT_CONT/TRANSMIT_S_BURST
        TRANSMIT_CONT define a continuous transmit.
        TRANSMIT_S_BURST define a burst transmit with custom number of packets.
@@ -332,9 +332,22 @@ option
    traffic_option = {
       # test method name, if use `measure_throughput`, ignore this key
       'method': 'throughput',
-      # port rate percent
+      # port rate percent, float(0--100), default value is 100.(reserved)
       'rate': 100,
-      # transmit lasting time second
+      # warm up time before start main transmission. If it is set, it will start
+      # a custom time transmission to make sure packet generator under good
+      # status. It is an optional key.
+      'delay': 5,
+      # the interval time of get throughput statistic (second).
+      # If set this key value, pktgen will return several throughput statistic
+      # data in a duration. If not set this key value, only return one statistic
+      # data. It is used coupled with `duration` option.
+      'interval': 1,
+      # this key works with ``interval`` key. If it is set, the callback
+      # of suite level will be executed after getting throughput statistic.
+      # callback method should define as below, don't add sleep in this method.
+      'callback' : callback_method,
+      # transmission lasting time(second), default value is 10 second.
       'duration': 5}
 
 return value
@@ -358,9 +371,13 @@ option
    traffic_option = {
       # test method name, if use `measure_loss`, ignore this key
       'method': 'loss',
-      # port rate percent
+      # port rate percent, float(0--100), default value is 100.(reserved)
       'rate': 100,
-      # transmit lasting time second
+      # warm up time before start main transmission. If it is set, it will start
+      # a custom time transmission to make sure packet generator under good
+      # status. It is an optional key.
+      'delay': 5,
+      # transmission lasting time(second), default value is 10 second.
       'duration': 5}
 
 return value
@@ -382,9 +399,13 @@ option
    traffic_option = {
       # test method name, if use `measure_latency`, ignore this key
       'method': 'latency',
-      # port rate percent
+      # port rate percent, float(0--100), default value is 100.(reserved)
       'rate': 100,
-      # transmit lasting time second
+      # warm up time before start main transmission. If it is set, it will start
+      # a custom time transmission to make sure packet generator under ready
+      # status. It is an optional key.
+      'delay': 5,
+      # transmission lasting time(second), default value is 10 second.
       'duration': 5}
 
 return value
@@ -398,7 +419,7 @@ return value
 
 rfc2544 option
 --------------
-single stream & rfc2544
+rfc2544 testing scenario by decreasing step.
 
 option
 ++++++
@@ -406,15 +427,19 @@ option
 .. code-block:: python
 
    traffic_option = {
-      # test method name, if use `measure_rfc2544`, ignore this key
+      # test method name, if use `measure_rfc2544`, ignore this key.
       'method': 'rfc2544',
-      # port rate percent at first round testing, 0 ~ 100, default is 100
+      # port rate percent at first round testing, 0 ~ 100, default is 100.
       'rate': 100,
-      # permit packet drop rate
+      # permit packet drop rate, default is 0.001.
       'pdr': 0.001,
-      # port rate percent drop step, 0 ~ 100 , default is 1
+      # port rate percent drop step, 0 ~ 100 , default is 1.
       'drop_step': 1,
-      # transmit lasting time second
+      # warm up time before start main transmission. If it is set, it will start
+      # a custom time transmission to make sure packet generator under ready
+      # status. It is an optional key.
+      'delay': 5,
+      # transmission lasting time(second), default value is 10 second.
       'duration': 5}
 
 return value
@@ -423,6 +448,41 @@ return value
 .. code-block:: python
 
    loss_stats = (loss_rate, tx_pkts, rx_pkts)
+
+rfc2544_dichotomy option
+------------------------
+rfc2544 testing scenario using dichotomy algorithm.
+
+option
+++++++
+
+.. code-block:: python
+
+   traffic_option = {
+      # test method name, if use `measure_rfc2544_dichotomy` method, ignore this key.
+      'method': 'rfc2544_dichotomy',
+      # dichotomy algorithm lower bound rate percent, default is 0.
+      'min_rate': 0,
+      # dichotomy algorithm upper bound rate percent, default is 100.
+      'max_rate': 100,
+      # dichotomy algorithm accuracy, default 0.001.
+      'accuracy': 0.001,
+      # permit packet drop rate, default is 0.001.
+      'pdr': 0.001,
+      # warm up time before start main transmission. If it is set, it will start
+      # a custom time transmission to make sure packet generator under ready
+      # status. It is an optional key.
+      'delay': 5,
+      # transmission lasting time(second), default value is 10 second.
+      'duration': 10}
+
+return value
+++++++++++++
+
+.. code-block:: python
+
+   loss_stats = (loss_rate, tx_pkts, rx_pkts)
+
 
 reference example
 =================
