@@ -1247,7 +1247,6 @@ class Ixia(SSHConnection):
         ''' start ixia ports '''
         self.configure_transmission(run_opt)
         self.start_transmission()
-        time.sleep(run_opt.get('duration') or 5)
 
     def remove_all_streams(self):
         ''' delete all streams on all ixia ports '''
@@ -1652,28 +1651,13 @@ class IxiaPacketGenerator(PacketGenerator):
         self._preset_ixia_port()
 
     def _start_transmission(self, stream_ids, options={}):
-        '''
-        :param sample_delay:
-        After traffic start ``sample_delay`` seconds, start get runtime statistics
-        '''
         # get rate percentage
-        rate_percent = options.get('rate') or '100'
-        # get duration
-        duration = options.get("duration") or 5
-        duration = int(duration) if isinstance(duration, (str, unicode)) \
-                                      else duration
-        # get sample interval
-        _sample_delay = options.get("sample_delay") or duration/2
-        sample_delay = int(_sample_delay) \
-                            if isinstance(_sample_delay, (str, unicode)) \
-                            else _sample_delay
-        # get configuration from pktgen config file
-        warmup = int(self.conf["warmup"]) if self.conf.has_key("warmup") \
-                                          else 25
-        wait_interval, core_mask = (warmup+30, self.conf["core_mask"]) \
-                            if self.conf.has_key("core_mask") \
-                            else (warmup+5, None)
-        #-------------------------------------------------------------------
+        rate_percent = options.get('rate')
+        if rate_percent:
+            msg = ('{0} only support set rate percent in streams, '
+                   'current run traffic with stream rate percent').format(
+                self.pktgen_type)
+            self.logger.warning(msg)
         # run ixia server
         try:
             ###########################################
@@ -1682,8 +1666,6 @@ class IxiaPacketGenerator(PacketGenerator):
             run_opt = {
                 'ports':    self._traffic_ports,
                 'mult':     rate_percent,
-                'duration': duration,
-                'core_mask':core_mask,
                 'force':    True,}
             self._conn.start(**run_opt)
         except Exception as e:
@@ -1693,6 +1675,7 @@ class IxiaPacketGenerator(PacketGenerator):
         # using ixia server command
         if self._traffic_ports:
             self._conn.stop_transmit()
+            self.logger.info("traffic completed. ")
 
     def _retrieve_port_statistic(self, stream_id, mode):
         ''' ixia traffic statistics '''
