@@ -95,7 +95,7 @@ class TestVirtioUserInterrupt(TestCase):
                     "-n %d -c %s --socket-mem 1024,1024 --legacy-mem " + \
                     "--log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd " + \
                     "--vdev=virtio_user0,path=%s,cq=1 -- -p 1 " + \
-                    " -P --config='(0,0,%s)' --parse-ptype "
+                    " --config='(0,0,%s)' --parse-ptype "
         cmd_l3fwd = cmd_l3fwd % (self.mem_channel, self.core_mask_l3fwd,
                     path, self.core_interrupt)
         self.l3fwd.get_session_before(timeout=2)
