@@ -81,7 +81,7 @@ class PacketGenerator(object):
                     return port_idx
             else:
                 port = -1
-        except:
+        except Exception as e:
             port = -1
 
         return port
@@ -100,7 +100,7 @@ class PacketGenerator(object):
             port = self._get_gen_port(tester_pci)
             msg = "test port {0} map gen port {1}".format(port_id, port)
             self.logger.debug(msg)
-        except:
+        except Exception as e:
             port = -1
 
         return port
@@ -157,39 +157,120 @@ class PacketGenerator(object):
     def reset_streams(self):
         self.__streams = []
 
-    def measure_throughput(self, stream_ids=[], options={}):
-        """
-        Measure throughput on each tx ports
-        """
+    def __warm_up_pktgen(self, stream_ids, options, delay):
+        ''' run warm up traffic before start main traffic '''
+        if not delay:
+            return
+        msg = '{1} packet generator: run traffic {0}s to warm up ... '.format(
+            delay, self.pktgen_type)
+        self.logger.info(msg)
+        self._start_transmission(stream_ids, options)
+        time.sleep(delay)
+        self._stop_transmission(stream_ids)
+        self._clear_streams()
+
+    def __get_single_throughput_statistic(self, stream_ids):
         bps_rx = []
         pps_rx = []
-        self._prepare_transmission(stream_ids=stream_ids)
-        self._start_transmission(stream_ids, options)
-
-        delay = options.get('delay') or 5
-        time.sleep(delay)
         used_rx_port = []
+        msg = 'begin get port statistic ...'
+        self.logger.info(msg)
         for stream_id in stream_ids:
             if self.__streams[stream_id]['rx_port'] not in used_rx_port:
                 rxbps_rates, rxpps_rates = self._retrieve_port_statistic(
-                                                        stream_id, 'throughput')
+                    stream_id, 'throughput')
                 used_rx_port.append(self.__streams[stream_id]['rx_port'])
                 bps_rx.append(rxbps_rates)
                 pps_rx.append(rxpps_rates)
-        self._stop_transmission(stream_id)
-
         bps_rx_total = self._summary_statistic(bps_rx)
         pps_rx_total = self._summary_statistic(pps_rx)
-        self.logger.info("throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+        self.logger.info(
+            "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
 
         return bps_rx_total, pps_rx_total
+
+    def __get_multi_throughput_statistic(
+            self, stream_ids, duration, interval, callback=None):
+        """
+        duration: traffic duration (second)
+        interval: interval of get throughput statistics (second)
+        callback: a callback method of suite, which is used to do some actions
+            during traffic lasting.
+
+        Return: a list of throughput instead of a single tuple of pps/bps rate
+        """
+        time_elapsed = 0
+        stats = []
+        while time_elapsed < duration:
+            time.sleep(interval)
+            stats.append(self.__get_single_throughput_statistic(stream_ids))
+            if callback and callable(callback):
+                callback()
+            time_elapsed += interval
+        return stats
+
+    def measure_throughput(self, stream_ids=[], options={}):
+        """
+        Measure throughput on each tx ports
+
+        options usage:
+            rate:
+                port rate percent, float(0--100). Default value is 100.
+
+            delay:
+                warm up time before start main traffic. If it is set, it will start
+                a delay time traffic to make sure packet generator under good status.
+                Warm up flow is ignored by default.
+
+            interval:
+                a interval time of get throughput statistic (second)
+                If set this key value, pktgen will return several throughput statistic
+                data within a duration traffic. If not set this key value, only
+                return one statistic data. It is ignored by default.
+                
+            callback:
+                this key works with ``interval`` key. If it is set, the callback
+                of suite level will be executed after getting throughput statistic.
+                callback method should define as below, don't add sleep in this method.
+
+                def callback(self):
+                    xxxx()
+
+            duration:
+                traffic lasting time(second). Default value is 10 second.
+        """
+        interval = options.get('interval')
+        callback = options.get('callback')
+        duration = options.get('duration') or 10
+        delay = options.get('delay')
+        self._prepare_transmission(stream_ids=stream_ids)
+        # start warm up traffic
+        self.__warm_up_pktgen(stream_ids, options, delay)
+        # main traffic
+        self._start_transmission(stream_ids)
+        # keep traffic within a duration time and get throughput statistic
+        if interval and duration:
+            stats = self.__get_multi_throughput_statistic(
+                stream_ids, duration, interval, callback)
+        else:
+            time.sleep(duration)
+            stats = self.__get_single_throughput_statistic(stream_ids)
+        self._stop_transmission(stream_ids)
+        return stats
 
     def _measure_loss(self, stream_ids=[], options={}):
         """
         Measure lost rate on each tx/rx ports
         """
+        delay = options.get('delay')
+        duration = options.get('duration') or 10
         self._prepare_transmission(stream_ids=stream_ids)
+        # start warm up traffic
+        self.__warm_up_pktgen(stream_ids, options, delay)
+        # main traffic
         self._start_transmission(stream_ids, options)
+        # keep traffic within a duration time
+        time.sleep(duration)
         self._stop_transmission(None)
         result = {}
         used_rx_port = []
@@ -210,6 +291,19 @@ class PacketGenerator(object):
         return result
 
     def measure_loss(self, stream_ids=[], options={}):
+        '''
+        options usage:
+            rate:
+                port rate percent, float(0--100). Default value is 100.
+
+            delay:
+                warm up time before start main traffic. If it is set, it will
+                start a delay time traffic to make sure packet generator
+                under good status. Warm up flow is ignored by default.
+
+            duration:
+                traffic lasting time(second). Default value is 10 second.
+        '''
         result = self._measure_loss(stream_ids, options)
         # here only to make sure that return value is the same as dts/etgen format
         # In real testing scenario, this method can offer more data than it
@@ -218,9 +312,28 @@ class PacketGenerator(object):
     def measure_latency(self, stream_ids=[], options={}):
         """
         Measure latency on each tx/rx ports
+
+        options usage:
+            rate:
+                port rate percent, float(0--100). Default value is 100.
+
+            delay:
+                warm up time before start main traffic. If it is set, it will
+                start a delay time transmission to make sure packet generator
+                under correct status. Warm up flow is ignored by default.
+
+            duration:
+                traffic lasting time(second). Default value is 10 second.
         """
+        delay = options.get('delay')
+        duration = options.get('duration') or 10
         self._prepare_transmission(stream_ids=stream_ids, latency=True)
+        # start warm up traffic
+        self.__warm_up_pktgen(stream_ids, options, delay)
+        # main traffic
         self._start_transmission(stream_ids, options)
+        # keep traffic within a duration time
+        time.sleep(duration)
         self._stop_transmission(None)
 
         result = {}
@@ -248,7 +361,26 @@ class PacketGenerator(object):
             return True
 
     def measure_rfc2544(self, stream_ids=[], options={}):
-        """ check loss rate with rate percent dropping """
+        """ check loss rate with rate percent dropping 
+
+        options usage:
+            rate:
+                port rate percent at first round testing(0 ~ 100), default is 100.
+
+            pdr:
+                permit packet drop rate, , default is 0.
+
+            drop_step:
+                port rate percent drop step(0 ~ 100), default is 1.
+
+            delay:
+                warm up time before start main traffic. If it is set, it will
+                start a delay time traffic to make sure packet generator
+                under good status. Warm up flow is ignored by default.
+
+            duration:
+                traffic lasting time(second). Default value is 10 second.
+        """
         loss_rate_table = []
         rate_percent = options.get('rate') or float(100)
         permit_loss_rate = options.get('pdr') or 0
@@ -265,6 +397,9 @@ class PacketGenerator(object):
             tx_num, rx_num = result.values()[0][1:]
             return rate_percent, tx_num, rx_num
         _options = deepcopy(options)
+        # if warm up option  'delay' is set, ignore it in next work flow
+        if 'delay' in _options:
+            _options.pop('delay')
         if 'rate' in _options:
             _options.pop('rate')
         while not status and rate_percent > 0:
@@ -328,6 +463,81 @@ class PacketGenerator(object):
         # here only pick one
         return loss_pps_table[-1][1].values()[0]
 
+    def measure_rfc2544_dichotomy(self, stream_ids=[], options={}):
+        """ check loss rate using dichotomy algorithm
+
+        options usage:
+            delay:
+                warm up time before start main traffic. If it is set, it will
+                start a delay time traffic to make sure packet generator
+                under good status. Warm up flow is ignored by default.
+
+            duration:
+                traffic lasting time(second). Default value is 10 second.
+
+            min_rate:
+                lower bound rate percent , default is 0.
+
+            max_rate:
+                upper bound rate percent , default is 100.
+
+            pdr:
+                permit packet drop rate(<1.0), default is 0.
+
+            accuracy :
+                dichotomy algorithm accuracy, default 0.001.
+        """
+        max_rate = options.get('max_rate') or 100.0
+        min_rate = options.get('min_rate') or 0.0
+        accuracy = options.get('accuracy') or 0.001
+        permit_loss_rate = options.get('pdr') or 0.0
+        duration = options.get('duration') or 10.0
+        # start warm up traffic
+        delay = options.get('delay')
+        _options = {'duration': duration}
+        self.__warm_up_pktgen(stream_ids, _options, delay)
+        # traffic parameters for dichotomy algorithm
+        loss_rate_table = []
+        hit_result = None
+        rate = traffic_rate_max = max_rate
+        traffic_rate_min = min_rate
+        while True:
+            # run loss rate testing
+            _options = {'duration': duration}
+            result = self._measure_loss(stream_ids, _options)
+            loss_rate_table.append([rate, result])
+            status = self._check_loss_rate(result, permit_loss_rate)
+            # if upper bound rate percent hit, quit the left flow
+            if rate == max_rate and status:
+                hit_result = result
+                break
+            # if lower bound rate percent not hit, quit the left flow
+            if rate == min_rate and not status:
+                break
+            if status:
+                traffic_rate_min = rate
+                hit_result = result
+            else:
+                traffic_rate_max = rate
+            if traffic_rate_max - traffic_rate_min < accuracy:
+                break
+            rate = (traffic_rate_max - traffic_rate_min)/2 + traffic_rate_min
+            self._clear_streams()
+            # set stream rate percent to custom value
+            self._set_stream_rate_percent(rate)
+
+        if not hit_result:
+            msg = ('expected permit loss rate <{0}>'
+                   'not between rate {1} and rate {2}').format(
+                        permit_loss_rate, max_rate, min_rate)
+            self.logger.error(msg)
+            self.logger.info(pformat(loss_rate_table))
+        else:
+            self.logger.debug(pformat(loss_rate_table))
+        self.logger.info("zero loss rate is %f" % rate)
+
+        return hit_result
+
     def measure(self, stream_ids, traffic_opt):
         '''
         use as an unify interface method for packet generator
@@ -343,6 +553,8 @@ class PacketGenerator(object):
             result = self.measure_rfc2544(stream_ids, traffic_opt)
         elif method == 'rfc2544_with_pps':
             result = self.measure_rfc2544_with_pps(stream_ids, traffic_opt)
+        elif method == 'rfc2544_dichotomy':
+            result = self.measure_rfc2544_dichotomy(stream_ids, traffic_opt)
         else:
             result = None
 
