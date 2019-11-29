@@ -411,7 +411,6 @@ class TrexPacketGenerator(PacketGenerator):
         self._ports = []
         self._traffic_ports = []
         self._rx_ports = []
-        self.runtime_stats = {}
 
         conf_inst = self._get_generator_conf_instance()
         self.conf = conf_inst.load_pktgen_config()
@@ -450,6 +449,23 @@ class TrexPacketGenerator(PacketGenerator):
         from trex_stl_lib.api import STLClient
         # set trex class
         self.STLClient = STLClient
+        # get configuration from pktgen config file
+        self._get_traffic_option()
+
+    def _get_traffic_option(self):
+        ''' get configuration from pktgen config file '''
+        # set trex coremask
+        _core_mask = self.conf.get("core_mask")
+        if _core_mask:
+            if '0x' in _core_mask:
+                self.core_mask = \
+                    [int(item[2:], 16) for item in _core_mask.split(',')]
+            else:
+                self.core_mask = self.STLClient.CORE_MASK_PIN \
+                    if _core_mask.upper() == 'CORE_MASK_PIN' else \
+                    None
+        else:
+            self.core_mask = None
 
     def _connect(self):
         self._conn = self.STLClient(server=self.conf["server"])
@@ -652,7 +668,7 @@ class TrexPacketGenerator(PacketGenerator):
     def _throughput_stats(self, stream, stats):
         # tx packet
         tx_port_id = stream["tx_port"]
-        port_stats = self.runtime_stats.get(tx_port_id)
+        port_stats = stats.get(tx_port_id)
         if not port_stats:
             msg = "failed to get tx_port {0} statistics".format(tx_port_id)
             raise Exception(msg)
@@ -666,7 +682,7 @@ class TrexPacketGenerator(PacketGenerator):
         self.logger.debug(os.linesep.join(msg))
         # rx bps/pps
         rx_port_id = stream["rx_port"]
-        port_stats = self.runtime_stats.get(rx_port_id)
+        port_stats = stats.get(rx_port_id)
         if not port_stats:
             msg = "failed to get rx_port {0} statistics".format(rx_port_id)
             raise Exception(msg)
@@ -769,65 +785,30 @@ class TrexPacketGenerator(PacketGenerator):
         self._preset_trex_port()
 
     def _start_transmission(self, stream_ids, options={}):
-        '''
-        :param sample_delay:
-        After traffic start ``sample_delay`` seconds, start get runtime statistics
-        '''
+        test_mode = options.get('method')
         # get rate percentage
         rate_percent = "{0}%".format(options.get('rate') or
                                      self._traffic_opt.get('rate') or
                                      '100')
-        # get duration
-        duration = options.get("duration") or 20
-        duration = int(duration) if isinstance(duration, (str, unicode)) \
-                                      else duration
-        # get sample interval
-        _sample_delay = options.get("sample_delay") or duration/2
-        sample_delay = int(_sample_delay) \
-                            if isinstance(_sample_delay, (str, unicode)) \
-                            else _sample_delay
-        # get configuration from pktgen config file
-        warmup = int(self.conf["warmup"]) if self.conf.has_key("warmup") \
-                                          else 25
-        # set trex coremask
-        wait_interval, core_mask = (
-                        warmup+30, int(self.conf["core_mask"], 16)) \
-                            if self.conf.has_key("core_mask") \
-                            else (warmup+5, 0x3)
-
         try:
-            ###########################################
             # clear the stats before injecting
             self._conn.clear_stats()
             # Start traffic on port(s)
             run_opt = {
                 'ports':    self._traffic_ports,
                 'mult':     rate_percent,
-                'duration': duration,
-                'core_mask':core_mask,
+                'core_mask': self.core_mask,
                 'force':    True,}
             self.logger.info("begin traffic ......")
             self.logger.debug(run_opt)
             self._conn.start(**run_opt)
-            ###########################################
-            if sample_delay:
-                time.sleep(sample_delay) # wait
-                # get ports runtime statistics
-                self.runtime_stats = self._conn.get_stats()
-                self.logger.debug(pformat(self.runtime_stats))
-            ###########################################
-            # Block until traffic on specified port(s) has ended
-            wait_opt = {'ports':  self._traffic_ports}
-            if duration:
-                time.sleep(wait_interval + 10)
-                wait_opt['timeout'] = wait_interval + duration
-            self._conn.wait_on_traffic(**wait_opt)
         except Exception as e:
             self.logger.error(e)
 
     def _stop_transmission(self, stream_id):
         if self._traffic_ports:
             self._conn.stop(ports=self._traffic_ports, rx_delay_ms=5000)
+            self.logger.info("traffic completed. ")
 
     def _retrieve_port_statistic(self, stream_id, mode):
         '''
