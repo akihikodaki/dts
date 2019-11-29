@@ -152,3 +152,36 @@ Test case 3: Driver enters Safe Mode failed
     ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode
 
    The driver failed to go to safe mode and testpmd failed to start.
+
+
+Test Case 4: Check specific package loadding
+=============================================
+
+This test case requires 2 Intel E810 NICs
+
+Copy 2 different ``ice.pkg`` into ``/lib/firmware/intel/ice/ddp/``, \
+and rename 1 ice.pkg to ice-<interface serial number>.pkg, e.g. ice-8ce1abfffffefd3c.pkg
+
+Get interface's serial number by::
+
+  lspci -vs b1:00.0 #Change to your interface's BDF
+
+For example,
+- ``ice.pkg`` version is 1.2.5.1
+- ``ice-8ce1abfffffefd3c.pkg`` version is 1.2.100.1
+
+Compile DPDK and testpmd::
+
+  make install -j T=x86_64-native-linuxapp-gcc
+
+Launch testpmd with 1 default interface and 1 specific interface::
+
+  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0 -w b1:00.0 --log-level=8 -- -i
+
+In this case, b1:00.0 interface is specific interface.
+
+Check the initial output log, it shows::
+
+EAL: PCI device 0000:b1:00.0 on NUMA socket 0
+EAL:   probe driver: 8086:1593 net_ice
+**ice_load_pkg(): pkg to be loaded: 1.2.100.0, ICE COMMS Package**
