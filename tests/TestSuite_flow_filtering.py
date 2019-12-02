@@ -95,7 +95,7 @@ class TestFlowFiltering(TestCase):
         pkg = {'IP/dst': 'Ether(dst="%s")/IP(src="0.0.0.0", dst="192.168.1.2")/Raw("x"*20)' % self.dts_mac}
         self.send_packet(pkg)
         queue_list = self.check_flow_queue()
-        self.verify(len(queue_list) == 1 and queue_list[0] == "0x0", "Dismatch rule failed!")
+        self.verify(len(queue_list) == 1 and queue_list[0] != "0x1", "Dismatch rule failed!")
 
     def tear_down(self):
         """
