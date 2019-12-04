@@ -51,6 +51,8 @@ class TestSriovKvm(TestCase):
             self.dut.send_expect('modprobe vfio-pci', '#')
         self.setup_2vm_2vf_env_flag = 0
         self.setup_2vm_prerequisite_flag = 0
+        self.vm0_testpmd = None
+        self.vm1_testpmd = None
         self.setup_2vm_2vf_env()
 
     def set_up(self):
@@ -482,6 +484,12 @@ class TestSriovKvm(TestCase):
             self.vm0_testpmd.execute_cmd('stop')
             self.vm1_testpmd.execute_cmd('stop')
         else:
+            if self.vm0_testpmd:
+                self.vm0_testpmd.quit()
+                self.vm0_testpmd = None
+            if self.vm1_testpmd:
+                self.vm1_testpmd.quit()
+                self.vm1_testpmd = None
             self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
             self.vm0_testpmd.start_testpmd(VM_CORES_MASK)
@@ -532,7 +540,8 @@ class TestSriovKvm(TestCase):
         self.vm0_testpmd.execute_cmd("set promisc all off")
         self.vm0_testpmd.execute_cmd('start')
 
-        self.setup_2vm_prerequisite_flag = 1
+        # restart testpmd after this cases, because in this case have set some special cmd
+        self.setup_2vm_prerequisite_flag = 0
         time.sleep(2)
 
         vm1_start_stats = self.vm1_testpmd.get_pmd_stats(port_id_0)
@@ -715,6 +724,7 @@ class TestSriovKvm(TestCase):
         self.verify(vm1_ret_stats['RX-packets'] == packet_num * 2, "Vlan mirror failed between VM0 and VM1!")
 
     def test_two_vms_vlan_and_pool_mirror(self):
+        self.setup_2vm_prerequisite_flag = 0
         self.vm0_testpmd.execute_cmd('vlan set strip on 0')
         self.vm1_testpmd.execute_cmd('vlan set strip on 0')
         port_id_0 = 0
@@ -755,11 +765,11 @@ class TestSriovKvm(TestCase):
 
         vm0_ret_stats = self.calculate_stats(vm0_start_stats, vm0_end_stats)
 
-        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 10 * packet_num),
-                    "Vlan mirror failed between VM0 and VM1 when set vlan and pool mirror!")
         self.host_testpmd.execute_cmd(
             'rx_vlan rm %d port %d vf %s' % (vlan_id, port_id_0, vf_mask))
         self.reset_port_all_mirror_rule(port_id_0)
+        self.verify(self.vm0_testpmd.check_tx_bytes(vm0_ret_stats['RX-packets'], 10 * packet_num),
+                    "Vlan mirror failed between VM0 and VM1 when set vlan and pool mirror!")
 
     def test_two_vms_uplink_and_downlink_mirror(self):
         """
@@ -893,6 +903,7 @@ class TestSriovKvm(TestCase):
         vf_num = 0
         packet_num = 10
 
+        self.setup_2vm_prerequisite_flag = 0
         for vf_mac in ["00:11:22:33:44:55", "00:55:44:33:22:11"]:
             if self.nic.startswith('niantic') or self.nic.startswith('sage'):
                 set_mac_cmd = "mac_addr add port %d vf %d %s"
@@ -924,6 +935,7 @@ class TestSriovKvm(TestCase):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
+        self.setup_2vm_prerequisite_flag = 0
         port_id_0 = 0
         vf_mac = "00:11:22:33:44:55"
         packet_num = 10
@@ -975,6 +987,7 @@ class TestSriovKvm(TestCase):
         port_id_0 = 0
         packet_num = 10
 
+        self.setup_2vm_prerequisite_flag = 0
         for vf_mac in ["00:55:44:33:22:11", "00:55:44:33:22:66"]:
             self.host_testpmd.execute_cmd("set port %d uta %s on" %
                                           (port_id_0, vf_mac))
@@ -1002,6 +1015,7 @@ class TestSriovKvm(TestCase):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
+        self.setup_2vm_prerequisite_flag = 0
         port_id_0 = 0
         vf_mac = "00:55:44:33:22:11"
         packet_num = 10
@@ -1039,6 +1053,7 @@ class TestSriovKvm(TestCase):
             self.dut.logger.warning("NIC is [%s], skip this case" % self.nic)
             return
 
+        self.setup_2vm_prerequisite_flag = 0
         port_id_0 = 0
         packet_num = 10
 
@@ -1080,6 +1095,7 @@ class TestSriovKvm(TestCase):
         port_id_0 = 0
         packet_num = 10
 
+        self.setup_2vm_prerequisite_flag = 0
         for switch in ['on', 'off', 'on']:
             self.host_testpmd.execute_cmd("set port %d vf 0 tx %s" %
                                           (port_id_0, switch))
@@ -1114,6 +1130,7 @@ class TestSriovKvm(TestCase):
         vf_mac = "FF:FF:FF:FF:FF:FF"
         packet_num = 10
 
+        self.setup_2vm_prerequisite_flag = 0
         for switch in ['on', 'off', 'on']:
             self.host_testpmd.execute_cmd("set port %d vf 0 rxmode BAM %s" %
                                           (port_id_0, switch))
