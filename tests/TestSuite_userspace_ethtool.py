@@ -221,6 +221,18 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
 
         return status, msg
 
+    def ethapp_check_link_status(self, port_id, expected_status = 'Up'):
+        retries = 0
+        reg_str = 'Port\s+{}:\s+(Up|Down)'.format(port_id)
+        while retries < 5:
+            out = self.dut.send_expect("link", "EthApp> ", 10)
+            if out is not None:
+                status = re.search(reg_str, out).group(1)
+                if status == expected_status:
+                    return True
+            time.sleep(1)
+        return False
+
     def test_dump_driver_info(self):
         """
         Test ethtool can dump basic information
@@ -519,7 +531,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             time.sleep(10)
             # stop port
             self.dut.send_expect("stop %d" % index, "EthApp>")
-            time.sleep(10)
+            self.verify(self.ethapp_check_link_status(index, 'Down') == True,
+                           'Fail to stop port{}'.format(index))
             # check packet not forwarded when port is stop
             pkt = Packet(pkt_type='UDP')
             tester_port = self.tester.get_local_port(port)
@@ -528,11 +541,11 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             rx_pkts, tx_pkts = self.strip_portstats(index)
             self.verify(rx_pkts == ori_rx_pkts, "Failed to stop port")
             # restart port and check packet can normally forwarded
-            time.sleep(2)
             self.dut.send_expect("open %d" % index, "EthApp>")
+            self.verify(self.ethapp_check_link_status(index, 'Up') == True,
+                         'Fail to Open port{}'.format(index))
             # wait few time for port ready
             rx_pkts, tx_pkts = self.strip_portstats(index)
-            time.sleep(2)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts_open, tx_pkts_open = self.strip_portstats(index)
             self.verify(rx_pkts_open == rx_pkts + 4, "Failed to reopen port rx")
