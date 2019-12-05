@@ -277,7 +277,9 @@
                 "fortpark_TLV",
                 "cavium_a063",
                 "cavium_a064",
-                "carlsville"
+                "carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
@@ -300,7 +302,9 @@
                 "cavium_a063",
                 "cavium_a064",
                 "carlsville",
-                "powerville"
+                "powerville",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
@@ -513,7 +517,9 @@
                 "fortpark_TLV",
                 "sagepond",
                 "sageville",
-                "carlsville"
+                "carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
@@ -535,7 +541,9 @@
                 "fortpark_TLV",
                 "sagepond",
                 "sageville",
-                "carlsville"
+                "carlsville",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
