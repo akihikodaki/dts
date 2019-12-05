@@ -143,9 +143,9 @@ class Dut(Crb):
                     else:
                         if config.has_key('port_options') and port in config['port_options'].keys():
                             port_option = config['port_options'][port]
-                            w_pci_list.append('-w %s,%s' % (self.ports_info[config['ports'].index(port)]['pci'], port_option))
+                            w_pci_list.append('-w %s,%s' % (port, port_option))
                         else:
-                            w_pci_list.append('-w %s' % self.ports_info[config['ports'].index(port)]['pci'])
+                            w_pci_list.append('-w %s' % port)
             w_pci_str = ' '.join(w_pci_list)
 
             # deal with black ports
