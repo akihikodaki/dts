@@ -155,8 +155,8 @@ class TestMeteringAndPolicing(TestCase):
             Corelist = "0x1f"
             Servicecorelist = "0x10"
         self.path = "./%s/app/testpmd" % self.target
-        cmd = self.path + " -c %s -s %s -n %d --vdev 'net_softnic0,firmware=%s,cpu_id=0,conn_port=8086' \
-         -- -i --rxq=%d --txq=%d --portmask=%s" \
+        cmd = self.path + " -c %s -s %s -n %d --vdev 'net_softnic0,firmware=%s' \
+         -- -i  --rxq=%d --txq=%d --portmask=%s --disable-rss" \
               % (Corelist, Servicecorelist, self.dut.get_memory_channels(), filename, self.port_id, self.port_id, portmask)
         self.dut.send_expect(cmd, "testpmd>", 60)
 
