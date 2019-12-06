@@ -231,6 +231,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 if status == expected_status:
                     return True
             time.sleep(1)
+            retries = retries + 1
         return False
 
     def test_dump_driver_info(self):
