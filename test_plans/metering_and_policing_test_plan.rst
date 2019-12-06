@@ -145,8 +145,8 @@ Bind them to dpdk igb_uio driver,
   ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x10
+    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli' \
+    -- -i --portmask=0x10 --disable-rss
     testpmd> start
 
 3. start softnic with default hierarchy Qos with following command line,
@@ -154,8 +154,8 @@ Bind them to dpdk igb_uio driver,
   ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 \
-    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli,cpu_id=1,conn_port=8086' \
-    -- -i --forward-mode=softnic --portmask=0x10
+    --vdev 'net_softnic0,firmware=./drivers/net/softnic/firmware.cli' \
+    -- -i --portmask=0x10 --disable-rss
     testpmd> set port tm hierarchy default 1
     testpmd> start
 
@@ -173,7 +173,7 @@ Test Case 1: ipv4 ACL table RFC2698 GYR
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
 
@@ -225,7 +225,7 @@ Test Case 2: ipv4 ACL table RFC2698 GYD
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -273,7 +273,7 @@ Test Case 3: ipv4 ACL table RFC2698 GDR
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -324,7 +324,7 @@ Test Case 4: ipv4 ACL table RFC2698 DYR
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -374,7 +374,7 @@ Test Case 5: ipv4 ACL table RFC2698 DDD
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -421,7 +421,7 @@ Test Case 6: ipv4 with same CBS and PBS GDR
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -461,7 +461,7 @@ Test Case 7: ipv4 HASH table RFC2698
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table,
   ::
@@ -496,7 +496,7 @@ Test Case 8: ipv6 ACL table RFC2698
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table,
   ::
@@ -548,7 +548,7 @@ Test Case 9: multiple meter and profile
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=4 --txq=4 --portmask=0x10
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x1f -s 0x10 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=4 --txq=4 --portmask=0x10 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -643,7 +643,7 @@ Test Case 10: ipv4 RFC2698 pre-colored red by DSCP table
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -730,7 +730,7 @@ Test Case 11: ipv4 RFC2698 pre-colored yellow by DSCP table
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
@@ -819,7 +819,7 @@ Test Case 12: ipv4 RFC2698 pre-colored green by DSCP table
 
   ::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli,cpu_id=0,conn_port=8086' -- -i --forward-mode=softnic --rxq=2 --txq=2 --portmask=0x4
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/root/dpdk/drivers/net/softnic/meter_and_policing_firmware.cli' -- -i --rxq=2 --txq=2 --portmask=0x4 --disable-rss
 
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
