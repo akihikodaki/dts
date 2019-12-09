@@ -2415,5 +2415,21 @@
             "Bug ID": "",
             "Comments": "the nic not support this case: ice_dev_filter_ctrl(): Filter type (6) not supported"
         }
+    ],
+    "two_vms_pool_down_mirrors": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
