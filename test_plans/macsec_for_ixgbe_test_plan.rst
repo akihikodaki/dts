@@ -151,7 +151,7 @@ Test Case 1: MACsec packets send and receive
   1. Start the testpmd of tx port::
 
       ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -w 0000:07:00.0 \
-      -- -i --port-topology=chained --tx-offloads=0x00002000
+      -- -i --port-topology=chained
 
   2. Set MACsec offload on::
 
@@ -352,10 +352,7 @@ Test Case 5: normal packet send and MACsec receive
 Test Case 6: MACsec send and receive with wrong parameters
 ==========================================================
 
-1. Don't add "--tx-offloads=0x00002000" in the tx_port command line.
-   The MACsec offload can't work. The tx packets are normal packets.
-
-2. Set different pn on rx and tx port, then start the data transfer.
+1. Set different pn on rx and tx port, then start the data transfer.
 
   1. Set the parameters as test case 1, start and stop the data transfer.
      Check the result, rx port can receive and decrypt the packets normally.
@@ -368,7 +365,7 @@ Test Case 6: MACsec send and receive with wrong parameters
 
       out_pkts_encrypted = in_pkts_late + in_pkts_ok
 
-3. Set different keys on rx and tx port, then start the data transfer::
+2. Set different keys on rx and tx port, then start the data transfer::
 
       the RX-packets=0,
       in_octets_decrypted == out_octets_encrypted,
@@ -376,20 +373,23 @@ Test Case 6: MACsec send and receive with wrong parameters
       in_pkts_ok=0,
       rx_good_packets=0
 
-4. Set different pi on rx and tx port, then start the data transfer::
+3. Set different pi on rx and tx port, then start the data transfer::
 
       in_octets_decrypted == out_octets_encrypted,
       in_pkts_ok = 0,
       in_pkts_nosci == out_pkts_encrypted
 
-5. Set different an on rx and tx port, then start the data transfer::
+   note: pi only support changed on rx side, if change pi on tx side,
+         it will be omitted.
+
+4. Set different an on rx and tx port, then start the data transfer::
 
       rx_good_packets=0,
       in_octets_decrypted == out_octets_encrypted,
       in_pkts_notusingsa == out_pkts_encrypted,
       in_pkts_ok=0,
 
-6. Set different index on rx and tx port, then start the data transfer::
+5. Set different index on rx and tx port, then start the data transfer::
 
       in_octets_decrypted == out_octets_encrypted,
       in_pkts_ok == out_pkts_encrypted
@@ -404,7 +404,7 @@ Test Case 7: performance test of MACsec offload packets
    MACsec offload on, set fwd mac::
 
       ./testpmd -c 0xf --socket-mem 1024,0 -- -i \
-      --port-topology=chained --tx-offloads=0x00002000
+      --port-topology=chained
       testpmd> set macsec offload 0 on encrypt on replay-protect on
       testpmd> set fwd mac
       testpmd> start
@@ -423,7 +423,7 @@ Test Case 7: performance test of MACsec offload packets
    Start two testpmd::
 
       ./testpmd -c 0xf --socket-mem 1024,0 --file-prefix=rx -w 0000:07:00.1 \
-      -- -i --port-topology=chained --tx-offloads=0x00002000
+      -- -i --port-topology=chained
 
       testpmd> set macsec offload 0 on encrypt on replay-protect on
       testpmd> set macsec sc rx 0 00:00:00:00:00:01 0
@@ -433,7 +433,7 @@ Test Case 7: performance test of MACsec offload packets
       testpmd> set fwd rxonly
 
       ./testpmd -c 0xf0 --socket-mem 1024,0 --file-prefix=tx -b 0000:07:00.1 \
-      -- -i --port-topology=chained --tx-offloads=0x00002000
+      -- -i --port-topology=chained
 
       testpmd> set macsec offload 1 on encrypt on replay-protect on
       testpmd> set macsec sc rx 1 00:00:00:00:00:02 0
