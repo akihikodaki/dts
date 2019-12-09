@@ -58,7 +58,8 @@ class TestFlowFiltering(TestCase):
         """
         Run before each test case.
         """
-        self.dut.send_expect("./examples/flow_filtering/build/flow -l 1 -n 1", "initializing port", 100)
+        out = self.dut.send_command("./examples/flow_filtering/build/flow -l 1 -n 1", timeout=15)
+        self.verify("Error" not in out, "flow launch failed")
 
     def send_packet(self, pkg):
         """
