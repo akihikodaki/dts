@@ -283,6 +283,7 @@ class scapy(object):
             pkt_layer.nh = nh
         pkt_layer.src = src
         pkt_layer.dst = dst
+        pkt_layer.hlim = hlim
 
     def tcp(self, pkt_layer, src=53, dst=53, flags=0, len=None, chksum=None):
         pkt_layer.sport = src
