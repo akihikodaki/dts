@@ -510,6 +510,9 @@ class TestKernelpfIavf(TestCase):
 
         # disable strip
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
+        if self.nic.startswith('columbiaville'):
+            self.vm_testpmd.execute_cmd("vlan set filter on 0")
+            self.vm_testpmd.execute_cmd("rx_vlan add %d 0" % random_vlan)
         self.start_tcpdump(self.tester_intf)
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
