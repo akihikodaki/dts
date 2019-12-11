@@ -110,7 +110,7 @@ class PmdOutput():
         :return:
         """
         re_w_pci_str = '\s?-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-w\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
-        re_file_prefix_str = '--file-prefix[=\s+].+\s'
+        re_file_prefix_str = '--file-prefix[\s*=]\S+\s'
         re_b_pci_str = '\s?-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-b\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
         eal_param = eal_param + ' '
         # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ']
@@ -156,21 +156,25 @@ class PmdOutput():
     def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, **config):
         config['cores'] = cores
         if eal_param == '':
-            # use configured ports
-            config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
+            # use configured ports if not set
+            if 'ports' not in config.keys():
+                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
             all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
         else:
             w_pci_list, port_options, b_pci_list, file_prefix, no_pci, other_eal_str = self.split_eal_param(eal_param)
             if no_pci:
                 config['no_pci'] = no_pci
-            elif not w_pci_list and not b_pci_list:
-                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
-                config['prefix'] = file_prefix
-            else:
+            if w_pci_list:
                 config['ports'] = w_pci_list
+            if port_options:
                 config['port_options'] = port_options
+            if b_pci_list:
                 config['b_ports'] = b_pci_list
+            if file_prefix:
                 config['prefix'] = file_prefix
+
+            if not w_pci_list and not b_pci_list and 'ports' not in config.keys():
+                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
             part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
             all_eal_param = part_eal_param + ' ' + other_eal_str
 
