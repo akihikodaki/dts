@@ -135,6 +135,7 @@ The following are the test plans for the DPDK DTS automated test system.
     enable_package_download_in_ice_driver_test_plan
     multicast_test_plan
     ethtool_stats_test_plan
+    metrics_test_plan.rst
 
     veb_switch_test_plan
     vf_daemon_test_plan
