@@ -39,12 +39,12 @@ conf = SuiteConf('compressdev_sample')
 
 default_opts = {
         "driver-name": None,
-        "seg-sz": 2048,
+        "seg-sz": None,
         "burst-sz": None,
         "compress-level": "1:1:9",
         "extended-input-sz": None,
         "num-iter": 10,
-        "max-num-sgl-segs": 16,
+        "max-num-sgl-segs": None,
         "external-mbufs": None,
         "huffman-enc": "dynamic",
         "ptest": None,
@@ -52,7 +52,7 @@ default_opts = {
         }
 
 default_eals = {
-        "l": "0-6",
+        "l": "0-3",
         "c": None,
         "n": None,
         "w": None,
@@ -136,12 +136,11 @@ def run_unit(test_case, eal={}):
 
     test_case.verify("Test OK" in out, "Test Failed")
 
-def run_perf(test_case, eal={}, opt={}):
+def run_compress_func(test_case, eal={}, opt={}):
     eal_str = get_opt_str(test_case, default_eals, eal)
     opt_str = get_opt_str(test_case, default_opts, opt)
     input_file = get_input_file(test_case)
 
-    result = {}
     for each_file in input_file:
         test_case.logger.info("Testing file: {}".format(each_file))
 
@@ -157,12 +156,46 @@ def run_perf(test_case, eal={}, opt={}):
         test_case.verify("failed" not in out and "FATAL" not in out,
                 "Test Failed: Parameter or the value error")
 
+        res = parse_perf_output(out)
+        test_case.verify(res, "Test Failed: can't get performance data")
+
+def run_compress_perf(test_case, eal={}, opt={}):
+    eal_str = get_opt_str(test_case, default_eals, eal)
+    opt_str = get_opt_str(test_case, default_opts, opt)
+    input_file = get_input_file(test_case)
+
+    result = {}
+    for each_file in input_file:
+        file_name = os.path.basename(each_file).split('.')[0]
+        if file_name == "calgary":
+            perf_file = each_file
+            break
+    else:
+        perf_file = ''
+
+    test_case.verify(perf_file, "Test Failed: can not found the test file: calgary")
+
+    for each_seg in [1, 2, 4, 8, 16, 32]:
+        test_case.logger.info("Testing file: {}, seg-sz: {}".format(perf_file, each_seg * 1024))
+        cmdline = "./{target}/app/dpdk-test-compress-perf {eal}\
+                -- --input-file {file} --seg-sz {seg} {opt}"
+
+        cmdline = cmdline.format(target = test_case.dut.target,
+                eal = eal_str,
+                file = perf_file,
+                seg = each_seg * 1024,
+                opt = opt_str)
+
+        out = test_case.dut.send_expect(cmdline, "# ", 300)
+        test_case.verify("failed" not in out and "FATAL" not in out,
+                "Test Failed: Parameter or the value error")
+
         case_name = test_case._suite_result.test_case
         res = format_perf_data(case_name, out)
         test_case.verify(res, "Test Failed: can't get performance data")
 
         file_name = os.path.basename(each_file).split('.')[0]
-        result.update({case_name + '_' + file_name: res})
+        result.update({case_name + '_' + str(each_seg) + 'k': res})
 
     return result
 

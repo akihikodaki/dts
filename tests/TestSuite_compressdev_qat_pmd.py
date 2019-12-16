@@ -33,6 +33,7 @@
 import os
 from test_case import TestCase
 import json
+import copy
 import compress_common as cc
 
 
@@ -41,12 +42,16 @@ class TestCompressdevQatPmd(TestCase):
     def set_up_all(self):
         self.prepare_dpdk()
         cc.bind_qat_device(self, self.drivername)
+        cc.default_eals.update({"vdev": None})
         cc.default_opts.update({"driver-name": "compress_qat"})
         self.device_list = cc.get_qat_device_list(self)
         self._perf_result = dict()
+        self.eals = copy.deepcopy(cc.default_eals)
+        self.opts = copy.deepcopy(cc.default_opts)
 
     def set_up(self):
-        pass
+        cc.default_eals = copy.deepcopy(self.eals)
+        cc.default_opts = copy.deepcopy(self.opts)
 
     def prepare_dpdk(self):
         self.dut.send_expect(
@@ -75,13 +80,61 @@ class TestCompressdevQatPmd(TestCase):
     def test_qat_pmd_fixed_func(self):
         cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
         cc.default_opts.update({"huffman-enc": "fixed"})
-        result = cc.run_perf(self)
-        self._perf_result.update(result)
+        result = cc.run_compress_func(self)
 
     def test_qat_pmd_dynamic_func(self):
         cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
         cc.default_opts.update({"huffman-enc": "dynamic"})
-        result = cc.run_perf(self)
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_big_sgl_fixed_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "fixed", "seg-sz": 1024,
+            "extended-input-sz": 1048576, "max-num-sgl-segs": 1003})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_big_sgl_dynamic_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "dynamic", "seg-sz": 1024,
+            "extended-input-sz": 1048576, "max-num-sgl-segs": 1003})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_big_seg_fixed_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "fixed", "seg-sz": 59460,
+            "extended-input-sz": 1048576, "max-num-sgl-segs": 18})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_big_seg_dynamic_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "dynamic", "seg-sz": 59460,
+            "extended-input-sz": 1048576, "max-num-sgl-segs": 18})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_external_mbufs_fixed_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "fixed", "max-num-sgl-segs": 16,
+            "seg-sz": 2048, "external-mbufs": '', "extended-input-sz": 300000})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_external_mbufs_dynamic_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "dynamic", "max-num-sgl-segs": 16,
+            "seg-sz": 2048, "external-mbufs": '', "extended-input-sz": 300000})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_fixed_perf(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "fixed", "extended-input-sz": 3244032,
+            "max-num-sgl-segs": 1})
+        result = cc.run_compress_perf(self)
+        self._perf_result.update(result)
+
+    def test_qat_pmd_dynamic_perf(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "dynamic", "extended-input-sz": 3244032,
+            "max-num-sgl-segs": 1})
+        result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
     def tear_down(self):

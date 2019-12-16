@@ -33,6 +33,7 @@
 import os
 from test_case import TestCase
 import json
+import copy
 import compress_common as cc
 
 class TestCompressdevZlibPmd(TestCase):
@@ -43,8 +44,12 @@ class TestCompressdevZlibPmd(TestCase):
         cc.default_opts.update({"driver-name": "compress_zlib"})
         self._perf_result = dict()
 
+        self.eals = copy.deepcopy(cc.default_eals)
+        self.opts = copy.deepcopy(cc.default_opts)
+
     def set_up(self):
-        pass
+        cc.default_eals = copy.deepcopy(self.eals)
+        cc.default_opts = copy.deepcopy(self.opts)
 
     def prepare_dpdk(self):
         self.dut.send_expect(
@@ -58,12 +63,22 @@ class TestCompressdevZlibPmd(TestCase):
 
     def test_zlib_pmd_fixed_func(self):
         cc.default_opts.update({"huffman-enc": "fixed"})
-        result = cc.run_perf(self)
-        self._perf_result.update(result)
+        result = cc.run_compress_func(self)
 
     def test_zlib_pmd_dynamic_func(self):
         cc.default_opts.update({"huffman-enc": "dynamic"})
-        result = cc.run_perf(self)
+        result = cc.run_compress_func(self)
+
+    def test_zlib_pmd_fixed_perf(self):
+        cc.default_opts.update({"huffman-enc": "fixed", "extended-input-sz": 3244032,
+            "max-num-sgl-segs": 1})
+        result = cc.run_compress_perf(self)
+        self._perf_result.update(result)
+
+    def test_zlib_pmd_dynamic_perf(self):
+        cc.default_opts.update({"huffman-enc": "dynamic", "extended-input-sz": 3244032,
+            "max-num-sgl-segs": 1})
+        result = cc.run_compress_perf(self)
         self._perf_result.update(result)
 
     def tear_down(self):
