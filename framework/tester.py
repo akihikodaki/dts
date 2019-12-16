@@ -174,6 +174,28 @@ class Tester(Crb):
         self.restore_interfaces()
         self.scan_ports()
 
+        self.disable_lldp()
+
+    def disable_lldp(self):
+        """
+        Disable tester ports LLDP.
+        """
+        result = self.send_expect("lldpad -d",  "# ")
+        if result:
+            self.logger.error(result.strip())
+
+        for port in self.ports_info:
+            if not "intf" in port.keys():
+                continue
+            eth = port["intf"]
+            out = self.send_expect("ethtool --show-priv-flags %s"
+                    % eth, "# ", alt_session=True)
+            if "disable-fw-lldp" in out:
+                self.send_expect("ethtool --set-priv-flags %s disable-fw-lldp on"
+                        % eth, "# ", alt_session=True)
+            self.send_expect("lldptool set-lldp -i %s adminStatus=disabled"
+                    % eth, "# ", alt_session=True)
+
     def get_local_port(self, remotePort):
         """
         Return tester local port connect to specified dut port.
