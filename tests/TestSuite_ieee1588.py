@@ -76,6 +76,8 @@ class TestIeee1588(TestCase):
         IEEE1588 Enable test case.
         """
         self.dut.send_expect("set fwd ieee1588", "testpmd> ", 10)
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            self.dut.send_expect("set port 0 ptype_mask 0xf", "testpmd> ", 10)
         # Waiting for 'testpmd> ' Fails due to log messages, "Received non PTP
         # packet", in the output
         self.dut.send_expect("start", ">", 10)
