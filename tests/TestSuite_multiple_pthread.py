@@ -36,6 +36,7 @@ import random
 import string
 import utils
 from test_case import TestCase
+from packet import Packet
 
 
 class TestMultiplePthread(TestCase):
@@ -60,27 +61,19 @@ class TestMultiplePthread(TestCase):
         """
         Run before each test case.
         """
-        pass
-
-    def destroy_packets_session(self):
-        """
-        close send packets session.
-        """
-        for i in valports:
-            self.tester.create_session(name="%s" % i).send_expect("^C", "#")
-            self.tester.destroy_session(self.tester.create_session(name="%s" % i))
+        self.send_sessions = []
 
     def send_packet(self):
         """
-        create sessions and Send packets continuous.
+        Send packets continuous.
         """
         for index in valports:
             localPort = self.tester.get_local_port(index)
             iface = self.tester.get_interface(localPort)
-            self.send_packets_session = self.tester.create_session(name="%s" % index)
-            packet = r'sendp([Ether()/IP(src="1.2.3.4", dst="192.168.0.%d")], iface="%s", loop=1)' % (index, iface)
-            self.send_packets_session.send_expect("scapy", ">>>")
-            self.send_packets_session.send_command(packet)
+            pcap_str = 'Ether()/IP(src="1.2.3.4", dst="192.168.0.%d")' % (index)
+            self.pkt = Packet(pcap_str)
+            intf = self.pkt.send_pkt_bg(crb=self.tester, tx_port=iface)
+            self.send_sessions.append(intf)
 
     def get_cores_statistic(self, cmdline):
         """
@@ -91,6 +84,7 @@ class TestMultiplePthread(TestCase):
         m = cmdline.replace('"', '', 2)
         out_list = out.split(m)
         mutiple_pthread_session.send_expect("^C", "#")
+        self.dut.close_session(mutiple_pthread_session)
         return out_list
 
     def verify_before_send_packets(self, out_list):
@@ -159,7 +153,6 @@ class TestMultiplePthread(TestCase):
         # quit application
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("quit", "# ", 30)
-        self.destroy_packets_session()
 
     def test_basic_operation(self):
         """
@@ -231,6 +224,8 @@ class TestMultiplePthread(TestCase):
         """
         Run after each test case.
         """
+        if len(self.send_sessions) != 0:
+            self.pkt.stop_send_pkt_bg(self.tester, self.send_sessions)
         self.dut.kill_all()
 
     def tear_down_all(self):
