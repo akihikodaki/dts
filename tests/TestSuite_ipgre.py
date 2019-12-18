@@ -65,8 +65,8 @@ class TestIpgre(TestCase):
         ports = self.dut.get_ports()
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
                                  "fortville_spirit_single", "fortville_25g", "carlsville",
-                                 "columbiaville_25g", "columbiaville_100g"],
-                    "GRE tunnel packet type only support by fortville and carlsville")
+                                 "columbiaville_25g", "columbiaville_100g", "cavium_a063", "cavium_a064"],
+                    "GRE tunnel packet type only support by fortville, carlsville and cavium")
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
         # start testpmd
@@ -189,14 +189,24 @@ class TestIpgre(TestCase):
         Start testpmd and enable rxonly forwarding mode
         Send packet as table listed and packet type match each layer
         """
-        pkt_types = {
-            "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-            "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-            "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT":       ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-            "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-            "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-            "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT":  ["TUNNEL_GRENAT", "INNER_L4_SCTP"]
-        }
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            pkt_types = {
+                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":        ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT":        ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT":       ["TUNNEL_GRE", "INNER_L4_SCTP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT":   ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT":   ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT":  ["TUNNEL_GRE", "INNER_L4_SCTP"]
+            }
+        else:
+            pkt_types = {
+                "MAC_IP_GRE_IPv4-TUNNEL_UDP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_TCP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_IP_GRE_IPv4-TUNNEL_SCTP_PKT":       ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_UDP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_TCP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_VLAN_IP_GRE_IPv4-TUNNEL_SCTP_PKT":  ["TUNNEL_GRENAT", "INNER_L4_SCTP"]
+            }
         config_layers =  {'ether': {'src': self.outer_mac_src},
                           'ipv4': {'proto': 'gre'}}
         # Start testpmd and enable rxonly forwarding mode
@@ -217,29 +227,48 @@ class TestIpgre(TestCase):
         Start testpmd and enable rxonly forwarding mode
         Send packet as table listed and packet type match each layer
         """
-        pkt_types_ipv6_ip = {
-            "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-            "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-            "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"],
-            "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
-        }
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            pkt_types_ipv6_ip = {
+                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRE", "INNER_L4_TCP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRE", "INNER_L4_SCTP"]
+            }
 
-        pkt_types_ipv6_ipv6 = {
-            "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_UDP"],
-            "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_TCP"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"]
-        }
+            pkt_types_ipv6_ipv6 = {
+                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRE", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRE", "INNER_L4_TCP"]
+            }
 
-        pkt_types_ipv6_ipv6_SCTP = {
-            "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
-            "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
-        }
+            pkt_types_ipv6_ipv6_SCTP = {
+                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRE", "INNER_L4_SCTP"]
+            }
+        else:
+            pkt_types_ipv6_ip = {
+                "MAC_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":           ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":          ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_UDP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_TCP_PKT":      ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv4-TUNNEL_SCTP_PKT":     ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
+            }
+
+            pkt_types_ipv6_ipv6 = {
+                "MAC_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_UDP"],
+                "MAC_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":         ["TUNNEL_GRENAT", "INNER_L4_TCP"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_UDP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_UDP", "PKT_RX_VLAN"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_TCP_PKT":    ["TUNNEL_GRENAT", "INNER_L4_TCP", "PKT_RX_VLAN"]
+            }
+
+            pkt_types_ipv6_ipv6_SCTP = {
+                "MAC_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":        ["TUNNEL_GRENAT", "INNER_L4_SCTP"],
+                "MAC_VLAN_IPv6_GRE_IPv6-TUNNEL_SCTP_PKT":   ["TUNNEL_GRENAT", "INNER_L4_SCTP", "PKT_RX_VLAN"]
+            }
 
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-hw-vlan" % self.target
+        if (self.nic in ["cavium_a063", "cavium_a064"]):
+            testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
+        else:
+            testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-hw-vlan" % self.target
         self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")

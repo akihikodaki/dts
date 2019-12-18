@@ -2415,7 +2415,9 @@
             ],
             "NIC": [
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
