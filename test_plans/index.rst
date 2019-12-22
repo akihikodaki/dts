@@ -231,7 +231,6 @@ The following are the test plans for the DPDK DTS automated test system.
     dpdk_hugetlbfs_mount_size_test_plan
     nic_single_core_perf_test_plan
     power_managerment_throughput_test_plan
-    ethtool_stats_test_plan
     iavf_test_plan
     packet_capture_test_plan
     packet_ordering_test_plan
@@ -240,3 +239,11 @@ The following are the test plans for the DPDK DTS automated test system.
 
     fips_cryptodev_test_plan
     flow_filtering_test_plan
+    af_xdp_2_test_plan
+    cbdma_test_plan
+    flexible_rxd_test_plan
+    ipsec_gw_and_library_test_plan
+    port_control_test_plan
+    port_representor_test_plan
+    vm2vm_virtio_user_test_plan
+    vmdq_dcb_test_plan

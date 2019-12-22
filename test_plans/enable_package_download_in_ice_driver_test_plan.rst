@@ -182,6 +182,6 @@ In this case, b1:00.0 interface is specific interface.
 
 Check the initial output log, it shows::
 
-EAL: PCI device 0000:b1:00.0 on NUMA socket 0
-EAL:   probe driver: 8086:1593 net_ice
-**ice_load_pkg(): pkg to be loaded: 1.2.100.0, ICE COMMS Package**
+  EAL: PCI device 0000:b1:00.0 on NUMA socket 0
+  EAL:   probe driver: 8086:1593 net_ice
+  **ice_load_pkg(): pkg to be loaded: 1.2.100.0, ICE COMMS Package**

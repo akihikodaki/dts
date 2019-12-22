@@ -195,12 +195,5 @@ Description: use control testpmd to set vlan
     scapy> sendp(pkts, iface="ens785f0")
 
 3. check port stats in 2 VF testpmd:
-  expected result:
-  2 VF testpmds should receive 10 packets separately.
-
-
-
-
-
-
-
+    expected result:
+    2 VF testpmds should receive 10 packets separately.

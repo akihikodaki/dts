@@ -37,11 +37,12 @@ vhost dequeue zero-copy test plan
 Description
 ===========
 
-Vhost dequeue zero-copy is a performance optimization for vhost, the copy in the dequeue path is avoided in order to improve the performance. The test cases cover split ring and packed ring. 
+Vhost dequeue zero-copy is a performance optimization for vhost, the copy in the dequeue path is avoided in order to improve the performance. The test cases cover split ring and packed ring.
 Notice:
-*All packed ring case need special qemu version.
-*In the PVP case, when packet size is 1518B, 10G nic could be the performance bottleneck, so we use 40G traffic genarator and 40G nic.
-*Also as vhost zero copy mbufs should be consumed as soon as possible, don't start send packets at vhost side before VM and virtio-pmd launched.
+
+* All packed ring case need special qemu version.
+* In the PVP case, when packet size is 1518B, 10G nic could be the performance bottleneck, so we use 40G traffic genarator and 40G nic.
+* Also as vhost zero copy mbufs should be consumed as soon as possible, don't start send packets at vhost side before VM and virtio-pmd launched.
 
 Test flow
 =========

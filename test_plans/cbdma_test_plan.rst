@@ -87,7 +87,7 @@ where,
     or not
 
 Packet pipeline: 
-===============
+================
 NIC RX -> copy packet -> free original -> update mac addresses -> NIC TX
 
 Test Case1: CBDMA basic test with differnet size packets
@@ -158,7 +158,7 @@ Test Case5: CBDMA performance cmparison between mac-updating and no-mac-updating
 
 4. Check performance from ioat app::
 
-Total packets Tx:                   xxx [pps]
+    Total packets Tx:                   xxx [pps]
 
 5.Launch ioatfwd app::
 
@@ -168,7 +168,7 @@ Total packets Tx:                   xxx [pps]
 
 7. Check performance from ioat app::
 
-Total packets Tx:                   xxx [pps]
+    Total packets Tx:                   xxx [pps]
   
 Test Case6: CBDMA performance cmparison between HW copies and SW copies using different packet size
 ===================================================================================================
@@ -183,7 +183,7 @@ Test Case6: CBDMA performance cmparison between HW copies and SW copies using di
 
 4. Check performance from ioat app::
 
-Total packets Tx:                   xxx [pps]
+    Total packets Tx:                   xxx [pps]
 
 5.Launch ioatfwd app with three cores::
 
@@ -193,4 +193,4 @@ Total packets Tx:                   xxx [pps]
 
 7. Check performance from ioat app and compare with hw copy test::
 
-Total packets Tx:                   xxx [pps]
+    Total packets Tx:                   xxx [pps]
