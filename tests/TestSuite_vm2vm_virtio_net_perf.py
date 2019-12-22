@@ -32,34 +32,39 @@
 """
 DPDK Test suite.
 
-Test cases for vhost-user + virtio-net VM2VM tso/tso
-zero-copy/ufo/tso_ufo capability check.
+vm2vm split ring and packed ring with tx offload (TSO and UFO) with non-mergeable path.
+vm2vm split ring and packed ring with UFO about virtio-net device capability with non-mergeable path.
+vm2vm split ring and packed ring vhost-user/virtio-net check the payload of large packet is valid with
+mergeable and non-mergeable dequeue zero copy.
+please use qemu version greater 4.1.94 which support packed feathur to test this suite.
 """
 import re
 import time
-import utils
+import string
+import random
 from virt_common import VM
 from test_case import TestCase
+from pmd_output import PmdOutput
 
 
 class TestVM2VMVirtioNetPerf(TestCase):
     def set_up_all(self):
         core_config = "1S/4C/1T"
-        cores_num = len([n for n in self.dut.cores if int(n['socket'])
-                            == 0])
-        self.verify(cores_num >= 4,
+        self.cores_list = self.dut.get_core_list(core_config)
+        self.verify(len(self.cores_list) >= 4,
                     "There has not enough cores to test this suite %s" %
                     self.suite_name)
-        cores = self.dut.get_core_list(core_config)
-        self.coremask = utils.create_mask(cores)
-        self.memory_channel = self.dut.get_memory_channels()
         self.vm_num = 2
         self.virtio_ip1 = "1.1.1.2"
         self.virtio_ip2 = "1.1.1.3"
         self.vritio_mac1 = "52:54:00:00:00:01"
         self.vritio_mac2 = "52:54:00:00:00:02"
-        self.vm_dut = None
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.random_string = string.ascii_letters + string.digits
+        socket_num = len(set([int(core['socket']) for core in self.dut.cores]))
+        self.socket_mem = ','.join(['2048']*socket_num)
+        self.vhost = self.dut.new_session(suite="vhost")
+        self.pmd_vhost = PmdOutput(self.dut, self.vhost)
 
     def set_up(self):
         """
@@ -67,10 +72,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         self.table_header = ['Mode', '[M|G]bits/sec']
         self.result_table_create(self.table_header)
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.vhost = self.dut.new_session(suite="vhost")
         self.vm_dut = []
         self.vm = []
 
@@ -82,29 +84,33 @@ class TestVM2VMVirtioNetPerf(TestCase):
             zerocopy_arg = ",dequeue-zero-copy=1"
         else:
             zerocopy_arg = ""
-        self.command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
-            "--socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost " + \
+        eal_params = self.dut.create_eal_parameters(cores=self.cores_list,
+                                prefix='vhost', no_pci=True)
+        self.command_line = self.dut.target + "/app/testpmd %s " + \
+            "--socket-mem %s --legacy-mem " + \
             "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " + \
             "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " + \
             "-- -i --nb-cores=1 --txd=1024 --rxd=1024"
 
         self.command_line = self.command_line % (
-                            self.coremask, self.memory_channel, self.base_dir,
+                            eal_params, self.socket_mem, self.base_dir,
                             zerocopy_arg, self.base_dir, zerocopy_arg)
-        self.vhost.send_expect(self.command_line, "testpmd> ", 30)
-        self.vhost.send_expect("start", "testpmd> ", 30)
+        self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
+        self.pmd_vhost.execute_cmd('start', timeout=30)
 
-    def start_vms(self, mode="normal"):
+    def start_vms(self, mode="mergeable", packed=False):
         """
         start two VM, each VM has one virtio device
         """
         setting_args = "mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
-        if mode == "tso":
-            setting_args += ",gso=on"
-        elif mode == "ufo":
+        if mode == "ufo":
             setting_args += ",guest_ufo=on,host_ufo=on"
-        elif mode == "normal":
+        elif mode == "mergeable":
             setting_args = "mrg_rxbuf=on"
+        elif mode == "normal":
+            setting_args = "mrg_rxbuf=off"
+        if packed is True:
+            setting_args = "%s,packed=on" % setting_args
 
         for i in range(self.vm_num):
             vm_dut = None
@@ -121,7 +127,8 @@ class TestVM2VMVirtioNetPerf(TestCase):
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
-                print utils.RED("Failure for %s" % str(e))
+                self.logger.error("Failure for %s" % str(e))
+                raise e
             vm_dut.restore_interfaces()
 
             self.vm_dut.append(vm_dut)
@@ -137,6 +144,14 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vm_dut[1].send_expect("ifconfig %s %s" % (vm2_intf, self.virtio_ip2), "#", 10)
         self.vm_dut[0].send_expect("arp -s %s %s" % (self.virtio_ip2, self.vritio_mac2), "#", 10)
         self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.vritio_mac1), "#", 10)
+
+    def prepare_test_env(self, zerocopy, path_mode, packed_mode=False):
+        """
+        start vhost testpmd and qemu, and config the vm env
+        """
+        self.start_vhost_testpmd(zerocopy)
+        self.start_vms(mode=path_mode, packed=packed_mode)
+        self.config_vm_env()
 
     def start_iperf(self, mode):
         """
@@ -159,6 +174,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         get the iperf test result
         """
+        self.vm_dut[0].send_expect('pkill iperf', '# ')
         self.vm_dut[1].session.copy_file_from("%s/iperf_client.log" % self.dut.base_dir)
         fp = open("./iperf_client.log")
         fmsg = fp.read()
@@ -195,9 +211,10 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.verify(int(tx_info.group(1)) > 0,
                     "Port 0 not forward packet greater than 1522")
 
-    def send_and_verify(self, mode):
+    def start_iperf_and_verify_vhost_xstats_info(self, mode):
         """
-        start to send packets and verify it
+        start to send packets and verify vm can received data of iperf
+        and verify the vhost can received big pkts in testpmd
         """
         self.start_iperf(mode)
         self.get_perf_result()
@@ -207,7 +224,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
     def stop_all_apps(self):
         for i in range(len(self.vm)):
             self.vm[i].stop()
-        self.vhost.send_expect("quit", "#", 30)
+        self.pmd_vhost.quit()
 
     def offload_capbility_check(self, vm_client):
         """
@@ -230,13 +247,15 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.verify(tcp6_info is not None and tcp6_info.group(1) == "on",
                     "tx-tcp6-segmentation in vm not right")
 
-    def check_payload_valid(self):
+    def check_scp_file_valid_between_vms(self):
         """
         scp 64b and 64KB file form VM1 to VM2, check the data is valid
         """
         # create a 64b and 64K size file
+        data = ''
         for b_size in [64, 65535]:
-            data = 'x'*b_size
+            for char in range(b_size):
+                data += random.choice(self.random_string)
             self.vm_dut[0].send_expect('echo "%s" > /tmp/payload' % data, '# ')
             # scp this file to vm1
             out = self.vm_dut[1].send_command('scp root@%s:/tmp/payload /root' % self.virtio_ip1, timeout=5)
@@ -244,69 +263,117 @@ class TestVM2VMVirtioNetPerf(TestCase):
                 self.vm_dut[1].send_command('yes', timeout=3)
             self.vm_dut[1].send_command(self.vm[0].password, timeout=3)
             # get the file info in vm1, and check it valid
-            file_info = self.vm_dut[1].send_expect('cat /root/payload', '# ')
-            self.verify(file_info == data, 'the file info is invalid as: %s' % file_info)
+            md5_send = self.vm_dut[0].send_expect('md5sum /tmp/payload', '# ')
+            md5_revd = self.vm_dut[1].send_expect('md5sum /root/payload', '# ')
+            md5_send = md5_send[: md5_send.find(' ')]
+            md5_revd = md5_revd[: md5_revd.find(' ')]
+            self.verify(md5_send == md5_revd, 'the received file is different with send file')
 
-    def test_vhost_vm2vm_tso_iperf(self):
+    def test_vm2vm_split_ring_iperf_with_tso(self):
         """
-        vhost-user + virtio-net VM2VM with tcp traffic
+        VM2VM split ring vhost-user/virtio-net test with tcp traffic
         """
-        self.start_vhost_testpmd(zerocopy=False)
-        self.start_vms(mode="tso")
-        self.config_vm_env()
-        self.send_and_verify(mode="tso")
-        self.stop_all_apps()
+        zerocopy = False
+        path_mode = "tso"
+        self.prepare_test_env(zerocopy, path_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
 
-    def test_vhost_vm2vm_tso_iperf_zerocopy(self):
+    def test_vm2vm_packed_ring_iperf_with_tso(self):
         """
-        vhost-user + virtio-net VM2VM zero-copy with tcp traffic
+        VM2VM packed ring vhost-user/virtio-net test with tcp traffic
         """
-        self.start_vhost_testpmd(zerocopy=True)
-        self.start_vms(mode="tso")
-        self.config_vm_env()
-        self.send_and_verify(mode="tso")
-        self.stop_all_apps()
+        zerocopy = False
+        path_mode = "tso"
+        packed_mode = True
+        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
 
-    def test_vhost_vm2vm_ufo_iperf(self):
+    def test_vm2vm_split_ring_iperf_with_ufo(self):
         """
-        vhost-user + virtio-net VM2VM with udp traffic
+        VM2VM split ring vhost-user/virtio-net test with udp traffic
         """
-        self.start_vhost_testpmd(zerocopy=False)
-        self.start_vms(mode="ufo")
-        self.config_vm_env()
-        self.send_and_verify(mode="ufo")
-        self.stop_all_apps()
+        zerocopy = False
+        path_mode = "ufo"
+        self.prepare_test_env(zerocopy, path_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="ufo")
 
-    def test_vhost_vm2vm_ufo_capbility(self):
+    def test_vm2vm_packed_ring_iperf_with_ufo(self):
         """
-        check virtio-net device capability
+        VM2VM packed ring vhost-user/virtio-net test with udp traffic
+        """
+        zerocopy = False
+        path_mode = "ufo"
+        packed_mode = True
+        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="ufo")
+
+    def test_vm2vm_split_ring_device_capbility(self):
+        """
+        Check split ring virtio-net device capability
         """
         self.start_vhost_testpmd(zerocopy=False)
         self.start_vms(mode="ufo")
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
-        self.stop_all_apps()
 
-    def test_vhost_vm2vm_packet_payload_valid_check(self):
+    def test_vm2vm_packed_ring_device_capbility(self):
         """
-        VM2VM vhost-user/virtio-net test with large packet payload valid check
+        Check split ring virtio-net device capability
         """
         self.start_vhost_testpmd(zerocopy=False)
-        self.start_vms(mode="normal")
-        self.config_vm_env()
-        self.check_payload_valid()
-        self.stop_all_apps()
+        self.start_vms(mode="ufo", packed=True)
+        self.offload_capbility_check(self.vm_dut[0])
+        self.offload_capbility_check(self.vm_dut[1])
+
+    def test_vm2vm_split_ring_zero_copy_with_mergeable_path_check_large_packet(self):
+        """
+        VM2VM virtio-net split ring mergeable zero copy test with large packet payload valid check
+        """
+        zerocopy = True
+        path_mode = 'mergeable'
+        self.prepare_test_env(zerocopy, path_mode)
+        self.check_scp_file_valid_between_vms()
+
+    def test_vm2vm_split_ring_zero_copy_with_no_mergeable_path_check_large_packet(self):
+        """
+        VM2VM virtio-net split ring non-mergeable zero copy test with large packet payload valid check
+        """
+        zerocopy = True
+        path_mode = 'normal'
+        self.prepare_test_env(zerocopy, path_mode)
+        self.check_scp_file_valid_between_vms()
+
+    def test_vm2vm_packed_ring_zero_copy_with_mergeable_path_check_large_packet(self):
+        """
+        VM2VM packed ring virtio-net mergeable dequeue zero copy test with large packet payload valid check
+        """
+        zerocopy = True
+        path_mode = 'mergeable'
+        packed_mode = True
+        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.check_scp_file_valid_between_vms()
+
+    def test_vm2vm_packed_ring_zero_copy_with_no_mergeable_path_check_large_packet(self):
+        """
+        VM2VM packed ring virtio-net non-mergeable dequeue zero copy test with large packet payload valid check
+        """
+        zerocopy = True
+        path_mode = 'normal'
+        packed_mode = True
+        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.check_scp_file_valid_between_vms()
 
     def tear_down(self):
         """
         run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.stop_all_apps()
+        self.dut.kill_all()
         time.sleep(2)
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        pass
+        if getattr(self, 'vhost', None):
+            self.dut.close_session(self.vhost)
