@@ -346,7 +346,8 @@
                 "springville",
                 "ironpond",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -1304,7 +1305,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -1349,7 +1351,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2434,6 +2437,22 @@
             "NIC": [
                 "niantic",
                 "sagepond"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "retrieve_eeprom": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
