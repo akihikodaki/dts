@@ -723,6 +723,7 @@ class TrexPacketGenerator(PacketGenerator):
     def _prepare_transmission(self, stream_ids=[], latency=False):
         ''' add one/multiple streams in one/multiple ports '''
         port_config = {}
+        self._traffic_ports = []
         for stream_id in stream_ids:
             stream = self._get_stream(stream_id)
             tx_port = stream['tx_port']
