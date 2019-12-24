@@ -808,7 +808,9 @@ class Tester(Crb):
         if self.it_uses_external_generator():
             if self.is_pktgen and self.pktgen:
                 self.pktgen.quit_generator()
-                self.restore_trex_interfaces()
+                # only restore ports if start trex in dts
+                if 'start_trex' in self.pktgen.conf.keys():
+                    self.restore_trex_interfaces()
                 self.pktgen = None
             elif self.ixia_packet_gen:
                 self.ixia_packet_gen.close()
