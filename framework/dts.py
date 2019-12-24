@@ -304,7 +304,14 @@ def dts_crbs_init(crbInsts, skip_setup, read_cache, project, base_dir, serialize
     tester.duts = duts
     show_speedup_options_messages(read_cache, skip_setup)
     tester.set_speedup_options(read_cache, skip_setup)
-    tester.init_ext_gen()
+    try:
+        tester.init_ext_gen()
+    except Exception as e:
+        log_handler.error(str(e))
+        tester.close()
+        for dutobj in duts:
+            dutobj.close()
+        raise e
 
     nic = settings.load_global_setting(settings.HOST_NIC_SETTING)
     for dutobj in duts:
