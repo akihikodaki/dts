@@ -38,6 +38,7 @@ There are three topology test (PVP/VM2VM/VM2NIC) for this feature.
 And this testsuite implement the topology of PVP.
 Testsuite vm2vm_net_perf implement the topology VM2VM
 Testsuite gso implement the topology VM2NIC
+To run this suite, the qemu version should support packed ring.
 """
 import utils
 import time
@@ -45,7 +46,8 @@ import re
 from settings import HEADER_SIZE
 from virt_common import VM
 from test_case import TestCase
-from pktgen import PacketGeneratorHelper
+from packet import Packet
+from pktgen import TRANSMIT_CONT
 
 
 class TestVhostDequeueZeroCopy(TestCase):
@@ -54,19 +56,19 @@ class TestVhostDequeueZeroCopy(TestCase):
         """
         Run at the start of each test suite.
         """
+        self.verify(self.nic in ("fortville_spirit"), "the port can not run this suite")
         self.tester.extend_external_packet_generator(TestVhostDequeueZeroCopy, self)
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
-        self.queue_number = 1
-        self.nb_cores = 1
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
-                          == self.ports_socket])
-        self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
+        self.tx_port = self.tester.get_local_port(self.dut_ports[0])
+        self.port_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.vm_dut = None
+        self.virtio_user = None
         self.virtio1_mac = "52:54:00:00:00:01"
+        self.header_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['udp']
 
         self.logger.info("you can config packet_size in file %s.cfg," % self.suite_name + \
                     "in region 'suite' like packet_sizes=[64, 128, 256]")
@@ -74,64 +76,93 @@ class TestVhostDequeueZeroCopy(TestCase):
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
 
-        self.out_path = '/tmp'
-        out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
-        if 'No such file or directory' in out:
-            self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
-        # create an instance to set stream field setting
-        self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
 
     def set_up(self):
         """
         Run before each test case.
         """
         # Clean the execution ENV
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         # Prepare the result table
         self.table_header = ["FrameSize(B)", "Throughput(Mpps)",
                             "% linerate", "Queue number", "Cycle"]
         self.result_table_create(self.table_header)
+        self.vm_dut = None
+        self.big_pkt_record = {}
 
-        self.vhost = self.dut.new_session(suite="vhost-user")
-
-    def get_core_mask(self):
+    def get_core_list(self):
         """
         check whether the server has enough cores to run case
+        if want to get the best perf of the vhost, the vhost tesptmd at least
+        should have 3 cores to start testpmd
         """
-        core_config = "1S/%dC/1T" % (self.nb_cores + 1)
-        self.verify(self.cores_num >= (self.nb_cores + 1),
-                "There has not enought cores to test this case %s" % self.running_case)
-        core_list = self.dut.get_core_list(
+        if self.nb_cores == 1:
+            cores_num = 2
+        else:
+            cores_num = 1
+        core_config = "1S/%dC/1T" % (self.nb_cores + cores_num)
+        self.core_list = self.dut.get_core_list(
                 core_config, socket=self.ports_socket)
-        self.core_mask = utils.create_mask(core_list)
+        self.verify(len(self.core_list) >= (self.nb_cores + cores_num),
+                "There has not enought cores to test this case %s" % self.running_case)
 
-    def launch_testpmd_on_vhost(self, txfreet):
+    def launch_testpmd_as_vhost(self, txfreet, zero_copy=True, client_mode=False):
         """
         launch testpmd on vhost
         """
-        self.get_core_mask()
+        self.get_core_list()
 
+        mode_info = ""
+        if client_mode is True:
+            mode_info = ',client=1'
+        zero_copy_info = 1
+        if zero_copy is False:
+            zero_copy_info = 0
         if txfreet == "normal":
-            txfreet_args = "--txfreet=992"
+            txfreet_args = "--txd=1024 --rxd=1024 --txfreet=992"
         elif txfreet == "maximum":
-            txfreet_args = "--txfreet=1020 --txrs=4"
-        command_client = self.dut.target + "/app/testpmd " + \
-                         " -n %d -c %s --socket-mem 1024,1024 " + \
-                         " --legacy-mem --file-prefix=vhost " + \
-                         " --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,dequeue-zero-copy=1' " + \
-                         " -- -i --nb-cores=%d --rxq=%d --txq=%d " + \
-                         "--txd=1024 --rxd=1024 %s"
-        command_line_client = command_client % (
-            self.mem_channels, self.core_mask, self.base_dir,
-            self.queue_number, self.nb_cores,
-            self.queue_number, self.queue_number, txfreet_args)
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
+            txfreet_args = "--txrs=4 --txd=992 --rxd=992 --txfreet=988"
+        elif txfreet == "vector_rx":
+            txfreet_args = "--txd=1024 --rxd=1024 --txfreet=992 --txrs=32"
 
-    def launch_testpmd_on_vm(self):
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
+                    prefix='vhost', ports=[self.port_pci])
+        command_client = self.dut.target + "/app/testpmd %s " + \
+                         " --socket-mem 1024,1024 --legacy-mem " + \
+                         " --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,dequeue-zero-copy=%d%s' " + \
+                         " -- -i --nb-cores=%d --rxq=%d --txq=%d %s"
+        command_line_client = command_client % (
+            eal_params, self.base_dir, self.queue_number,
+            zero_copy_info, mode_info, self.nb_cores,
+            self.queue_number, self.queue_number, txfreet_args)
+        self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
+        self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
+
+    def launch_testpmd_as_virtio_user(self, path_mode):
+        """
+        launch testpmd use vhost-net with path mode
+        """
+        # To get the best perf, the vhost and virtio testpmd should not use same cores,
+        # so get the additional 3 cores to start virtio testpmd
+        core_config = "1S/%dC/1T" % (len(self.core_list) + 3)
+        core_list = self.dut.get_core_list(
+                core_config, socket=self.ports_socket)
+        self.verify(len(core_list) >= (len(self.core_list) + 3),
+                "There has not enought cores to test this case %s" % self.running_case)
+        eal_params = self.dut.create_eal_parameters(cores=core_list[len(self.core_list):],
+                        prefix='virtio', no_pci=True)
+        command_line = self.dut.target + "/app/testpmd %s " + \
+                        "--socket-mem 1024,1024 --legacy-mem " + \
+                        "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queue_size=1024,%s " + \
+                        "-- -i --tx-offloads=0x0 --nb-cores=%d --txd=1024 --rxd=1024"
+        command_line = command_line % (eal_params, path_mode, self.nb_cores)
+        self.virtio_user.send_expect(command_line, 'testpmd> ', 120)
+        self.virtio_user.send_expect('set fwd mac', 'testpmd> ', 120)
+        self.virtio_user.send_expect('start', 'testpmd> ', 120)
+
+    def start_testpmd_on_vm(self, fwd_mode='mac'):
         """
         start testpmd in vm depend on different path
         """
@@ -142,12 +173,12 @@ class TestVhostDequeueZeroCopy(TestCase):
         command_line = command % (self.nb_cores,
                                   self.queue_number, self.queue_number)
         self.vm_dut.send_expect(command_line, "testpmd> ", 30)
+        self.vm_dut.send_expect('set fwd %s' % fwd_mode, "testpmd> ", 30)
+        self.vm_dut.send_expect('start', "testpmd> ", 30)
 
-    def relaunch_testpmd_on_vm(self):
+    def restart_testpmd_on_vm(self, fwd_mode):
         self.vm_dut.send_expect("quit", "# ", 30)
-        self.launch_testpmd_on_vm()
-        self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut.send_expect("start", "testpmd> ", 30)
+        self.start_testpmd_on_vm(fwd_mode)
 
     def set_vm_vcpu(self):
         """
@@ -166,7 +197,7 @@ class TestVhostDequeueZeroCopy(TestCase):
                 if 'cpupin' in self.vm.params[i]['cpu'][0].keys():
                     self.vm.params[i]['cpu'][0].pop('cpupin')
 
-    def start_one_vm(self):
+    def start_one_vm(self, mode='client', packed=False):
         """
         start qemu
         """
@@ -176,10 +207,14 @@ class TestVhostDequeueZeroCopy(TestCase):
         vm_params['driver'] = 'vhost-user'
         vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = self.virtio1_mac
+        if mode == 'server':
+            vm_params['opt_server'] = 'server'
         opt_args = "mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
         if self.queue_number > 1:
             vm_params['opt_queue'] = self.queue_number
             opt_args += ",mq=on,vectors=%d" % (2*self.queue_number + 2)
+        if packed is True:
+            opt_args += ',packed=on'
         vm_params['opt_settings'] = opt_args
         self.vm.set_vm_device(**vm_params)
         self.set_vm_vcpu()
@@ -190,7 +225,26 @@ class TestVhostDequeueZeroCopy(TestCase):
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
-            self.logger.error("ERROR: Failure for %s" % str(e))
+            self.logger.error("ERROR: Failure for %s, " % str(e) + \
+                    "if 'packed not found' in output of start qemu log, " + \
+                    "please use the qemu version which support packed ring")
+            raise e
+
+    def prepare_test_evn(self, vhost_txfreet_mode, vhost_zero_copy, vhost_client_mode,
+                vm_testpmd_fwd_mode, packed_mode):
+        """
+        start vhost testpmd and launch qemu, start testpmd on vm
+        """
+        if vhost_client_mode is True:
+            vm_mode = 'server'
+        else:
+            vm_mode = 'client'
+        self.launch_testpmd_as_vhost(txfreet=vhost_txfreet_mode, zero_copy=vhost_zero_copy,
+                                    client_mode=vhost_client_mode)
+        self.start_one_vm(mode=vm_mode, packed=packed_mode)
+        self.start_testpmd_on_vm(fwd_mode=vm_testpmd_fwd_mode)
+        # start testpmd at host side after VM and virtio-pmd launched
+        self.vhost_user.send_expect("start", "testpmd> ", 120)
 
     def update_table_info(self, frame_size, Mpps, throughtput, cycle):
         results_row = [frame_size]
@@ -200,50 +254,64 @@ class TestVhostDequeueZeroCopy(TestCase):
         results_row.append(cycle)
         self.result_table_add(results_row)
 
-    def set_fields(self):
-        """
-        set ip protocol field behavior
-        """
-        fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
-        return fields_config
+        # record the big pkt Mpps
+        if frame_size == 1518:
+            self.big_pkt_record[cycle] = Mpps
 
-    def calculate_avg_throughput(self, frame_size, loopback):
+    def calculate_avg_throughput(self, frame_size, fwd_mode):
         """
         start to send packet and get the throughput
         """
-        payload = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
-        flow = '[Ether(dst="%s")/IP(src="192.168.4.1",proto=255)/UDP()/("X"*%d)]' % (
+        payload = frame_size - self.header_size
+        flow = 'Ether(dst="%s")/IP(src="192.168.4.1",proto=255)/UDP(sport=33,dport=34)/("X"*%d)' % (
             self.dst_mac, payload)
-        self.tester.scapy_append('wrpcap("%s/zero_copy.pcap", %s)' % (
-                                self.out_path, flow))
-        self.tester.scapy_execute()
-
-        tgenInput = []
-        port = self.tester.get_local_port(self.dut_ports[0])
-        tgenInput.append((port, port, "%s/zero_copy.pcap" % self.out_path))
-        vm_config = self.set_fields()
+        pkt = Packet(pkt_str=flow)
+        pkt.save_pcapfile(self.tester, "%s/zero_copy.pcap" % self.tester.tmp_file)
+        stream_option = {
+            'pcap': "%s/zero_copy.pcap" % self.tester.tmp_file,
+            'fields_config': {
+                'ip': {'src': {'action': 'random', 'start': '16.0.0.1', 'step': 1, 'end': '16.0.0.64'}}},
+            'stream_config': {
+                'rate': 100,
+                'transmit_mode': TRANSMIT_CONT,
+            }
+        }
         self.tester.pktgen.clear_streams()
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
-        # set traffic option
-        traffic_opt = {'delay': 5, 'duration': 20}
-        _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-        Mpps = pps / 1000000.0
+        stream_id = self.tester.pktgen.add_stream(self.tx_port, self.tx_port,
+                                    "%s/zero_copy.pcap" % self.tester.tmp_file)
+        self.tester.pktgen.config_stream(stream_id, stream_option)
+        traffic_opt = {
+            'method': 'throughput',
+            'rate': 100,
+            'interval': 6,
+            'duration': 30}
+        stats = self.tester.pktgen.measure([stream_id], traffic_opt)
+
+        if isinstance(stats, list):
+            # if get multi result, ignore the first one, because it may not stable
+            num = len(stats)
+            Mpps = 0
+            for index in range(1, num):
+                Mpps += stats[index][1]
+            Mpps = Mpps / 1000000.0 / (num-1)
+        else:
+            Mpps = stats[1] / 1000000.0
         # when the fwd mode is rxonly, we can not receive data, so should not verify it
-        if loopback != "rxonly":
+        if fwd_mode != "rxonly":
             self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
         throughput = Mpps * 100 / \
                     float(self.wirespeed(self.nic, frame_size, 1))
         return Mpps, throughput
 
-    def check_packets_of_each_queue(self, frame_size, loopback):
+    def check_packets_of_each_queue(self, frame_size, fwd_mode):
         """
         check each queue has receive packets
         """
-        if loopback == "rxonly":
+        if fwd_mode == "rxonly":
             verify_port = 1
         else:
             verify_port = 2
-        out = self.vhost.send_expect("stop", "testpmd> ", 60)
+        out = self.vhost_user.send_expect("stop", "testpmd> ", 60)
         for port_index in range(0, verify_port):
             for queue_index in range(0, self.queue_number):
                 queue_info = re.findall("RX\s*Port=\s*%d/Queue=\s*%d" %
@@ -260,9 +328,9 @@ class TestVhostDequeueZeroCopy(TestCase):
                       "frame_size:%d, rx-packets:%d, tx-packets:%d" %
                       (frame_size, rx_packets, tx_packets))
 
-        self.vhost.send_expect("start", "testpmd> ", 60)
+        self.vhost_user.send_expect("start", "testpmd> ", 60)
 
-    def send_and_verify(self, cycle="", loopback=""):
+    def send_and_verify_throughput(self, cycle="", fwd_mode=""):
         """
         start to send packets and verify it
         """
@@ -270,110 +338,171 @@ class TestVhostDequeueZeroCopy(TestCase):
             info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
             self.logger.info(info)
 
-            Mpps, throughput = self.calculate_avg_throughput(frame_size, loopback)
-            if loopback != "rxonly":
+            Mpps, throughput = self.calculate_avg_throughput(frame_size, fwd_mode)
+            if fwd_mode != "rxonly":
                 self.update_table_info(frame_size, Mpps, throughput, cycle)
             # when multi queues, check each queue can receive packets
             if self.queue_number > 1:
-                self.check_packets_of_each_queue(frame_size, loopback)
+                self.check_packets_of_each_queue(frame_size, fwd_mode)
+
+    def check_perf_drop_between_with_and_without_zero_copy(self):
+        """
+        for dequeue-zero-copy=0, about the small pkts we expect ~10% gain
+        compare to dequeue-zero-copy=1
+        """
+        value_with_zero_copy = 0
+        value_without_zero_copy = 0
+        if 'dequeue-zero-copy=1' in self.big_pkt_record.keys():
+            value_with_zero_copy = self.big_pkt_record['dequeue-zero-copy=1']
+        if 'dequeue-zero-copy=0' in self.big_pkt_record.keys():
+            value_without_zero_copy = self.big_pkt_record['dequeue-zero-copy=0']
+        self.verify(value_with_zero_copy != 0 and value_without_zero_copy != 0,
+                'can not get the value of big pkts, please check self.frame_sizes')
+        self.verify(value_with_zero_copy - value_without_zero_copy >= value_with_zero_copy*0.1,
+                'the drop with dequeue-zero-copy=0 is not as expected')
 
     def close_all_testpmd_and_vm(self):
         """
         close testpmd about vhost-user and vm_testpmd
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.vm_dut.send_expect("quit", "#", 60)
-        self.dut.close_session(self.vhost)
-        self.vm.stop()
+        if getattr(self, 'vhost_user', None):
+            self.vhost_user.send_expect("quit", "#", 60)
+        if getattr(self, 'virtio_user', None):
+            self.virtio_user.send_expect("quit", "#", 60)
+            self.dut.close_session(self.virtio_user)
+            self.virtio_user = None
+        if getattr(self, 'vm_dut', None):
+            self.vm_dut.send_expect("quit", "#", 60)
+            self.vm.stop()
 
-    def test_perf_pvp_dequeue_zero_copy(self):
+    def test_perf_pvp_split_ring_dequeue_zero_copy(self):
         """
-        performance of pvp zero-copy with [frame_sizes]
+        pvp split ring dequeue zero-copy test
         """
         self.nb_cores = 1
         self.queue_number = 1
-        self.launch_testpmd_on_vhost(txfreet="normal")
-        self.start_one_vm()
-        self.launch_testpmd_on_vm()
-        # set fwd mode on vm
-        self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut.send_expect("start", "testpmd> ", 30)
-        # start testpmd at host side after VM and virtio-pmd launched
-        self.vhost.send_expect("start", "testpmd> ", 120)
-        self.send_and_verify()
-        self.close_all_testpmd_and_vm()
-        self.result_table_print()
+        self.logger.info('start vhost testpmd with dequeue-zero-copy=1 to test')
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=False)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
 
-    def test_perf_pvp_dequeue_zero_copy_with_2_queue(self):
+        self.close_all_testpmd_and_vm()
+        self.logger.info('start vhost testpmd with dequeue-zero-copy=0 to test')
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=False,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=False)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=0')
+        self.result_table_print()
+        self.check_perf_drop_between_with_and_without_zero_copy()
+
+    def test_perf_pvp_packed_ring_dequeue_zero_copy(self):
         """
-        pvp dequeue zero-copy test with 2 queues
+        pvp packed ring dequeue zero-copy test
+        """
+        self.nb_cores = 1
+        self.queue_number = 1
+        self.logger.info('start vhost testpmd with dequeue-zero-copy=1 to test')
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=True)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
+
+        self.close_all_testpmd_and_vm()
+        self.logger.info('start vhost testpmd with dequeue-zero-copy=0 to test')
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=False,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=True)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=0')
+        self.result_table_print()
+        self.check_perf_drop_between_with_and_without_zero_copy()
+
+    def test_perf_pvp_split_ring_dequeue_zero_copy_with_2_queue(self):
+        """
+        pvp split ring dequeue zero-copy test with 2 queues
         """
         self.nb_cores = 2
         self.queue_number = 2
-        self.launch_testpmd_on_vhost(txfreet="normal")
-        self.start_one_vm()
-        self.launch_testpmd_on_vm()
-        # set fwd mode on vm
-        self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut.send_expect("start", "testpmd> ", 30)
-        # start testpmd at host side after VM and virtio-pmd launched
-        self.vhost.send_expect("start", "testpmd> ", 120)
-        # when multi queues, the function will check each queue can receive packets
-        self.send_and_verify()
-        self.close_all_testpmd_and_vm()
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=False)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
         self.result_table_print()
 
-    def test_perf_pvp_dequeue_zero_copy_with_driver_unload(self):
+    def test_perf_pvp_packed_ring_dequeue_zero_copy_with_2_queue(self):
         """
-        pvp dequeue zero-copy test with driver unload test
+        pvp packed ring dequeue zero-copy test with 2 queues
+        """
+        self.nb_cores = 2
+        self.queue_number = 2
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=True)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
+        self.result_table_print()
+
+    def test_perf_pvp_split_ring_dequeue_zero_copy_with_driver_unload(self):
+        """
+        pvp split ring dequeue zero-copy test with driver reload test
         """
         self.nb_cores = 4
         self.queue_number = 16
-        self.launch_testpmd_on_vhost(txfreet="normal")
-        self.start_one_vm()
-        self.launch_testpmd_on_vm()
-        # set fwd mode on vm
-        self.vm_dut.send_expect("set fwd rxonly", "testpmd> ", 30)
-        self.vm_dut.send_expect("start", "testpmd> ", 30)
-        # start testpmd at host side after VM and virtio-pmd launched
-        self.vhost.send_expect("start", "testpmd> ", 120)
-        # when multi queues, the function will check each queue can receive packets
-        self.send_and_verify(cycle="befor relaunch", loopback="rxonly")
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=True, vm_testpmd_fwd_mode='rxonly', packed_mode=False)
+        self.send_and_verify_throughput(cycle="before relaunch", fwd_mode="rxonly")
 
         # relaunch testpmd at virtio side in VM for driver reloading
-        self.relaunch_testpmd_on_vm()
-        self.send_and_verify(cycle="after relaunch")
-        self.close_all_testpmd_and_vm()
+        self.restart_testpmd_on_vm(fwd_mode='mac')
+        self.send_and_verify_throughput(cycle="after relaunch")
         self.result_table_print()
 
-    def test_perf_pvp_dequeue_zero_copy_with_maximum_txfreet(self):
+    def test_perf_pvp_packed_ring_dequeue_zero_copy_with_driver_unload(self):
         """
-        pvp dequeue zero-copy test with maximum txfreet
+        pvp packed ring dequeue zero-copy test with driver reload test
         """
         self.nb_cores = 4
         self.queue_number = 16
-        self.launch_testpmd_on_vhost(txfreet="maximum")
-        self.start_one_vm()
-        self.launch_testpmd_on_vm()
-        # set fwd mode on vm
-        self.vm_dut.send_expect("set fwd mac", "testpmd> ", 30)
-        self.vm_dut.send_expect("start", "testpmd> ", 30)
-        # start testpmd at host side after VM and virtio-pmd launched
-        self.vhost.send_expect("start", "testpmd> ", 120)
-        # when multi queues, the function will check each queue can receive packets
-        self.send_and_verify()
-        self.close_all_testpmd_and_vm()
+        self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
+                    vhost_client_mode=True, vm_testpmd_fwd_mode='rxonly', packed_mode=True)
+        self.send_and_verify_throughput(cycle="before relaunch", fwd_mode="rxonly")
+
+        # relaunch testpmd at virtio side in VM for driver reloading
+        self.restart_testpmd_on_vm(fwd_mode='mac')
+        self.send_and_verify_throughput(cycle="after relaunch")
+        self.result_table_print()
+
+    def test_perf_pvp_split_ring_dequeue_zero_copy_with_maximum_txfreet(self):
+        """
+        pvp split ring dequeue zero-copy test with maximum txfreet
+        """
+        self.nb_cores = 4
+        self.queue_number = 16
+        self.prepare_test_evn(vhost_txfreet_mode='maximum', vhost_zero_copy=True,
+                    vhost_client_mode=True, vm_testpmd_fwd_mode='mac', packed_mode=False)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
+        self.result_table_print()
+
+    def test_perf_pvp_split_ring_dequeue_zero_copy_with_vector_rx(self):
+        """
+        pvp split ring dequeue zero-copy test with vector_rx path
+        """
+        self.nb_cores = 1
+        self.queue_number = 1
+        path_mode = 'packed_vq=0,in_order=0,mrg_rxbuf=0'
+        self.virtio_user = self.dut.new_session(suite="virtio-user")
+
+        self.logger.info('start vhost testpmd with dequeue-zero-copy=1 to test')
+        self.launch_testpmd_as_vhost(txfreet="vector_rx", zero_copy=True, client_mode=False)
+        self.vhost_user.send_expect("start", "testpmd> ", 120)
+        self.launch_testpmd_as_virtio_user(path_mode)
+        self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
         self.result_table_print()
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.close_all_testpmd_and_vm()
+        self.dut.kill_all()
         time.sleep(2)
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        if getattr(self, 'vhost_user', None):
+            self.dut.close_session(self.vhost_user)
