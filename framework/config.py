@@ -266,7 +266,8 @@ class CrbsConf(UserConf):
                'pass': '', 'tester IP': '', 'tester pass': '',
                IXIA: None, 'memory channels': 4,
                PKTGEN: None,
-               'bypass core0': True, 'dut_cores': ''}
+               'bypass core0': True, 'dut_cores': '',
+               'snapshot_load_side': 'tester'}
 
     def __init__(self, crbs_conf=CRBCONF):
         self.config_file = crbs_conf
@@ -324,6 +325,8 @@ class CrbsConf(UserConf):
                     crb['dut arch'] = value
                 elif key == 'dut_cores':
                     crb['dut_cores'] = value
+                elif key == 'snapshot_load_side':
+                    crb['snapshot_load_side'] = value.lower()
 
             self.crbs_cfg.append(crb)
         return self.crbs_cfg
