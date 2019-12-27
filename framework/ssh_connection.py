@@ -108,8 +108,8 @@ class SSHConnection(object):
 
         return True
 
-    def copy_file_from(self, src, dst=".", password=''):
-        self.session.copy_file_from(src, dst, password)
+    def copy_file_from(self, src, dst=".", password='', crb_session=None):
+        self.session.copy_file_from(src, dst, password, crb_session)
 
-    def copy_file_to(self, src, dst="~/", password=''):
-        self.session.copy_file_to(src, dst, password)
+    def copy_file_to(self, src, dst="~/", password='', crb_session=None):
+        self.session.copy_file_to(src, dst, password, crb_session)

@@ -163,7 +163,7 @@ class SSHPexpect(object):
     def isalive(self):
         return self.session.isalive()
 
-    def copy_file_from(self, src, dst=".", password=''):
+    def copy_file_from(self, src, dst=".", password='', crb_session=None):
         """
         Copies a file from a remote place into local.
         """
@@ -172,11 +172,11 @@ class SSHPexpect(object):
             command = 'scp -v -P {0} -o NoHostAuthenticationForLocalhost=yes {1}@{2}:{3} {4}'.format(
                 str(self.port), self.username, self.ip, src, dst)
         if password == '':
-            self._spawn_scp(command, self.password)
+            self._spawn_scp(command, self.password, crb_session)
         else:
-            self._spawn_scp(command, password)
+            self._spawn_scp(command, password, crb_session)
 
-    def copy_file_to(self, src, dst="~/", password=''):
+    def copy_file_to(self, src, dst="~/", password='', crb_session=None):
         """
         Sends a local file to a remote place.
         """
@@ -188,16 +188,23 @@ class SSHPexpect(object):
             command = 'scp -v {0} {1}@{2}:{3}'.format(
                 src, self.username, self.host, dst)
         if password == '':
-            self._spawn_scp(command, self.password)
+            self._spawn_scp(command, self.password, crb_session)
         else:
-            self._spawn_scp(command, password)
+            self._spawn_scp(command, password, crb_session)
 
-    def _spawn_scp(self, scp_cmd, password):
+    def _spawn_scp(self, scp_cmd, password, crb_session):
         """
         Transfer a file with SCP
         """
         self.logger.info(scp_cmd)
-        p = pexpect.spawn(scp_cmd)
+        # if crb_session is not None, copy file from/to crb env
+        # if crb_session is None, copy file from/to current dts env
+        if crb_session is not None:
+            crb_session.session.clean_session()
+            crb_session.session.__sendline(scp_cmd)
+            p = crb_session.session.session
+        else:
+            p = pexpect.spawn(scp_cmd)
         time.sleep(0.5)
         ssh_newkey = 'Are you sure you want to continue connecting'
         i = p.expect([ssh_newkey, '[pP]assword', "# ", pexpect.EOF,
@@ -212,5 +219,5 @@ class SSHPexpect(object):
             p.expect("Exit status 0", 60)
         if i == 4:
             self.logger.error("SCP TIMEOUT error %d" % i)
-
-        p.close()
+        if crb_session is None:
+            p.close()
