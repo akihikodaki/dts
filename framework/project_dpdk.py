@@ -259,7 +259,23 @@ class DPDKdut(Dut):
 
     def prepare_package(self):
         if not self.skip_setup:
-            assert (os.path.isfile(self.package) is True), "Invalid package"
+            session_info = None
+            # if snapshot_load_side=dut, will copy the dpdk tar from dut side
+            # and will judge whether the path of tar is existed on dut
+            if self.crb['snapshot_load_side'] == 'dut':
+                if not os.path.isabs(self.package):
+                    raise ValueError("As snapshot_load_side=dut, will copy dpdk.tar "
+                                    "from dut, please specify a abs path use params "
+                                    "--snapshot when run dts")
+                # if ':' in session, this is vm dut, use the dut session
+                if ':' in self.session.name:
+                    session_info = self.host_dut.alt_session
+                else:
+                     session_info = self.alt_session
+                out = session_info.send_expect('ls -F %s' % self.package, '# ')
+                assert (out == self.package), "Invalid package"
+            else:
+               assert (os.path.isfile(self.package) is True), "Invalid package"
 
             p_dir, _ = os.path.split(self.base_dir)
             # ToDo: make this configurable
@@ -271,7 +287,7 @@ class DPDKdut(Dut):
                 raise ValueError("Directory %s or %s does not exist,"
                                  "please check params -d"
                                  % (p_dir, dst_dir))
-            self.session.copy_file_to(self.package, dst_dir)
+            self.session.copy_file_to(self.package, dst_dir, crb_session=session_info)
 
             # put patches to p_dir/patches/
             if (self.patches is not None):
