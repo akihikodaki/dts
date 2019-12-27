@@ -295,6 +295,63 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         for error_message in error_messages:
             self.verify(error_message in out, "There should be '%s' in out: %s" % (error_message, out))
 
+    def get_sn(self, nic_pci):
+        cmd = "lspci -vs %s | grep 'Device Serial Number'" % nic_pci
+        out = self.dut.send_expect(cmd, "#")
+        sn_temp = re.findall(r'Device Serial Number (.*)', out)
+        sn = re.sub("-", "", sn_temp[0])
+        return sn
+
+    def check_env(self):
+        """
+        Check the DUT has two or more CVL NICs. If not, return "the ENV needs at least two CVL NICs"
+        """
+        self.nic_pci = [self.dut.ports_info[0]['pci'], self.dut.ports_info[-1]['pci']]
+        self.nic_sn = [self.get_sn(self.nic_pci[0]), self.get_sn(self.nic_pci[1])]
+        self.verify(self.nic_sn[0] != self.nic_sn[1], "the case needs >=2 CVL NICs with different Serial Numbers")
+
+    def copy_specify_ice_pkg(self, pkg_ver):
+        """
+        Copy 2 different ``ice-xxx.pkg`` from dts/dep to dut /tmp/
+        pkg_files = ['ice-1.3.4.0.pkg', 'ice-1.3.10.0.pkg']
+        """
+        dst = "/tmp"
+        pkg_file = "ice-%s.pkg" % pkg_ver
+        src_file = r'./dep/%s' % pkg_file
+        self.dut.session.copy_file_to(src_file, dst)
+
+    def generate_delete_specify_pkg(self, pkg_ver, sn, key="true"):
+        self.dut.send_expect("rm -rf /lib/firmware/intel/ice/ddp/ice-%s.pkg" % sn, "#")
+        if key == "true":
+            self.dut.send_expect("\cp /tmp/ice-%s.pkg /lib/firmware/intel/ice/ddp/ice-%s.pkg" % (pkg_ver, sn), "#")
+
+    def test_check_specific_package_loading(self):
+        """
+        Copy 2 different ``ice.pkg`` into ``/lib/firmware/intel/ice/ddp/``,
+        and rename 1 ice.pkg to ice-<interface serial number>.pkg, e.g. ice-8ce1abfffffefd3c.pkg
+        Launch testpmd with 1 default interface and 1 specific interface,
+        check the ice-<interface serial number>.pkg is loadded by the specific interface.
+        """
+        self.check_env()
+        self.use_correct_ice_pkg(flag="true")
+        self.new_pkgs = ["1.3.10.0", "1.3.4.0"]
+        for i in range(len(self.new_pkgs)):
+            self.copy_specify_ice_pkg(self.new_pkgs[i])
+            self.generate_delete_specify_pkg(pkg_ver=self.new_pkgs[i], sn=self.nic_sn[i], key="true")
+
+        eal_param = "-w %s " % self.nic_pci[0] + "-w %s " % self.nic_pci[1] + "--log-level=8"
+        out = self.dut_testpmd.execute_cmd("./%s/app/testpmd %s -- -i " % (self.target, eal_param))
+        self.dut_testpmd.quit()
+
+        # Delete ice-<interface serial number>.pkg to recover the ENV
+        for i in range(len(self.new_pkgs)):
+            self.generate_delete_specify_pkg(pkg_ver=self.new_pkgs[i], sn=self.nic_sn[i], key="false")
+
+        self.actual_pcis = re.findall(r"device (.*) on", out)
+        self.pkgs = re.findall(r"is: (.*),", out)
+        self.verify(self.actual_pcis == self.nic_pci and self.pkgs == self.new_pkgs,
+                    "The nics pci info/pkg are not matched")
+
     def tear_down(self):
         self.dut_testpmd.quit()
 
