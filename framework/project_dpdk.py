@@ -281,6 +281,10 @@ class DPDKdut(Dut):
             # ToDo: make this configurable
             dst_dir = "/tmp/"
 
+            out = self.send_expect("ls -d %s" % p_dir, "# ", verify=True)
+            if out == 2:
+                self.send_expect("mkdir -p %s" % p_dir, "# ")
+
             out = self.send_expect("ls %s && cd %s" % (dst_dir, p_dir),
                                    "#", verify=True)
             if out == -1:
