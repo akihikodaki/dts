@@ -167,7 +167,6 @@ class PacketGenerator(object):
         self._start_transmission(stream_ids, options)
         time.sleep(delay)
         self._stop_transmission(stream_ids)
-        self._clear_streams()
 
     def __get_single_throughput_statistic(self, stream_ids):
         bps_rx = []
@@ -495,7 +494,10 @@ class PacketGenerator(object):
         # start warm up traffic
         delay = options.get('delay')
         _options = {'duration': duration}
-        self.__warm_up_pktgen(stream_ids, _options, delay)
+        if delay:
+            self._prepare_transmission(stream_ids=stream_ids)
+            self.__warm_up_pktgen(stream_ids, _options, delay)
+            self._clear_streams()
         # traffic parameters for dichotomy algorithm
         loss_rate_table = []
         hit_result = None
@@ -527,16 +529,18 @@ class PacketGenerator(object):
             self._set_stream_rate_percent(rate)
 
         if not hit_result:
-            msg = ('expected permit loss rate <{0}>'
+            msg = ('expected permit loss rate <{0}> '
                    'not between rate {1} and rate {2}').format(
                         permit_loss_rate, max_rate, min_rate)
             self.logger.error(msg)
             self.logger.info(pformat(loss_rate_table))
+            ret_value = 0, result[0][1], result[0][2]
         else:
             self.logger.debug(pformat(loss_rate_table))
+            ret_value = rate, hit_result[0][1], hit_result[0][2]
         self.logger.info("zero loss rate is %f" % rate)
 
-        return hit_result
+        return ret_value
 
     def measure(self, stream_ids, traffic_opt):
         '''
