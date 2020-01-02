@@ -64,28 +64,30 @@ Pattern and input set
   |    Packet Types     |           Pattern             +-------------------------------------------+-------------------------------------------+
   |                     |                               |              non-pipeline mode            |              pipeline mode                |
   +=====================+===============================+===========================================+===========================================+
-  |                     | MAC_IPV4_FRAG                 |                                           | [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV4_FRAG                 | N/A        								| [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [DSCP]                                    |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                     | MAC_IPV4_PAY                  |                                           | [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV4_PAY                  | [Source IP], [Dest IP],[TOS],[TTL]        | [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [IP protocol], [DSCP]                     |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                     | MAC_IPV4_UDP_PAY              |                                           | [Source IP], [Dest IP],                   |
-  |                     |                               |                                           | [DSCP],                                   |
+  |                     | MAC_IPV4_UDP_PAY              | [Source IP], [Dest IP],[TOS],[TTL],       | [Source IP], [Dest IP],                   |
+  |                     |                               | [Source Port],[Dest Port]                 | [DSCP],                                   |
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  | IPv4/IPv6 + TCP/UDP	| MAC_IPV4_TCP                  |                                           | [Source IP], [Dest IP],                   |
-  |                     |                               |                                           | [DSCP],                                   |
+  | IPv4/IPv6 + TCP/UDP	| MAC_IPV4_TCP                  | [Source IP], [Dest IP],[TOS],[TTL],       | [Source IP], [Dest IP],                   |
+  |                     |                               | [Source Port],[Dest Port]                 | [DSCP],                                   |
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                     | MAC_IPV6_FRAG                 |                                           | [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV6_FRAG                 | [Source IP], [Dest IP]                    | [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [TC]                                      |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                     | MAC_IPV6_UDP_PAY              |                                           | [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV6_UDP_PAY              | [Source IP], [Dest IP],[TOS],[TTL],       | [Source IP], [Dest IP],                   |
+  |                     |                               | [Source Port],[Dest Port]                | [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [TC],                                     |
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                     | MAC_IPV6_TCP                  |                                           | [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV6_TCP                  | [Source IP], [Dest IP],[TOS],[TTL],       | [Source IP], [Dest IP],                   |
+  |                     |                               | [Source Port],[Dest Port]                 | [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [TC],                                     |
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   +---------------------+-------------------------------+-------------------------------------------+-------------------------------------------+
@@ -3552,8 +3554,8 @@ verify this packet not dropped
    verify the rule does not exist, and send matched packets, the packets are not to the corresponding queues.
 
 
-Test case: Non-tunnel pipeline mode
-===================================
+Test case: IPv4/IPv6 + TCP/UDP pipeline mode
+============================================
 
 1. create switch filter rules and verify
 
@@ -4471,3 +4473,197 @@ verify this packet not dropped
      testpmd> flow list 0
 
    verify the rule does not exist, and send matched packets, the packets are not to the corresponding queues.
+
+Test case: IPv4/IPv6 + TCP/UDP non-pipeline mode
+================================================
+
+1. create fdir rules to make the fdir table full,
+   which can be created as follows::
+
+     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 5 / end
+
+2. create switch filter rules and verify
+
+* MAC_IPV4_PAY
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions queue index 4 / end
+
+send matched packets::
+
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/("X"*480)], iface="enp27s0f2", count=100)
+  
+verify these 100 packets to queue 4
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 ttl is 2 / end actions drop / end
+
+send matched packets::
+
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4,ttl=2)/("X"*480)], iface="enp27s0f2", count=100)  
+  
+verify theses 100 packets dropped
+
+* MAC_IPV4_UDP_PAY
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions queue index 2 / end
+  
+send matched packets::
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+
+verify these 100 packets to queue 2
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / udp src is 25 dst is 23 / end actions drop / end
+
+send matched packets::
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+ 
+verify theses 100 packets dropped
+
+* MAC_IPV4_TCP_PAY
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.32 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 3 / end
+
+send matched packets::
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.32",tos=4)/TCP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+
+verify these 100 packets to queue 3
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions drop / end
+
+send matched packets::
+  sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/TCP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+ 
+verify theses 100 packets dropped
+ 
+
+* MAC_IPV6_PAY
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 8 / end
+ 
+send matched packets::
+ sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="enp27s0f2", count=100)
+
+verify these 100 packets to queue 8
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1537 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end
+
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="enp27s0f2", count=100)
+
+verify theses 100 packets dropped
+
+* MAC_IPV6_FRAG
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions queue index 10 / end
+ 
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/("X"*480)], iface="enp27s0f2", count=100)	
+
+verify these 100 packets to queue 10
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2023 / end actions drop / end
+
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/("X"*480)], iface="enp27s0f2", count=100)
+
+verify theses 100 packets dropped
+ 
+* MAC_IPV6_UDP
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / udp src is 25 dst is 23 / end actions queue index 6 / end
+		
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+
+verify these 100 packets to queue 6
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1528 / udp src is 25 dst is 23 / end actions drop / end
+ 
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1528", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
+
+verify theses 100 packets dropped
+ 
+* MAC_IPV6_TCP
+
+1) to queue action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1515 / tcp / end actions queue index 12 / end
+
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)], iface="enp27s0f2", count=100)
+
+verify these 100 packets to queue 12
+
+2) drop action
+
+create a rule::
+
+  testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1516 / tcp / end actions drop / end
+
+send matched packets::
+  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1516", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)], iface="enp27s0f2", count=100)
+
+verify theses 100 packets dropped
+
+3. verify rules can be listed and destroyed::
+
+     testpmd> flow list 0
+
+   verify the rule exists in the list.
+   destroy the rule, suppose the rule number is 0::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   verify the rule does not exist, and send matched packets, the packets are not to the corresponding queues.
+
