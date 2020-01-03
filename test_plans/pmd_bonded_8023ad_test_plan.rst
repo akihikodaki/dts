@@ -30,6 +30,7 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
+=================================
 Link Bonding for mode 4 (802.3ad)
 =================================
 
@@ -47,7 +48,7 @@ note: Slave selection for outgoing traffic is done according to the transmit
 hash policy, which may be changed from the default simple XOR layer2 policy.
 
 Requirements
-------------
+============
 #. Bonded ports shall maintain statistics similar to normal port.
 
 #. The slave links shall be monitor for link status change. See also the concept

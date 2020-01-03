@@ -30,8 +30,10 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-Prerequisites
-=============
+======================================
+Malicious Driver Detection (MDD) Tests
+======================================
+
 Malicious Driver Detection (MDD) support sagevill and i350 nic, dpdk2.3+ only
 support sagevill NIC. ixgbe supports disable MDD from version 4.2.3
 so this test must run dpdk2.3+

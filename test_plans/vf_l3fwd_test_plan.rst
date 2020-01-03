@@ -82,7 +82,6 @@ Prerequisites
       | NIC-2,Port-1  ---  TG,Port-2 |
       +------------------------------+
 
-==============
 Setup overview
 ==============
 
