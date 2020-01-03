@@ -7,9 +7,10 @@ dpdk hugepage management conflict issue
 trex use older dpdk version than we release cycle source code. When dpdk change
 the memory management merchanism, trex will meet the following issue.
 
-Trex should run on an independent platform. DUT/Trex should run on two platforms
-*. one is used as TESTER and trex server, another one is used as DUT.(dts/pktgen)
-*. one is used as trex server, another one is used as DUT/TESTER.(recommended scheme)
+Trex should run on an independent platform. DUT/Trex should run on two platforms:
+
+* one is used as TESTER and trex server, another one is used as DUT.(dts/pktgen)
+* one is used as trex server, another one is used as DUT/TESTER.(recommended scheme)
    This scheme can make sure that trex run on its full status capability.
 
 When trex run with dts on the same platform, trex server sometimes boot up

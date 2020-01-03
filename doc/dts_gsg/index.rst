@@ -43,4 +43,7 @@ Getting Started Guide
     virtualization
     scenario
     multiple_vm
+    pktgen_prog_guide
+    migrate_from_etgen_to_pktgen
     trex
+    trex_known_issue

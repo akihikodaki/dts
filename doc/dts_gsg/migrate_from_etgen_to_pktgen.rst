@@ -1,13 +1,18 @@
 
-=================
-etgen replacement
-=================
-pktgen usage please refer to doc **pktgen_prog_guide.rst**.
+======================
+Etgen to Pktgen Guides
+======================
+
+If you are working on etgen, and this document can help you to update your
+test suites to pktgen rapidly. Etgen is not under maitenance, and it will
+be removed from DTS some days.
+
+pktgen usage please refer to doc `pktgen_prog_guide <pktgen_prog_guide.html>`__.
 
 import new class
 ----------------
 
-#. import a new module::
+#. import a new module:
 
 .. code-block:: python
 
@@ -49,7 +54,10 @@ If no protocol layer field vary requirement, ignore this content.
 field key definition
 ~~~~~~~~~~~~~~~~~~~~
 
-#. ip protocol layer::
+#. ip protocol layer:
+
+.. code-block:: python
+
    # protocol layer name
    'mac':  {
       # field name
@@ -63,7 +71,10 @@ field key definition
       'dst': {'range': 64, 'step': 1, 'action': 'inc'},
        }
 
-#. mac protocol layer::
+#. mac protocol layer:
+
+.. code-block:: python
+
    # protocol layer name
    'mac':  {
       # field name
@@ -77,7 +88,10 @@ field key definition
       'dst': {'range': 64, 'step': 1, 'action': 'inc'},
        }
 
-#. vlan protocol layer::
+#. vlan protocol layer:
+
+.. code-block:: python
+
    # protocol layer name
    'vlan':  {
       '0': {
@@ -86,7 +100,8 @@ field key definition
          # field value vary step
          'step': 1,
          # action: inc/dec/random
-         'action': 'inc'},}
+         'action': 'inc'},
+       }
 
 usage example
 ~~~~~~~~~~~~~
@@ -125,13 +140,13 @@ etgen interface.
 throughput
 ~~~~~~~~~~
 
-etgen::
+etgen:
 
 .. code-block:: python
 
    self.tester.traffic_generator_throughput(tgen_input)
 
-pktgen::
+pktgen:
 
 .. code-block:: python
 
@@ -147,13 +162,13 @@ pktgen::
 loss
 ~~~~
 
-etgen::
+etgen:
 
 .. code-block:: python
 
    self.tester.traffic_generator_loss(tgen_input)
 
-pktgen::
+pktgen:
 
 .. code-block:: python
 
@@ -169,13 +184,13 @@ pktgen::
 latency
 ~~~~~~~
 
-etgen::
+etgen:
 
 .. code-block:: python
 
    self.tester.traffic_generator_latency(tgen_input)
 
-pktgen::
+pktgen:
 
 .. code-block:: python
 
@@ -191,13 +206,13 @@ pktgen::
 rfc2544
 ~~~~~~~
 
-etgen::
+etgen:
 
 .. code-block:: python
 
    self.tester.run_rfc2544(tgen_input)
 
-pktgen::
+pktgen:
 
 .. code-block:: python
 

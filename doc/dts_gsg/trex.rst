@@ -2,8 +2,6 @@ Configuring T-Rex for DPDK Test Suite
 =====================================
 
 DPDK can utilize T-Rex as a traffic generator in stateless Layer 2 mode.
-This is supported for the ``nic_single_core_perf`` test but may be usable
-by other tests in the future.
 
 An example T-Rex configuration that accomplishes this is shown as follows:
 
@@ -22,6 +20,4 @@ DTS may use a standalone T-Rex instance, or can be configured to start T-Rex
 itself using the settings in ``pktgen.conf``.
 
 To read more about T-Rex stateless mode, read the
-`T-Rex stateless support guide`_.
-
-:: _T-Rex stateless support guide: https://trex-tgn.cisco.com/trex/doc/trex_stateless.html
+`T-Rex stateless support guide <https://trex-tgn.cisco.com/trex/doc/trex_stateless.html>`__.

@@ -1,7 +1,13 @@
 
-=================
-how to use pktgen
-=================
+===================
+Pktgen How-to Guide
+===================
+
+The old module *etgen* is only support hardward packet generator `Ixia Explorer`
+which is not friendly for users to get. So DTS community refined DTS framework to
+support another software packet generator `Trex` which is an open source project,
+and user can get it easily.
+
 these definition and usage pattern come from doc `pktgen-API-1.1.docx` and etgen
 usage in dts. For trex(CISCO) rapid iterative development speed, we lack of
 adequate manpower to keep up with it. Here we recommend to use trex v2.41/v2.42/v2.43
