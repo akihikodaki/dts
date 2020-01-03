@@ -51,6 +51,7 @@ sys.path.append(DEP_FOLDER)
 
 from vxlan import VXLAN
 from nvgre import NVGRE, IPPROTO_NVGRE
+from scapy.contrib.gtp import *
 from lldp import LLDP, LLDPManagementAddress
 from Dot1BR import Dot1BR
 from nsh import NSH
