@@ -2337,7 +2337,7 @@ class SwitchFilterTest(TestCase):
 
         global test_results
 
-        out = self.dut.send_expect(command, "testpmd> ", 120)
+        out = self.dut.send_expect(command, "testpmd> ", 300)
         self.dut.send_expect("port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd", "testpmd> ", 15)
         if is_vxlan:
             self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 15)
