@@ -402,6 +402,7 @@ Send packets
     p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/SCTP()/Raw('x'*20)
     p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
     p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/Raw('x'*20)
 
 
 Test case: MAC_IPV4_PAY queue index
@@ -863,7 +864,7 @@ Test case: MAC_IPV4_UDP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 1 / udp src is 22 dst is 23 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions drop / end
 
 2. send matched packets, check the packet dropped.
    send mismatched packets, check the packets are not dropped.
@@ -885,7 +886,7 @@ Test case: MAC_IPV4_TCP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 1 / tcp src is 22 dst is 23 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions drop / end
 
 2. send matched packets, check the packet dropped.
    send mismatched packets, check the packets are not dropped.
@@ -907,7 +908,7 @@ Test case: MAC_IPV4_SCTP drop
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 1 / sctp src is 22 dst is 23 / end actions drop / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / sctp src is 22 dst is 23 / end actions drop / end
 
 2. send matched packets, check the packet dropped.
    send mismatched packets, check the packets are not dropped.
@@ -2527,7 +2528,7 @@ Test case: multirules mark
 
 3. query count::
 
-    testpmd> flow query 0 0 count
+    testpmd> flow query 0 2 count
     COUNT:
      hits_set: 1
      bytes_set: 0
@@ -2549,7 +2550,7 @@ Test case: multirules mark
    packet 3 to queue 1 with "FDIR matched ID=0x2" printed.
    query count::
 
-    testpmd> flow query 0 0 count
+    testpmd> flow query 0 2 count
     COUNT:
      hits_set: 1
      bytes_set: 0
