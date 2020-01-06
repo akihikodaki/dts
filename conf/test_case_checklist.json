@@ -2461,5 +2461,37 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+    "enable_disablejumbo": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "power_acpi_cpufreq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
