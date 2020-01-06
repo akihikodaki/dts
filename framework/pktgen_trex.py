@@ -793,11 +793,13 @@ class TrexPacketGenerator(PacketGenerator):
         try:
             # clear the stats before injecting
             self._conn.clear_stats()
+            # 'core_mask' list must be the same length as 'ports' list
+            core_mask = self.core_mask[:len(self._traffic_ports)]
             # Start traffic on port(s)
             run_opt = {
                 'ports':    self._traffic_ports,
                 'mult':     rate_percent,
-                'core_mask': self.core_mask,
+                'core_mask': core_mask,
                 'force':    True,}
             self.logger.info("begin traffic ......")
             self.logger.debug(run_opt)
