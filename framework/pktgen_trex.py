@@ -794,7 +794,9 @@ class TrexPacketGenerator(PacketGenerator):
             # clear the stats before injecting
             self._conn.clear_stats()
             # 'core_mask' list must be the same length as 'ports' list
-            core_mask = self.core_mask[:len(self._traffic_ports)]
+            core_mask = self.core_mask
+            if type(self.core_mask) == list:
+                core_mask = self.core_mask[:len(self._traffic_ports)]
             # Start traffic on port(s)
             run_opt = {
                 'ports':    self._traffic_ports,
