@@ -102,16 +102,16 @@ class TestShortLiveApp(TestCase):
         if (txPort == rxPort):
             count = 2
 
-        inst = self.tester.tcpdump_sniff_packets(rxitf, count=count)
+        filter_list = [{'layer': 'ether', 'config': {'type': 'not IPv6'}}]
+        inst = self.tester.tcpdump_sniff_packets(rxitf, count=count,filters=filter_list)
 
         pktlen = pktSize - 14
         padding = pktlen - 20
         self.tester.scapy_append('sendp([Ether(src="%s", dst="%s")/IP()/Raw(load="P"*%s)], iface="%s", count=4)' % (smac, dmac, padding, txitf))
 
         self.tester.scapy_execute()
-        time.sleep(3)
 
-        pkts = self.tester.load_tcpdump_sniff_packets(inst)
+        pkts = self.tester.load_tcpdump_sniff_packets(inst,timeout=2)
         out = str(pkts[0].show)
         self.logger.info('SCAPY Result:\n' + out + '\n\n\n')
         if received:
