@@ -2,7 +2,8 @@ import json
 import time
 import re
 import packet
-
+import os
+from scapy.contrib.gtp import *
 from test_case import TestCase
 from pmd_output import PmdOutput
 from utils import BLUE, RED
@@ -17,6 +18,16 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import Dot1Q
 from scapy.layers.sctp import SCTP, SCTPChunkData
 from nvgre import NVGRE
+
+out = os.popen("pip list|grep scapy ")
+version_result =out.read()
+p=re.compile('scapy\s+2\.3\.\d+')
+m=p.search(version_result)
+
+if not m:
+   GTP_TEID= "teid"
+else:
+   GTP_TEID= "TEID"
 
 tv_mac_ipv4_l3_src_only = {
     "name":"tv_mac_ipv4_l3_src_only",
@@ -356,34 +367,54 @@ tv_mac_ipv4_pppoe_icmp= {
     "check_func_param": {"expect_port":0}
 }
 
+pkt_str=[]
+pkt = ['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(GTP_TEID=0x123456)/IP(src="192.168.0.%d")/ICMP()/("X"*480)' %i for i in range(0,100)]
+for i in pkt:
+    pkt_str.append(i.replace('GTP_TEID', GTP_TEID))
+
 tv_mac_ipv4_gtpu_icmp= {
     "name":"tv_mac_ipv4_gtpu_icmp",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
-    "scapy_str":['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IP(src="192.168.0.%d")/ICMP()/("X"*480)' %i for i in range(0,100)],
+    "scapy_str":pkt_str,
     "check_func": rfc.check_packets_of_each_queue,
     "check_func_param": {"expect_port":0}
 }
+
+pkt_str=[]
+pkt = ['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(GTP_TEID=0x123456)/IP(src="192.168.0.%d", frag=6)/UDP(dport=%d)/("X"*480)' %(i, i+10) for i in range(0,100)]
+for i in pkt:
+    pkt_str.append(i.replace('GTP_TEID', GTP_TEID))
 
 tv_mac_ipv4_gtpu_udp_frag= {
     "name":"tv_mac_ipv4_gtpu_udp_frag",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end",
-    "scapy_str":['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IP(src="192.168.0.%d", frag=6)/UDP(dport=%d)/("X"*480)' %(i, i+10) for i in range(0,100)],
+    "scapy_str":pkt_str,
     "check_func": rfc.check_packets_of_each_queue,
     "check_func_param": {"expect_port":0}
 }
+
+pkt_str=[]
+pkt = ['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(GTP_TEID=0x123456)/IP(src="192.168.0.%d", frag=6)/("X"*480)' %i for i in range(0,100)]
+for i in pkt:
+    pkt_str.append(i.replace('GTP_TEID', GTP_TEID))
 
 tv_mac_ipv4_gtpu_ipv4_frag= {
     "name":"tv_mac_ipv4_gtpu_ipv4_frag",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
-    "scapy_str":['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IP(src="192.168.0.%d", frag=6)/("X"*480)' %i for i in range(0,100)],
+    "scapy_str":pkt_str,
     "check_func": rfc.check_packets_of_each_queue,
     "check_func_param": {"expect_port":0}
 }
 
+pkt_str=[]
+pkt =['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(GTP_TEID=0x123456)/IP(src="192.168.0.%d", frag=6)/TCP(dport=%d)/("X"*480)' %(i, i+10) for i in range(0,100)]
+for i in pkt:
+    pkt_str.append(i.replace('GTP_TEID', GTP_TEID))
+
 tv_mac_ipv4_gtpu_tcp= {
     "name":"tv_mac_ipv4_gtpu_tcp",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
-    "scapy_str":['Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(teid=0x123456)/IP(src="192.168.0.%d", frag=6)/TCP(dport=%d)/("X"*480)' %(i, i+10) for i in range(0,100)],
+    "scapy_str":pkt_str,
     "check_func": rfc.check_packets_of_each_queue,
     "check_func_param": {"expect_port":0}
 }
@@ -799,7 +830,9 @@ class AdvancedRSSTest(TestCase):
         self.pf_mac = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.verify(self.nic in ["columbiaville_25g","columbiaville_100g"], "%s nic not support ethertype filter" % self.nic)
-    
+
+
+
     def set_up(self):
         """
         Run before each test case.
@@ -829,28 +862,6 @@ class AdvancedRSSTest(TestCase):
         print all_eal_param   #print eal parameters
         command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=64 --txq=64")
         return command
-
-
-    def create_testpmd_command_pipeline_mode(self):
-        """
-        Create testpmd command for pipeline mode
-        """
-        #Prepare testpmd EAL and parameters   
-        all_eal_param = self.dut.create_eal_parameters(ports=[0], port_options={0:"pipeline-mode-support=1"})
-        print all_eal_param   #print eal parameters
-        command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=64 --txq=64")
-        return command
-
-
-    def get_rule_number(self,outstring):
-        """
-        get the rule number.
-        """
-        result_scanner = r'Flow rule #(\d+) created'
-        scanner = re.compile(result_scanner, re.DOTALL)
-        m = scanner.search(outstring)
-        rule_num = int(m.group(1))
-        return rule_num
 
     def _rte_flow_validate_pattern(self, test_vectors, command, is_vxlan):
 
@@ -950,5 +961,4 @@ class AdvancedRSSTest(TestCase):
     def test_rss_simple_xor(self):  
          command = self.create_testpmd_command()
          self._rte_flow_validate_pattern(tvs_mac_rss_simple_xor, command, is_vxlan = True)   
-
 
