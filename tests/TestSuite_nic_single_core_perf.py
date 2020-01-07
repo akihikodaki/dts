@@ -40,6 +40,7 @@ from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from pmd_output import PmdOutput
+from pktgen import TRANSMIT_CONT
 from copy import deepcopy
 import rst
 from pktgen import PacketGeneratorHelper
@@ -108,7 +109,7 @@ class TestNicSingleCorePerf(TestCase):
             self.expected_throughput = self.get_suite_cfg()[
                 'expected_throughput'][self.nic]
 
-        # initilize throughput attribution
+        # initialize throughput attribution
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
@@ -257,7 +258,7 @@ class TestNicSingleCorePerf(TestCase):
 
                 self.verify(throughput,
                     "No traffic detected, please check your configuration")
-                self.logger.info("Trouthput of " +
+                self.logger.info("Throughput of " +
                     "framesize: {}, rxd/txd: {} is :{} Mpps".format(
                         frame_size, nb_desc, throughput))
 
