@@ -423,6 +423,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             self.verify(tx_ring == tx_max, "Userspace tool failed to set Tx ring parameter")
             pkt = Packet(pkt_type='UDP')
             tester_port = self.tester.get_local_port(port)
+            self.verify(self.ethapp_check_link_status(index, 'Up') == True,
+                        'Fail to Open port{}'.format(index))
             intf = self.tester.get_interface(tester_port)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
@@ -456,6 +458,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt.config_layer('vlan', {'vlan': vlan})
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
+            self.verify(self.ethapp_check_link_status(index, 'Up') == True,
+                        'Fail to Open port{}'.format(index))
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(port)
             self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to Rx vlan packet")
@@ -501,6 +505,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt = Packet(pkt_type='UDP')
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
+            self.verify(self.ethapp_check_link_status(index, 'Up') == True,
+                        'Fail to Open port{}'.format(index))
             # send and sniff packet
             inst = self.tester.tcpdump_sniff_packets(intf)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
