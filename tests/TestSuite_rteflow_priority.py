@@ -179,7 +179,7 @@ class TestRteflowPriority(TestCase):
         self.logger.info('pass: queue id is 3')
  
         self.dut.send_expect("start", "testpmd>", 20)
-        self.send_pkt('sendp([Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.4 ",dst="192.168.0.7")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="%s")'%(self.__tx_iface))
+        self.send_pkt('sendp([Ether(dst="00:00:00:00:01:00",src="11:22:33:44:55:66")/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.4",dst="192.168.0.7")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="%s")'%(self.__tx_iface))
         out=self.dut.send_expect("stop", "testpmd>", 20)
         pkt_num=self.check_queue_rx_packets_number(out, 4)
         self.verify(pkt_num==1, "failed: the flow rule can not work")
