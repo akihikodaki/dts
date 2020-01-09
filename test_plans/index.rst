@@ -42,6 +42,10 @@ The following are the test plans for the DPDK DTS automated test system.
     checksum_offload_test_plan
     cloud_filter_test_plan
     coremask_test_plan
+    cvl_advanced_rss_test_plan
+    cvl_fdir_test_plan
+    cvl_switch_filter_test_plan
+    loopback_virtio_user_packed_ring_server_mode_test_plan
     crypto_perf_cryptodev_perf_test_plan
     ddp_gtp_qregion_test_plan
     ddp_gtp_test_plan
@@ -88,6 +92,7 @@ The following are the test plans for the DPDK DTS automated test system.
     metering_and_policing_test_plan
     multiple_pthread_test_plan
     NICStatistics_test_plan
+    ntb_test_plan
     nvgre_test_plan
     pmd_bonded_8023ad_test_plan
     pmd_bonded_test_plan
@@ -99,6 +104,7 @@ The following are the test plans for the DPDK DTS automated test system.
     ptype_mapping_test_plan
     pvp_multi_paths_performance_test_plan
     pvp_multi_paths_vhost_single_core_performance_test_plan
+    pvp_packed_ring_vhost_user_reconnect_test_plan
     pvp_multi_paths_virtio_single_core_performance_test_plan
     qinq_filter_test_plan
     qos_api_test_plan
@@ -107,6 +113,7 @@ The following are the test plans for the DPDK DTS automated test system.
     queue_region_test_plan
     queue_start_stop_test_plan
     rss_to_rte_flow_test_plan
+    rteflow_priority_test_plan
     runtime_vf_queue_number_kernel_test_plan
     runtime_vf_queue_number_maxinum_test_plan
     runtime_vf_queue_number_test_plan
