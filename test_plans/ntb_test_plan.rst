@@ -173,7 +173,7 @@ Test Case3: NTB test with rxonly/txonly fwd mode using igb_uio
 4. Check throughput with log info on two machines.
 
 Test Case4: NTB test with rxonly/txonly fwd mode using vfio-pci
-==============================================================
+===============================================================
 
 1. Insmod kernel module and bind Non-Transparent Bridge to vfio-pci driver on two host machines separately::
 
