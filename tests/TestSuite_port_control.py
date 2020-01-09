@@ -166,12 +166,18 @@ class TestPortControl(TestCase):
         terminal.execute_cmd("stop")
         terminal.execute_cmd("port stop all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        self.verify(ret == "down", "port not down!")
+        if self.nic.startswith('columbiaville'):
+            self.verify(ret != "", "port status error!")
+        else:
+            self.verify(ret == "down", "port not down!")
 
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        self.verify(ret == "down", "port reset fail!")
+        if self.nic.startswith('columbiaville'):
+            self.verify(ret != "", "port status error!")
+        else:
+            self.verify(ret == "down", "port not down!")
 
     def close_pmd_port(self, terminal):
         terminal.execute_cmd("port close all")
