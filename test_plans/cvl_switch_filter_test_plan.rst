@@ -64,7 +64,7 @@ Pattern and input set
   |    Packet Types     |           Pattern             +-------------------------------------------+-------------------------------------------+
   |                     |                               |              non-pipeline mode            |              pipeline mode                |
   +=====================+===============================+===========================================+===========================================+
-  |                     | MAC_IPV4_FRAG                 | N/A        								| [Source IP], [Dest IP],                   |
+  |                     | MAC_IPV4_FRAG                 |  N/A         				                | [Source IP], [Dest IP],       |
   |                     |                               |                                           | [DSCP]                                    |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
   |                     | MAC_IPV4_PAY                  | [Source IP], [Dest IP],[TOS],[TTL]        | [Source IP], [Dest IP],                   |
@@ -82,7 +82,7 @@ Pattern and input set
   |                     |                               |                                           | [TC]                                      |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
   |                     | MAC_IPV6_UDP_PAY              | [Source IP], [Dest IP],[TOS],[TTL],       | [Source IP], [Dest IP],                   |
-  |                     |                               | [Source Port],[Dest Port]                | [Source IP], [Dest IP],                   |
+  |                     |                               | [Source Port],[Dest Port]                 | [Source IP], [Dest IP],                   |
   |                     |                               |                                           | [TC],                                     |
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
@@ -92,7 +92,7 @@ Pattern and input set
   |                     |                               |                                           | [Source Port], [Dest Port]                |
   +---------------------+-------------------------------+-------------------------------------------+-------------------------------------------+
   |                     | MAC_IPV4_TUN_IPV4_FRAG        | [Out Dest IP], [VNI/GRE_KEY],             | [inner Source IP], [inner Dest IP],       |
-  |                     |               		| [Inner Source IP], [Inner Dest IP],       | [DSCP]                                    |
+  |                     |               	        | [Inner Source IP], [Inner Dest IP],       | [DSCP]                                    |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
   |                     | MAC_IPV4_TUN_IPV4_PAY         | [Out Dest IP], [VNI/GRE_KEY],             | N/A                                       |
   |                     |                               | [Inner Source IP], [Inner Dest IP],       |                                           |
@@ -4519,6 +4519,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions queue index 2 / end
   
 send matched packets::
+
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
 
 verify these 100 packets to queue 2
@@ -4530,6 +4531,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / udp src is 25 dst is 23 / end actions drop / end
 
 send matched packets::
+
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
  
 verify theses 100 packets dropped
@@ -4543,6 +4545,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.32 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 3 / end
 
 send matched packets::
+
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.32",tos=4)/TCP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
 
 verify these 100 packets to queue 3
@@ -4554,6 +4557,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions drop / end
 
 send matched packets::
+
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/TCP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
  
 verify theses 100 packets dropped
@@ -4568,6 +4572,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 8 / end
  
 send matched packets::
+
  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="enp27s0f2", count=100)
 
 verify these 100 packets to queue 8
@@ -4579,6 +4584,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1537 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end
 
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="enp27s0f2", count=100)
 
 verify theses 100 packets dropped
@@ -4592,6 +4598,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions queue index 10 / end
  
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/("X"*480)], iface="enp27s0f2", count=100)	
 
 verify these 100 packets to queue 10
@@ -4603,6 +4610,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2023 / end actions drop / end
 
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/("X"*480)], iface="enp27s0f2", count=100)
 
 verify theses 100 packets dropped
@@ -4614,8 +4622,9 @@ verify theses 100 packets dropped
 create a rule::
 
   testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / udp src is 25 dst is 23 / end actions queue index 6 / end
-		
+
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
 
 verify these 100 packets to queue 6
@@ -4627,6 +4636,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1528 / udp src is 25 dst is 23 / end actions drop / end
  
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1528", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=25,dport=23)/("X"*480)], iface="enp27s0f2", count=100)
 
 verify theses 100 packets dropped
@@ -4640,6 +4650,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1515 / tcp / end actions queue index 12 / end
 
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)], iface="enp27s0f2", count=100)
 
 verify these 100 packets to queue 12
@@ -4651,6 +4662,7 @@ create a rule::
   testpmd> flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is CDCD:910A:2222:5498:8475:1111:3900:1516 / tcp / end actions drop / end
 
 send matched packets::
+
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1516", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)], iface="enp27s0f2", count=100)
 
 verify theses 100 packets dropped
