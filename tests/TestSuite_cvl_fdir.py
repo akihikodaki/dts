@@ -240,7 +240,8 @@ MAC_IPV4_GTPU_IPV4_PAY = {
     "unmatch": [
         'Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/SCTP()/Raw("x"*20)',
         'Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw("x"*20)',
-        'Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw("x"*20)']
+        'Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw("x"*20)',
+        'Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/Raw("x"*20)']
 }
 
 tv_mac_ipv4_pay_queue_index = {
