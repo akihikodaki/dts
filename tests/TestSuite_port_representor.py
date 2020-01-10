@@ -104,14 +104,14 @@ class TestPortRepresentor(TestCase):
         self.vf_flag = 0
 
     def testpmd_pf(self):
-        self.pmdout_pf.start_testpmd("Default", eal_param="-w %s,representor=0-1" % self.pf_pci, param="--port-topology=chained")
+        self.pmdout_pf.start_testpmd("Default", eal_param="-w %s,representor=0-1" % self.pf_pci, param="--port-topology=chained --total-num-mbufs=120000")
 
     def testpmd_vf0(self):
-        self.out_vf0 = self.pmdout_vf0.start_testpmd("Default", eal_param="-w %s --file-prefix testpmd-vf0" % self.vfs_pci[0])
+        self.out_vf0 = self.pmdout_vf0.start_testpmd("Default", eal_param="-w %s --file-prefix testpmd-vf0" % self.vfs_pci[0], param="--total-num-mbufs=120000")
         self.vf0_mac = self.pmdout_vf0.get_port_mac(0)
 
     def testpmd_vf1(self):
-        self.out_vf1 = self.pmdout_vf1.start_testpmd("Default", eal_param="-w %s --file-prefix testpmd-vf1" % self.vfs_pci[1])
+        self.out_vf1 = self.pmdout_vf1.start_testpmd("Default", eal_param="-w %s --file-prefix testpmd-vf1" % self.vfs_pci[1], param="--total-num-mbufs=120000")
         self.vf1_mac = self.pmdout_vf1.get_port_mac(0)
 
     def check_port_stats(self):
