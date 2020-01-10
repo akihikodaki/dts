@@ -2387,7 +2387,9 @@
             ],
             "NIC": [
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2403,7 +2405,9 @@
             ],
             "NIC": [
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+                "cavium_a063",
+                "cavium_a064"
             ],
             "Target": [
                 "ALL"
@@ -2479,6 +2483,118 @@
         }
     ],
      "power_acpi_cpufreq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "power_cpufreq": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "nvgre_ipv4_checksum_offload": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "different_types_rss_queue_rule": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "disable_enable_rss": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "disable_rss_in_commandline": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "enable_ipv4_udp_rss": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "cavium_a063",
+                "cavium_a064"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+     "rss_queue_rule": [
         {
             "OS": [
                 "ALL"
