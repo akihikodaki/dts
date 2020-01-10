@@ -208,22 +208,27 @@ class TestTSO(TestCase):
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
-        cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
+        if (self.nic in ["cavium_a063","cavium_a064"]):
+            cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x8000" % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
+        else:
+            cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("port stop all", "testpmd> ", 120)
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set udp hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[0], "testpmd> ", 120)
-        self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120)
-        self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
+        if (self.nic not in ["cavium_a063", "cavium_a064"]):
+            self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120)
+            self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120)
 
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum set udp hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum set tcp hw %d" % self.dut_ports[1], "testpmd> ", 120)
-        self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120)
-        self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
+        if (self.nic not in ["cavium_a063", "cavium_a064"]):
+            self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[1], "testpmd> ", 120)
+            self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[1], "testpmd> ", 120)
 
         self.dut.send_expect("tso set 800 %d" % self.dut_ports[1], "testpmd> ", 120)
