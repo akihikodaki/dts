@@ -594,7 +594,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                 pkt.send_pkt(self.tester, tx_port=intf, count=4)
                 rx_pkts, _ = self.strip_portstats(index)
                 self.verify(rx_pkts == ori_rx_pkts + 4, "Packet match mtu not forwarded as expected")
-                pkt = Packet(pkt_type='UDP', pkt_len=mtu + 1 + HEADER_SIZE['eth'] + offset)
+                if (self.nic in ["cavium_a063","cavium_a064"]):
+                    pkt = Packet(pkt_type='UDP', pkt_len=mtu + 9 + HEADER_SIZE['eth'] + offset)
+                else:
+                    pkt = Packet(pkt_type='UDP', pkt_len=mtu + 1 + HEADER_SIZE['eth'] + offset)
                 pkt.send_pkt(self.tester, tx_port=intf, count=4)
                 rx_pkts_over, _ = self.strip_portstats(index)
                 self.verify(rx_pkts == rx_pkts_over, "Packet over mtu should not be forwarded")
