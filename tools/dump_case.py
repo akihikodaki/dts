@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import sys
 import os
 import re
@@ -88,8 +87,8 @@ def load_cases():
         suite_func_list[suite] = func_cases
         suite_perf_list[suite] = perf_cases 
 
-    print pprint(suite_func_list)
-    print pprint(suite_perf_list)
+    print(pprint(suite_func_list))
+    print(pprint(suite_perf_list))
 
 
 if __name__ == '__main__':
