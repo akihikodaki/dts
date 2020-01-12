@@ -191,6 +191,30 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         self.close_all_testpmd()
         self.result_table_print()
 
+    def test_perf_virtio_single_core_virtio11_inorder_mergeable(self):
+        """
+        performance for Vhost PVP virtio 1.1 inorder  Mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=1",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virtio_1.1_inorder_mergeable on")
+        self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_perf_virtio_single_core_virtio11_inorder_normal(self):
+        """
+        performance for Vhost PVP virtio1.1 inorder Normal Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virtio_1.1_inorder_normal")
+        self.close_all_testpmd()
+        self.result_table_print()
+
     def test_perf_virtio_single_core_inorder_mergeable(self):
         """
         performance for Vhost PVP In_order mergeable Path.
