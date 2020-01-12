@@ -10,8 +10,9 @@ from scapy.layers.inet6 import IPv6
 from scapy.layers.dns import DNS
 from scapy.layers.l2 import Ether
 
-vxlanmagic = "0x8"
+XLAN_PORT=4789
 
+VXLAN_PORT=4789
 _GP_FLAGS = ["R", "R", "R", "A", "R", "R", "D", "R"]
 
 class VXLAN(Packet):
