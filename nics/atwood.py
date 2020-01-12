@@ -96,16 +96,16 @@ class Atwood(NetDevice):
 
         port_cfg = portconf.get_ports_config()[pci_addr]
 
-        if 'tp_ip' not in port_cfg.keys():
+        if 'tp_ip' not in list(port_cfg.keys()):
             raise PortConfigParseException("Atwood must configure test point ip")
-        if 'passwd' not in port_cfg.keys():
+        if 'passwd' not in list(port_cfg.keys()):
             raise PortConfigParseException("Atwood must configure host password")
 
         crb = {}
         crb['IP'] = port_cfg['tp_ip']
         crb['pass'] = port_cfg['passwd']
 
-        if 'tp_path' in port_cfg.keys():
+        if 'tp_path' in list(port_cfg.keys()):
             self.tp_path = port_cfg['tp_path']
 
         # create additional session

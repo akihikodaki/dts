@@ -240,7 +240,7 @@ class NetDevice(object):
         Set mac address of specified vf device on linux.
         """
         if self.current_driver != self.default_driver:
-            print "Only support when PF bound to default driver"
+            print("Only support when PF bound to default driver")
             return
 
         self.__send_expect("ip link set %s vf %d mac %s" % (intf, vf_idx, mac), "# ")
@@ -620,7 +620,7 @@ class NetDevice(object):
                         vf_uevent).group(1)
                     sriov_vfs_pci.append(vf_pci)
             except Exception as e:
-                print "Scan linux port [%s:%s.%s] sriov vf failed: %s" % (domain_id, bus_id, devfun_id, e)
+                print("Scan linux port [%s:%s.%s] sriov vf failed: %s" % (domain_id, bus_id, devfun_id, e))
 
         return sriov_vfs_pci
 
@@ -720,13 +720,13 @@ class NetDevice(object):
         bind_vf_driver = getattr(self, 'bind_driver_%s' % self.__get_os_type())
         if not driver:
             if not self.default_vf_driver:
-                print "Must specify a driver because default VF driver is NULL!"
+                print("Must specify a driver because default VF driver is NULL!")
                 return
             driver = self.default_vf_driver
 
         if not pci:
             if not self.sriov_vfs_pci:
-                print "No VFs on the nic [%s]!" % self.pci
+                print("No VFs on the nic [%s]!" % self.pci)
                 return
             for vf_pci in self.sriov_vfs_pci:
                 addr_array = vf_pci.split(':')
@@ -750,7 +750,7 @@ class NetDevice(object):
         bind_driver = getattr(self, 'bind_driver_%s' % self.__get_os_type())
         if not driver:
             if not self.default_driver:
-                print "Must specify a driver because default driver is NULL!"
+                print("Must specify a driver because default driver is NULL!")
                 return
             driver = self.default_driver
         ret = bind_driver(self.domain_id, self.bus_id, self.devfun_id, driver)
@@ -849,10 +849,10 @@ class NetDevice(object):
 
     def enable_jumbo(self, framesize=0):
         if self.intf_name == "N/A":
-            print RED("Enable jumbo must based on kernel interface!!!")
+            print(RED("Enable jumbo must based on kernel interface!!!"))
             return
         if framesize < MIN_MTU:
-            print RED("Enable jumbo must over %d !!!" % MIN_MTU)
+            print(RED("Enable jumbo must over %d !!!" % MIN_MTU))
             return
 
         mtu = self._cal_mtu(framesize)

@@ -101,9 +101,9 @@ def send_email(sender, mailto, message, smtp_server):
         smtp = smtplib.SMTP(smtp_server)
         smtp.sendmail(sender, mailto, message.as_string())
         smtp.quit()
-        print utils.GREEN("Email sent successfully.")
-    except Exception, e:
-        print utils.RED("Failed to send email " + str(e))
+        print(utils.GREEN("Email sent successfully."))
+    except Exception as e:
+        print(utils.RED("Failed to send email " + str(e)))
 
 def send_html_report(sender, mailto, subject, html_msg, smtp_server):
     
