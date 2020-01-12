@@ -149,7 +149,7 @@ class TestFtag(TestCase):
                 self.dut.send_expect("fm10k_ftag_autotest", "Dump", 100)
                 self.check_forwarding(txport, rxport, self.nic, received=False)
                 out = self.dut.get_session_output()
-                print "out:%s" %out
+                print(("out:%s" %out))
                 self.verify("Test OK" in out, "Fail to do fm10k ftag test")
         self.dut.send_expect("quit", "# ")
 

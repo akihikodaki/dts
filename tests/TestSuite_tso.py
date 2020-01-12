@@ -204,7 +204,6 @@ class TestTSO(TestCase):
         self.verify(cores is not None, "Insufficient cores for speed testing")
         self.coreMask = utils.create_mask(cores)
 
-
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
@@ -212,6 +211,7 @@ class TestTSO(TestCase):
             cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x8000" % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
         else:
             cmd = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
+
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("port stop all", "testpmd> ", 120)
@@ -221,6 +221,7 @@ class TestTSO(TestCase):
         if (self.nic not in ["cavium_a063", "cavium_a064"]):
             self.dut.send_expect("csum set sctp hw %d" % self.dut_ports[0], "testpmd> ", 120)
             self.dut.send_expect("csum set outer-ip hw %d" % self.dut_ports[0], "testpmd> ", 120)
+
         self.dut.send_expect("csum parse-tunnel on %d" % self.dut_ports[0], "testpmd> ", 120)
 
         self.dut.send_expect("csum set ip hw %d" % self.dut_ports[1], "testpmd> ", 120)
@@ -247,7 +248,7 @@ class TestTSO(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -256,7 +257,7 @@ class TestTSO(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = int(loading_size/800)
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -269,7 +270,7 @@ class TestTSO(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -278,7 +279,7 @@ class TestTSO(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = int(loading_size/800)
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -348,7 +349,7 @@ class TestTSO(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/VXLAN()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -357,7 +358,7 @@ class TestTSO(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "Vxlan RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = int(loading_size/800)
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -372,7 +373,7 @@ class TestTSO(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -381,7 +382,7 @@ class TestTSO(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "Nvgre RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = int(loading_size/800)
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -402,7 +403,7 @@ class TestTSO(TestCase):
             cores = self.dut.get_core_list(core_config, socket=self.ports_socket)
             self.coreMask = utils.create_mask(cores)
             if len(cores) > 2:
-                queues = len(cores) / 2
+                queues = len(cores) // 2
             else:
                 queues = 1
 
@@ -456,7 +457,7 @@ class TestTSO(TestCase):
 
                 pps /= 1000000.0
                 test_cycle['Mpps'][loading_size] = pps
-                test_cycle['pct'][loading_size] = pps * 100 / wirespeed
+                test_cycle['pct'][loading_size] = pps * 100 // wirespeed
 
             self.dut.send_expect("stop", "testpmd> ")
             self.dut.send_expect("quit", "# ", 30)

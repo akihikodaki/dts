@@ -129,7 +129,7 @@ class TestPmdBonded(TestCase):
 
         try:
             dut_dest_port = self.dut_ports[dest_port]
-        except Exception, e:
+        except Exception as e:
             dut_dest_port = dest_port
 
         if not ether_ip.get('ether'):

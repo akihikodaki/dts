@@ -244,19 +244,19 @@ def check_queue(out, pkt_num, check_param, stats=True):
         if stats:
             if isinstance(queue, int):
                 verify(all(q == queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
-                print(GREEN("pass: queue id %s matched" % res_queue))
+                print((GREEN("pass: queue id %s matched" % res_queue)))
             elif isinstance(queue, list):
                 verify(all(q in queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
-                print(GREEN("pass: queue id %s matched" % res_queue))
+                print((GREEN("pass: queue id %s matched" % res_queue)))
             else:
                 raise Exception("wrong queue value, expect int or list")
         else:
             if isinstance(queue, int):
                 verify(not any(q == queue for q in res_queue), "fail: queue id should not matched, expect queue %s, got %s" % (queue, res_queue))
-                print(GREEN("pass: queue id %s not matched" % res_queue))
+                print((GREEN("pass: queue id %s not matched" % res_queue)))
             elif isinstance(queue, list):
                 verify(not any(q in queue for q in res_queue), "fail: each queue in %s should not in queue %s" % (res_queue, queue))
-                print(GREEN("pass: queue id %s not matched" % res_queue))
+                print((GREEN("pass: queue id %s not matched" % res_queue)))
             else:
                 raise Exception("wrong action value, expect queue_index or queue_group")
     else:
@@ -270,7 +270,7 @@ def check_drop(out, pkt_num, check_param, stats=True):
     title_li = ["rx-packets", "rx-dropped", "rx-total"]
     pkt_li = p.findall(out)
     if pkt_li:
-        res = {k: v for k, v in zip(title_li, map(int, list(pkt_li[0])))}
+        res = {k: v for k, v in zip(title_li, list(map(int, list(pkt_li[0]))))}
         verify(pkt_num == res["rx-total"], "failed: get wrong amount of packet %d, expected %d" % (res["rx-total"], pkt_num))
         if stats:
             verify(res["rx-dropped"] == pkt_num, "failed: dropped packets number %s not match" % res["rx-dropped"])

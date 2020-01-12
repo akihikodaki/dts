@@ -191,10 +191,10 @@ class TestVhostDequeueZeroCopy(TestCase):
         """
         params_number = len(self.vm.params)
         for i in range(params_number):
-            if self.vm.params[i].keys()[0] == 'cpu':
-                if 'number' in self.vm.params[i]['cpu'][0].keys():
+            if list(self.vm.params[i].keys())[0] == 'cpu':
+                if 'number' in list(self.vm.params[i]['cpu'][0].keys()):
                     self.vm.params[i]['cpu'][0]['number'] = 5
-                if 'cpupin' in self.vm.params[i]['cpu'][0].keys():
+                if 'cpupin' in list(self.vm.params[i]['cpu'][0].keys()):
                     self.vm.params[i]['cpu'][0].pop('cpupin')
 
     def start_one_vm(self, mode='client', packed=False):
@@ -352,9 +352,9 @@ class TestVhostDequeueZeroCopy(TestCase):
         """
         value_with_zero_copy = 0
         value_without_zero_copy = 0
-        if 'dequeue-zero-copy=1' in self.big_pkt_record.keys():
+        if 'dequeue-zero-copy=1' in list(self.big_pkt_record.keys()):
             value_with_zero_copy = self.big_pkt_record['dequeue-zero-copy=1']
-        if 'dequeue-zero-copy=0' in self.big_pkt_record.keys():
+        if 'dequeue-zero-copy=0' in list(self.big_pkt_record.keys()):
             value_without_zero_copy = self.big_pkt_record['dequeue-zero-copy=0']
         self.verify(value_with_zero_copy != 0 and value_without_zero_copy != 0,
                 'can not get the value of big pkts, please check self.frame_sizes')

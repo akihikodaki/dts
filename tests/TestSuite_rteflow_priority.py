@@ -47,7 +47,8 @@ from test_case import TestCase
 from settings import HEADER_SIZE
 from pmd_output import PmdOutput
 import sys
-reload(sys)
+import imp
+imp.reload(sys)
 sys.setdefaultencoding('utf8')
 
 

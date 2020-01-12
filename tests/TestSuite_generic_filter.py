@@ -777,7 +777,7 @@ class TestGeneric_filter(TestCase):
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
-        print valports[0], valports[1]
+        print(valports[0], valports[1])
         tx_port = self.tester.get_local_port(valports[0])
         tx_mac = self.dut.get_mac_address(valports[0])
         txItf = self.tester.get_interface(tx_port)
@@ -785,8 +785,8 @@ class TestGeneric_filter(TestCase):
         rx_port = self.tester.get_local_port(valports[1])
         rxItf = self.tester.get_interface(rx_port)
         package_sizes = [64, 128, 256, 512, 1024, 1280, 1518]
-        print tx_mac
-        print self.dut.ports_info[valports[0]], self.dut.ports_info[valports[1]]
+        print(tx_mac)
+        print(self.dut.ports_info[valports[0]], self.dut.ports_info[valports[1]])
         test_type = {
             "syn": ["syn_filter add 0 priority high queue 1", "syn_filter del 0 priority high queue 1"],
             "ethertype": ["add_ethertype_filter 0 ethertype 0x0806 priority disable 0 queue 2 index 1", "remove_ethertype_filter 0 index 1"],
@@ -799,7 +799,7 @@ class TestGeneric_filter(TestCase):
         }
         self.result_table_create(
             ['pack_size', "filter_type", "enable", "disable", "perf_compare"])
-        for key in test_type.keys():
+        for key in list(test_type.keys()):
             if "5tuple" != key:
                 pps_lists = []
                 for i in range(2):
@@ -840,7 +840,7 @@ class TestGeneric_filter(TestCase):
                         # tgen_input.append((txItf, rxItf, "generic_firlter.pcap"))
                         tgen_input.append(
                             (tx_port, rx_port, "generic_firlter.pcap"))
-                        print tgen_input
+                        print(tgen_input)
                         _, pps = self.tester.traffic_generator_throughput(
                             tgen_input)
                         pps_lists.append(pps)

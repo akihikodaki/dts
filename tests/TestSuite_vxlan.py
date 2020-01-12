@@ -262,7 +262,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
         elif self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            print "CVL support default none VECTOR"
+            print("CVL support default none VECTOR")
         else:
             self.verify(False, "%s not support this vxlan" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -385,7 +385,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         # check whether detect vxlan type
         out = self.dut.get_session_output(timeout=2)
-        print out
+        print(out)
         self.verify(config.packet_type() in out, "Vxlan Packet not detected")
 
     def send_and_check(self, **kwargs):
@@ -453,7 +453,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.logger.info("chksums" + str(chksums))
 
         out = self.dut.send_expect("stop", "testpmd>", 10)
-        print out
+        print(out)
 
         # verify detected l4 invalid checksum
         if "inner_l4_invalid" in kwargs:
@@ -506,7 +506,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("start", "testpmd>", 10)
         config.send_pcap(self.tester_iface)
         out = self.dut.get_session_output(timeout=2)
-        print out
+        print(out)
 
         queue = -1
         pattern = re.compile("- Receive queue=0x(\d)")
@@ -524,7 +524,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify vxlan packet detection
         """
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            print "CVL support default none VECTOR"
+            print("CVL support default none VECTOR")
             src_vec_model = 'n'
         else:
             out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -566,7 +566,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("quit", "#", 10)
         
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            print "CVL support default none VECTOR"
+            print("CVL support default none VECTOR")
             src_vec_model = 'n'
         else:
             out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -582,7 +582,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify vxlan packet detection with ipv6 header
         """
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            print "CVL support default none VECTOR"
+            print("CVL support default none VECTOR")
             src_vec_model = 'n'
         else:
             out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -628,7 +628,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.dut.send_expect("quit", "#", 10)
 
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-            print "CVL support default none VECTOR"
+            print("CVL support default none VECTOR")
             src_vec_model = 'n'
         else:
             out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -880,7 +880,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         recv_queue = perf_config['recvqueue']
         # there's known bug that if enable vxlan, rss will be disabled
         if tun_filter == "None" and recv_queue == 'Multi':
-            print utils.RED("RSS and Tunel filter can't enable in the same time")
+            print((utils.RED("RSS and Tunel filter can't enable in the same time")))
         else:
             self.enable_vxlan(dut_port)
 
@@ -969,8 +969,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         for perf_config in self.tunnel_perf:
             tun_filter = perf_config['tunnel_filter']
             recv_queue = perf_config['recvqueue']
-            print utils.GREEN("Measure tunnel performance of [%s %s %s]"
-                            % (perf_config['Packet'], tun_filter, recv_queue))
+            print((utils.GREEN("Measure tunnel performance of [%s %s %s]"
+                            % (perf_config['Packet'], tun_filter, recv_queue))))
 
             if tun_filter == "None" and recv_queue == "Multi":
                 pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
@@ -1062,8 +1062,8 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         tgen_tester = self.tester.get_local_port(self.recv_port)
         for cal in self.cal_type:
             recv_queue = cal['recvqueue']
-            print utils.GREEN("Measure checksum performance of [%s %s %s]"
-                            % (cal['Type'], recv_queue, cal['csum']))
+            print((utils.GREEN("Measure checksum performance of [%s %s %s]"
+                            % (cal['Type'], recv_queue, cal['csum']))))
 
             # configure flows
             tgen_input = []

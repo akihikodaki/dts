@@ -148,7 +148,7 @@ class TestVEBSwitching(TestCase):
                 if (cnt == 2):
                     count_pkt = count_pkt + 1
                 cnt = 0
-        print utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt)
+        print(utils.GREEN("The number of UDP packets received by pf is %d." % count_pkt))
         return count_pkt
 
     # Test cases.
@@ -395,7 +395,7 @@ class TestVEBSwitching(TestCase):
         self.session_secondary.send_expect("stop", "testpmd>", 2)
 
         vf0_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
-        print utils.GREEN("The number of UDP packets received by vf is %d." % vf0_rx_stats[0])
+        print(utils.GREEN("The number of UDP packets received by vf is %d." % vf0_rx_stats[0]))
         self.verify(vf0_rx_stats[0] > 100, "no packet was received by VF0")
         self.session_secondary.send_expect("quit", "# ")
         time.sleep(2)

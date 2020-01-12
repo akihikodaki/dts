@@ -113,8 +113,8 @@ class TestMacsecForIxgbe(TestCase):
                     'in_pkts_ok', 'in_octets_decrypted', 'in_octets_validated', 'in_pkts_late', 'in_pkts_notvalid', 'in_pkts_nosci', 'in_pkts_notusingsa']
         list_2 = [out_pkts_encrypted, out_octets_encrypted, out_pkts_protected, out_octets_protected, tx_good_packets, rx_good_packets,
                     in_pkts_ok, in_octets_decrypted, in_octets_validated, in_pkts_late, in_pkts_notvalid, in_pkts_nosci, in_pkts_notusingsa]
-        result_dict = dict(zip(list_1, list_2))
-        print result_dict
+        result_dict = dict(list(zip(list_1, list_2)))
+        print(result_dict)
 
         if self.ol_flags == 0:
             return result_dict, pkts_content

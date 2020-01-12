@@ -39,7 +39,7 @@ import time
 import textwrap
 import random
 import traceback
-from itertools import product, izip
+from itertools import product
 from datetime import datetime, timedelta
 from copy import deepcopy
 from pprint import pformat
@@ -108,7 +108,7 @@ class TestVmPwMgmtPolicy(TestCase):
         console, msg_pipe = self.get_console(name)
         if len(cmds) == 0:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -164,13 +164,13 @@ class TestVmPwMgmtPolicy(TestCase):
         # create packet for send
         streams = []
         for stm_name in stm_names:
-            if stm_name not in pkt_configs.keys():
+            if stm_name not in list(pkt_configs.keys()):
                 continue
             values = pkt_configs[stm_name]
             pkt_type = values.get('type')
             pkt_layers = values.get('pkt_layers')
             pkt = Packet(pkt_type=pkt_type)
-            for layer in pkt_layers.keys():
+            for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
             streams.append(pkt.pktgen.pkt)
 
@@ -829,11 +829,11 @@ class TestVmPwMgmtPolicy(TestCase):
                 _common_config['opt_fmt'] += option_cfg.get('opt_fmt', [])
                 _common_config['option'].update(option_cfg['option'])
                 config.pop('cmd')
-            values = _common_config['option'].values()
-            keys = _common_config['option'].keys()
+            values = list(_common_config['option'].values())
+            keys = list(_common_config['option'].keys())
             opt_fmt = _common_config['opt_fmt']
             for item in product(*values):
-                _options = dict(izip(keys, item))
+                _options = dict(zip(keys, item))
                 _options['policy'] = policy_name
                 _opt_fmt = " ".join(opt_fmt)
                 _config = deepcopy(config)

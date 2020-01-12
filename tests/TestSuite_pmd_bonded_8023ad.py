@@ -315,7 +315,7 @@ class TestBonding8023AD(TestCase):
                 self.bond_inst.d_console(cmds)
                 self.set_8023ad_agg_mode(bond_port, mode)
             except Exception as e:
-                check_results.append(e); print traceback.format_exc()
+                check_results.append(e); print(traceback.format_exc())
             finally:
                 self.bond_inst.close_testpmd()
                 time.sleep(2)
@@ -335,7 +335,7 @@ class TestBonding8023AD(TestCase):
                 bond_port = self.set_8023ad_bonded(slaves, bond_mode)
                 self.set_8023ad_dedicated_queues(bond_port, mode)
             except Exception as e:
-                check_results.append(e); print traceback.format_exc()
+                check_results.append(e); print(traceback.format_exc())
             finally:
                 self.bond_inst.close_testpmd()
                 time.sleep(2)
@@ -419,7 +419,7 @@ class TestBonding8023AD(TestCase):
             msgs.append(msg)
         # check bonded slaves
         _cur_slaves = [int(id) for id in cur_slaves]
-        if not _cur_slaves or cmp(sorted(slaves), sorted(_cur_slaves)) != 0:
+        if not _cur_slaves or sorted(slaves) != sorted(_cur_slaves):
             slaves_str = ' '.join([str(id) for id in slaves])
             cur_slaves_str = ' '.join([str(id) for id in _cur_slaves]) \
                                         if _cur_slaves else ''
@@ -430,7 +430,7 @@ class TestBonding8023AD(TestCase):
         if self.kdriver is 'i40e':
             if cur_active_slaves:
                 check_active_slaves = [int(id) for id in cur_active_slaves]
-                if cmp(sorted(slaves), sorted(check_active_slaves)) != 0:
+                if sorted(slaves) != sorted(check_active_slaves):
                     slaves_str = ' '.join([str(id) for id in slaves])
                     msg_fmt = ('expected active slaves is [{0}], '
                               'current active slaves is [{1}]')
@@ -452,8 +452,7 @@ class TestBonding8023AD(TestCase):
             cur_active_slaves = [
                     int(id) for id in self.bond_inst.get_bonding_info(
                                                 bond_port, 'active_slaves')]
-            if not cur_active_slaves or cmp(sorted(slaves),
-                                            sorted(cur_active_slaves)) != 0:
+            if not cur_active_slaves or sorted(slaves) != sorted(cur_active_slaves):
                 slaves_str = ' '.join([str(id) for id in slaves])
                 active_str = ' '.join([str(id) for id in cur_active_slaves]) \
                                                if cur_active_slaves else ''
@@ -525,7 +524,7 @@ class TestBonding8023AD(TestCase):
                 self.check_bonded_device_start(bond_port)
                 self.stop_bonded_device(bond_port)
         except Exception as e:
-            print traceback.format_exc()
+            print(traceback.format_exc())
             msg = "bonding 8023ad check start/stop failed"
         self.run_dpdk_functional_post()
         if msg:

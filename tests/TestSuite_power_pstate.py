@@ -86,7 +86,7 @@ class TestPowerPbf(TestCase):
         console, msg_pipe = self.get_console(con_name)
         if len(cmds) == 0:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -129,7 +129,7 @@ class TestPowerPbf(TestCase):
     def get_cores_mask(self, config='all'):
         sockets = [self.dut.get_numa_id(index) for index in self.dut_ports]
         socket_count = Counter(sockets)
-        port_socket = socket_count.keys()[0] if len(socket_count) == 1 else -1
+        port_socket = list(socket_count.keys())[0] if len(socket_count) == 1 else -1
         mask = create_mask(self.dut.get_core_list(config, socket=port_socket))
         return mask
 
@@ -217,7 +217,7 @@ class TestPowerPbf(TestCase):
 
     @property
     def is_hyper_threading(self):
-        cpu_index = self.cpu_info.keys()[-1]
+        cpu_index = list(self.cpu_info.keys())[-1]
         core_num = self.cpu_info[cpu_index].get('core')
         return (cpu_index + 1) / 2 == (core_num + 1)
 

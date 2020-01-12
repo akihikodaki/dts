@@ -78,16 +78,16 @@ class TestUniPacket(TestCase):
 
     def run_test(self, pkt_types):
         time.sleep(1)
-        for pkt_type in pkt_types.keys():
+        for pkt_type in list(pkt_types.keys()):
             pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
             pkt.send_pkt(self.tester, tx_port=self.tester_iface, count=4)
             out = self.dut.get_session_output(timeout=2)
             for pkt_layer_name in pkt_names:
                 if pkt_layer_name not in out:
-                    print utils.RED("Fail to detect %s" % pkt_layer_name)
+                    print((utils.RED("Fail to detect %s" % pkt_layer_name)))
                     raise VerifyFailure("Failed to detect %s" % pkt_layer_name)            
-            print utils.GREEN("Detected %s successfully" % pkt_type)
+            print((utils.GREEN("Detected %s successfully" % pkt_type)))
 
     def test_l2pkt_detect(self):
         """
@@ -108,13 +108,13 @@ class TestUniPacket(TestCase):
                   "LLDP": "L2_ETHER_LLDP",
             }
         #Change this code end for DPDK-15109, the share code doest not support TIMESYNC, once supported then will enable
-        for l2_type in self.L2_types.keys():
+        for l2_type in list(self.L2_types.keys()):
             pkt_name = self.L2_types[l2_type]
             pkt = Packet(pkt_type=l2_type)
             pkt.send_pkt(self.tester, tx_port=self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             if pkt_name in out:
-                print(utils.GREEN("Detected L2 %s successfully" % l2_type))
+                print((utils.GREEN("Detected L2 %s successfully" % l2_type)))
             else:
                 raise VerifyFailure("Failed to detect L2 %s" % l2_type)
 
@@ -292,11 +292,11 @@ class TestUniPacket(TestCase):
                     "NVGRE in IPv6 detect only support by Fortville")
         nvgre_base_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN", "TUNNEL_GRENAT"]
         # INNER IPV4 not with vlan
-	nvgre_ipv4_default_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER", "INNER_L3_IPV4_EXT_UNKNOWN"]
+        nvgre_ipv4_default_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER", "INNER_L3_IPV4_EXT_UNKNOWN"]
         # INNER IPV6 not with vlan
         nvgre_ipv6_default_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER", "INNER_L3_IPV6_EXT_UNKNOWN"]
         # INNER IPV4 with vlan
-	nvgre_ipv4_vlan_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER_VLAN", "INNER_L3_IPV4_EXT_UNKNOWN"]
+        nvgre_ipv4_vlan_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER_VLAN", "INNER_L3_IPV4_EXT_UNKNOWN"]
         # INNER IPV6 with vlan
         nvgre_ipv6_vlan_packet_type = nvgre_base_packet_type + ["INNER_L2_ETHER_VLAN", "INNER_L3_IPV6_EXT_UNKNOWN"]
 
@@ -351,9 +351,9 @@ class TestUniPacket(TestCase):
             out = self.dut.get_session_output(timeout=2)
             for pkt_layer_name in pkts[1]:
                 if pkt_layer_name not in out:
-                    print utils.RED("Fail to detect %s" % pkt_layer_name)
+                    print((utils.RED("Fail to detect %s" % pkt_layer_name)))
                     raise VerifyFailure("Failed to detect %s" % pkt_layer_name)
-            print utils.GREEN("Detected %s successfully" % pkts[0])
+            print((utils.GREEN("Detected %s successfully" % pkts[0])))
 
     def test_GRE_tunnel(self):
         """
@@ -448,7 +448,7 @@ class TestUniPacket(TestCase):
             pk.send_pkt(self.tester, self.tester_iface)
             out = self.dut.get_session_output(timeout=2)
             self.verify(nsh_detect_message[packet] in out, "Packet Detection Error for : %s" % packet)
-            print utils.GREEN("Detected packet %s Successfully" % packet)
+            print((utils.GREEN("Detected packet %s Successfully" % packet)))
 
     def tear_down(self):
         """

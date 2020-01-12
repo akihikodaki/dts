@@ -42,6 +42,7 @@ from utils import create_mask as dts_create_mask
 from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE
+from functools import reduce
 
 
 class TestFlowClassify(TestCase):
@@ -59,7 +60,7 @@ class TestFlowClassify(TestCase):
     def get_cores_mask(self, config='all'):
         sockets = [self.dut.get_numa_id(index) for index in self.dut_ports]
         socket_count = Counter(sockets)
-        port_socket = socket_count.keys()[0] if len(socket_count) == 1 else -1
+        port_socket = list(socket_count.keys())[0] if len(socket_count) == 1 else -1
         mask = dts_create_mask(self.dut.get_core_list(config,
                                                       socket=port_socket))
         return mask
@@ -108,7 +109,7 @@ class TestFlowClassify(TestCase):
         console, msg_pipe = self.get_console(con_name)
         if len(cmds) == 0:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -140,8 +141,7 @@ class TestFlowClassify(TestCase):
         # packet size
         frame_size = 256
         headers_size = sum(
-            map(lambda x: 132 if x == 'sctp' else HEADER_SIZE[x],
-                ['eth', 'ip', pkt_type]))
+            [132 if x == 'sctp' else HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
         pktlen = frame_size - headers_size
         return pktlen
 
@@ -235,7 +235,7 @@ class TestFlowClassify(TestCase):
         # create packet for send
         streams = []
         for stm_name in stm_names:
-            if stm_name not in pkt_configs.keys():
+            if stm_name not in list(pkt_configs.keys()):
                 continue
             values = pkt_configs[stm_name]
             savePath = os.sep.join([self.output_path,
@@ -243,7 +243,7 @@ class TestFlowClassify(TestCase):
             pkt_type = values.get('type')
             pkt_layers = values.get('pkt_layers')
             pkt = Packet(pkt_type=pkt_type)
-            for layer in pkt_layers.keys():
+            for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
             pkt.pktgen.pkt.show()
             streams.append(pkt.pktgen.pkt)
@@ -317,7 +317,7 @@ class TestFlowClassify(TestCase):
         timestamp = dt.strftime('%Y-%m-%d_%H%M%S')
         self.test_data = '{0}/{1}_{2}.log'.format(
             self.output_path, 'flow_classify', timestamp)
-        with open(self.test_data, 'wb') as fp:
+        with open(self.test_data, 'w') as fp:
             fp.write(output)
         cmds = ['killall flow_classify', '# ', 10]
         self.d_a_console(cmds)
@@ -368,7 +368,7 @@ class TestFlowClassify(TestCase):
         pat = "rule\[{0}\] count=(\d+)".format(rule_priority) \
               if rule_priority is not None else \
               "rule\[\d+\] count=(\d+)"
-        with open(log, 'rb') as fp:
+        with open(log, 'r') as fp:
             content = fp.read()
         if content:
             grp = re.findall(pat, content, re.M)

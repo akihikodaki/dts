@@ -88,7 +88,7 @@ class TestTimer(TestCase):
         # verify timer1
         pat = re.compile(r'timer1_cb\(\) on lcore (\d+)')
         matchlist = sorted(pat.findall(out))
-        self.verify(cmp(list(set(matchlist)), cores) == 0, "timer1 error")
+        self.verify(list(set(matchlist)) == cores, "timer1 error")
 
     def tear_down(self):
         """

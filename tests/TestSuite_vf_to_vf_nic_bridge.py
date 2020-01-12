@@ -100,7 +100,7 @@ class TestVF2VFBridge(TestCase):
             if self.vm0_dut is None:
                 raise Exception('Set up VM0 failed')
         except Exception as e:
-            print utils.RED(str(e))
+            print(utils.RED(str(e)))
 
         self.vm1 = VM(self.dut, 'vm1', 'vf_to_vf_bridge')
         self.vm1.set_vm_device(driver=self.vf_assign_method, **vf1_prop)
@@ -109,7 +109,7 @@ class TestVF2VFBridge(TestCase):
             if self.vm1_dut is None:
                 raise Exception('Set up VM1 failed')
         except Exception as e:
-            print utils.RED(str(e))
+            print(utils.RED(str(e)))
 
     def clear_vf_to_vf_env(self):
         if self.vm0 is not None:

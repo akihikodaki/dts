@@ -256,7 +256,7 @@ class TestDualVlan(TestCase):
         """
         Check results of synthetic test.
         """
-        print "vlan flage config:%s" % errorString
+        print(("vlan flage config:%s" % errorString))
         out = self.get_tcpdump_package()
         if allResult[resultKey][0] == "No":
             self.verify("vlan" not in out, errorString)
@@ -283,7 +283,7 @@ class TestDualVlan(TestCase):
         self.mode_config(extend="off")
         self.vlan_send_packet(outvlan)
         out = self.get_tcpdump_package()
-        print out
+        print(out)
         self.verify(out is not None and "vlan %s" % outvlan not in out, "Vlan filter enable error: " + out)
 
         if self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:

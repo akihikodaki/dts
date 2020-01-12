@@ -313,7 +313,7 @@ class TestVhostUserLiveMigration(TestCase):
         vm_dut.send_expect("clear port stats all", "testpmd> ")
         time.sleep(5)
         out = vm_dut.send_expect("show port stats 0", "testpmd> ")
-        print out
+        print(out)
         m = stats_pat.search(out)
         if m:
             num_received = int(m.group(1))
@@ -334,7 +334,7 @@ class TestVhostUserLiveMigration(TestCase):
         vm_dut.get_session_output(timeout=1)
         time.sleep(5)
         out = vm_dut.get_session_output(timeout=1)
-        print out
+        print(out)
         num = out.count('UDP')
         self.verify(num > 0, "Not receive packets as expected!!!")
         vm_dut.send_command('^a')

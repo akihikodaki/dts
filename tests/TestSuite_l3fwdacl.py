@@ -638,17 +638,17 @@ class TestL3fwdacl(TestCase):
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
         self.core_mask = utils.create_mask(cores)
-        print "Core mask: %s" % self.core_mask
+        print("Core mask: %s" % self.core_mask)
 
         valid_ports = [port for port in ports if self.tester.get_local_port(port) != -1]
         self.verify(
             len(valid_ports) >= 2, "Insufficient active dut_ports for speed testing")
 
         self.dut_ports = valid_ports
-        print "Valid ports found in DUT: %s" % self.dut_ports
+        print("Valid ports found in DUT: %s" % self.dut_ports)
 
         self.port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
-        print "Port mask: %s" % self.port_mask
+        print("Port mask: %s" % self.port_mask)
 
         TestL3fwdacl.default_rule["Port"] = self.dut_ports[1]
 

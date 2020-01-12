@@ -82,7 +82,7 @@ class TestL2fwdJobstats(TestCase):
         self.scapy_send_packet(100000)
         out = self.dut.get_session_output(timeout=10)
 
-        print out
+        print(out)
         send_packets = re.findall(r"Total packets sent:\s+?(\d+?)\r", out)[-1]
         receive_packets = re.findall(r"Total packets received:\s+?(\d+?)\r", out)[-1]
         self.verify(send_packets == receive_packets == str(100000*len(self.tx_ports)), "Wrong: can't receive enough packages")

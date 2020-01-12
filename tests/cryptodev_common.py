@@ -154,12 +154,12 @@ def get_opt_str(test_case, default_opts, override_opts={}, add_port=False):
     opts = default_opts.copy()
 
     # Update options with test suite/case config file
-    for key in opts.keys():
+    for key in list(opts.keys()):
         if key in test_case.get_case_cfg():
             opts[key] = test_case.get_case_cfg()[key]
 
     pci_list = [port["pci"] for port in test_case.dut.ports_info]
-    if 'w' in opts.keys() and opts['w']:
+    if 'w' in list(opts.keys()) and opts['w']:
         pci_list.append(opts['w'])
     if add_port and pci_list:
         opts['w'] = " -w ".join(pci_list)
@@ -169,7 +169,7 @@ def get_opt_str(test_case, default_opts, override_opts={}, add_port=False):
 
     # Generate option string
     opt_str = ""
-    for key,value in opts.items():
+    for key,value in list(opts.items()):
         if value is None:
             continue
         dash = "-" if len(key) == 1 else "--"

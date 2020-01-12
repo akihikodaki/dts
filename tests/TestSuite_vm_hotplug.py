@@ -135,7 +135,7 @@ class TestVmHotplug(TestCase):
         while time_diff < 120:
             try:
                 out = self.vm_net_session.send_expect('~/QMP/qemu-ga-client --address=/tmp/vm0_qga0.sock ifconfig', '#')
-            except Exception, EnvironmentError:
+            except Exception as EnvironmentError:
                 pass
             if '10.0.2' in out:
                 pos = self.vm0.hostfwd_addr.find(':')

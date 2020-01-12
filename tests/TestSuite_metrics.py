@@ -70,7 +70,7 @@ class TestMetrics(TestCase):
             'jitter_ns'], }
 
     def d_a_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         output = self.dut.alt_session.send_expect(*_cmd)
         output2 = self.dut.alt_session.session.get_session_before(2)
         return output + os.linesep + output2
@@ -85,7 +85,7 @@ class TestMetrics(TestCase):
 
     def get_pkt_len(self, pkt_type, frame_size=64):
         headers_size = sum(
-            map(lambda x: HEADER_SIZE[x], ['eth', 'ip', pkt_type]))
+            [HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
         pktlen = frame_size - headers_size
         return pktlen
 
@@ -100,7 +100,7 @@ class TestMetrics(TestCase):
         pkt_type = pkt_config.get('type')
         pkt_layers = pkt_config.get('pkt_layers')
         pkt = Packet(pkt_type=pkt_type)
-        for layer in pkt_layers.keys():
+        for layer in list(pkt_layers.keys()):
             pkt.config_layer(layer, pkt_layers[layer])
         self.logger.debug(pformat(pkt.pktgen.pkt.command()))
 
@@ -239,7 +239,7 @@ class TestMetrics(TestCase):
     def display_metrics_data(self, port_status, mode=None):
         mode = mode if mode else self.BIT_RATE
         display_seq = self.display_seq.get(mode)
-        textLength = max(map(lambda x: len(x), display_seq))
+        textLength = max([len(x) for x in display_seq])
         for port in sorted(port_status.keys()):
             port_value = port_status[port]
             if port != 'non port':
@@ -249,7 +249,7 @@ class TestMetrics(TestCase):
                     self.logger.info("{0} = [{1}]".format(
                         key.ljust(textLength), value))
             else:
-                maxvalue = max(map(lambda x: int(x), port_value.values()))
+                maxvalue = max([int(x) for x in list(port_value.values())])
                 if not maxvalue:
                     continue
                 self.logger.info("port {0}".format(port))
@@ -323,9 +323,9 @@ class TestMetrics(TestCase):
         title = ['No', 'port']
         values = []
         for index, result in enumerate(metrics_data):
-            for port, data in sorted(result.iteritems()):
+            for port, data in sorted(result.items()):
                 _value = [index, port]
-                for key, value in data.iteritems():
+                for key, value in data.items():
                     if key not in title:
                         title.append(key)
                     _value.append(value)
@@ -386,8 +386,8 @@ class TestMetrics(TestCase):
         # display test content
         test_content = data.get('test_content')
         test_cfg = {
-            'title': test_content.keys(),
-            'values': [test_content.values()]}
+            'title': list(test_content.keys()),
+            'values': [list(test_content.values())]}
         self.display_suite_result(test_cfg)
         # display pktgen bit rate statistics on traffic
         self.logger.info("pktgen bit rate statistics:")
@@ -480,8 +480,8 @@ class TestMetrics(TestCase):
         # display test content
         test_content = data.get('test_content')
         test_cfg = {
-            'title': test_content.keys(),
-            'values': [test_content.values()]}
+            'title': list(test_content.keys()),
+            'values': [list(test_content.values())]}
         self.display_suite_result(test_cfg)
         # display pktgen bit rate statistics on traffic
         self.logger.info("pktgen bit rate statistics :")
@@ -565,9 +565,9 @@ class TestMetrics(TestCase):
         title = ['No', 'port']
         values = []
         for index, result in enumerate(metrics_data):
-            for port_id, data in result.iteritems():
+            for port_id, data in result.items():
                 _value = [index, port_id]
-                for key, value in data.iteritems():
+                for key, value in data.items():
                     if key not in title:
                         title.append(key)
                     _value.append(value)
@@ -615,15 +615,15 @@ class TestMetrics(TestCase):
         # display test content
         test_content = data.get('test_content')
         test_cfg = {
-            'title': test_content.keys(),
-            'values': [test_content.values()]}
+            'title': list(test_content.keys()),
+            'values': [list(test_content.values())]}
         self.display_suite_result(test_cfg)
         # display pktgen latency statistics on traffic
         self.logger.info("pktgen line latency statistics :")
         pktgen_results = data.get('pktgen_stats_on_traffic')
         self.display_metrics_latency([pktgen_results])
         # check if the value is reasonable, no reference data
-        for port, value in pktgen_results.iteritems():
+        for port, value in pktgen_results.items():
             max_value = value.get('max')
             min_value = value.get('min')
             average = value.get('average')
@@ -645,7 +645,7 @@ class TestMetrics(TestCase):
         self.display_metrics_latency(metrics_results)
         # check if the value is reasonable, no reference data
         for index, result in enumerate(metrics_results):
-            for port, value in result.iteritems():
+            for port, value in result.items():
                 if port != 'non port':
                     continue
                 max_value = value.get('max_latency_ns')
@@ -754,7 +754,7 @@ class TestMetrics(TestCase):
                 for item in [item.split(':') for item in frames_cfg.split(',')]]
         frames_info = dict(info)
         test_content = {
-            'frame_sizes': frames_info.keys(),
+            'frame_sizes': list(frames_info.keys()),
             'duration': int(cfg_content.get('duration') or 0),
             'sample_number': int(cfg_content.get('sample_number') or 0),
             'rates': [int(item)

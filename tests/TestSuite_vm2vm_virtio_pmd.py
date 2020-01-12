@@ -209,7 +209,7 @@ class TestVM2VMVirtioPMD(TestCase):
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
-                print utils.RED("Failure for %s" % str(e))
+                print((utils.RED("Failure for %s" % str(e))))
                 raise e
 
             self.vm_dut.append(vm_dut)

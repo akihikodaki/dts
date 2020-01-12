@@ -113,11 +113,11 @@ class TestPtpClient(TestCase):
         utils.regexp(out, r'Delta between master and slave clocks\:(-?\d+)ns')
         pat = re.compile(r'Delta between master and slave clocks\:(-?\d+)ns')
         Delta_list = pat.findall(out)
-        Delta = map(int, Delta_list) 
+        Delta = list(map(int, Delta_list))
         Delta_ns = self.average(Delta)
         Delta_us = Delta_ns / 1000.0
 
-        print "Delta:", Delta
+        print("Delta:", Delta)
 
         self.creat_table(Delta_us)
 
@@ -144,11 +144,11 @@ class TestPtpClient(TestCase):
         utils.regexp(out, r'Delta between master and slave clocks\:(-?\d+)ns')
         pat = re.compile(r'Delta between master and slave clocks\:(-?\d+)ns')
         Delta_list = pat.findall(out)
-        Delta = map(int, Delta_list)
+        Delta = list(map(int, Delta_list))
         Delta_ns = self.average(Delta)
         Delta_us = Delta_ns / 1000.0
 
-        print "Delta:", Delta
+        print("Delta:", Delta)
 
         self.creat_table(Delta_us)
 

@@ -164,7 +164,7 @@ class TestJumboframes(TestCase):
         """
         # RRC has no ability to set the max pkt len to hardware
         if self.kdriver == "fm10k":
-            print utils.RED("fm10k not support this case\n")
+            print(utils.RED("fm10k not support this case\n"))
             return
         self.pmdout.start_testpmd("Default", "--max-pkt-len=%d --port-topology=loop --tx-offloads=0x8000" % (ETHER_STANDARD_MTU))
         self.dut.send_expect("set fwd mac", "testpmd> ")

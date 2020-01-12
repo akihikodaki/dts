@@ -715,7 +715,7 @@ class TestIavf(TestCase):
     def test_vf_rss(self):
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--txq=4 --rxq=4")
         self.vm0_testpmd.execute_cmd("set verbose 1")
-        for i, j in zip(range(64), [0, 1, 2, 3]*16):
+        for i, j in zip(list(range(64)), [0, 1, 2, 3]*16):
             self.vm0_testpmd.execute_cmd("port config 1 rss reta (%d,%d)" % (i, j))
         pkt_types = ["ip", "tcp", "udp"]
         for pkt_type in pkt_types:

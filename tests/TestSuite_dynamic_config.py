@@ -92,7 +92,7 @@ class TestDynamicConfig(TestCase):
         ret = utils.regexp(out, mac_scanner)
 
         self.verify(ret is not None, "MAC address not found")
-        self.verify(cmp(ret.lower(), self.dest) == 0, "MAC address wrong")
+        self.verify(ret.lower() == self.dest, "MAC address wrong")
         self.verify("Promiscuous mode: enabled" in out,
                     "wrong default promiscuous value")
         

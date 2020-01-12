@@ -46,7 +46,7 @@ class TestDynamicFlowtype(TestCase):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print utils.RED('Search no queue number.')
+            print((utils.RED('Search no queue number.')))
             return None
         else:
             queue = res.group(2)
@@ -149,21 +149,21 @@ class TestDynamicFlowtype(TestCase):
 
         if match_opt == 'not matched':
             if flowtype == 23:
-                pkts = dict(pkts_gtpc_pay.items() +
-                            pkts_gtpu_pay.items() +
-                            pkts_gtpu_ipv4.items())
+                pkts = dict(list(pkts_gtpc_pay.items()) +
+                            list(pkts_gtpu_pay.items()) +
+                            list(pkts_gtpu_ipv4.items()))
             if flowtype == 24:
-                pkts = dict(pkts_gtpc_pay.items() +
-                            pkts_gtpu_ipv4.items() +
-                            pkts_gtpu_ipv6.items())
+                pkts = dict(list(pkts_gtpc_pay.items()) +
+                            list(pkts_gtpu_ipv4.items()) +
+                            list(pkts_gtpu_ipv6.items()))
             if flowtype == 25:
-                pkts = dict(pkts_gtpu_pay.items() +
-                            pkts_gtpu_ipv4.items() +
-                            pkts_gtpu_ipv6.items())
+                pkts = dict(list(pkts_gtpu_pay.items()) +
+                            list(pkts_gtpu_ipv4.items()) +
+                            list(pkts_gtpu_ipv6.items()))
             if flowtype == 26:
-                pkts = dict(pkts_gtpc_pay.items() +
-                            pkts_gtpu_pay.items() +
-                            pkts_gtpu_ipv6.items())
+                pkts = dict(list(pkts_gtpc_pay.items()) +
+                            list(pkts_gtpu_pay.items()) +
+                            list(pkts_gtpu_ipv6.items()))
 
         return pkts
 
@@ -172,7 +172,7 @@ class TestDynamicFlowtype(TestCase):
         Send packet and verify rss function.
         """
         pkts = self.gtp_packets(flowtype, match_opt)
-        for packet_type in pkts.keys():
+        for packet_type in list(pkts.keys()):
             self.tester.scapy_append(
                 'sendp([%s], iface="%s")'
                 % (pkts[packet_type], self.tester_intf))

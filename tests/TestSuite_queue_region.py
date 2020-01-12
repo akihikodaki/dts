@@ -95,7 +95,7 @@ class TestQueue_region(TestCase):
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(outstring)
         queue_id = m.group(1)
-        print "queue is %s" % queue_id
+        print("queue is %s" % queue_id)
         self.dut.send_expect("start", "testpmd> ")
         return queue_id
 
@@ -185,7 +185,7 @@ class TestQueue_region(TestCase):
         dump all queue region rules that have been created in memory and compare that total rules number with the given expected number
         to see if they are equal, as to get your conclusion after you have deleted any queue region rule entry.
         """
-        print out
+        print(out)
         self.verify("error" not in out, "the queue region settings has error.")
         actual_QRnum = re.findall("region_id.*", out)
         actual_FTnum = re.findall("flowtype_num\D*(\d*).*", out)

@@ -48,12 +48,7 @@ from settings import HEADER_SIZE
 from pmd_output import PmdOutput
 
 import sys
-reload(sys)
-sys.setdefaultencoding('utf8')
-#
-#
-# Test class.
-#
+import imp
 
 
 class TestFdir(TestCase, IxiaPacketGenerator):
@@ -115,26 +110,26 @@ class TestFdir(TestCase, IxiaPacketGenerator):
             scanner = re.compile(result_scanner, re.DOTALL)
             m = scanner.search(out)
 
-            print "**************Print sub-case result****************"
+            print("**************Print sub-case result****************")
             if m:
                 m.groups()
                 if (self.queue == int(m.group(2))):
-                    print utils.GREEN("Pass: queue id is " + m.group(2))
+                    print(utils.GREEN("Pass: queue id is " + m.group(2)))
                     self.verify(1, "Pass")
                 else:
-                    print utils.RED("Fail: queue id is " + m.group(2))
+                    print(utils.RED("Fail: queue id is " + m.group(2)))
                     self.verify(0, "Fail")
-                    print out
+                    print(out)
             else:
-                print "not match"
+                print("not match")
                 if (-1 == self.queue):
-                    print utils.GREEN("Pass: fdir should not match ")
+                    print(utils.GREEN("Pass: fdir should not match "))
                     self.verify(1, "Pass")
                 else:
-                    print utils.RED("Fail")
+                    print(utils.RED("Fail"))
                     self.verify(0, "Fail")
-                    print out
-            print "**************Print sub-case result****************"
+                    print(out)
+            print("**************Print sub-case result****************")
 
     #
     #
@@ -1182,7 +1177,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         flows = []
         src_ip_temp = self.src_ip
         dst_ip_temp = self.dst_ip
-        print "*src_ip_temp = " + src_ip_temp + "dst_ip_temp = " + dst_ip_temp
+        print("*src_ip_temp = " + src_ip_temp + "dst_ip_temp = " + dst_ip_temp)
         flows.append('Ether(src="52:00:00:00:00:00", dst="00:1B:21:8E:B2:30")/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw(load="%s" + "X"*(%d - 42 - %d))' % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
         self.scapyCmds.append('wrpcap("/root/test.pcap", [%s])' % string.join(flows, ','))
 
@@ -1200,10 +1195,10 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                           self.tester.get_local_port(self.dut_ports[0]),
                           "/root/test.pcap"))
 
-        print "self.ports_socket=%s" % (self.ports_socket)
+        print("self.ports_socket=%s" % (self.ports_socket))
         # run testpmd for each core config
         for test_cycle in self.test_cycles:
-            print "******************test cycles*********************\n"
+            print("******************test cycles*********************\n")
             core_config = test_cycle['cores']
 
             core_list = self.dut.get_core_list(core_config, socket=self.ports_socket)
@@ -1231,7 +1226,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
             self.rst_report(command_line + "\n\n", frame=True, annex=True)
 
             out = self.dut.send_expect(command_line, "testpmd> ", 100)
-            print out
+            print(out)
 
             self.dut.send_expect("set verbose 1", "testpmd>")
             self.fdir_get_flexbytes()
@@ -1240,9 +1235,9 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                 self.fdir_set_rule()
                 self.fdir_perf_set_rules(num_rules)
             out = self.dut.send_expect("start", "testpmd> ")
-            print out
+            print(out)
             for frame_size in self.frame_sizes:
-                print "******************frame size = %d*********************\n" % (frame_size)
+                print("******************frame size = %d*********************\n" % (frame_size))
                 wirespeed = self.wirespeed(self.nic, frame_size, 2)
                 # create pcap file
                 self.logger.info("Running with frame size %d " % frame_size)
@@ -1274,7 +1269,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                 """
 
                 out = self.dut.send_expect("show port stats all", "testpmd> ")
-                print out
+                print(out)
 
                 pps /= 1000000.0
                 test_cycle['Mpps'][frame_size] = pps
@@ -1326,19 +1321,19 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         fdir Performance Benchmarking with 2 ports.
         """
         for test_type in self.test_types:
-            print "***************\n"
-            print test_type
-            print "***************\n"
+            print("***************\n")
+            print(test_type)
+            print("***************\n")
             if test_type in ["fdir_enable", "fdir_disable"]:
                 num_rules = 0
                 num_flows = 64
-                print "************%d rules/%d flows********************" % (num_rules, num_flows)
+                print("************%d rules/%d flows********************" % (num_rules, num_flows))
                 self.perf_fdir_performance_2ports(test_type, num_rules, num_flows)
             elif test_type in ["fdir_noflexbytes", "fdir_2flexbytes", "fdir_16flexbytes"]:
                 for flows in self.flows:
                     num_rules = flows["rules"]
                     num_flows = flows["flows"]
-                    print "************%d rules/%d flows********************" % (num_rules, num_flows)
+                    print("************%d rules/%d flows********************" % (num_rules, num_flows))
                     self.perf_fdir_performance_2ports(test_type, num_rules, num_flows)
 
     def tear_down(self):

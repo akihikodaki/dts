@@ -36,7 +36,7 @@ Virtio idx interrupt need test with l3fwd-power sample
 
 import utils
 import time
-import thread
+import _thread
 import re
 from virt_common import VM
 from test_case import TestCase
@@ -163,7 +163,7 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         # ixia send packets times equal to reload_times * wait_times
         start_time = time.time()
-        thread.start_new_thread(self.start_to_send_packets, (reload_times*20,))
+        _thread.start_new_thread(self.start_to_send_packets, (reload_times*20,))
         # wait the ixia begin to send packets
         time.sleep(10)
         self.vm_pci = self.vm_dut.ports_info[0]['pci']
@@ -203,7 +203,7 @@ class TestVirtioIdxInterrupt(TestCase):
         check each queue has receive packets on vhost side
         """
         out = self.vhost.send_expect("stop", "testpmd> ", 60)
-        print out
+        print(out)
         for queue_index in range(0, self.queues):
             queue = re.search("Port= 0/Queue=\s*%d" % queue_index, out)
             queue = queue.group()

@@ -104,7 +104,7 @@ class TestPmdrssreta(TestCase):
             self.tester.scapy_execute()
             time.sleep(.5)
         else:
-            print "\ntran_type error!\n"
+            print("\ntran_type error!\n")
         out = self.dut.get_session_output(timeout=1)
         self.dut.send_expect("stop", "testpmd>")
         lines = out.split("\r\n")
@@ -118,7 +118,7 @@ class TestPmdrssreta(TestCase):
                     item = item.strip()
                     if(item.startswith("RSS hash")):
                         name, value = item.split("=", 1)
-                        print name + "-" + value
+                        print(name + "-" + value)
 
                 reta_line[name.strip()] = value.strip()
                 reta_lines.append(reta_line)
@@ -184,8 +184,8 @@ class TestPmdrssreta(TestCase):
         """
         Run at the start of each test suite.
         """
-	cores = self.dut.get_core_list("all")
-	self.coremask = utils.create_mask(cores)
+        cores = self.dut.get_core_list("all")
+        self.coremask = utils.create_mask(cores)
 
         ports = self.dut.get_ports(self.nic)
         self.ports_socket = self.dut.get_numa_id(ports[0])
@@ -222,7 +222,7 @@ class TestPmdrssreta(TestCase):
                 self.pmdout.start_testpmd(
                     "all", "--mbcache=128 --rxq=%d --txq=%d" % (queue, queue), socket=self.ports_socket)
 
-            for iptype, rsstype in iptypes.items():
+            for iptype, rsstype in list(iptypes.items()):
                 self.dut.send_expect("set verbose 8", "testpmd> ")
                 self.dut.send_expect("set fwd rxonly", "testpmd> ")
                 self.dut.send_expect(
@@ -260,7 +260,7 @@ class TestPmdrssreta(TestCase):
 
     def test_rss_key_size(self):
         nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "redrockcanyou": 40, "atwood": 40,  "boulderrapid": 40, "fortpark_TLV": 52, "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52, "sagepond": 40, "sageville": 40}
-        self.verify(self.nic in nic_rss_key_size.keys(), "Not supporte rss key on %s" % self.nic)
+        self.verify(self.nic in list(nic_rss_key_size.keys()), "Not supporte rss key on %s" % self.nic)
 
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
@@ -276,8 +276,8 @@ class TestPmdrssreta(TestCase):
         m = pattern.search(out)
         if m is not None:
             size = m.group(1)
-            print utils.GREEN("******************")
-            print utils.GREEN("NIC %s hash size %d and expected %d" % (self.nic, int(size), nic_rss_key_size[self.nic]))
+            print(utils.GREEN("******************"))
+            print(utils.GREEN("NIC %s hash size %d and expected %d" % (self.nic, int(size), nic_rss_key_size[self.nic])))
             if (nic_rss_key_size[self.nic] == int(size)):
                 self.verify(True, "pass")
             else:

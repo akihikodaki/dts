@@ -193,7 +193,7 @@ class TestEventdevPipeline(TestCase):
             for i in range(len(self.pkts)):
                 pay_load = "0000%.2d" % (packet_index)
                 if self.pkts[i]['IP'].src == src_ip:
-                    print(self.pkts[i].show)
+                    print((self.pkts[i].show))
                     # get the start index load info of each queue
                     if packet_index == 0:
                         packet_index = int(self.pkts[i]['Raw'].load[-2:])

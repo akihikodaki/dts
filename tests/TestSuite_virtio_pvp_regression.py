@@ -119,7 +119,7 @@ class TestVirtioPVPRegression(TestCase):
         config_qemu = False
         params_num = len(self.vm.params)
         for qemu_index in range(params_num):
-            if self.vm.params[qemu_index].keys()[0] == "qemu":
+            if list(self.vm.params[qemu_index].keys())[0] == "qemu":
                 qemu_num = len(self.vm.params[qemu_index]["qemu"])
                 config_qemu = True
                 break
@@ -179,7 +179,7 @@ class TestVirtioPVPRegression(TestCase):
         """
         params_num = len(self.vm.params)
         for qemu_index in range(params_num):
-            if self.vm.params[qemu_index].keys()[0] == "qemu":
+            if list(self.vm.params[qemu_index].keys())[0] == "qemu":
                 qemu_num = len(self.vm.params[qemu_index]["qemu"])
                 break
         self.verify(qemu_index < params_num, "Please config qemu path in conf gile")
@@ -195,8 +195,8 @@ class TestVirtioPVPRegression(TestCase):
         """
         params_number = len(self.vm.params)
         for i in range(params_number):
-            if self.vm.params[i].keys()[0] == 'cpu':
-                if 'cpupin' in self.vm.params[i]['cpu'][0].keys():
+            if list(self.vm.params[i].keys())[0] == 'cpu':
+                if 'cpupin' in list(self.vm.params[i]['cpu'][0].keys()):
                     self.vm.params[i]['cpu'][0].pop('cpupin')
 
     def start_vm(self, qemu_path, qemu_version, modem, virtio_path):

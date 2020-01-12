@@ -172,7 +172,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         for port_no in nic_infos:
             nic_info = nic_infos[port_no]
             for item in check_content:
-                if item not in nic_info.keys():
+                if item not in list(nic_info.keys()):
                     status.append("port {0} get {1} failed".format(port_no, item))
                     break
         # if there is error in status, clear nic_infos 
@@ -206,8 +206,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
 
     def check_driver_info(self, port_name, sys_nic_info, dpdk_drv_info):
         # compare dpdk query nic information with linux query nic information 
-        for item, value in dpdk_drv_info.items():
-            if item not in sys_nic_info.keys():
+        for item, value in list(dpdk_drv_info.items()):
+            if item not in list(sys_nic_info.keys()):
                 msg = "linux ethtool failed to dump driver info"
                 status = False
                 break
@@ -404,8 +404,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         for index in range(len(self.ports)):
             md5 = self.strip_md5(portsinfo[index]['eeprom_file'])
             md5_ref = self.strip_md5(portsinfo[index]['ethtool_eeprom'])
-            print utils.GREEN("Reference eeprom md5 %s" % md5)
-            print utils.GREEN("Reference eeprom md5_ref %s" % md5_ref)
+            print(utils.GREEN("Reference eeprom md5 %s" % md5))
+            print(utils.GREEN("Reference eeprom md5_ref %s" % md5_ref))
             self.verify(md5 == md5_ref, "Dumped eeprom not same as linux dumped")
 
     def test_ring_parameter(self):
@@ -424,7 +424,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             pkt = Packet(pkt_type='UDP')
             tester_port = self.tester.get_local_port(port)
             self.verify(self.ethapp_check_link_status(index, 'Up') == True,
-                        'Fail to Open port{}'.format(index))
+                    'Fail to Open port{}'.format(index))
+
             intf = self.tester.get_interface(tester_port)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(index)
@@ -459,7 +460,8 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
             self.verify(self.ethapp_check_link_status(index, 'Up') == True,
-                        'Fail to Open port{}'.format(index))
+                    'Fail to Open port{}'.format(index))
+
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
             rx_pkts, tx_pkts = self.strip_portstats(port)
             self.verify(rx_pkts == ori_rx_pkts + 4, "Failed to Rx vlan packet")
@@ -506,7 +508,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             tester_port = self.tester.get_local_port(port)
             intf = self.tester.get_interface(tester_port)
             self.verify(self.ethapp_check_link_status(index, 'Up') == True,
-                        'Fail to Open port{}'.format(index))
+                    'Fail to Open port{}'.format(index))
             # send and sniff packet
             inst = self.tester.tcpdump_sniff_packets(intf)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
@@ -651,7 +653,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         """
         # sleep a while when receive packets
         main_file = "examples/ethtool/ethtool-app/main.c"
-        self.dut.send_expect("sed -i -e '/if (cnt_recv_frames > 0) {$/i\usleep(10);' %s" % main_file, "# ")
+        self.dut.send_expect("sed -i -e '/if (cnt_recv_frames > 0) {$/i\\usleep(10);' %s" % main_file, "# ")
         # build sample app
         self.build_ethtool()
         self.dut.send_expect(self.cmd, "EthApp>", 60)

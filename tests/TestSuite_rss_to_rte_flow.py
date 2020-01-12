@@ -97,7 +97,7 @@ class TestRSS_to_Rteflow(TestCase):
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(outstring)
         queue_id = m.group(1)
-        print("queue is %s" % queue_id)
+        print(("queue is %s" % queue_id))
         self.pmdout.execute_cmd("clear port stats all")
         return queue_id
 

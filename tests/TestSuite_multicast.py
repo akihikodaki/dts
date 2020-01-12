@@ -103,7 +103,7 @@ class TestMulticast(TestCase):
         self.dut.send_expect("examples/ipv4_multicast/build/ipv4_multicast -c %s -n 4 -- -p %s -q 2" % (
             coremask, '0x5'), "IPv4_MULTICAST:", 60)
 
-        for flow in trafficFlow.keys():
+        for flow in list(trafficFlow.keys()):
             for tx_port in trafficFlow[flow][0].split(","):
                 for rx_port in trafficFlow[flow][1].split(","):
                     sniff_src = "not 00:00:00:00:00:00"
@@ -122,7 +122,7 @@ class TestMulticast(TestCase):
                     for i in range(len(pkts)):
                         result = str(pkts[i].show)
 
-                        print result
+                        print(result)
                         self.verify("Ether" in result, "No packet received")
                         self.verify("src=" + trafficFlow[flow][2] + " dst=" + trafficFlow[flow][3] in result,
                             "Wrong IP address")

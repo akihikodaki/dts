@@ -40,7 +40,6 @@ from test_case import TestCase
 from exception import VerifyFailure
 from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from pmd_output import PmdOutput
-from pktgen import TRANSMIT_CONT
 from copy import deepcopy
 import rst
 from pktgen import PacketGeneratorHelper
@@ -109,7 +108,7 @@ class TestNicSingleCorePerf(TestCase):
             self.expected_throughput = self.get_suite_cfg()[
                 'expected_throughput'][self.nic]
 
-        # initialize throughput attribution
+        # initilize throughput attribution
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
@@ -184,7 +183,7 @@ class TestNicSingleCorePerf(TestCase):
 
         # check the gap between expected throughput and actual throughput
         try:
-            for frame_size in self.test_parameters.keys():
+            for frame_size in list(self.test_parameters.keys()):
                 for nb_desc in self.test_parameters[frame_size]:
                     cur_gap = (self.expected_throughput[frame_size][nb_desc] - self.throughput[frame_size][nb_desc])
                     self.verify(cur_gap < self.gap, "Beyond Gap, Possible regression")
@@ -201,7 +200,7 @@ class TestNicSingleCorePerf(TestCase):
         Update expected numbers to configurate file: conf/$suite_name.cfg
         """
         if load_global_setting(UPDATE_EXPECTED) == "yes":
-            for frame_size in self.test_parameters.keys():
+            for frame_size in list(self.test_parameters.keys()):
                 for nb_desc in self.test_parameters[frame_size]:
                     self.expected_throughput[frame_size][nb_desc] = \
                         round(self.throughput[frame_size][nb_desc], 3)
@@ -227,7 +226,7 @@ class TestNicSingleCorePerf(TestCase):
         if self.nic in ["fortville_25g", "fortville_spirit"]:
             param += " --rxq=2 --txq=2"
 
-        for frame_size in self.test_parameters.keys():
+        for frame_size in list(self.test_parameters.keys()):
             self.throughput[frame_size] = dict()
             pcaps = self.create_pacap_file(frame_size)
             tgenInput = self.prepare_stream(pcaps)
@@ -258,7 +257,7 @@ class TestNicSingleCorePerf(TestCase):
 
                 self.verify(throughput,
                     "No traffic detected, please check your configuration")
-                self.logger.info("Throughput of " +
+                self.logger.info("Trouthput of " +
                     "framesize: {}, rxd/txd: {} is :{} Mpps".format(
                         frame_size, nb_desc, throughput))
 
@@ -274,7 +273,7 @@ class TestNicSingleCorePerf(TestCase):
 
         # save test results to self.test_result
         header = self.table_header
-        for frame_size in self.test_parameters.keys():
+        for frame_size in list(self.test_parameters.keys()):
             wirespeed = self.wirespeed(self.nic, frame_size, self.nb_ports)
             ret_datas = {}
             for nb_desc in self.test_parameters[frame_size]:
@@ -296,7 +295,7 @@ class TestNicSingleCorePerf(TestCase):
 
         # Create test results table
         self.result_table_create(header)
-        for frame_size in self.test_parameters.keys():
+        for frame_size in list(self.test_parameters.keys()):
             for nb_desc in self.test_parameters[frame_size]:
                 table_row = list()
                 for i in range(len(header)):
@@ -319,7 +318,7 @@ class TestNicSingleCorePerf(TestCase):
         json_obj = dict()
         json_obj['nic_type'] = self.nic
         json_obj['results'] = list()
-        for frame_size in self.test_parameters.keys():
+        for frame_size in list(self.test_parameters.keys()):
             for nb_desc in self.test_parameters[frame_size]:
                 row_in = self.test_result[frame_size][nb_desc]
                 row_dict = dict()

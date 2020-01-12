@@ -130,7 +130,7 @@ class TestVlan(TestCase):
         """
 
         if self.kdriver == "fm10k":
-            print utils.RED("fm10k not support this case\n")
+            print((utils.RED("fm10k not support this case\n")))
             return
         self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
         self.dut.send_expect("vlan set strip off  %s" % dutRxPortId, "testpmd> ")

@@ -710,7 +710,7 @@ class TestIPsecGW(TestCase):
         self.verify(result, "FAIL")
 
     def _get_ipsec_gw_opt_str(self, override_ipsec_gw_opts={}):
-        if "librte_ipsec" in self.get_suite_cfg().keys() and self.get_suite_cfg()["librte_ipsec"]:
+        if "librte_ipsec" in list(self.get_suite_cfg().keys()) and self.get_suite_cfg()["librte_ipsec"]:
             override_ipsec_gw_opts={"l": ""}
         return cc.get_opt_str(self, self._default_ipsec_gw_opts,
                               override_ipsec_gw_opts)

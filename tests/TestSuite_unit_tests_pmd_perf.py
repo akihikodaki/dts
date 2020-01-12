@@ -127,7 +127,7 @@ class TestUnitTestsPmdPerf(TestCase):
         self.table_header = ['Mode']
         self.table_header += self.anchors
         self.result_table_create(self.table_header)
-        print self.table_header
+        print((self.table_header))
 
         for mode in self.rxtx_modes:
             if mode is "scalar":

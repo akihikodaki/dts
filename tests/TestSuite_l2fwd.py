@@ -163,7 +163,7 @@ class TestL2fwd(TestCase):
         Benchmark performance for frame_sizes.
         """
         ports = []
-        for port in xrange(self.number_of_ports):
+        for port in range(self.number_of_ports):
             ports.append(self.dut_ports[port])
 
         port_mask = utils.create_mask(ports)
@@ -176,7 +176,7 @@ class TestL2fwd(TestCase):
 
             tgen_input = []
             cnt = 1
-            for port in xrange(self.number_of_ports):
+            for port in range(self.number_of_ports):
                 rx_port = self.tester.get_local_port(self.dut_ports[port % self.number_of_ports])
                 tx_port = self.tester.get_local_port(self.dut_ports[(port + 1) % self.number_of_ports])
                 destination_mac = self.dut.get_mac_address(self.dut_ports[(port + 1) % self.number_of_ports])

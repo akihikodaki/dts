@@ -87,7 +87,7 @@ class TestPowerPbf(TestCase):
         console, msg_pipe = self.get_console(con_name)
         if len(cmds) == 0:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -129,7 +129,7 @@ class TestPowerPbf(TestCase):
     def get_cores_mask(self, config='all'):
         sockets = [self.dut.get_numa_id(index) for index in self.dut_ports]
         socket_count = Counter(sockets)
-        port_socket = socket_count.keys()[0] if len(socket_count) == 1 else -1
+        port_socket = list(socket_count.keys())[0] if len(socket_count) == 1 else -1
         mask = create_mask(self.dut.get_core_list(config, socket=port_socket))
         return mask
 
@@ -302,14 +302,14 @@ class TestPowerPbf(TestCase):
 
         # get high priority core and normal core
         base_freqs_info = {}
-        for core_index, value in cpu_info.iteritems():
+        for core_index, value in list(cpu_info.items()):
             base_frequency = value.get('base_frequency')
             base_freqs_info.setdefault(base_frequency, []).append(core_index)
-        base_freqs = base_freqs_info.keys()
+        base_freqs = list(base_freqs_info.keys())
         # cpu should have high priority core and normal core
         # high priority core frequency is higher than normal core frequency
         if len(base_freqs) <= 1 or \
-           not all([len(value) for value in base_freqs_info.values()]):
+           not all([len(value) for value in list(base_freqs_info.values())]):
             msg = 'current cpu has no high priority core'
             raise Exception(msg)
 
@@ -406,14 +406,14 @@ class TestPowerPbf(TestCase):
         cores_info = self.parse_vm_power_cores_freq(output)
         # get high priority core and normal core
         base_freqs_info = {}
-        for core_index, value in cores_info.iteritems():
+        for core_index, value in list(cores_info.items()):
             base_frequency = value.get('base_frequency')
             base_freqs_info.setdefault(base_frequency, []).append(core_index)
-        base_freqs = base_freqs_info.keys()
+        base_freqs = list(base_freqs_info.keys())
         # cpu should have high priority core and normal core
         # high priority core frequency is higher than normal core frequency
         if len(base_freqs) <= 1 or \
-           not all([len(value) for value in base_freqs_info.values()]):
+           not all([len(value) for value in list(base_freqs_info.values())]):
             msg = 'current cpu has no high priority core'
             raise Exception(msg)
 

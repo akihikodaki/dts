@@ -64,7 +64,7 @@ class TestBondingStacked(TestCase):
         # get slave device queue configuration
         for port_id in devices[1:]:
             config = self.bond_inst.get_port_info(port_id, 'queue_config')
-            if cmp(config, master) == 0:
+            if config == master:
                 continue
             msg = ("slave bonded port [{0}] is "
                    "different to top bonded port [{1}]").format(
@@ -378,7 +378,7 @@ class TestBondingStacked(TestCase):
         num_ports = len(self.dut_ports)
         self.verify(num_ports == 2 or num_ports == 4, "Insufficient ports")
         # separate ports into two group as first level bond ports' slaves
-        sep_index = len(self.dut_ports)/2
+        sep_index = len(self.dut_ports)//2
         self.slaveGrpOne = self.dut_ports[:sep_index]
         self.slaveGrpTwo = self.dut_ports[sep_index:]
         self.bond_slave = self.dut_ports[0]

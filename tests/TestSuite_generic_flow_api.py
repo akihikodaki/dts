@@ -234,10 +234,10 @@ class TestGeneric_flow_api(TestCase):
         result_scanner = r'\d*.*?\d*.*?\d*.*?=>*'
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.findall(outstring)
-        print "All flow entries are: "
+        print("All flow entries are: ")
         for i in range(len(m)):
-            print m[i]
-        print 'Expected rules are: %d - actual are: %d' % (expectedRules, len(m))
+            print(m[i])
+        print('Expected rules are: %d - actual are: %d' % (expectedRules, len(m)))
         self.verify(expectedRules == len(m), 'Total rules number mismatched')
 
     def all_flows_process(self, basic_flow_actions):

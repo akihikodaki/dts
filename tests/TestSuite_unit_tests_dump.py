@@ -143,7 +143,7 @@ class TestUnitTestsDump(TestCase):
         results = m.findall(out)
         phy_info = []
         for result in results:
-            phy_info.append(dict(zip(elements, result)))
+            phy_info.append(dict(list(zip(elements, result))))
 
         self.verify(len(phy_info) > 0, "Test failed")
 
@@ -166,7 +166,7 @@ class TestUnitTestsDump(TestCase):
         results = m.findall(out)
         memzone_info = []
         for result in results:
-            memzone_info.append(dict(zip(elements, result)))
+            memzone_info.append(dict(list(zip(elements, result))))
 
         self.verify(len(memzone_info) > 0, "Test failed")
 
@@ -186,7 +186,7 @@ class TestUnitTestsDump(TestCase):
         m = re.compile(r"%s" % match_regex, re.S)
 
         result = m.search(out)
-        struct_info = dict(zip(elements, result.groups()))
+        struct_info = dict(list(zip(elements, result.groups())))
 
     def test_dump_devargs(self):
         """
@@ -240,7 +240,7 @@ class TestUnitTestsDump(TestCase):
         results = m.findall(out)
         memzone_info = []
         for result in results:
-            memzone_info.append(dict(zip(elements, result)))
+            memzone_info.append(dict(list(zip(elements, result))))
         self.verify(len(memzone_info) > 0, "Dump malloc heaps failed")
 
     def test_dump_log_types(self):
@@ -258,7 +258,7 @@ class TestUnitTestsDump(TestCase):
         results = m.findall(out)
         memzone_info = []
         for result in results:
-            memzone_info.append(dict(zip(elements, result)))
+            memzone_info.append(dict(list(zip(elements, result))))
         self.verify(len(memzone_info) > 0, "Dump log types failed")
 
     def tear_down(self):

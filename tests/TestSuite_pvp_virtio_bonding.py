@@ -135,7 +135,7 @@ class TestPVPVirtIOBonding(TestCase):
         """
         out = self.vhost_testpmd.execute_cmd('stop')
         self.vhost_testpmd.execute_cmd('start')
-        print out
+        print(out)
         rx, tx = self.get_port_stats(out, 0)
         self.verify(rx > 0 and tx > 0, "vhost port 0 can not receive or fwd data")
 
@@ -151,7 +151,7 @@ class TestPVPVirtIOBonding(TestCase):
         port 4 can rx packets,while port 3 tx packets
         """
         out = self.vm_testpmd.execute_cmd('stop')
-        print out
+        print(out)
         rx, tx = self.get_port_stats(out, 4)
         self.verify(rx > 0, "vm port 4 can not receive data")
 
@@ -181,7 +181,7 @@ class TestPVPVirtIOBonding(TestCase):
         """
         params_number = len(self.vm.params)
         for i in range(params_number):
-            if self.vm.params[i].keys()[0] == 'cpu':
+            if list(self.vm.params[i].keys())[0] == 'cpu':
                 self.vm.params[i]['cpu'][0]['number'] = 6
 
     def start_one_vm(self):
