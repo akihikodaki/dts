@@ -157,7 +157,7 @@ class PmdOutput():
         config['cores'] = cores
         if eal_param == '':
             # use configured ports if not set
-            if 'ports' not in config.keys():
+            if 'ports' not in list(config.keys()):
                 config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
             all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
         else:
@@ -173,7 +173,7 @@ class PmdOutput():
             if file_prefix:
                 config['prefix'] = file_prefix
 
-            if not w_pci_list and not b_pci_list and 'ports' not in config.keys():
+            if not w_pci_list and not b_pci_list and 'ports' not in list(config.keys()):
                 config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
             part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
             all_eal_param = part_eal_param + ' ' + other_eal_str

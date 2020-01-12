@@ -119,7 +119,7 @@ class Dut(Crb):
         os_type = self.get_os_type()
         if config:
             # deal with cores
-            if config.has_key('cores'):
+            if 'cores' in config:
                 if type(config['cores']) == list:
                     core_list = config['cores']
                 elif isinstance(config['cores'], str):
@@ -132,16 +132,16 @@ class Dut(Crb):
 
             # deal with ports
             w_pci_list = []
-            if config.has_key('ports') and len(config['ports']) != 0:
+            if 'ports' in config and len(config['ports']) != 0:
                 for port in config['ports']:
                     if type(port) == int:
-                        if config.has_key('port_options') and port in config['port_options'].keys():
+                        if 'port_options' in config and port in list(config['port_options'].keys()):
                             port_option = config['port_options'][port]
                             w_pci_list.append('-w %s,%s' % (self.ports_info[port]['pci'], port_option))
                         else:
                             w_pci_list.append('-w %s' % self.ports_info[port]['pci'])
                     else:
-                        if config.has_key('port_options') and port in config['port_options'].keys():
+                        if 'port_options' in config and port in list(config['port_options'].keys()):
                             port_option = config['port_options'][port]
                             w_pci_list.append('-w %s,%s' % (port, port_option))
                         else:
@@ -150,7 +150,7 @@ class Dut(Crb):
 
             # deal with black ports
             b_pci_list = []
-            if config.has_key('b_ports') and len(config['b_ports']) != 0:
+            if 'b_ports' in config and len(config['b_ports']) != 0:
                 for port in config['b_ports']:
                     if type(port) == int:
                         b_pci_list.append('-b %s' % self.ports_info[port]['pci'])
@@ -159,7 +159,7 @@ class Dut(Crb):
             b_ports_str = ' '.join(b_pci_list)
 
             # deal with no-pci
-            if config.has_key('no_pci'):
+            if 'no_pci' in config:
                 if config['no_pci'] == True:
                     no_pci = '--no-pci'
                 else:
@@ -168,7 +168,7 @@ class Dut(Crb):
                 no_pci = ''
 
             # deal with file prefix
-            if config.has_key('prefix') and config['prefix'] != '':
+            if 'prefix' in config and config['prefix'] != '':
                 if fixed_prefix == True:
                     file_prefix = config['prefix']
                 else:
@@ -178,7 +178,7 @@ class Dut(Crb):
             self.prefix_list.append(file_prefix)
 
             # deal with vdev
-            if config.has_key('vdevs') and len(config['vdevs']) != 0:
+            if 'vdevs' in config and len(config['vdevs']) != 0:
                 vdev = '--vdev ' + ' --vdev '.join(config['vdevs'])
             else:
                 vdev = ''
@@ -190,7 +190,7 @@ class Dut(Crb):
                           + blank + b_ports_str \
                           + blank + no_pci \
                           + blank + vdev
-		self.prefix_list = []
+                self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
@@ -215,7 +215,7 @@ class Dut(Crb):
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
                           + blank + pci_str
-		self.prefix_list = []
+                self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
@@ -786,7 +786,7 @@ class Dut(Crb):
         elif self.nic_type == 'cfg':
             if self.conf.check_port_available(pci_bus) is True:
                 return True
-        elif self.nic_type not in NICS.keys():
+        elif self.nic_type not in list(NICS.keys()):
             self.logger.warning("NOT SUPPORTED NIC TYPE: %s" % self.nic_type)
         else:
             codename = NICS[self.nic_type]
@@ -871,7 +871,7 @@ class Dut(Crb):
         cached_ports_info = []
         for port in self.ports_info:
             port_info = {}
-            for key in port.keys():
+            for key in list(port.keys()):
                 if type(port[key]) is str:
                     port_info[key] = port[key]
             cached_ports_info.append(port_info)
@@ -1170,7 +1170,7 @@ class Dut(Crb):
                 # skip ping those not connected port
                 ipv6 = self.get_ipv6_address(dutPort)
                 if ipv6 == "Not connected":
-                    if self.tester.ports_info[remotePort].has_key('ipv4'):
+                    if 'ipv4' in self.tester.ports_info[remotePort]:
                         out = self.tester.send_ping(
                             dutPort, self.tester.ports_info[remotePort]['ipv4'],
                             self.get_mac_address(dutPort))

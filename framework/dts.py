@@ -30,7 +30,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import re           # regular expressions module
-import ConfigParser  # config parse module
+import configparser  # config parse module
 import os           # operation system module
 import texttable    # text format
 import traceback    # exception traceback
@@ -60,8 +60,8 @@ from config import CrbsConf
 from checkCase import CheckCase
 from utils import get_subclasses, copy_instance_attr, create_parallel_locks
 import sys
-reload(sys)
-sys.setdefaultencoding('UTF8')
+import imp
+imp.reload(sys)
 
 requested_tests = None
 result = None
@@ -515,7 +515,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     if dts_cfg_folder != '':
         config_file = dts_cfg_folder + os.sep +  config_file
 
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     load_cfg = config.read(config_file)
     if len(load_cfg) == 0:
         raise ConfigParseException(config_file)

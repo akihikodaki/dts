@@ -162,14 +162,14 @@ class TestCase(object):
     def verify(self, passed, description):
         if not passed:
             if self._enable_debug:
-                print RED("Error happened, dump command history...")
+                print(RED("Error happened, dump command history..."))
                 self.dump_history()
-                print "Error \"%s\" happened" % RED(description)
-                print RED("History dump finished.")
+                print("Error \"%s\" happened" % RED(description))
+                print(RED("History dump finished."))
             raise VerifyFailure(description)
 
     def _get_nic_driver(self, nic_name):
-        if nic_name in DRIVERS.keys():
+        if nic_name in list(DRIVERS.keys()):
             return DRIVERS[nic_name]
 
         return "Unknown"
@@ -227,8 +227,8 @@ class TestCase(object):
         """
         Pass down subtitle for Rst report
         """
-	self._rst_obj._subtitle = subtitle
-	self._rst_obj.write_subtitle()
+        self._rst_obj._subtitle = subtitle
+        self._rst_obj.write_subtitle()
 
     def _get_test_cases(self, test_name_regex):
         """
@@ -344,7 +344,7 @@ class TestCase(object):
         finally:
             # update expected
             if load_global_setting(UPDATE_EXPECTED) == "yes" and \
-                self.get_suite_cfg().has_key('update_expected') and \
+                'update_expected' in self.get_suite_cfg() and \
                 self.get_suite_cfg()['update_expected'] == True:
                 self._suite_conf.update_case_config(SUITE_SECTION_NAME)
             self.tear_down()
@@ -451,9 +451,9 @@ class TestCase(object):
         Dump recorded command history
         """
         for cmd_history in self.setup_history:
-            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
+            print('%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command']))
         for cmd_history in self.test_history:
-            print '%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command'])
+            print('%-20s: %s' % (BLUE(cmd_history['name']), cmd_history['command']))
 
     def wirespeed(self, nic, frame_size, num_ports):
         """

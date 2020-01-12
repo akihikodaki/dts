@@ -165,10 +165,10 @@ class LibvirtKvm(VirtBase):
             size : memory size, measured in MB
             hugepage : guest memory allocated using hugepages
         """
-        if 'size' in options.keys():
+        if 'size' in list(options.keys()):
             memory = ET.SubElement(self.domain, 'memory', {'unit': 'MB'})
             memory.text = options['size']
-        if 'hugepage' in options.keys():
+        if 'hugepage' in list(options.keys()):
             memoryBacking = ET.SubElement(self.domain, 'memoryBacking')
             ET.SubElement(memoryBacking, 'hugepages')
 
@@ -188,10 +188,10 @@ class LibvirtKvm(VirtBase):
         'cpupin' : '3 4 5 6' # host cpu list
         """
         vcpu = 0
-        if 'number' in options.keys():
+        if 'number' in list(options.keys()):
             vmcpu = ET.SubElement(self.domain, 'vcpu', {'placement': 'static'})
             vmcpu.text = options['number']
-        if 'cpupin' in options.keys():
+        if 'cpupin' in list(options.keys()):
             cputune = ET.SubElement(self.domain, 'cputune')
             # cpu resource will be allocated
             req_cpus = options['cpupin'].split()
@@ -230,11 +230,11 @@ class LibvirtKvm(VirtBase):
 
     def add_vm_os(self, **options):
         os = self.domain.find('os')
-        if 'loader' in options.keys():
+        if 'loader' in list(options.keys()):
             loader = ET.SubElement(
                 os, 'loader', {'readonly': 'yes', 'type': 'pflash'})
             loader.text = options['loader']
-        if 'nvram' in options.keys():
+        if 'nvram' in list(options.keys()):
             nvram = ET.SubElement(os, 'nvram')
             nvram.text = options['nvram']
 
@@ -310,7 +310,7 @@ class LibvirtKvm(VirtBase):
         Options:
             path: absolute path for qemu emulator
         """
-        if 'path' in options.keys():
+        if 'path' in list(options.keys()):
             self.set_qemu_emulator(options['path'])
             # update emulator config
             devices = self.domain.find('devices')
@@ -394,10 +394,10 @@ class LibvirtKvm(VirtBase):
         ET.SubElement(graphics, 'listen', listen)
 
     def add_vm_serial_port(self, **options):
-        if 'enable' in options.keys():
+        if 'enable' in list(options.keys()):
             if options['enable'].lower() == 'yes':
                 devices = self.domain.find('devices')
-                if 'opt_type' in options.keys():
+                if 'opt_type' in list(options.keys()):
                     serial_type = options['opt_type']
                 else:
                     serial_type = 'unix'
@@ -429,11 +429,11 @@ class LibvirtKvm(VirtBase):
             user: login username of virtual machine
             password: login password of virtual machine
         """
-        if 'user' in options.keys():
+        if 'user' in list(options.keys()):
             user = options['user']
             self.username = user
 
-        if 'password' in options.keys():
+        if 'password' in list(options.keys()):
             password = options['password']
             self.password = password
 
@@ -553,7 +553,7 @@ class LibvirtKvm(VirtBase):
                 drv_opt = {}
                 guest_opt = {}
                 host_opt = {}
-                for key, value in _sub_opt.iteritems():
+                for key, value in _sub_opt.items():
                     if key.startswith('host_'):
                         host_opt[key[5:]] = value
                         continue
@@ -638,7 +638,7 @@ class LibvirtKvm(VirtBase):
                 self.__add_vm_pci_assign,
         }
         driver = options.get('driver')
-        if not driver or driver not in driver_table.keys():
+        if not driver or driver not in list(driver_table.keys()):
             driver = 'pci-assign'
             msg = 'use {0} configuration as default driver'.format(driver)
             self.logger.warning(msg)
@@ -650,7 +650,7 @@ class LibvirtKvm(VirtBase):
         Options:
             default: create e1000 netdev and redirect ssh port
         """
-        if 'type' in options.keys():
+        if 'type' in list(options.keys()):
             if options['type'] == 'nic':
                 self.__add_vm_net_nic(**options)
             elif options['type'] == 'tap':
@@ -664,12 +664,12 @@ class LibvirtKvm(VirtBase):
         opt_addr: ''
             note: PCI cards only.
         """
-        if 'opt_model' in options.keys():
+        if 'opt_model' in list(options.keys()):
             model = options['opt_model']
         else:
             model = 'e1000'
 
-        if 'opt_hostfwd' in options.keys():
+        if 'opt_hostfwd' in list(options.keys()):
             port = self.virt_pool.alloc_port(self.vm_name)
             if port is None:
                 return
@@ -678,7 +678,7 @@ class LibvirtKvm(VirtBase):
 
         qemu = ET.SubElement(self.domain, 'qemu:commandline')
         ET.SubElement(qemu, 'qemu:arg', {'value': '-net'})
-        if 'opt_addr' in options.keys():
+        if 'opt_addr' in list(options.keys()):
             pci = self.__parse_pci(options['opt_addr'])
             if pci is None:
                 return False
@@ -691,7 +691,7 @@ class LibvirtKvm(VirtBase):
                            % self.pciindex})
             self.pciindex += 1
 
-        if 'opt_hostfwd' in options.keys():
+        if 'opt_hostfwd' in list(options.keys()):
             ET.SubElement(qemu, 'qemu:arg', {'value': '-net'})
             ET.SubElement(qemu, 'qemu:arg', {'value': 'user,hostfwd='
                                              'tcp:%s:%d-:22' % (dut_ip, port)})
@@ -729,7 +729,7 @@ class LibvirtKvm(VirtBase):
         devices = self.domain.find('devices')
         channel = ET.SubElement(devices, 'channel', {'type': 'unix'})
         for opt in ['path', 'name']:
-            if opt not in options.keys():
+            if opt not in list(options.keys()):
                 msg = "invalid virtio serial channel setting"
                 self.logger.error(msg)
                 return

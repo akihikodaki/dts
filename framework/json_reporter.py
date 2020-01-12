@@ -73,4 +73,4 @@ class JSONReporter(object):
         for dut in result.all_duts():
             result_map[dut] = self.__scan_dut(result, dut)
         with open(self.filename, 'w') as outfile:
-            json.dump(result_map, outfile, indent=4, separators=(',', ': '), encoding="utf-8", sort_keys=True)
+            json.dump(result_map, outfile, indent=4, separators=(',', ': '), sort_keys=True)

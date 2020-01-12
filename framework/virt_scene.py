@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # BSD LICENSE
 #
 # Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
@@ -88,12 +87,12 @@ class VirtScene(object):
 
     def prepare_vm(self):
         host_cfg = None
-        for conf in self.vm_confs.keys():
+        for conf in list(self.vm_confs.keys()):
             if conf == 'scene':
                 for cfg in self.vm_confs['scene']:
-                    if 'suite' in cfg.keys():
+                    if 'suite' in list(cfg.keys()):
                         self.prepare_suite(cfg['suite'])
-                    if 'host' in cfg.keys():
+                    if 'host' in list(cfg.keys()):
                         self.host_bound = True
                         host_cfg = cfg['host'][0]
                 self.vm_confs.pop('scene')
@@ -111,7 +110,7 @@ class VirtScene(object):
     def cleanup_vm(self):
         # reload config for has been changed when handle config
         self.load_config()
-        for conf in self.vm_confs.keys():
+        for conf in list(self.vm_confs.keys()):
             if conf != 'scene':
                 vm_name = conf
                 vm_conf = self.vm_confs[vm_name]
@@ -119,10 +118,10 @@ class VirtScene(object):
 
     def prepare_suite(self, conf):
         for param in conf:
-            if 'dut' in param.keys():
+            if 'dut' in list(param.keys()):
                 if param['dut'] == 'vm_dut':
                     self.vm_dut_enable = True
-            if 'type' in param.keys():
+            if 'type' in list(param.keys()):
                 if param['type'] == 'xen':
                     self.vm_type = 'xen'
                 # not implement yet
@@ -131,20 +130,20 @@ class VirtScene(object):
                 # not implement yet
                 if param['type'] == 'container':
                     self.vm_type = 'container'
-            if 'portmap' in param.keys():
+            if 'portmap' in list(param.keys()):
                 if param['portmap'] == 'cfg':
                     self.auto_portmap = False
 
     def prepare_host(self, **opts):
-        if 'dpdk' not in opts.keys():
-            print utils.RED("Scenario host parameter request dpdk option!!!")
+        if 'dpdk' not in list(opts.keys()):
+            print(utils.RED("Scenario host parameter request dpdk option!!!"))
             raise VirtConfigParamException('host')
 
-        if 'cores' not in opts.keys():
-            print utils.RED("Scenario host parameter request cores option!!!")
+        if 'cores' not in list(opts.keys()):
+            print(utils.RED("Scenario host parameter request cores option!!!"))
             raise VirtConfigParamException('host')
 
-        if 'target' in opts.keys():
+        if 'target' in list(opts.keys()):
             target = opts['target']
         else:
             target = self.def_target
@@ -161,11 +160,11 @@ class VirtScene(object):
     def prepare_cpu(self, vm_name, conf):
         cpu_param = {}
         for params in conf:
-            if 'cpu' in params.keys():
+            if 'cpu' in list(params.keys()):
                 cpu_conf = params['cpu'][0]
                 break
 
-        if 'skipcores' in cpu_conf.keys():
+        if 'skipcores' in list(cpu_conf.keys()):
             cpus = cpu_conf['skipcores'].split()
             # remove invalid configured core
             for cpu in cpus:
@@ -176,7 +175,7 @@ class VirtScene(object):
             # reserve those skipped cores
             self.host_dut.virt_pool.reserve_cpu(core_mask)
 
-        if 'numa' in cpu_conf.keys():
+        if 'numa' in list(cpu_conf.keys()):
             if cpu_conf['numa'] == 'auto':
                 numa = self.host_dut.ports_info[0]['port'].socket
             else:
@@ -184,22 +183,22 @@ class VirtScene(object):
         else:
             numa = 0
 
-        if 'number' in cpu_conf.keys():
+        if 'number' in list(cpu_conf.keys()):
             num = int(cpu_conf['number'])
         else:
             num = 2
 
-        if 'model' in cpu_conf.keys():
+        if 'model' in list(cpu_conf.keys()):
             model = cpu_conf['model']
         else:
             model = 'host'
 
         cpu_topo = ''
-        if 'cpu_topo' in cpu_conf.keys():
+        if 'cpu_topo' in list(cpu_conf.keys()):
             cpu_topo = cpu_conf['cpu_topo']
 
         pin_cores = []
-        if 'cpu_pin' in cpu_conf.keys():
+        if 'cpu_pin' in list(cpu_conf.keys()):
             pin_cores = cpu_conf['cpu_pin'].split()
 
         if len(pin_cores):
@@ -222,7 +221,7 @@ class VirtScene(object):
 
     def prepare_devices(self, conf):
         for params in conf:
-            if 'dev_gen' in params.keys():
+            if 'dev_gen' in list(params.keys()):
                 index = conf.index(params)
                 for param in params['dev_gen']:
                     self.handle_dev_gen(**param)
@@ -231,19 +230,19 @@ class VirtScene(object):
 
     def cleanup_devices(self, conf):
         for params in conf:
-            if 'dev_gen' in params.keys():
+            if 'dev_gen' in list(params.keys()):
                 for param in params['dev_gen']:
                     self.handle_dev_destroy(**param)
 
     def prepare_vmdevice(self, conf):
         for params in conf:
-            if 'device' in params.keys():
+            if 'device' in list(params.keys()):
                 for param in params['device']:
-                    if 'vf_idx' in param.keys():
+                    if 'vf_idx' in list(param.keys()):
                         new_param = self.prepare_vf_conf(param)
                         index = params['device'].index(param)
                         params['device'][index] = new_param
-                    elif 'pf_idx' in param.keys():
+                    elif 'pf_idx' in list(param.keys()):
                         new_param = self.prepare_pf_conf(param)
                         index = params['device'].index(param)
                         params['device'][index] = new_param
@@ -270,7 +269,7 @@ class VirtScene(object):
     def prepare_vf_conf(self, param):
         vf_param = {}
         # strip vf pci id
-        if 'pf_dev' in param.keys():
+        if 'pf_dev' in list(param.keys()):
             pf = int(param['pf_dev'])
             pf_net = self.host_dut.ports_info[pf]['port']
             vfs = self.host_dut.ports_info[pf]['vfs_port']
@@ -282,10 +281,10 @@ class VirtScene(object):
             vf_param['opt_host'] = vf_pci
             if param['guestpci'] != 'auto':
                 vf_param['opt_addr'] = param['guestpci']
-            if 'mac' in param.keys():
+            if 'mac' in list(param.keys()):
                 pf_net.set_vf_mac_addr(vf_idx, param['mac'])
         else:
-            print utils.RED("Invalid vf device config, request pf_dev")
+            print(utils.RED("Invalid vf device config, request pf_dev"))
 
         return vf_param
 
@@ -298,33 +297,33 @@ class VirtScene(object):
             self.reg_postvm_cmds(command)
 
     def handle_dev_gen(self, **opts):
-        if 'pf_idx' in opts.keys():
+        if 'pf_idx' in list(opts.keys()):
             port = int(opts['pf_idx'])
-            if 'vf_num' in opts.keys():
+            if 'vf_num' in list(opts.keys()):
                 vf_num = int(opts['vf_num'])
             else:
-                print utils.RED("No vf_num for port %d, assum one VF" % port)
+                print(utils.RED("No vf_num for port %d, assum one VF" % port))
                 vf_num = 1
-            if 'driver' in opts.keys():
+            if 'driver' in list(opts.keys()):
                 driver = opts['driver']
 
             try:
-                print utils.GREEN("create vf %d %d %s" % (port, vf_num, driver))
+                print(utils.GREEN("create vf %d %d %s" % (port, vf_num, driver)))
                 self.host_dut.generate_sriov_vfs_by_port(port, vf_num, driver)
                 self.reset_pf_cmds(port)
             except:
-                print utils.RED("Failed to create vf as requested!!!")
+                print(utils.RED("Failed to create vf as requested!!!"))
                 raise VirtDeviceCreateException
 
     def handle_dev_destroy(self, **opts):
-        if 'pf_idx' in opts.keys():
+        if 'pf_idx' in list(opts.keys()):
             port = int(opts['pf_idx'])
 
             try:
-                print utils.GREEN("destroy vfs on port %d" % port)
+                print(utils.GREEN("destroy vfs on port %d" % port))
                 self.host_dut.destroy_sriov_vfs_by_port(port)
             except:
-                print utils.RED("Failed to destroy vf as requested!!!")
+                print(utils.RED("Failed to destroy vf as requested!!!"))
 
     def reg_prevm_cmds(self, command):
         """
@@ -344,7 +343,7 @@ class VirtScene(object):
     def run_pre_cmds(self):
         for cmd in self.pre_cmds:
             if cmd['type'] == 'vm':
-                print utils.RED("Can't run vm command when vm not ready")
+                print(utils.RED("Can't run vm command when vm not ready"))
             elif cmd['type'] == 'host':
                 crb = self.host_dut
             elif cmd['type'] == 'tester':
@@ -352,17 +351,17 @@ class VirtScene(object):
             else:
                 crb = self.host_dut
 
-            if 'expect' not in cmd.keys():
+            if 'expect' not in list(cmd.keys()):
                 expect = "# "
             else:
                 expect = cmd['expect']
 
-            if 'verify' not in cmd.keys():
+            if 'verify' not in list(cmd.keys()):
                 verify = False
             else:
                 verify = cmd['verify']
 
-            if 'timeout' not in cmd.keys():
+            if 'timeout' not in list(cmd.keys()):
                 timeout = 5
             else:
                 timeout = cmd['timeout']
@@ -371,7 +370,7 @@ class VirtScene(object):
                                   verify=verify)
 
             if type(ret) is int and ret != 0:
-                print utils.RED("Failed to run command %s" % cmd['command'])
+                print(utils.RED("Failed to run command %s" % cmd['command']))
                 raise VirtVmOperationException
 
     def reg_postvm_cmds(self, command):
@@ -399,17 +398,17 @@ class VirtScene(object):
             else:
                 crb = self.host_dut
 
-            if 'expect' not in cmd.keys():
+            if 'expect' not in list(cmd.keys()):
                 expect = "# "
             else:
                 expect = cmd['expect']
 
-            if 'verify' not in cmd.keys():
+            if 'verify' not in list(cmd.keys()):
                 verify = False
             else:
                 verify = cmd['verify']
 
-            if 'timeout' not in cmd.keys():
+            if 'timeout' not in list(cmd.keys()):
                 timeout = 5
             else:
                 timeout = cmd['timeout']
@@ -418,12 +417,12 @@ class VirtScene(object):
                                   verify=verify)
 
             if type(ret) is int and ret != 0:
-                print utils.RED("Failed to run command %s" % cmd['command'])
+                print(utils.RED("Failed to run command %s" % cmd['command']))
                 raise VirtVmOperationException
 
     def merge_params(self, vm, params):
         for param in params:
-            index = vm.find_option_index(param.keys()[0])
+            index = vm.find_option_index(list(param.keys())[0])
             if index is not None:
                 vm.params[index] = param
             else:
@@ -434,14 +433,14 @@ class VirtScene(object):
 
     def get_cputopo(self, params):
         for param in params:
-            if 'cpu' in param.keys():
+            if 'cpu' in list(param.keys()):
                 cpu_topo = param['cpu'][0]['cputopo']
                 return cpu_topo
 
     def start_vms(self):
         self.vms = []
         if self.vm_type == 'kvm':
-            for vm_name in self.vm_confs.keys():
+            for vm_name in list(self.vm_confs.keys()):
                 # tricky here, QEMUKvm based on suite and vm name
                 # suite is virt_global, vm_name just the type
                 vm = QEMUKvm(self.host_dut, self.vm_type.upper(),
@@ -468,12 +467,12 @@ class VirtScene(object):
                     self.vms.append(vm_info)
 
                 except Exception as e:
-                    print utils.RED("Failure for %s" % str(e))
+                    print(utils.RED("Failure for %s" % str(e)))
 
     def get_vm_duts(self):
         duts = []
         for vm_info in self.vms:
-            for vm_obj in vm_info.keys():
+            for vm_obj in list(vm_info.keys()):
                 if 'session' in vm_obj:
                     duts.append(vm_info[vm_obj])
 
@@ -488,18 +487,18 @@ class VirtScene(object):
 
     def set_target(self, target):
         for vm_info in self.vms:
-            for vm_obj in vm_info.keys():
+            for vm_obj in list(vm_info.keys()):
                 if 'session' in vm_obj:
                     vm_info[vm_obj].set_target(target)
 
     def destroy_scene(self):
         for vm_info in self.vms:
-            for vm_obj in vm_info.keys():
+            for vm_obj in list(vm_info.keys()):
                 if 'session' in vm_obj:
                     vm_info[vm_obj].kill_all()
                     vm_info[vm_obj].close()
                     vm_info[vm_obj].logger.logger_exit()
-            for vm_obj in vm_info.keys():
+            for vm_obj in list(vm_info.keys()):
                 if 'session' not in vm_obj:
                     vm_info[vm_obj].stop()
                     vm_info[vm_obj] = None
@@ -511,11 +510,11 @@ if __name__ == "__main__":
     class QEMUKvm():
 
         def __init__(self, dut, vm_name, suite_name):
-            print vm_name
-            print suite_name
+            print(vm_name)
+            print(suite_name)
 
         def start(self):
-            print self.params
+            print(self.params)
             return True
 
     class simple_dev(object):
@@ -540,7 +539,7 @@ if __name__ == "__main__":
 
         def send_expect(self, cmds, expected, timeout=5,
                         alt_session=False, verify=False):
-            print cmds + "---" + expected
+            print(cmds + "---" + expected)
 
     class simple_resource(object):
 
@@ -548,10 +547,10 @@ if __name__ == "__main__":
             pass
 
         def reserve_cpu(self, coremask):
-            print "reserve " + coremask
+            print("reserve " + coremask)
 
         def alloc_cpu(self, vm='', number=-1, socket=-1, corelist=None):
-            print "alloc %s num %d on socket %d" % (vm, number, socket)
+            print("alloc %s num %d on socket %d" % (vm, number, socket))
 
     dut = simple_dut()
     scene = VirtScene(dut, None, "vf_passthrough")

@@ -119,12 +119,12 @@ class PacketGeneratorHelper(object):
         fields_config = {}
         # set ethernet protocol layer fields
         layer_name = 'mac'
-        if layer_name in suite_config.keys() and \
+        if layer_name in list(suite_config.keys()) and \
            'Ethernet' in self.packetLayers:
             fields_config[layer_name] = {}
             suite_fields = suite_config.get(layer_name)
             pcap_fields = self.packetLayers.get('Ethernet')
-            for name, config in suite_fields.iteritems():
+            for name, config in suite_fields.items():
                 action = config.get('action') or 'default'
                 range = config.get('range') or 64
                 step = config.get('step') or 1
@@ -137,12 +137,12 @@ class PacketGeneratorHelper(object):
                 fields_config[layer_name][name]['action'] = action
         # set ip protocol layer fields
         layer_name = 'ip'
-        if layer_name in suite_config.keys() and \
+        if layer_name in list(suite_config.keys()) and \
            'IP' in self.packetLayers:
             fields_config[layer_name] = {}
             suite_fields = suite_config.get(layer_name)
             pcap_fields = self.packetLayers.get('IP')
-            for name, config in suite_fields.iteritems():
+            for name, config in suite_fields.items():
                 action = config.get('action') or 'default'
                 range = config.get('range') or 64
                 step = config.get('step') or 1
@@ -155,14 +155,14 @@ class PacketGeneratorHelper(object):
                 fields_config[layer_name][name]['action'] = action
         # set vlan protocol layer fields, only support one layer vlan here
         layer_name = 'vlan'
-        if layer_name in suite_config.keys() and \
+        if layer_name in list(suite_config.keys()) and \
            '802.1Q' in self.packetLayers:
             fields_config[layer_name] = {}
             suite_fields = suite_config.get(layer_name)
             pcap_fields = self.packetLayers.get('802.1Q')
             # only support one layer vlan here, so set name to `0`
             name = 0
-            if name in suite_fields.keys():
+            if name in list(suite_fields.keys()):
                 config = suite_fields[name]
                 action = config.get('action') or 'default'
                 range = config.get('range') or 64
@@ -207,7 +207,7 @@ def getPacketGenerator(tester, pktgen_type=PKTGEN_IXIA):
         PKTGEN_IXIA: IxiaPacketGenerator,
         PKTGEN_TREX: TrexPacketGenerator,}
 
-    if pktgen_type in pktgen_cls.keys():
+    if pktgen_type in list(pktgen_cls.keys()):
         CLS = pktgen_cls.get(pktgen_type)
         return CLS(tester)
     else:

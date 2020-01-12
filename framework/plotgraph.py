@@ -309,10 +309,10 @@ class Plot2DGraph:
             currGraph.graphType = graphType
 
         if len(xData) != len(yData):
-            print 'Error xData = ' + str(len(xData))
-            print 'yData = ' + str(len(yData))
-            print xData
-            print yData
+            print('Error xData = ' + str(len(xData)))
+            print('yData = ' + str(len(yData)))
+            print(xData)
+            print(yData)
             return
 
         currGraph.xs = xData
@@ -358,13 +358,13 @@ class Plot2DGraph:
             ax.set_ylabel(graph.yLabel)
 
         if graph.xticks:
-            ax.set_xticks(range(len(graph.xticks)))
+            ax.set_xticks(list(range(len(graph.xticks))))
             ax.set_xticklabels(graph.xticks)
         elif self.xticklabels:
             ax.set_xticks(self.xticks)
             ax.set_xticklabels(self.xticklabels)
         if graph.yticks:
-            ax.set_yticks(range(len(graph.yticks)))
+            ax.set_yticks(list(range(len(graph.yticks))))
             ax.set_yticklabels(graph.yticks)
         elif self.yticklabels:
             ax.set_yticks(self.yticks)
@@ -392,7 +392,7 @@ class Plot2DGraph:
 
 # deprecated
         if graph.expectedXs:
-            print 'DEPRECATED'
+            print('DEPRECATED')
             return
 
             if graph.graphType and graph.graphType == 'bar':
@@ -420,7 +420,7 @@ class Plot2DGraph:
         newAx.spines['left'].set_facecolor('r')
         newAx.spines['left'].set_edgecolor('r')
 
-        newAx.set_yticks(range(len(oldAx.get_yticks())))
+        newAx.set_yticks(list(range(len(oldAx.get_yticks()))))
         newAx.set_yticklabels(self.newYticks[0:len(oldAx.get_yticks())])
         newAx.set_ylabel(self.newYLabel, color='b')
         newAx.yaxis.set_visible(True)
@@ -658,7 +658,7 @@ class Plot2DGraph:
             # newAx.spines['bottom'].set_facecolor('red')
             # newAx.spines['bottom'].set_edgecolor('red')
 
-            newAx.set_xticks(range(len(self.newXticks)))
+            newAx.set_xticks(list(range(len(self.newXticks))))
             newAx.set_xticklabels(self.newXticks)
             newAx.set_xlabel(self.newXLabel, color='b')
             newAx.xaxis.set_visible(True)
@@ -695,7 +695,7 @@ class Plot2DGraph:
             newAx.spines['bottom'].set_facecolor('r')
             newAx.spines['bottom'].set_edgecolor('r')
 
-            newAx.set_xticks(range(len(self.newXticks)))
+            newAx.set_xticks(list(range(len(self.newXticks))))
             newAx.set_xticklabels(self.newXticks)
             newAx.set_xlabel(self.newXLabel, color='b')
             newAx.xaxis.set_visible(True)
@@ -754,7 +754,7 @@ class Plot2DGraph:
         """check num subplots is not too much"""
 
         if(self.numSubPlots > 4):
-            print "Max subplots exceeded: " + str(self.numSubPlots)
+            print("Max subplots exceeded: " + str(self.numSubPlots))
             return
 
         # generate graphs, write to file

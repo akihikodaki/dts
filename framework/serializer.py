@@ -56,8 +56,6 @@ class Serializer(object):
     is called it will return a reference to the same instance.
     """
 
-    __metaclass__ = Singleton
-
     def __init__(self):
         self.volatile_cache = {}
         self.filename = 'serializer.cache'

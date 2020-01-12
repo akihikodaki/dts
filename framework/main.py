@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 # BSD LICENSE
 #
 # Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
@@ -57,12 +57,12 @@ def git_build_package(gitLabel, pkgName, depot="dep"):
     if os.path.exists("%s/%s" % (depot, gitPrefix)) is True:
         ret = os.system("cd %s/%s && git pull --force" % (depot, gitPrefix))
     else:
-        print "git clone %s %s/%s" % (gitURL, depot, gitPrefix)
+        print("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
         ret = os.system("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
     if ret is not 0:
         raise EnvironmentError
 
-    print "git archive --format=tar.gz --prefix=%s %s -o %s" % (gitPrefix, gitLabel, pkgName)
+    print("git archive --format=tar.gz --prefix=%s %s -o %s" % (gitPrefix, gitLabel, pkgName))
     ret = os.system("cd %s/%s && git archive --format=tar.gz --prefix=%s/ %s -o ../%s"
                     % (depot, gitPrefix, gitPrefix, gitLabel, pkgName))
     if ret is not 0:
@@ -158,7 +158,7 @@ if args.git is not None:
     try:
         git_build_package(args.git, os.path.split(args.snapshot)[1])
     except Exception:
-        print "FAILED TO PREPARE DPDK PACKAGE!!!"
+        print("FAILED TO PREPARE DPDK PACKAGE!!!")
         sys.exit()
 
 # Main program begins here

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # BSD LICENSE
 #
 # Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
@@ -391,11 +390,11 @@ class Packet(object):
         self.pkt_opts = options
         self.pkt_layers = []
 
-        if 'pkt_gen' in self.pkt_opts.keys():
+        if 'pkt_gen' in list(self.pkt_opts.keys()):
             if self.pkt_opts['pkt_gen'] == 'scapy':
                 self.pktgen = scapy()
             else:
-                print "Not support other pktgen yet!!!"
+                print("Not support other pktgen yet!!!")
         else:
             self.pktgen = scapy()
 
@@ -419,10 +418,10 @@ class Packet(object):
         """
         self.pkt_len = 64
         self.pkt_type = "UDP"
-        if 'pkt_type' in options.keys():
+        if 'pkt_type' in list(options.keys()):
             self.pkt_type = options['pkt_type']
 
-        if self.pkt_type in self.def_packet.keys():
+        if self.pkt_type in list(self.def_packet.keys()):
             self.pkt_layers = self.def_packet[self.pkt_type]['layers']
             self.pkt_cfgload = self.def_packet[self.pkt_type]['cfgload']
             if "IPv6" in self.pkt_type:
@@ -430,7 +429,7 @@ class Packet(object):
         else:
             self._load_pkt_layers()
 
-        if 'pkt_len' in options.keys():
+        if 'pkt_len' in list(options.keys()):
             self.pkt_len = options['pkt_len']
 
         self._load_assign_layers()
@@ -449,7 +448,7 @@ class Packet(object):
         if hasattr(self, 'configured_layer_raw') is False and self.pkt_cfgload is True:
             payload = []
             raw_confs = {}
-            if 'ran_payload' in self.pkt_opts.keys():
+            if 'ran_payload' in list(self.pkt_opts.keys()):
                 for loop in range(payload_len):
                     payload.append("%02x" % random.randrange(0, 255))
             else:
@@ -516,14 +515,14 @@ class Packet(object):
                     try:
                         self.update_pkt_str(i)
                     except:
-                        print("warning: packet %s update failed" % i)
+                        print(("warning: packet %s update failed" % i))
                 elif isinstance(i, dict):
                     try:
                         self.update_pkt_dict(i)
                     except:
-                        print("warning: packet %s update failed" % i)
+                        print(("warning: packet %s update failed" % i))
                 else:
-                    print("packet {} is not acceptable".format(i))
+                    print(("packet {} is not acceptable".format(i)))
 
     def generate_random_pkts(self, dstmac=None, pktnum=100, random_type=None, ip_increase=True, random_payload=False,
                              options=None):
@@ -562,7 +561,7 @@ class Packet(object):
                 self.config_layer('tcp', {'src': 65535, 'dst': 65535})
             if "UDP" in self.pkt_type:
                 self.config_layer('udp', {'src': 65535, 'dst': 65535})
-            if options.has_key('layers_config'):
+            if 'layers_config' in options:
                 self.config_layers(options['layers_config'])
             if dstmac:
                 self.config_layer('ether', {'dst': '%s' % dstmac})
@@ -667,9 +666,9 @@ class Packet(object):
         if send_bg:  # if send_bg create a new session to execute send action
             session_prefix = 'scapy_bg_session'
             scapy_session = crb.create_session(session_prefix + time_stamp)
-            scapy_session.send_command('python %s' % crb.tmp_file + scapy_cmd)
+            scapy_session.send_command('python3 %s' % crb.tmp_file + scapy_cmd)
         else:
-            crb.send_expect('python %s' % crb.tmp_file + scapy_cmd, '# ', timeout=timeout)
+            crb.send_expect('python3 %s' % crb.tmp_file + scapy_cmd, '# ', timeout=timeout)
         return crb.tmp_file + scapy_cmd
 
     def send_pkt(self, crb, tx_port='', count=1, interval=0, timeout=15):
@@ -688,13 +687,13 @@ class Packet(object):
                 try:
                     pids.append(re.search('\d+', out).group())
                 except AttributeError as e:
-                    print(e, ' :%s not killed' % file)
+                    print((e, ' :%s not killed' % file))
         else:
             out = crb.send_expect('ps -ef |grep %s|grep -v grep' % filenames, expected='# ')
             try:
                 pids.append(re.search('\d+', out).group())
             except AttributeError as e:
-                print(e, ' :%s not killed' % filenames)
+                print((e, ' :%s not killed' % filenames))
         pid = ' '.join(pids)
         if pid:
             crb.send_expect('kill -9 %s' % pid, expected='# ')
@@ -711,14 +710,14 @@ class Packet(object):
             found = False
             l_type = layer.lower()
 
-            for types in LayersTypes.values():
+            for types in list(LayersTypes.values()):
                 if l_type in types:
                     found = True
                     break
 
             if found is False:
                 self.pkt_layers.remove(l_type)
-                print "INVAILD LAYER TYPE [%s]" % l_type.upper()
+                print("INVAILD LAYER TYPE [%s]" % l_type.upper())
 
     def assign_layers(self, layers=None):
         """
@@ -732,14 +731,14 @@ class Packet(object):
             found = False
             l_type = layer.lower()
 
-            for types in LayersTypes.values():
+            for types in list(LayersTypes.values()):
                 if l_type in types:
                     found = True
                     break
 
             if found is False:
                 self.pkt_layers.remove(l_type)
-                print "INVAILD LAYER TYPE [%s]" % l_type.upper()
+                print("INVAILD LAYER TYPE [%s]" % l_type.upper())
 
         self.pktgen.add_layers(self.pkt_layers)
         if layers:
@@ -775,7 +774,7 @@ class Packet(object):
         self.pkt_layers = []
         self.pkt_cfgload = True
         for layer in layers:
-            if layer in name2type.keys():
+            if layer in list(name2type.keys()):
                 self.pkt_layers.append(name2type[layer])
 
     def config_def_layers(self):
@@ -826,7 +825,7 @@ class Packet(object):
         try:
             idx = self.pkt_layers.index(layer)
         except Exception as e:
-            print "INVALID LAYER ID %s" % layer
+            print("INVALID LAYER ID %s" % layer)
             return False
 
         if self.check_layer_config() is False:
@@ -849,10 +848,10 @@ class Packet(object):
         for layer in layers:
             name, config = layer
             if name not in self.pkt_layers:
-                print "[%s] is missing in packet!!!" % name
+                print("[%s] is missing in packet!!!" % name)
                 raise
             if self.config_layer(name, config) is False:
-                print "[%s] failed to configure!!!" % name
+                print("[%s] failed to configure!!!" % name)
                 raise
 
     def strip_layer_element(self, layer, element, p_index=0):
@@ -926,13 +925,13 @@ def get_filter_cmd(filters=[]):
     for pktfilter in filters:
         filter_cmd = ""
         if pktfilter['layer'] == 'ether':
-            if pktfilter['config'].keys()[0] == 'dst':
+            if list(pktfilter['config'].keys())[0] == 'dst':
                 dmac = pktfilter['config']['dst']
                 filter_cmd = "ether dst %s" % dmac
-            elif pktfilter['config'].keys()[0] == 'src':
+            elif list(pktfilter['config'].keys())[0] == 'src':
                 smac = pktfilter['config']['src']
                 filter_cmd = "ether src %s" % smac
-            elif pktfilter['config'].keys()[0] == 'type':
+            elif list(pktfilter['config'].keys())[0] == 'type':
                 eth_type = pktfilter['config']['type']
                 eth_format = r"(\w+) (\w+)"
                 m = re.match(eth_format, eth_type)
@@ -945,14 +944,14 @@ def get_filter_cmd(filters=[]):
                     elif m.group(1) == 'not':
                         filter_cmd = 'ether[12:2] != %s' % type_hex
         elif pktfilter['layer'] == 'network':
-            if pktfilter['config'].keys()[0] == 'srcport':
+            if list(pktfilter['config'].keys())[0] == 'srcport':
                 sport = pktfilter['config']['srcport']
                 filter_cmd = "src port %s" % sport
-            elif pktfilter['config'].keys()[0] == 'dstport':
+            elif list(pktfilter['config'].keys())[0] == 'dstport':
                 dport = pktfilter['config']['dstport']
                 filter_cmd = "dst port %s" % dport
         elif pktfilter['layer'] == 'userdefined':
-            if pktfilter['config'].keys()[0] == 'pcap-filter':
+            if list(pktfilter['config'].keys())[0] == 'pcap-filter':
                 filter_cmd = pktfilter['config']['pcap-filter']
 
         if len(filter_cmds):
@@ -998,7 +997,7 @@ def start_tcpdump(crb, intf, count=0, filters=None, lldp_forbid=True):
                     param = "-P" + " in"
 
     if len(param) == 0:
-        print "tcpdump not support direction choice!!!"
+        print("tcpdump not support direction choice!!!")
 
     if lldp_forbid and (LLDP_FILTER not in filters):
         filters.append(LLDP_FILTER)
@@ -1027,7 +1026,7 @@ def stop_and_load_tcpdump_packets(index='', timeout=1):
     """
     Stop sniffer and return packet object
     """
-    if index in SNIFF_PIDS.keys():
+    if index in list(SNIFF_PIDS.keys()):
         pipe, intf, filename = SNIFF_PIDS.pop(index)
         pipe.get_session_before(timeout)
         pipe.send_command('^C')

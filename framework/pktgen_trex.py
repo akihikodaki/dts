@@ -81,7 +81,7 @@ class TrexConfigVm(object):
         _ip_start = self.ipv4_str_to_num(self.is_valid_ipv4_ret(ip_start))
         _ip_end = self.ipv4_str_to_num(self.is_valid_ipv4_ret(ip_end))
         _step = self.ipv4_str_to_num(self.is_valid_ipv4_ret(step)) \
-                                if isinstance(step, (str, unicode)) else step
+                                if isinstance(step, str) else step
         if mode == 'inc' or mode == 'dec':
             min_value = _ip_start
             max_value = _ip_end
@@ -110,7 +110,7 @@ class TrexConfigVm(object):
         ###################################################################
         # mac inc/dec/random
         if 'mac' in option:
-            for name, config in option['mac'].iteritems():
+            for name, config in option['mac'].items():
                 mac_start = config.get('start') or '00:00:00:00:00:00'
                 mac_end = config.get('end') or 'FF:FF:FF:FF:FF:FF'
                 step = config.get('step') or 1
@@ -124,7 +124,7 @@ class TrexConfigVm(object):
         ###################################################################
         # src ip mask inc/dec/random
         if 'ip' in option:
-            for name, config in option['ip'].iteritems():
+            for name, config in option['ip'].items():
                 ip_start = config.get('start') or '0.0.0.1'
                 ip_end = config.get('end') or '0.0.0.255'
                 step = config.get('step') or 1
@@ -139,7 +139,7 @@ class TrexConfigVm(object):
         ###################################################################
         # src ip mask inc/dec/random
         if 'port' in option:
-            for name, config in option['port'].iteritems():
+            for name, config in option['port'].items():
                 protocol = config.get('protocol') or 'UDP'
                 port_start = config.get('start') or 1
                 port_end = config.get('end') or 255
@@ -158,7 +158,7 @@ class TrexConfigVm(object):
         ###################################################################
         # vlan field inc/dec/random
         if 'vlan' in option:
-            for name, config in option['vlan'].iteritems():
+            for name, config in option['vlan'].items():
                 vlan_start = config.get('start') \
                                 if config.get('start') != None else 0
                 vlan_end = config.get('end') or 256
@@ -237,7 +237,7 @@ class TrexConfigStream(object):
             'max_value': 255,
             'size': 4,
             'step': 1}
-        for name, value in default.iteritems():
+        for name, value in default.items():
             if name not in config:
                 config[name] = value
 
@@ -248,7 +248,7 @@ class TrexConfigStream(object):
         msg = "layer <{0}> field name <{1}> is not defined".format
         fv_names = []
         fix_chksum = False
-        for layer, _config in configs.iteritems():
+        for layer, _config in configs.items():
             # set default value
             if isinstance(_config, (tuple, list)):
                 config = _config[0]
@@ -479,7 +479,7 @@ class TrexPacketGenerator(PacketGenerator):
         '''
         get port pci address
         '''
-        for name, _port_obj in self._conn.ports.iteritems():
+        for name, _port_obj in self._conn.ports.items():
             if name == port_id:
                 _pci = _port_obj.info['pci_addr']
                 return _pci
@@ -490,7 +490,7 @@ class TrexPacketGenerator(PacketGenerator):
         '''
         get port management id of the packet generator
         '''
-        for name, _port_obj in self._conn.ports.iteritems():
+        for name, _port_obj in self._conn.ports.items():
             _pci = _port_obj.info['pci_addr']
             if _pci == pci:
                 return name
@@ -501,7 +501,7 @@ class TrexPacketGenerator(PacketGenerator):
         '''
         check if a pci address is managed by the packet generator
         '''
-        for name, _port_obj in self._conn.ports.iteritems():
+        for name, _port_obj in self._conn.ports.items():
             _pci = _port_obj.info['pci_addr']
             self.logger.debug((_pci, pci))
             if _pci == pci:
@@ -584,7 +584,7 @@ class TrexPacketGenerator(PacketGenerator):
 
     def _prepare_generator(self):
         ''' start trex server '''
-        if self.conf.has_key('start_trex') and self.conf['start_trex']:
+        if 'start_trex' in self.conf and self.conf['start_trex']:
             app_param_temp = "-i"
             # flow control
             flow_control = self.conf.get('flow_control')
@@ -612,14 +612,14 @@ class TrexPacketGenerator(PacketGenerator):
         return None # close it and wait for more discussion about pktgen framework
         conf = {}
         #get the subnet range of src and dst ip
-        if self.conf.has_key("ip_src"):
+        if "ip_src" in self.conf:
             conf['src'] = {}
             ip_src = self.conf['ip_src']
             ip_src_range = ip_src.split('-')
             conf['src']['start'] = ip_src_range[0]
             conf['src']['end'] = ip_src_range[1]
 
-        if self.conf.has_key("ip_dst"):
+        if "ip_dst" in self.conf:
             conf['dst'] = {}
             ip_dst = self.conf['ip_dst']
             ip_dst_range = ip_dst.split('-')
@@ -701,7 +701,7 @@ class TrexPacketGenerator(PacketGenerator):
     def _loss_rate_stats(self, stream, stats):
         # tx packet
         port_id = stream.get("tx_port")
-        if port_id in stats.keys():
+        if port_id in list(stats.keys()):
             port_stats = stats[port_id]
         else:
             msg = "port {0} statistics is not found".format(port_id)
@@ -722,7 +722,7 @@ class TrexPacketGenerator(PacketGenerator):
     def _latency_stats(self, stream, stats):
         _stats = stats.get('latency')
         port_id = stream.get("tx_port")
-        if port_id in _stats.keys():
+        if port_id in list(_stats.keys()):
             port_stats = _stats[port_id]['latency']
         else:
             msg = "port {0} latency stats is not found".format(port_id)
@@ -751,7 +751,7 @@ class TrexPacketGenerator(PacketGenerator):
                 self._rx_ports.append(rx_port)
             # set all streams in one port to do batch configuration
             options = stream['options']
-            if tx_port not in port_config.keys():
+            if tx_port not in list(port_config.keys()):
                 port_config[tx_port] = []
             config = {}
             config.update(options)
@@ -777,7 +777,7 @@ class TrexPacketGenerator(PacketGenerator):
 
         self._conn.reset(ports=self._ports)
         config_inst = TrexConfigStream()
-        for port_id, config in port_config.iteritems():
+        for port_id, config in port_config.items():
             # add a group of streams in one port
             config_inst.add_streams(self._conn, config, ports=[port_id],
                                     latency=latency)

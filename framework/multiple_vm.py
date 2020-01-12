@@ -1,4 +1,3 @@
-#!/usr/bin/python
 import time
 import re
 import threadpool
@@ -151,7 +150,7 @@ class MultipleVM(object):
 
         self.logger.debug("Parallel task start for DUT%d %s" % (dut_id, vm_name))
 
-        combinations = zip(commands, expects, timeouts)
+        combinations = list(zip(commands, expects, timeouts))
         for combine in combinations:
             command, expect, timeout = combine
             # timeout value need enlarge if vm number increased

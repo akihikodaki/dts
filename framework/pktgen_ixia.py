@@ -73,7 +73,7 @@ class Ixia(SSHConnection):
         self.ixiaVersion = ixiaPorts[ixiaRef]["Version"]
         self.ports = ixiaPorts[ixiaRef]["Ports"]
 
-        if ixiaPorts[ixiaRef].has_key('force100g'):
+        if 'force100g' in ixiaPorts[ixiaRef]:
             self.enable100g = ixiaPorts[ixiaRef]['force100g']
         else:
             self.enable100g = 'disable'
@@ -194,7 +194,7 @@ class Ixia(SSHConnection):
             'default':  'idle'}
 
         cmds = []
-        for name, config in fields.iteritems():
+        for name, config in fields.items():
             default_config = default_fields.get(name)
             mac_start = config.get('start') or default_config.get('start')
             mac_end = config.get('end')
@@ -229,7 +229,7 @@ class Ixia(SSHConnection):
             default_fields.pop(name)
         # if some filed not set, set it here
         if default_fields:
-            for name, config in default_fields.iteritems():
+            for name, config in default_fields.items():
                 ip_start = config.get('start')
                 prefix = 'sa' if name == 'src' else 'da'
                 cmds.append('stream config -{0} "{1}"'.format(prefix, ip_start))
@@ -274,7 +274,7 @@ class Ixia(SSHConnection):
             # set default
             'default':  'ipIdle',}
         cmds = []
-        for name, config in fields.iteritems():
+        for name, config in fields.items():
             default_config = default_fields.get(name)
             fv_name = 'IP.{0}'.format(name)
             ip_start = config.get('start') or default_config.get('start')
@@ -291,7 +291,7 @@ class Ixia(SSHConnection):
 
             mask =  config.get('mask')
             _step = config.get('step')
-            step = int(_step) if _step and isinstance(_step, (str, unicode)) else \
+            step = int(_step) if _step and isinstance(_step, str) else \
                    _step or 1
             action = config.get('action')
             # get ixia command prefix
@@ -318,7 +318,7 @@ class Ixia(SSHConnection):
         if not default_fields:
             return cmds
         # if some filed not set, set it here
-        for name, config in default_fields.iteritems():
+        for name, config in default_fields.items():
             ip_start = config.get('start')
             prefix = 'source' if name == 'src' else 'dest'
             cmds.append('ip config -{0}IpAddr "{1}"'.format(prefix, ip_start))
@@ -426,7 +426,7 @@ class Ixia(SSHConnection):
             # No change to VlanID tag regardless of repeat
             'idle':     'vIdle',}
         cmds = []
-        for name, config in fields.iteritems():
+        for name, config in fields.items():
             fv_name = '8021Q.{0}'.format(name)
             vlan_start = config.get('start') or 0
             vlan_end = config.get('end') or 256
@@ -533,7 +533,7 @@ class Ixia(SSHConnection):
         frameType = txmode.get('frameType') or {}
         time_unit = frameType.get('type', 'ns')
         gapUnit = gapUnits.get(time_unit) \
-                        if time_unit in gapUnits.keys() else gapUnits.get('ns')
+                        if time_unit in list(gapUnits.keys()) else gapUnits.get('ns')
         # The inter-stream gap is the delay in clock ticks between stream.
         # This delay comes after the receive trigger is enabled. Setting this
         # option to 0 means no delay. (default = 960.0)
@@ -879,14 +879,14 @@ class Ixia(SSHConnection):
 
         # calculate total streams of ports
         for (txPort, rxPort, pcapFile, option) in portList:
-            if txPort not in self.stream_total.keys():
+            if txPort not in list(self.stream_total.keys()):
                 self.stream_total[txPort] = 1
             else:
                 self.stream_total[txPort] += 1
 
         # stream/flow setting
         for (txPort, rxPort, pcapFile, option) in portList:
-            if txPort not in self.stream_index.keys():
+            if txPort not in list(self.stream_index.keys()):
                 self.stream_index[txPort] = 1
             frame_index = self.stream_index[txPort]
             self.config_stream(pcapFile, option, txPort,
@@ -1346,7 +1346,7 @@ class Ixia(SSHConnection):
             'throughput':   self.get_throughput_stat,
             'loss':         self.get_loss_stat,
             'latency':      self.get_latency_stat,}
-        if mode not in methods.keys():
+        if mode not in list(methods.keys()):
             msg = "not support mode <{0}>".format(mode)
             raise Exception(msg)
         # get custom mode stat
@@ -1441,7 +1441,7 @@ class IxiaPacketGenerator(PacketGenerator):
         '''
         check if a pci address is managed by the packet generator
         '''
-        for name, _port_obj in self._conn.ports.iteritems():
+        for name, _port_obj in self._conn.ports.items():
             _pci = _port_obj.info['pci_addr']
             self.logger.debug((_pci, pci))
             if _pci == pci:
@@ -1464,14 +1464,14 @@ class IxiaPacketGenerator(PacketGenerator):
         return None
         conf = {}
         #get the subnet range of src and dst ip
-        if self.conf.has_key("ip_src"):
+        if "ip_src" in self.conf:
             conf['src'] = {}
             ip_src = self.conf['ip_src']
             ip_src_range = ip_src.split('-')
             conf['src']['start'] = ip_src_range[0]
             conf['src']['end'] = ip_src_range[1]
 
-        if self.conf.has_key("ip_dst"):
+        if "ip_dst" in self.conf:
             conf['dst'] = {}
             ip_dst = self.conf['ip_dst']
             ip_dst_range = ip_dst.split('-')
@@ -1557,7 +1557,7 @@ class IxiaPacketGenerator(PacketGenerator):
         ''' convert ixia loss rate statistics format to dts PacketGenerator format '''
         # tx packet
         port_id = stream.get("tx_port")
-        if port_id in stats.keys():
+        if port_id in list(stats.keys()):
             port_stats = stats[port_id]
         else:
             msg = "port {0} statistics is not found".format(port_id)
@@ -1578,7 +1578,7 @@ class IxiaPacketGenerator(PacketGenerator):
     def _latency_stats(self, stream, stats):
         ''' convert ixia latency statistics format to dts PacketGenerator format '''
         port_id = stream.get("tx_port")
-        if port_id in stats.keys():
+        if port_id in list(stats.keys()):
             port_stats = stats[port_id]
         else:
             msg = "port {0} latency stats is not found".format(port_id)
@@ -1619,7 +1619,7 @@ class IxiaPacketGenerator(PacketGenerator):
                 self._rx_ports.append(rx_port)
             # set all streams in one port to do batch configuration
             options = stream['options']
-            if tx_port not in port_config.keys():
+            if tx_port not in list(port_config.keys()):
                 port_config[tx_port] = []
             config = {}
             config.update(options)
@@ -1641,7 +1641,7 @@ class IxiaPacketGenerator(PacketGenerator):
             raise Exception(msg)
         #-------------------------------------------------------------------
         port_lists = []
-        for port_id, option in port_config.iteritems():
+        for port_id, option in port_config.items():
             port_lists += option
         self._conn.clear_tcl_buffer()
         rxPortlist, txPortlist = self._conn.prepare_port_list(

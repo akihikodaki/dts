@@ -292,14 +292,14 @@ class Crb(object):
             if configed_pcis:
                 if 'tester' in str(self):
                     tester_pci_in_cfg = []
-                    for item in configed_pcis.values():
+                    for item in list(configed_pcis.values()):
                         for pci_info in match:
                             if item['peer'] == pci_info[0]:
                                 tester_pci_in_cfg.append(pci_info)
                     match = tester_pci_in_cfg[:]
                 else:
                     dut_pci_in_cfg = []
-                    for key in configed_pcis.keys():
+                    for key in list(configed_pcis.keys()):
                         for pci_info in match:
                             if key == pci_info[0]:
                                 dut_pci_in_cfg.append(pci_info)
@@ -621,7 +621,7 @@ class Crb(object):
         for line in cpuinfo:
             (thread, core, socket, node) = line.split(',')[0:4]
 
-            if core not in coremap.keys():
+            if core not in list(coremap.keys()):
                 coremap[core] = core_id
                 core_id += 1
 
@@ -691,7 +691,7 @@ class Crb(object):
         self.reserved_cores = self.remove_reserved_cores(partial_cores, rsv_list)
 
         # return thread list
-        return map(str, thread_list)
+        return list(map(str, thread_list))
 
     def get_core_list(self, config, socket=-1, from_last = False):
         """
@@ -798,7 +798,7 @@ class Crb(object):
                     temp.extend(thread_list)
                     thread_list = temp
                 i += 1
-            return map(str, thread_list)
+            return list(map(str, thread_list))
 
     def get_lcore_id(self, config, inverse = False):
         """

@@ -34,7 +34,7 @@ Generic port and crbs configuration file load function
 """
 import os
 import re
-import ConfigParser  # config parse module
+import configparser  # config parse module
 import argparse      # parse arguments module
 from settings import (IXIA, PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA,
                       CONFIG_ROOT_PATH, SUITE_SECTION_NAME)
@@ -53,7 +53,7 @@ GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
 class UserConf():
 
     def __init__(self, config):
-        self.conf = ConfigParser.SafeConfigParser()
+        self.conf = configparser.SafeConfigParser()
         load_files = self.conf.read(config)
         if load_files == []:
             self.conf = None
@@ -107,7 +107,7 @@ class GlobalConf(UserConf):
         try:
             section_confs = self.global_conf.load_section(section_name)
         except:
-            print "FAILED FIND SECTION[%s] CONFIG!!!" % section_name
+            print("FAILED FIND SECTION[%s] CONFIG!!!" % section_name)
             return global_cfg
 
         if section_confs is None:
@@ -138,14 +138,14 @@ class SuiteConf(UserConf):
         try:
             case_confs = self.suite_conf.load_section(case_name)
         except:
-            print "FAILED FIND CASE[%s] CONFIG!!!" % case_name
+            print("FAILED FIND CASE[%s] CONFIG!!!" % case_name)
             return case_cfg
 
         if case_confs is None:
             return case_cfg
 
         conf = dict(case_confs)
-        for key, data_string in conf.items():
+        for key, data_string in list(conf.items()):
             case_cfg[key] = eval(data_string)
 
         return case_cfg
@@ -179,7 +179,7 @@ class VirtConf(UserConf):
         try:
             virt_confs = self.virt_conf.load_section(name)
         except:
-            print "FAILED FIND SECTION %s!!!" % name
+            print("FAILED FIND SECTION %s!!!" % name)
             return
 
         for virt_conf in virt_confs:
@@ -228,7 +228,7 @@ class PortConf(UserConf):
 
             # port config for vm in virtualization scenario
             if 'dev_idx' in port_param:
-                keys = port_param.keys()
+                keys = list(port_param.keys())
                 keys.remove('dev_idx')
                 self.ports_cfg[port_param['dev_idx']] = {
                     key: port_param[key] for key in keys}
@@ -236,14 +236,14 @@ class PortConf(UserConf):
 
             # check pci BDF validity
             if 'pci' not in port_param:
-                print "NOT FOUND CONFIG FOR NO PCI ADDRESS!!!"
+                print("NOT FOUND CONFIG FOR NO PCI ADDRESS!!!")
                 continue
             m = re.match(self.pci_regex, port_param['pci'])
             if m is None:
-                print "INVALID CONFIG FOR NO PCI ADDRESS!!!"
+                print("INVALID CONFIG FOR NO PCI ADDRESS!!!")
                 continue
 
-            keys = port_param.keys()
+            keys = list(port_param.keys())
             keys.remove('pci')
             self.ports_cfg[port_param['pci']] = {
                 key: port_param[key] for key in keys}
@@ -255,7 +255,7 @@ class PortConf(UserConf):
         return self.ports_cfg
 
     def check_port_available(self, pci_addr):
-        if pci_addr in self.ports_cfg.keys():
+        if pci_addr in list(self.ports_cfg.keys()):
             return True
         else:
             return False
@@ -377,13 +377,13 @@ class IxiaConf(UserConf):
                     ixia_group['enable_rsfec'] = value
 
             if 'Version' not in ixia_group:
-                print 'ixia configuration file request ixia_version option!!!'
+                print('ixia configuration file request ixia_version option!!!')
                 continue
             if 'IP' not in ixia_group:
-                print 'ixia configuration file request ixia_ip option!!!'
+                print('ixia configuration file request ixia_ip option!!!')
                 continue
             if 'Ports' not in ixia_group:
-                print 'ixia configuration file request ixia_ports option!!!'
+                print('ixia configuration file request ixia_ports option!!!')
                 continue
 
             self.ixia_cfg[group] = ixia_group
@@ -430,13 +430,13 @@ class PktgenConf(UserConf):
                 ixia_group['enable_rsfec'] = value
 
         if 'Version' not in ixia_group:
-            print 'ixia configuration file request ixia_version option!!!'
+            print('ixia configuration file request ixia_version option!!!')
             return
         if 'IP' not in ixia_group:
-            print 'ixia configuration file request ixia_ip option!!!'
+            print('ixia configuration file request ixia_ip option!!!')
             return
         if 'Ports' not in ixia_group:
-            print 'ixia configuration file request ixia_ports option!!!'
+            print('ixia configuration file request ixia_ports option!!!')
             return
 
         self.pktgen_cfg[section.lower()] = ixia_group
@@ -485,7 +485,7 @@ if __name__ == '__main__':
     try:
         VirtConf('/tmp/not-existed.cfg')
     except VirtConfigParseException:
-        print "Capture config parse failure"
+        print("Capture config parse failure")
 
     # example for basic use configuration file
     conf = UserConf(PORTCONF)
@@ -499,23 +499,23 @@ if __name__ == '__main__':
     # example for port configuration file
     portconf = PortConf(PORTCONF)
     portconf.load_ports_config('DUT IP')
-    print portconf.get_ports_config()
+    print(portconf.get_ports_config())
     portconf.check_port_available('86:00.0')
 
     # example for global virtualization configuration file
     virtconf = VirtConf(VIRTCONF)
     virtconf.load_virt_config('LIBVIRT')
-    print virtconf.get_virt_config()
+    print(virtconf.get_virt_config())
 
     # example for crbs configuration file
     crbsconf = CrbsConf(CRBCONF)
-    print crbsconf.load_crbs_config()
+    print(crbsconf.load_crbs_config())
 
     # example for ixia configuration file
     ixiaconf = IxiaConf(IXIACONF)
-    print ixiaconf.load_ixia_config()
+    print(ixiaconf.load_ixia_config())
 
     # example for suite configure file
     suiteconf = SuiteConf("suite_sample")
-    print suiteconf.load_case_config("case1")
-    print suiteconf.load_case_config("case2")
+    print(suiteconf.load_case_config("case1"))
+    print(suiteconf.load_case_config("case2"))

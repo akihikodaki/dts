@@ -26,12 +26,12 @@ class CheckCase(object):
         try:
             self.check_function_dict = json.load(open(filter_json_file), object_pairs_hook=collections.OrderedDict)
         except:
-            print RED("Can't load check list for test cases, all case will be taken as supported")
+            print(RED("Can't load check list for test cases, all case will be taken as supported"))
 
         try:
             self.support_function_dict = json.load(open(support_json_file), object_pairs_hook=collections.OrderedDict)
         except:
-            print RED("Can't load support list for test cases, all case will be taken as supported")
+            print(RED("Can't load support list for test cases, all case will be taken as supported"))
 
     def check_dut(self, dut):
         """
@@ -83,16 +83,16 @@ class CheckCase(object):
         self.comments = ""
 
         if self.dut is None:
-            print RED("No Dut assigned before case skip check")
+            print(RED("No Dut assigned before case skip check"))
             return skip_flag
 
-        if case_name in self.check_function_dict.keys():
+        if case_name in list(self.check_function_dict.keys()):
             case_checks = self.check_function_dict[case_name]
             # each case may have several checks
             for case_check in case_checks:
                 # init result for each check
                 skip_flag = False
-                for key in case_check.keys():
+                for key in list(case_check.keys()):
                     # some items like "Bug ID" and "Comments" do not need check
                     try:
                         if 'Comments' == key:
@@ -101,7 +101,7 @@ class CheckCase(object):
                             continue
                         check_function = getattr(self, '_check_%s' % key.lower())
                     except:
-                        print RED("can't check %s type" % key)
+                        print(RED("can't check %s type" % key))
 
                     # skip this check if any item not matched
                     if check_function(case_check[key]):
@@ -112,7 +112,7 @@ class CheckCase(object):
 
                 # if all items matched, this case should skip
                 if skip_flag:
-                    if 'Comments' in case_check.keys():
+                    if 'Comments' in list(case_check.keys()):
                         self.comments = case_check['Comments']
                     return skip_flag
 
@@ -127,16 +127,16 @@ class CheckCase(object):
         self.comments = ""
 
         if self.dut is None:
-            print RED("No Dut assigned before case support check")
+            print(RED("No Dut assigned before case support check"))
             return support_flag
 
-        if case_name in self.support_function_dict.keys():
+        if case_name in list(self.support_function_dict.keys()):
             # each case may have several supports
             case_supports = self.support_function_dict[case_name]
             for case_support in case_supports:
                 # init result for each check
                 support_flag = True
-                for key in case_support.keys():
+                for key in list(case_support.keys()):
                     # some items like "Bug ID" and "Comments" do not need check
                     try:
                         if 'Comments' == key:
@@ -145,7 +145,7 @@ class CheckCase(object):
                             continue
                         check_function = getattr(self, '_check_%s' % key.lower())
                     except:
-                        print RED("can't check %s type" % key)
+                        print(RED("can't check %s type" % key))
 
                     # skip this case if any item not matched
                     if check_function(case_support[key]):
@@ -155,7 +155,7 @@ class CheckCase(object):
                         break
 
             if support_flag is False:
-                if 'Comments' in case_support.keys():
+                if 'Comments' in list(case_support.keys()):
                     self.comments = case_support['Comments']
                 return support_flag
 
@@ -184,14 +184,14 @@ if __name__ == "__main__":
 
     # check dut
     case_inst.check_dut(dut)
-    print case_inst.case_skip("fdir_flexword_drop_ipv4")
-    print case_inst.comments
-    print case_inst.case_support("Vxlan_tunnel")
-    print case_inst.comments
+    print(case_inst.case_skip("fdir_flexword_drop_ipv4"))
+    print(case_inst.comments)
+    print(case_inst.case_support("Vxlan_tunnel"))
+    print(case_inst.comments)
 
     # check other dut
     case_inst.check_dut(dut1)
-    print case_inst.case_skip("fdir_flexword_drop_ipv4")
-    print case_inst.comments
-    print case_inst.case_support("Vxlan_tunnel")
-    print case_inst.comments
+    print(case_inst.case_skip("fdir_flexword_drop_ipv4"))
+    print(case_inst.comments)
+    print(case_inst.case_support("Vxlan_tunnel"))
+    print(case_inst.comments)
