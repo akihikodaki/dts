@@ -34,9 +34,10 @@
 vhost/virtio pvp multi-paths performance test plan
 ==================================================
 
-Benchmark pvp multi-paths performance with 7 tx/rx paths.
-Includes mergeable, normal, vector_rx, inorder mergeable,
-inorder no-mergeable, virtio 1.1 mergeable, virtio 1.1 normal path.
+Benchmark PVP multi-paths performance with 9 tx/rx paths.
+Includes mergeable, non-mergeable, vector_rx, inorder mergeable,
+inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，
+virtio 1.1 inorder mergeable, virtio 1.1 inorder non-mergeable path.
 Give 1 core for vhost and virtio respectively.
 
 Test flow
@@ -69,8 +70,8 @@ Test Case 1: pvp test with virtio 1.1 mergeable path
 
     testpmd>show port stats all
 
-Test Case 2: pvp test with virtio 1.1 normal path
-=================================================
+Test Case 2: pvp test with virtio 1.1 non-mergeable path
+========================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -119,8 +120,8 @@ Test Case 3: pvp test with inorder mergeable path
 
     testpmd>show port stats all
 
-Test Case 4: pvp test with inorder no-mergeable path
-====================================================
+Test Case 4: pvp test with inorder non-mergeable path
+=====================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -169,8 +170,8 @@ Test Case 5: pvp test with mergeable path
 
     testpmd>show port stats all
 
-Test Case 6: pvp test with normal path
-======================================
+Test Case 6: pvp test with non-mergeable path
+=============================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
@@ -212,6 +213,56 @@ Test Case 7: pvp test with vector_rx path
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0 \
     -- -i --tx-offloads=0x0 --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
+
+    testpmd>show port stats all
+
+Test Case 8: pvp test with virtio 1.1 inorder mergeable path
+============================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
+
+    testpmd>show port stats all
+
+Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
+================================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-3  --socket-mem 1024,1024 --legacy-mem \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
