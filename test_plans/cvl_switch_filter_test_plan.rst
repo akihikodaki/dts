@@ -141,11 +141,13 @@ Prerequisites
 =============
 
 1. Hardware:
-   columbiaville_25g/columbiaville_100g
+
+   - columbiaville_25g/columbiaville_100g
 
 2. software:
-   dpdk: http://dpdk.org/git/dpdk
-   scapy: http://www.secdev.org/projects/scapy/
+
+   - dpdk: http://dpdk.org/git/dpdk
+   - scapy: http://www.secdev.org/projects/scapy/
 
 3. Copy comm #1 package to /lib/firmware/intel/ice/ddp/ice.pkg,
    then reboot server, and compile DPDK.
@@ -181,9 +183,11 @@ Test case: VXLAN non-pipeline mode
 
 2. create switch filter rules and verify
 
-* MAC_IPV4_VXLAN_IPV4_FRAG
+MAC_IPV4_VXLAN_IPV4_FRAG
+------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -205,7 +209,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -227,7 +232,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -249,9 +255,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_PAY
+MAC_IPV4_VXLAN_IPV4_PAY
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -273,7 +281,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -295,7 +304,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -317,9 +327,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_UDP_PAY
+MAC_IPV4_VXLAN_IPV4_UDP_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -338,7 +350,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -357,7 +370,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -376,9 +390,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_TCP
+MAC_IPV4_VXLAN_IPV4_TCP
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -397,7 +413,8 @@ send mismatched packets::
 
 verify these packets not to queue 5
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -416,7 +433,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -435,9 +453,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV4_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+---------------
 
 create a rule::
 
@@ -456,7 +476,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -475,7 +496,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -494,9 +516,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV4_ICMP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -514,7 +538,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -532,7 +557,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -550,9 +576,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_FRAG
+MAC_IPV4_VXLAN_MAC_IPV4_FRAG
+----------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -575,7 +603,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -598,7 +627,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -621,9 +651,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_PAY
+MAC_IPV4_VXLAN_MAC_IPV4_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -646,7 +678,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -669,7 +702,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -692,9 +726,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_UDP_PAY
+MAC_IPV4_VXLAN_MAC_IPV4_UDP_PAY
+--------------------------------
 
-1) to queue action
+to queue action
+---------------
 
 create a rule::
 
@@ -713,7 +749,8 @@ send mismatched packets::
 
 verify these packets not to queue 1
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -732,7 +769,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -751,9 +789,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_TCP
+MAC_IPV4_VXLAN_MAC_IPV4_TCP
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -772,7 +812,8 @@ send mismatched packets::
 
 verify these packets not to queue 1
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -791,7 +832,8 @@ send mismatched packets::
 
 verify these packets not to queue 1 and 2
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -810,9 +852,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_VXLAN_MAC_IPV4_SCTP (not support in 19.11)
+---------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -831,7 +875,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -850,7 +895,9 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -869,9 +916,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_MAC_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_VXLAN_MAC_IPV4_ICMP (not support in 19.11)
+---------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -889,7 +938,8 @@ send a mismatched packet::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -907,7 +957,9 @@ send a mismatched packet::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -943,9 +995,11 @@ Test case: VXLAN pipeline mode
 
 1. create switch filter rules and verify
 
-* MAC_IPV4_VXLAN_IPV4_FRAG
+MAC_IPV4_VXLAN_IPV4_FRAG
+------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -966,7 +1020,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -987,7 +1042,9 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1008,9 +1065,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_PAY (not support in 19.11)
+MAC_IPV4_VXLAN_IPV4_PAY (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1044,7 +1103,8 @@ send a mismatched packet::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1078,7 +1138,8 @@ send a mismatched packet::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1112,9 +1173,11 @@ send a mismatched packet::
 
 verify this packet not dropped
 
-* MAC_IPV4_VXLAN_IPV4_UDP_PAY
+MAC_IPV4_VXLAN_IPV4_UDP_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1133,7 +1196,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1152,7 +1216,9 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1171,9 +1237,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_TCP
+MAC_IPV4_VXLAN_IPV4_TCP
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1192,7 +1260,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1211,7 +1280,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1230,9 +1300,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV4_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1251,7 +1323,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1270,7 +1343,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1289,9 +1363,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV4_ICMP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1309,7 +1385,8 @@ send a mismatched packet::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1327,7 +1404,8 @@ send a mismatched packet::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1345,9 +1423,11 @@ send a mismatched packet::
 
 verify this packet not dropped
 
-* MAC_IPV4_VXLAN_IPV6_FRAG (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_FRAG (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1366,7 +1446,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1385,7 +1466,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1404,9 +1486,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV6_PAY (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_PAY (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1440,7 +1524,8 @@ send a mismatched packet::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1474,7 +1559,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -1508,9 +1594,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_VXLAN_IPV6_UDP_PAY (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_UDP_PAY (not support in 19.11)
+--------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1529,7 +1617,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1548,7 +1637,8 @@ send mismatched packets::
 
 verify these packets not to queue 1 and 2
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1567,9 +1657,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV6_TCP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_TCP (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1588,7 +1680,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1607,7 +1700,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1626,9 +1720,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV6_SCTP (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1647,7 +1743,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1666,7 +1763,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1685,9 +1783,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_VXLAN_IPV6_ICMPV6 (not support in 19.11)
+MAC_IPV4_VXLAN_IPV6_ICMPV6 (not support in 19.11)
+-------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1705,7 +1805,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1723,7 +1824,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1764,9 +1866,11 @@ Test case: NVGRE non-pipeline mode
 
 2. create switch filter rules and verify
 
-* MAC_IPV4_NVGRE_IPV4_FRAG
+MAC_IPV4_NVGRE_IPV4_FRAG
+------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1788,7 +1892,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1810,7 +1915,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1832,9 +1938,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_PAY
+MAC_IPV4_NVGRE_IPV4_PAY
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1856,7 +1964,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1878,7 +1987,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1900,9 +2010,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_UDP_PAY
+MAC_IPV4_NVGRE_IPV4_UDP_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1921,7 +2033,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1940,7 +2053,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -1959,9 +2073,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_TCP
+MAC_IPV4_NVGRE_IPV4_TCP
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1980,7 +2096,8 @@ send mismatched packets::
 
 verify these packets not to queue 1
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -1999,7 +2116,8 @@ send mismatched packets::
 
 verify these packets not to queue 1 and 2
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2018,9 +2136,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV4_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2039,7 +2159,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2058,7 +2179,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2077,9 +2199,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV4_ICMP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2097,7 +2221,8 @@ send mismatched packets::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2115,7 +2240,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2133,9 +2259,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_FRAG
+MAC_IPV4_NVGRE_MAC_IPV4_FRAG
+----------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2158,7 +2286,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2181,7 +2310,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2204,9 +2334,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_PAY
+MAC_IPV4_NVGRE_MAC_IPV4_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2229,7 +2361,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2252,7 +2385,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2275,9 +2409,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_UDP_PAY
+MAC_IPV4_NVGRE_MAC_IPV4_UDP_PAY
+-------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2296,7 +2432,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2315,7 +2452,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2334,9 +2472,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_TCP
+MAC_IPV4_NVGRE_MAC_IPV4_TCP
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2355,7 +2495,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2374,7 +2515,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2393,9 +2535,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_NVGRE_MAC_IPV4_SCTP (not support in 19.11)
+---------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2414,7 +2558,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2433,7 +2578,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2452,9 +2598,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_MAC_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_NVGRE_MAC_IPV4_ICMP (not support in 19.11)
+---------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2472,7 +2620,8 @@ send mismatched packets::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2490,7 +2639,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2526,9 +2676,11 @@ Test case: NVGRE pipeline mode
 
 1. create switch filter rules and verify
 
-* MAC_IPV4_NVGRE_IPV4_FRAG
+MAC_IPV4_NVGRE_IPV4_FRAG
+------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2549,7 +2701,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2570,7 +2723,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2591,9 +2745,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_PAY (not support in 19.11)
+MAC_IPV4_NVGRE_IPV4_PAY (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -2627,7 +2783,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -2661,7 +2818,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -2695,9 +2853,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_NVGRE_IPV4_UDP_PAY
+MAC_IPV4_NVGRE_IPV4_UDP_PAY
+---------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2716,7 +2876,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2735,7 +2896,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2754,9 +2916,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_TCP
+MAC_IPV4_NVGRE_IPV4_TCP
+-----------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2775,7 +2939,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2794,7 +2959,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2813,9 +2979,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV4_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2834,7 +3002,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2853,7 +3022,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2872,9 +3042,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV4_ICMP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2892,7 +3064,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2910,7 +3083,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2928,9 +3102,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_NVGRE_IPV6_FRAG (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_FRAG (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2949,7 +3125,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -2968,7 +3145,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -2987,9 +3165,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV6_PAY (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_PAY (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3023,7 +3203,8 @@ send mismatched packets::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3057,7 +3238,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3091,9 +3273,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_NVGRE_IPV6_UDP_PAY (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_UDP_PAY (not support in 19.11)
+--------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3112,7 +3296,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3131,7 +3316,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3150,9 +3336,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV6_TCP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_TCP (not support in 19.11)
+----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3171,7 +3359,8 @@ send mismatched packets::
 
 verify these packets not to queue 1
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3190,7 +3379,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3209,9 +3399,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV6_SCTP (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_SCTP (not support in 19.11)
+-----------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3230,7 +3422,8 @@ send mismatched packets::
 
 verify these packets not to queue 5
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3249,7 +3442,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3268,9 +3462,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_NVGRE_IPV6_ICMPV6 (not support in 19.11)
+MAC_IPV4_NVGRE_IPV6_ICMPV6 (not support in 19.11)
+-------------------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3288,7 +3484,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3306,7 +3503,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3347,9 +3545,11 @@ Test case: PPPOD non-pipeline mode
 
 2. create switch filter rules and verify
 
-* MAC_PPPOD_PAY
+MAC_PPPOD_PAY
+-------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create rules::
 
@@ -3367,7 +3567,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3385,7 +3586,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3426,9 +3628,11 @@ Test case: PPPOE non-pipeline mode
 
 2. create switch filter rules and verify
 
-* MAC_PPPOE_PAY
+MAC_PPPOE_PAY
+-------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create rules::
 
@@ -3446,7 +3650,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3464,7 +3669,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3482,9 +3688,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_PPPOE_IPV4_PAY
+MAC_PPPOE_IPV4_PAY
+------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3503,7 +3711,8 @@ send mismatched packets::
 
 verify this packet not to queue 1
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3522,7 +3731,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3559,9 +3769,11 @@ Test case: IPv4/IPv6 + TCP/UDP pipeline mode
 
 1. create switch filter rules and verify
 
-* MAC_IPV4_FRAG
+MAC_IPV4_FRAG
+-------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3600,7 +3812,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3639,7 +3852,8 @@ send mismatched packets::
 
   verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3678,9 +3892,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_PAY
+MAC_IPV4_PAY
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3714,7 +3930,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3748,7 +3965,8 @@ send mismatched packets::
 
 verify this packet not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -3782,9 +4000,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV4_UDP_PAY
+MAC_IPV4_UDP_PAY
+----------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3803,7 +4023,8 @@ send mismatched packets::
 
 verify these packets not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3822,7 +4043,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3841,9 +4063,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_TCP
+MAC_IPV4_TCP
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3862,7 +4086,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3881,7 +4106,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3900,9 +4126,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_SCTP (not support in 19.11)
+MAC_IPV4_SCTP (not support in 19.11)
+------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3921,7 +4149,8 @@ send mismatched packets::
 
 verify these packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3940,7 +4169,8 @@ send mismatched packets::
 
 verify these packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -3959,9 +4189,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV4_ICMP (not support in 19.11)
+MAC_IPV4_ICMP (not support in 19.11)
+------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3979,7 +4211,8 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -3997,7 +4230,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4015,9 +4249,10 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV6_FRAG
+MAC_IPV6_FRAG
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule with src ipv6 + dst ipv6::
 
@@ -4053,7 +4288,8 @@ send mismatched packets::
 
 verify these packets not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule with src ipv6 + dst ipv6::
 
@@ -4089,7 +4325,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule with src ipv6 + dst ipv6::
 
@@ -4125,9 +4362,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV6_PAY (not support in 19.11)
+MAC_IPV6_PAY (not support in 19.11)
+-----------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -4161,7 +4400,8 @@ send mismatched packets::
 
 verify this packet not to queue 3
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -4195,7 +4435,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule for tcp::
 
@@ -4229,9 +4470,11 @@ send mismatched packets::
 
 verify this packet not dropped
 
-* MAC_IPV6_UDP_PAY
+MAC_IPV6_UDP_PAY
+----------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4250,7 +4493,8 @@ send mismatched packets::
 
 verify these packets not to queue 5
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4269,7 +4513,8 @@ send mismatched packets::
 
 verify these packets not to queue 2 and 3
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4288,9 +4533,11 @@ send mismatched packets::
 
 verify these packets not dropped
 
-* MAC_IPV6_TCP
+MAC_IPV6_TCP
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4309,7 +4556,8 @@ send mismatched packets::
 
 verify these two packets not to queue 4
 
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4328,7 +4576,8 @@ send mismatched packets::
 
 verify these two packets not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4347,9 +4596,11 @@ send mismatched packets::
 
 verify these two packets not dropped
 
-* MAC_IPV6_SCTP (not support in 19.11)
+MAC_IPV6_SCTP (not support in 19.11)
+------------------------------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4368,65 +4619,8 @@ send mismatched packets::
 
 verify these two packets not to queue 4
 
-2) to queue group action
-
-create a rule::
-
-  testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / sctp src is 25 dst is 23 / end actions rss queues 2 3 end / end
-
-send matched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=25,dport=23)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify this packet to queue 2 or 3
-
-send mismatched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=1,dport=23)/Raw('x'*80)],iface="enp27s0f2",count=1)
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=25,dport=9)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify these two packets not to queue 2 and 3
-
-3) drop action
-
-create a rule::
-
-  testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / sctp src is 25 dst is 23 / end actions drop / end
-
-send matched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=25,dport=23)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify this packet dropped
-
-send mismatched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=1,dport=23)/Raw('x'*80)],iface="enp27s0f2",count=1)
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/SCTP(sport=25,dport=9)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify these two packets not dropped
-
-* MAC_IPV6_ICMPV6 (not support in 19.11)
-
-1) to queue action
-
-create a rule::
-
-  testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / icmp type is 0x01 / end actions queue index 2 / end
-
-send matched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/ICMP(type=0x01)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify this packet to queue 2
-
-send mismatched packets::
-
-  sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/ICMP(type=0x03)/Raw('x'*80)],iface="enp27s0f2",count=1)
-
-verify this packet not to queue 2
-
-2) to queue group action
+to queue group action
+^^^^^^^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4444,7 +4638,8 @@ send mismatched packets::
 
 verify this packet not to queue 4 and 5
 
-3) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4484,9 +4679,11 @@ Test case: IPv4/IPv6 + TCP/UDP non-pipeline mode
 
 2. create switch filter rules and verify
 
-* MAC_IPV4_PAY
+MAC_IPV4_PAY
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4498,7 +4695,8 @@ send matched packets::
   
 verify these 100 packets to queue 4
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4510,9 +4708,11 @@ send matched packets::
   
 verify theses 100 packets dropped
 
-* MAC_IPV4_UDP_PAY
+MAC_IPV4_UDP_PAY
+----------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4524,7 +4724,8 @@ send matched packets::
 
 verify these 100 packets to queue 2
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4536,9 +4737,11 @@ send matched packets::
  
 verify theses 100 packets dropped
 
-* MAC_IPV4_TCP_PAY
+MAC_IPV4_TCP_PAY
+----------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4550,7 +4753,8 @@ send matched packets::
 
 verify these 100 packets to queue 3
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4563,9 +4767,11 @@ send matched packets::
 verify theses 100 packets dropped
  
 
-* MAC_IPV6_PAY
+MAC_IPV6_PAY
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4577,7 +4783,8 @@ send matched packets::
 
 verify these 100 packets to queue 8
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4589,9 +4796,11 @@ send matched packets::
 
 verify theses 100 packets dropped
 
-* MAC_IPV6_FRAG
+MAC_IPV6_FRAG
+-------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4603,7 +4812,8 @@ send matched packets::
 
 verify these 100 packets to queue 10
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4615,9 +4825,11 @@ send matched packets::
 
 verify theses 100 packets dropped
  
-* MAC_IPV6_UDP
+MAC_IPV6_UDP
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4629,7 +4841,8 @@ send matched packets::
 
 verify these 100 packets to queue 6
 
-2) drop action
+drop action
+^^^^^^^^^^^
 
 create a rule::
 
@@ -4641,9 +4854,11 @@ send matched packets::
 
 verify theses 100 packets dropped
  
-* MAC_IPV6_TCP
+MAC_IPV6_TCP
+------------
 
-1) to queue action
+to queue action
+^^^^^^^^^^^^^^^
 
 create a rule::
 
@@ -4655,7 +4870,6 @@ send matched packets::
 
 verify these 100 packets to queue 12
 
-2) drop action
 
 create a rule::
 

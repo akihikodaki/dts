@@ -34,9 +34,9 @@
 CVL:Classification:Flow Director
 ================================
 
-Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
-Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
-Enable fdir filter for GTP (comm #1 package)
+* Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
+* Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
+* Enable fdir filter for GTP (comm #1 package)
 
 Pattern and input set
 ---------------------
@@ -86,31 +86,34 @@ Pattern and input set
     |                              | MAC_IPV4_GTPU_IPV4_SCTP    | [TEID], [QFI]                                                                 |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
-Notes: 1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
-          support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
+.. note::
 
-       2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
-       3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
+    1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
+       support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
+    2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
+    3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
 
 Action type
 -----------
 
-    queue index
-    drop
-    rss queues
-    count identifier 0x1234 shared on|off
-    mark id
+    * queue index
+    * drop
+    * rss queues
+    * count identifier 0x1234 shared on|off
+    * mark id
 
 
 Prerequisites
 =============
 
 1. Hardware:
-   columbiaville_25g/columbiaville_100g
+
+   - columbiaville_25g/columbiaville_100g
 
 2. Software:
-   DPDK: http://dpdk.org/git/dpdk
-   scapy: http://www.secdev.org/projects/scapy/
+
+   - DPDK: http://dpdk.org/git/dpdk
+   - scapy: http://www.secdev.org/projects/scapy/
 
 3. Copy specific ice package to /lib/firmware/intel/ice/ddp/ice.pkg
    Then reboot server, and compile DPDK
@@ -130,7 +133,9 @@ Prerequisites
     testpmd> port config 0 udp_tunnel_port add vxlan 4789
     testpmd> start
 
-   Notes: if need two ports environment, launch ``testpmd`` with the following arguments::
+.. note::
+
+   if need two ports environment, launch ``testpmd`` with the following arguments::
 
     ./testpmd -c 0xff -n 6 -w 86:00.0 -w 86:00.1 -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
 
