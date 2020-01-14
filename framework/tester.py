@@ -509,7 +509,7 @@ class Tester(Crb):
         """
         if self.is_pktgen:
             if self.ports_info[localPort]['type'].lower() in 'ixia':
-                return self.packet_gen.send_ping6(
+                return self.pktgen.send_ping6(
                                 self.ports_info[localPort]['pci'], mac, ipv6)
             elif self.ports_info[localPort]['type'].lower() == 'trex':
                 return "Not implemented yet"
