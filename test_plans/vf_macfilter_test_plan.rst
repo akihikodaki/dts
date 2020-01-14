@@ -185,9 +185,6 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
       testpmd> set fwd mac
       testpmd> start
 
-   Note: In Jan, 2016, i40e doesn't support mac_addr add operation, so the
-   case will be failed for FVL/Fort park NICs.
-
 6. Use scapy to send 100 random packets with current VF0's MAC, verify the
    packets can be received by one VF and can be forwarded to another VF
    correctly.
@@ -274,9 +271,6 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
       testpmd> mac_addr add 0 00:11:22:33:44:55
       testpmd> set fwd mac
       testpmd> start
-
-   Note: In Jan, 2016, i40e doesn't support mac_addr add operation, so the
-   case will be failed for FVL/Fort park NICs.
 
 7. Use scapy to send 100 random packets with current VF0's MAC, verify the
    packets can be received by one VF and can be forwarded to another VF
