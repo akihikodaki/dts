@@ -661,7 +661,7 @@ class Ixia(SSHConnection):
         """
         Send ping6 packet from IXIA ports.
         """
-        port = self.pci_to_port(pci)['card']
+        port = self.pci_to_port(pci)
         ixia_port = "%d %d %d" % (self.chasId, port['card'], port['port'])
         self.send_expect("source ./ixTcl1.0/ixiaPing6.tcl", "% ")
         cmd = 'ping6 "%s" "%s" %s' % (self.ipv6_to_tcl_format(ipv6),
