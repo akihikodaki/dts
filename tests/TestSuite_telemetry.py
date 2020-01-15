@@ -405,7 +405,7 @@ class TestTelemetry(TestCase):
                 pformat(metric_missed_paras), ])
             error_msg.append(msg)
         # check if metric parameters and values are the same
-        if cmp(metric, xstat) != 0:
+        if metric != xstat:
             msg = 'telemetry metric data is not the same as testpmd xstat data'
             error_msg.append(msg)
             msg_fmt = 'port {} <{}>: metric is <{}>, xstat is is <{}>'.format

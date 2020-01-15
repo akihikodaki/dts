@@ -198,7 +198,10 @@ class TestEventdevPipeline(TestCase):
                     if packet_index == 0:
                         packet_index = int(self.pkts[i]['Raw'].load[-2:])
                         pay_load = "0000%.2d" % (packet_index)
-                    self.verify(self.pkts[i]['Raw'].load == pay_load,
+                    rev_pkt_load = self.pkts[i]['Raw'].load
+                    if isinstance(self.pkts[i]['Raw'].load, bytes):
+                        rev_pkt_load = str(self.pkts[i]['Raw'].load, encoding='utf-8')
+                    self.verify(rev_pkt_load == pay_load,
                             "%s : The packets not ordered" % case_info)
                     packet_index = packet_index + 1
 
