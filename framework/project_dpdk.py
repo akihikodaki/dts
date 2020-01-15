@@ -34,6 +34,7 @@ import re
 
 from settings import NICS, load_global_setting, accepted_nic
 from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING
+from settings import HOST_SHARED_LIB_SETTING, HOST_SHARED_LIB_PATH
 from ssh_connection import SSHConnection
 from crb import Crb
 from dut import Dut
@@ -207,6 +208,11 @@ class DPDKdut(Dut):
         """
         Build DPDK source code with specified target.
         """
+        use_shared_lib = load_global_setting(HOST_SHARED_LIB_SETTING)
+        shared_lib_path = load_global_setting(HOST_SHARED_LIB_PATH)
+        if use_shared_lib == 'true' and 'Virt' not in str(self):
+            self.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=n/CONFIG_RTE_BUILD_SHARED_LIB=y/g' "
+                             "config/common_base", '#')
         build_install_dpdk = getattr(self, 'build_install_dpdk_%s' % self.get_os_type())
         build_install_dpdk(target, extra_options)
 
