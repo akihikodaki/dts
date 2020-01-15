@@ -523,6 +523,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     if verbose is True:
         logger.set_verbose()
 
+    re_run = int(re_run)
     if re_run < 0:
         re_run = 0
 

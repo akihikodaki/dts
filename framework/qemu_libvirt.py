@@ -788,11 +788,11 @@ class LibvirtKvm(VirtBase):
         if os.path.exists(xml_file):
             os.remove(xml_file)
         self.root.write(xml_file)
-        with open(xml_file, 'rb') as fp:
+        with open(xml_file, 'r') as fp:
             content = fp.read()
         doc = minidom.parseString(content)
         vm_content = doc.toprettyxml(indent='    ')
-        with open(xml_file, 'wb') as fp:
+        with open(xml_file, 'w') as fp:
             fp.write(vm_content)
         self.host_session.copy_file_to(xml_file)
         time.sleep(2)
