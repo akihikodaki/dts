@@ -79,6 +79,14 @@ def dts_parse_param(config, section):
     performance = False
     functional = False
     # Set parameters
+    shared_lib_parameters = ''
+    try:
+        shared_lib_parameters = config.get(section, 'shared_lib_param')
+    except Exception as e:
+        log_handler.info("{}".format(e))
+        shared_lib_parameters = ''
+    shared_lib_parameters = shared_lib_parameters.split(':')
+
     parameters = config.get(section, 'parameters').split(':')
     drivername = config.get(section, 'drivername').split('=')[-1]
 
@@ -91,6 +99,21 @@ def dts_parse_param(config, section):
         drivername = driver[0]
 
     settings.save_global_setting(settings.HOST_DRIVER_SETTING, drivername)
+
+    shared_lib_paramDict = dict()
+    for param in shared_lib_parameters:
+        (key, _, value) = param.partition('=')
+        shared_lib_paramDict[key] = value
+    if 'use_shared_lib' in shared_lib_paramDict and shared_lib_paramDict['use_shared_lib'].lower() == 'true':
+        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, 'true')
+    else:
+        settings.save_global_setting(settings.HOST_SHARED_LIB_SETTING, 'false')
+
+    if 'shared_lib_path' in shared_lib_paramDict:
+        if not shared_lib_paramDict['shared_lib_path'] \
+                and settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING):
+            raise ValueError("use shared lib but shared lib path is empty")
+        settings.save_global_setting(settings.HOST_SHARED_LIB_PATH, shared_lib_paramDict['shared_lib_path'])
 
     paramDict = dict()
     for param in parameters:
