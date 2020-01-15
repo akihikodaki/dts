@@ -620,7 +620,8 @@ class QEMUKvm(VirtBase):
         # init the redirect incoming TCP or UDP connections
         # just combine host address and host port, it is enough
         # for using ssh to connect with VM
-        self.hostfwd_addr = host_addr + separator + host_port
+        if not hasattr(self, 'hostfwd_addr'):
+            self.hostfwd_addr = host_addr + separator + host_port
 
         return hostfwd_line
 
