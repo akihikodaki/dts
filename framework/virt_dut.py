@@ -411,7 +411,7 @@ class VirtDut(DPDKdut):
                 out = self.tester.send_ping6(
                     remotePort, ipv6, self.get_mac_address(vmPort))
 
-                if ('64 bytes from' in out):
+                if out and '64 bytes from' in out:
                     self.logger.info(
                         "PORT MAP: [dut %d: tester %d]" % (vmPort, remotePort))
                     self.ports_map[vmPort] = remotePort
