@@ -190,7 +190,7 @@ class Dut(Crb):
                           + blank + b_ports_str \
                           + blank + no_pci \
                           + blank + vdev
-		self.prefix_list = []
+                self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
@@ -215,12 +215,16 @@ class Dut(Crb):
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
                           + blank + pci_str
-		self.prefix_list = []
+                self.prefix_list = []
             else:
                 eal_str = '-l ' + ','.join(map(str, core_list)) \
                           + blank + '-n %d' % self.get_memory_channels() \
                           + blank + pci_str \
                           + blank + '--file-prefix=' + file_prefix
+        use_shared_lib = settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING)
+        shared_lib_path = settings.load_global_setting(settings.HOST_SHARED_LIB_PATH)
+        if use_shared_lib == 'true' and shared_lib_path and 'Virt' not in str(self):
+            eal_str = eal_str + ' -d {}'.format(shared_lib_path)
 
         return eal_str
 
@@ -1185,7 +1189,7 @@ class Dut(Crb):
                         out = self.tester.send_ping6(
                             remotePort, ipv6, self.get_mac_address(dutPort))
 
-                    if ('64 bytes from' in out):
+                    if out and '64 bytes from' in out:
                         self.logger.info("PORT MAP: [dut %d: tester %d]" % (dutPort, remotePort))
                         self.ports_map[dutPort] = remotePort
                         hits[remotePort] = True
