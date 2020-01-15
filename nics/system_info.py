@@ -40,8 +40,8 @@ from git import Repo
 class SystemInfo(object):
 
     def __init__(self, dut, pci_device_id):
-	self.dut = dut
-	self.pci_device_id = pci_device_id
+        self.dut = dut
+        self.pci_device_id = pci_device_id
         self.session = self.dut.session
         self.system_info =  OrderedDict()
         self.nic_info = OrderedDict()
