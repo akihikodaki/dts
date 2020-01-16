@@ -600,15 +600,15 @@ class Ixia(SSHConnection):
                     "set chasId [ixGetChassisID %s]" % self.tclServerIP, "% ")
         self.chasId = int(out.strip())
 
-        out = self.send_expect("ixClearOwnership [list %s]" % string.join(
+        out = self.send_expect("ixClearOwnership [list %s]" % ' '.join(
             ['[list %d %d %d]' % (self.chasId, item['card'], item['port'])
-                for item in self.ports], ' '),
+                for item in self.ports]),
             "% ", 10)
         if out.strip()[-1] != '0':
             return False
-        out = self.send_expect("ixTakeOwnership [list %s] force" % string.join(
+        out = self.send_expect("ixTakeOwnership [list %s] force" % ' '.join(
             ['[list %d %d %d]' % (self.chasId, item['card'], item['port'])
-                for item in self.ports], ' '),
+                for item in self.ports]),
             "% ", 10)
         if out.strip()[-1] != '0':
             return False
@@ -644,7 +644,7 @@ class Ixia(SSHConnection):
             pl.append('[list %d %d %d]' % (
                                        self.chasId, item['card'], item['port']))
 
-        self.add_tcl_cmd("set portList [list %s]" % string.join(pl, ' '))
+        self.add_tcl_cmd("set portList [list %s]" % ' '.join(pl))
 
         self.add_tcl_cmd("ixClearTimeStamp portList")
         self.add_tcl_cmd("ixWritePortsToHardware portList")
@@ -655,7 +655,7 @@ class Ixia(SSHConnection):
         Implement ports/streams configuration on specified ports.
         """
         self.add_tcl_cmd("set portList [list %s]" %
-                string.join(['[list %s]' % ixia_port for ixia_port in pList], ' '))
+                ' '.join(['[list %s]' % ixia_port for ixia_port in pList]))
 
     def send_ping6(self, pci, mac, ipv6):
         """
@@ -961,7 +961,7 @@ class Ixia(SSHConnection):
         self.send_expect("source ./ixTcl1.0/ixiaDCB.tcl", "% ")
         self.send_expect("configIxia %d %s" % (
                             self.chasId,
-                            string.join(["%s" % (
+                            ' '.join(["%s" % (
                                 repr(self.conRelation[port][n]))
                                     for port in [rxPort, txPort]
                                             for n in range(3)])),

@@ -427,12 +427,12 @@ class IxiaPacketGenerator(SSHConnection):
         out = self.send_expect("set chasId [ixGetChassisID %s]" % self.tclServerIP, "% ")
         self.chasId = int(out.strip())
 
-        out = self.send_expect("ixClearOwnership [list %s]" % string.join(
-            ['[list %d %d %d]' % (self.chasId, item['card'], item['port']) for item in self.ports], ' '), "% ", 10)
+        out = self.send_expect("ixClearOwnership [list %s]" % ' '.join(
+            ['[list %d %d %d]' % (self.chasId, item['card'], item['port']) for item in self.ports]), "% ", 10)
         if out.strip()[-1] != '0':
             return False
-        out = self.send_expect("ixTakeOwnership [list %s] force" % string.join(
-            ['[list %d %d %d]' % (self.chasId, item['card'], item['port']) for item in self.ports], ' '), "% ", 10)
+        out = self.send_expect("ixTakeOwnership [list %s] force" % ' '.join(
+            ['[list %d %d %d]' % (self.chasId, item['card'], item['port']) for item in self.ports]), "% ", 10)
         if out.strip()[-1] != '0':
             return False
 
@@ -464,7 +464,7 @@ class IxiaPacketGenerator(SSHConnection):
 
             pl.append('[list %d %d %d]' % (self.chasId, item['card'], item['port']))
 
-        self.add_tcl_cmd("set portList [list %s]" % string.join(pl, ' '))
+        self.add_tcl_cmd("set portList [list %s]" % ' '.join(pl))
 
         self.add_tcl_cmd("ixClearTimeStamp portList")
         self.add_tcl_cmd("ixWritePortsToHardware portList")
@@ -475,8 +475,8 @@ class IxiaPacketGenerator(SSHConnection):
         Implement ports/streams configuration on specified ports.
         """
         self.add_tcl_cmd("set portList [list %s]" %
-                         string.join(['[list %d %d %d]' %
-                                      (self.chasId, item['card'], item['port']) for item in pList], ' '))
+                         ' '.join(['[list %d %d %d]' %
+                                      (self.chasId, item['card'], item['port']) for item in pList]))
 
     def send_ping6(self, pci, mac, ipv6):
         """
@@ -726,7 +726,7 @@ class IxiaPacketGenerator(SSHConnection):
         Configure Ixia for DCB.
         """
         self.send_expect("source ./ixTcl1.0/ixiaDCB.tcl", "% ")
-        self.send_expect("configIxia %d %s" % (self.chasId, string.join(["%s" % (
+        self.send_expect("configIxia %d %s" % (self.chasId, ' '.join(["%s" % (
             repr(self.conRelation[port][n])) for port in [rxPort, txPort] for n in range(3)])), "% ", 100)
 
     def config_port_dcb(self, direction, tc):
