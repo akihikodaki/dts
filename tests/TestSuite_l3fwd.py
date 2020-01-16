@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,77 +34,42 @@ DPDK Test suite.
 Layer-3 forwarding test script.
 """
 
-import utils
-import string
-import time
-import re
-import os
 from test_case import TestCase
-from settings import HEADER_SIZE
-from pktgen import PacketGeneratorHelper
+from l3fwd_base import L3fwdBase, LPM, EM, L3_IPV6, L3_IPV4
 
 
-class TestL3fwd(TestCase):
+class TestL3fwd(TestCase, L3fwdBase):
 
-    path = "./examples/l3fwd/build/"
-    cmdline_2_ports = {
-        "1S/1C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0})'",
-        "1S/1C/2T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1})'",
-        "1S/2C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0})'",
-        "1S/4C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P0,1,C{1.3.0}), (P1,1,C{1.4.0})'"}
-
-    cmdline_4_ports = {
-        "1S/1C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.0}), (P2,0,C{1.1.0}), (P3,0,C{1.1.0})'",
-        "1S/2C/2T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.1.1}), (P2,0,C{1.2.0}), (P3,0,C{1.2.1})'",
-        "1S/4C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,1,C{1.3.0}), (P3,1,C{1.4.0})'",
-        "1S/8C/1T": "%s -c %s -n %d -- -p %s --config '(P0,0,C{1.1.0}), (P1,0,C{1.2.0}), (P2,0,C{1.3.0}), (P3,0,C{1,4,0}),\
-        (P0,1,C{1.5.0}), (P1,1,C{1.6.0}), (P2,1,C{1.7.0}), (P3,1,C{1,8,0})'"}
-
+    #
+    # Test cases.
+    #
     def set_up_all(self):
         """
         Run at the start of each test suite.
         L3fwd Prerequisites
         """
-        self.tester.extend_external_packet_generator(TestL3fwd, self)
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
-        global valports
-        valports = [_ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
-
-        # Verify that enough ports are available
-        self.verify(len(valports) == 2 or len(valports) == 4, "Port number must be 2 or 4.")
-
+        valports = [
+            _ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
+        self.logger.debug(valports)
+        self.verify_ports_number(valports)
         # get socket and cores
-        self.socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores = self.dut.get_core_list("1S/8C/1T", socket=self.socket)
-        self.verify(self.cores is not None, "Insufficient cores for speed testing")
+        socket = self.dut.get_numa_id(self.dut_ports[0])
+        cores = self.dut.get_core_list("1S/8C/1T", socket=socket)
+        self.verify(cores is not None, "Insufficient cores for speed testing")
+        # init l3fwd common base class parameters
+        self.l3fwd_init(valports, socket)
+        # preset testing environment
+        self.l3fwd_preset_test_environment(self.get_suite_cfg())
 
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
-
-        # Update config file and rebuild to get best perf on FVL
-        if self.nic in ["fortville_sprit", "fortville_eagle", "fortville_25g"]:
-            self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_"
-                                 "I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
-            self.dut.build_install_dpdk(self.target)
-
-        self.logger.info("Configure RX/TX descriptor to 2048, and re-build ./examples/l3fwd")
-        self.dut.send_expect("sed -i -e 's/define RTE_TEST_RX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
-        self.dut.send_expect("sed -i -e 's/define RTE_TEST_TX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
-
-        self.pat = re.compile("P([0123])")
-        self.test_results = {'header': [], 'data': []}
-
-        # get dts output path
-        if self.logger.log_path.startswith(os.sep):
-            self.output_path = self.logger.log_path
-        else:
-            cur_path = os.path.dirname(
-                os.path.dirname(os.path.realpath(__file__)))
-            self.output_path = os.sep.join([cur_path, self.logger.log_path])
-        # create an instance to set stream field setting
-        self.pktgen_helper = PacketGeneratorHelper()
+    def tear_down_all(self):
+        """
+        Run after each test suite.
+        """
+        if self:
+            self.l3fwd_save_results()
+            self = None
 
     def set_up(self):
         """
@@ -112,288 +77,41 @@ class TestL3fwd(TestCase):
         """
         pass
 
-    def portRepl(self, match):
-        """
-        Function to replace P([0123]) pattern in tables
-        """
-        portid = match.group(1)
-        self.verify(int(portid) in range(4), "invalid port id")
-        if int(portid) >= len(valports):
-            return '0'
-        else:
-            return '%s' % valports[int(portid)]
-
-    def install_l3fwd_application(self, l3_proto, mode):
-        """
-        Prepare long prefix match table, replace P(x) port pattern
-        """
-        l3fwd_method = l3_proto + "_l3fwd_" + mode
-        self.dut.send_expect("make clean -C examples/l3fwd", "# ")
-        if "lpm" in l3fwd_method:
-            out = self.dut.build_dpdk_apps("./examples/l3fwd", "USER_FLAGS=-DAPP_LOOKUP_METHOD=1")
-        elif "em" in l3fwd_method:
-            out = self.dut.build_dpdk_apps("./examples/l3fwd", "USER_FLAGS=-DAPP_LOOKUP_METHOD=0")
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
-
-        # Backup the l3fwd exe.
-        self.dut.send_expect("mv -f examples/l3fwd/build/l3fwd examples/l3fwd/build/%s" % l3fwd_method, "# ")
-
-    def flows(self):
-        """
-        Return a list of packets that implements the flows described in the
-        l3fwd test plan.
-        """
-        return {"ipv4": ['IP(src="1.2.3.4",dst="192.18.1.0")',
-                         'IP(src="1.2.3.4",dst="192.18.1.1")',
-                         'IP(src="1.2.3.4",dst="192.18.0.0")',
-                         'IP(src="1.2.3.4",dst="192.18.0.1")',
-                         'IP(src="1.2.3.4",dst="192.18.3.0")',
-                         'IP(src="1.2.3.4",dst="192.18.3.1")',
-                         'IP(src="1.2.3.4",dst="192.18.2.0")',
-                         'IP(src="1.2.3.4",dst="192.18.2.1")'],
-                "ipv6": [
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="fe80:0000:0000:0000:021b:21ff:fe91:3805")/UDP(sport=10,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="fe80:0000:0000:0000:031b:21ff:fe91:3805")/UDP(sport=10,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2a80:0000:0000:0000:021b:21ff:fe91:3805")/UDP(sport=11,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2a80:0000:0000:0000:031b:21ff:fe91:3805")/UDP(sport=11,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2b80:0000:0000:0000:021b:21ff:fe91:3805")/UDP(sport=12,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2b80:0000:0000:0000:031b:21ff:fe91:3805")/UDP(sport=12,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2c80:0000:0000:0000:021b:21ff:fe91:3805")/UDP(sport=13,dport=1)',
-                    'IPv6(src="fe80:0000:0000:0000:021e:67ff:fe0d:b60a",dst="2c80:0000:0000:0000:031b:21ff:fe91:3805")/UDP(sport=13,dport=1)'
-                ]}
-
-    def repl(self, match):
-        pid = match.group(1)
-        qid = match.group(2)
-        self.logger.debug("%s\n" % match.group(3))
-        lcid = self.dut.get_lcore_id(match.group(3))
-        self.logger.debug("%s\n" % lcid)
-
-        global corelist
-        corelist.append(int(lcid))
-        self.verify(int(pid) in range(4), "invalid port id")
-        self.verify(lcid, "invalid thread id")
-        return '%s,%s,%s' % (str(valports[int(pid)]), qid, lcid)
-
-    def perpare_commandline(self, ports):
-        """
-        Generate the command line based on the number of ports
-        """
-        global corelist
-        pat = re.compile("P([0123]),([0123]),(C\{\d.\d.\d\})")
-        core_mask = {}
-        if ports == 2:
-            rtCmdLines = dict(TestL3fwd.cmdline_2_ports)
-        elif ports == 4:
-            rtCmdLines = dict(TestL3fwd.cmdline_4_ports)
-
-        for key in list(rtCmdLines.keys()):
-            corelist = []
-            while pat.search(rtCmdLines[key]):
-                print(rtCmdLines[key])
-                rtCmdLines[key] = pat.sub(self.repl, rtCmdLines[key])
-            core_mask[key] = utils.create_mask(set(corelist))
-        return rtCmdLines, core_mask
-
-    def create_pcap_file(self, frame_size, l3_proto):
-        """
-        Prepare traffic flow for packet generator
-        """
-        if l3_proto == 'ipv4':
-            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] - HEADER_SIZE['udp']
-        else:
-            payload_size = frame_size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6'] - HEADER_SIZE['udp']
-
-        pcaps = {}
-        for _port in valports:
-            index = valports[_port]
-            dmac = self.dut.get_mac_address(index)
-            cnt = 0
-            layer3s = self.flows()[l3_proto][_port * 2:(_port + 1) * 2]
-            for l3 in layer3s:
-                flow = ['Ether(dst="%s")/%s/UDP()/("X"*%d)' % (dmac, l3, payload_size)]
-                pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
-                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, string.join(flow, ',')))
-                self.tester.scapy_execute()
-                if index not in pcaps:
-                    pcaps[index] = []
-                pcaps[index].append(pcap)
-                cnt += 1
-        return pcaps
-
-    def prepare_stream(self, pcaps):
-        """
-        create streams for ports, one port one stream
-        """
-        tgen_input = []
-        for rxPort in valports:
-            if rxPort % len(valports) == 0 or len(valports) % rxPort == 2:
-                txIntf = self.tester.get_local_port(valports[rxPort + 1])
-                port_id = valports[rxPort + 1]
-            else:
-                txIntf = self.tester.get_local_port(valports[rxPort - 1])
-                port_id = valports[rxPort - 1]
-            rxIntf = self.tester.get_local_port(valports[rxPort])
-            for pcap in pcaps[port_id]:
-                tgen_input.append((txIntf, rxIntf, pcap))
-        return tgen_input
-
-    def create_result_table(self, ttl, ttl1, ttl2, ttl3, ttl4):
-
-        header_row = [ttl, ttl1, ttl2, ttl3, ttl4]
-        self.test_results['header'] = header_row
-        self.result_table_create(header_row)
-        self.test_results['data'] = []
-
-    def measure_throughput(self, l3_proto, mode):
-        """
-        measure throughput according to Layer-3 Protocal and Lookup Mode
-        """
-        # create result table
-        self.create_result_table("Frame Size", "Mode", "S/C/T", "Mpps", "% Linerate")
-        # build application
-        self.install_l3fwd_application(l3_proto, mode)
-        # perpare commandline and core mask
-        rtCmdLines, core_mask = self.perpare_commandline(len(valports))
-
-        for frame_size in self.frame_sizes:
-            if l3_proto == "ipv6" and frame_size == 64:
-                frame_size += 2
-            for cores in list(rtCmdLines.keys()):
-                # Start L3fwd appliction
-                command_line = rtCmdLines[cores] % (TestL3fwd.path + l3_proto + "_l3fwd_" + mode, core_mask[cores],
-                                                    self.dut.get_memory_channels(), utils.create_mask(valports))
-                if self.nic == "niantic":
-                    command_line += " --parse-ptype"
-                if frame_size > 1518:
-                    command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
-                self.dut.send_expect(command_line, "L3FWD:", 120)
-                self.logger.info("Executing l3fwd using %s mode, %d ports, %s and %d frame size"
-                                 % (mode, len(valports), cores, frame_size))
-                # crete traffic flow
-                pcaps = self.create_pcap_file(frame_size, l3_proto)
-                # send the traffic and Measure test
-                tgenInput = self.prepare_stream(pcaps)
-
-                vm_config = self.set_fields()
-                if l3_proto == "ipv6":
-                    vm_config = None
-                # clear streams before add new streams
-                self.tester.pktgen.clear_streams()
-                # run packet generator
-                streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
-                # set traffic option
-                traffic_opt = {'delay': 30}
-                _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-                self.verify(pps > 0, "No traffic detected")
-                # statistical result
-                pps /= 1000000.0
-                linerate = self.wirespeed(self.nic, frame_size, len(valports))
-                percentage = pps * 100 / linerate
-                data_row = [frame_size, mode, cores, str(pps), str(percentage)]
-                self.result_table_add(data_row)
-                self.test_results['data'].append(data_row)
-                # Stop L3fwd
-                self.dut.send_expect("^C", "#")
-                time.sleep(1)
-        # Print result
-        self.result_table_print()
-
-    def measure_rfc2544(self, l3_proto, mode):
-        """
-        measure RFC2544 according to Layer-3 Protocal and Lookup Mode
-        """
-        # create result table
-        self.create_result_table("Frame Size", "Mode", "S/C/T", "Zero Loss Throughput(Mpps)", " % Zero Loss Rate")
-        # build application
-        self.install_l3fwd_application(l3_proto, mode)
-        # perpare commandline and core mask
-        rtCmdLines, core_mask = self.perpare_commandline(len(valports))
-
-        for frame_size in self.frame_sizes:
-            if l3_proto == "ipv6" and frame_size == 64:
-                frame_size += 2
-            for cores in list(rtCmdLines.keys()):
-                # in order to save time, only some of the cases will be run.
-                if cores in ["1S/2C/1T", "1S/4C/1T"]:
-                    # Start L3fwd appliction
-                    command_line = rtCmdLines[cores] % (TestL3fwd.path + l3_proto + "_l3fwd_" + mode, core_mask[cores],
-                                                        self.dut.get_memory_channels(), utils.create_mask(valports))
-                    if self.nic == "niantic":
-                        command_line += " --parse-ptype"
-                    if frame_size > 1518:
-                        command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
-                    self.dut.send_expect(command_line, "L3FWD:", 120)
-                    self.logger.info("Executing l3fwd using %s mode, %d ports, %s and %d frame size"
-                                     % (mode, len(valports), cores, frame_size))
-                    # crete traffic flow
-                    pcaps = self.create_pcap_file(frame_size, l3_proto)
-                    # send the traffic and Measure test
-                    tgenInput = self.prepare_stream(pcaps)
-
-                    vm_config = self.set_fields()
-                    if l3_proto == "ipv6":
-                        vm_config = None
-                    # clear streams before add new streams
-                    self.tester.pktgen.clear_streams()
-                    # run packet generator
-                    streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
-                    # set traffic option
-                    traffic_opt = {'duration': 15}
-                    zero_loss_rate, tx_pkts, rx_pkts = self.tester.pktgen.measure_rfc2544(stream_ids=streams,
-                                                                                          options=traffic_opt)
-                    # statistical result
-                    linerate = self.wirespeed(self.nic, frame_size, len(valports))
-                    zero_loss_throughput = (linerate * zero_loss_rate) / 100
-                    data_row = [frame_size, mode, cores, str(zero_loss_throughput), str(zero_loss_rate)]
-                    self.result_table_add(data_row)
-                    self.test_results['data'].append(data_row)
-                # Stop L3fwd
-                self.dut.send_expect("^C", "#")
-                time.sleep(1)
-        # Print result
-        self.result_table_print()
-
-    def test_perf_rfc2544_ipv4_lpm(self):
-        self.measure_rfc2544(l3_proto="ipv4", mode="lpm")
-
-    def test_perf_rfc2544_ipv4_em(self):
-        self.measure_rfc2544(l3_proto="ipv4", mode="em")
-
-    def test_perf_throughput_ipv4_lpm(self):
-        self.measure_throughput(l3_proto="ipv4", mode="lpm")
-
-    def test_perf_throughput_ipv4_em(self):
-        self.measure_throughput(l3_proto="ipv4", mode="em")
-
-    def test_perf_rfc2544_ipv6_lpm(self):
-        self.measure_rfc2544(l3_proto="ipv6", mode="lpm")
-
-    def test_perf_rfc2544_ipv6_em(self):
-        self.measure_rfc2544(l3_proto="ipv6", mode="em")
-
-    def test_perf_throughput_ipv6_lpm(self):
-        self.measure_throughput(l3_proto="ipv6", mode="lpm")
-
-    def test_perf_throughput_ipv6_em(self):
-        self.measure_throughput(l3_proto="ipv6", mode="em")
-
-    def set_fields(self):
-        """
-        set ip protocol field behavior
-        """
-        fields_config = {'ip':  {'src': {'action': 'random'}, }, }
-        return fields_config
-
     def tear_down(self):
         """
         Run after each test case.
         """
         self.dut.kill_all()
+        self.l3fwd_reset_cur_case()
 
-    def tear_down_all(self):
-        """
-        Run after each test suite.
-        """
-        pass
+    def test_perf_rfc2544_ipv4_lpm(self):
+        self.l3fwd_set_cur_case('test_perf_rfc2544_ipv4_lpm')
+        self.qt_rfc2544(l3_proto=L3_IPV4, mode=LPM)
+
+    def test_perf_rfc2544_ipv4_em(self):
+        self.l3fwd_set_cur_case('test_perf_rfc2544_ipv4_em')
+        self.qt_rfc2544(l3_proto=L3_IPV4, mode=EM)
+
+    def test_perf_throughput_ipv4_lpm(self):
+        self.l3fwd_set_cur_case('test_perf_throughput_ipv4_lpm')
+        self.ms_throughput(l3_proto=L3_IPV4, mode=LPM)
+
+    def test_perf_throughput_ipv4_em(self):
+        self.l3fwd_set_cur_case('test_perf_throughput_ipv4_em')
+        self.ms_throughput(l3_proto=L3_IPV4, mode=EM)
+
+    def test_perf_rfc2544_ipv6_lpm(self):
+        self.l3fwd_set_cur_case('test_perf_rfc2544_ipv6_lpm')
+        self.qt_rfc2544(l3_proto=L3_IPV6, mode=LPM)
+
+    def test_perf_rfc2544_ipv6_em(self):
+        self.l3fwd_set_cur_case('test_perf_rfc2544_ipv6_em')
+        self.qt_rfc2544(l3_proto=L3_IPV6, mode=EM)
+
+    def test_perf_throughput_ipv6_lpm(self):
+        self.l3fwd_set_cur_case('test_perf_throughput_ipv6_lpm')
+        self.ms_throughput(l3_proto=L3_IPV6, mode=LPM)
+
+    def test_perf_throughput_ipv6_em(self):
+        self.l3fwd_set_cur_case('test_perf_throughput_ipv6_em')
+        self.ms_throughput(l3_proto=L3_IPV6, mode=EM)
