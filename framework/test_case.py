@@ -483,5 +483,9 @@ class TestCase(object):
             bitrate *= 10
         elif nic == 'fortville_25g':
             bitrate *=25
+        elif nic == 'columbiaville_25g':
+            bitrate *= 25
+        elif nic == 'columbiaville_100g':
+            bitrate *= 100
 
         return bitrate * num_ports / 8 / (frame_size + 20)
