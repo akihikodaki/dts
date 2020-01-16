@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 ## This file is part of Scapy
 ## See http://www.secdev.org/projects/scapy for more informations
 ## Copyright (C) Philippe Biondi <phil@secdev.org>
@@ -78,7 +79,7 @@ class LLDPGeneric(Packet):
     def post_build(self, p, pay):
         if self.length is None:
             l = len(p) - 2
-            p = chr((self.type << 1) ^ (l >> 8)) + chr(l & 0xff) + bytes.decode(p[2:], encoding='gbk')
+            p = chr((self.type << 1) ^ (l >> 8)).encode() + chr(l & 0xff).encode() + p[2:]
 
         return p+pay
 
@@ -211,15 +212,13 @@ class LLDPManagementAddress(LLDPGeneric):
         # TODO Remove redundant code. LLDPGeneric.post_build()
         if self.length is None:
             l = len(p) - 2
-            p = chr((self.type << 1) ^ (l >> 8)) + chr(l & 0xff) + p[2:].decode()
+            p = chr((self.type << 1) ^ (l >> 8)).encode() + chr(l & 0xff).encode() + p[2:]
 
         if self.addrlen is None:
             addrlen = len(p) - 2 - 8 - len(self.oid) + 1
-            if isinstance(p, type('abc')):
-                p = p[:2]+ struct.pack("B", addrlen).decode() + p[3:]
-            else:
-                p = p[:2].decode() + struct.pack("B", addrlen).decode() + p[3:].decode()
-        return bytes(p, encoding="utf-8")+pay
+            p = p[:2] + struct.pack("B", addrlen) + p[3:]
+
+        return p+pay
 
 
 _LLDPDot1Subtype = {1: "Port VLAN Id"}
