@@ -62,8 +62,6 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
     def start_scapy(self):
         self.tester.scapy_foreground()
-        self.scapyCmds.append('sys.path.append("./")')
-        self.scapyCmds.append('from sctp import *')
         self.tester.send_expect('scapy', '>>> ', 10)
         sleep(2)
 
@@ -239,15 +237,17 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         if(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g", "carlsville"]):
             if not sctp:
-                self.flexbytes = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x88,0x88"
+                self.flexbytes = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x77,0x77"
             else:
                 self.flexbytes = '0x0,0x0,0x0,0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0'
-            self.payload = "\\x11\\x11\\x22\\x22\\x33\\x33\\x44\\x44\\x55\\x55\\x66\\x66\\x77\\x77\\x88\\x88"
+            self.payload = b'\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x77\x77'
             self.flexlength = 16
         elif (self.nic in ["niantic"]):
             self.flexbytes = "0x00,0x00"
-            self.payload = "\\x11\\x11\\x22\\x22\\x33\\x33\\x44\\x44\\x55\\x55\\x66\\x66\\x77\\x77\\x88\\x88"
+            self.payload = b'\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x77\x77'
             self.flexlength = 2
+        self.payload = str(self.payload)
+        self.payload = self.payload.split("'")[1]
 
     def test_fdir_noflexword_fwd_ipv4(self):
         """
@@ -546,35 +546,35 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         # ipv4 ip
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"),dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'),dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
 
         # ipv4 udp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
 
         # ipv4 tcp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
 
         # ipv4 frag
@@ -582,24 +582,24 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         if (self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g", "carlsville"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1, flags="MF")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2', frag=1, flags='MF')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"),dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1, flags="MF")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'),dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2', frag=1, flags='MF')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         # ipv4 sctp
         self.fdir_get_flexbytes(sctp=True)
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
         self.fdir_get_flexbytes()
 
@@ -628,46 +628,46 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         # ipv6 ip
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
 
         # ipv6 udp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2   ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2   ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2  proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
 
         # ipv6 tcp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2   ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2   ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2  proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 1, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2  proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
         #ipv6 sctp
         self.fdir_get_flexbytes(sctp=True)
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-sctp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32 verify_tag 1  tos 2   ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes,2,1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-sctp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes,2,1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         if (self.nic in ["niantic"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-sctp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32 verify_tag 1  tos 2  proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes,1,1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  update flow ipv6-sctp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes,2,1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=132)/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-sctp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32 verify_tag 1  tos 2  proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes,2,1), "testpmd>")
         self.fdir_get_flexbytes()
 
@@ -676,10 +676,10 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         if (self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g", "carlsville"]):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-frag src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=44)/IPv6ExtHdrFragment()/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=44)/IPv6ExtHdrFragment()/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-frag src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) fwd pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=44)/IPv6ExtHdrFragment()/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=44)/IPv6ExtHdrFragment()/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         self.dut.send_expect("quit", "# ", 30)
 
@@ -697,28 +697,28 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         # ipv4 ip
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         # ipv4 udp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-udp src 192.168.0.1 1024 dst 192.168.0.2 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         # ipv4 tcp
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-tcp src 192.168.0.1 32 dst 192.168.0.2 32  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         # ipv4 sctp
         self.fdir_get_flexbytes(sctp=True)
         self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-sctp src 192.168.0.1 32 dst 192.168.0.2 32 verify_tag 1  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d "%(self.dut_ports[0],self.flexbytes, 2, 1), "testpmd>")
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2")/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2')/SCTP(sport=32, dport=32, tag=1)/SCTPChunkData(data='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
         self.fdir_get_flexbytes()
 
         # ipv4 frag
@@ -729,13 +729,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1, flags="MF")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2', frag=1, flags='MF')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-other src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv4-frag src 192.168.0.1 dst 192.168.0.2  tos 2 proto 20  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"),dst="00:1B:21:8E:B2:30")/IP(src="192.168.0.1", dst="192.168.0.2", frag=1, flags="MF")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'),dst='00:1B:21:8E:B2:30')/IP(src='192.168.0.1', dst='192.168.0.2', frag=1, flags='MF')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
         self.dut.send_expect("quit", "# ", 30)
 
@@ -755,28 +755,28 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
             # ipv6 ip
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
             # ipv6 udp
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-udp src FE80:0:0:0:200:1FF:FE00:200 1024 dst 3555:5555:6666:6666:7777:7777:8888:8888 1024  tos 2  ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/UDP(sport=1024,dport=1024)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/UDP(sport=1024,dport=1024)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
             # ipv6 tcp
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2   ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-tcp src FE80:0:0:0:200:1FF:FE00:200 32 dst 3555:5555:6666:6666:7777:7777:8888:8888 32  tos 2   ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=32,dport=32)/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888')/TCP(sport=32,dport=32)/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
             # ipv6 frag
             self.dut.send_expect("flow_director_filter %s mode IP  add flow ipv6-frag src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(False, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=44)/IPv6ExtHdrFragment()/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(False, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=44)/IPv6ExtHdrFragment()/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-other src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 3, 1), "testpmd>")
             self.dut.send_expect("flow_director_filter %s mode IP  del flow ipv6-frag src FE80:0:0:0:200:1FF:FE00:200 dst 3555:5555:6666:6666:7777:7777:8888:8888  tos 2 proto 20 ttl 40 vlan 0 flexbytes (%s) drop pf queue %d fd_id %d " % (self.dut_ports[0], self.flexbytes, 2, 1), "testpmd>")
-            self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888", nh=44)/IPv6ExtHdrFragment()/Raw(load="%s")], iface="%s")' % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
+            self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30')/IPv6(src='FE80:0:0:0:200:1FF:FE00:200', dst='3555:5555:6666:6666:7777:7777:8888:8888', nh=44)/IPv6ExtHdrFragment()/Raw(load='%s')], iface='%s')" % (self.dut_rx_interface, self.payload, self.dut_rx_interface))
 
             self.dut.send_expect("quit", "# ", 30)
 
@@ -808,13 +808,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 8 proto 255 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2" 
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
             
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=8, proto=255, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=8, proto=255, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv4-other src 192.168.1.1 dst 192.168.1.2 \
@@ -824,13 +824,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 8 proto 255 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=8, proto=255, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=8, proto=255, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
         # test add and remove proto rule
@@ -842,13 +842,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 254 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=253, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=253, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=254, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=254, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv4-other src 192.168.1.1 dst 192.168.1.2 \
@@ -858,13 +858,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 254 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=253, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=253, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=254, ttl=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=254, ttl=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
         # test add and remove ttl rule
@@ -876,13 +876,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 255 ttl 64 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=32) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=32) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv4-other src 192.168.1.1 dst 192.168.1.2 \
@@ -892,13 +892,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 255 ttl 64 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=32) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=32) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IP(src="192.168.1.1", dst="192.168.1.2", tos=16, proto=255, ttl=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IP(src='192.168.1.1', dst='192.168.1.2', tos=16, proto=255, ttl=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
     def test_fdir_ipv6_tc(self):
@@ -929,13 +929,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 8 proto 255 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=8, nh=255, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=8, nh=255, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv6-other src 2000::1 dst 2000::2 \
@@ -945,13 +945,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 8 proto 255 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=8, nh=255, hlim=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=8, nh=255, hlim=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
         # test add and remove ipv6-next-header  rule
@@ -963,13 +963,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 254 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=253, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=254, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=254, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv6-other src 2000::1 dst 2000::2 \
@@ -979,13 +979,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 254 ttl 255 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=253, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=253, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=254, hlim=255) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=254, hlim=255) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
         # test add and remove ipv6-hop-limits rule
@@ -997,13 +997,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 255 ttl 64 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=32) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=32) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 1)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 2)
 
         self.dut.send_expect("flow_director_filter %d mode IP del flow ipv6-other src 2000::1 dst 2000::2 \
@@ -1013,13 +1013,13 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                               tos 16 proto 255 ttl 64 vlan 0 flexbytes (%s) fwd pf queue 2 fd_id 2"
                               % (self.dut_ports[0], self.flexbytes), "testpmd>")
 
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=32) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=32) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
-        self.send_and_verify(True, 'sendp([Ether(src=get_if_hwaddr("%s"), dst="00:1B:21:8E:B2:30") \
-                             /IPv6(src="2000::1", dst="2000::2", tc=16, nh=255, hlim=64) \
-                             /Raw(load="%s")], iface="%s")' \
+        self.send_and_verify(True, "sendp([Ether(src=get_if_hwaddr('%s'), dst='00:1B:21:8E:B2:30') \
+                             /IPv6(src='2000::1', dst='2000::2', tc=16, nh=255, hlim=64) \
+                             /Raw(load='%s')], iface='%s')" \
                              % (self.dut_rx_interface, self.payload, self.dut_rx_interface), queueid = 0)
 
     def test_fdir_ivlan(self):
@@ -1178,7 +1178,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         src_ip_temp = self.src_ip
         dst_ip_temp = self.dst_ip
         print("*src_ip_temp = " + src_ip_temp + "dst_ip_temp = " + dst_ip_temp)
-        flows.append('Ether(src="52:00:00:00:00:00", dst="00:1B:21:8E:B2:30")/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw(load="%s" + "X"*(%d - 42 - %d))' % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
+        flows.append("Ether(src='52:00:00:00:00:00', dst='00:1B:21:8E:B2:30')/IP(src='%s',dst='%s')/UDP(sport=%d,dport=%d)/Raw(load='%s' + 'X'*(%d - 42 - %d))" % (src_ip_temp, dst_ip_temp, 1021, 1021, self.payload, frame_size, self.flexlength))
         self.scapyCmds.append('wrpcap("/root/test.pcap", [%s])' % string.join(flows, ','))
 
     def perf_fdir_performance_2ports(self, test_type, num_rules, num_flows):
