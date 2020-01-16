@@ -159,7 +159,7 @@ class TestEthtoolStats(TestCase):
         ports_mask = reduce(lambda x, y: x | y,
                             [0x1 << x for x in range(ports_count)])
         self.query_tool = os.path.join(
-            self.target_dir, self.target, 'app', 'dpdk-procinfo')
+            self.target_dir, self.target, 'app', 'dpdk-procinfo --file-prefix=%s' % self.prefix)
         self.dpdk_proc_info = "%s -v -- -p %s" % (self.query_tool, ports_mask)
 
     def parse_proc_info_xstat_output(self, msg):
@@ -471,6 +471,7 @@ class TestEthtoolStats(TestCase):
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports')
+        self.prefix = "dpdk_" + self.dut.prefix_subfix
         self.preset_test_environment()
 
     def set_up(self):
