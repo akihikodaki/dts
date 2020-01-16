@@ -47,6 +47,7 @@ from exception import VerifyFailure
 from packet import Packet
 from scapy.sendrecv import sendp
 from settings import HEADER_SIZE
+from functools import reduce
 
 
 class TestEthtoolStats(TestCase):
@@ -60,19 +61,19 @@ class TestEthtoolStats(TestCase):
         return target_dir
 
     def d_a_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         output = self.dut.alt_session.send_expect(*_cmd)
         output2 = self.dut.alt_session.session.get_session_before(1)
         return output + os.linesep + output2
 
     def send_packet(self, pkt_config, src_intf):
-        for pkt_type in pkt_config.keys():
+        for pkt_type in list(pkt_config.keys()):
             pkt = Packet(pkt_type=pkt_type)
             # set packet every layer's input parameters
-            if 'layer_configs' in pkt_config[pkt_type].keys():
+            if 'layer_configs' in list(pkt_config[pkt_type].keys()):
                 pkt_configs = pkt_config[pkt_type]['layer_configs']
                 if pkt_configs:
-                    for layer in pkt_configs.keys():
+                    for layer in list(pkt_configs.keys()):
                         pkt.config_layer(layer, pkt_configs[layer])
             pkt.send_pkt(crb=self.tester, tx_port=src_intf, count=1)
             time.sleep(1)
@@ -85,7 +86,7 @@ class TestEthtoolStats(TestCase):
         # send out packet
         for frame_size in self.frame_sizes:
             headers_size = sum(
-                map(lambda x: HEADER_SIZE[x], ['eth', 'ip', 'udp']))
+                [HEADER_SIZE[x] for x in ['eth', 'ip', 'udp']])
             payload_size = frame_size - headers_size
             config_layers = {
                 'ether': {'src': src_mac},
@@ -156,7 +157,7 @@ class TestEthtoolStats(TestCase):
     def init_proc_info(self):
         ports_count = len(self.dut_ports)
         ports_mask = reduce(lambda x, y: x | y,
-                            map(lambda x: 0x1 << x, range(ports_count)))
+                            [0x1 << x for x in range(ports_count)])
         self.query_tool = os.path.join(
             self.target_dir, self.target, 'app', 'dpdk-procinfo')
         self.dpdk_proc_info = "%s -v -- -p %s" % (self.query_tool, ports_mask)
@@ -221,7 +222,7 @@ class TestEthtoolStats(TestCase):
 
     def check_single_stats_result(self, sub_stat_data, all_xstat_data):
         execept_msgs = []
-        for port, infos in sub_stat_data.items():
+        for port, infos in list(sub_stat_data.items()):
             for item in infos:
                 if not port or \
                    port not in all_xstat_data or \
@@ -240,7 +241,7 @@ class TestEthtoolStats(TestCase):
     def get_xstat_single_statistic(self, stat, all_xstat_data):
         option = "xstats-id"
         execept_msgs = []
-        for id in stat.values():
+        for id in list(stat.values()):
             cmd = self.dpdk_proc_info + " --%s %s" % (option, id)
             msg = self.d_a_con(cmd)
             sub_stat_data = self.parse_proc_info_xstat_output(msg)
@@ -291,7 +292,7 @@ class TestEthtoolStats(TestCase):
         execept_msgs = []
         for port in all_xstat_data:
             stats_info = all_xstat_data[port]
-            for stat_name, value in stats_info.items():
+            for stat_name, value in list(stats_info.items()):
                 if int(value) != 0:
                     msg = "port {0} <{1}> [{2}] has not been reset"
                     execept_msgs.append(msg.format(port, stat_name, value))
@@ -305,14 +306,14 @@ class TestEthtoolStats(TestCase):
         execept_msgs = []
         option = "xstats-id"
         sub_option = reduce(lambda x, y: str(x) + "," + str(y),
-                            range(len(all_xstat_data['0'].keys())))
+                            list(range(len(list(all_xstat_data['0'].keys())))))
         cmd = self.dpdk_proc_info + " --%s %s" % (option, sub_option)
         msg = self.d_a_con(cmd)
         sub_stat_data = self.parse_proc_info_xstat_output(msg)
         if not sub_stat_data or not len(sub_stat_data):
             execept_msgs.append([option, msg])
         else:
-            for port, infos in sub_stat_data.items():
+            for port, infos in list(sub_stat_data.items()):
                 for item in infos:
                     if not port or \
                        port not in all_xstat_data or \
@@ -331,7 +332,7 @@ class TestEthtoolStats(TestCase):
 
     def check_xstat_name_cmd(self, all_xstat_data):
         option = "xstats-name"
-        _sub_options = all_xstat_data['0'].keys()
+        _sub_options = list(all_xstat_data['0'].keys())
         execept_msgs = []
         for sub_option in _sub_options:
             cmd = self.dpdk_proc_info + " --%s %s" % (option, sub_option)
@@ -368,7 +369,7 @@ class TestEthtoolStats(TestCase):
     def check_xstat_single_statistic(self, sub_options_ex=None):
         all_xstat_data = self.get_pmd_xstat_data()
         self.logger.info("total stat names [%d]" % len(all_xstat_data['0']))
-        for stat_name in all_xstat_data['0'].keys():
+        for stat_name in list(all_xstat_data['0'].keys()):
             # firstly, get statistic name.
             stats, execept_msgs = self.get_xstat_statistic_id(stat_name)
             if len(execept_msgs):

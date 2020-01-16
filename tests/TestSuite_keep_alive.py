@@ -75,7 +75,7 @@ class TestKeepAlive(TestCase):
 
         self.scapy_send_packet(2000)
         out = self.dut.get_session_output(timeout=10)
-        print out
+        print(out)
         p = re.compile(r'\d+')
         result = p.findall(out)
         amount = 2000 * len(self.dut_ports)

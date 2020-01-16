@@ -229,9 +229,9 @@ class TestShutdownApi(TestCase):
         try:
             self.check_forwarding(ports)
         except VerifyFailure as e:
-            print 'promiscuous mode is working correctly'
+            print('promiscuous mode is working correctly')
         except Exception as e:
-            print "   !!! DEBUG IT: " + e.message
+            print(("   !!! DEBUG IT: " + e.message))
             self.verify(False, e.message)
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
@@ -312,7 +312,7 @@ class TestShutdownApi(TestCase):
         Change Link Speed.
         """
         if self.kdriver == "fm10k":
-            print utils.RED("RRC not support\n")
+            print((utils.RED("RRC not support\n")))
             return
 
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
@@ -326,9 +326,9 @@ class TestShutdownApi(TestCase):
             result_scanner = r"([0-9]+)baseT/([A-Za-z]+)"
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.findall(out)
-        configs = m[:-(len(m) / 2)]
+        configs = m[:-int(len(m) / 2)]
         for config in configs:
-            print config
+            print(config)
             if self.nic in ["ironpond"]:
                 if config[0] != '1000' or '10000':
                     continue
@@ -362,7 +362,7 @@ class TestShutdownApi(TestCase):
         Enable/Disable Jumbo Frames.
         """
         if self.kdriver == "fm10k":
-            print utils.RED("RRC not support\n")
+            print((utils.RED("RRC not support\n")))
             return
 
         jumbo_size = 2048
@@ -538,7 +538,7 @@ class TestShutdownApi(TestCase):
         port link stats test
         """
         if self.kdriver == "fm10k":
-            print utils.RED("RRC not support\n")
+            print((utils.RED("RRC not support\n")))
             return
 
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)

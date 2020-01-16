@@ -74,7 +74,7 @@ def sniff_packets(intf, count=0, timeout=5, pcap=None):
             param = "-" + m.group(2) + " in"
 
     if len(param) == 0:
-        print "tcpdump not support direction choice!!!"
+        print("tcpdump not support direction choice!!!")
 
     sniff_cmd = 'tcpdump -i %(INTF)s %(IN_PARAM)s -w %(FILE)s'
     options = {'INTF': intf, 'COUNT': count, 'IN_PARAM': param,
@@ -96,7 +96,7 @@ def sniff_packets(intf, count=0, timeout=5, pcap=None):
 def load_sniff_packets(index=''):
     pkts = []
     child_exit = False
-    if index in SNIFF_PIDS.keys():
+    if index in list(SNIFF_PIDS.keys()):
         pipe, intf, timeout = SNIFF_PIDS[index]
         time_elapse = int(time.time() - float(index))
         while time_elapse < timeout:
@@ -178,7 +178,7 @@ class parsePacket(object):
                     self.pcapFile, number)
                 return warning
             self.get_valid_packet(pcap_pkts, number)
-        except Exception, e:
+        except Exception as e:
             print (e)
 
         return None
@@ -392,7 +392,7 @@ class TestPacketCapture(TestCase):
             return warning
         # remove some fields, which are filled by dpdk automatically
         # if packet is filled with `Padding`, remove this
-        if "Padding" in targetObj.packetLayers.keys():
+        if "Padding" in list(targetObj.packetLayers.keys()):
             targetObj.packetLayers.pop("Padding")
         if len(refObj.packetLayers) != len(targetObj.packetLayers):
             refObj_layer = pformat(refObj.packetLayers)
@@ -402,8 +402,8 @@ class TestPacketCapture(TestCase):
             warning = "packet {0} layers are not as expected".format(targetPkt)
             return warning
 
-        for layer in refObj.packetLayers.keys():
-            if layer not in targetObj.packetLayers.keys():
+        for layer in list(refObj.packetLayers.keys()):
+            if layer not in list(targetObj.packetLayers.keys()):
                 warning = "{0} has no [{1}] layer".format(targetPkt, layer)
                 return warning
 
@@ -417,10 +417,10 @@ class TestPacketCapture(TestCase):
                     targetPkt, layer)
                 return warning
 
-            for field in refLayerFields.keys():
+            for field in list(refLayerFields.keys()):
                 if field == 'src' or field == 'dst':
                     continue
-                if field not in targetLayerFields.keys():
+                if field not in list(targetLayerFields.keys()):
                     warning = ("{0} layer [{1}] "
                                "has no [{2}] field").format(
                         targetPkt, layer, field)

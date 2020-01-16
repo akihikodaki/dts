@@ -52,7 +52,7 @@ class TestDynamicQueue(TestCase):
         s = re.compile(pattern, re.DOTALL)
         res = s.search(out)
         if res is None:
-            print utils.RED('Fail to search number.')
+            print((utils.RED('Fail to search number.')))
             return None
         else:
             result = res.group(1)

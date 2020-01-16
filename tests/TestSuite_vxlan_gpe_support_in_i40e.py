@@ -238,7 +238,7 @@ class TestVxlanGpeSupportInI40e(TestCase):
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
         out = self.dut.get_session_output(timeout=5)
-        print out
+        print(out)
         self.verify('L3_IPV4_EXT_UNKNOWN' in out and '%s' % VXLAN_GPE_PORT in out, 'no detect vxlan-gpe packet')
 
         # delete the VXLAN-GPE packet type, testpmd should treat the packet as a normal UDP packet
@@ -248,7 +248,7 @@ class TestVxlanGpeSupportInI40e(TestCase):
         self.tester.scapy_append(packet)
         self.tester.scapy_execute()
         out = self.dut.get_session_output(timeout=5)
-        print out
+        print(out)
         self.pmdout.execute_cmd('quit', '#')
         self.verify('L3_IPV4_EXT_UNKNOWN' in out and '%s' % VXLAN_GPE_PORT not in out, 'no detect vxlan-gpe packet')
 

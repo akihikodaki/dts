@@ -35,7 +35,7 @@ Test DPDK vhost + virtio scenarios
 import os
 import utils
 import time
-import commands
+import subprocess
 import binascii
 from test_case import TestCase
 from qemu_kvm import QEMUKvm
@@ -133,13 +133,13 @@ class VirtioCryptodevIpsecTest(TestCase):
         opts = default_eal_opts.copy()
 
         # Update options with test suite/case config file
-        for key in opts.keys():
+        for key in list(opts.keys()):
             if key in self.get_suite_cfg():
                 opts[key] = self.get_suite_cfg()[key]
 
         # Generate option string
         opt_str = ""
-        for key,value in opts.items():
+        for key,value in list(opts.items()):
             if value is None:
                 continue
             dash = "-" if len(key) == 1 else "--"
@@ -202,8 +202,8 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
 
     def bind_vfio_pci(self):
-        commands.getoutput("modprobe vfio-pci")
-        commands.getoutput('%s -b vfio-pci %s' % (os.path.join(self.dut.base_dir, self.bind_script_path), self.vfio_pci))
+        subprocess.getoutput("modprobe vfio-pci")
+        subprocess.getoutput('%s -b vfio-pci %s' % (os.path.join(self.dut.base_dir, self.bind_script_path), self.vfio_pci))
 
     def set_virtio_pci(self, dut):
         out = dut.send_expect("lspci -d:1054|awk '{{print $1}}'", "# ", 10)
@@ -223,7 +223,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         try:
             vm_dut = vm.start(set_target=False)
             if vm_dut is None:
-                print('{} start failed'.format(vm_name))
+                print(('{} start failed'.format(vm_name)))
         except Exception as err:
             raise err
         vm_dut.restore_interfaces()
@@ -338,7 +338,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.logger.info(cmd_str)
         try:
             out = vm_dut.send_expect(cmd_str, "IPSEC", 600)
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error(ex)
             raise ex
 

@@ -114,7 +114,7 @@ class TestEtag(TestCase):
                 raise Exception('Set up VM0 ENV failed!')
 
         except Exception as e:
-            print e
+            print(e)
             self.destroy_vm_env()
             raise Exception(e)
 
@@ -151,44 +151,44 @@ class TestEtag(TestCase):
 
     def check_packet_transmission(self, pkt_types):
         time.sleep(1)
-        for pkt_type in pkt_types.keys():
+        for pkt_type in list(pkt_types.keys()):
             intf = self.src_intf
             pkt = Packet(pkt_type=pkt_type)
             # set packet every layer's input parameters
-            if 'layer_configs' in pkt_types[pkt_type].keys():
+            if 'layer_configs' in list(pkt_types[pkt_type].keys()):
                 pkt_configs = pkt_types[pkt_type]['layer_configs']
                 if pkt_configs:
-                    for layer in pkt_configs.keys():
+                    for layer in list(pkt_configs.keys()):
                         pkt.config_layer(layer, pkt_configs[layer])
             pkt.send_pkt(self.tester, tx_port=self.src_intf)
             
             # check vm testpmd packet received information
-            if 'vm' in pkt_types[pkt_type].keys():
+            if 'vm' in list(pkt_types[pkt_type].keys()):
                 out = self.vm0_testpmd.get_output(timeout=2)
                 if self.printFlag: # debug output
-                    print out
+                    print(out)
                 for pkt_attribute in pkt_types[pkt_type]['vm']:
                     if self.printFlag:# debug output
-                        print pkt_attribute
+                        print(pkt_attribute)
                     if pkt_attribute not in out:
-                        print utils.RED('Fail to detect %s' % pkt_attribute)
+                        print(utils.RED('Fail to detect %s' % pkt_attribute))
                         if not self.printFlag:# print out all info in debug mode
                             raise VerifyFailure('Failed to detect %s' % pkt_attribute)
-                print utils.GREEN('VM detected %s successfully' % pkt_type)
+                print(utils.GREEN('VM detected %s successfully' % pkt_type))
 
             # check dut testpmd packet received information
-            if 'dut' in pkt_types[pkt_type].keys():
+            if 'dut' in list(pkt_types[pkt_type].keys()):
                 out = self.host_testpmd.get_output(timeout=2)
                 if self.printFlag: # debug output
-                    print out
+                    print(out)
                 for pkt_attribute in pkt_types[pkt_type]['dut']:
                     if self.printFlag:# debug output
-                        print pkt_attribute
+                        print(pkt_attribute)
                     if pkt_attribute not in out:
-                        print utils.RED('Fail to detect %s' % pkt_attribute)
+                        print(utils.RED('Fail to detect %s' % pkt_attribute))
                         if not self.printFlag:# print out all info in debug mode
                             raise VerifyFailure('Failed to detect %s' % pkt_attribute)
-                print utils.GREEN('DUT detected %s successfully' % pkt_type)
+                print(utils.GREEN('DUT detected %s successfully' % pkt_type))
             time.sleep(1)
 
     def preset_host_testpmd(self, core_mask, eal_param):
@@ -358,7 +358,7 @@ class TestEtag(TestCase):
         out = fp.read()
         fp.close()
         if self.printFlag:# debug output
-            print out
+            print(out)
         self.verify( "Dot1BR" in out, "tester %s hasn't receiver etag packet"% intf)
 
     def test_etag_strip(self):

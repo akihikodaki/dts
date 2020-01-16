@@ -174,7 +174,7 @@ class Testddp_mpls(TestCase):
                             /MPLS(label=%s)/Ether()/IP()/UDP()'% label,
                         'mpls/bad chksum gre': 'Ether()/IP(proto=47)/GRE(chksum=0x1234,\
                             proto=0x8847)/MPLS(label=%s)/Ether()/IP()/UDP()'% label }
-            for packet_type in pkts.keys(): 
+            for packet_type in list(pkts.keys()):
                 self.tester.scapy_append('sendp([%s], iface="%s")' 
                     % (pkts[packet_type], self.tester_intf)) 
                 self.tester.scapy_execute()

@@ -76,7 +76,7 @@ class FipCryptodev(TestCase):
         self.logger.info(cmd_str)
         try:
             out = self.dut.send_expect(cmd_str, "#", 600)
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error(ex)
             raise ex
         return out

@@ -185,8 +185,8 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
 
             self.vm0_testpmd.execute_cmd('set verbose 1')
             self.vm0_testpmd.execute_cmd('set promisc all off')
-        #set rss-hash-key to a fixed value instead of default random value on vf
-	    self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E')
+            #set rss-hash-key to a fixed value instead of default random value on vf
+            self.vm0_testpmd.execute_cmd('port config 0 rss-hash-key ipv4 6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E')
             time.sleep(1)
             self.vm0_testpmd.execute_cmd('set fwd mac')
             self.vm0_testpmd.execute_cmd("clear port stats all")

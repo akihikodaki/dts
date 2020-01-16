@@ -2265,224 +2265,6 @@ tvs_mac_ipv6_tcp_pipeline_mode = [
     tv_mac_ipv6_tcp_pipeline_mode_drop_03
     ]
 
-tv_mac_ipv4_in_queue_01 = {
-    "name":"tv_mac_ipv4_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 2 / end actions queue index 4 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":4}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.9",dst="192.168.6.12",tos=4,ttl=2)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":4}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv4_drop_queue_02 = {
-    "name":"tv_mac_ipv4_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 ttl is 2 / end actions drop / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4,ttl=2)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.5.6",dst="192.168.5.15",tos=2,ttl=5)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv4_udp_in_queue_01 = {
-    "name":"tv_mac_ipv4_udp_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions queue index 2 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":2}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.6.56",dst="192.168.5.83",tos=2,ttl=1)/UDP(sport=20,dport=33)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":2}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv4_udp_drop_queue_02 = {
-    "name":"tv_mac_ipv4_udp_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / udp src is 25 dst is 23 / end actions drop / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/UDP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:98")/IP(src="192.168.6.3",dst="192.168.8.5",tos=4)/UDP(sport=85,dport=62)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv4_tcp_in_queue_01 = {
-    "name":"tv_mac_ipv4_tcp_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.32 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 6 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.32",tos=4)/TCP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":6}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.8.3",dst="192.168.15.26",tos=3)/UDP(sport=62,dport=88)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":6}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv4_tcp_drop_queue_02 = {
-    "name":"tv_mac_ipv4_tcp_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.3 tos is 4 / tcp src is 25 dst is 23 / end actions drop / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.3",tos=4)/TCP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.5.6",dst="192.168.5.5",tos=8)/UDP(sport=55,dport=36)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_in_queue_01 = {
-    "name":"tv_mac_ipv6_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 7 / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":7}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220", dst="ABAB:910A:2222:5498:8475:1111:3900:1520")/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":7}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_drop_queue_02 = {
-    "name":"tv_mac_ipv6_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220", dst="ABAB:910A:2222:5498:8475:1111:3900:1520")/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-
-tv_mac_ipv6_frag_in_queue_01 = {
-    "name":"tv_mac_ipv6_frag_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 7 / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":7}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220", dst="ABAB:910A:2222:5498:8475:1111:3900:1520")/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":7}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_frag_drop_queue_02 = {
-    "name":"tv_mac_ipv6_frag_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220", dst="ABAB:910A:2222:5498:8475:1111:3900:1520")/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_udp_in_queue_01 = {
-    "name":"tv_mac_ipv6_udp_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / udp src is 25 dst is 23 / end actions queue index 7 / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518")/UDP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":7}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="ABAB:910A:2222:5498:8475:1111:3900:1520")/UDP(sport=22,dport=12)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":7}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_udp_drop_queue_02 = {
-    "name":"tv_mac_ipv6_udp_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / udp src is 25 dst is 23 / end actions drop / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518")/UDP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220")/UDP(sport=62,dport=11)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_tcp_in_queue_01 = {
-    "name":"tv_mac_ipv6_tcp_in_queue_01",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / tcp src is 25 dst is 23 / end actions queue index 7 / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518")/TCP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_in_queue,
-                             "param":{"expect_port":0, "expect_queues":7}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="ABAB:910A:2222:5498:8475:1111:3900:1520")/UDP(sport=22,dport=12)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_in_queue_mismatched,
-                                "param":{"expect_port":0, "expect_queues":7}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_ipv6_tcp_drop_queue_02 = {
-    "name":"tv_mac_ipv6_tcp_drop_queue_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1518 / tcp src is 25 dst is 23 / end actions drop / end",
-    "matched":{"scapy_str":['Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518")/TCP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_output_log_drop,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IPv6(src="BCBC:910A:2222:5498:8475:1111:3900:8220")/TCP(sport=62,dport=11)/("X"*480)'],
-                  "check_func":{"func":rfc.check_output_log_drop_mismatched,
-                                "param":{"expect_port":0, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tvs_mac_ipv4_non_pipeline_mode = [
-    tv_mac_ipv4_in_queue_01,
-    tv_mac_ipv4_drop_queue_02
-    ]
-    
-tvs_mac_ipv4_udp_non_pipeline_mode = [
-    tv_mac_ipv4_udp_in_queue_01,
-    tv_mac_ipv4_udp_drop_queue_02 
-    ]
-
-tvs_mac_ipv4_tcp_non_pipeline_mode = [
-    tv_mac_ipv4_tcp_in_queue_01,
-    tv_mac_ipv4_tcp_drop_queue_02
-    ]
-    
-tvs_mac_ipv6_non_pipeline_mode = [
-    tv_mac_ipv6_in_queue_01,
-    tv_mac_ipv6_drop_queue_02
-    ]
-
-tvs_mac_ipv6_frag_non_pipeline_mode = [
-    tv_mac_ipv6_frag_in_queue_01,
-    tv_mac_ipv6_frag_drop_queue_02
-    ]
-
-tvs_mac_ipv6_udp_non_pipeline_mode = [
-    tv_mac_ipv6_udp_in_queue_01,
-    tv_mac_ipv6_udp_drop_queue_02
-    ]
-
-tvs_mac_ipv6_tcp_non_pipeline_mode = [
-    tv_mac_ipv6_tcp_in_queue_01,
-    tv_mac_ipv6_tcp_drop_queue_02
-    ]
-
 test_results = OrderedDict()
 
 class SwitchFilterTest(TestCase):
@@ -2587,7 +2369,7 @@ class SwitchFilterTest(TestCase):
 
         global test_results
 
-        out = self.dut.send_expect(command, "testpmd> ", 350)
+        out = self.dut.send_expect(command, "testpmd> ", 300)
         self.dut.send_expect("port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd", "testpmd> ", 15)
         if is_vxlan:
             self.dut.send_expect("rx_vxlan_port add 4789 0", "testpmd> ", 15)
@@ -2630,7 +2412,7 @@ class SwitchFilterTest(TestCase):
 
             #mismatched part
             mismatched_dic = tv["mismatched"]
-            if len(mismatched_dic.keys()) != 0:
+            if len(list(mismatched_dic.keys())) != 0:
                 result_flag, log_msg = self.send_and_check_packets(mismatched_dic, self.dut_ports[0])
                 overall_result = self.save_results(pattern_name, "mismatched", result_flag, log_msg, overall_result)
 
@@ -2667,23 +2449,23 @@ class SwitchFilterTest(TestCase):
         self.dut.send_expect("quit", "#")
         #print the results of the test case
         count = 1
-        for pattern in test_results.keys():
-            print str(count)+". "+pattern
+        for pattern in list(test_results.keys()):
+            print(str(count)+". "+pattern)
 
-            for flag in test_results[pattern].keys():
+            for flag in list(test_results[pattern].keys()):
                 result_flag = test_results[pattern][flag]["result_flag"]
                 log_msg = test_results[pattern][flag]["log_msg"]
 
-                print flag+": ",
+                print(flag+": ", end=' ')
                 result = ""
                 if result_flag:
                     result = "Passed"
-                    print GREEN(result), log_msg
+                    print(GREEN(result), log_msg)
                 else:
                     result = "failed"
-                    print RED(result+", "+log_msg)
+                    print(RED(result+", "+log_msg))
 
-            print
+            print()
             count += 1
         self.verify(overall_result == True, "Some test case failed.")
 
@@ -2865,32 +2647,3 @@ class SwitchFilterTest(TestCase):
     def test_mac_ipv6_tcp_pipeline_mode(self):
         command = self.create_testpmd_command_pipeline_mode()
         self._rte_flow_validate_pattern(tvs_mac_ipv6_tcp_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv4_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv4_non_pipeline_mode, command, is_vxlan = False)
-            
-    def test_mac_ipv4_udp_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv4_udp_non_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv4_tcp_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv4_tcp_non_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv6_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv6_non_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv6_frag_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv6_frag_non_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv6_udp_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv6_udp_non_pipeline_mode, command, is_vxlan = False)
-
-    def test_mac_ipv6_tcp_non_pipeline_mode(self):
-        command = self.create_testpmd_command()
-        self._rte_flow_validate_pattern(tvs_mac_ipv6_tcp_non_pipeline_mode, command, is_vxlan = False)
-

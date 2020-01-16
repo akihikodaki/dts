@@ -39,6 +39,7 @@ import time
 from test_case import TestCase
 from pmd_output import PmdOutput
 from packet import Packet
+import operator
 
 class TestMacFilter(TestCase):
 
@@ -70,7 +71,7 @@ class TestMacFilter(TestCase):
 
         ret = utils.regexp(out, mac_scanner)
         self.verify(ret is not None, "MAC address not found")
-        self.verify(cmp(ret.lower(), self.dest) == 0, "MAC address wrong")
+        self.verify(operator.eq(ret.lower(), self.dest), "MAC address wrong")
 
         self.max_mac_addr = utils.regexp(out, "Maximum number of MAC addresses: ([0-9]+)")
 

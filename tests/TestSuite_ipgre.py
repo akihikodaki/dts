@@ -94,11 +94,11 @@ class TestIpgre(TestCase):
 
     def check_packet_transmission(self, pkt_types, layer_configs=None, queue=None, add_filter=0):
         time.sleep(1)
-        for pkt_type in pkt_types.keys():
+        for pkt_type in list(pkt_types.keys()):
             pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
             if layer_configs:
-                for layer in layer_configs.keys():
+                for layer in list(layer_configs.keys()):
                     pkt.config_layer(layer, layer_configs[layer])
             inst = self.tester.tcpdump_sniff_packets(self.tester_iface, count=1)
             pkt.send_pkt(crb=self.tester, tx_port=self.tester_iface, count=4)
@@ -106,16 +106,16 @@ class TestIpgre(TestCase):
             time.sleep(1)
             pkt = self.tester.load_tcpdump_sniff_packets(inst)
             if self.printFlag: # debug output
-                print out
+                print(out)
             for pkt_layer_name in pkt_names:
                 if self.printFlag:# debug output
-                    print pkt_layer_name
+                    print(pkt_layer_name)
                 if pkt_layer_name not in out:
-                    print utils.RED("Fail to detect %s" % pkt_layer_name)
+                    print(utils.RED("Fail to detect %s" % pkt_layer_name))
                     if not self.printFlag:
                         raise VerifyFailure("Failed to detect %s" % pkt_layer_name)
             else:
-                print utils.GREEN("Detected %s successfully" % pkt_type)
+                print(utils.GREEN("Detected %s successfully" % pkt_type))
             time.sleep(1)
             if queue == None: # no filter
                 pass
@@ -128,11 +128,11 @@ class TestIpgre(TestCase):
 
 
     def save_ref_packet(self, pkt_types, layer_configs=None):
-        for pkt_type in pkt_types.keys():
+        for pkt_type in list(pkt_types.keys()):
             pkt_names = pkt_types[pkt_type]
             pkt = Packet(pkt_type=pkt_type)
             if layer_configs:
-                for layer in layer_configs.keys():
+                for layer in list(layer_configs.keys()):
                     pkt.config_layer(layer, layer_configs[layer])
             wrpcap("/tmp/ref_pkt.pcap", pkt.pktgen.pkt)
             time.sleep(1)
@@ -182,7 +182,7 @@ class TestIpgre(TestCase):
         # verify saved pcap checksum same to expected checksum
         for key in chksums_ref:
             self.verify(int(chksums[key], 16) == int(chksums_ref[key], 16), "%s not matched to %s" % (key, chksums_ref[key]))
-        print utils.GREEN("Checksum is ok")
+        print(utils.GREEN("Checksum is ok"))
 
     def test_GRE_ipv4_packet_detect(self):
         """

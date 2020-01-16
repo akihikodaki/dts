@@ -200,7 +200,6 @@ class DTSLOG(BaseLoggerAdapter):
     def __init__(self, logger, crb="suite"):
         global log_dir
         filename = inspect.stack()[1][1][:-3]
-        self.name = filename.split('/')[-1]
 
         self.error_lvl = logging.ERROR
         self.warn_lvl = logging.WARNING
@@ -406,7 +405,7 @@ class LogParser(object):
         try:
             self.log_handler = open(self.log_path, 'r')
         except:
-            print RED("Failed to logfile %s" % log_path)
+            print(RED("Failed to logfile %s" % log_path))
             return None
 
         self.suite_pattern = re.compile(_TESTSUITE_NAME_FORMAT_PATTERN)
@@ -421,7 +420,7 @@ class LogParser(object):
         begin = 0
         end = len(self.loglist)
         for line in self.loglist:
-            m = self.suite_pattern.match(line.values()[0])
+            m = self.suite_pattern.match(list(line.values())[0])
             if m:
                 if suite_name is None:
                     begin = self.loglist.index(line)
@@ -429,7 +428,7 @@ class LogParser(object):
                     begin = self.loglist.index(line)
 
         for line in self.loglist[begin:]:
-            m = self.end_pattern.match(line.values()[0])
+            m = self.end_pattern.match(list(line.values())[0])
             if m:
                 if suite_name is None:
                     end = self.loglist.index(line)
@@ -443,7 +442,7 @@ class LogParser(object):
         end = len(self.loglist)
         for line in self.loglist:
             # only handle case log
-            m = self.case_pattern.match(line.values()[0])
+            m = self.case_pattern.match(list(line.values())[0])
             if m:
                 # not determine case will start from beginning
                 if case_name is None:
@@ -453,7 +452,7 @@ class LogParser(object):
                     begin = self.loglist.index(line)
 
         for line in self.loglist[begin:]:
-            m = self.result_pattern.match(line.values()[0])
+            m = self.result_pattern.match(list(line.values())[0])
             if m:
                 # not determine case will stop to the end
                 if case_name is None:

@@ -149,11 +149,11 @@ class TestVfRss(TestCase):
             time.sleep(.5)
 
         else:
-            print "\ntran_type error!\n"
+            print("\ntran_type error!\n")
 
         out = self.vm_dut_0.get_session_output()
-        print '*******************************************'
-        print out
+        print('*******************************************')
+        print(out)
         if not reta_entries:
             # for test_vfpmd_rss, check every queue can receive packet.
             for i in range(queue):
@@ -174,7 +174,7 @@ class TestVfRss(TestCase):
                     item = item.strip()
                     if item.startswith("RSS hash"):
                         name, value = item.split("=", 1)
-                        print name + "-" + value
+                        print(name + "-" + value)
                         reta_line[name.strip()] = value.strip()
                         reta_lines.append(reta_line)
                         reta_line = {}
@@ -350,7 +350,7 @@ class TestVfRss(TestCase):
             self.vm0_testpmd.start_testpmd(
                 "all", "--rxq=%d --txq=%d %s" % (queue, queue, eal_param), socket=self.vm0_ports_socket)
 
-            for iptype, rss_type in iptypes.items():
+            for iptype, rss_type in list(iptypes.items()):
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
                 self.vm_dut_0.send_expect(
@@ -409,7 +409,7 @@ class TestVfRss(TestCase):
             self.vm0_testpmd.start_testpmd(
                 "all", "--rxq=%d --txq=%d %s" % (queue, queue, eal_param), socket=self.vm0_ports_socket)
 
-            for iptype, rsstype in iptypes.items():
+            for iptype, rsstype in list(iptypes.items()):
                 self.vm_dut_0.send_expect("set verbose 8", "testpmd> ")
                 self.vm_dut_0.send_expect("set fwd rxonly", "testpmd> ")
                 if self.nic in ['sageville', 'sagepond'] and rsstype == 'sctp':

@@ -703,7 +703,7 @@ class TestL2fwdCrypto(TestCase):
                     "null": ["NULL"]
                     }
 
-        for index, value in test_vectors.iteritems():
+        for index, value in list(test_vectors.items()):
             test_vector_list = self.__test_vector_to_vector_list(value,
                 core_mask="-1", port_mask=self.port_mask)
             count = count + len(test_vector_list)
@@ -727,11 +727,11 @@ class TestL2fwdCrypto(TestCase):
                     map_combine[temp_str] += len(test_vector_list)
                 else:
                     map_combine[temp_str] = len(test_vector_list)
-        for k, v in alg_map.iteritems():
+        for k, v in list(alg_map.items()):
             self.logger.info("Total {name} cases:\t\t\t{number}".format(name=k, number=v))
-        for k, v in pmd_map.iteritems():
+        for k, v in list(pmd_map.items()):
             self.logger.info("Total {name} cases:\t\t\t{number}".format(name=k, number=v))
-        for k, v in map_combine.iteritems():
+        for k, v in list(map_combine.items()):
             self.logger.info("Total {name} cases:\t\t\t{number}".format(name=k, number=v))
         self.logger.info("Total cases:\t\t\t {0}".format(count))
 
@@ -779,36 +779,37 @@ class TestL2fwdCrypto(TestCase):
                     result = False
                     self.logger.info("no payload !")
                     continue
-                cipher_text = binascii.b2a_hex(packet_hex)
-                if str.lower(cipher_text) == str.lower(test_vector["output_cipher"]):
+                cipher_text = str(binascii.b2a_hex(packet_hex), encoding='utf-8')
+                if cipher_text.lower() == test_vector["output_cipher"].lower():
+
                     self.logger.debug(cipher_text)
                     self.logger.info("Cipher Matched.")
                 else:
                     if test_vector["output_cipher"] != "":
                         result = False
                         self.logger.info("Cipher NOT Matched.")
-                        self.logger.info("Cipher text in packet = " + cipher_text)
+                        self.logger.info("Cipher text in packet = " + str(cipher_text))
                         self.logger.info("Ref Cipher text       = " + test_vector["output_cipher"])
                     else:
                         self.logger.info("Skip Cipher, Since no cipher text set")
 
-                hash_length = len(test_vector["output_hash"])/2
+                hash_length = len(test_vector["output_hash"])//2
                 if hash_length != 0:
                     if test_vector["auth_algo"] == "null":
-                        hash_text = binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load"))
+                        hash_text = str(binascii.b2a_hex(pkt_rec.pktgen.pkt["Raw"].getfieldval("load")), encoding='utf-8')
                     else:
-                        hash_text = binascii.b2a_hex(pkt_rec[i]["Padding"].getfieldval("load"))
-                    if str.lower(hash_text) == str.lower(test_vector["output_hash"]):
+                        hash_text = str(binascii.b2a_hex(pkt_rec.pktgen.pkt["Padding"].getfieldval("load")), encoding='utf-8')
+                    if hash_text.lower() == test_vector["output_hash"].lower():
                         self.logger.info("Hash Matched")
                     else:
                         result = False
                         self.logger.info("Hash NOT Matched")
-                        self.logger.info("Hash text in packet = " + hash_text)
+                        self.logger.info("Hash text in packet = " + str(hash_text))
                         self.logger.info("Ref Hash text       = " + test_vector["output_hash"])
                 else:
                     self.logger.info("Skip Hash, Since no hash text set")
 
-            self.logger.info("Packet Size :    %d " % (len(test_vector["input"]) / 2))
+            self.logger.info("Packet Size :    %d " % (len(test_vector["input"]) // 2))
 
             # Close l2fwd-crypto process
             self.dut.kill_all()
@@ -1045,10 +1046,11 @@ class TestL2fwdCrypto(TestCase):
         out_str = ""
         cipher_algo = vector['cipher_algo']
 
-        mBitlen = 8 * (len(vector['input']) / 2)
+        mBitlen = 8 * (len(vector['input']) // 2)
         bin_input = bytearray.fromhex(vector["input"])
-        str_input = str(bin_input)
+        str_input = str(bin_input, encoding='utf-8')
         bin_key = binascii.a2b_hex(vector["cipher_key"])
+        bin_key = str(bin_key, encoding='utf-8')
 
         if ((cipher_algo.upper()).find("KASUMI") != -1):
             vector["iv"] = vector["iv"][:10] + "000000"
@@ -1064,7 +1066,7 @@ class TestL2fwdCrypto(TestCase):
             out_str = cm.EEA3(key=bin_key, count=0x10203, bearer=0, dir=1,
                            data=str_input, bitlen=mBitlen)
 
-        cipher_str = out_str.encode("hex").upper()
+        cipher_str = out_str.upper()
 
         return cipher_str
 
@@ -1097,7 +1099,7 @@ class TestL2fwdCrypto(TestCase):
         elif (vector['cipher_algo']).upper() == "NULL":
             cipher_str = vector["input"] if vector["chain"].upper().find("HASH_") == -1 else vector["output_hash"]
         else:
-            cipher_str = self.__cryptography_cipher(vector)
+            cipher_str = str(self.__cryptography_cipher(vector), encoding='utf-8')
         vector["output_cipher"] = cipher_str.lower()
 
     def __gen_kasumi_hash(self, vector):
@@ -1105,12 +1107,13 @@ class TestL2fwdCrypto(TestCase):
         auth_algo = vector['auth_algo']
         mBitlen = 8 * (len(vector['input']) / 2)
         bin_input = bytearray.fromhex(vector["input"])
-        str_input = str(bin_input)
+        str_input = str(bin_input, encoding='utf-8')
         bin_key = binascii.a2b_hex(vector["auth_key"])
+        bin_key = str(bin_key, encoding='utf-8')
 
         hash_out = cm.UIA1(key=bin_key, count=0X10203, fresh=0X4050607, dir=0,
                         data=str_input)
-        auth_str = hash_out.encode("hex").lower()
+        auth_str = hash_out.lower()
 
         vector["input"] = '0001020304050607' + vector["input"] + '40'
         return auth_str
@@ -1120,14 +1123,15 @@ class TestL2fwdCrypto(TestCase):
         auth_algo = vector['auth_algo']
         mBitlen = 8 * (len(vector['input']) / 2)
         bin_input = bytearray.fromhex(vector["input"])
-        str_input = str(bin_input)
+        str_input = str(bin_input, encoding='utf-8')
         bin_key = binascii.a2b_hex(vector["auth_key"])
+        bin_key = str(bin_key, encoding='utf-8')
         vector["aad"] = "00000000000000000000000000000000"
 
         hash_out = cm.UIA2(key=bin_key, count=0, fresh=0, dir=0,
                         data=str_input)
 
-        auth_str = hash_out.encode("hex").lower()
+        auth_str = hash_out.lower()
 
         return auth_str
 
@@ -1136,13 +1140,14 @@ class TestL2fwdCrypto(TestCase):
         auth_algo = vector['auth_algo']
         mBitlen = 8 * (len(vector['input']) / 2)
         bin_input = bytearray.fromhex(vector["input"])
-        str_input = str(bin_input)
+        str_input = str(bin_input, encoding='utf-8')
         bin_key = binascii.a2b_hex(vector["auth_key"])
+        bin_key = str(bin_key, encoding='utf-8')
 
         vector["aad"] = "00000000000000000000000000000000"
 
         hash_out = cm.EIA3(key=bin_key, count=0, bearer=0, dir=0, data=str_input, bitlen=mBitlen)
-        auth_str = hash_out.encode("hex").lower()
+        auth_str = hash_out.lower()
 
         return auth_str
 
@@ -1235,6 +1240,8 @@ class TestL2fwdCrypto(TestCase):
             hash_str = hashlib.sha512(binascii.a2b_hex(vector["auth_key"])).hexdigest()
         else:
             pass
+        if not isinstance(hash_str, str):
+            hash_str = str(hash_str, encoding='utf-8')
         vector["output_hash"] = hash_str.lower()
         self.__actually_pmd_hash(vector)
 
@@ -1431,7 +1438,7 @@ class TestL2fwdCrypto(TestCase):
                 ]
         if vector["auth_algo"] in auth_algo_dgst_map:
             digest = vector["digest_size"]
-            if digest >= (len(vector["output_hash"]) / 2):
+            if digest >= (len(vector["output_hash"]) // 2):
                 vector["output_hash"] = vector["output_hash"]
             else:
                 vector["output_hash"] = (vector["output_hash"])[0:2*digest]
@@ -2057,7 +2064,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "aesni_mb_h_MD_SHA_00": {
-        "vdev": "crypto_aesni_mb_pmd",
+        "vdev": "crypto_aesni_mb",
         "chain": ["HASH_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": "",
@@ -2078,7 +2085,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "aesni_mb_aead_AES_GCM_00": {
-        "vdev": "crypto_aesni_mb_pmd",
+        "vdev": "crypto_aesni_mb",
         "chain": ["AEAD"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],

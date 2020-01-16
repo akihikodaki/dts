@@ -196,7 +196,7 @@ class TestL3fwdEM(TestCase):
 
             coreMask = {}
             rtCmdLines = dict(TestL3fwdEM.test_cases_2_ports)
-            for key in rtCmdLines.keys():
+            for key in list(rtCmdLines.keys()):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
@@ -213,7 +213,7 @@ class TestL3fwdEM(TestCase):
                 # start l3fwd
                 index = 0
                 subtitle = []
-                for cores in rtCmdLines.keys():
+                for cores in list(rtCmdLines.keys()):
 
                     info = "Executing l3fwd using %s mode, 2 ports, %s and %d frame size.\n" % (
                            mode, cores, frame_size)

@@ -151,7 +151,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
                 self.vm_dut.send_expect(
                     "set_cpu_freq %d down" % vcpu, "vmpower\(guest\)>")
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
-                print utils.GREEN("After frequency down, freq is %d\n" % cur_freq)
+                print((utils.GREEN("After frequency down, freq is %d\n" % cur_freq)))
                 self.verify(
                     ori_freq > cur_freq, "Cpu freqenecy can not scale down")
                 ori_freq = cur_freq
@@ -178,7 +178,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
                 self.vm_dut.send_expect(
                     "set_cpu_freq %d up" % vcpu, "vmpower\(guest\)>")
                 cur_freq = self.get_cpu_frequency(self.vcpu_map[vcpu])
-                print utils.GREEN("After frequency up, freq is %d\n" % cur_freq)
+                print((utils.GREEN("After frequency up, freq is %d\n" % cur_freq)))
                 self.verify(
                     cur_freq > ori_freq, "Cpu freqenecy can not scale up")
                 ori_freq = cur_freq
@@ -205,7 +205,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
             max_freq = int(out)
 
             self.verify(freq == max_freq, "Cpu max frequency not correct")
-            print utils.GREEN("After frequency max, freq is %d\n" % max_freq)
+            print((utils.GREEN("After frequency max, freq is %d\n" % max_freq)))
         self.vm_dut.send_expect("quit", "# ")
 
     def test_vm_power_managment_freqmin(self):
@@ -228,7 +228,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
             min_freq = int(out)
 
             self.verify(freq == min_freq, "Cpu min frequency not correct")
-            print utils.GREEN("After frequency min, freq is %d\n" % min_freq)
+            print((utils.GREEN("After frequency min, freq is %d\n" % min_freq)))
         self.vm_dut.send_expect("quit", "# ")
 
     def test_vm_power_multivms(self):
@@ -322,7 +322,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
                               "vmpower.pcap"))
             # run traffic generator
             [latency] = self.tester.traffic_generator_latency(tgen_input)
-            print latency
+            print(latency)
             table_row = [frame_size, latency['max'], latency['min'],
                          latency['average']]
             self.result_table_add(table_row)
@@ -390,7 +390,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
 
     def get_freq_in_transmission(self):
         self.cur_freq = self.get_cpu_frequency(self.vcpu_map[1])
-        print utils.GREEN("Current cpu frequency %d" % self.cur_freq)
+        print((utils.GREEN("Current cpu frequency %d" % self.cur_freq)))
 
     def get_max_freq(self, core_num):
         freq_path = "cat /sys/devices/system/cpu/cpu%d/cpufreq/" + \

@@ -149,12 +149,12 @@ class TestVfOffload(TestCase):
 
         self.tester.send_expect("scapy", ">>> ")
 
-        for packet_type in packets_expected.keys():
+        for packet_type in list(packets_expected.keys()):
             self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
             out = self.tester.send_expect("p.show2()", ">>>")
             chksums = checksum_pattern.findall(out)
             chksum[packet_type] = chksums
-            print packet_type, ": ", chksums
+            print(packet_type, ": ", chksums)
 
         self.tester.send_expect("exit()", "#")
 
@@ -163,12 +163,12 @@ class TestVfOffload(TestCase):
         self.tester.scapy_append('nr_packets=len(p)')
         self.tester.scapy_append('reslist = [p[i].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]')
         self.tester.scapy_append('import string')
-        self.tester.scapy_append('RESULT = string.join(reslist, ",")')
+        self.tester.scapy_append('RESULT = ",".join(reslist)')
 
         # Send packet.
         self.tester.scapy_foreground()
 
-        for packet_type in packets_sent.keys():
+        for packet_type in list(packets_sent.keys()):
             self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], tx_interface))
 
         self.tester.scapy_execute()
@@ -178,7 +178,7 @@ class TestVfOffload(TestCase):
 
         for packet_received in packets_received:
             ip_checksum, tcp_checksum, udp_checksup, sctp_checksum = packet_received.split(';')
-            print "ip_checksum: ", ip_checksum, "tcp_checksum:, ", tcp_checksum, "udp_checksup: ", udp_checksup, "sctp_checksum: ", sctp_checksum
+            print("ip_checksum: ", ip_checksum, "tcp_checksum:, ", tcp_checksum, "udp_checksup: ", udp_checksup, "sctp_checksum: ", sctp_checksum)
 
             packet_type = ''
             l4_checksum = ''
@@ -251,7 +251,7 @@ class TestVfOffload(TestCase):
         self.verify(bad_ipcsum == 3, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 5, "Bad-l4csum check error")
 
-        self.verify(len(result) == 0, string.join(result.values(), ","))
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
     def test_checksum_offload_disable(self):
         """
@@ -293,7 +293,7 @@ class TestVfOffload(TestCase):
         self.verify(bad_ipcsum == 2, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 4, "Bad-l4csum check error")
 
-        self.verify(len(result) == 0, string.join(result.values(), ","))
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
     def tcpdump_start_sniffing(self, ifaces=[]):
         """
@@ -323,7 +323,7 @@ class TestVfOffload(TestCase):
         """
 
         result = self.tester.send_expect(command, '#')
-        print result
+        print(result)
         return int(result.strip())
 
     def number_of_packets(self, iface):
@@ -402,7 +402,7 @@ class TestVfOffload(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.vm0_testpmd.execute_cmd("show port stats all")
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -411,7 +411,7 @@ class TestVfOffload(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV4 RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = loading_size // 800
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -424,7 +424,7 @@ class TestVfOffload(TestCase):
             self.tester.scapy_append('sendp([Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="FE80:0:0:0:200:1FF:FE00:200", dst="3555:5555:6666:6666:7777:7777:8888:8888")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.vm0_testpmd.execute_cmd("show port stats all")
-            print out
+            print(out)
             self.tcpdump_stop_sniff()
             rx_stats = self.number_of_packets(rx_interface)
             tx_stats = self.number_of_packets(tx_interface)
@@ -433,7 +433,7 @@ class TestVfOffload(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "IPV6 RX or TX packet number not correct")
             else:
-                num = loading_size/800
+                num = loading_size // 800
                 for i in range(num):
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
                 if loading_size% 800 != 0:
@@ -444,7 +444,7 @@ class TestVfOffload(TestCase):
         self.dut.send_expect("ifconfig %s mtu %s" % (self.dut.ports_info[0]['intf'], DEFAULT_MTU), "# ")
 
     def tear_down_all(self):
-        print "tear_down_all"
+        print("tear_down_all")
         if self.setup_2pf_2vf_1vm_env_flag == 1:
             self.destroy_2pf_2vf_1vm_env()
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])), DEFAULT_MTU), "# ")

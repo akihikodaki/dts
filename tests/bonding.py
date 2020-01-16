@@ -148,8 +148,7 @@ class PmdBonding(object):
     def get_pkt_len(self, pkt_type):
         ''' get packet payload size '''
         frame_size = self.default_pkt_size
-        headers_size = sum(map(lambda x: HEADER_SIZE[x],
-                               ['eth', 'ip', pkt_type]))
+        headers_size = sum([HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
         pktlen = frame_size - headers_size
         return pktlen
 
@@ -186,7 +185,7 @@ class PmdBonding(object):
         pkt_type = pkt_config.get('type')
         pkt_layers = pkt_config.get('pkt_layers')
         pkt = Packet(pkt_type=pkt_type.upper())
-        for layer in pkt_layers.keys():
+        for layer in list(pkt_layers.keys()):
             pkt.config_layer(layer, pkt_layers[layer])
         pkt.save_pcapfile(filename=savePath)
         streams.append(pkt.pktgen.pkt)
@@ -233,7 +232,7 @@ class PmdBonding(object):
             pkt_type = values.get('type')
             pkt_layers = values.get('pkt_layers')
             pkt = Packet(pkt_type=pkt_type.upper())
-            for layer in pkt_layers.keys():
+            for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
             pkt.save_pcapfile(filename=savePath)
             streams.append(pkt.pktgen.pkt)
@@ -265,7 +264,7 @@ class PmdBonding(object):
         self.tgen_input = []
         tgen_input = self.tgen_input
         # generate packet contain multi stream
-        for pkt in self.packet_types.values():
+        for pkt in list(self.packet_types.values()):
             send_pkts.append(pkt.pktgen.pkt)
         ixia_pkt = os.sep.join([self.target_source, 'bonding_ixia.pcap'])
         wrpcap(ixia_pkt, send_pkts)
@@ -481,7 +480,7 @@ class PmdBonding(object):
         """
         get one port statistics of testpmd
         """
-        _portid = int(portid) if isinstance(portid, (str, unicode)) else portid
+        _portid = int(portid) if isinstance(portid, str) else portid
         info = self.testpmd.get_pmd_stats(_portid)
         _kwd = ["-packets", "-errors", "-bytes"]
         stats = {}
@@ -490,7 +489,7 @@ class PmdBonding(object):
                 for item2 in _kwd:
                     name = item.upper() + item2
                     stats[name] = int(info[name])
-        elif isinstance(flow, (str, unicode)):
+        elif isinstance(flow, str):
             for item in _kwd:
                 name = flow.upper() + item
                 stats[name] = int(info[name])
@@ -547,7 +546,7 @@ class PmdBonding(object):
         """
         Get some values from the given string by the regular expression.
         """
-        if isinstance(key_str, (unicode, str)):
+        if isinstance(key_str, str):
             pattern = r"(?<=%s)%s" % (key_str, regx_str)
             s = re.compile(pattern)
             res = s.search(string)
@@ -613,12 +612,12 @@ class PmdBonding(object):
                         ['Min possible number of TXDs per queue: ', "\d+"],]
         }
 
-        if info_type in info_set.keys():
+        if info_type in list(info_set.keys()):
             return self.get_detail_from_port_info(port_id, info_set[info_type])
         else:
             msg = os.linesep.join([
                 "support query items including::",
-                os.linesep.join(info_set.keys())])
+                os.linesep.join(list(info_set.keys()))])
             self.logger.warning(msg)
             return None
     # 
@@ -664,7 +663,7 @@ class PmdBonding(object):
         if isinstance(info_types, (list or tuple)):
             query_values = []
             for info_type in info_types:
-                if info_type in info_set.keys():
+                if info_type in list(info_set.keys()):
                     find_value = self.get_info_from_bond_config(
                                             config_content, info_set[info_type])
                     if info_type in ['active_slaves', 'slaves']:
@@ -676,7 +675,7 @@ class PmdBonding(object):
             return query_values
         else:
             info_type = info_types
-            if info_type in info_set.keys():
+            if info_type in list(info_set.keys()):
                 find_value = self.get_info_from_bond_config(
                                             config_content, info_set[info_type])
                 if info_type in ['active_slaves', 'slaves']:

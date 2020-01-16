@@ -95,7 +95,7 @@ class TestMultiplePthread(TestCase):
             if data != '':
                 data_row = re.findall(r'[\d\.]+', data)
                 if data_row[0] == data_row[1]:
-                    self.verify(data_row[2] > 0, "master thread are not running")
+                    self.verify(float(data_row[2]) > 0, "master thread are not running")
                     # add data to the table
                 self.result_table_add(data_row)
                 self.out_view['data'].append(data_row)
@@ -109,7 +109,7 @@ class TestMultiplePthread(TestCase):
                 data_row = re.findall(r'[\d\.]+', data)
                 for lcore in lcore_list:
                     if data_row[3] == lcore:
-                        self.verify(data_row[2] > 0, "TID:%s not running" % data_row[1])
+                        self.verify(float(data_row[2]) > 0, "TID:%s not running" % data_row[1])
                 self.result_table_add(data_row)
                 self.out_view['data'].append(data_row)
         # print table

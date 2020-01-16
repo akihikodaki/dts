@@ -111,7 +111,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         config_qemu = False
         params_num = len(self.vm.params)
         for qemu_index in range(params_num):
-            if self.vm.params[qemu_index].keys()[0] == "qemu":
+            if list(self.vm.params[qemu_index].keys())[0] == "qemu":
                 qemu_num = len(self.vm.params[qemu_index]["qemu"])
                 config_qemu = True
                 break
@@ -164,7 +164,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         params_num = len(self.vm.params)
         for qemu_index in range(params_num):
-            if self.vm.params[qemu_index].keys()[0] == "qemu":
+            if list(self.vm.params[qemu_index].keys())[0] == "qemu":
                 qemu_num = len(self.vm.params[qemu_index]["qemu"])
                 break
         self.verify(qemu_index < params_num, "Please config qemu path in conf gile")

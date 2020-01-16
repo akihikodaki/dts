@@ -64,11 +64,11 @@ class TestPowerEmptPoll(TestCase):
         return target_dir
 
     def d_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)
 
     def d_a_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         return self.dut.alt_session.send_expect(*_cmd)
 
     def prepare_binary(self, name):
@@ -135,13 +135,13 @@ class TestPowerEmptPoll(TestCase):
         # create packet instance for send
         streams = []
         for stm_name in stm_names:
-            if stm_name not in pkt_configs.keys():
+            if stm_name not in list(pkt_configs.keys()):
                 continue
             values = pkt_configs[stm_name]
             pkt_type = values.get('type')
             pkt_layers = values.get('pkt_layers')
             pkt = Packet(pkt_type=pkt_type)
-            for layer in pkt_layers.keys():
+            for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
             streams.append(pkt.pktgen.pkt)
 

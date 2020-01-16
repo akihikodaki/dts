@@ -155,7 +155,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.vm_qemu_version = vm_config.qemu_emulator
         params_number = len(vm_config.params)
         for i in range(params_number):
-            if vm_config.params[i].keys()[0] == 'qemu':
+            if list(vm_config.params[i].keys())[0] == 'qemu':
                 self.vm_qemu_version = vm_config.params[i]['qemu'][0]['path']
 
         out = self.dut.send_expect("%s --version" % self.vm_qemu_version, "#")
@@ -193,7 +193,7 @@ class TestPVPVhostUserReconnect(TestCase):
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
-                print utils.RED("Failure for %s" % str(e))
+                print(utils.RED("Failure for %s" % str(e)))
             self.verify(vm_dut is not None, "start vm failed")
             self.vm_dut.append(vm_dut)
             self.vm.append(vm_info)

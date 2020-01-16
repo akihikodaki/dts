@@ -254,14 +254,14 @@ class TestFM10kL3fwd(TestCase):
             self.fm10k_rxmode_set(mode = mode['rxmode'])
             if mode['txmode'] == 'default':
                 # need --enable-jumbo parameter
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     if "--enable-jumbo" not in TestFM10kL3fwd.test_cases_2_ports[key]:
                         TestFM10kL3fwd.test_cases_2_ports[key] += " --enable-jumbo"
             else:
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
+            print((GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))))
             self.perf_l3fwd_2ports()
 
         # remove setting for scatter
@@ -277,14 +277,14 @@ class TestFM10kL3fwd(TestCase):
             self.fm10k_rxmode_set(mode = mode['rxmode'])
             if mode['txmode'] == 'default':
                 # need --enable-jumbo parameter
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     if "--enable-jumbo" not in TestFM10kL3fwd.test_cases_2_ports[key]:
                         TestFM10kL3fwd.test_cases_2_ports[key] += " --enable-jumbo"
             else:
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
+            print((GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))))
             self.perf_l3fwd_2ports()
 
         # remove setting for scatter
@@ -339,7 +339,7 @@ class TestFM10kL3fwd(TestCase):
 
             coreMask = {}
             rtCmdLines = dict(TestFM10kL3fwd.test_cases_2_ports)
-            for key in rtCmdLines.keys():
+            for key in list(rtCmdLines.keys()):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
@@ -358,7 +358,7 @@ class TestFM10kL3fwd(TestCase):
                 # start l3fwd
                 index = 0
                 subtitle = []
-                for cores in rtCmdLines.keys():
+                for cores in list(rtCmdLines.keys()):
 
                     info = "Executing l3fwd using %s mode, 2 ports, %s and %d frame size.\n" % (
                            mode, cores, frame_size)
@@ -415,7 +415,7 @@ class TestFM10kL3fwd(TestCase):
 
                     # Stop l3fwd
                     self.dut.send_expect("^C", "#")
-                    print latencys
+                    print(latencys)
 
                     for latency in latencys:
                         if latency['max'] > 0:
@@ -472,7 +472,7 @@ class TestFM10kL3fwd(TestCase):
 
             coreMask = {}
             rtCmdLines = dict(TestFM10kL3fwd.test_cases_2_ports)
-            for key in rtCmdLines.keys():
+            for key in list(rtCmdLines.keys()):
                 corelist = []
                 while pat.search(rtCmdLines[key]):
                     # Change the socket to the NIC's socket
@@ -489,7 +489,7 @@ class TestFM10kL3fwd(TestCase):
                 # start l3fwd
                 index = 0
                 subtitle = []
-                for cores in rtCmdLines.keys():
+                for cores in list(rtCmdLines.keys()):
 
                     # in order to save time, only some of the cases will be run.
                     if mode == "lpm" and (cores == "1S/1C/1T" or cores == "1S/4C/1T"):
@@ -561,14 +561,14 @@ class TestFM10kL3fwd(TestCase):
             self.fm10k_rxmode_set(mode = mode['rxmode'])
             if mode['txmode'] == 'default':
                 # need --enable-jumbo parameter
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     if "--enable-jumbo" not in TestFM10kL3fwd.test_cases_2_ports[key]:
                         TestFM10kL3fwd.test_cases_2_ports[key] += " --enable-jumbo"
             else:
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
+            print((GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))))
             self.perf_rfc2544()
 
         # remove setting for scatter
@@ -583,14 +583,14 @@ class TestFM10kL3fwd(TestCase):
             self.fm10k_rxmode_set(mode = mode['rxmode'])
             if mode['txmode'] == 'default':
                 # need --enable-jumbo parameter
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     if "--enable-jumbo" not in TestFM10kL3fwd.test_cases_2_ports[key]:
                         TestFM10kL3fwd.test_cases_2_ports[key] += " --enable-jumbo"
             else:
-                for key in TestFM10kL3fwd.test_cases_2_ports.keys():
+                for key in list(TestFM10kL3fwd.test_cases_2_ports.keys()):
                     TestFM10kL3fwd.test_cases_2_ports[key].replace(" --enable-jumbo", "")
 
-            print GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))
+            print((GREEN("Performance test for rxmode %s txmode %s" % (mode['rxmode'], mode['txmode']))))
             self.perf_rfc2544()
 
         # remove setting for scatter

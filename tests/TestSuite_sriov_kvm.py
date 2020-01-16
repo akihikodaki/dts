@@ -111,7 +111,7 @@ class TestSriovKvm(TestCase):
         try:
             dut_dest_port = dut_ports[dest_port]
         except Exception as e:
-            print
+            print()
             e
 
         # using api get_local_port() to get the correct tester port.
@@ -377,7 +377,7 @@ class TestSriovKvm(TestCase):
 
     def make_port_new_ruleid(self, port):
         port = self.transform_integer(port)
-        if port not in self.port_mirror_ref.keys():
+        if port not in list(self.port_mirror_ref.keys()):
             max_rule_id = 0
         else:
             rule_ids = sorted(self.port_mirror_ref[port])
@@ -391,7 +391,7 @@ class TestSriovKvm(TestCase):
         port = self.transform_integer(port)
         rule_id = self.transform_integer(rule_id)
 
-        if port not in self.port_mirror_ref.keys():
+        if port not in list(self.port_mirror_ref.keys()):
             self.port_mirror_ref[port] = [rule_id]
         else:
             self.verify(rule_id not in self.port_mirror_ref[port],
@@ -401,7 +401,7 @@ class TestSriovKvm(TestCase):
     def remove_port_ruleid(self, port, rule_id):
         port = self.transform_integer(port)
         rule_id = self.transform_integer(rule_id)
-        if port not in self.port_mirror_ref.keys():
+        if port not in list(self.port_mirror_ref.keys()):
             pass
         else:
             if rule_id not in self.port_mirror_ref[port]:
@@ -472,7 +472,7 @@ class TestSriovKvm(TestCase):
         """
         port = self.transform_integer(port)
 
-        if port not in self.port_mirror_ref.keys():
+        if port not in list(self.port_mirror_ref.keys()):
             pass
         else:
             for rule_id in self.port_mirror_ref[port][:]:
@@ -555,7 +555,7 @@ class TestSriovKvm(TestCase):
 
     def calculate_stats(self, start_stats, end_stats):
         ret_stats = {}
-        for key in start_stats.keys():
+        for key in list(start_stats.keys()):
             try:
                 start_stats[key] = int(start_stats[key])
                 end_stats[key] = int(end_stats[key])

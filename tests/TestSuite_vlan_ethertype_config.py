@@ -155,7 +155,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.vlan_send_packet(vlan, tpid)
         out = self.get_tcpdump_packet(self.rxItf)
         tpid_vlan = str("%04x" % tpid) + str("%04x" % vlan)
-        print "tpid_vlan: %s" % tpid_vlan
+        print(("tpid_vlan: %s" % tpid_vlan))
         if(result):
             self.verify(tpid_vlan in out, "Wrong vlan:" + str(out))
         else:
@@ -166,7 +166,7 @@ class TestVlanEthertypeConfig(TestCase):
         Test Case 1: change VLAN TPID
         """
         if self.kdriver == "fm10k":
-            print dts.RED("fm10k not support this case\n")
+            print((dts.RED("fm10k not support this case\n")))
             return
         random_vlan = random.randint(1, MAX_VLAN - 1)
         self.dut.send_expect("set fwd rxonly", "testpmd> ")

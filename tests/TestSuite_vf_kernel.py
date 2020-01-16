@@ -250,7 +250,7 @@ class TestVfKernel(TestCase):
             out = session.send_expect(
                 "ping -w 5 -c 5 -A -I %s %s" % (intf, ipv4), "# ")
             if '64 bytes from' not in out:
-                print GREEN("%s ping %s failed, retry" % (intf, ipv4))
+                print(GREEN("%s ping %s failed, retry" % (intf, ipv4)))
             else:
                 return True
         return False
@@ -495,8 +495,8 @@ class TestVfKernel(TestCase):
             # SIOCSIFFLAGS: Network is down
             # i think the pf link abnormal
             if "Link detected: no" in out:
-                print GREEN(out)
-                print GREEN("Try again")
+                print(GREEN(out))
+                print(GREEN("Try again"))
                 session.restore_interfaces_linux()
             else:
                 return True
@@ -689,7 +689,7 @@ class TestVfKernel(TestCase):
         # Send multi-threaded traffics to the DUT with a number of threads
         # Check kernel VF each queue can receive packets
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
-        for i in xrange(5):
+        for i in range(5):
             mythread = threading.Thread(target=self.send_packet(vm0_vf0_mac))
             mythread.start()
 
@@ -1046,7 +1046,7 @@ class TestVfKernel(TestCase):
         """
         Load kernel driver stress
         """
-        for i in xrange(100):
+        for i in range(100):
             out = self.vm0_dut.send_expect("rmmod %svf" % self.kdriver, "#")
             self.verify('error' not in out,
                         "stress error for rmmod %svf:%s" % (self.kdriver, out))

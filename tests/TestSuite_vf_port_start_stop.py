@@ -60,7 +60,7 @@ class TestVfPortStartStop(TestCase):
                     'IPv6/UDP': 'Ether(dst="%s", src="%s")/IPv6(src="::2")/UDP()/("X"*46)' % (dst_mac, src_mac),
                     'IPv6/TCP': 'Ether(dst="%s", src="%s")/IPv6(src="::2")/TCP()/("X"*46)' % (dst_mac, src_mac),}
 
-        for key in def_pkts.keys():
+        for key in list(def_pkts.keys()):
             self.pkts.append_pkt(def_pkts[key])
         self.send_pks_session = self.pkts.send_pkt_bg(self.tester, self.tester_tintf)
 

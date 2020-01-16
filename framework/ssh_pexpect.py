@@ -12,7 +12,7 @@ Also supports transfer files to tester or DUT.
 """
 
 
-class SSHPexpect(object):
+class SSHPexpect:
 
     def __init__(self, host, username, password, dut_id):
         self.magic_prompt = "MAGIC PROMPT"
@@ -35,7 +35,7 @@ class SSHPexpect(object):
         be modified along with MaxStartups value.
         """
         try:
-            self.session = pxssh.pxssh()
+            self.session = pxssh.pxssh(encoding='utf-8')
             if ':' in self.host:
                 self.ip = self.host.split(':')[0]
                 self.port = int(self.host.split(':')[1])
@@ -48,11 +48,11 @@ class SSHPexpect(object):
             self.send_expect('stty -echo', '#')
             self.send_expect('stty columns 1000', "#")
         except Exception as e:
-            print RED(e)
+            print(RED(e))
             if getattr(self, 'port', None):
                 suggestion = "\nSuggession: Check if the firewall on [ %s ] " % \
                     self.ip + "is stopped\n"
-                print GREEN(suggestion)
+                print(GREEN(suggestion))
 
             raise SSHConnectionException(self.host)
 
@@ -86,7 +86,7 @@ class SSHPexpect(object):
             else:
                 return ret
         except Exception as e:
-            print RED("Exception happened in [%s] and output is [%s]" % (command, self.get_output_before()))
+            print(RED("Exception happened in [%s] and output is [%s]" % (command, self.get_output_before())))
             raise(e)
 
     def send_command(self, command, timeout=1):

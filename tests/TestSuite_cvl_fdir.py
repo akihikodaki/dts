@@ -536,7 +536,7 @@ tv_mac_ipv4_tcp_queue_group = {
     "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions rss queues 56 57 58 59 60 61 62 63 end / end",
     "scapy_str": MAC_IPV4_TCP,
     "check_func": rfc.check_queue,
-    "check_param": {"port_id": 0, "queue": range(56, 64)}
+    "check_param": {"port_id": 0, "queue": list(range(56, 64))}
 }
 
 tv_mac_ipv4_sctp_queue_group = {
@@ -544,7 +544,7 @@ tv_mac_ipv4_sctp_queue_group = {
     "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / sctp src is 22 dst is 23 tag is 1 / end actions rss queues 0 1 2 3 end / end",
     "scapy_str": MAC_IPV4_SCTP,
     "check_func": rfc.check_queue,
-    "check_param": {"port_id": 0, "queue": range(4)}
+    "check_param": {"port_id": 0, "queue": list(range(4))}
 }
 
 tv_mac_ipv6_pay_queue_group = {
@@ -584,7 +584,7 @@ tv_mac_ipv4_tun_ipv4_pay_queue_group = {
     "rule": "flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 end / end",
     "scapy_str": MAC_IPV4_TUN_IPV4_PAY_MAC_IPV4_TUN_MAC_IPV4_PAY,
     "check_func": rfc.check_queue,
-    "check_param": {"port_id": 0, "queue": range(9, 25)}
+    "check_param": {"port_id": 0, "queue": list(range(9, 25))}
 }
 
 tv_mac_ipv4_tun_ipv4_udp_queue_group = {
@@ -861,7 +861,7 @@ class TestCVLFdir(TestCase):
             if rule_list:
                 p = re.compile("^(\d+)\s")
                 li = out.splitlines()
-                res = filter(bool, map(p.match, li))
+                res = list(filter(bool, list(map(p.match, li))))
                 result = [i.group(1) for i in res]
                 self.verify(sorted(result) == sorted(rule_list),
                             "check rule list failed. expect %s, result %s" % (rule_list, result))
@@ -924,13 +924,13 @@ class TestCVLFdir(TestCase):
                 # check not rule exists
                 self.check_rule(port_id=port_id, stats=False)
                 test_results[tv["name"]] = True
-                print(GREEN("case passed: %s" % tv["name"]))
+                print((GREEN("case passed: %s" % tv["name"])))
             except Exception as e:
-                print(RED(e))
+                print((RED(e)))
                 test_results[tv["name"]] = False
                 continue
         failed_cases = []
-        for k, v in test_results.items():
+        for k, v in list(test_results.items()):
             if not v:
                 failed_cases.append(k)
         self.verify(all(test_results.values()), "{} failed.".format(failed_cases))
@@ -1035,7 +1035,7 @@ class TestCVLFdir(TestCase):
             if rule_list:
                 p = re.compile("^(\d+)\s")
                 li = out.splitlines()
-                res = filter(bool, map(p.match, li))
+                res = list(filter(bool, list(map(p.match, li))))
                 result = [i.group(1) for i in res]
                 self.verify(sorted(result) == sorted(rule_list),
                             "check rule list failed. expect %s, result %s" % (rule_list, result))
@@ -1122,12 +1122,12 @@ class TestCVLFdir(TestCase):
         try:
             self.create_fdir_rule(rule5, check_stats=True)
             out = self.send_pkts_getouput(pkts=MAC_IPV4_PAY["match"])
-            rfc.check_queue(out, pkt_num=len(MAC_IPV4_PAY["match"]), check_param={"port_id": 0, "queue": range(64)})
+            rfc.check_queue(out, pkt_num=len(MAC_IPV4_PAY["match"]), check_param={"port_id": 0, "queue": list(range(64))})
             out = self.send_pkts_getouput(pkts=MAC_IPV4_PAY["unmatch"])
-            rfc.check_queue(out, pkt_num=len(MAC_IPV4_PAY["unmatch"]), check_param={"port_id": 0, "queue": range(64)})
+            rfc.check_queue(out, pkt_num=len(MAC_IPV4_PAY["unmatch"]), check_param={"port_id": 0, "queue": list(range(64))})
         except Exception as e:
             result = False
-            print(RED("failed:" + str(e)))
+            print((RED("failed:" + str(e))))
         finally:
             # restore testpmd config to default, then verify results
             self.config_testpmd()
@@ -1140,7 +1140,7 @@ class TestCVLFdir(TestCase):
         # create fdir rule
         rule_li = self.create_fdir_rule(rule, check_stats=True)
         out = self.send_pkts_getouput(pkts=p_gtpu1, port_id=1, mark=True)
-        check_param = {"port_id": 1, "queue": range(64), "mark_id": 100}
+        check_param = {"port_id": 1, "queue": list(range(64)), "mark_id": 100}
         rfc.check_mark(out, pkt_num=1, check_param=check_param)
 
         out = self.send_pkts_getouput(pkts=p_gtpu2, port_id=1, mark=True)
@@ -1316,7 +1316,7 @@ class TestCVLFdir(TestCase):
         self.check_fdir_rule(0, stats=True, rule_list=res)
         self.dut.send_command("flow flush 0", timeout=1)
         out = self.send_pkts_getouput(pkts=[pkt1, pkt2, pkt3, pkt4, pkt5])
-        rfc.check_queue(out, pkt_num=5, check_param={"port_id": 0, "queue": range(1, 6)}, stats=False)
+        rfc.check_queue(out, pkt_num=5, check_param={"port_id": 0, "queue": list(range(1, 6))}, stats=False)
         out6 = self.send_pkts_getouput(pkt6, count=10)
         rfc.check_drop(out6, pkt_num=10, check_param={"port_id": 0}, stats=False)
         out7 = self.send_pkts_getouput(pkt7, count=10)

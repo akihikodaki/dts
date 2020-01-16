@@ -36,7 +36,6 @@ Test support of RX/TX Checksum Offload Features by Poll Mode Drivers.
 
 """
 
-import string
 import os
 import re
 from rst import RstReport
@@ -109,7 +108,7 @@ class TestChecksumOffload(TestCase):
 
         self.tester.send_expect("scapy", ">>> ")
 
-        for packet_type in packets_expected.keys():
+        for packet_type in list(packets_expected.keys()):
             self.tester.send_expect("p = %s" % packets_expected[packet_type], ">>>")
             out = self.tester.send_command("p.show2()", timeout=1)
             chksums = checksum_pattern.findall(out)
@@ -125,7 +124,7 @@ class TestChecksumOffload(TestCase):
         """
         self.dut.send_expect("start", "testpmd>")
         tx_interface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
-        for packet_type in packets_sent.keys():
+        for packet_type in list(packets_sent.keys()):
             self.pkt = packet.Packet(pkt_str=packets_sent[packet_type])
             self.pkt.send_pkt(self.tester, tx_interface, count=4)
             out = self.dut.get_session_output(timeout=1)
@@ -178,13 +177,15 @@ class TestChecksumOffload(TestCase):
                 filters=[{'layer': 'ether', 'config': {'src': sniff_src}}])
 
         self.pkt = packet.Packet()
-        for packet_type in packets_sent.keys():
+        for packet_type in list(packets_sent.keys()):
             self.pkt.append_pkt(packets_sent[packet_type])
         self.pkt.send_pkt(crb=self.tester, tx_port=tx_interface, count=4)
 
         p = self.tester.load_tcpdump_sniff_packets(inst)
         nr_packets = len(p)
+        print(p)
         packets_received = [p[i].sprintf("%IP.chksum%;%TCP.chksum%;%UDP.chksum%;%SCTP.chksum%") for i in range(nr_packets)]
+        print(len(packets_sent), len(packets_received))
         self.verify(len(packets_sent)*4 == len(packets_received), "Unexpected Packets Drop")
 
         for packet_received in packets_received:
@@ -241,7 +242,7 @@ class TestChecksumOffload(TestCase):
         self.dut.send_expect("start", "testpmd>")
         result = self.checksum_validate(pktsChkErr, pkts)
         self.dut.send_expect("stop", "testpmd>")
-        self.verify(len(result) == 0, string.join(result.values(), ","))
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
     def test_rx_checksum_valid_flags(self):
         """
@@ -319,7 +320,7 @@ class TestChecksumOffload(TestCase):
 
         self.dut.send_expect("stop", "testpmd>")
 
-        self.verify(len(result) == 0, string.join(result.values(), ","))
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
     def test_checksum_offload_disable(self):
         """
@@ -346,7 +347,7 @@ class TestChecksumOffload(TestCase):
         self.dut.send_expect("start", "testpmd>")
         result = self.checksum_validate(sndPkts, expPkts)
 
-        self.verify(len(result) == 0, string.join(result.values(), ","))
+        self.verify(len(result) == 0, ",".join(list(result.values())))
 
         self.dut.send_expect("stop", "testpmd>")
 
@@ -436,7 +437,7 @@ class TestChecksumOffload(TestCase):
                 self.checksum_enablesw(self.dut_ports[1])
 
             self.dut.send_expect("start", "testpmd> ", 3)
-            for ptype in pkts.keys():
+            for ptype in list(pkts.keys()):
                 self.benchmark(
                     lcore, ptype, mode, pkts[ptype], sizes, self.nic)
 

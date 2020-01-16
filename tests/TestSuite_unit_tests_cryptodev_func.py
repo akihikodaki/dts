@@ -131,7 +131,7 @@ class UnitTestsCryptodev(TestCase):
         try:
             out = self.dut.send_expect(testsuite, "RTE>>", timeout)
             self.dut.send_expect("quit", "# ", 30)
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error("Cryptodev Unit Tests Exception")
             dmesg = self.dut.alt_session.send_expect("dmesg", "# ", 30)
             self.logger.error("dmesg info:")

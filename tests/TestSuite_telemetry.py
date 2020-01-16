@@ -123,7 +123,7 @@ class TestTelemetry(TestCase):
         fileName = 'query_tool.py'
         query_script = os.path.join(self.output_path, fileName)
         with open(query_script, 'wb') as fp:
-            fp.write('#! /usr/bin/env python' + os.linesep + script_content)
+            fp.write(('#! /usr/bin/env python' + os.linesep + script_content).encode())
         self.dut.session.copy_file_to(query_script, self.target_dir)
         self.query_tool = ';'.join([
             'cd {}'.format(self.target_dir),
@@ -189,7 +189,7 @@ class TestTelemetry(TestCase):
         console, msg_pipe = self.get_console(con_name)
         if not cmds:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -228,7 +228,7 @@ class TestTelemetry(TestCase):
             self.used_ports = self.dut_ports
             return None
         pci_addrs = [
-            pci_addr for pci_addrs in self.nic_grp.values()[:nic_types]
+            pci_addr for pci_addrs in list(self.nic_grp.values())[:nic_types]
             for pci_addr in pci_addrs[:num]]
         for index in self.dut_ports:
             info = self.dut.ports_info[index]
@@ -250,7 +250,7 @@ class TestTelemetry(TestCase):
                                             socket=socket)
         self.testpmd_status = 'running'
         self.testpmd.execute_cmd('start')
-	if not self.change_flag:
+        if not self.change_flag:
             self.change_run_fileprefix(output)
         return output
 
@@ -363,7 +363,7 @@ class TestTelemetry(TestCase):
         metric_data = self.get_metric_data()
         msg = "haven't get all ports metric data"
         self.verify(len(self.used_ports) == len(metric_data), msg)
-        port_index_list = range(len(self.used_ports))
+        port_index_list = list(range(len(self.used_ports)))
         for port_index in metric_data:
             msg = '<{}> is not the expected port'.format(port_index)
             self.verify(
@@ -389,13 +389,13 @@ class TestTelemetry(TestCase):
             if len(metric[0]) == len(xstat[0]):
                 continue
             xstat_missed_paras = []
-            for keyname in metric[0].keys():
-                if keyname in xstat[0].keys():
+            for keyname in list(metric[0].keys()):
+                if keyname in list(xstat[0].keys()):
                     continue
                 xstat_missed_paras.append(keyname)
             metric_missed_paras = []
-            for keyname in xstat[0].keys():
-                if keyname in metric[0].keys():
+            for keyname in list(xstat[0].keys()):
+                if keyname in list(metric[0].keys()):
                     continue
                 metric_missed_paras.append(keyname)
             msg = os.linesep.join([
@@ -409,21 +409,21 @@ class TestTelemetry(TestCase):
             msg = 'telemetry metric data is not the same as testpmd xstat data'
             error_msg.append(msg)
             msg_fmt = 'port {} <{}>: metric is <{}>, xstat is is <{}>'.format
-            for port_index, info in metric.iteritems():
-                for name, value in info.iteritems():
+            for port_index, info in list(metric.items()):
+                for name, value in list(info.items()):
                     if value == xstat[port_index][str(name)]:
                         continue
                     error_msg.append(msg_fmt(port_index, name,
                                              value, xstat[port_index][name]))
         # check if metric parameters value should be zero
         # ensure extended NIC stats are 0
-        is_clear = any([any(data.values()) for data in metric.values()])
+        is_clear = any([any(data.values()) for data in list(metric.values())])
         if is_clear:
             msg = 'telemetry metric data are not default value'
             error_msg.append(msg)
             msg_fmt = 'port {} <{}>: metric is <{}>'.format
-            for port_index, info in metric.iteritems():
-                for name, value in info.iteritems():
+            for port_index, info in list(metric.items()):
+                for name, value in list(info.items()):
                     if not value:
                         continue
                     error_msg.append(msg_fmt(port_index, name, value))
@@ -478,7 +478,7 @@ class TestTelemetry(TestCase):
         try:
             self.start_telemetry_server()
             metric_data = self.get_metric_data()
-            port_index_list = range(len(self.dut_ports))
+            port_index_list = list(range(len(self.dut_ports)))
             msg = "haven't get all ports metric data"
             self.verify(len(self.dut_ports) == len(metric_data), msg)
             for port_index in metric_data:
@@ -495,7 +495,7 @@ class TestTelemetry(TestCase):
 
     def verify_same_nic_with_2ports(self):
         msg = os.linesep.join(['no enough ports', pformat(self.nic_grp)])
-        self.verify(len(self.nic_grp.values()[0]) >= 2, msg)
+        self.verify(len(list(self.nic_grp.values())[0]) >= 2, msg)
         try:
             # check and verify error show on testpmd
             whitelist = self.get_whitelist(num=2, nic_types=1)
@@ -510,7 +510,7 @@ class TestTelemetry(TestCase):
     def verify_same_nic_with_4ports(self):
         msg = os.linesep.join(['no enough ports, 4 ports at least',
                                pformat(self.nic_grp)])
-        self.verify(len(self.nic_grp.values()[0]) >= 4, msg)
+        self.verify(len(list(self.nic_grp.values())[0]) >= 4, msg)
         try:
             self.used_ports = self.dut_ports
             self.start_telemetry_server()
@@ -525,7 +525,7 @@ class TestTelemetry(TestCase):
         # check ports total number
         msg = os.linesep.join(['no enough nic types, 2 nic types at least',
                                pformat(self.nic_grp)])
-        self.verify(len(self.nic_grp.keys()) >= 2, msg)
+        self.verify(len(list(self.nic_grp.keys())) >= 2, msg)
         try:
             whitelist = self.get_whitelist()
             self.start_telemetry_server(whitelist)
@@ -539,12 +539,12 @@ class TestTelemetry(TestCase):
     def verify_different_nic_with_4ports(self):
         msg = os.linesep.join(['no enough nic types, 2 nic types at least',
                                pformat(self.nic_grp)])
-        self.verify(len(self.nic_grp.keys()) >= 2, msg)
+        self.verify(len(list(self.nic_grp.keys())) >= 2, msg)
         msg = os.linesep.join(['no enough ports, 2 ports/nic type at least',
                                pformat(self.nic_grp)])
         self.verify(
             all([pci_addrs and len(pci_addrs) >= 2
-                 for pci_addrs in self.nic_grp.values()]),
+                 for pci_addrs in list(self.nic_grp.values())]),
             msg)
 
         try:

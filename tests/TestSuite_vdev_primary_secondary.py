@@ -156,10 +156,10 @@ class TestVdevPrimarySecondary(TestCase):
         self.launch_examples()
         time.sleep(3)
         vhost_first_out =  self.vhost_first.send_expect("^c", "#", 15)
-        print vhost_first_out
+        print(vhost_first_out)
         time.sleep(3)
         vhost_secondary_out = self.vhost_secondary.send_expect("^c", "#", 15)
-        print vhost_secondary_out
+        print(vhost_secondary_out)
         result_first = re.findall(r'Port \d: RX - (\w+)', vhost_first_out)
         result_secondary = re.findall(r'Port \d: RX - (\w+)', vhost_secondary_out)
         self.verify(len(result_first[0]) != 0 and len(result_first[1]) != 0 and len(result_secondary[0]) != 0 and len(result_secondary[1]) != 0, "RX no data")

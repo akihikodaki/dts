@@ -212,7 +212,7 @@ class TestDistributor(TestCase):
     def _get_thread_lcore(self, core_num):
         def strip_core(x):
             return(int(x['thread']))
-        cores = map(strip_core, self.dut.cores[0:core_num])
+        cores = list(map(strip_core, self.dut.cores[0:core_num]))
         return cores
 
     def hook_transmission_func(self):

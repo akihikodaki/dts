@@ -66,7 +66,7 @@ class TestFlowFiltering(TestCase):
         Send packets according to parameters.
         """
         self.pkt = packet.Packet()
-        for packet_type in pkg.keys():
+        for packet_type in list(pkg.keys()):
             self.pkt.append_pkt(pkg[packet_type])
         self.pkt.send_pkt(crb=self.tester, tx_port=self.txitf, count=1)
 

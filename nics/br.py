@@ -116,9 +116,9 @@ class BoulderRapid(NetDevice):
         port_cfg = portconf.get_ports_config()[pci_addr]
 
         # secondary port do not need reinitialize
-        if 'sec_port' in port_cfg.keys():
-            print GREEN("Skip init second port test point session")
-            if 'first_port' not in port_cfg.keys():
+        if 'sec_port' in list(port_cfg.keys()):
+            print(GREEN("Skip init second port test point session"))
+            if 'first_port' not in list(port_cfg.keys()):
                 raise PortConfigParseException("BoulderRapid second port must configure first port")
             # find net_device by pci_addr
             first_addr = port_cfg['first_port']
@@ -132,16 +132,16 @@ class BoulderRapid(NetDevice):
             return
 
 
-        if 'tp_ip' not in port_cfg.keys():
+        if 'tp_ip' not in list(port_cfg.keys()):
             raise PortConfigParseException("BoulderRapid must configure test point ip")
-        if 'passwd' not in port_cfg.keys():
+        if 'passwd' not in list(port_cfg.keys()):
             raise PortConfigParseException("BoulderRapid must configure host password")
 
         crb = {}
         crb['IP'] = port_cfg['tp_ip']
         crb['pass'] = port_cfg['passwd']
 
-        if 'tp_path' in port_cfg.keys():
+        if 'tp_path' in list(port_cfg.keys()):
             self.tp_path = port_cfg['tp_path']
 
         # create additional session
@@ -187,7 +187,7 @@ class BoulderRapid(NetDevice):
         Before any execution, must enable test point first
         """
         if self.sec_port:
-            print GREEN("Skip start second port testpoint")
+            print(GREEN("Skip start second port testpoint"))
             return
 
         self.ctrl_crb.send_expect("cd %s" % self.tp_path, "# ")
@@ -251,7 +251,7 @@ class BoulderRapid(NetDevice):
         s = re.compile(pattern)
         res = s.search(dmac)
         if res is None:
-            print RED("search none mac filter")
+            print(RED("search none mac filter"))
             return None
         else:
             mac_filter = res.group(2)
@@ -259,7 +259,7 @@ class BoulderRapid(NetDevice):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print RED("search none port value")
+            print(RED("search none port value"))
             return None
         else:
             port_value = res.group(2)
@@ -268,7 +268,7 @@ class BoulderRapid(NetDevice):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print RED("search none port glort id")
+            print(RED("search none port glort id"))
             return None
         else:
             port_glortid = res.group(1)

@@ -188,10 +188,10 @@ class TestL3fwd(TestCase):
         elif ports == 4:
             rtCmdLines = dict(TestL3fwd.cmdline_4_ports)
 
-        for key in rtCmdLines.keys():
+        for key in list(rtCmdLines.keys()):
             corelist = []
             while pat.search(rtCmdLines[key]):
-                print rtCmdLines[key]
+                print(rtCmdLines[key])
                 rtCmdLines[key] = pat.sub(self.repl, rtCmdLines[key])
             core_mask[key] = utils.create_mask(set(corelist))
         return rtCmdLines, core_mask
@@ -260,7 +260,7 @@ class TestL3fwd(TestCase):
         for frame_size in self.frame_sizes:
             if l3_proto == "ipv6" and frame_size == 64:
                 frame_size += 2
-            for cores in rtCmdLines.keys():
+            for cores in list(rtCmdLines.keys()):
                 # Start L3fwd appliction
                 command_line = rtCmdLines[cores] % (TestL3fwd.path + l3_proto + "_l3fwd_" + mode, core_mask[cores],
                                                     self.dut.get_memory_channels(), utils.create_mask(valports))
@@ -314,7 +314,7 @@ class TestL3fwd(TestCase):
         for frame_size in self.frame_sizes:
             if l3_proto == "ipv6" and frame_size == 64:
                 frame_size += 2
-            for cores in rtCmdLines.keys():
+            for cores in list(rtCmdLines.keys()):
                 # in order to save time, only some of the cases will be run.
                 if cores in ["1S/2C/1T", "1S/4C/1T"]:
                     # Start L3fwd appliction

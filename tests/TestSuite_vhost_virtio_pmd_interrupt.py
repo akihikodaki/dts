@@ -167,7 +167,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         # config the vcpu numbers
         params_number = len(self.vm.params)
         for i in range(params_number):
-            if self.vm.params[i].keys()[0] == 'cpu':
+            if list(self.vm.params[i].keys())[0] == 'cpu':
                 self.vm.params[i]['cpu'][0]['number'] = self.queues
 
     def start_vms(self, mode=0):

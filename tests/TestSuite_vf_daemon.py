@@ -45,7 +45,7 @@ class TestVfDaemon(TestCase):
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
         for i in range(10):
             out = self.vm0_testpmd.execute_cmd('show port info 0')
-            print out
+            print(out)
             if 'Link status: down' in out:
                 self.dut_testpmd.execute_cmd('port stop all')
                 self.dut_testpmd.execute_cmd('port start all')

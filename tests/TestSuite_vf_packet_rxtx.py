@@ -149,7 +149,7 @@ class TestVfPacketRxtx(TestCase):
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
 
         result = self.tester.check_random_pkts(tgen_ports, allow_miss=False, params=pkt_param)
-        print self.vm0_testpmd.execute_cmd('show port stats all')
+        print(self.vm0_testpmd.execute_cmd('show port stats all'))
         self.verify(result != False, "VF0 failed to forward packets to VF1")
 
 
@@ -172,7 +172,7 @@ class TestVfPacketRxtx(TestCase):
         try:
 
             for port in self.sriov_vfs_port:
-                print port.pci
+                print(port.pci)
                 port.bind_driver(self.vf_driver)
 
             time.sleep(1)

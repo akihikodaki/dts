@@ -43,7 +43,7 @@ def VM(dut, vm_name, suite_name):
     # Default virt_type is 'KVM'
     virt_type = 'KVM'
     for param in local_conf:
-        if 'virt_type' in param.keys():
+        if 'virt_type' in list(param.keys()):
             virt_type = param['virt_type'][0]['virt_type']
 
     if virt_type == 'KVM':

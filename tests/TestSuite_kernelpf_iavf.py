@@ -362,7 +362,7 @@ class TestKernelpfIavf(TestCase):
         self.send_random_pkt(broadcast_mac, count=1)
         time.sleep(1)
         out = self.vm_dut.get_session_output()
-        print out
+        print(out)
         self.verify(broadcast_mac.upper() in out and self.tester_mac.upper() in out, 'vf receive pkt fail with broadcast mac')
 
     def test_vf_add_pvid(self):
@@ -492,7 +492,7 @@ class TestKernelpfIavf(TestCase):
         out = self.send_and_getout(pkt_type="UDP")
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        print out
+        print(out)
         self.verify(len(receive_pkt) == 1, 'Failed to received vlan packet!!!')
 
     def test_vf_vlan_strip(self):
@@ -574,7 +574,7 @@ class TestKernelpfIavf(TestCase):
         self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
-        for i, j in zip(range(64), [0, 1, 2, 3]*16):
+        for i, j in zip(list(range(64)), [0, 1, 2, 3]*16):
             self.vm_testpmd.execute_cmd("port config 0 rss reta (%d,%d)" % (i, j))
         self.vm_testpmd.execute_cmd("port config all rss ip")
         self.vm_testpmd.execute_cmd("port config all rss tcp")
@@ -662,7 +662,7 @@ class TestKernelpfIavf(TestCase):
         # Send packet.
         self.tester.scapy_foreground()
 
-        for packet_type in packets_sent.keys():
+        for packet_type in list(packets_sent.keys()):
             self.tester.scapy_append('sendp([%s], iface="%s")' % (packets_sent[packet_type], self.tester_intf))
             self.start_tcpdump(self.tester_intf)
             self.tester.scapy_execute()
@@ -791,13 +791,13 @@ class TestKernelpfIavf(TestCase):
         out = self.vm_testpmd.execute_cmd("show port info 0")
         self.verify('Link status: up' in out, 'link stats has error')
         self.verify('Link speed: %s' % self.speed in out, 'link speed has error')
-        print out
+        print(out)
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
         self.send_random_pkt(self.vf_mac, count=100)
         out = self.vm_testpmd.execute_cmd("show port stats all")
-        print out
+        print(out)
         self.verify("RX-packets: 100" in out and "TX-packets: 100" in out, "receive packet fail")
 
     def test_vf_rx_interrupt(self):
@@ -814,7 +814,7 @@ class TestKernelpfIavf(TestCase):
                           "'(0,0,6),(1,0,7)'"
         self.dut.send_expect(cmd, "POWER", timeout=40)
         out = self.dut.get_session_output()
-        print out
+        print(out)
         pattern = re.compile(r"(([a-f0-9]{2}:){5}[a-f0-9]{2})")
         mac_list = pattern.findall(out.lower())
         vf0_mac = mac_list[0][0]

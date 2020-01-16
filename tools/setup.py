@@ -1,10 +1,9 @@
-#!/usr/bin/python
 import sys
 import os
 import parse_opt
 import re
 import time
-import ConfigParser
+import configparser
 
 exec_file = os.path.realpath(__file__)
 DTS_PATH = exec_file.replace('/tools/setup.py', '')
@@ -86,7 +85,7 @@ def config_crbs():
     global perf_execution
 
     print ('============================================================')
-    print "Setting DUT and Tester crb information"
+    print("Setting DUT and Tester crb information")
     ip_option = {'prompt': 'DUT IP address',
                  'type': 'ip',
                  'help': 'Please input ip address of DUT crb',
@@ -185,7 +184,7 @@ def load_execution(file_name):
     global suites
     global nic_type
 
-    config = ConfigParser.SafeConfigParser()
+    config = configparser.SafeConfigParser()
     config.read(file_name)
     section = config.sections()[0]
     parameters = config.get(section, 'parameters').split(':')
@@ -216,9 +215,9 @@ def config_execution():
     global nic_type
 
     print ('============================================================')
-    print "Setting execution plan"
+    print("Setting execution plan")
     if not dut_ip:
-        print RED("Need to configure 'DUT&Tester crb' first!!!")
+        print(RED("Need to configure 'DUT&Tester crb' first!!!"))
         return False
     # default execution
     driver_name = 'igb_uio'
@@ -260,7 +259,7 @@ def config_execution():
         suites = opt.parse_input()
 
     nics = ['cfg']
-    nics += NICS.keys()
+    nics += list(NICS.keys())
     nic_option = {'prompt': 'Choose one of nics',
                   'type': 'choice',
                   'help': 'Choose one of dpdk support NIC',
@@ -334,11 +333,11 @@ def config_ixia():
     global ixia_ports
 
     print ('============================================================')
-    print 'Setting IXIA port for performance validation'
+    print('Setting IXIA port for performance validation')
     ixia_ports = []
     if ixia is None or ixia == '':
-        print RED("Performance request configure IXIA group in "
-                  "'DUT&Tester crb' first!!!")
+        print(RED("Performance request configure IXIA group in "
+                  "'DUT&Tester crb' first!!!"))
         return False
 
     version_option = {'prompt': 'IXIA Server version',
@@ -408,7 +407,7 @@ def config_ports():
     print ('============================================================')
     print ("Manually configure DUT port mapping")
     if not dut_ip:
-        print RED("Need to configuure 'DUT&Tester crb' first!!!")
+        print(RED("Need to configuure 'DUT&Tester crb' first!!!"))
         return False
 
     while add_more:
@@ -420,7 +419,7 @@ def config_ports():
         dut_addr = opt.parse_input()
         m = re.match(pci_regex, dut_addr)
         if not m:
-            print RED("Pci address should follow Domain+BDF format!!!")
+            print(RED("Pci address should follow Domain+BDF format!!!"))
             continue
 
         if ixia and ixia != '':
@@ -442,7 +441,7 @@ def config_ports():
             test_addr = opt.parse_input()
             m = re.match(pci_regex, test_addr)
             if not m:
-                print RED("Pci address should follow Domain+BDF format!!!")
+                print(RED("Pci address should follow Domain+BDF format!!!"))
                 continue
 
         dut_port = {}
@@ -475,7 +474,7 @@ def write_ports_cfg():
     content += separator
 
     for port in dut_ports:
-        pci_addr = port.keys()[0]
+        pci_addr = list(port.keys())[0]
         test_addr = port[pci_addr]
         content += '    pci=%s,peer=%s;' % (pci_addr, test_addr)
         content += separator
@@ -508,7 +507,7 @@ def get_next_opt():
 
 def run_dts():
     print ('============================================================')
-    print "Ready to run DTS"
+    print("Ready to run DTS")
     git_option = {'prompt': 'Whether pull latest git code',
                   'type': 'bool',
                   'help': 'If need input "Yes", otherwise ' +
@@ -583,7 +582,7 @@ def main():
             config_done = True
             run_dts()
 
-        print GREEN("Waiting for preparation ready...")
+        print(GREEN("Waiting for preparation ready..."))
         time.sleep(2)
         get_next_opt()
 

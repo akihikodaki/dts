@@ -136,7 +136,7 @@ class TestVhostEventIdxInterrupt(TestCase):
             return
         params_number = len(vm_config.params)
         for i in range(params_number):
-            if vm_config.params[i].keys()[0] == 'cpu':
+            if list(vm_config.params[i].keys())[0] == 'cpu':
                 vm_config.params[i]['cpu'][0]['number'] = self.queues
 
     def check_qemu_version(self, vm_config):
@@ -146,7 +146,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.vm_qemu_version = vm_config.qemu_emulator
         params_number = len(vm_config.params)
         for i in range(params_number):
-            if vm_config.params[i].keys()[0] == 'qemu':
+            if list(vm_config.params[i].keys())[0] == 'qemu':
                 self.vm_qemu_version = vm_config.params[i]['qemu'][0]['path']
 
         out = self.dut.send_expect("%s --version" % self.vm_qemu_version, "#")

@@ -33,7 +33,7 @@ import sys
 import traceback
 import threading
 from random import randint
-from itertools import imap
+
 
 import utils
 import exception
@@ -127,7 +127,7 @@ class VirtBase(object):
         conf.load_virt_config(self.virt_type)
         global_conf = conf.get_virt_config()
         for param in global_conf:
-            for key in param.keys():
+            for key in list(param.keys()):
                 if self.find_option_index(key) is None:
                     self.__save_local_config(key, param[key])
 
@@ -153,11 +153,11 @@ class VirtBase(object):
 
         # replace global configurations with local configurations
         for param in self.local_conf:
-            if 'virt_type' in param.keys():
+            if 'virt_type' in list(param.keys()):
                 # param 'virt_type' is for virt_base only
                 continue
             # save local configurations
-            for key in param.keys():
+            for key in list(param.keys()):
                 self.__save_local_config(key, param[key])
 
     def __save_local_config(self, key, value):
@@ -165,7 +165,7 @@ class VirtBase(object):
         Save the local config into the global dict self.param.
         """
         for param in self.params:
-            if key in param.keys():
+            if key in list(param.keys()):
                 param[key] = value
                 return
 
@@ -176,7 +176,7 @@ class VirtBase(object):
         Compose all boot param for starting the VM.
         """
         for param in self.params:
-            key = param.keys()[0]
+            key = list(param.keys())[0]
             value = param[key]
             try:
                 param_func = getattr(self, 'add_vm_' + key)
@@ -185,10 +185,10 @@ class VirtBase(object):
                         for option in value:
                             param_func(**option)
                 else:
-                    print utils.RED("Virt %s function not callable!!!" % key)
+                    print(utils.RED("Virt %s function not callable!!!" % key))
             except AttributeError:
                     self.host_logger.error(traceback.print_exception(*sys.exc_info()))
-                    print utils.RED("Virt %s function not implemented!!!" % key)
+                    print(utils.RED("Virt %s function not implemented!!!" % key))
             except Exception:
                 self.host_logger.error(traceback.print_exception(*sys.exc_info()))
                 raise exception.VirtConfigParamException(key)
@@ -197,9 +197,9 @@ class VirtBase(object):
         """
         Set default driver which may required when setup VM
         """
-        if 'driver_name' in options.keys():
+        if 'driver_name' in list(options.keys()):
             self.def_driver = options['driver_name']
-        if 'driver_mode' in options.keys():
+        if 'driver_mode' in list(options.keys()):
             self.driver_mode = options['driver_mode']
 
     def find_option_index(self, option):
@@ -211,7 +211,7 @@ class VirtBase(object):
         """
         index = 0
         for param in self.params:
-            key = param.keys()[0]
+            key = list(param.keys())[0]
             if key.strip() == option.strip():
                 return index
             index += 1
@@ -224,7 +224,7 @@ class VirtBase(object):
         """
         mac_head = '00:00:00:'
         mac_tail = ':'.join(
-            ['%02x' % x for x in imap(lambda x:randint(0, 255), range(3))])
+            ['%02x' % x for x in map(lambda x:randint(0, 255), list(range(3)))])
         return mac_head + mac_tail
 
     def get_vm_ip(self):
@@ -296,9 +296,9 @@ class VirtBase(object):
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled exception " + str(type(vm_except)))
+                print(utils.RED("Handled exception " + str(type(vm_except))))
             else:
-                print utils.RED("Unhandled exception " + str(type(vm_except)))
+                print(utils.RED("Unhandled exception " + str(type(vm_except))))
 
             if callable(self.callback):
                 self.callback()
@@ -321,9 +321,9 @@ class VirtBase(object):
 
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled exception " + str(type(vm_except)))
+                print(utils.RED("Handled exception " + str(type(vm_except))))
             else:
-                print utils.RED("Unhandled exception " + str(type(vm_except)))
+                print(utils.RED("Unhandled exception " + str(type(vm_except))))
 
             if callable(self.callback):
                 self.callback()
@@ -341,9 +341,9 @@ class VirtBase(object):
                 vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=False, autodetect_topo=False)
         except Exception as vm_except:
             if self.handle_exception(vm_except):
-                print utils.RED("Handled exception " + str(type(vm_except)))
+                print(utils.RED("Handled exception " + str(type(vm_except))))
             else:
-                print utils.RED("Unhandled exception " + str(type(vm_except)))
+                print(utils.RED("Unhandled exception " + str(type(vm_except))))
 
             return None
 
@@ -398,9 +398,9 @@ class VirtBase(object):
         """
         param_len = len(self.params)
         for i in range(param_len):
-            if 'disk' in self.params[i].keys():
+            if 'disk' in list(self.params[i].keys()):
                 value = self.params[i]['disk'][0]
-                if 'file' in value.keys():
+                if 'file' in list(value.keys()):
                     host_ip = self.host_dut.get_ip_address()
                     return host_ip + ':' + self.host_dut.test_classname + ':' + value['file']
         return None

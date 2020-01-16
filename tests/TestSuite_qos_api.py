@@ -123,7 +123,7 @@ class TestQosApi(TestCase):
         dmac = self.dut.get_mac_address(P0)
         queues_4tc = [0, 32, 64, 96]
         queues_8tc = [0, 16, 32, 48, 64, 80, 96, 112]
-        print dmac
+        print(dmac)
         for i in range(n):
             pkt = "Ether(dst='%s', src='00:02:00:00:00:01')/Dot1Q(prio=%s)/IP()/Raw('x'*20)" % (dmac, i)
             self.tester.scapy_append('sendp([%s], iface="%s")' % (pkt, self.txItf))
@@ -240,7 +240,7 @@ class TestQosApi(TestCase):
             traffic_opt = {'delay': 10}
             bps, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             bps_rate = abs(float(self.bps) - bps)/self.bps
-            print "bps_rate", bps_rate
+            print("bps_rate", bps_rate)
             self.verify(round(self.bps_rate[1] >= bps_rate, 3) >= self.bps_rate[0], 'rx bps is not match 200M')
 
     def add_queue_leaf_node(self, n):

@@ -90,14 +90,14 @@ def bind_qat_device(test_case, driver = "igb_uio"):
 def get_opt_str(test_case, default_opts={}, override_opts={}):
     case_cfg = conf.load_case_config(test_case._suite_result.test_case)
     opts = default_opts.copy()
-    for key in default_opts.keys():
+    for key in list(default_opts.keys()):
         if key in case_cfg:
             opts[key] = case_cfg[key]
 
     opts.update(override_opts)
 
     opt_str = ""
-    for key,value in opts.items():
+    for key,value in list(opts.items()):
         if value is None:
             continue
         dash = "-" if len(key) == 1 else "--"
@@ -263,7 +263,7 @@ def format_perf_data(flag, output):
     stats_results = parse_perf_output(output)
 
     json_result = []
-    for level, values in stats_results.items():
+    for level, values in list(stats_results.items()):
         status, delta = "PASS", 0
         try:
             if 'accepted_tolerance' in  conf.suite_cfg:

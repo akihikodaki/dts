@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # BSD LICENSE
 #
 # Copyright(c) 2010-2015 Intel Corporation. All rights reserved.
@@ -163,7 +162,7 @@ class VirtResource(object):
         cores = []
 
         if vm == '':
-            print "Alloc cpu request virtual machine name!!!"
+            print("Alloc cpu request virtual machine name!!!")
             return cores
 
         # if vm has been allocated cores, just return them
@@ -178,12 +177,12 @@ class VirtResource(object):
                         cores.append(str(core))
                         number = number - 1
             if number != 0:
-                print "Can't allocated requested cpu!!!"
+                print("Can't allocated requested cpu!!!")
 
         if corelist is not None:
             for core in corelist:
                 if self.__core_isused(int(core)) is True:
-                    print "Core %s has been used!!!" % core
+                    print("Core %s has been used!!!" % core)
                 else:
                     if self.__core_on_socket(int(core), socket) is True:
                         self.__core_used(int(core))
@@ -236,12 +235,12 @@ class VirtResource(object):
                         ports.append(pci)
                         number = number - 1
             if number != 0:
-                print "Can't allocated requested PF devices!!!"
+                print("Can't allocated requested PF devices!!!")
 
         if pflist is not None:
             for pci in pflist:
                 if self.__port_isused(pci) is True:
-                    print "Port %s has been used!!!" % pci
+                    print("Port %s has been used!!!" % pci)
                 else:
                     if self.__port_on_socket(pci, socket) is True:
                         self.__port_used(core)
@@ -269,11 +268,11 @@ class VirtResource(object):
         """
         vfs = []
         if vm == '':
-            print "Alloc VF request vitual machine name!!!"
+            print("Alloc VF request vitual machine name!!!")
             return vfs
 
         if pf_pci == '':
-            print "Alloc VF request PF pci address!!!"
+            print("Alloc VF request PF pci address!!!")
             return vfs
 
         for vf_info in self.vfs_info:
@@ -344,14 +343,14 @@ class VirtResource(object):
         """
         Check whether port has been pre-allocated
         """
-        for vm_info in self.allocated_info.values():
-            if vm_info.has_key('hostport') and port == vm_info['hostport']:
+        for vm_info in list(self.allocated_info.values()):
+            if 'hostport' in vm_info and port == vm_info['hostport']:
                 return True
-            if vm_info.has_key('serialport') and port == vm_info['serialport']:
+            if 'serialport' in vm_info and port == vm_info['serialport']:
                 return True
-            if vm_info.has_key('migrateport') and port == vm_info['migrateport']:
+            if 'migrateport' in vm_info and port == vm_info['migrateport']:
                 return True
-            if vm_info.has_key('displayport') and port == (vm_info['displayport'] + 5900):
+            if 'displayport' in vm_info and port == (vm_info['displayport'] + 5900):
                 return True
         return False
 
@@ -366,7 +365,7 @@ class VirtResource(object):
         global INIT_DISPLAY_PORT
 
         if vm == '':
-            print "Alloc host port request vitual machine name!!!"
+            print("Alloc host port request vitual machine name!!!")
             return None
 
         if port_type == 'connect':
@@ -492,44 +491,44 @@ if __name__ == "__main__":
                        'peer': 'IXIA:6.8', 'type': '8086:10fb'}]
 
     virt_pool = VirtResource(dut)
-    print "Alloc two PF devices on socket 1 from VM"
-    print virt_pool.alloc_pf(vm='test1', number=2, socket=1)
+    print("Alloc two PF devices on socket 1 from VM")
+    print(virt_pool.alloc_pf(vm='test1', number=2, socket=1))
 
     virt_pool.add_vf_on_pf(pf_pci='08:00.0', vflist=[
                            '08:10.0', '08:10.2', '08:10.4', '08:10.6'])
     virt_pool.add_vf_on_pf(pf_pci='08:00.1', vflist=[
                            '08:10.1', '08:10.3', '08:10.5', '08:10.7'])
-    print "Add VF devices to resource pool"
-    print virt_pool.vfs_info
+    print("Add VF devices to resource pool")
+    print(virt_pool.vfs_info)
 
-    print "Alloc VF device from resource pool"
-    print virt_pool.alloc_vf_from_pf(vm='test1', pf_pci='08:00.0', number=2)
-    print virt_pool.used_vfs
-    print "Alloc VF device from resource pool"
-    print virt_pool.alloc_vf_from_pf(vm='test2', pf_pci='08:00.1', vflist=['08:10.3', '08:10.5'])
-    print virt_pool.used_vfs
+    print("Alloc VF device from resource pool")
+    print(virt_pool.alloc_vf_from_pf(vm='test1', pf_pci='08:00.0', number=2))
+    print(virt_pool.used_vfs)
+    print("Alloc VF device from resource pool")
+    print(virt_pool.alloc_vf_from_pf(vm='test2', pf_pci='08:00.1', vflist=['08:10.3', '08:10.5']))
+    print(virt_pool.used_vfs)
 
-    print "Del VF devices from resource pool"
+    print("Del VF devices from resource pool")
     virt_pool.del_vf_on_pf(pf_pci='08:00.0', vflist=['08:10.4', '08:10.2'])
-    print virt_pool.vfs_info
+    print(virt_pool.vfs_info)
 
     virt_pool.reserve_cpu('e')
-    print "Reserve three cores from resource pool"
-    print virt_pool.unused_cores
-    print "Alloc two cores on socket1 for VM-test1"
-    print virt_pool.alloc_cpu(vm="test1", number=2, socket=1)
-    print "Alloc two cores in list for VM-test2"
-    print virt_pool.alloc_cpu(vm="test2", corelist=['4', '5'])
-    print "Alloc two cores for VM-test3"
-    print virt_pool.alloc_cpu(vm="test3", number=2)
-    print "Alloc port for VM-test1"
-    print virt_pool.alloc_port(vm='test1')
-    print "Alloc information after allocated"
-    print virt_pool.allocated_info
+    print("Reserve three cores from resource pool")
+    print(virt_pool.unused_cores)
+    print("Alloc two cores on socket1 for VM-test1")
+    print(virt_pool.alloc_cpu(vm="test1", number=2, socket=1))
+    print("Alloc two cores in list for VM-test2")
+    print(virt_pool.alloc_cpu(vm="test2", corelist=['4', '5']))
+    print("Alloc two cores for VM-test3")
+    print(virt_pool.alloc_cpu(vm="test3", number=2))
+    print("Alloc port for VM-test1")
+    print(virt_pool.alloc_port(vm='test1'))
+    print("Alloc information after allocated")
+    print(virt_pool.allocated_info)
 
-    print "Get cores on VM-test1"
-    print virt_pool.get_cpu_on_vm("test1")
-    print "Get pfs on VM-test1"
-    print virt_pool.get_pfs_on_vm("test1")
-    print "Get vfs on VM-test2"
-    print virt_pool.get_vfs_on_vm("test2")
+    print("Get cores on VM-test1")
+    print(virt_pool.get_cpu_on_vm("test1"))
+    print("Get pfs on VM-test1")
+    print(virt_pool.get_pfs_on_vm("test1"))
+    print("Get vfs on VM-test2")
+    print(virt_pool.get_vfs_on_vm("test2"))

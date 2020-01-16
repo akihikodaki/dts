@@ -171,6 +171,7 @@ class TestPortControl(TestCase):
         else:
             self.verify(ret == "down", "port not down!")
 
+
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)

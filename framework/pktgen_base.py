@@ -226,7 +226,7 @@ class PacketGenerator(object):
                 If set this key value, pktgen will return several throughput statistic
                 data within a duration traffic. If not set this key value, only
                 return one statistic data. It is ignored by default.
-                
+
             callback:
                 this key works with ``interval`` key. If it is set, the callback
                 of suite level will be executed after getting throughput statistic.
@@ -306,7 +306,7 @@ class PacketGenerator(object):
         result = self._measure_loss(stream_ids, options)
         # here only to make sure that return value is the same as dts/etgen format
         # In real testing scenario, this method can offer more data than it
-        return result.values()[0]
+        return list(result.values())[0]
 
     def measure_latency(self, stream_ids=[], options={}):
         """
@@ -352,7 +352,7 @@ class PacketGenerator(object):
         support multiple link peer, if any link peer loss rate happen set
         return value to False
         '''
-        for port_id, _result in result.iteritems():
+        for port_id, _result in result.items():
             loss_rate, _, _ = _result
             if loss_rate > permit_loss_rate:
                 return False
@@ -393,7 +393,7 @@ class PacketGenerator(object):
             # return data is the same with dts/etgen format
             # In fact, multiple link peer have multiple loss rate value,
             # here only pick one
-            tx_num, rx_num = result.values()[0][1:]
+            tx_num, rx_num = list(result.values())[0][1:]
             return rate_percent, tx_num, rx_num
         _options = deepcopy(options)
         # if warm up option  'delay' is set, ignore it in next work flow
@@ -421,7 +421,7 @@ class PacketGenerator(object):
         # here only pick one
         last_result = loss_rate_table[-1]
         rate_percent = last_result[0]
-        tx_num, rx_num = last_result[1].values()[0][1:]
+        tx_num, rx_num = list(last_result[1].values())[0][1:]
         return rate_percent, tx_num, rx_num
 
     def measure_rfc2544_with_pps(self, stream_ids=[], options={}):
@@ -460,7 +460,7 @@ class PacketGenerator(object):
         # use last result as return data to keep the same with dts/etgen format
         # In fact, multiple link peer have multiple loss rate value,
         # here only pick one
-        return loss_pps_table[-1][1].values()[0]
+        return list(loss_pps_table[-1][1].values())[0]
 
     def measure_rfc2544_dichotomy(self, stream_ids=[], options={}):
         """ check loss rate using dichotomy algorithm

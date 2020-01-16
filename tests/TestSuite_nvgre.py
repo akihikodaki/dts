@@ -366,7 +366,7 @@ class TestNvgre(TestCase):
         elif self.nic in ["sageville", "sagepond"]:
             self.compile_switch = 'CONFIG_RTE_IXGBE_INC_VECTOR'
         elif self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
+           print("CVL support default none VECTOR")
         else:
             self.verify(False, "%s not support NVGRE case" % self.nic)
         # Based on h/w type, choose how many ports to use
@@ -471,7 +471,7 @@ class TestNvgre(TestCase):
         config.send_pcap()
         # check whether detect nvgre type
         out = self.dut.get_session_output()
-        print out
+        print(out)
         self.verify(config.packet_type(self.nic) in out, "Nvgre Packet not detected")
         self.dut.send_expect("show port stats all", "testpmd>", 10)
         self.dut.send_expect("stop", "testpmd>", 10)
@@ -502,7 +502,7 @@ class TestNvgre(TestCase):
         out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
                                    % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, vlan_id, filter_type, config.tni, queue_id),
                                    "testpmd>", 10)
-        print out
+        print(out)
         # invalid case request to remove tunnel filter
         if remove is True:
             queue_id = 0
@@ -515,7 +515,7 @@ class TestNvgre(TestCase):
         self.dut.send_expect("start", "testpmd>", 10)
         config.send_pcap()
         out = self.dut.get_session_output()
-        print out
+        print(out)
         queue = -1
         pattern = re.compile("- Receive queue=0x(\d)")
         m = pattern.search(out)
@@ -624,7 +624,7 @@ class TestNvgre(TestCase):
         """
          # packet type detect must used without VECTOR pmd
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
+           print("CVL support default none VECTOR")
            src_vec_model = 'n'
         else:
            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -650,7 +650,7 @@ class TestNvgre(TestCase):
         # check vlan nvgre + vlan inner and outer packet
         self.nvgre_detect(outer_l3_type = "IPv6", inner_l3_type="IPv6", outer_vlan=1, inner_vlan=1)
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
+           print("CVL support default none VECTOR")
            src_vec_model = 'n'
         else:
            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -699,7 +699,7 @@ class TestNvgre(TestCase):
         """
         # packet type detect must used without VECTOR pmd
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
+           print("CVL support default none VECTOR")
            src_vec_model = 'n'
         else:
            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
@@ -723,7 +723,7 @@ class TestNvgre(TestCase):
         # check vlan nvgre + vlan inner packet
         self.nvgre_detect(outer_vlan=1, inner_vlan=1)
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
-           print "CVL support default none VECTOR"
+           print("CVL support default none VECTOR")
            src_vec_model = 'n'
         else:
            out = self.dut.send_expect("cat config/common_base", "]# ", 10)

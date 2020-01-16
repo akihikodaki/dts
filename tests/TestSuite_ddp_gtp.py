@@ -61,7 +61,7 @@ class TestDdpGtp(TestCase):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print utils.RED('Search no queue number.')
+            print((utils.RED('Search no queue number.')))
             return None
         else:
             if Q_strip is self.VF_Q_strip:
@@ -229,30 +229,30 @@ class TestDdpGtp(TestCase):
             if type is 'fdir':
                 if tunnel_pkt is 'gtpc' and inner_L3 is None:
                     pkts = dict(
-                        pkts_gtpu_pay.items() +
-                        pkts_gtpu_ipv4.items() +
-                        pkts_gtpu_ipv6.items())
+                        list(pkts_gtpu_pay.items()) +
+                        list(pkts_gtpu_ipv4.items()) +
+                        list(pkts_gtpu_ipv6.items()))
                 if tunnel_pkt is 'gtpu' and inner_L3 is None:
                     pkts = dict(
-                        pkts_gtpc_pay.items() +
-                        pkts_gtpu_ipv4.items() +
-                        pkts_gtpu_ipv6.items())
+                        list(pkts_gtpc_pay.items()) +
+                        list(pkts_gtpu_ipv4.items()) +
+                        list(pkts_gtpu_ipv6.items()))
                 if tunnel_pkt is 'gtpu' and inner_L3 is 'ipv4':
                     pkts = dict(
-                        pkts_gtpc_pay.items() +
-                        pkts_gtpu_pay.items() +
-                        pkts_gtpu_ipv6.items())
+                        list(pkts_gtpc_pay.items()) +
+                        list(pkts_gtpu_pay.items()) +
+                        list(pkts_gtpu_ipv6.items()))
                 if tunnel_pkt is 'gtpu' and inner_L3 is 'ipv6':
                     pkts = dict(
-                        pkts_gtpc_pay.items() +
-                        pkts_gtpu_pay.items() +
-                        pkts_gtpu_ipv4.items())
+                        list(pkts_gtpc_pay.items()) +
+                        list(pkts_gtpu_pay.items()) +
+                        list(pkts_gtpu_ipv4.items()))
             if type is 'clfter':
                 if tunnel_pkt is 'gtpc':
                     pkts = dict(
-                        pkts_gtpu_pay.items() +
-                        pkts_gtpu_ipv4.items() +
-                        pkts_gtpu_ipv6.items())
+                        list(pkts_gtpu_pay.items()) +
+                        list(pkts_gtpu_ipv4.items()) +
+                        list(pkts_gtpu_ipv6.items()))
                 if tunnel_pkt is 'gtpu':
                     pkts = pkts_gtpc_pay
         return pkts
@@ -294,7 +294,7 @@ class TestDdpGtp(TestCase):
                 for chksum_opt in ['good chksum', 'bad chksum']:
                     pkts = self.gtp_packets(
                         type, tunnel_pkt, inner_L3, match_opt, chk, teid)
-                    for packet_type in pkts.keys():
+                    for packet_type in list(pkts.keys()):
                         count = count + 1
                         self.tester.scapy_append(
                             'sendp([%s], iface="%s")'

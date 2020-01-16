@@ -106,7 +106,7 @@ class Plotting(object):
 
         for yseries in ydata:
             if len(xdata) != len(yseries):
-                print utils.RED("The number of items in X axis (%s) and Y axis (%s) does not match." % (xdata, ydata))
+                print(utils.RED("The number of items in X axis (%s) and Y axis (%s) does not match." % (xdata, ydata)))
                 return ''
 
         image_path = "%s/%s.%s" % (self.plots_path, image_filename,
@@ -124,7 +124,7 @@ class Plotting(object):
         pgraph.setBarLegends(0, legend)
 
         # For each value in the x axis add corresponding bar (array in ydata)
-        for xvalue in xrange(len(xdata)):
+        for xvalue in range(len(xdata)):
             yvalues = [_[xvalue] for _ in ydata]
             pgraph.addBarData(0, xdata[xvalue], yvalues)
 
@@ -166,7 +166,7 @@ class Plotting(object):
 
         # workaround
         if numPlots > len(line_colours):
-            print 'WARNING - numPlots > len(line_colours)'
+            print('WARNING - numPlots > len(line_colours)')
             r = 0x00
             g = 0x66
             b = 0xFF
@@ -191,7 +191,7 @@ class Plotting(object):
         pgraph.setBarLegends(0, legend)
 
         # For each value in the x axis add corresponding bar (array in ydata)
-        for i in list(xrange(numPlots)):
+        for i in list(range(numPlots)):
             yDataStart = i * numticks
             pgraph.addPlotData(i, 'Number of active pipes per output port',
                                ylabel,

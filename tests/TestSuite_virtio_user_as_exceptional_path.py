@@ -204,9 +204,9 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         Get the iperf test result
         '''
         fmsg = vm_client.send_expect("cat /root/iperf_client.log", "#")
-        print fmsg
+        print(fmsg)
         iperfdata = re.compile('[\d+]*.[\d+]* [M|G]bits/sec').findall(fmsg)
-        print iperfdata
+        print(iperfdata)
         self.verify(iperfdata, 'There no data about this case')
         self.result_table_create(['Data', 'Unit'])
         results_row = ['exception path']

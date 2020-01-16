@@ -184,12 +184,12 @@ class TestInlineIpsec(TestCase):
         p = IP(str(p))
 
         if do_encrypt == True:
-            print "send encrypt package"
+            print("send encrypt package")
             print("before encrypt, the package info is like below: ")
             p.show()
             e = sa_gcm.encrypt(p)
         else:
-            print "send normal package"
+            print("send normal package")
             e = p
 
         eth_e = Ether() / e
@@ -249,9 +249,9 @@ class TestInlineIpsec(TestCase):
             out = session_receive.send_expect("results", ">>>", 10)
 
         if verify:
-            print('received packet content is %s' % out)
-            print('send pkt src ip is %s, dst ip is %s, payload is %s' % (
-                send_package[1], send_package[2], send_package[0]))
+            print(('received packet content is %s' % out))
+            print(('send pkt src ip is %s, dst ip is %s, payload is %s' % (
+                send_package[1], send_package[2], send_package[0])))
             self.verify(send_package[0] in out,
                         "Unreceived package or get other package")
         else:

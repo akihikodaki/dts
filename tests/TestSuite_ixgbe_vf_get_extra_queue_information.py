@@ -130,7 +130,7 @@ class TestIxgbeVfGetExtraInfo(TestCase):
         elif rev_num_added1 == 100 and rev_byte_added1 != 0:
             queue = 1
         else:
-            print utils.RED("There is no packet received.")
+            print(utils.RED("There is no packet received."))
 
         return queue
 

@@ -141,7 +141,7 @@ class TestTX_preparation(TestCase):
                 'IPv6/large pkt': 'Ether(dst="%s")/IPv6()/TCP(flags=0x10)\
                     /Raw(RandString(%s))' %(self.dmac, LrgLength) } 
 
-        for packet_type in pkts.keys():
+        for packet_type in list(pkts.keys()):
             self.start_tcpdump(self.tester_intf)
             self.tester.scapy_append(
                 'sendp([%s], iface="%s", count=%d)' % (pkts[packet_type], self.tester_intf, count))
@@ -158,7 +158,7 @@ class TestTX_preparation(TestCase):
             if tsoflag == 1:
                  if packet_type in\
                     ['IPv4/large pkt', 'IPv6/large pkt', 'IPv4/bad cksum/large pkt']:
-                    segnum = LrgLength / TSO_value 
+                    segnum = int(LrgLength / TSO_value)
                     LastLength = LrgLength % TSO_value
                     num = out.count('length %s' %TSO_value)
                     self.verify("length %s" %TSO_value in out and num == segnum * count,

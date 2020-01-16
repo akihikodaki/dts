@@ -61,7 +61,7 @@ def list_command():
     index = 0
     from ssh_connection import CONNECTIONS
     for connection in CONNECTIONS:
-        for name, session in connection.items():
+        for name, session in list(connection.items()):
             console.push('print \'connect %d: %10s\'' % (index, name))
             index += 1
 
@@ -72,14 +72,14 @@ def connect_command(connect):
     """
     from ssh_connection import CONNECTIONS
     if type(connect) == int:
-        name, session = CONNECTIONS[connect].items()[0]
-        print GREEN("Connecting to session[%s]" % name)
+        name, session = list(CONNECTIONS[connect].items())[0]
+        print(GREEN("Connecting to session[%s]" % name))
         session.session.interact()
     else:
         for connection in CONNECTIONS:
-            for name, session in connection.items():
+            for name, session in list(connection.items()):
                 if name == connect:
-                    print GREEN("Connecting to session[%s]" % name)
+                    print(GREEN("Connecting to session[%s]" % name))
                     session.session.interact()
 
 

@@ -87,7 +87,7 @@ class PerfTestsCryptodev(TestCase):
             return
 
         with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "w") as fv:
-            json.dump(self._perf_result, fv, indent=4, encoding="utf-8")
+            json.dump(self._perf_result, fv, indent=4)
 
     def set_up(self):
         pass
@@ -435,7 +435,7 @@ class PerfTestsCryptodev(TestCase):
 
             self.logger.debug(results)
             return results
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error(ex)
             raise ex
 
@@ -479,7 +479,7 @@ class PerfTestsCryptodev(TestCase):
         self.logger.info(cmd_str)
         try:
             out = self.dut.send_expect(cmd_str, "#", 600)
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error(ex)
             raise ex
 
@@ -515,7 +515,7 @@ class PerfTestsCryptodev(TestCase):
                 return False
 
             json_result = []
-            for buf_size, values in stats_results.items():
+            for buf_size, values in list(stats_results.items()):
                 status, delta = "PASS", 0
                 # delta, status
                 if 'accepted_tolerance' in self.get_suite_cfg():
@@ -587,6 +587,6 @@ class PerfTestsCryptodev(TestCase):
             self._perf_result[case_name] = json_result
             self.logger.debug(self._perf_result)
             return True
-        except Exception, ex:
+        except Exception as ex:
             self.logger.error(ex)
             return False

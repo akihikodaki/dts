@@ -233,7 +233,7 @@ class TestDPDKGsoLib(TestCase):
         # config the cpupin only have one core
         params_number = len(vm_config.params)
         for i in range(params_number):
-            if vm_config.params[i].keys()[0] == 'cpu':
+            if list(vm_config.params[i].keys())[0] == 'cpu':
                 vm_config.params[i]['cpu'][0]['number'] = 1
                 vm_config.params[i]['cpu'][0]['cpupin'] = self.qemu_cpupin
 
@@ -270,7 +270,7 @@ class TestDPDKGsoLib(TestCase):
             if self.vm1_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
-            print utils.RED("Failure for %s" % str(e))
+            print((utils.RED("Failure for %s" % str(e))))
         self.vm1_dut.restore_interfaces()
 
     def iperf_result_verify(self, vm_client):
@@ -278,9 +278,9 @@ class TestDPDKGsoLib(TestCase):
         Get the iperf test result
         '''
         fmsg = vm_client.send_expect("cat /root/iperf_client.log", "#")
-        print fmsg
+        print(fmsg)
         iperfdata = re.compile('[\d+]*.[\d+]* [M|G|K]bits/sec').findall(fmsg)
-        print iperfdata
+        print(iperfdata)
         self.verify(iperfdata, 'There no data about this case')
         self.result_table_create(['Data', 'Unit'])
         results_row = ['GSO']
@@ -313,7 +313,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "the GSO lib for TCP traffic %s " % (self.output_result)
+        print(("the GSO lib for TCP traffic %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.dut.send_expect("ip netns del ns1", "#")
         self.quit_testpmd()
@@ -346,7 +346,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "the GSO lib for UDP traffic %s " % (self.output_result)
+        print(("the GSO lib for UDP traffic %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.dut.send_expect("ip netns del ns1", "#")
         self.quit_testpmd()
@@ -382,7 +382,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "the TSO lib %s " % (self.output_result)
+        print(("the TSO lib %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
@@ -418,7 +418,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "Kernel GSO %s " % (self.output_result)
+        print(("Kernel GSO %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
@@ -453,7 +453,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "NO GSO/TSO %s " % (self.output_result)
+        print(("NO GSO/TSO %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
@@ -484,7 +484,7 @@ class TestDPDKGsoLib(TestCase):
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
-        print "the GSO lib for Vxlan traffic %s " % (self.output_result)
+        print(("the GSO lib for Vxlan traffic %s " % (self.output_result)))
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.dut.send_expect("ip netns del ns1", "#")
         self.quit_testpmd()

@@ -72,8 +72,8 @@ class SoftwarePacketGenerator():
 
         # assign core for ports
         map_cmd = ""
-        port_index = range(len(ports))
-        port_map = dict(zip(ports, port_index))
+        port_index = list(range(len(ports)))
+        port_map = dict(list(zip(ports, port_index)))
         self.tester.init_reserved_core()
 
         # reserve one core for master process
@@ -190,7 +190,7 @@ class IxiaPacketGenerator(SSHConnection):
         self.ixiaVersion = ixiaPorts[ixiaRef]["Version"]
         self.ports = ixiaPorts[ixiaRef]["Ports"]
 
-        if ixiaPorts[ixiaRef].has_key('force100g'):
+        if 'force100g' in ixiaPorts[ixiaRef]:
             self.enable100g = ixiaPorts[ixiaRef]['force100g']
         else:
             self.enable100g = 'disable'

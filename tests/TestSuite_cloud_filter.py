@@ -153,7 +153,7 @@ class CloudFilterConfig(object):
                                        'QUEUE': self.cf_rule['queue'],
                                        'ID': self.rule_idx}
 
-        print ethtool_cmd
+        print(ethtool_cmd)
         out = self.case.dut.send_expect(ethtool_cmd, "# ", alt_session=True)
         self.case.verify("ethtool" not in out, "Add cloud filter failed!!!")
 
@@ -179,18 +179,18 @@ class CloudFilterConfig(object):
         """
         ether_cfg = {'src': self.case.tester_mac}
         if match:
-            if 'iip' in self.cf_rule.keys():
+            if 'iip' in list(self.cf_rule.keys()):
                 self.pkt.config_layer(
                     'inner_ipv4', {'dst': self.cf_rule['iip']})
-            if 'imac' in self.cf_rule.keys():
+            if 'imac' in list(self.cf_rule.keys()):
                 self.pkt.config_layer(
                     'inner_mac', {'dst': self.cf_rule['imac']})
-            if 'omac' in self.cf_rule.keys():
+            if 'omac' in list(self.cf_rule.keys()):
                 ether_cfg['dst'] = self.cf_rule['omac']
-            if 'ivlan' in self.cf_rule.keys():
+            if 'ivlan' in list(self.cf_rule.keys()):
                 self.pkt.config_layer(
                     'inner_vlan', {'vlan': self.cf_rule['ivlan']})
-            if 'vni' in self.cf_rule.keys():
+            if 'vni' in list(self.cf_rule.keys()):
                 self.pkt.config_layer('vxlan', {'vni': self.cf_rule['vni']})
 
         self.pkt.config_layer('ether', ether_cfg)
@@ -317,11 +317,11 @@ class TestCloudFilter(TestCase):
             self.verify("VXLAN packet" in out, "Vxlan packet not detected")
             self.verify("Inner L4 type: TCP" in out,
                         "Vxlan inner L4 type not detected")
-            if 'vni' in cloud_cfg.cf_rule.keys():
+            if 'vni' in list(cloud_cfg.cf_rule.keys()):
                 vni = cloud_cfg.cf_rule['vni']
                 self.verify("VNI = %d" %
                             vni in out, "Vxlan vni value not correct")
-            if 'ivlan' in cloud_cfg.cf_rule.keys():
+            if 'ivlan' in list(cloud_cfg.cf_rule.keys()):
                 self.verify("Inner L2 type: ETHER_VLAN" in out,
                             "Vxlan inner vlan not detected")
         else:
@@ -353,7 +353,7 @@ class TestCloudFilter(TestCase):
                 self.verify(inner_ip == cloud_cfg.cf_rule['iip'],
                             "Inner ip not matched")
             except:
-                print "Kernel VF captured packet not match rule"
+                print("Kernel VF captured packet not match rule")
                 raise
 
         self.logger.info("Verified vxlan %s filter pass" % cloud_cfg.cf_rule['type'])

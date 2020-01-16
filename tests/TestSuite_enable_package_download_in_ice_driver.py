@@ -137,7 +137,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         Sends a tcpdump related command and returns an integer from the output
         """
         result = self.tester.send_expect(command, '#')
-        print result
+        print(result)
         return int(result.strip())
 
     def number_of_packets(self, iface):
@@ -216,7 +216,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
             self.tester.scapy_execute()
             time.sleep(.5)
         else:
-            print "\ntran_type error!\n"
+            print("\ntran_type error!\n")
 
         self.verifyResult(tran_type=tran_type, flag=flag)
 
@@ -242,7 +242,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
                         if(item.startswith("port 0/queue ")):
                             queue_id = item.split(" ", 2)[-1]
                             queue_list.append(queue_id)
-            print list(set(queue_list))
+            print(list(set(queue_list)))
             if flag == "true":
                 self.verify(len(list(set(queue_list))) > 1, "All packets enter the same queue: %s" % queue_list)
             else:
@@ -268,7 +268,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.dut_testpmd.execute_cmd('set fwd rxonly')
         self.dut_testpmd.execute_cmd('start')
         for tran_types in ["ipv4-tcp", "ipv4-udp", "ipv4-sctp", "ipv6-tcp", "ipv6-udp", "ipv6-sctp"]:
-            print tran_types
+            print(tran_types)
             self.send_packet(tran_type=tran_types, flag=ice_pkg)
 
     def test_download_the_package_successfully(self):

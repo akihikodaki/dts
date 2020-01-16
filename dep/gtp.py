@@ -1,5 +1,3 @@
-#! /usr/bin/env python
-
 # Copyright (C) 2018 Leonardo Monteiro <decastromonteiro@gmail.com>
 #               2017 Alexis Sultan    <alexis.sultan@sfr.com>
 #               2017 Alessio Deiana <adeiana@gmail.com>
@@ -11,7 +9,7 @@
 # scapy.contrib.description = GPRS Tunneling Protocol (GTP)
 # scapy.contrib.status = loads
 
-from __future__ import absolute_import
+
 import struct
 
 

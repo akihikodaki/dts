@@ -859,7 +859,7 @@ class AdvancedRSSTest(TestCase):
         """
         #Prepare testpmd EAL and parameters 
         all_eal_param = self.dut.create_eal_parameters()
-        print all_eal_param   #print eal parameters
+        print(all_eal_param)   #print eal parameters
         command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=64 --txq=64")
         return command
 
@@ -880,11 +880,11 @@ class AdvancedRSSTest(TestCase):
         self.mac_count=100    
         for tv in test_vectors:
             out = self.dut.send_expect(tv["rte_flow_pattern"], "testpmd> ", 15)  #create a rule
-            print out
+            print(out)
             self.dut.send_expect("start", "testpmd> ", 15)
             time.sleep(2)
             tv["check_func_param"]["expect_port"] = self.dut_ports[0]
-            print "expect_port is", self.dut_ports[0]
+            print("expect_port is", self.dut_ports[0])
 
             #send a packet
             if isinstance(tv["scapy_str"], list):
@@ -895,13 +895,13 @@ class AdvancedRSSTest(TestCase):
                 for index in range(10):
                     pkt = Packet(pkt_str=tv["scapy_str"])
                     pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=self.count)
-                    print "packet:"
-                    print tv["scapy_str"]
+                    print("packet:")
+                    print(tv["scapy_str"])
 
             out = self.dut.send_expect("stop", "testpmd> ",60)
-            print out
+            print(out)
             log_msg =  tv["check_func"](out)
-            print log_msg
+            print(log_msg)
             rfc.check_rx_tx_packets_match(out, self.mac_count)
 
         self.dut.send_expect("flow flush %d" % self.dut_ports[0], "testpmd> ")

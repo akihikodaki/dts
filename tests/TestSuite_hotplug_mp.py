@@ -150,7 +150,7 @@ class TestHotplugMp(TestCase):
         elif opt_plug == "plugout":
             self.dut.bind_interfaces_linux(self.drivername)
             self.multi_process_setup()
-
+        time.sleep(3)
         if opt_plug in ["plugin", "plugout"]:
             self.attach_detach(process, 1, opt_plug, flg_loop, dev)
         elif opt_plug in ["hotplug", "crossplug"]:

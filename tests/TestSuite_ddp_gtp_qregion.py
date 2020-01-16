@@ -38,7 +38,7 @@ class TestDdpGtpQregion(TestCase):
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
-            print utils.RED('Search no queue number.')
+            print((utils.RED('Search no queue number.')))
             return None
         else:
             result = res.group(2)
@@ -134,7 +134,7 @@ class TestDdpGtpQregion(TestCase):
             a = Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=100, sport=200)/Raw("X"*20)
         if flowtype == 26:
             a = Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=100, sport=200)/Raw("X"*20)
-        ba = bytearray(str(a))
+        ba = bytearray(bytes(a))
         rawfile_src = '/tmp/test_gtp.raw'
         File = open("%s" % rawfile_src, "wb")
         File.write(ba)
@@ -147,7 +147,7 @@ class TestDdpGtpQregion(TestCase):
         Send packets and verify result.
         """
         pkts = self.gtp_pkts(flowtype, keyword, opt)
-        for packet_type in pkts.keys():
+        for packet_type in list(pkts.keys()):
             self.tester.scapy_append(
                 'sendp([%s], iface="%s")'
                 % (pkts[packet_type], self.tester_intf))
@@ -209,7 +209,7 @@ class TestDdpGtpQregion(TestCase):
                                  'dst_ipv6_32pre']:
                     keyword = 'src_ipv6'
             pkts = self.gtp_pkts(flowtype, keyword, opt)
-            for packet_type in pkts.keys():
+            for packet_type in list(pkts.keys()):
                 self.tester.scapy_append(
                     'sendp([%s], iface="%s")'
                     % (pkts[packet_type], self.tester_intf))
@@ -370,7 +370,7 @@ class TestDdpGtpQregion(TestCase):
         outer dst could control queue, also queue number is between the queue
         range(40,55).
         """
-        crlwords = range(50, 58)
+        crlwords = list(range(50, 58))
         self.run_gtp_test(crlwords, 25, 25, 40, 55, "dst_ipv6")
 
     def test_teid_contrl_gtpcq(self):
@@ -380,7 +380,7 @@ class TestDdpGtpQregion(TestCase):
         set configuration for teid words 44~45, enable rss, check teid could
         control queue, also queue number is between the queue range(40,55).
         """
-        crlwords = range(44, 46)
+        crlwords = list(range(44, 46))
         self.run_gtp_test(crlwords, 25, 25, 40, 55, "teid")
 
     def test_teid_contrl_gtpu_ipv4q(self):
@@ -391,7 +391,7 @@ class TestDdpGtpQregion(TestCase):
         could control queue, also queue number is between the queue
         range(1,8).
         """
-        crlwords = range(44, 46)
+        crlwords = list(range(44, 46))
         self.run_gtp_test(crlwords, 26, 22, 1, 8, "teid")
 
     def test_sport_contrl_gtpu_ipv4q(self):
@@ -402,7 +402,7 @@ class TestDdpGtpQregion(TestCase):
         sport could control queue, also queue number is between the queue
         range(1,8).
         """
-        crlwords = range(29, 30)
+        crlwords = list(range(29, 30))
         self.run_gtp_test(crlwords, 26, 22, 1, 8, "sport")
 
     def test_dport_contrl_gtpu_ipv4q(self):
@@ -413,7 +413,7 @@ class TestDdpGtpQregion(TestCase):
         dport could control queue, also queue number is between the queue
         range(1,8).
         """
-        crlwords = range(30, 31)
+        crlwords = list(range(30, 31))
         self.run_gtp_test(crlwords, 26, 22, 1, 8, "dport")
 
     def test_inner_src_contrl_gtpu_ipv4q(self):
@@ -424,7 +424,7 @@ class TestDdpGtpQregion(TestCase):
         inner src could control queue, also queue number is between the
         queue range(1,8).
         """
-        crlwords = range(15, 17)
+        crlwords = list(range(15, 17))
         self.run_gtp_test(crlwords, 26, 22, 1, 8, "src_ip")
 
     def test_inner_dst_contrl_gtpu_ipv4q(self):
@@ -435,7 +435,7 @@ class TestDdpGtpQregion(TestCase):
         inner dst could control queue, also queue number is between the queue
         range(1,8).
         """
-        crlwords = range(27, 29)
+        crlwords = list(range(27, 29))
         self.run_gtp_test(crlwords, 26, 22, 1, 8, "dst_ip")
 
     def test_teid_contrl_gtpu_ipv6q(self):
@@ -446,7 +446,7 @@ class TestDdpGtpQregion(TestCase):
         could control queue, also queue number is between the queue
         range(10,25).
         """
-        crlwords = range(44, 46)
+        crlwords = list(range(44, 46))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "teid")
 
     def test_sport_contrl_gtpu_ipv6q(self):
@@ -457,7 +457,7 @@ class TestDdpGtpQregion(TestCase):
         sport could control queue, also queue number is between the queue
         range(10,25).
         """
-        crlwords = range(29, 30)
+        crlwords = list(range(29, 30))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "sport")
 
     def test_dport_contrl_gtpu_ipv6q(self):
@@ -468,7 +468,7 @@ class TestDdpGtpQregion(TestCase):
         dport could control queue, also queue number is between the queue
         range(10,25).
         """
-        crlwords = range(30, 31)
+        crlwords = list(range(30, 31))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "dport")
 
     def test_inner_src_contrl_gtpu_ipv6q(self):
@@ -479,7 +479,7 @@ class TestDdpGtpQregion(TestCase):
         inner src could control queue, also queue number is between the queue
         range(10,25).
         """
-        crlwords = range(13, 21)
+        crlwords = list(range(13, 21))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "src_ipv6")
 
     def test_inner_dst_contrl_gtpu_ipv6q(self):
@@ -490,7 +490,7 @@ class TestDdpGtpQregion(TestCase):
         inner dst could control queue, also queue number is between the queue
         range(10,25).
         """
-        crlwords = range(21, 29)
+        crlwords = list(range(21, 29))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "dst_ipv6")
 
     def test_fd_gtpu_ipv4(self):
@@ -515,7 +515,7 @@ class TestDdpGtpQregion(TestCase):
         work when sending matched dst IPv4 packets to configured queue,
         otherwise direct packets to queue 0.
         """
-        crlwords = range(27, 29)
+        crlwords = list(range(27, 29))
         keywords = ['src_ip', 'sport', 'dport', 'dst_ip']
         qchecks = ['sameq', 'sameq', 'sameq', 'difq']
         self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
@@ -529,7 +529,7 @@ class TestDdpGtpQregion(TestCase):
         work when sending matched src IPv4 packets to configured queue,
         otherwise direct packets to queue 0.
         """
-        crlwords = range(15, 17)
+        crlwords = list(range(15, 17))
         keywords = ['dst_ip', 'sport', 'dport', 'src_ip']
         qchecks = ['sameq', 'sameq', 'sameq', 'difq']
         self.run_fd_test(crlwords, 26, 22, keywords, qchecks)
@@ -556,7 +556,7 @@ class TestDdpGtpQregion(TestCase):
         work when sending matched dst IPv6 packets to configured queue,
         otherwise direct packets to queue 0.
         """
-        crlwords = range(21, 29)
+        crlwords = list(range(21, 29))
         keywords = ['src_ipv6', 'sport', 'dport', 'teid', 'dst_ipv6']
         qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
         self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
@@ -570,7 +570,7 @@ class TestDdpGtpQregion(TestCase):
         work when sending matched src IPv6 packets to configured queue,
         otherwise direct packets to queue 0.
         """
-        crlwords = range(13, 21)
+        crlwords = list(range(13, 21))
         keywords = ['dst_ipv6', 'sport', 'dport', 'teid', 'src_ipv6']
         qchecks = ['sameq', 'sameq', 'sameq', 'sameq', 'difq']
         self.run_fd_test(crlwords, 23, 23, keywords, qchecks)
@@ -583,7 +583,7 @@ class TestDdpGtpQregion(TestCase):
         50~53, enable rss, check dst 64 bit prefixes could control queue,
         also queue number is between the queue range(40,55).
         """
-        crlwords = range(50, 54)
+        crlwords = list(range(50, 54))
         self.run_gtp_test(crlwords, 25, 25, 40, 55, "dst_ipv6_64pre")
 
     def test_inner_48pre_src_contrl_gtpuq(self):
@@ -594,7 +594,7 @@ class TestDdpGtpQregion(TestCase):
         13~15, enable rss, check src 48 bit prefixes could control queue,
         also queue number is between the queue range(10,25).
         """
-        crlwords = range(13, 16)
+        crlwords = list(range(13, 16))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "src_ipv6_48pre")
 
     def test_inner_32pre_dst_contrl_gtpuq(self):
@@ -605,7 +605,7 @@ class TestDdpGtpQregion(TestCase):
         21~22, enable rss, check dst 32 bit prefixes could control queue,
         also queue number is between the queue range(10,25).
         """
-        crlwords = range(21, 23)
+        crlwords = list(range(21, 23))
         self.run_gtp_test(crlwords, 23, 23, 10, 25, "dst_ipv6_32pre")
 
     def tear_down(self):

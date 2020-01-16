@@ -132,7 +132,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
 
         # run ipv4_frag
         self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d -- -p %s -q %s" % (
-            coremask, self.dut.get_memory_channels(), portmask, numPortThread), "Link Up", 120)
+            coremask, self.dut.get_memory_channels(), portmask, int(numPortThread)), "Link Up", 120)
 
         time.sleep(2)
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
@@ -157,7 +157,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
             # simulate to set TG properties
             if flag == 'frag':
                 # do fragment, each packet max length 1518 - 18 - 20 = 1480
-                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']) / 1480
+                expPkts = int((size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']) / 1480)
                 if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ip']) % 1480:
                     expPkts += 1
                 val = 0
@@ -209,7 +209,7 @@ l3fwd_ipv4_route_array[] = {\\\n"
             # simulate to set TG properties
             if flag == 'frag':
                 # each packet max len: 1518 - 18 (eth) - 40 (ipv6) - 8 (ipv6 ext hdr) = 1452
-                expPkts = (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1452
+                expPkts = int((size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) / 1452)
                 if (size - HEADER_SIZE['eth'] - HEADER_SIZE['ipv6']) % 1452:
                     expPkts += 1
                 val = 0

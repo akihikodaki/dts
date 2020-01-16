@@ -159,7 +159,7 @@ class TestPmdrssHash(TestCase):
             self.tester.scapy_execute()
             time.sleep(.5)
         else:
-            print "\ntran_type error!\n"
+            print("\ntran_type error!\n")
 
         out = self.dut.get_session_output(timeout=1)
         self.dut.send_expect("stop", "testpmd>")
@@ -206,7 +206,7 @@ class TestPmdrssHash(TestCase):
             status = "false"
             # compute the hash result of five tuple into the 7 LSBs value.
             hash_index = int(tmp_reta_line["RSS hash"], 16) % reta_num
-            print reta_entries[hash_index], tmp_reta_line
+            print(reta_entries[hash_index], tmp_reta_line)
             if(reta_entries[hash_index] == int(tmp_reta_line["queue"])):
                 status = "true"
                 result.insert(i, 0)
@@ -341,7 +341,7 @@ class TestPmdrssHash(TestCase):
             self.tester.scapy_execute()
             time.sleep(.5)
         else:
-            print "\ntran_type error!\n"
+            print("\ntran_type error!\n")
 
         out = self.dut.get_session_output(timeout=1)
         self.dut.send_expect("stop", "testpmd>")
@@ -392,10 +392,10 @@ class TestPmdrssHash(TestCase):
                 if(i % 2 == 1):
                     if(pre_RSS_hash == tmp_reta_line["RSS hash"]):
                         status = "true"
-                        result.insert(len(reta_lines) + (i - 1) / 2, 0)
+                        result.insert(len(reta_lines) + (i - 1) // 2, 0)
                     else:
                         status = "fail"
-                        result.insert(len(reta_lines) + (i - 1) / 2, 1)
+                        result.insert(len(reta_lines) + (i - 1) // 2, 1)
                 pre_RSS_hash = tmp_reta_line["RSS hash"]
             else:
                 status = "fail"
@@ -461,7 +461,7 @@ class TestPmdrssHash(TestCase):
             "./%s/app/testpmd  -c %s -n %d -- -i --rxq=%d --txq=%d" %
             (self.target, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
-        for iptype, rsstype in iptypes.items():
+        for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect("set promisc all off", "testpmd> ")
@@ -499,7 +499,7 @@ class TestPmdrssHash(TestCase):
             "./%s/app/testpmd  -c %s -n %d -- -i --rxq=%d --txq=%d" %
             (self.target, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
-        for iptype, rsstype in iptypes.items():
+        for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect("set promisc all off", "testpmd> ")
@@ -544,7 +544,7 @@ class TestPmdrssHash(TestCase):
             "./%s/app/testpmd  -c %s -n %d -- -i --rxq=%d --txq=%d" %
             (self.target, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
-        for iptype, rsstype in iptypes.items():
+        for iptype, rsstype in list(iptypes.items()):
             self.logger.info("***********************%s rss test********************************" % iptype)
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -584,7 +584,7 @@ class TestPmdrssHash(TestCase):
             "./%s/app/testpmd  -c %s -n %d -- -i --rxq=%d --txq=%d" %
             (self.target, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
 
-        for iptype, rsstype in iptypes.items():
+        for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
             self.dut.send_expect("set promisc all off", "testpmd> ")

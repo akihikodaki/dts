@@ -79,7 +79,7 @@ class TestPtype_Mapping(TestCase):
         Generate and send packet according to packet type, detect each packet 
         layer.
         """
-        for pkt_type in pkt_types.keys():
+        for pkt_type in list(pkt_types.keys()):
             if chk_types != None:
                 pkt_names = chk_types[pkt_type]
             else:
@@ -92,9 +92,9 @@ class TestPtype_Mapping(TestCase):
                     "Failed to detect correct ptype value")
             for pkt_layer_name in pkt_names:
                 if pkt_layer_name not in out:
-                    print utils.RED("Fail to detect %s" % pkt_layer_name)
+                    print(utils.RED("Fail to detect %s" % pkt_layer_name))
                     raise VerifyFailure("Failed to detect %s" % pkt_layer_name)            
-            print utils.GREEN("Detected %s successfully" % pkt_type)
+            print(utils.GREEN("Detected %s successfully" % pkt_type))
 
     def strip_ptype(self, table, hw_ptype):
         """
@@ -106,7 +106,7 @@ class TestPtype_Mapping(TestCase):
         s = re.compile(pattern)
         res = s.search(table)
         if res is None:
-            print utils.RED("search none ptype")
+            print(utils.RED("search none ptype"))
             return None
         else:
             ptype = res.group(3)

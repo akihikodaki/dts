@@ -230,7 +230,7 @@ class DpdkHugetlbfsMountSize(TestCase):
             self.verify(0, 'the expect str: %s ,not in output info' % expect_str)
         self.logger.info('the third testpmd start failed as expect : %s' % expect_str)
         result = self.dut.get_session_output(timeout=2)
-        print result
+        print(result)
 
         # start send packet and verify the session can receive the packet.
         self.send_pkg(0)

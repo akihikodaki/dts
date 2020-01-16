@@ -249,7 +249,7 @@ class TestQuotaWatermark(TestCase, IxiaPacketGenerator):
 
     def send_pcap_pkt_by_scapy(self, tester=None, file='', intf=''):
         if intf == '' or file == '' or tester is None:
-            print "Invalid option for send packet by scapy"
+            print("Invalid option for send packet by scapy")
             return
 
         content = 'pkts=rdpcap(\"%s\");sendp(pkts, iface=\"%s\");exit()' % (file, intf)

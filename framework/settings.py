@@ -270,7 +270,7 @@ def get_nic_name(type):
     """
     strip nic code name by nic type
     """
-    for name, nic_type in NICS.items():
+    for name, nic_type in list(NICS.items()):
         if nic_type == type:
             return name
     return 'Unknown'
@@ -280,7 +280,7 @@ def get_nic_driver(pci_id):
     """
     Return linux driver for specified pci device
     """
-    driverlist = dict(zip(NICS.values(), DRIVERS.keys()))
+    driverlist = dict(list(zip(list(NICS.values()), list(DRIVERS.keys()))))
     try:
         driver = DRIVERS[driverlist[pci_id]]
     except Exception as e:
@@ -292,7 +292,7 @@ def get_netdev(crb, pci):
     for port in crb.ports_info:
         if pci == port['pci']:
             return port['port']
-        if 'vfs_port' in port.keys():
+        if 'vfs_port' in list(port.keys()):
             for vf in port['vfs_port']:
                 if pci == vf.pci:
                     return vf
@@ -310,7 +310,7 @@ def get_host_ip(address):
             result = socket.gethostbyaddr(address)
             return result[2][0]
         except:
-            print "couldn't look up %s" % address
+            print("couldn't look up %s" % address)
             return ''
 
 
@@ -335,7 +335,7 @@ def load_global_setting(key):
     else:
         env_key = "DTS_" + key
 
-    if env_key in os.environ.keys():
+    if env_key in list(os.environ.keys()):
         return os.environ[env_key]
     else:
         return ''
@@ -345,7 +345,7 @@ def report_error(error):
     """
     Report error when error occurred
     """
-    if error in DTS_ERR_TBL.keys():
+    if error in list(DTS_ERR_TBL.keys()):
         os.environ[DTS_ERROR_ENV] = error
     else:
         os.environ[DTS_ERROR_ENV] = "GENERIC_ERR"
@@ -355,7 +355,7 @@ def exit_error():
     """
     Set system exit value when error occurred
     """
-    if DTS_ERROR_ENV in os.environ.keys():
+    if DTS_ERROR_ENV in list(os.environ.keys()):
         ret_val = DTS_ERR_TBL[os.environ[DTS_ERROR_ENV]]
         sys.exit(ret_val)
     else:
@@ -368,7 +368,7 @@ def accepted_nic(pci_id):
     it is selected in the execution file, otherwise it returns False.
     """
     nic = load_global_setting(HOST_NIC_SETTING)
-    if pci_id not in NICS.values():
+    if pci_id not in list(NICS.values()):
         return False
 
     if nic is 'any':

@@ -84,7 +84,7 @@ class TestLoadbalancer(TestCase):
         self.dut.send_expect(cmd, 'main loop.')
 
         # Verify the traffic flow according to Ipv4 route table
-        for flow in trafficFlow.keys():
+        for flow in list(trafficFlow.keys()):
             rx_port = trafficFlow[flow][0]
 
             for i in range(len(dutPorts)):

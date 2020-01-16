@@ -142,7 +142,7 @@ class TestRxTx_Offload(TestCase):
         m = scanner.search(outstring)
         i = 0
         offload_value = m.group(1).split()
-        for key, value in offloads.items():
+        for key, value in list(offloads.items()):
             if value in offload_value:
                 offload_keys.insert(i, key)
                 i = i + 1
@@ -172,7 +172,7 @@ class TestRxTx_Offload(TestCase):
             exp_offload = m.group(1).split()
             self.verify(exp_offload != None, "There is no offload configured.")
             for each_offload in offload:
-                self.verify(each_offload in offloads.keys(), "Offload type error!")
+                self.verify(each_offload in list(offloads.keys()), "Offload type error!")
                 self.verify(offloads[each_offload] in exp_offload, "There is wrong offload configured.")
 
     def check_queue_config(self, rxtx, offload):
@@ -225,7 +225,7 @@ class TestRxTx_Offload(TestCase):
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(outstring)
         queue_id = m.group(1)
-        print "queue is %s" % queue_id
+        print(("queue is %s" % queue_id))
         return queue_id
 
     def check_flag(self, packet, queue):

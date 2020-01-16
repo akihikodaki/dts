@@ -159,7 +159,7 @@ class TestShortLiveApp(TestCase):
         time = regex.findall(out)
 
         if time != []:
-            print "start time: %s s"%time[0]
+            print("start time: %s s"%time[0])
         else:
             self.verify(0, "start_up_time failed")
 
@@ -167,7 +167,7 @@ class TestShortLiveApp(TestCase):
         repeat_time = 5
         for i in range(repeat_time):
             #dpdk start
-            print "clean_up_with_signal_testpmd round %d" % (i + 1)
+            print("clean_up_with_signal_testpmd round %d" % (i + 1))
             self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "link state change event", 120)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
@@ -192,7 +192,7 @@ class TestShortLiveApp(TestCase):
         self.compile_examples("l2fwd")
         for i in range(repeat_time):
             #dpdk start
-            print "clean_up_with_signal_l2fwd round %d" % (i + 1)
+            print("clean_up_with_signal_l2fwd round %d" % (i + 1))
             self.dut.send_expect("./examples/l2fwd/build/app/l2fwd -n 4 -c 0xf -- -p 0x3 &", "L2FWD: entering main loop", 60)
             self.check_forwarding([0, 1], self.nic)
 
@@ -208,7 +208,7 @@ class TestShortLiveApp(TestCase):
         self.compile_examples("l3fwd")
         for i in range(repeat_time):
             #dpdk start
-            print "clean_up_with_signal_l3fwd round %d" % (i + 1)
+            print("clean_up_with_signal_l3fwd round %d" % (i + 1))
             self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 

@@ -93,8 +93,8 @@ def parallel_lock(num=1):
             # make sure when owned global lock, should also own update lock
             if lock_info[name]['current_thread'] >= num:
                 if lock._is_owned():
-                    print RED("DUT%d %s waiting for func lock %s" % (dut_id,
-                              threading.current_thread().name, func.__name__))
+                    print(RED("DUT%d %s waiting for func lock %s" % (dut_id,
+                              threading.current_thread().name, func.__name__)))
                 lock.acquire()
             else:
                 uplock.release()
@@ -154,7 +154,7 @@ def regexp(s, to_match, allString=False):
         return scanner.findall(s)
     m = scanner.search(s)
     if m is None:
-        print RED("Failed to match " + to_match + " in the string " + s)
+        print(RED("Failed to match " + to_match + " in the string " + s))
         return None
     return m.group(1)
 
@@ -200,7 +200,7 @@ def get_subclasses(module, clazz):
 
 
 def copy_instance_attr(from_inst, to_inst):
-    for key in from_inst.__dict__.keys():
+    for key in list(from_inst.__dict__.keys()):
         to_inst.__dict__[key] = from_inst.__dict__[key]
 
 
@@ -249,7 +249,7 @@ def convert_mac2long(mac_str):
     mac_hex = '0x'
     for mac_part in mac_str.lower().split(':'):
         mac_hex += mac_part
-    ret  = long(mac_hex, 16)
+    ret  = int(mac_hex, 16)
     return ret
 
 def convert_mac2str(mac_long):

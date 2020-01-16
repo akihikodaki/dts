@@ -238,7 +238,7 @@ class TestDPDKGROLib(TestCase):
         # config the cpupin only have one core
         params_number = len(vm_config.params)
         for i in range(params_number):
-            if vm_config.params[i].keys()[0] == 'cpu':
+            if list(vm_config.params[i].keys())[0] == 'cpu':
                 vm_config.params[i]['cpu'][0]['number'] = 1
                 vm_config.params[i]['cpu'][0]['cpupin'] = self.qemu_cpupin
 
@@ -258,7 +258,7 @@ class TestDPDKGROLib(TestCase):
             if self.vm1_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
-            print utils.RED("Failure for %s" % str(e))
+            print((utils.RED("Failure for %s" % str(e))))
         self.vm1_dut.restore_interfaces()
 
     def iperf_result_verify(self, run_info):
@@ -266,9 +266,9 @@ class TestDPDKGROLib(TestCase):
         Get the iperf test result
         '''
         fmsg = self.dut.send_expect("cat /root/iperf_client.log", "#")
-        print fmsg
+        print(fmsg)
         iperfdata = re.compile('[\d+]*.[\d+]* [M|G|K]bits/sec').findall(fmsg)
-        print iperfdata
+        print(iperfdata)
         self.verify(iperfdata, 'There no data about this case')
         self.result_table_create(['Data', 'Unit'])
         results_row = [run_info]
@@ -302,7 +302,7 @@ class TestDPDKGROLib(TestCase):
             (self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('GRO lib')
-        print "the GRO lib %s " % (self.output_result)
+        print(("the GRO lib %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         # Turn off DPDK GRO lib and Kernel GRO off
         self.set_testpmd_gro_off()
@@ -311,7 +311,7 @@ class TestDPDKGROLib(TestCase):
             (self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('Kernel GRO')
-        print "the Kernel GRO %s " % (self.output_result)
+        print(("the Kernel GRO %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
@@ -342,7 +342,7 @@ class TestDPDKGROLib(TestCase):
             (self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('GRO lib')
-        print "the GRO lib %s " % (self.output_result)
+        print(("the GRO lib %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
@@ -373,7 +373,7 @@ class TestDPDKGROLib(TestCase):
             (self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('GRO lib')
-        print "the GRO lib %s " % (self.output_result)
+        print(("the GRO lib %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")

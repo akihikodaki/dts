@@ -123,13 +123,13 @@ class VirtDut(DPDKdut):
         """
         port_num = len(self.ports_info)
         self.ports_map = [-1] * port_num
-        for key in self.ports_cfg.keys():
+        for key in list(self.ports_cfg.keys()):
             index = int(key)
             if index >= port_num:
-                print RED("Can not found [%d ]port info" % index)
+                print(RED("Can not found [%d ]port info" % index))
                 continue
 
-            if 'peer' in self.ports_cfg[key].keys():
+            if 'peer' in list(self.ports_cfg[key].keys()):
                 tester_pci = self.ports_cfg[key]['peer']
                 # find tester_pci index
                 pci_idx = self.tester.get_local_index(tester_pci)
@@ -233,7 +233,7 @@ class VirtDut(DPDKdut):
                 total_phycores = socks * cores
                 # cores should match cpu_topo
                 if total != len(cpuinfo):
-                    print RED("Core number not matched!!!")
+                    print(RED("Core number not matched!!!"))
                 else:
                     for core in range(total):
                         thread = core / total_phycores
@@ -281,7 +281,7 @@ class VirtDut(DPDKdut):
                 itf = port.get_interface_name()
                 self.send_expect("ifconfig %s up" % itf, "# ")
                 time.sleep(30)
-                print self.send_expect("ip link ls %s" % itf, "# ")
+                print(self.send_expect("ip link ls %s" % itf, "# "))
             else:
                 self.logger.info(
                     "NOT FOUND DRIVER FOR PORT (%s|%s)!!!" % (pci_bus, pci_id))
@@ -401,7 +401,7 @@ class VirtDut(DPDKdut):
                         vfs = remoteport.get_sriov_vfs_pci()
                         # if hostpci is vf of tester port
                         if hostpci == remotepci or hostpci in vfs:
-                            print RED("Skip ping from same PF device")
+                            print(RED("Skip ping from same PF device"))
                             continue
 
                 ipv6 = self.get_ipv6_address(vmPort)
