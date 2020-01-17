@@ -63,6 +63,7 @@ class L3fwdBase(object):
 
     def l3fwd_init(self, valports, socket):
         self.__valports = valports
+        self.__white_list = None
         self.__socket = socket
         self.__nic_name = self.nic
         self.__pkt_typ = 'udp'
@@ -172,8 +173,8 @@ class L3fwdBase(object):
             msg = "flows not set in json cfg file"
             raise VerifyFailure(msg)
         flows_configs = {}
-        for name, mode_configs in flows.iteritems():
-            for mode, configs in mode_configs.iteritems():
+        for name, mode_configs in flows.items():
+            for mode, configs in mode_configs.items():
                 for index, config in enumerate(configs):
                     if mode == LPM:
                         # under LPM mode, one port only set one stream
@@ -208,7 +209,7 @@ class L3fwdBase(object):
         test_streams = {}
         flows_configs = self.__preset_flows_configs()
         for frame_size in frame_sizes:
-            for flow_key, flows_config in flows_configs.iteritems():
+            for flow_key, flows_config in flows_configs.items():
                 streams_key = flow_key + (frame_size, )
                 for flow_config in flows_config:
                     _layers, fields_config = flow_config
@@ -384,6 +385,7 @@ class L3fwdBase(object):
             "{bin} "
             "-c {cores} "
             "-n {channel} "
+            "{whitelist}"
             "-- "
             "-p {port_mask} "
             "--config '{config}'"
@@ -391,6 +393,7 @@ class L3fwdBase(object):
                 'bin': bin,
                 'cores': core_mask,
                 'channel': self.dut.get_memory_channels(),
+                'whitelist': self.__white_list if self.__white_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': config, })
         if self.nic == "niantic":
@@ -661,7 +664,7 @@ class L3fwdBase(object):
             raise VerifyFailure(msg)
         configs = []
         frame_sizes_grp = []
-        for test_item, frame_sizes in sorted(options.iteritems()):
+        for test_item, frame_sizes in sorted(options.items()):
             _frame_sizes = [int(frame_size) for frame_size in frame_sizes]
             frame_sizes_grp.extend([int(item) for item in _frame_sizes])
             cores, queues_per_port = self.__parse_port_config(test_item)
@@ -701,7 +704,32 @@ class L3fwdBase(object):
 
         return test_content
 
+    def __get_whitelist(self, port_list):
+        white_list = ''
+        for port_index in port_list:
+            pci = self.dut.ports_info[port_index].get('pci')
+            if not pci:
+                continue
+            white_list += '-w {} '.format(pci)
+        return white_list
+
+    def __preset_port_list(self, test_content):
+        port_list = test_content.get('port_list')
+        if port_list:
+            if not set(port_list).issubset(set(self.__valports)):
+                msg = 'total ports are {}, select ports are wrong'.format(
+                    pformat(self.__valports))
+                raise VerifyFailure(msg)
+            else:
+                msg = 'current using ports {} for testing'.format(
+                    pformat(port_list))
+                self.logger.info(msg)
+            self.__valports = port_list
+            self.__white_list = self.__get_whitelist(port_list)
+
     def l3fwd_preset_test_environment(self, test_content):
+        # if user set port list in cfg file, use
+        self.__preset_port_list(test_content)
         # get test content
         self.__test_content = self.__get_test_content_from_cfg(test_content)
         # binary process flag
