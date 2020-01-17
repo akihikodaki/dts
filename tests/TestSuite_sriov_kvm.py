@@ -111,8 +111,7 @@ class TestSriovKvm(TestCase):
         try:
             dut_dest_port = dut_ports[dest_port]
         except Exception as e:
-            print()
-            e
+            print(e)
 
         # using api get_local_port() to get the correct tester port.
         tester_port = self.tester.get_local_port(dut_dest_port)
