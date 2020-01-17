@@ -49,7 +49,6 @@ from pmd_output import PmdOutput
 import sys
 import imp
 imp.reload(sys)
-sys.setdefaultencoding('utf8')
 
 
 class TestRteflowPriority(TestCase):
