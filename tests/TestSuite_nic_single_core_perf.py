@@ -52,8 +52,8 @@ class TestNicSingleCorePerf(TestCase):
         Run at the start of each test suite.
         PMD prerequisites.
         """
-        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit',
-                                 'ConnectX5_MT4121', 'ConnectX4_LX_MT4117'],
+        self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit', 'ConnectX5_MT4121',
+                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g'],
                                  "Not required NIC ")
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
@@ -62,6 +62,10 @@ class TestNicSingleCorePerf(TestCase):
         if self.nic in ["fortville_25g", "fortville_spirit"]:
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
+            self.dut.build_install_dpdk(self.target)
+        elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            self.dut.send_expect(
+                "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
             self.dut.build_install_dpdk(self.target)
 
         # Based on h/w type, choose how many ports to use
@@ -134,41 +138,55 @@ class TestNicSingleCorePerf(TestCase):
             'IP(src="1.2.3.4",dst="192.18.2.0")',
             'IP(src="1.2.3.4",dst="192.18.2.1")']
 
-    def create_pacap_file(self, frame_size):
+    def create_pacap_file(self, frame_size, port_num):
         """
         Prepare traffic flow
         """
         payload_size = frame_size - HEADER_SIZE['ip'] - HEADER_SIZE['eth']
         pcaps = {}
         for _port in self.dut_ports:
-            index = self.dut_ports[_port]
-            cnt = 0
-            for layer in self.flows()[_port * 2:(_port + 1) * 2]:
-                flow = ['Ether(src="52:00:00:00:00:00")/%s/("X"*%d)' % (layer, payload_size)]
-                pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
-                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, string.join(flow, ',')))
+            if 1 == port_num:
+                flow = ['Ether(src="52:00:00:00:00:00")/%s/("X"*%d)' % (self.flows()[_port], payload_size)]
+                pcap = os.sep.join([self.output_path, "dst{0}.pcap".format(_port)])
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ','.join(flow)))
                 self.tester.scapy_execute()
-                if index not in pcaps:
-                    pcaps[index] = []
-                pcaps[index].append(pcap)
-                cnt += 1
+                pcaps[_port] = []
+                pcaps[_port].append(pcap)
+            else:
+                index = self.dut_ports[_port]
+                cnt = 0
+                for layer in self.flows()[_port * 2:(_port + 1) * 2]:
+                    flow = ['Ether(src="52:00:00:00:00:00")/%s/("X"*%d)' % (layer, payload_size)]
+                    pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
+                    self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ','.join(flow)))
+                    self.tester.scapy_execute()
+                    if index not in pcaps:
+                        pcaps[index] = []
+                    pcaps[index].append(pcap)
+                    cnt += 1
         return pcaps
 
-    def prepare_stream(self, pcaps):
+    def prepare_stream(self, pcaps, port_num):
         """
         create streams for ports,one port one stream
         """
         tgen_input = []
-        for rxPort in range(self.nb_ports):
-            if rxPort % self.nb_ports == 0 or self.nb_ports % rxPort == 2:
-                txIntf = self.tester.get_local_port(self.dut_ports[rxPort + 1])
-                port_id = self.dut_ports[rxPort + 1]
-            else:
-                txIntf = self.tester.get_local_port(self.dut_ports[rxPort - 1])
-                port_id = self.dut_ports[rxPort - 1]
-            rxIntf = self.tester.get_local_port(self.dut_ports[rxPort])
-            for pcap in pcaps[port_id]:
+        if 1 == port_num:
+            txIntf = self.tester.get_local_port(self.dut_ports[0])
+            rxIntf = txIntf
+            for pcap in pcaps[0]:
                 tgen_input.append((txIntf, rxIntf, pcap))
+        else:
+            for rxPort in range(self.nb_ports):
+                if rxPort % self.nb_ports == 0 or self.nb_ports % rxPort == 2:
+                    txIntf = self.tester.get_local_port(self.dut_ports[rxPort + 1])
+                    port_id = self.dut_ports[rxPort + 1]
+                else:
+                    txIntf = self.tester.get_local_port(self.dut_ports[rxPort - 1])
+                    port_id = self.dut_ports[rxPort - 1]
+                rxIntf = self.tester.get_local_port(self.dut_ports[rxPort])
+                for pcap in pcaps[port_id]:
+                    tgen_input.append((txIntf, rxIntf, pcap))
         return tgen_input
 
     def test_perf_nic_single_core(self):
@@ -176,8 +194,7 @@ class TestNicSingleCorePerf(TestCase):
         Run nic single core performance
         """
         self.nb_ports = len(self.dut_ports)
-        self.verify(self.nb_ports == 2 or self.nb_ports == 4,
-                    "Require 2 or 4 ports to test")
+        self.verify(self.nb_ports >= 1, "At least 1 port is required to test")
         self.perf_test(self.nb_ports)
         self.handle_results()
 
@@ -211,12 +228,12 @@ class TestNicSingleCorePerf(TestCase):
         """
         # ports whitelist
         eal_para = ""
-        for i in range(self.nb_ports):
+        for i in range(port_num):
             eal_para += " -w " + self.dut.ports_info[i]['pci']
 
         # run testpmd with 2 cores, one for interaction ,and one for forwarding
         core_config = "1S/2C/1T"
-        core_list = self.dut.get_core_list(core_config, socket = self.socket)
+        core_list = self.dut.get_core_list(core_config, socket=self.socket)
         self.logger.info("Executing Test Using cores: %s" % core_list)
         port_mask = utils.create_mask(self.dut_ports)
 
@@ -225,17 +242,20 @@ class TestNicSingleCorePerf(TestCase):
         # fortville has to use 2 queues at least to get the best performance
         if self.nic in ["fortville_25g", "fortville_spirit"]:
             param += " --rxq=2 --txq=2"
+        # columbiaville use one queue per port for best performance.
+        elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            param += "  --rxq=%d --rxq=%d" % (port_num, port_num)
 
         for frame_size in list(self.test_parameters.keys()):
             self.throughput[frame_size] = dict()
-            pcaps = self.create_pacap_file(frame_size)
-            tgenInput = self.prepare_stream(pcaps)
+            pcaps = self.create_pacap_file(frame_size, port_num)
+            tgenInput = self.prepare_stream(pcaps, port_num)
             for nb_desc in self.test_parameters[frame_size]:
                 self.logger.info("Test running at parameters: " +
                     "framesize: {}, rxd/txd: {}".format(frame_size, nb_desc))
                 parameter = param + " --txd=%d --rxd=%d" % (nb_desc, nb_desc)
                 self.pmdout.start_testpmd(
-                    core_config, parameter, eal_para, socket = self.socket)
+                    core_config, parameter, eal_para, socket=self.socket)
                 self.dut.send_expect("start", "testpmd> ", 15)
 
                 vm_config = self.set_fields()
@@ -364,5 +384,8 @@ class TestNicSingleCorePerf(TestCase):
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
             self.dut.build_install_dpdk(self.target)
-
+        elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            self.dut.send_expect(
+                "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
+            self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()
