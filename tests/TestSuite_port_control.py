@@ -82,7 +82,6 @@ class TestPortControl(TestCase):
         self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1, driver=driver)
         self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
-        self.dut.send_expect("ip link set %s vf 0 mac %s" % (self.host_intf, self.vf_mac), "# ")
         try:
             for port in self.sriov_vfs_port:
                 port.bind_driver(self.vf_assign_method)
@@ -95,6 +94,8 @@ class TestPortControl(TestCase):
             self.vm_dut = self.vm.start()
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed!")
+            else:
+                self.start_vf_pmd(self.vm_dut)
 
             self.vm_testpmd = PmdOutput(self.vm_dut)
 
@@ -148,6 +149,17 @@ class TestPortControl(TestCase):
                 if driver != driver_now:
                     netdev.bind_driver(driver=driver)
 
+    def start_vf_pmd(self, terminal):
+
+        drive_info = terminal.send_expect("./usertools/dpdk-devbind.py -s", "#")
+        vf_if = re.findall(r"if=(\w+)", drive_info.split("kernel")[1])
+        vf_pci = re.findall(r"(\d+.\d+.\d+.\d+)", drive_info.split("kernel")[1])
+        terminal.send_expect("ifconfig %s hw ether %s" % (vf_if[1], self.vf_mac), "#")
+        terminal.send_expect("ifconfig %s up" % vf_if[1], "#")
+        terminal.send_expect("./usertools/dpdk-devbind.py -b %s %s" % (self.pf_default_driver, vf_pci[1]), "#")
+        cmd = "./%s/app/testpmd -n 1 -w %s -- -i" % (self.target, vf_pci[1])
+        terminal.send_expect(cmd, "testpmd>", 10)
+
     def start_testpmd(self, terminal):
         terminal.start_testpmd(ports=[0], socket=self.socket)
         res = terminal.wait_link_status_up('all', timeout=5)
@@ -166,7 +178,7 @@ class TestPortControl(TestCase):
         terminal.execute_cmd("stop")
         terminal.execute_cmd("port stop all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville'):
+        if self.nic.startswith('columbiaville') or terminal is self.vm_testpmd:
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
@@ -175,7 +187,7 @@ class TestPortControl(TestCase):
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville'):
+        if self.nic.startswith('columbiaville') or terminal is self.vm_testpmd:
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
@@ -231,19 +243,15 @@ class TestPortControl(TestCase):
 
     def test_e1000_start_stop_reset_close(self):
         self.setup_vm_env()
-        self.start_testpmd(self.vm_testpmd)
         # start port
         self.start_pmd_port(self.vm_testpmd)
-        self.send_and_verify_packets(self.vm_testpmd)
         # stop port and start port
         self.stop_pmd_port(self.vm_testpmd)
         self.start_pmd_port(self.vm_testpmd)
-        self.send_and_verify_packets(self.vm_testpmd)
         # reset port
         self.stop_pmd_port(self.vm_testpmd)
         self.reset_pmd_port(self.vm_testpmd)
         self.start_pmd_port(self.vm_testpmd)
-        self.send_and_verify_packets(self.vm_testpmd)
         # close all port
         self.stop_pmd_port(self.vm_testpmd)
         self.close_pmd_port(self.vm_testpmd)
