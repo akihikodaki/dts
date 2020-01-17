@@ -48,6 +48,7 @@ from test_case import TestCase
 from exception import VerifyFailure
 from packet import Packet
 import time
+from pmd_output import PmdOutput
 
 
 class TestUniPacket(TestCase):
@@ -61,13 +62,15 @@ class TestUniPacket(TestCase):
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
         # start testpmd
         self.dut_port = valports[0]
+        socket_id = self.dut.get_numa_id(self.dut_port)
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
-        self.dut.send_expect(
-            "./%s/app/testpmd -c f -n 4 -- -i" % self.target, "testpmd>", 20)
+        self.pmd = PmdOutput(self.dut)
+        self.pmd.start_testpmd(socket=socket_id)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
+        self.pmd.wait_link_status_up(port_id=self.dut_port)
 
     def set_up(self):
         """
