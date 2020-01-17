@@ -87,7 +87,7 @@ class L3fwdBase(object):
         return output_path
 
     def d_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str)) else cmd
         return self.dut.send_expect(*_cmd)
 
     def __get_ipv4_lpm_vm_config(self, lpm_config):
@@ -192,7 +192,7 @@ class L3fwdBase(object):
                         if index >= 2 * len(self.__valports):
                             break
                         port_id = \
-                            self.__valports[(index / 2) % len(self.__valports)]
+                            self.__valports[int(index / 2) % len(self.__valports)]
                         dmac = self.dut.get_mac_address(port_id)
                         _layer = {'ether': {'dst': dmac, }, }
                         _layer.update(config)
@@ -230,7 +230,7 @@ class L3fwdBase(object):
                  for index, _ in enumerate(self.__valports)] \
                  if len(self.__valports) > 1 else [[port(0), port(0)]]
         stream_ids = []
-        step = len(streams) / len(self.__valports)
+        step = int(len(streams) / len(self.__valports))
         for cnt, stream in enumerate(streams):
             pkt, field_config = stream
             index = cnt // step
@@ -476,7 +476,7 @@ class L3fwdBase(object):
         with open(_js_file, 'w') as fp:
             json.dump(self.__json_results, fp, indent=4,
                       separators=(',', ': '),
-                      encoding="utf-8", sort_keys=True)
+                      sort_keys=True)
 
     def __display_suite_result(self, data, mode):
         values = data.get('values')
@@ -651,7 +651,7 @@ class L3fwdBase(object):
 
     def __parse_port_config(self, config):
         cores, total_threads, queue = config.split('/')
-        _thread = str(int(total_threads[:-1]) / int(cores[:-1])) + 'T'
+        _thread = str(int(int(total_threads[:-1]) / int(cores[:-1]))) + 'T'
         _cores = str(int(cores[:-1]) * len(self.__valports)) + 'C'
         # only use one socket
         cores_config = '/'.join(['1S', _cores, _thread])
