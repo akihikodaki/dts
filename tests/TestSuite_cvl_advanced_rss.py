@@ -11,14 +11,6 @@ from collections import OrderedDict
 from packet import IncreaseIP, IncreaseIPv6
 import rte_flow_common as rfc
 
-from socket import AF_INET6
-from scapy.utils import struct, socket, wrpcap, rdpcap
-from scapy.layers.inet import Ether, IP, TCP, UDP
-from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import Dot1Q
-from scapy.layers.sctp import SCTP, SCTPChunkData
-from nvgre import NVGRE
-
 out = os.popen("pip list|grep scapy ")
 version_result =out.read()
 p=re.compile('scapy\s+2\.3\.\d+')
@@ -192,7 +184,6 @@ tv_mac_ipv4_udp_all_frag = {
 tv_mac_ipv4_udp_nvgre = {
     "name":"tv_mac_ipv4_udp_nvgre",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end",
-    "scapy_str":'Ether(dst="68:05:ca:a3:28:94")/IP()/NVGRE()/Ether()/IP(src=RandIP(),dst=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)',
     "scapy_str":['Ether(dst="68:05:ca:a3:28:94")/IP()/NVGRE()/Ether()/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(sport=%d, dport=%d)/("X"*480)' %(i, i+10, i+50,i+55) for i in range(0,100)],
     "check_func": rfc.check_packets_of_each_queue,
     "check_func_param": {"expect_port":0}
@@ -796,7 +787,7 @@ tvs_mac_rss_ipv6_symmetric_toeplitz_nvgre = [
     ]
 
 tvs_mac_rss_symmetric_toeplitz_vxlan = [
-	tv_mac_ipv4_vxlan_symmetric_toeplitz,
+    tv_mac_ipv4_vxlan_symmetric_toeplitz,
     tv_mac_ipv6_vxlan_udp_symmetric_toeplitz,
     tv_mac_ipv6_vxlan_symmetric_toeplitz,
     tv_mac_ipv6_vxlan_tcp_symmetric_toeplitz,
@@ -874,7 +865,6 @@ class AdvancedRSSTest(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
-        overall_result = True
         test_results.clear()
         self.count = 1
         self.mac_count=100    
@@ -907,10 +897,7 @@ class AdvancedRSSTest(TestCase):
         self.dut.send_expect("flow flush %d" % self.dut_ports[0], "testpmd> ")
         self.dut.send_expect("quit", "#")
 
-        self.verify(overall_result == True, "Some test case failed.")
-
-
-    def test_advance_rss_ipv4(self):  
+    def test_advance_rss_ipv4(self):
         command = self.create_testpmd_command()
         self._rte_flow_validate_pattern(tvs_mac_rss_ipv4, command, is_vxlan = True)
 
