@@ -50,7 +50,7 @@ class TestVhost1024Ethports(TestCase):
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for testing')
         self.mem_channels = self.dut.get_memory_channels()
         cores = self.dut.get_core_list("1S/2C/1T")
-        self.coremask = utils.create_mask(cores)
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.build_user_dpdk()
 
     def set_up(self):
@@ -78,9 +78,8 @@ class TestVhost1024Ethports(TestCase):
         command_line_vdev = ''
         for ethport in range(self.max_ethport):
             command_line_vdev += '--vdev "eth_vhost%d,iface=vhost-net%d,queues=%d" ' %(ethport, ethport, self.queue)
-        command_line_argument = '/app/testpmd -c %s -n %d --socket-mem 10240,10240 '\
-                        '--file-prefix=vhost ' %(self.coremask, self.mem_channels)
-        command_line_client = self.dut.target + command_line_argument + command_line_vdev + '-- -i'
+        eal_params = self.dut.create_eal_parameters(cores="1S/2C/1T", prefix='vhost', ports=[self.pci_info])
+        cmd = self.dut.target + '/app/testpmd ' + eal_params + command_line_vdev + ' -- -i'
         try:
             out = self.vhost_user.send_expect(command_line_client, 'testpmd> ', 120)
         except Exception as e:
