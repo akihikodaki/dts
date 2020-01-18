@@ -127,16 +127,11 @@ class TestVhostDequeueZeroCopy(TestCase):
         elif txfreet == "vector_rx":
             txfreet_args = "--txd=1024 --rxd=1024 --txfreet=992 --txrs=32"
 
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                    prefix='vhost', ports=[self.port_pci])
-        command_client = self.dut.target + "/app/testpmd %s " + \
-                         " --socket-mem 1024,1024 --legacy-mem " + \
-                         " --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,dequeue-zero-copy=%d%s' " + \
-                         " -- -i --nb-cores=%d --rxq=%d --txq=%d %s"
-        command_line_client = command_client % (
-            eal_params, self.base_dir, self.queue_number,
-            zero_copy_info, mode_info, self.nb_cores,
-            self.queue_number, self.queue_number, txfreet_args)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=%d,dequeue-zero-copy=%d%s'" % (self.base_dir, self.queue_number, zero_copy_info, mode_info)]
+        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d %s" % (self.nb_cores, self.queue_number, self.queue_number, txfreet_args)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.port_pci], vdevs=vdev)
+        command_line_client = testcmd + eal_params + para
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -151,13 +146,12 @@ class TestVhostDequeueZeroCopy(TestCase):
                 core_config, socket=self.ports_socket)
         self.verify(len(core_list) >= (len(self.core_list) + 3),
                 "There has not enought cores to test this case %s" % self.running_case)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queue_size=1024,%s" % path_mode
+        para = " -- -i --tx-offloads=0x0 --nb-cores=%d --txd=1024 --rxd=1024" % self.nb_cores
         eal_params = self.dut.create_eal_parameters(cores=core_list[len(self.core_list):],
                         prefix='virtio', no_pci=True)
-        command_line = self.dut.target + "/app/testpmd %s " + \
-                        "--socket-mem 1024,1024 --legacy-mem " + \
-                        "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queue_size=1024,%s " + \
-                        "-- -i --tx-offloads=0x0 --nb-cores=%d --txd=1024 --rxd=1024"
-        command_line = command_line % (eal_params, path_mode, self.nb_cores)
+        command_line = testcmd + eal_params + vdev + para
         self.virtio_user.send_expect(command_line, 'testpmd> ', 120)
         self.virtio_user.send_expect('set fwd mac', 'testpmd> ', 120)
         self.virtio_user.send_expect('start', 'testpmd> ', 120)
