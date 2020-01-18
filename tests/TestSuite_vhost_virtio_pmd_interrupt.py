@@ -57,7 +57,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores_num = len([n for n in self.dut.cores if int(n['socket']) ==
                         self.ports_socket])
-        self.mem_channels = self.dut.get_memory_channels()
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.logger.info("Please comfirm the kernel of vm greater than 4.8.0 "
@@ -93,7 +93,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
                     self.running_case)
         self.core_list = self.dut.get_core_list(core_config,
                                     socket=self.ports_socket)
-        self.core_mask = utils.create_mask(self.core_list)
 
     def prepare_vm_env(self):
         """
@@ -117,14 +116,11 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         # get the core list depend on current nb_cores number
         self.get_core_list()
-
-        command_client = self.dut.target + "/app/testpmd -c %s -n %d " + \
-                        "--socket-mem 1024,1024 --legacy-mem " + \
-                        "--vdev 'net_vhost0,iface=%s/vhost-net,queues=%d' " + \
-                        "-- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip"
-        command_line_client = command_client % (
-                        self.core_mask, self.mem_channels, self.base_dir,
-                        self.queues, self.nb_cores, self.queues, self.queues)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=%d'" % (self.base_dir, self.queues)]
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip" % (self.nb_cores, self.queues, self.queues)
+        command_line_client = testcmd + eal_params + para
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
