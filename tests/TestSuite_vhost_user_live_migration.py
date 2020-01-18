@@ -71,8 +71,6 @@ class TestVhostUserLiveMigration(TestCase):
         self.host_tintf = self.tester.get_interface(host_tport)
         self.backup_tintf = self.tester.get_interface(backup_tport)
 
-        self.host_mem_channels = self.host_dut.get_memory_channels()
-        self.backup_mem_channels = self.backup_dut.get_memory_channels()
         self.host_pci_info = self.host_dut.ports_info[0]['pci']
         self.backup_pci_info = self.backup_dut.ports_info[0]['pci']
 
@@ -139,12 +137,10 @@ class TestVhostUserLiveMigration(TestCase):
     def get_core_list(self):
         core_number = self.queue_number + 1
         core_config = '1S/%dC/1T' % core_number
-        core_list0 = self.duts[0].get_core_list(core_config)
-        core_list1 = self.duts[1].get_core_list(core_config)
-        self.verify(len(core_list0) >= core_number and len(core_list1) >= core_number,
+        self.core_list0 = self.duts[0].get_core_list(core_config)
+        self.core_list1 = self.duts[1].get_core_list(core_config)
+        self.verify(len(self.core_list0) >= core_number and len(core_list1) >= core_number,
                     'There have not enough cores to start testpmd on duts')
-        self.host_core_mask_user = utils.create_mask(core_list0)
-        self.backup_core_mask_user = utils.create_mask(core_list1)
 
     def launch_testpmd_as_vhost_on_both_dut(self, zero_copy=False):
         """
@@ -154,22 +150,13 @@ class TestVhostUserLiveMigration(TestCase):
         zero_copy_str = ''
         if zero_copy is True:
             zero_copy_str = ',dequeue-zero-copy=1'
-        vdev_info = 'eth_vhost0,iface=%s/vhost-net,queues=%d%s' % (
-                self.base_dir, self.queue_number, zero_copy_str)
-
-        params_info = '--nb-cores=%d --rxq=%d --txq=%d' % (
-                self.queue_number, self.queue_number, self.queue_number)
-
-        cmd_line = self.dut.target + '/app/testpmd -c %s -n %d -w %s ' + \
-                "--socket-mem %s --legacy-mem --file-prefix=vhost --vdev '%s' " + \
-                "-- -i %s"
-        host_cmd_line = cmd_line % (self.host_core_mask_user, self.host_mem_channels,
-                    self.host_pci_info, self.host_socket_mem,
-                    vdev_info, params_info)
-        backup_cmd_line = cmd_line % (self.backup_core_mask_user, self.backup_mem_channels,
-                    self.backup_pci_info, self.backup_socket_mem,
-                    vdev_info, params_info)
-
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=%d%s'" % (self.base_dir, self.queue_number, zero_copy_str)]
+        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (self.queue_number, self.queue_number, self.queue_number)
+        eal_params_first = self.dut.create_eal_parameters(cores=self.core_list0, prefix='vhost', ports=[self.host_pci_info], vdevs=vdev)
+        eal_params_secondary = self.dut.create_eal_parameters(cores=self.core_list1, prefix='vhost', ports=[self.backup_pci_info], vdevs=vdev)
+        host_cmd_line = testcmd + eal_params_first + para
+        backup_cmd_line = testcmd + eal_params_secondary + para
         self.host_dut.send_expect(host_cmd_line, 'testpmd> ', 30)
         self.backup_dut.send_expect(backup_cmd_line, 'testpmd> ', 30)
 
