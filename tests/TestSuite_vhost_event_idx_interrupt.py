@@ -52,6 +52,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.queues = 1
         self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == 0])
         self.prepare_l3fwd_power()
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.base_dir = self.dut.base_dir.replace('~', '/root')
 
     def set_up(self):
@@ -73,7 +74,6 @@ class TestVhostEventIdxInterrupt(TestCase):
                     "There has not enought cores to test this case %s" %
                     self.running_case)
         self.core_list_l3fwd = self.dut.get_core_list(self.core_config)
-        self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
 
     def prepare_l3fwd_power(self):
         self.dut.send_expect("cp ./examples/l3fwd-power/main.c .", "#")
@@ -106,12 +106,10 @@ class TestVhostEventIdxInterrupt(TestCase):
 
         port_info = "0x1" if self.vm_num == 1 else "0x3"
 
-        command_client = "./examples/l3fwd-power/build/app/l3fwd-power " + \
-                         "-c %s -n %d --socket-mem 1024,1024 --legacy-mem --no-pci " + \
-                         "--log-level=9 %s -- -p %s --parse-ptype 1 --config '%s' "
-        command_line_client = command_client % (
-                        self.core_mask_l3fwd, self.dut.get_memory_channels(),
-                        vdev_info, port_info, config_info)
+        example_para = "./examples/l3fwd-power/build/app/l3fwd-power "
+        para = " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s'" % (vdev_info, port_info, config_info)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info])
+        command_line_client = example_para + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
         time.sleep(10)
