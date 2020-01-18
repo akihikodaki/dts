@@ -64,6 +64,7 @@ class TestVhostPmdXstats(TestCase):
         self.scapy_num = 0
         self.dmac = self.dut.get_mac_address(self.dut_ports[0])
         self.virtio1_mac = "52:54:00:00:00:01"
+        self.pci_info = self.dut.ports_info[0]['pci']
 
         # build sample app
         out = self.dut.build_dpdk_apps("./examples/vhost")
@@ -143,8 +144,12 @@ class TestVhostPmdXstats(TestCase):
         """
         prepare all of the conditions for start
         """
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %s --vdev 'net_vhost0,iface=%s/vhost-net,queues=1' -- -i --nb-cores=1" %
-                             (self.target, self.coremask, self.dut.get_memory_channels(), self.base_dir), "testpmd>", 60)
+        testcmd = self.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=1'" % self.base_dir]
+        eal_params = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --nb-cores=1"
+        cmd = testcmd + eal_params + para
+        self.dut.send_expect(cmd, "testpmd>", 60)
         self.start_onevm()
         self.vm_testpmd_start()
         self.dut.send_expect("set fwd mac", "testpmd>", 60)
