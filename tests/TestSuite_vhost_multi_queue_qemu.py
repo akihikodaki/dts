@@ -59,6 +59,7 @@ class TestVhostMultiQueueQemu(TestCase):
         self.socket = netdev.get_nic_socket()
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.verify(len(self.cores) >= 3, "Insufficient cores for speed testing")
+        self.pci_info = self.dut.ports_info[0]['pci']
 
         self.queue_number = 2
         # Using file to save the vhost sample output since in jumboframe case,
@@ -98,11 +99,11 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         Launch the vhost sample with different parameters
         """
-        testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem 1024,1024" + \
-                       " --vdev 'net_vhost0,iface=%s/vhost-net,queues=%d' -- -i --rxq=%d --txq=%d --nb-cores=2"
-        self.coremask = utils.create_mask(self.cores)
-        testcmd_start = testcmd % (self.coremask, self.memory_channel, self.base_dir, self.queue_number, self.queue_number, self.queue_number)
-
+        testcmd = self.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=%d'" % (self.base_dir, self.queue_number)]
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --rxq=%d --txq=%d --nb-cores=2" % (self.queue_number, self.queue_number)
+        testcmd_start = testcmd + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -284,11 +285,11 @@ class TestVhostMultiQueueQemu(TestCase):
         Test the performance for change vhost queue size
         """
         self.queue_number = 2
-        testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem 1024,1024" + \
-                       " --vdev 'net_vhost0,iface=%s/vhost-net,queues=2' -- -i --rxq=1 --txq=1 --nb-cores=1"
-        self.coremask = utils.create_mask(self.cores)
-        testcmd_start = testcmd % (self.coremask, self.memory_channel, self.base_dir)
-
+        testcmd = self.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=2'" % self.base_dir]
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --rxq=1 --txq=1 --nb-cores=1"
+        testcmd_start = testcmd + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
