@@ -49,8 +49,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         self.queues = 1
         self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == 0])
         self.vmac = "00:11:22:33:44:10"
-        self.dut_ports = self.dut.get_ports()
-        self.mem_channels = self.dut.get_memory_channels()
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.prepare_l3fwd_power()
 
     def set_up(self):
@@ -83,21 +82,15 @@ class TestVhostEnqueueInterrupt(TestCase):
         core_list = self.dut.get_core_list(self.core_config)
         self.core_list_virtio = core_list[0: self.queues+1]
         self.core_list_l3fwd = core_list[self.queues+1: need_num]
-        self.core_mask_virtio = utils.create_mask(self.core_list_virtio)
-        self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
 
     def lanuch_virtio_user(self):
         """
         launch virtio-user with server mode
         """
-        command_client = self.dut.target + "/app/testpmd -c %s -n %d " + \
-                        "--socket-mem 1024,1024 --legacy-mem --no-pci " + \
-                        "--file-prefix=virtio " + \
-                        "--vdev=net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d " + \
-                        "-- -i --rxq=%d --txq=%d --rss-ip"
-        command_line_client = command_client % (
-                        self.core_mask_virtio, self.mem_channels,
-                        self.vmac, self.queues, self.queues, self.queues)
+        vdev = "--vdev=net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d" % (self.vmac, self.queues)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio, prefix='virtio', no_pci=True, ports=[self.pci_info])
+        para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
+        command_line_client =  self.dut.target + "/app/testpmd " + eal_params + vdev + para
         self.virtio_user.send_expect(command_line_client, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
 
@@ -115,13 +108,11 @@ class TestVhostEnqueueInterrupt(TestCase):
             info = {'core': self.core_list_l3fwd[i], 'port': 0, 'queue': i}
             self.verify_info.append(info)
 
-        command_client = "./examples/l3fwd-power/build/app/l3fwd-power " + \
-                         "-c %s -n %d --socket-mem 1024,1024 --legacy-mem --no-pci " + \
-                         "--vdev 'net_vhost0,iface=vhost-net,queues=%d,client=1' " + \
-                         "-- -p 0x1 --parse-ptype 1 --config '%s' "
-        command_line_client = command_client % (
-                        self.core_mask_l3fwd, self.mem_channels,
-                        self.queues, config_info)
+        example_cmd = "./examples/l3fwd-power/build/app/l3fwd-power "
+        vdev = [r"'net_vhost0,iface=vhost-net,queues=%d,client=1'" % self.queues]
+        para = " -- -p 0x1 --parse-ptype 1 --config '%s' " % config_info
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info], vdevs=vdev)
+        command_line_client = example_cmd + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
         time.sleep(10)
