@@ -57,7 +57,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.core_mask_vhost = utils.create_mask(self.core_list_vhost)
         self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
         self.core_mask_virtio = self.core_mask_l3fwd
-        self.mem_channel = self.dut.get_memory_channels()
+        self.pci_info = self.dut.ports_info[0]['pci']
 
         self.prepare_l3fwd_power()
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -91,13 +91,11 @@ class TestVirtioUserInterrupt(TestCase):
 
     def launch_l3fwd(self, path):
         self.core_interrupt = self.core_list_l3fwd[0]
-        cmd_l3fwd = "./examples/l3fwd-power/build/l3fwd-power " + \
-                    "-n %d -c %s --socket-mem 1024,1024 --legacy-mem " + \
-                    "--log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd " + \
-                    "--vdev=virtio_user0,path=%s,cq=1 -- -p 1 " + \
-                    " --config='(0,0,%s)' --parse-ptype "
-        cmd_l3fwd = cmd_l3fwd % (self.mem_channel, self.core_mask_l3fwd,
-                    path, self.core_interrupt)
+        example_para = "./examples/l3fwd-power/build/l3fwd-power "
+        vdev = " --log-level='user1,7' --vdev=virtio_user0,path=%s,cq=1 -- -p 1" % path
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info])
+        para = " --config='(0,0,%s)' --parse-ptype" % self.core_interrupt
+        cmd_l3fwd = example_para + eal_params + vdev + para
         self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
         time.sleep(10)
@@ -111,16 +109,14 @@ class TestVirtioUserInterrupt(TestCase):
         """
         start testpmd on vhost side
         """
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=vhost-net,queues=1,client=0'"]
+        para = " -- -i --rxq=1 --txq=1"
         if len(pci) == 0:
-            pci_info = self.dut.ports_info[self.dut_ports[0]]['pci']
-            pci = '-w %s' % pci_info
-        cmd_vhost_user = self.dut.target + "/app/testpmd -n %d -c %s " + \
-              "--socket-mem 1024,1024 --legacy-mem %s " + \
-              "--file-prefix=vhost " + \
-              "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' " + \
-              "-- -i --rxq=1 --txq=1"
-        cmd_vhost_user = cmd_vhost_user % (self.mem_channel,
-                self.core_mask_vhost, pci)
+            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=[self.pci_info], vdevs=vdev)
+        else:
+            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, ports=[self.pci_info], vdevs=vdev)
+        cmd_vhost_user = testcmd + eal_params + para
 
         self.vhost.send_expect(cmd_vhost_user, "testpmd>", 30)
         self.vhost.send_expect("set fwd mac", "testpmd>", 30)
@@ -130,14 +126,11 @@ class TestVirtioUserInterrupt(TestCase):
         """
         start testpmd on virtio side
         """
-        cmd_virtio_user = self.dut.target + "/app/testpmd -n %d -c %s " + \
-                        " --socket-mem 1024,1024 --legacy-mem --no-pci " + \
-                        "--file-prefix=virtio " + \
-                        " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net" + \
-                        " -- -i --txd=512 --rxd=128 --tx-offloads=0x00"
-        cmd_virtio_user = cmd_virtio_user % (self.mem_channel,
-                        self.core_mask_virtio)
-
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net"
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='virtio', no_pci=True, ports=[self.pci_info])
+        para = " -- -i --txd=512 --rxd=128 --tx-offloads=0x00"
+        cmd_virtio_user = testcmd + eal_params + vdev + para
         self.virtio.send_expect(cmd_virtio_user, "testpmd>", 120)
         self.virtio.send_expect("set fwd mac", "testpmd>", 20)
         self.virtio.send_expect("start", "testpmd>", 20)
