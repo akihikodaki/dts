@@ -177,8 +177,8 @@ class TestNicSingleCorePerf(TestCase):
             for pcap in pcaps[0]:
                 tgen_input.append((txIntf, rxIntf, pcap))
         else:
-            for rxPort in range(self.nb_ports):
-                if rxPort % self.nb_ports == 0 or self.nb_ports % rxPort == 2:
+            for rxPort in range(port_num):
+                if rxPort % port_num == 0 or rxPort ** 2 == port_num:
                     txIntf = self.tester.get_local_port(self.dut_ports[rxPort + 1])
                     port_id = self.dut_ports[rxPort + 1]
                 else:
