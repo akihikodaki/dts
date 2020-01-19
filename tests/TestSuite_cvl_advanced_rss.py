@@ -849,7 +849,7 @@ class AdvancedRSSTest(TestCase):
         Create testpmd command for non-pipeline mode
         """
         #Prepare testpmd EAL and parameters 
-        all_eal_param = self.dut.create_eal_parameters()
+        all_eal_param = self.dut.create_eal_parameters(ports=[self.pf_pci])
         print(all_eal_param)   #print eal parameters
         command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=64 --txq=64")
         return command
