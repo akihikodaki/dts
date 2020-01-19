@@ -38,6 +38,7 @@ Test moving RSS to rte_flow.
 
 import time
 import re
+import packet
 
 from test_case import TestCase
 from pmd_output import PmdOutput
@@ -115,18 +116,18 @@ class TestRSS_to_Rteflow(TestCase):
         """
         Sends packets.
         """
-        self.tester.scapy_foreground()
-        time.sleep(2)
+        pkt_list = []
         for i in range(128):
             if ptype == "ipv4-udp":
-                packet = r'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(dport=%d, sport=%d)], iface="%s")' % (
-                    self.pf_mac, self.tester_mac, i + 1, i + 2, i + 21, i + 22, itf)
+                scapy_pkt = 'Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")/UDP(dport=%d, sport=%d)' % (
+                    self.pf_mac, self.tester_mac, i + 1, i + 2, i + 21, i + 22)
             elif ptype == "ipv4-other":
-                packet = r'sendp([Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")], iface="%s")' % (
-                    self.pf_mac, self.tester_mac, i + 1, i + 2, itf)
-            self.tester.scapy_append(packet)
-        self.tester.scapy_execute()
-        time.sleep(2)
+                scapy_pkt = 'Ether(dst="%s", src="%s")/IP(src="192.168.0.%d", dst="192.168.0.%d")' % (self.pf_mac, self.tester_mac, i + 1, i + 2)
+            pkt_list.append(scapy_pkt)
+
+        pkt = packet.Packet()
+        pkt.update_pkt(pkt_list)
+        pkt.send_pkt(self.tester, tx_port=itf)
 
     def check_packet_queue(self, queue, out):
         """
