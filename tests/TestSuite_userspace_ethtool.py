@@ -512,7 +512,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # send and sniff packet
             inst = self.tester.tcpdump_sniff_packets(intf)
             pkt.send_pkt(self.tester, tx_port=intf, count=4)
-            pkts = self.tester.load_tcpdump_sniff_packets(inst)
+            pkts = self.tester.load_tcpdump_sniff_packets(inst, timeout=3)
             self.verify(len(pkts) == 4, "Packet not forwarded as expected")
             src_mac = pkts.strip_layer_element("layer2", "src", p_index=0)
             self.verify(src_mac == valid_mac, "Forwarded packet not match default mac")
@@ -540,7 +540,11 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             time.sleep(10)
             # stop port
             self.dut.send_expect("stop %d" % index, "EthApp>")
-            self.verify(self.ethapp_check_link_status(index, 'Down') == True,
+            # about columbiaville_25g(8086:1593),there have a kernel driver link status issue
+            # about Sageville(8086:1563),driver do not write register to set link-down
+            # so skip this step of verify status
+            if self.nic not in ['columbiaville_25g', 'sageville']:
+                self.verify(self.ethapp_check_link_status(index, 'Down') == True,
                            'Fail to stop port{}'.format(index))
             # check packet not forwarded when port is stop
             pkt = Packet(pkt_type='UDP')
@@ -573,6 +577,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         if self.nic in ['powerville', 'springville']:
             mtu_threshold = 2026
             offset = 4
+        # RTE_ETHER_HDR_LEN + RTE_ETHER_CRC_LEN + ICE_VLAN_TAG_SIZE * 2
+        if self.nic in ["columbiaville_25g"]:
+            offset = 8
         for index in range(len(self.ports)):
             port = self.ports[index]
             # change mtu
@@ -581,6 +588,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             ori_mtu = self.strip_mtu(intf)
             self.tester.send_expect("ifconfig %s mtu 9000" % (intf), "# ")
             for mtu in mtus:
+                # cvl should stop port before set mtu
+                if self.nic in ["columbiaville_25g"]:
+                    self.dut.send_expect("stop %s" % index, "EthApp>")
+
                 # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
                 if mtu > mtu_threshold:
                     if self.nic in ['powerville', 'springville']:
@@ -589,6 +600,10 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
                     self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
                     self.dut.send_expect("open %s" % index, "EthApp>")
                 self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
+
+                if self.nic in ["columbiaville_25g"]:
+                    self.dut.send_expect("open %s" % index, "EthApp>")
+
                 time.sleep(5)
                 ori_rx_pkts, _ = self.strip_portstats(index)
                 pkt_size = mtu + HEADER_SIZE['eth'] + offset
