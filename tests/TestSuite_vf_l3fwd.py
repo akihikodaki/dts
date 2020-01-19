@@ -192,7 +192,7 @@ class TestVfL3fwd(TestCase):
             for layer in self.flows()[_port * 2:(_port + 1) * 2]:
                 flow = ['Ether(dst="%s", src="%s")/%s/("X"*%d)' % (dmac[index], smac[index], layer, payload_size)]
                 pcap = os.sep.join([self.output_path, "dst{0}_{1}.pcap".format(index, cnt)])
-                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, string.join(flow, ',')))
+                self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, ','.join(flow)))
                 self.tester.scapy_execute()
                 if index not in pcaps:
                     pcaps[index] = []
