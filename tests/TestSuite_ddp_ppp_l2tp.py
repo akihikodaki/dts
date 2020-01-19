@@ -105,13 +105,13 @@ class TestDdpPppL2tp(TestCase):
             pkts = {'IPV4/L2TP': 'Ether(src="%s", dst="%s")/IP()/UDP(dport=1701, sport=1701)/L2TP(session_id=%s)/Raw("X"*20)'
                     % (src_mac, dst_mac, session_id)}
         if flowtype == 28:
-            pkts = {'PPPOE/IPV4/UDP': 'Ether()/PPPoE(session_id=%s)/PPP(proto=0x21)/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+            pkts = {'PPPOE/IPV4/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(proto=0x21)/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
                     % (session_id, src_ip, dst_ip, sport, dport)}
         if flowtype == 29:
-            pkts = {'PPPOE/IPV6/UDP': 'Ether()/PPPoE(session_id=%s)/PPP(proto=0x57)/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+            pkts = {'PPPOE/IPV6/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(proto=0x57)/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
                     % (session_id, src_ipv6, dst_ipv6, sport, dport)}
         if flowtype == 30:
-            pkts = {'PPPOE': 'Ether(src="%s", dst="%s")/PPPoE(session_id=%s)'
+            pkts = {'PPPOE': 'Ether(src="%s", dst="%s")/PPPoE(sessionid=%s)'
                     % (src_mac, dst_mac, session_id)}
         return pkts
 
@@ -128,11 +128,11 @@ class TestDdpPppL2tp(TestCase):
         if flowtype == 26:
             a = Ether(dst="3C:FD:FE:A3:A0:01", src="4C:FD:FE:A3:A0:01")/IP()/UDP(dport=1701, sport=1701)/L2TP(session_id=0x7)/Raw("X"*20)
         if flowtype == 28:
-            a = Ether()/PPPoE(session_id=0x7)/PPP(proto=0x21)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=4000, sport=8000)/Raw("X"*20)
+            a = Ether()/PPPoE(sessionid=0x7)/PPP(proto=0x21)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=4000, sport=8000)/Raw("X"*20)
         if flowtype == 29:
-            a = Ether()/PPPoE(session_id=0x7)/PPP(proto=0x57)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=4000, sport=8000)/Raw("X"*20)
+            a = Ether()/PPPoE(sessionid=0x7)/PPP(proto=0x57)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=4000, sport=8000)/Raw("X"*20)
         if flowtype == 30:
-            a = Ether(dst="3C:FD:FE:A3:A0:01", src="4C:FD:FE:A3:A0:01")/PPPoE(session_id=0x7)
+            a = Ether(dst="3C:FD:FE:A3:A0:01", src="4C:FD:FE:A3:A0:01")/PPPoE(sessionid=0x7)
         ba = bytearray(bytes(a))
         rawfile_src = '/tmp/test.raw'
         File = open("%s" % rawfile_src, "wb")
@@ -159,10 +159,8 @@ class TestDdpPppL2tp(TestCase):
             qnum = self.element_strip(out, pattern)
             ptypes = packet_type.split('/')
             if flowtype in [23, 24, 26]:
-                layerparams = ['L3_', 'TUNNEL_',
-                               'INNER_L3_', 'INNER_L4_']
-                endparams = ['_EXT_UNKNOWN', '',
-                             '_EXT_UNKNOWN', '']
+                layerparams = ['L3_', 'TUNNEL_']
+                endparams = ['_EXT_UNKNOWN', '']
             if flowtype in [28, 29, 30]:
                 layerparams = ['L2_ETHER_', 'L3_', 'L4_']
                 endparams = ['', '_EXT_UNKNOWN', '']
