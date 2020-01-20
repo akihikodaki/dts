@@ -58,8 +58,7 @@ class TestUnitTestsPower(TestCase):
 
         Power Prerequisites
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
 
     def set_up(self):
         """
@@ -72,7 +71,8 @@ class TestUnitTestsPower(TestCase):
         Run power autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -83,7 +83,8 @@ class TestUnitTestsPower(TestCase):
         """
         # This acpi driver test case need correct BIOS and Grub settings.
         # otherwise, the power lib initialization will be failed
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_cpufreq_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -94,7 +95,8 @@ class TestUnitTestsPower(TestCase):
         """
         # This acpi driver test case need correct BIOS and Grub settings.
         # otherwise, the power lib initialization will be failed
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_caps_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
