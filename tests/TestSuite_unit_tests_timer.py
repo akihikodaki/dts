@@ -57,15 +57,14 @@ class TestUnitTestsTimer(TestCase):
         """
         Run at the start of each test suite.
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
         #
         # change timeout base number of cores on the system
         # default 60 secs
         #
         self.this_timeout = 60
-        if (len(cores) > 16) :
-            self.this_timeout = self.this_timeout * len(cores)/16
+        if (len(self.cores) > 16) :
+            self.this_timeout = self.this_timeout * len(self.cores)/16
 
     def set_up(self):
         """
@@ -77,7 +76,8 @@ class TestUnitTestsTimer(TestCase):
         """
         Run timer autotest.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("timer_autotest", "RTE>>", self.this_timeout)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -86,7 +86,8 @@ class TestUnitTestsTimer(TestCase):
         """
         Run timer autotest.
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("timer_perf_autotest", "RTE>>", self.this_timeout)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
