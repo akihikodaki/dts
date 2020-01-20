@@ -213,6 +213,8 @@ class DPDKdut(Dut):
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=n/CONFIG_RTE_BUILD_SHARED_LIB=y/g' "
                              "config/common_base", '#')
+        self.send_expect("sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' "
+                        "config/common_base", '#')
         build_install_dpdk = getattr(self, 'build_install_dpdk_%s' % self.get_os_type())
         build_install_dpdk(target, extra_options)
 
