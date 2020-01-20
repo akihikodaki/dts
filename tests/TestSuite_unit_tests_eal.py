@@ -34,7 +34,9 @@ class TestUnitTestsEal(TestCase):
         [arch, machine, self.env, toolchain] = self.target.split('-')
         self.start_test_time = 60
         self.run_cmd_time = 180
-        self.test_app_cmdline = "./%s/app/test -n 1 -c f" % self.target
+        default_cores = '1S/4C/1T'
+        eal_params = self.dut.create_eal_parameters(cores=default_cores)
+        self.test_app_cmdline = "./%s/app/test %s" % (self.target,eal_params)
 
     def set_up(self):
         """
@@ -176,7 +178,8 @@ class TestUnitTestsEal(TestCase):
         Run hash readwrite_lf autotest.
         """
 
-        self.dut.send_expect("./%s/app/test" % self.target,
+        eal_params = self.dut.create_eal_parameters()
+        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_readwrite_lf_autotest",
                                    "RTE>>", self.run_cmd_time*3)
