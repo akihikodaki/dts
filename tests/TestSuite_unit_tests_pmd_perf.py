@@ -106,7 +106,8 @@ class TestUnitTestsPmdPerf(TestCase):
         """
 
         self.core = self.get_core_from_socket()
-        self.dut.send_expect("./app/test/test -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters()
+        self.dut.send_expect("./app/test/test %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -127,13 +128,14 @@ class TestUnitTestsPmdPerf(TestCase):
         self.table_header = ['Mode']
         self.table_header += self.anchors
         self.result_table_create(self.table_header)
+        eal_params = self.dut.create_eal_parameters()
         print((self.table_header))
 
         for mode in self.rxtx_modes:
             if mode is "scalar":
-                self.dut.send_expect("./app/test/test_scalar -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./app/test/test_scalar %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
             else:
-                self.dut.send_expect("./app/test/test -n 1 --lcores='%d-%d'" % (self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./app/test/test %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
 
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
