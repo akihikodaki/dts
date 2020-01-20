@@ -59,8 +59,7 @@ class TestUnitTestsQos(TestCase):
 
         QoS Prerequisites
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
 
 
     def set_up(self):
@@ -74,7 +73,8 @@ class TestUnitTestsQos(TestCase):
         Run RED autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 30)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("red_autotest", "RTE>>", 180)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -84,7 +84,8 @@ class TestUnitTestsQos(TestCase):
         Run meter autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 30)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("meter_autotest", "RTE>>", 5)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -97,7 +98,8 @@ class TestUnitTestsQos(TestCase):
         [arch, machine, env, toolchain] = self.target.split('-')
         self.verify(arch in ["x86_64" ,"arm64" ,"ppc_64"], "Sched auto_test only support in x86_64 or arm64 ppc_64")
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 30)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 30)
         out = self.dut.send_expect("sched_autotest", "RTE>>", 5)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
