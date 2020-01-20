@@ -57,8 +57,7 @@ class TestUnitTestsRing(TestCase):
         """
         Run at the start of each test suite.
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
 
     def set_up(self):
         """
@@ -71,7 +70,8 @@ class TestUnitTestsRing(TestCase):
         Run ring autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("ring_autotest", "RTE>>", 36000)
         self.verify("Test OK" in out, "Test failed")
 
@@ -80,7 +80,8 @@ class TestUnitTestsRing(TestCase):
         Run ring performance autotest.
         """
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target ,self.coremask), "R.*T.*E.*>.*>", 60)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target ,eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("ring_perf_autotest", "RTE>>", 210)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
