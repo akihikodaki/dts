@@ -106,8 +106,10 @@ class TestL2fwd(TestCase):
         """
         # the cases use the first two ports
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
+        eal_params = self.dut.create_eal_parameters()
 
-        self.dut.send_expect("./examples/l2fwd/build/app/l2fwd -n 1 -c f -- -q 8 -p %s  &" % port_mask, "L2FWD: entering main loop", 60)
+        self.dut.send_expect("./examples/l2fwd/build/app/l2fwd %s -- -q 8 -p %s  &" % (eal_params, port_mask),
+                             "L2FWD: entering main loop", 60)
 
         for i in [0, 1]:
             tx_port = self.tester.get_local_port(self.dut_ports[i])
@@ -136,14 +138,14 @@ class TestL2fwd(TestCase):
         """
         # the cases use the first two ports
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
-
+        cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
         core_mask = utils.create_mask(self.dut.get_core_list(self.core_config,
-                                                           socket=self.ports_socket))
+                                                             socket=self.ports_socket))
+        eal_params = self.dut.create_eal_parameters(cores=cores)
         for queues in self.test_queues:
 
-            command_line = "./examples/l2fwd/build/app/l2fwd -n %d -c %s -- -q %s -p %s &" % \
-                (self.dut.get_memory_channels(), core_mask,
-                 str(queues['queues']), port_mask)
+            command_line = "./examples/l2fwd/build/app/l2fwd  %s -- -q %s -p %s &" % \
+                           (eal_params, str(queues['queues']), port_mask)
 
             self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
 
@@ -167,8 +169,9 @@ class TestL2fwd(TestCase):
             ports.append(self.dut_ports[port])
 
         port_mask = utils.create_mask(ports)
-        core_mask = utils.create_mask(self.dut.get_core_list(self.core_config,
-                                                           socket=self.ports_socket))
+        cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
+
+        eal_params = self.dut.create_eal_parameters(cores=cores)
 
         for frame_size in self.frame_sizes:
 
@@ -188,11 +191,10 @@ class TestL2fwd(TestCase):
                 self.tester.scapy_execute()
                 cnt += 1
 
-            for queues in self.test_queues:
+            for queues in self.test_queues[0:2]:
 
-                command_line = "./examples/l2fwd/build/app/l2fwd -n %d -c %s -- -q %s -p %s &" % \
-                    (self.dut.get_memory_channels(), core_mask,
-                     str(queues['queues']), port_mask)
+                command_line = "./examples/l2fwd/build/app/l2fwd %s -- -q %s -p %s &" % \
+                    (eal_params, str(queues['queues']), port_mask)
 
 #                self.dut.send_expect(command_line, "memory mapped", 60)
                 self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
