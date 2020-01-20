@@ -58,8 +58,7 @@ class TestUnitTestsRingPmd(TestCase):
         Run at the start of each test suite.
         Nothing to do here.
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
 
     def set_up(self):
         """
@@ -72,14 +71,17 @@ class TestUnitTestsRingPmd(TestCase):
         """
         Run Inter-VM share memory test.
         """
-        dev_str = "--vdev=net_ring0 --vdev=net_ring1"
+        dev_str1 = "net_ring0"
+        dev_str2 = "net_ring1"
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s" % (self.target, self.coremask), "R.*T.*E.*>.*>", 10)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 10)
         out = self.dut.send_expect("ring_pmd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Default no eth_ring devices Test failed")
 
-        self.dut.send_expect("./%s/app/test -n 1 -c %s %s" % (self.target, self.coremask, dev_str), "R.*T.*E.*>.*>", 10)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores,vdevs=[dev_str1,dev_strt2])
+        self.dut.send_expect("./%s/app/test %s %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 10)
         out = self.dut.send_expect("ring_pmd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Two eth_ring devices test failed")
