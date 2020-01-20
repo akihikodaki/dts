@@ -139,7 +139,7 @@ class TestVhostUserLiveMigration(TestCase):
         core_config = '1S/%dC/1T' % core_number
         self.core_list0 = self.duts[0].get_core_list(core_config)
         self.core_list1 = self.duts[1].get_core_list(core_config)
-        self.verify(len(self.core_list0) >= core_number and len(core_list1) >= core_number,
+        self.verify(len(self.core_list0) >= core_number and len(self.core_list1) >= core_number,
                     'There have not enough cores to start testpmd on duts')
 
     def launch_testpmd_as_vhost_on_both_dut(self, zero_copy=False):
