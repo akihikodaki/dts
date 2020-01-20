@@ -274,7 +274,7 @@ class TestVmHotplug(TestCase):
         out = self.get_tcpdump_package(iface_list)
         for pkt_num in out:
             # rule out miscellaneous package possibility
-            self.verify(pkt_num > 1000, 'vf send packet fail')
+            self.verify(int(pkt_num) > 1000, 'vf send packet fail')
 
     def check_vf_device(self, has_device=True, device=1):
         time.sleep(1)
