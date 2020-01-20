@@ -240,7 +240,7 @@ class TestMetrics(TestCase):
         mode = mode if mode else self.BIT_RATE
         display_seq = self.display_seq.get(mode)
         textLength = max([len(x) for x in display_seq])
-        for port in sorted(port_status.keys()):
+        for port in sorted(list(port_status.keys())):
             port_value = port_status[port]
             if port != 'non port':
                 self.logger.info("port {0}".format(port))
@@ -278,7 +278,7 @@ class TestMetrics(TestCase):
         # check metrics status
         first_result = stop_testpmd_results[0]
         second_result = stop_testpmd_results[1]
-        if cmp(first_result, second_result) == 0:
+        if first_result == second_result:
             msg = "bit rate statistics stop successful after stop testpmd"
             self.logger.info(msg)
         else:
@@ -323,7 +323,7 @@ class TestMetrics(TestCase):
         title = ['No', 'port']
         values = []
         for index, result in enumerate(metrics_data):
-            for port, data in sorted(result.items()):
+            for port, data in result.items():
                 _value = [index, port]
                 for key, value in data.items():
                     if key not in title:
@@ -375,7 +375,7 @@ class TestMetrics(TestCase):
                 ewma_bits = []
                 for result in data:
                     ewma_bits.append(result.get(port_id).get(key))
-                status = [ewma_bits[index] > ewma_bits[port_id + 1]
+                status = [ewma_bits[index] > ewma_bits[index + 1]
                           for index in range(len(ewma_bits) - 1)]
                 if all(status):
                     continue
@@ -437,7 +437,7 @@ class TestMetrics(TestCase):
         # check metrics tool status
         first_result = stop_testpmd_results[0]
         second_result = stop_testpmd_results[1]
-        if cmp(first_result, second_result) == 0:
+        if first_result == second_result:
             msg = "metrics bit rate stop successful after stop testpmd"
             self.logger.info(msg)
         else:
@@ -553,7 +553,7 @@ class TestMetrics(TestCase):
         # check metrics behavior
         first_result = stop_testpmd_results[0]
         second_result = stop_testpmd_results[1]
-        if cmp(first_result, second_result) == 0:
+        if first_result == second_result:
             msg = "metrics latency stop successful after stop testpmd"
             self.logger.info(msg)
         else:
@@ -747,18 +747,13 @@ class TestMetrics(TestCase):
         self.verify(result, msg)
 
     def get_test_content_from_cfg(self):
-        conf = SuiteConf(self.suite_name)
-        cfg_content = dict(conf.suite_conf.load_section('content'))
-        frames_cfg = cfg_content.get('frames_cfg')
-        info = [(int(item[0]), float(item[1]))
-                for item in [item.split(':') for item in frames_cfg.split(',')]]
-        frames_info = dict(info)
+        cfg_content = self.get_suite_cfg()
+        frames_info = cfg_content.get('frames_cfg')
         test_content = {
-            'frame_sizes': list(frames_info.keys()),
+            'frame_sizes':  list(frames_info.keys()),
             'duration': int(cfg_content.get('duration') or 0),
             'sample_number': int(cfg_content.get('sample_number') or 0),
-            'rates': [int(item)
-                      for item in cfg_content.get('rates').split(',')],
+            'rates': cfg_content.get('rates') or [100, 10],
             'bias': frames_info}
         self.query_times_after_stop = 5
 
