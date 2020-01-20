@@ -60,8 +60,7 @@ class TestUnitTestsLpmIpv6(TestCase):
 
         Qos Prerequisites
         """
-        cores = self.dut.get_core_list("all")
-        self.coremask = utils.create_mask(cores)
+        self.cores = self.dut.get_core_list("all")
 
     def set_up(self):
         """
@@ -73,9 +72,10 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv4 autotest.
         """
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
         self.dut.send_expect(
-            "./%s/app/test -n 1 -c %s"
-            % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+            "./%s/app/test %s"
+            % (self.target,eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -84,9 +84,10 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv6 autotest.
         """
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
         self.dut.send_expect(
-            "./%s/app/test -n 1 -c %s"
-            % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+            "./%s/app/test %s"
+            % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm6_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -95,9 +96,10 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv4 performance autotest.
         """
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
         self.dut.send_expect(
-            "./%s/app/test -n 1 -c %s"
-            % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+            "./%s/app/test %s"
+            % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm_perf_autotest", "RTE>>", 600)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -106,9 +108,10 @@ class TestUnitTestsLpmIpv6(TestCase):
         """
         Run lpm for IPv6 performance autotest.
         """
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
         self.dut.send_expect(
-            "./%s/app/test -n 1 -c %s"
-            % (self.target, self.coremask), "R.*T.*E.*>.*>", 60)
+            "./%s/app/test %s"
+            % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("lpm6_perf_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
