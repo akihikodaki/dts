@@ -79,7 +79,7 @@ class TestVhost1024Ethports(TestCase):
         for ethport in range(self.max_ethport):
             command_line_vdev += '--vdev "eth_vhost%d,iface=vhost-net%d,queues=%d" ' %(ethport, ethport, self.queue)
         eal_params = self.dut.create_eal_parameters(cores="1S/2C/1T", prefix='vhost', ports=[self.pci_info])
-        cmd = self.dut.target + '/app/testpmd ' + eal_params + command_line_vdev + ' -- -i'
+        command_line_client = self.dut.target + '/app/testpmd ' + eal_params + command_line_vdev + ' -- -i'
         try:
             out = self.vhost_user.send_expect(command_line_client, 'testpmd> ', 120)
         except Exception as e:
