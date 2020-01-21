@@ -80,20 +80,18 @@ class TestFlowClassifySoftnic(TestCase):
         """
         Start testpmd.
         """
+        self.cores = self.dut.get_core_list("all")
         self.set_ports(filename, port_num)
         TESTPMD = "./%s/app/testpmd" % self.target
         cmd="cat /sys/bus/pci/devices/%s/numa_node"%self.dut_p0_pci
         numa_node = int(self.dut.send_expect(cmd, "# ", 60))
         cpu_id = numa_node if numa_node > 0 else 0
+        eal_params = self.dut.create_eal_parameters(cores=self.cores)
         VDEV = "--vdev 'net_softnic0,firmware=./drivers/net/softnic/flow_classify_softnic/%s,cpu_id=%s,conn_port=8086'" % (filename,cpu_id)
         if port_num == 4:
-            DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                        .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-            cmd = "{0} -c 0x1f -s 0x10 -n 4 {1} {2} -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10".format(TESTPMD, DUT_PORTS, VDEV)
+            cmd = "{0} {1} {2} -s 0x4 -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10".format(TESTPMD, VDEV, eal_params)
         elif port_num == 2:
-            DUT_PORTS = " -w {0} -w {1} "\
-                        .format(self.dut_p0_pci, self.dut_p1_pci)
-            cmd = "{0} -c 0x7 -s 0x4 -n 4 {1} {2} -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4".format(TESTPMD, DUT_PORTS, VDEV)
+            cmd = "{0} {1} {2} -s 0x4 -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4".format(TESTPMD, VDEV, eal_params)
         else:
             raise Exception("The number of port is wrong!")
         self.dut.send_expect(cmd, "testpmd> ", 60)
@@ -162,7 +160,7 @@ class TestFlowClassifySoftnic(TestCase):
         # For the [pid]+ Done tcpdump... message after killing the process
         sleep(1)
         self.tester.send_expect('echo "Cleaning buffer"', '# ')
-        sleep(1)
+        sleep(3)
 
     def write_pcap_file(self, pcap_file, pkts):
         try:
