@@ -247,7 +247,6 @@ class TestFlowClassify(TestCase):
                 pkt.config_layer(layer, pkt_layers[layer])
             pkt.pktgen.pkt.show()
             streams.append(pkt.pktgen.pkt)
-
         return streams
 
     def send_packet_by_scapy(self, config):
@@ -304,8 +303,9 @@ class TestFlowClassify(TestCase):
         if not self.is_existed_on_crb(rule_config):
             raise VerifyFailure("rules file doesn't existed")
         core = "1S/1C/1T"
-        option = r" -c {0} -n 4 --file-prefix=test -- --rule_ipv4={1}".format(
-            self.get_cores_mask(core), rule_config)
+        eal_params = self.dut.create_eal_parameters()
+        #option = r" -c {0} - n 4  --file-prefix=test {1} -- --rule_ipv4={2}".format(self.get_cores_mask(core),eal_params,rule_config)
+        option = r" {0} -- --rule_ipv4={1}".format(eal_params,rule_config)
         prompt = 'table_entry_delete succeeded'
         cmd = [' '.join([self.flow_classify, option]), prompt, 30]
         output = self.d_console(cmd)
@@ -355,6 +355,7 @@ class TestFlowClassify(TestCase):
         # begin traffic checking
         self.logger.info("begin traffic ... ")
         method_name = 'send_packet_by_' + pktgen_name
+        print('pktname is %s'% pktgen_name)
         pkt_gen_func = getattr(self, 'send_packet_by_' + pktgen_name)
         if pkt_gen_func:
             result = pkt_gen_func(ports_topo)
@@ -435,6 +436,7 @@ class TestFlowClassify(TestCase):
             # close flow_classify
             self.close_flow_classify()
         except Exception as e:
+            print(e)
             # close flow_classify
             self.close_flow_classify()
             msg = 'failed to run traffic'
