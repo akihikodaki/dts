@@ -78,9 +78,9 @@ class L3fwdBase(object):
             output_path = os.path.join(self.logger.log_path, suiteName)
         else:
             cur_path = os.sep.join(
-                os.path.realpath(__file__).split(os.sep)[:-3])
+                os.path.realpath(__file__).split(os.sep)[:-2])
             output_path = os.path.join(
-                cur_path, self.logger.log_path, suiteName)
+                cur_path, self.logger.log_path)
         if not os.path.exists(output_path):
             os.makedirs(output_path)
 
