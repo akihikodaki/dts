@@ -73,7 +73,9 @@ class TestUnitTestsKni(TestCase):
 
         KNI Prerequisites
         """
-        
+        self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=n$/KNI_KMOD_ETHTOOL=y/' config/common_base", "# ", 30)
+        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_KNI_KMOD=n$/CONFIG_RTE_KNI_KMOD=y/' config/common_base", "# ", 30)
+        self.dut.build_install_dpdk(self.target)
         self.cores = self.dut.get_core_list("all")
         self.insmod_kni()
 
