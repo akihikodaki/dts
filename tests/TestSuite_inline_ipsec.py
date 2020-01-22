@@ -174,14 +174,13 @@ class TestInlineIpsec(TestCase):
         payload = test[0:int(paysize)]
         sa_gcm = SecurityAssociation(ESP, spi=send_spi,
                                      crypt_algo='AES-GCM',
-                                     crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',
+                                     crypt_key=b'\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',
                                      auth_algo='NULL', auth_key=None,
                                      tunnel_header=IP(src=sa_src, dst=sa_dst))
         sa_gcm.crypt_algo.icv_size = 16
 
         p = IP(src='192.168.105.10', dst=inner_dst)
         p /= payload
-        p = IP(str(p))
 
         if do_encrypt == True:
             print("send encrypt package")
@@ -217,26 +216,26 @@ class TestInlineIpsec(TestCase):
         self.dut.send_expect(cmd, "IPSEC", 60)
 
         session_receive = self.tester.create_session(name='receive_encryption_package')
-        sa_gcm = r"sa_gcm=SecurityAssociation(ESP,spi=%s,crypt_algo='AES-GCM',crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL',auth_key=None,tunnel_header=IP(src='172.16.1.5',dst='172.16.2.5'))" % receive_spi
+        sa_gcm = r"sa_gcm=SecurityAssociation(ESP,spi=%s,crypt_algo='AES-GCM',crypt_key=b'\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL',auth_key=None,tunnel_header=IP(src='172.16.1.5',dst='172.16.2.5'))" % receive_spi
 
         session_receive.send_expect("scapy", ">>>", 10)
         time.sleep(1)
         session_receive.send_expect(
-            "pkts=sniff(iface='%s',count=1,timeout=45)" % rxItf, "", 10)
+            "pkts=sniff(iface='%s', count=1, timeout=10)" % rxItf, "", 10)
 
         if do_encrypt:
             send_package = self.send_encryption_package(
                 txItf, paysize, do_encrypt, send_spi, count, inner_dst, sa_src, sa_dst)
-            time.sleep(45)
+            time.sleep(10)
             session_receive.send_expect("pkts", "", 30)
             out = session_receive.send_expect("pkts[0]['IP'] ", ">>>", 10)
         else:
             session_receive2 = self.tester.create_session(name='receive_encryption_package2')
-            session_receive2.send_expect("tcpdump -Xvvvi %s -c 1" % rxItf, "", 30)
+            session_receive2.send_expect("tcpdump -Xvvvi %s -c 1" % rxItf, "", 10)
             send_package = self.send_encryption_package(txItf, paysize, do_encrypt, send_spi, count, inner_dst, sa_src,
                                                         sa_dst)
-            time.sleep(45)
-            rev = session_receive2.get_session_before()
+            time.sleep(10)
+            rev = session_receive2.get_session_before(timeout=2)
             print(rev)
             p = re.compile(': ESP\(spi=0x\w+,seq=0x\w+\),')
             res = p.search(rev)
@@ -347,7 +346,7 @@ class TestInlineIpsec(TestCase):
         self.dut.send_expect(cmd, "IPSEC", 60)
         session_receive = self.tester.create_session(
             name='receive_encryption_package')
-        sa_gcm = r"sa_gcm=SecurityAssociation(ESP, spi=1005,crypt_algo='AES-GCM',crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL', auth_key=None,tunnel_header=IP(src='172.16.1.5', dst='172.16.2.5'))"
+        sa_gcm = r"sa_gcm=SecurityAssociation(ESP, spi=1005,crypt_algo='AES-GCM',crypt_key=b'\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',auth_algo='NULL', auth_key=None,tunnel_header=IP(src='172.16.1.5', dst='172.16.2.5'))"
 
         session_receive.send_expect("scapy", ">>>", 60)
         session_receive.send_expect(sa_gcm, ">>>", 60)
@@ -364,14 +363,13 @@ class TestInlineIpsec(TestCase):
         payload = "test for Ipsec Encryption Decryption simultaneously"
         sa_gcm = SecurityAssociation(ESP, spi=5,
                                      crypt_algo='AES-GCM',
-                                     crypt_key='\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',
+                                     crypt_key=b'\x2b\x7e\x15\x16\x28\xae\xd2\xa6\xab\xf7\x15\x88\x09\xcf\x4f\x3d\xde\xad\xbe\xef',
                                      auth_algo='NULL', auth_key=None,
                                      tunnel_header=IP(src='172.16.1.5', dst='172.16.2.5'))
         sa_gcm.crypt_algo.icv_size = 16
 
         p = IP(src='192.168.105.10', dst='192.168.105.10')
         p /= payload
-        p = IP(str(p))
 
         e1 = sa_gcm.encrypt(p)
         e2 = p
@@ -383,12 +381,12 @@ class TestInlineIpsec(TestCase):
         eth_e2.src = self.rx_src
         eth_e2.dst = self.tx_dst
         session_receive3 = self.tester.create_session('check_forward_encryption_package')
-        session_receive3.send_expect("tcpdump -Xvvvi %s -c 1" % self.rxItf, "", 30)
+        session_rece3ive3.send_expect("tcpdump -Xvvvi %s -c 1" % self.rxItf, "", 30)
         time.sleep(2)
         sendp(eth_e1, iface=self.rxItf, count=2)
         sendp(eth_e2, iface=self.txItf, count=1)
-        time.sleep(30)
-        rev = session_receive3.get_session_before()
+        time.sleep(3)
+        rev = session_receive3.get_session_before(3)
         print(rev)
         p = re.compile(': ESP\(spi=0x\w+,seq=0x\w+\),')
         res = p.search(rev)
@@ -401,12 +399,16 @@ class TestInlineIpsec(TestCase):
         out = session_receive2.send_expect("pkts[1]", ">>>", 60)
         self.verify(payload in out,
                     "The package is not received. Please check the package")
+        self.tester.destroy_session(session_receive)
+        self.tester.destroy_session(session_receive2)
+        self.tester.destroy_session(session_receive3)
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        self.tester.send_expect("^C", "#", 5)
+        self.tester.send_expect("killall scapy", "#", 5)
+        self.tester.send_expect("killall tcpdump", "#", 5)
         self.dut.kill_all()
         time.sleep(2)
 
