@@ -43,6 +43,7 @@ import time
 from random import randint
 from pktgen import PacketGeneratorHelper
 from test_case import TestCase
+import packet
 
 dut_ports = []
 port_virtual_interaces = []
@@ -259,6 +260,7 @@ class TestKni(TestCase):
                     "The linux tool brctl is needed to run this test suite")
 
         self.dut.send_expect("sed -i -e 's/KNI_KMOD_ETHTOOL=n$/KNI_KMOD_ETHTOOL=y/' config/common_base", "# ", 30)
+        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_KNI_KMOD=n$/CONFIG_RTE_KNI_KMOD=y/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
 
         out = self.dut.build_dpdk_apps("./examples/kni/")
@@ -707,20 +709,15 @@ class TestKni(TestCase):
             tx_mac = self.tester.get_mac(tx_port)
             tx_interface = self.tester.get_interface(tx_port)
 
-            self.tester.scapy_append('dstmac = "%s"' % rx_mac)
-            self.tester.scapy_append('srcmac = "%s"' % tx_mac)
+            scapy_str = ['Ether(src = "%s",dst="%s")/IP()/UDP()/("X"*28)' % (tx_mac, rx_mac),
+                         'Ether(src = "%s",dst="%s")/IP()/TCP()/("X"*28)' % (tx_mac, rx_mac),
+                         'Ether(src = "%s",dst="%s")/IP()/ICMP()/("X"*28)' % (tx_mac, rx_mac),
+                         'Ether(src = "%s",dst="%s")/IP()/("X"*38)' % (tx_mac, rx_mac),
+                         'Ether(src = "%s",dst="%s")/("X"*46)' % (tx_mac, rx_mac), ]
 
-            self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/UDP()/("X"*28)],iface="%s",count=200)' % tx_interface)
-            self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/TCP()/("X"*28)],iface="%s",count=200)' % tx_interface)
-            self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/ICMP()/("X"*28)],iface="%s",count=200)' % tx_interface)
-            self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/IP()/("X"*38)],iface="%s",count=200)' % tx_interface)
-            self.tester.scapy_append(
-                'sendp([Ether(src = srcmac,dst=dstmac)/("X"*46)],iface="%s",count=200)' % tx_interface)
-            self.tester.scapy_execute()
+            pkt = packet.Packet()
+            pkt.update_pkt(scapy_str)
+            pkt.send_pkt(self.tester, tx_port=tx_interface, count=200)
 
             out = self.dut.send_expect("ifconfig %s" % virtual_interface, "# ")
             m = re.search(rx_match, out)
