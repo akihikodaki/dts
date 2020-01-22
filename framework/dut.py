@@ -224,7 +224,7 @@ class Dut(Crb):
         use_shared_lib = settings.load_global_setting(settings.HOST_SHARED_LIB_SETTING)
         shared_lib_path = settings.load_global_setting(settings.HOST_SHARED_LIB_PATH)
         if use_shared_lib == 'true' and shared_lib_path and 'Virt' not in str(self):
-            eal_str = eal_str + ' -d {}'.format(shared_lib_path)
+            eal_str = eal_str + ' -d {} '.format(shared_lib_path)
 
         return eal_str
 
