@@ -83,7 +83,6 @@ def dts_parse_param(config, section):
     try:
         shared_lib_parameters = config.get(section, 'shared_lib_param')
     except Exception as e:
-        log_handler.info("{}".format(e))
         shared_lib_parameters = ''
     shared_lib_parameters = shared_lib_parameters.split(':')
 
