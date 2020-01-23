@@ -58,10 +58,6 @@ class TestPVPMultiPathPerformance(TestCase):
         self.core_list_host = self.core_list[2:4]
         self.core_mask_user = utils.create_mask(self.core_list_user)
         self.core_mask_host = utils.create_mask(self.core_list_host)
-        if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
-            self.socket_mem = '1024'
-        else:
-            self.socket_mem = '1024,1024'
 
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
@@ -127,12 +123,11 @@ class TestPVPMultiPathPerformance(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        command_line_client = "./%s/app/testpmd -n %d -c %s --socket-mem " + \
-                              " %s --legacy-mem -w %s --file-prefix=vhost --vdev " + \
-                              "'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_client = command_line_client % (self.target,
-            self.dut.get_memory_channels(), self.core_mask_host,
-            self.socket_mem, self.dut.ports_info[self.dut_ports[0]]['pci'])
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, prefix='vhost',
+                                                   ports=[self.dut.ports_info[self.dut_ports[0]]['pci']],
+                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
+        eal_param += " --single-file-segments"
+        command_line_client = "./%s/app/testpmd " % self.target + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
@@ -141,13 +136,13 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            " --socket-mem %s --legacy-mem --no-pci --file-prefix=virtio " + \
-                            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s " + \
-                            "-- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_user = command_line_user % (self.target,
-            self.dut.get_memory_channels(), self.core_mask_user,
-            self.socket_mem, args["version"], args["path"])
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, prefix='virtio',
+                                                   no_pci=True,
+                                                   vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' %
+                                                          args["version"]])
+        eal_param += " --single-file-segments"
+        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % \
+                            args["path"]
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(command_line_user, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
