@@ -80,8 +80,8 @@ class TestUnitTestsRingPmd(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Default no eth_ring devices Test failed")
 
-        eal_params = self.dut.create_eal_parameters(cores=self.cores,vdevs=[dev_str1,dev_strt2])
-        self.dut.send_expect("./%s/app/test %s %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 10)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores,vdevs=[dev_str1,dev_str2])
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 10)
         out = self.dut.send_expect("ring_pmd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Two eth_ring devices test failed")
