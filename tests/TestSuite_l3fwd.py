@@ -67,9 +67,7 @@ class TestL3fwd(TestCase, L3fwdBase):
         """
         Run after each test suite.
         """
-        if self:
-            self.l3fwd_save_results()
-            self = None
+        self.l3fwd_save_results()
 
     def set_up(self):
         """
