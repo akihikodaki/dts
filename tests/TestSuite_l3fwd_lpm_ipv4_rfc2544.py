@@ -66,7 +66,7 @@ class TestL3fwdLpmIpv4Rfc2544(TestCase, L3fwdBase):
         """
         Run after each test suite.
         """
-        pass
+        self.l3fwd_save_results(json_file="{}.json".format(self.suite_name))
 
     def set_up(self):
         """
