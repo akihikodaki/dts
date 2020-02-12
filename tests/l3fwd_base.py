@@ -232,13 +232,13 @@ class L3fwdBase(object):
         stream_ids = []
         step = int(len(streams) / len(self.__valports))
         for cnt, stream in enumerate(streams):
-            pkt, field_config = stream
+            pkt, fields_config = stream
             index = cnt // step
             txport, rxport = topos[index]
             _option = deepcopy(option)
             _option['pcap'] = pkt
-            if field_config:
-                _option['field_config'] = field_config
+            if fields_config:
+                _option['fields_config'] = fields_config
             stream_id = self.tester.pktgen.add_stream(txport, rxport, pkt)
             self.tester.pktgen.config_stream(stream_id, _option)
             stream_ids.append(stream_id)
