@@ -85,29 +85,14 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         pass
 
-    def get_core_from_socket(self):
-       """
-       select  the port and lcores from same socket.
-       """
-    
-       out = self.dut.send_expect("./usertools/cpu_layout.py", "#", 10)
-       k = re.search("Core 0 (.*)", out)
-       socket_id = self.dut.ports_info[0]['port'].socket
-       if socket_id == 0 or socket_id == -1:
-          result = re.findall("(\d+)", k.group())
-          return  int(result[0])
-       else:
-          result = re.findall("(\d+),", k.group())
-          return  int(result[1])
-
     def test_pmd_burst(self):
         """
         Run pmd stream control mode burst test case.
         """
 
-        self.core = self.get_core_from_socket()
-        eal_params = self.dut.create_eal_parameters()
-        self.dut.send_expect("./app/test/test %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+        socket_id = self.dut.ports_info[0]['port'].socket
+        eal_params = self.dut.create_eal_parameters(socket=socket_id)
+        self.dut.send_expect("./app/test/test %s" % (eal_params), "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -124,18 +109,18 @@ class TestUnitTestsPmdPerf(TestCase):
         Run pmd stream control mode continues test case.
         """
         
-        self.core = self.get_core_from_socket()
         self.table_header = ['Mode']
         self.table_header += self.anchors
         self.result_table_create(self.table_header)
-        eal_params = self.dut.create_eal_parameters()
+        socket_id = self.dut.ports_info[0]['port'].socket
+        eal_params = self.dut.create_eal_parameters(socket=socket_id)
         print((self.table_header))
 
         for mode in self.rxtx_modes:
             if mode is "scalar":
-                self.dut.send_expect("./app/test/test_scalar %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./app/test/test_scalar %s " % (eal_params), "R.*T.*E.*>.*>", 60)
             else:
-                self.dut.send_expect("./app/test/test %s --lcores='%d-%d'" % (eal_params,self.core, self.core + 1), "R.*T.*E.*>.*>", 60)
+                self.dut.send_expect("./app/test/test %s " % (eal_params), "R.*T.*E.*>.*>", 60)
 
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
