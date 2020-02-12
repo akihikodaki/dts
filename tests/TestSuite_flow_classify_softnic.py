@@ -89,7 +89,7 @@ class TestFlowClassifySoftnic(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
         VDEV = "--vdev 'net_softnic0,firmware=./drivers/net/softnic/flow_classify_softnic/%s,cpu_id=%s,conn_port=8086'" % (filename,cpu_id)
         if port_num == 4:
-            cmd = "{0} {1} {2} -s 0x4 -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10".format(TESTPMD, VDEV, eal_params)
+            cmd = "{0} {1} {2} -s 0x10 -- -i --rxq=4 --txq=4 --disable-rss --portmask=0x10".format(TESTPMD, VDEV, eal_params)
         elif port_num == 2:
             cmd = "{0} {1} {2} -s 0x4 -- -i --rxq=2 --txq=2 --disable-rss --portmask=0x4".format(TESTPMD, VDEV, eal_params)
         else:
