@@ -51,8 +51,6 @@ class TestVhostMultiQueueQemu(TestCase):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        local_port = self.tester.get_local_port(self.dut_ports[0])
-        self.tx_interface = self.tester.get_interface(local_port)
         # Get the port's socket
         self.pf = self.dut_ports[0]
         netdev = self.dut.ports_info[self.pf]['port']
@@ -180,6 +178,8 @@ class TestVhostMultiQueueQemu(TestCase):
         While verify_type is "vhost queue < virtio queue", the vhost should forward all set of data
         While verify_type is "vhost queue > virtio queue", the vhost should forward at least one set of data
         """
+        local_port = self.tester.get_local_port(self.dut_ports[0])
+        self.tx_interface = self.tester.get_interface(local_port)
         for frame_size in self.frame_sizes:
             info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
             self.logger.info(info)
