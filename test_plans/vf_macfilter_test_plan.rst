@@ -193,7 +193,14 @@ Test Case 2: test_kernel_2pf_2vf_1vm_mac_add_filter
    packets can be received by one VF and can be forwarded to another VF
    correctly.
 
-8. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
+8. remove the added mac address.
+      testpmd> mac_addr remove 0 00:11:22:33:44:55
+
+9. Use scapy to send 100 random packets to the deleted MAC to VF0, verify the
+   packets can't be received by one VF and also can't be forwarded to another
+   VF correctly
+
+10. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
    packets can't be received by one VF and also can't be forwarded to another
    VF correctly.
 
@@ -280,7 +287,14 @@ Test Case 3: test_dpdk_2pf_2vf_1vm_mac_add_filter
    packets can be received by one VF and can be forwarded to another VF
    correctly.
 
-9. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
+9. remove the added mac address.
+      testpmd> mac_addr remove 0 00:11:22:33:44:55
+
+10. Use scapy to send 100 random packets to the deleted MAC to VF0, verify the
+   packets can't be received by one VF and also can't be forwarded to another
+   VF correctly
+
+11. Use scapy to send 100 random packets with a wrong MAC to VF0, verify the
    packets can't be received by one VF and also can't be forwarded to
    another VF correctly.
 
