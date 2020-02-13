@@ -474,3 +474,28 @@ Test Case 14: Set Vlan filter for VF from PF
    VF0 can receive packet
 
 9. Send packet without vlan id to random MAC, check VF0 can receive packet
+
+Test Case 15: Ixgbe vf jumbo frame test
+=======================================
+1. Default mtu size is 1500, send one packet with length bigger than default
+   mtu size to VF0, such as 2000 from tester, check VF0 can't receive packet
+
+2. Set VF0 mtu size as 3000, but need to stop then restart port to active mtu::
+
+      testpmd> port stop all
+      testpmd> port config mtu 0 3000
+      testpmd> port start all
+      testpmd> start
+
+3. Send one packet with length 2000 from tester to VF0, check VF0 can receive packet
+
+4. Send one packet with length bigger than configured mtu size to VF0,such as 4000
+   from tester, check VF0 can't receive packet
+
+5. Quit VF0 testpmd, restart VF0 testpmd, send one packet with length 2000 from
+   tester to VF0, check VF0 can receive packet
+
+6. send one packet with length bigger than configured mtu size to VF0, such as
+   5000 from tester, check VF0 can't receive packet
+
+notes: only x550 and x540 support jumbo frames.
