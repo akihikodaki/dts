@@ -696,7 +696,7 @@ class TestIavf(TestCase):
             if (loading_size <= 800):
                 self.verify(rx_stats == tx_stats and int(tx_outlist[0]) == loading_size, "the packet segmentation incorrect, %s" % tx_outlist)
             else:
-                num = loading_size/800
+                num = loading_size // 800
                 for i in range(num):
                     self.verify(tx_outlist != [], "the packet segmentation incorrect, %s" % tx_outlist)
                     self.verify(int(tx_outlist[i]) == 800, "the packet segmentation incorrect, %s" % tx_outlist)
