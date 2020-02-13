@@ -202,11 +202,11 @@ class TestVxlanSample(TestCase):
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed!")
         except Exception as e:
-            print(utils.RED("Failure for %s" % str(e)))
+            self.logger.error("Failure for %s" % str(e))
 
         # create another vm
         if vm_num == 2:
-            print("not implemented now")
+            self.logger.warning("not implemented now")
 
         return True
 
@@ -303,11 +303,11 @@ class TestVxlanSample(TestCase):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
                 case_pass = False
-                print(utils.RED("Failure in checking packet payload"))
+                self.logger.error("Failure in checking packet payload")
 
             if case_pass:
-                print(utils.GREEN("Check normal udp packet forward pass on "
-                                "virtIO port %d" % vf_id))
+                self.logger.info("Check normal udp packet forward pass on "
+                                "virtIO port %d" % vf_id)
 
         if pkt_type == "vxlan_udp_decap":
             # create vxlan packet pf mac + vni=1000 + inner virtIO port0 mac
@@ -338,11 +338,11 @@ class TestVxlanSample(TestCase):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
                 case_pass = False
-                print(utils.RED("Failure in checking packet payload"))
+                self.logger.error("Failure in checking packet payload")
 
             if case_pass:
-                print(utils.GREEN("Check vxlan packet decap pass on virtIO port"
-                                " %d" % vf_id))
+                self.logger.info("Check vxlan packet decap pass on virtIO port"
+                                " %d" % vf_id)
 
         if pkt_type == "vxlan_udp":
             # create vxlan packet pf mac + vni=1000 + inner virtIO port0 mac
@@ -373,11 +373,11 @@ class TestVxlanSample(TestCase):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
                 case_pass = False
-                print(utils.RED("Failure in checking packet payload"))
+                self.logger.error("Failure in checking packet payload")
 
             if case_pass:
-                print(utils.GREEN("Check vxlan packet decap and encap pass on "
-                                "virtIO port %d" % vf_id))
+                self.logger.info("Check vxlan packet decap and encap pass on "
+                                "virtIO port %d" % vf_id)
 
         if pkt_type == "vxlan_udp_chksum":
             params['inner_l4_type'] = 'UDP'
@@ -396,7 +396,7 @@ class TestVxlanSample(TestCase):
             vxlan_pkt = VxlanTestConfig(self, **params)
             vxlan_pkt.create_pcap()
             chksums_ref = vxlan_pkt.get_chksums()
-            print(utils.GREEN("Checksum reference: %s" % chksums_ref))
+            self.logger.info("Checksum reference: %s" % chksums_ref)
 
             params['inner_ip_invalid'] = 1
             params['inner_l4_invalid'] = 1
@@ -419,14 +419,14 @@ class TestVxlanSample(TestCase):
             pk_new.pktgen.assign_pkt(pkts)
             pk_new.pktgen.update_pkts()
             chksums = vxlan_pkt.get_chksums(pk_new)
-            print(utils.GREEN("Checksum : %s" % chksums))
+            self.logger.info("Checksum : %s" % chksums)
             for key in chksums_ref:
                 if 'inner' in key:  # only check inner packet chksum
                     self.verify(chksums[key] == chksums_ref[key],
                                 "%s not matched to %s"
                                 % (key, chksums_ref[key]))
 
-            print(utils.GREEN("%s checksum pass" % params['inner_l4_type']))
+            self.logger.info("%s checksum pass" % params['inner_l4_type'])
 
         if pkt_type == "vxlan_tcp_tso":
             # create vxlan packet pf mac + vni=1000 + inner virtIO port0 mac +
@@ -459,15 +459,15 @@ class TestVxlanSample(TestCase):
                 del inner.chksum
                 inner[IP] = inner[IP].__class__(str(inner[IP]))
                 inner_ip_chksum_ref = inner[IP].chksum
-                print(utils.GREEN("inner ip checksum reference: %x" % inner_ip_chksum_ref))
-                print(utils.GREEN("inner ip checksum: %x" % inner_ip_chksum))
+                self.logger.info("inner ip checksum reference: %x" % inner_ip_chksum_ref)
+                self.logger.info("inner ip checksum: %x" % inner_ip_chksum)
                 self.verify(inner_ip_chksum == inner_ip_chksum_ref, "inner ip checksum error")
                 inner_l4_chksum = inner[params['inner_l4_type']].chksum
                 del inner[params['inner_l4_type']].chksum
                 inner[params['inner_l4_type']] = inner[params['inner_l4_type']].__class__(str(inner[params['inner_l4_type']]))
                 inner_l4_chksum_ref =  inner[params['inner_l4_type']].chksum
-                print(utils.GREEN("inner l4 checksum reference: %x" % inner_l4_chksum_ref))
-                print(utils.GREEN("inner l4 checksum: %x" % inner_l4_chksum))
+                self.logger.info("inner l4 checksum reference: %x" % inner_l4_chksum_ref)
+                self.logger.info("inner l4 checksum: %x" % inner_l4_chksum)
                 self.verify(inner_l4_chksum == inner_l4_chksum_ref, "inner %s checksum error" % params['inner_l4_type'])
 
             length = 0
@@ -481,12 +481,12 @@ class TestVxlanSample(TestCase):
                     length += len(payload)
                 except:
                     case_pass = False
-                    print(utils.RED("Failure in checking tso payload"))
+                    self.logger.error("Failure in checking tso payload")
 
             self.verify(length == 892, "Total tcp payload size not match")
             if case_pass:
-                print(utils.GREEN("Vxlan packet tso pass on virtIO port %d"
-                                % vf_id))
+                self.logger.info("Vxlan packet tso pass on virtIO port %d"
+                                % vf_id)
 
     def test_perf_vxlan_sample(self):
         # vxlan payload length for performance test
