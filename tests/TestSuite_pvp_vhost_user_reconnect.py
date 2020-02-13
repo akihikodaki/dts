@@ -170,12 +170,15 @@ class TestPVPVhostUserReconnect(TestCase):
                     'in this suite, please config it in vhost_sample.cfg file')
         self.checked_vm = True
 
-    def start_vms(self):
+    def start_vms(self, packed=False):
         """
         start two VM
         """
         self.vm_dut = []
         self.vm = []
+        setting_args = "mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024"
+        if packed is True:
+            setting_args = "%s,packed=on" % setting_args
         for i in range(self.vm_num):
             vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
             vm_params = {}
@@ -183,7 +186,7 @@ class TestPVPVhostUserReconnect(TestCase):
             vm_params['opt_path'] = './vhost-net%d' % (i)
             vm_params['opt_mac'] = '52:54:00:00:00:0%d' % (i+1)
             vm_params['opt_server'] = 'server'
-            vm_params['opt_settings'] = 'mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024'
+            vm_params['opt_settings'] = setting_args
             vm_info.set_vm_device(**vm_params)
             self.check_qemu_version(vm_info)
 
@@ -295,7 +298,7 @@ class TestPVPVhostUserReconnect(TestCase):
                             "After relaunch", "1"]
             self.result_table_add(data_row)
 
-    def test_perf_vhost_user_reconnet_one_vm(self):
+    def test_perf_split_ring_reconnet_one_vm(self):
         """
         test reconnect stability test of one vm
         """
@@ -327,7 +330,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.result_table_print()
         self.stop_all_apps()
 
-    def test_perf_vhost_user_reconnet_two_vms(self):
+    def test_perf_split_ring_reconnet_two_vms(self):
         """
         test reconnect stability test of two vms
         """
@@ -359,7 +362,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.result_table_print()
         self.stop_all_apps()
 
-    def test_perf_vhost_vm2vm_virtio_net_reconnet_two_vms(self):
+    def test_perf_split_ring_vm2vm_virtio_net_reconnet_two_vms(self):
         """
         test the iperf traffice can resume after reconnet
         """
@@ -389,6 +392,105 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_dut[1].send_expect('rm iperf_client.log', '# ', 10)
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
             self.start_vms()
+            self.config_vm_intf()
+            self.start_iperf()
+            self.iperf_result_verify(vm_cycle, 'reconnet from vm')
+        self.result_table_print()
+
+    def test_perf_packed_ring_reconnet_one_vm(self):
+        """
+        test reconnect stability test of one vm
+        """
+        self.header_row = ["Mode", "FrameSize(B)", "Throughput(Mpps)",
+                            "LineRate(%)", "Cycle", "Queue Number"]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 1
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms(packed=True)
+        self.vm_testpmd_start()
+        self.send_and_verify(vm_cycle, "reconnet one vm")
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user()
+            self.send_and_verify(vm_cycle, "reconnet from vhost")
+
+        # reconnet from qemu
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms(packed=True)
+            self.vm_testpmd_start()
+            self.send_and_verify(vm_cycle, "reconnet from VM")
+        self.result_table_print()
+        self.stop_all_apps()
+
+    def test_perf_packed_ring_reconnet_two_vms(self):
+        """
+        test reconnect stability test of two vms
+        """
+        self.header_row = ["Mode", "FrameSize(B)", "Throughput(Mpps)",
+                            "LineRate(%)", "Cycle", "Queue Number"]
+        self.result_table_create(self.header_row)
+        vm_cycle = 0
+        self.vm_num = 2
+        self.launch_testpmd_as_vhost_user()
+        self.start_vms(packed=True)
+        self.vm_testpmd_start()
+        self.send_and_verify(vm_cycle, "reconnet two vm")
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user()
+            self.send_and_verify(vm_cycle, "reconnet from vhost")
+
+        # reconnet from qemu
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms(packed=True)
+            self.vm_testpmd_start()
+            self.send_and_verify(vm_cycle, "reconnet from VM")
+        self.result_table_print()
+        self.stop_all_apps()
+
+    def test_perf_packed_ring_virtio_net_reconnet_two_vms(self):
+        """
+        test the iperf traffice can resume after reconnet
+        """
+        self.header_row = ["Mode", "[M|G]bits/sec", "Cycle"]
+        self.result_table_create(self.header_row)
+        self.vm_num = 2
+        vm_cycle = 0
+        self.launch_testpmd_as_vhost_user_with_no_pci()
+        self.start_vms(packed=True)
+        self.config_vm_intf()
+        self.start_iperf()
+        self.iperf_result_verify(vm_cycle, 'before reconnet')
+
+        vm_cycle = 1
+        # reconnet from vhost
+        self.logger.info('now reconnect from vhost')
+        for i in range(self.reconnect_times):
+            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.launch_testpmd_as_vhost_user_with_no_pci()
+            self.start_iperf()
+            self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
+
+        # reconnet from VM
+        self.logger.info('now reconnect from vm')
+        for i in range(self.reconnect_times):
+            self.vm_dut[0].send_expect('rm iperf_server.log', '# ', 10)
+            self.vm_dut[1].send_expect('rm iperf_client.log', '# ', 10)
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+            self.start_vms(packed=True)
             self.config_vm_intf()
             self.start_iperf()
             self.iperf_result_verify(vm_cycle, 'reconnet from vm')
