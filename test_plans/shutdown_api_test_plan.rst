@@ -144,6 +144,26 @@ Test Case: Change Link Speed
    successfully.
 7. Repeat this process for every compatible speed depending on the NIC driver.
 
+Test Case: Change Link Speed VF
+----------------------------
+
+1. bind a PF to DPDK::
+    ./usertools/dpdk-devbind.py -b igb_uio 1b:00.0
+2. create a VF from this PF::
+    echo 1 > /sys/bus/pci/devices/0000\:1b\:00.0/max_vfs
+   bind a VF to DPDK::
+    ./usertools/dpdk-devbind.py -b igb_uio 1b:02.0
+3. launch testpmd with cmd::
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 0-3 -n 4 --file-prefix=minjq -- -i
+4. Run ``port stop all`` to stop all ports.
+5. Run ``port config all speed SPEED duplex HALF/FULL`` to select the new config for the link.
+6. Run ``port start all`` to restart all ports.
+   show port info all Check on the tester side that the VF configuration actually changed using ethtool.
+7. Run ``start`` again to restart the forwarding, then start packet generator to transmit
+   and receive packets, and check if testpmd is able to receive and forward packets
+   successfully.
+8. Repeat this process for every compatible speed depending on the NIC driver.
+
 Test Case: Enable/Disable Jumbo Frame
 -------------------------------------
 
