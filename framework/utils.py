@@ -256,7 +256,7 @@ def convert_mac2str(mac_long):
     """
     convert the MAC type from the int into the string.
     """
-    mac = hex(mac_long)[2:-1].zfill(12)
+    mac = hex(mac_long)[2:].zfill(12)
     b = []
     [b.append(mac[n:n+2]) for n in range(len(mac)) if n % 2 == 0 ]
     new_mac = ":".join(b)
