@@ -209,6 +209,11 @@ class Ixia(SSHConnection):
                                                             prefix, mac_start))
             if step:
                 cmds.append('stream config -{0}Step {1}'.format(prefix, step))
+                # if not enable ContinueFromLastValue, the mac will always be start_mac
+                if prefix == 'sa':
+                    cmds.append('stream config -enableSaContinueFromLastValue true')
+                elif prefix == 'da':
+                    cmds.append('stream config -enableDaContinueFromLastValue true')
             if action:
                 cmds.append('stream config -{0}RepeatCounter {1}'.format(
                                                 prefix, addr_mode.get(action)))
@@ -513,7 +518,7 @@ class Ixia(SSHConnection):
             break
 
         # set commands at last stream
-        if stream_id > 1:
+        if stream_id >= self.stream_total[port_index]:
             self.add_tcl_cmd("stream config -dma gotoFirst")
             self.add_tcl_cmd("stream set %s %d" % (ixia_port, stream_id))
 
