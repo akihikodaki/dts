@@ -34,9 +34,9 @@
 CVL:Classification:Flow Director
 ================================
 
-* Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
-* Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
-* Enable fdir filter for GTP (comm #1 package)
+Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
+Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
+Enable fdir filter for GTP (comm #1 package)
 
 Pattern and input set
 ---------------------
@@ -77,43 +77,36 @@ Pattern and input set
     |                              | MAC_IPV4_TUN_MAC_IPV4_SCTP | [Inner Source IP], [Inner Dest IP], [Inner Source Port], [Inner Dest Port]    |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
     | GTP-U data packet types      |                            |                                                                               |
-    | IPv4 transport, IPv4 payload | MAC_IPV4_GTPU_IPV4_PAY     | [TEID], [QFI]                                                                 |
+    | IPv4 transport, IPv4 payload | MAC_IPV4_GTPU              | [TEID]                                                                        |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_GTPU_IPV4_UDP     | [TEID], [QFI]                                                                 |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_GTPU_IPV4_TCP     | [TEID], [QFI]                                                                 |
-    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
-    |                              | MAC_IPV4_GTPU_IPV4_SCTP    | [TEID], [QFI]                                                                 |
+    |                              | MAC_IPV4_GTPU_EH           | [TEID], [QFI]                                                                 |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
-.. note::
-
-    1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
-       support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
-    2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
-    3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
+Notes: 1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
+          support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
+       2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
+       3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
 
 Action type
 -----------
 
-    * queue index
-    * drop
-    * rss queues
-    * count identifier 0x1234 shared on|off
-    * mark id
+    queue index
+    drop
+    rss queues
+    passthru
+    count identifier 0x1234 shared on|off
+    mark id
 
 
 Prerequisites
 =============
 
 1. Hardware:
-
-   - columbiaville_25g/columbiaville_100g
+   columbiaville_25g/columbiaville_100g
 
 2. Software:
-
-   - DPDK: http://dpdk.org/git/dpdk
-   - scapy: http://www.secdev.org/projects/scapy/
+   DPDK: http://dpdk.org/git/dpdk
+   scapy: http://www.secdev.org/projects/scapy/
 
 3. Copy specific ice package to /lib/firmware/intel/ice/ddp/ice.pkg
    Then reboot server, and compile DPDK
@@ -133,9 +126,7 @@ Prerequisites
     testpmd> port config 0 udp_tunnel_port add vxlan 4789
     testpmd> start
 
-.. note::
-
-   if need two ports environment, launch ``testpmd`` with the following arguments::
+   Notes: if need two ports environment, launch ``testpmd`` with the following arguments::
 
     ./testpmd -c 0xff -n 6 -w 86:00.0 -w 86:00.1 -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
 
@@ -192,8 +183,8 @@ Send packets
 
    matched packets::
 
-    pkt1 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4) / Raw('x' * 80)
-    pkt2 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=255, ttl=2, tos=4)/Raw('x' * 80)
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255, ttl=2, tos=4) / Raw('x' * 80)],iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=255, ttl=2, tos=4)/Raw('x' * 80)],iface="enp175s0f0")
 
    mismatched packets::
 
@@ -393,7 +384,7 @@ Send packets
     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst='192.168.1.15')/UDP(sport=200, dport=4790)/VXLAN(flags=0xc)/IP(src='192.168.0.20', dst='192.168.0.21')/UDP(sport=22, dport=23)/Raw('x' * 80)], iface="enp175s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN()/IP(dst="192.168.0.21", src="192.168.0.20")/SCTP(sport=22,dport=23)/("X"*480)], iface="enp175s0f0")
 
-* MAC_IPV4_GTPU_IPV4_PAY
+* MAC_IPV4_GTPU_EH
 
    matched packets::
 
@@ -402,14 +393,43 @@ Send packets
     p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
     p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
     p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/IPv6ExtHdrFragment(1000)/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu10 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/ICMP()/Raw('x'*20)
 
    mismatched packets::
 
-    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/SCTP()/Raw('x'*20)
-    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
-    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
-    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/Raw('x'*20)
+    p_gtpu11 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/SCTP()/Raw('x'*20)
+    p_gtpu12 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/SCTP()/Raw('x'*20)
+    p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
+    p_gtpu14 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+    p_gtpu15 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/Raw('x'*20)
+    p_gtpu16 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/Raw('x'*20)
 
+* MAC_IPV4_GTPU
+
+   matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(frag=1)/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/IPv6ExtHdrFragment(1000)/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu10 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/ICMP()/Raw('x'*20)
+    p_gtpu11 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+
+   mismatched packets::
+
+    p_gtpu12 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/Raw('x'*20)
+    p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/SCTP()/Raw('x'*20)
+    p_gtpu14 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/SCTP()/Raw('x'*20)
+    p_gtpu15 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw('x'*20)
 
 Test case: MAC_IPV4_PAY queue index
 ===================================
@@ -491,11 +511,10 @@ Test case: MAC_IPV4_TCP queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 63 / end
+   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 63 / end
 
-2. send matched packets, check the packets is distributed to queue 63::
-
-    send mismatched packets, check the packets are not distributed to queue 63.
+2. send matched packets, check the packets is distributed to queue 63.
+   send mismatched packets, check the packets are not distributed to queue 63.
 
 3. verify rules can be listed and destroyed::
 
@@ -843,6 +862,388 @@ Test case: queue index wrong parameters
 
    flow 1 can be created successfully,
    flow 2 and flow 3 failed to be created cause of confliction.
+
+Test case: MAC_IPV4_PAY passthru/count
+======================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / count / end
+
+2. send matched packets, check the packets are redirected by RSS
+   send mismatched packets, check the packets are redirected by RSS
+   check the count number::
+
+    flow query 0 0 count
+    count:
+     hits_set: 1
+     bytes_set: 0
+     hits: 2
+     bytes: 0
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_PAY passthru/mark
+=====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_UDP passthru/mark
+=====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TCP passthru/mark
+=====================================
+
+1. create filter rules::
+
+   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_SCTP passthru/mark
+======================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / sctp src is 22 dst is 23 tag is 1 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_PAY passthru/mark
+=====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 1 hop is 2 tc is 1 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_UDP passthru/mark
+=====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_TCP passthru/mark
+=====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_SCTP passthru/mark
+======================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_PAY passthru/mark
+==============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_UDP passthru/mark
+==============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_TCP passthru/mark
+==============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_SCTP passthru/mark
+===============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_PAY passthru/mark
+==================================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_UDP passthru/mark
+==================================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_TCP passthru/mark
+==================================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_SCTP passthru/mark
+===================================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
 
 Test case: MAC_IPV4_PAY drop
 ============================
@@ -1577,12 +1978,12 @@ all the above five rules are failed to created.
    send matched packets, check the packets are distributed to queue 0-63.
    send mismatched packets, check the packets are distributed to queue 0-63 too.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY queue index
-=============================================
+Test case: MAC_IPV4_GTPU_EH queue index
+=======================================
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / end
 
 2. send matched packets, check the packets are distributed to queue 1.
    send mismatched packets, check the packets are not distributed to queue 1.
@@ -1599,12 +2000,34 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY queue index
    verify matched packets are not distributed to queue 1.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY drop
-======================================
+Test case: MAC_IPV4_GTPU_EH passthru/mark
+=========================================
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU_EH drop
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
 
 2. send matched packets, check the packets are dropped.
    send mismatched packets, check the packets are not dropped.
@@ -1621,12 +2044,12 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY drop
    verify matched packets are not dropped.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY queue group
-=============================================
+Test case: MAC_IPV4_GTPU_EH queue group
+=======================================
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions rss queues 0 1 end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions rss queues 0 1 end / end
 
 2. send matched packets, check the packets are distributed to queue group.
    send mismatched packets, check the packets are not distributed to queue group.
@@ -1643,11 +2066,99 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY queue group
    verify matched packets are not distributed to queue group.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY mark/count/query
-==================================================
+Test case: MAC_IPV4_GTPU queue index
+====================================
+
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 2 / mark id 2 / count / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions queue index 1 / end
+
+2. send matched packets, check the packets are distributed to queue 1.
+   send mismatched packets, check the packets are not distributed to queue 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are not distributed to queue 1.
+   Then check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU passthru/mark
+======================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU drop
+=============================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are not dropped.
+   Then check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU queue group
+====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions rss queues 0 1 end / end
+
+2. send matched packets, check the packets are distributed to queue group.
+   send mismatched packets, check the packets are not distributed to queue group.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are not distributed to queue group.
+   Then check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU_EH mark/count/query
+============================================
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 2 / mark id 2 / count / end
 
 2. send matched packets, check the packets are distributed to queue 2, the FDIR=0x2.
    send mismatched packets, check the packets are not distributed to queue 2, no FDIR.
@@ -1657,7 +2168,7 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY mark/count/query
     count:
      hits_set: 1
      bytes_set: 0
-     hits: 5
+     hits: 10
      bytes: 0
 
 3. verify rules can be listed and destroyed::
@@ -1672,20 +2183,21 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY mark/count/query
    verify matched packets are not distributed to queue 2, and no FDIR.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY TEID mark/count/query
-=======================================================
+Test case: MAC_IPV4_GTPU mark/count/query
+=========================================
 
 1. create filter rules on port 1::
 
-    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions rss queues 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 end / mark id 100 / count / end
+    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions rss queues 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62 63 end / mark id 100 / count / end
 
 2. send matched packets, check the packets are distributed to queue in 0-63, the FDIR=0x64::
 
     p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/Raw('x'*20)
 
    send mismatched packets, check the packets have not FDIR::
 
-    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw('x'*20)
 
    check the count number::
 
@@ -1693,7 +2205,7 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY TEID mark/count/query
     count:
      hits_set: 1
      bytes_set: 0
-     hits: 1
+     hits: 2
      bytes: 0
 
 3. verify rules can be listed and destroyed::
@@ -1708,20 +2220,20 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY TEID mark/count/query
    verify matched packets are distributed to queue in 0-63, and no FDIR.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY QFI mark/count/query
-=======================================================
+Test case: MAC_IPV4_GTPU_EH QFI mark/count/query
+================================================
 
 1. create filter rules on port 1::
 
-    flow create 1 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / ipv4 / end actions drop / mark id 3 / count / end
+    flow create 1 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / end actions drop / mark id 3 / count / end
 
 2. send matched packets, check the packets are dropped::
 
-    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
 
    send mismatched packets, check the packets are not dropped, no FDIR::
 
-    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
 
    check the count number::
 
@@ -1744,26 +2256,62 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY QFI mark/count/query
    verify matched packets are not dropped, and no FDIR.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY multirules
-============================================
+Test case: MAC_IPV4_GTPU_EH without QFI mark/count/query
+========================================================
 
 1. create filter rules on port 0::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 1 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 2 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 3 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / end actions queue index 15 / mark id 3 / count / end
+
+2. send matched packets, check the packets are distributed to queue 15, the FDIR=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packets are not distributed to queue 15, no FDIR::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0)/IP()/TCP()/Raw('x'*20)
+
+   check the count number::
+
+    flow query 0 0 count
+    count:
+     hits_set: 1
+     bytes_set: 0
+     hits: 1
+     bytes: 0
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are not distributed to queue 15, and no FDIR.
+   Then check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU_EH multirules
+======================================
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / end actions queue index 2 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / end actions queue index 3 / end
 
    the three rules are created successfully.
    then create the following rules::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 3 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 4 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x75 / ipv4 / end actions queue index 4 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / end actions queue index 3 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x35 / end actions queue index 4 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x75 / end actions queue index 4 / end
 
    the three rules are failed to created.
    then create the following rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 3 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x1234567 / gtp_psc qfi is 0x34 / end actions queue index 3 / end
 
    the rule is created successfully.
 
@@ -1791,13 +2339,13 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY multirules
    verify matched packets are not distributed to same queue.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY two ports
-===========================================
+Test case: MAC_IPV4_GTPU_EH two ports
+=====================================
 
 1. create filter rules on two ports::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 1 / end
-    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / end
+    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / end
 
    send matched packets::
 
@@ -1807,8 +2355,8 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY two ports
 
 2. create filter rules on two ports::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 2 / end
-    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / ipv4 / end actions queue index 3 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / end actions queue index 2 / end
+    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x35 / end actions queue index 3 / end
 
    send matched packets::
 
@@ -1823,16 +2371,17 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY two ports
 
 4. create filter rules on two ports::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / ipv4 / end actions queue index 1 / end
-    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / ipv4 / end actions queue index 2 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / end
+    flow create 1 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions queue index 2 / end
 
    send matched packets::
 
     p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:00:00:00:01:03")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
 
-   send the packet to two ports, it is not distributed to queue 1 of port 0,
-   it is distributed to queue 2 of port 1.
-
+   send the packets to two ports,
+   p_gtpu2 is not distributed to queue 1 of port 0, it is distributed to queue 2 of port 1.
+   p_gtpu3 is distributed to queue 2 of port 1, it is distributed to queue 1 of port 0.
 
 5. verify rules can be listed and destroyed::
 
@@ -1848,15 +2397,30 @@ Test case: MAC_IPV4_GTPU_IPV4_PAY two ports
    verify matched packets are not distributed to expected queue.
    Then check there is no rule listed.
 
-Test case: MAC_IPV4_GTPU_IPV4_PAY wrong parameters
-==================================================
+Test case: MAC_IPV4_GTPU_EH wrong parameters
+============================================
 
 1. create filter rules on port 0::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / ipv4 / end actions queue index 1 / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / ipv4 / end actions queue index 2 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end
 
    the two flows can not be created successfully.
+
+2. list the flow::
+
+    testpmd> flow list 0
+
+   there is no flow listed.
+
+Test case: MAC_IPV4_GTPU wrong parameters
+=========================================
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / end actions queue index 1 / end
+
+   the flow can not be created successfully.
 
 2. list the flow::
 
