@@ -147,7 +147,7 @@ def keyboard_handle(signum, frame):
     command['help'] = help_command
     command['connect'] = connect_command
     command['rerun'] = rerun_command
-    console.push('print \"Use help command for detail information\"')
+    console.push('print(\"Use help command for detail information\")')
     try:
         code.interact(local=command)
     except SystemExit:
