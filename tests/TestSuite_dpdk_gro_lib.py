@@ -81,9 +81,8 @@ class TestDPDKGROLib(TestCase):
         self.verify(self.dut.number_of_cores >= 3,
                 "There has not enought cores to test this case %s" % self.suite_name)
         cores_list = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
-        vhost_list = cores_list[0:2]
+        self.vhost_list = cores_list[0:2]
         self.qemu_cpupin = cores_list[2:3][0]
-        self.core_mask_vhost = utils.create_mask(vhost_list)
 
         # Set the params for VM
         self.virtio_ip1 = "1.1.1.2"
@@ -112,11 +111,8 @@ class TestDPDKGROLib(TestCase):
         # mode 2 : tcp traffic heavy mode
         # mode 3 : vxlan traffic light mode
         # mode 4 : tcp traffic flush 4
-        self.testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" \
-            + " --vdev 'net_vhost0,iface=%s/vhost-net,queues=1' -- -i  --enable-hw-vlan-strip --tx-offloads=0x00" \
-                + " --txd=1024 --rxd=1024"
-        self.testcmd_start = self.testcmd % (
-            self.core_mask_vhost, self.memory_channel, self.socket_mem, self.base_dir)
+        eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=1' % self.base_dir])
+        self.testcmd_start = self.target + "/app/testpmd " + eal_param + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
