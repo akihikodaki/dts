@@ -61,8 +61,6 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
 
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
-        self.core_mask_virtio_user = utils.create_mask(self.core_list_virtio_user)
-        self.core_mask_vhost_user = utils.create_mask(self.core_list_vhost_user)
         self.mem_channels = self.dut.get_memory_channels()
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
         self.prepare_vhost_switch()
@@ -163,18 +161,20 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
             results_row.append(throughput)
             self.result_table_add(results_row)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def launch_vhost_switch(self):
         """
         start vhost-switch on vhost
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        command_line_client = "./examples/vhost/build/app/vhost-switch " + \
-                              "-c %s -n %d --socket-mem %s -- " + \
-                              "-p 0x1 --mergeable 0 --vm2vm 1 " + \
-                              "--builtin-net-driver  --socket-file ./vhost-net" + \
-                              "> ./vhost.out &"
-        command_line_client = command_line_client % (self.core_mask_vhost_user,
-                                                     self.mem_channels, self.mem_size)
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost')
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_client = "./examples/vhost/build/app/vhost-switch " + eal_param + ' -- -p 0x1 --mergeable 0 --vm2vm 1 --builtin-net-driver --socket-file ./vhost-net> ./vhost.out &'
         self.vhost_switch.send_expect(command_line_client, "# ", 120)
         time.sleep(15)
         try:
@@ -195,13 +195,12 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            "--no-pci --socket-mem %s --file-prefix=virtio-user " + \
-                            "--vdev=net_virtio_user0,mac=%s,path=./vhost-net,queues=1 " + \
-                            "-- -i --rxq=1 --txq=1"
-        command_line_user = command_line_user % (self.target,
-                                                 self.mem_channels, self.core_mask_virtio_user,
-                                                 self.mem_size, self.virtio_mac)
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_virtio_user, prefix='virtio',
+                                                   no_pci=True, vdevs=[
+                'net_virtio_user0,mac=%s,path=./vhost-net,queues=1' % self.virtio_mac])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i --rxq=1 --txq=1"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start tx_first", "testpmd> ", 120)
