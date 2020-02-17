@@ -56,12 +56,6 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
             self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:2]
         self.core_list_host = self.core_list[2:5]
-        self.core_mask_user = utils.create_mask(self.core_list_user)
-        self.core_mask_host = utils.create_mask(self.core_list_host)
-        if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
-            self.socket_mem = '1024'
-        else:
-            self.socket_mem = '1024,1024'
 
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
@@ -120,6 +114,11 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
             results_row.append(throughput)
             self.result_table_add(results_row)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_vhost_testpmd(self):
         """
         start testpmd on vhost
@@ -128,12 +127,12 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        command_line_client = "./%s/app/testpmd -n %d -c %s --socket-mem " + \
-                              " %s --legacy-mem -w %s --file-prefix=vhost --vdev " + \
-                              "'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=2 --txd=1024 --rxd=1024"
-        command_line_client = command_line_client % (self.target,
-            self.dut.get_memory_channels(), self.core_mask_host,
-            self.socket_mem, self.dut.ports_info[self.dut_ports[0]]['pci'])
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_host, prefix='vhost',
+                                                   ports=[self.dut.ports_info[self.dut_ports[0]]['pci']],
+                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i --nb-cores=2 --txd=1024 --rxd=1024'
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd io", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
@@ -142,13 +141,10 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            " --socket-mem %s --legacy-mem --no-pci --file-prefix=virtio " + \
-                            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s " + \
-                            "-- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_user = command_line_user % (self.target,
-            self.dut.get_memory_channels(), self.core_mask_user,
-            self.socket_mem, args["version"], args["path"])
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' % args["version"]])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % args["path"]
         self.vhost_user.send_expect(command_line_user, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
@@ -172,7 +168,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP virtio 1.1 Mergeable Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=1,in_order=0,mrg_rxbuf=1",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1_mergeable on")
@@ -184,7 +180,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP virtio1.1 Normal Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=1,in_order=0,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1_normal")
@@ -196,7 +192,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP virtio 1.1 inorder  Mergeable Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=1",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1_inorder_mergeable on")
@@ -208,7 +204,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP virtio1.1 inorder Normal Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1_inorder_normal")
@@ -220,7 +216,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP In_order mergeable Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("inoder mergeable on")
@@ -232,7 +228,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP In_order no_mergeable Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
-                        "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("inoder mergeable off")
@@ -244,7 +240,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP Mergeable Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virito mergeable")
@@ -256,7 +252,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP Normal Path.
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virito normal")
@@ -268,7 +264,7 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         performance for Vhost PVP Vector Path
         """
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0"}
+                          "path": "--tx-offloads=0x0"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio vector rx")
