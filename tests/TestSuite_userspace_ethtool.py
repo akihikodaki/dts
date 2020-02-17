@@ -199,7 +199,12 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             out = result[0]
             if len(out) == 2:
                 if out[0] == 'firmware-version':
-                    sys_nic_info[out[0]] = "0x" + re.findall(firmwarePat, out[1], re.M)[0]
+                    result2 = re.findall(firmwarePat, out[1], re.M)
+                    if not result2:
+                        msg = ("{} can not get firmware-version,"
+                               "ignore left check").format(self.nic)
+                        raise VerifyFailure(msg)
+                    sys_nic_info[out[0]] = "0x" + result2[0]
                 else:
                     sys_nic_info[out[0]] = out[1]
         return sys_nic_info
