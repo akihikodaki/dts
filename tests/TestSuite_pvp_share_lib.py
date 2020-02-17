@@ -58,8 +58,6 @@ class TestPVPShareLib(TestCase):
 
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
-        self.core_mask_virtio_user = utils.create_mask(self.core_list_virtio_user)
-        self.core_mask_vhost_user = utils.create_mask(self.core_list_vhost_user)
         self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.prepare_share_lib_env()
@@ -129,17 +127,22 @@ class TestPVPShareLib(TestCase):
         results_row.append(Pct)
         self.result_table_add(results_row)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_testpmd_as_vhost(self, driver):
         """
         start testpmd on vhost
         """
-        command_line_client = "%s/app/testpmd -c %s -n %d " + \
-                              "--socket-mem 2048,2048 --legacy-mem " + \
-                              "-d librte_pmd_vhost.so -d librte_pmd_%s.so " + \
-                              "-d librte_mempool_ring.so --file-prefix=vhost " + \
-                              "--vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i"
-        command_line_client = command_line_client % (self.target,
-                        self.core_mask_vhost_user, self.mem_channels, driver)
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost',
+                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1'])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        eal_param += " -d librte_pmd_vhost.so -d librte_pmd_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
+        command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i'
+
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
@@ -148,13 +151,13 @@ class TestPVPShareLib(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            "--no-pci --socket-mem 2048,2048 --legacy-mem " + \
-                            "--file-prefix=virtio-user " + \
-                            "-d librte_pmd_virtio.so -d librte_mempool_ring.so " + \
-                            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i"
-        command_line_user = command_line_user % (self.target,
-                self.mem_channels, self.core_mask_virtio_user)
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_virtio_user, prefix='virtio-user',
+                                                   no_pci=True, vdevs=[
+                'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net'])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        eal_param += " -d librte_pmd_virtio.so -d librte_mempool_ring.so"
+        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
