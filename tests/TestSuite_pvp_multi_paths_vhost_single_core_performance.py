@@ -55,8 +55,6 @@ class TestPVPMultiPathVhostPerformance(TestCase):
             self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:5]
-        self.core_mask_user = utils.create_mask(self.core_list_user)
-        self.core_mask_host = utils.create_mask(self.core_list_host)
 
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
@@ -113,6 +111,11 @@ class TestPVPMultiPathVhostPerformance(TestCase):
             results_row.append(throughput)
             self.result_table_add(results_row)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_vhost_testpmd(self):
         """
         start testpmd on vhost
@@ -122,10 +125,11 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, prefix='vhost',
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost',
                                                    no_pci=True,
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1'])
-        eal_param += " --single-file-segments"
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
         command_line_client = "./%s/app/testpmd " % self.target + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
@@ -135,10 +139,11 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         start testpmd on virtio
         """
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, prefix='virtio',
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio',
                                                    vdevs=['virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,%s' %
                                                           args["version"]])
-        eal_param += " --single-file-segments"
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
         command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i %s --nb-cores=2 --txd=1024 --rxd=1024" % \
                             args["path"]
         self.vhost_user.send_expect(command_line_user, "testpmd> ", 120)
