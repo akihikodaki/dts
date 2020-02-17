@@ -88,20 +88,13 @@ class TestLoopbackMultiQueues(TestCase):
         self.core_list = self.dut.get_core_list(self.core_config)
         self.core_list_user = self.core_list[0:self.nb_cores + 1]
         self.core_list_host = self.core_list[self.nb_cores + 1:2 * self.nb_cores + 2]
-        self.core_mask_user = utils.create_mask(self.core_list_user)
-        self.core_mask_host = utils.create_mask(self.core_list_host)
 
     def start_vhost_testpmd(self):
         """
         start testpmd on vhost
         """
-        command_line_client = self.dut.target + "/app/testpmd -n %d -c %s --socket-mem %s" + \
-                              " --legacy-mem --no-pci --file-prefix=vhost --vdev " + \
-                              "'net_vhost0,iface=vhost-net,queues=%d' -- -i --nb-cores=%d " + \
-                              "--rxq=%d --txq=%d --txd=1024 --rxd=1024"
-        command_line_client = command_line_client % (
-            self.dut.get_memory_channels(), self.core_mask_host, self.socket_mem,
-            self.queue_number, self.nb_cores, self.queue_number, self.queue_number)
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=%d' % self.queue_number])
+        command_line_client = self.dut.target + "/app/testpmd " + eal_param + " -- -i --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.nb_cores, self.queue_number, self.queue_number)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -109,14 +102,8 @@ class TestLoopbackMultiQueues(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = self.dut.target + "/app/testpmd -n %d -c %s " + \
-                            " --socket-mem %s --legacy-mem --no-pci --file-prefix=virtio " + \
-                            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s " + \
-                            "-- -i %s --rss-ip --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024"
-        command_line_user = command_line_user % (
-            self.dut.get_memory_channels(), self.core_mask_user, self.socket_mem,
-            self.queue_number, args["version"], args["path"], self.nb_cores,
-            self.queue_number, self.queue_number)
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s' % (self.queue_number, args["version"])])
+        command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i %s --rss-ip --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (args["path"], self.nb_cores, self.queue_number, self.queue_number)
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
