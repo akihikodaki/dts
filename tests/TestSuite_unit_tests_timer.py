@@ -72,12 +72,18 @@ class TestUnitTestsTimer(TestCase):
         """
         pass
 
+    def get_nic_timeout(self):
+        if self.nic in ["x722_37d2"]:
+            return 120
+        return 60
+
     def test_timer(self):
         """
         Run timer autotest.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        timeout = self.get_nic_timeout()
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", timeout)
         out = self.dut.send_expect("timer_autotest", "RTE>>", self.this_timeout)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
