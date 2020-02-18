@@ -122,15 +122,25 @@ class TestVmdq(TestCase):
             tgen_input.append((tx_port, rx_port, "%s" %pcap))
 
         self.tester.pktgen.clear_streams()
+        vm_config = self.set_fields()
         # run packet generator
-        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                                                        None, self.tester.pktgen)
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 10,
+                                                        vm_config, self.tester.pktgen)
         loss = self.tester.pktgen.measure_loss(stream_ids=streams)
         self.logger.info("loss is {}!".format(loss))
 
         # Verify the accurate
         self.verify(loss[0]/100 < 0.001, "Excessive packet loss")
+        out = self.get_vmdq_stats()
         self.validateApproxEqual(out.split("\r\n"))
+
+    def get_vmdq_stats(self):
+        vmdq_dcb_session = self.dut.new_session()
+        vmdq_dcb_session.send_expect("kill -s SIGHUP  `pgrep -fl vmdq_app | awk '{print $1}'`", "#", 20)
+        out = self.dut.get_session_output()
+        self.logger.info(out)
+        vmdq_dcb_session.close()
+        return out
 
     def set_up(self):
         """
@@ -237,9 +247,10 @@ class TestVmdq(TestCase):
 
                 # clear streams before add new streams
                 self.tester.pktgen.clear_streams()
+                vm_config = self.set_fields()
                 # run packet generator
                 streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
-                                                    None, self.tester.pktgen)
+                                                    vm_config, self.tester.pktgen)
                 _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
 
                 config['mpps'][frame_size] = pps/1000000.0
