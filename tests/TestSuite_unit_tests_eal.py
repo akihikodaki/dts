@@ -168,7 +168,7 @@ class TestUnitTestsEal(TestCase):
 
         self.dut.send_expect(self.test_app_cmdline,
                              "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_readwrite_autotest",
+        out = self.dut.send_expect("hash_readwrite_func_autotest",
                                    "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -181,7 +181,20 @@ class TestUnitTestsEal(TestCase):
         eal_params = self.dut.create_eal_parameters()
         self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
                              "R.*T.*E.*>.*>", self.start_test_time)
-        out = self.dut.send_expect("hash_readwrite_lf_autotest",
+        out = self.dut.send_expect("hash_readwrite_lf_perf_autotest",
+                                   "RTE>>", self.run_cmd_time*3)
+        self.dut.send_expect("quit", "# ")
+        self.verify("Test OK" in out, "Test failed")
+
+    def test_hash_readwrite_perf(self):
+        """
+        Run hash readwrite perf autotest.
+        """
+
+        eal_params = self.dut.create_eal_parameters()
+        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
+                             "R.*T.*E.*>.*>", self.start_test_time)
+        out = self.dut.send_expect("hash_readwrite_perf_autotest",
                                    "RTE>>", self.run_cmd_time*3)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
