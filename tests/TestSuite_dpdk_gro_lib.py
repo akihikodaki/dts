@@ -250,7 +250,7 @@ class TestDPDKGROLib(TestCase):
         self.vm1.set_vm_device(**vm_params_1)
         self.set_vm_cpu_number(self.vm1)
         try:
-            self.vm1_dut = self.vm1.start(load_config=False)
+            self.vm1_dut = self.vm1.start(load_config=False, set_target=False)
             if self.vm1_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
