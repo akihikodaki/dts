@@ -270,12 +270,12 @@ Test Case: srTCM blind changed CBS and EBS
    The dropped packets are marked yellow, others are marked red.
    The drop percent is 4.81%.
 
-7. The packets are 512 bytes Ethernet frames, the IPv4 packet size of 530 bytes.
+7. The packets are 530 bytes Ethernet frames, the IPv4 packet size of 512 bytes.
    The linerate is 2.272 Mpps, the valid frames received on the peer IXIA port is 2.191Mpps.
    The dropped packets are marked yellow, others are marked red.
    The drop percent is 3.57%.
 
-8. The packets are 513 bytes Ethernet frames, the IPv4 packet size of 531 bytes > ebs.
+8. The packets are 531 bytes Ethernet frames, the IPv4 packet size of 513 bytes > ebs.
    The linerate is 2.268 Mpps, the valid frames received on the peer IXIA port is 2.268Mpps.
    All the packets are marked red.
    The drop percent is 0%.
