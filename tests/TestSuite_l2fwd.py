@@ -191,7 +191,7 @@ class TestL2fwd(TestCase):
                 self.tester.scapy_execute()
                 cnt += 1
 
-            for queues in self.test_queues[0:2]:
+            for queues in self.test_queues:
 
                 command_line = "./examples/l2fwd/build/app/l2fwd %s -- -q %s -p %s &" % \
                     (eal_params, str(queues['queues']), port_mask)
