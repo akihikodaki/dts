@@ -308,7 +308,7 @@ Test Case: best effort TC12
 
 2. The traffic manage setting is configured in profile.cfg.
    Set flows with QinQ inner vlan ID=0, which represents pipe 0.
-   Set IP dst address from 10.0.0.12~10.0.0.4, which enter queue12~queue14,
+   Set IP dst address from 10.0.0.12~10.0.0.14, which enter queue12~queue14,
    mapping TC12.
    Frame size=70bytes.
    Send rate is 100% linerate.
@@ -591,6 +591,9 @@ the default mastercore 1 and the RX, WT and TX cores only.
 
 Test Case: Two Subports, different pipe profiles, different number of pipes I
 =============================================================================
+*Note: the sample can't be set to two subports,
+ so the two supports case can't be verified.*
+
 1. Configure the profile.cfg file with two subports, two different pipe
    profiles and different number of pipes::
 
@@ -636,6 +639,9 @@ Test Case: Two Subports, different pipe profiles, different number of pipes I
 
 Test Case: Two Subports, different pipe profiles, different number of pipes II
 ==============================================================================
+*Note: the sample can't be set to two subports,
+ so the two supports case can't be verified.*
+
 1. Configure the profile.cfg file the same with last case I.
 
 2. This example uses a single packet flow configuration
@@ -666,7 +672,7 @@ Test Case: Redistribution of unused pipe BW to other pipes within the same subpo
    which creates one RX thread on lcore 5 reading from port 0
    and a worker thread on lcore 7 writing to port 1::
 
-    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile.cfg
+    ./qos_sched -l 1,2,5,7 -n 4 -- -i --pfc "0,1,2,5,7" --cfg ../profile_ov.cfg
 
 3. The generator settings:
    Configure 4 flows:
