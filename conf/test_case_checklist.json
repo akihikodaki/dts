@@ -2609,5 +2609,21 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+    "retrieve_reg": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_25g",
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
