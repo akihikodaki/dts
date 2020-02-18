@@ -1149,7 +1149,8 @@ class Dut(Crb):
             if peer is not None:
                 for remotePort in range(len(self.tester.ports_info)):
                     if self.tester.ports_info[remotePort]['type'].lower() == 'trex':
-                        if self.tester.ports_info[remotePort]['intf'].lower() == peer.lower():
+                        if self.tester.ports_info[remotePort]['intf'].lower() == peer.lower() or \
+                                self.tester.ports_info[remotePort]['pci'].lower() == peer.lower():
                             hits[remotePort] = True
                             self.ports_map[dutPort] = remotePort
                             break
