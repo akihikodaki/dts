@@ -705,6 +705,57 @@ class TestVfDaemon(TestCase):
         self.vm0_testpmd.execute_cmd('vlan set strip off 0')
         self.vm0_testpmd.execute_cmd('vlan set filter off 0')
 
+    def test_ixgbe_vf_jumboframe(self):
+        """
+        Enable jumbo frame for VF by configuring DPDK PF.
+        """
+        self.tester.send_expect("ifconfig %s mtu 9000" % self.tester_intf, "#")
+        self.check_vf_link_status()
+        time.sleep(10)
+        self.vf0_mac = self.vm0_testpmd.get_port_mac(0)
+
+        self.vm0_testpmd.execute_cmd('set verbose 1')
+        self.vm0_testpmd.execute_cmd('start')
+        pktsize = random.randint(1500, 9000)
+        out = self.send_and_pmdout(self.vf0_mac, 0, pktsize)
+        self.vm0_testpmd.execute_cmd('stop')
+        self.verify("received" not in out,
+            "Failed to receive this length packet!!!")
+
+        self.vm0_testpmd.execute_cmd('port stop all')
+        self.vm0_testpmd.execute_cmd('port config mtu 0 %s' % (pktsize+100))
+        self.vm0_testpmd.execute_cmd('port start all')
+        self.vm0_testpmd.execute_cmd('start')
+        out = self.send_and_pmdout(self.vf0_mac, 0, pktsize)
+        self.vm0_testpmd.execute_cmd('stop')
+        self.verify("received" in out,
+            "Failed to receive this length packet!!!")
+
+        self.vm0_testpmd.execute_cmd('start')
+        out = self.send_and_pmdout(self.vf0_mac, 0, pktsize+200)
+        self.vm0_testpmd.execute_cmd('stop')
+        self.verify("received" not in out,
+            "Failed to receive this length packet!!!")
+
+        self.vm0_testpmd.quit()
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        self.vm0_testpmd.execute_cmd('set verbose 1')
+        self.vm0_testpmd.execute_cmd('start')
+        out = self.send_and_pmdout(self.vf0_mac, 0, pktsize)
+        self.vm0_testpmd.execute_cmd('stop')
+        self.verify("received" in out,
+              "Failed to receive this length packet!!!")
+
+        self.vm0_testpmd.execute_cmd('start')
+        out = self.send_and_pmdout(self.vf0_mac, 0, pktsize+200)
+        self.vm0_testpmd.execute_cmd('stop')
+        self.verify("received" not in out,
+            "Failed to receive this length packet!!!")
+
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
+        self.tester.send_expect("ifconfig %s mtu 1500" % self.tester_intf, "#")
+
     def test_stats_show_clear(self):
         """
         Show and clear statistics for a VF from PF
