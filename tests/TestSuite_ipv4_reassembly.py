@@ -209,7 +209,7 @@ class TestIpReassembly(TestCase):
         self.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.test_config.pcap_file)
         self.tester.scapy_append(
-            'sendp(pcap, iface="%s")' % self.test_config.tester_iface)
+            'sendp(pcap, iface="%s", verbose=False)' % self.test_config.tester_iface)
         self.tester.scapy_execute()
         time.sleep(5)
 
@@ -226,6 +226,12 @@ class TestIpReassembly(TestCase):
         os.remove(self.test_config.pcap_file)
         time.sleep(5)
 
+    @property
+    def wait_interval_for_tcpdump(self):
+        interval = 5 if self.nic in ["x722_37d2"] \
+                   else 0
+        return interval
+
     def tcpdump_start_sniffing(self):
         """
         Starts tcpdump in the background to sniff the tester interface where
@@ -238,12 +244,13 @@ class TestIpReassembly(TestCase):
                    self.test_config.tester_iface)
         self.tester.send_expect('rm -f tcpdump.pcap', '#')
         self.tester.send_expect(command, '#')
+        time.sleep(self.wait_interval_for_tcpdump)
 
     def tcpdump_stop_sniff(self):
         """
         Stops the tcpdump process running in the background.
         """
-
+        time.sleep(self.wait_interval_for_tcpdump)
         self.tester.send_expect('killall tcpdump', '#')
         # For the [pid]+ Done tcpdump... message after killing the process
         self.tester.send_expect('cat tcpdump.out', '#')
