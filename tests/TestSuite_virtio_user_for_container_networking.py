@@ -96,9 +96,9 @@ class TestVirtioUserForContainer(TestCase):
         self.verify(len(core_list) >= (self.nb_cores*2 + 2),
                     'There has not enought cores to test this case %s' %
                     self.running_case)
-        core_list_vhost_user = core_list[0:self.nb_cores+1]
+        self.core_list_vhost_user = core_list[0:self.nb_cores+1]
         core_list_virtio_user = core_list[self.nb_cores+1:self.nb_cores*2+2]
-        self.core_mask_vhost_user = utils.create_mask(core_list_vhost_user)
+        self.core_list_virtio_user = core_list[self.nb_cores+1:self.nb_cores*2+2]
         self.core_mask_virtio_user = utils.create_mask(core_list_virtio_user)
 
     def send_and_verify(self):
@@ -133,17 +133,19 @@ class TestVirtioUserForContainer(TestCase):
             results_row.append(throughput)
             self.result_table_add(results_row)
 
+    @property
+    def check_2M_env(self):
+        hugepage_size = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if hugepage_size == '2048' else False
+
     def launch_testpmd_as_vhost(self):
         """
         start testpmd as vhost
         """
-        command_line_client = self.dut.target + '/app/testpmd ' + \
-                              '-c %s -n %d --socket-mem 1024,1024 --file-prefix=vhost ' + \
-                              '--vdev "net_vhost0,iface=vhost-net,queues=%d,client=0" ' + \
-                              '-- -i --nb-cores=%d'
-        command_line_client = command_line_client % (self.core_mask_vhost_user,
-                                        self.mem_channels, self.queue_number,
-                                        self.nb_cores)
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', vdevs=["net_vhost0,iface=vhost-net,queues=%d,client=0" % self.queue_number])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_client = self.dut.target + '/app/testpmd ' + eal_param + ' -- -i --nb-cores=%d' % self.nb_cores
         self.vhost_user.send_expect(command_line_client, 'testpmd> ', 30)
         self.vhost_user.send_expect('start', 'testpmd> ', 30)
 
@@ -151,10 +153,18 @@ class TestVirtioUserForContainer(TestCase):
         """
         start testpmd as virtio
         """
-        command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
+        if self.check_2M_env:
+            command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
                             '-v /mnt/huge:/dev/hugepages ' + \
                             '-v %s:%s %s .%s/%s/app/testpmd -c %s -n %d ' + \
-                            '-m 1024 --no-pci --file-prefix=container ' + \
+                            '-m 1024 --no-pci --file-prefix=container --single-file-segments ' + \
+                            '--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d ' + \
+                            '-- -i --rxq=%d --txq=%d --nb-cores=%d'
+        else:
+            command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
+                            '-v /mnt/huge:/dev/hugepages ' + \
+                            '-v %s:%s %s .%s/%s/app/testpmd -c %s -n %d ' + \
+                            '-m 1024 --no-pci --file-prefix=container --single-file-segments ' + \
                             '--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d ' + \
                             '-- -i --rxq=%d --txq=%d --nb-cores=%d'
         command_line_user = command_line_user % (self.container_base_dir,
