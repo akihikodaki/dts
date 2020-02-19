@@ -191,7 +191,7 @@ class TestUnitTestsEal(TestCase):
         Run hash readwrite perf autotest.
         """
 
-        eal_params = self.dut.create_eal_parameters()
+        eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
         self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_readwrite_perf_autotest",
