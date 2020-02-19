@@ -298,7 +298,7 @@ class TestVxlanSample(TestCase):
             self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
             try:
-                payload = str(pkts[0][UDP]['VXLAN'][UDP].payload)
+                payload = pkts[0][UDP]['VXLAN'][UDP].payload
                 for i in range(18):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
@@ -333,7 +333,7 @@ class TestVxlanSample(TestCase):
                         "Packet not de-encapsulated")
 
             try:
-                payload = str(pkts[0][UDP].payload)
+                payload = pkts[0][UDP].payload
                 for i in range(18):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
@@ -368,7 +368,7 @@ class TestVxlanSample(TestCase):
             self.verify(pkts[0].haslayer('VXLAN') == 1,
                         "Packet not encapsulated")
             try:
-                payload = str(pkts[0][UDP]['VXLAN'][UDP].payload)
+                payload = pkts[0][UDP]['VXLAN'][UDP].payload
                 for i in range(18):
                     self.verify(ord(payload[i]) == 88, "Check udp data failed")
             except:
@@ -457,14 +457,14 @@ class TestVxlanSample(TestCase):
                 inner = pkt['VXLAN']
                 inner_ip_chksum = inner[IP].chksum
                 del inner.chksum
-                inner[IP] = inner[IP].__class__(str(inner[IP]))
+                inner[IP] = inner[IP].__class__(inner[IP])
                 inner_ip_chksum_ref = inner[IP].chksum
                 self.logger.info("inner ip checksum reference: %x" % inner_ip_chksum_ref)
                 self.logger.info("inner ip checksum: %x" % inner_ip_chksum)
                 self.verify(inner_ip_chksum == inner_ip_chksum_ref, "inner ip checksum error")
                 inner_l4_chksum = inner[params['inner_l4_type']].chksum
                 del inner[params['inner_l4_type']].chksum
-                inner[params['inner_l4_type']] = inner[params['inner_l4_type']].__class__(str(inner[params['inner_l4_type']]))
+                inner[params['inner_l4_type']] = inner[params['inner_l4_type']].__class__(inner[params['inner_l4_type']])
                 inner_l4_chksum_ref =  inner[params['inner_l4_type']].chksum
                 self.logger.info("inner l4 checksum reference: %x" % inner_l4_chksum_ref)
                 self.logger.info("inner l4 checksum: %x" % inner_l4_chksum)
@@ -475,7 +475,7 @@ class TestVxlanSample(TestCase):
                 self.verify(pkt.haslayer('VXLAN') == 1,
                             "Packet not encapsulated")
                 try:
-                    payload = str(pkt[UDP]['VXLAN'][TCP].payload)
+                    payload = pkt[UDP]['VXLAN'][TCP].payload
                     self.verify(len(payload) <= self.def_mss,
                                 "TCP payload oversized")
                     length += len(payload)
