@@ -71,6 +71,7 @@ class TestVirtioSingleCorePerf(TestCase):
         set_up_all in debug mode.
         """
 
+        self.dut.send_expect('rm vhost-net*', '# ')
         # test parameters include: frames size, descriptor numbers
         self.test_parameters = self.get_suite_cfg()['test_parameters']
 
@@ -201,7 +202,7 @@ class TestVirtioSingleCorePerf(TestCase):
             self.dut_ports[0])
         tx_port = self.tester.get_local_port(
             self.dut_ports[0])
-        for port in xrange(2):
+        for port in range(2):
             destination_mac = self.dut.get_mac_address(
                 self.dut_ports[(port) % self.number_of_ports])
             pkt = Packet(pkt_type='IP_RAW', pkt_len=frame_size)
@@ -235,7 +236,7 @@ class TestVirtioSingleCorePerf(TestCase):
             eal_params = self.dut.create_eal_parameters(cores=self.core_list_host,
                             ports=[0], prefix='vhost')
         command_line_client = self.target + "/app/testpmd %s " + \
-                        "--socket-mem 1024,1024 --legacy-mem "  \
+                        "--socket-mem 1024,1024 "  \
                         "--vdev 'net_vhost0,iface=vhost-net,queues=1' " + \
                         "-- -i --nb-cores=%d  --txd=%d --rxd=%d"
         command_line_client = command_line_client % (eal_params, len(self.core_list_host)-1,
