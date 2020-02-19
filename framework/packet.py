@@ -656,7 +656,7 @@ class Packet(object):
         pcap_file = 'scapy_{}.pcap'.format(tx_port) + time_stamp
         self.save_pcapfile(crb, pcap_file)
         scapy_cmd = 'scapy_{}.cmd'.format(tx_port) + time_stamp
-        cmd_str = 'from scapy.all import *\np=rdpcap("%s")\nprint("packet ready for sending...")\nfor i in p:\n\tprint(i.command())\nsendp(p, iface="%s", count=%d, loop=%d, inter=%0.3f)' % (
+        cmd_str = 'from scapy.all import *\np=rdpcap("%s")\nprint("packet ready for sending...")\nfor i in p:\n\tprint(i.command())\nsendp(p, iface="%s", count=%d, loop=%d, inter=%0.3f,  verboase=False)' % (
             crb.tmp_file + pcap_file, tx_port, count, loop, inter)
         # write send cmd file to local tmp directory then copy to remote tester tmp folder
         with open(TMP_PATH + scapy_cmd, 'w') as f:
