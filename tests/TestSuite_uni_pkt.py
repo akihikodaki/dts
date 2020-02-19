@@ -121,11 +121,14 @@ class TestUniPacket(TestCase):
             else:
                 raise VerifyFailure("Failed to detect L2 %s" % l2_type)
 
+
     def test_IPv4_L4(self):
         """
         checked that whether L3 and L4 packet can be normally detected.
         """
-        if "fortville" in self.nic or "fortpark_TLV" in self.nic or "carlsville" in self.nic or "columbiaville" in self.nic:
+        if "fortville" in self.nic or "fortpark_TLV" in self.nic or \
+           "carlsville" in self.nic or "columbiaville" in self.nic or \
+           "x722" in self.nic:
             outerL4Type = "L4_NONFRAG"
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN"]
         elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
@@ -143,7 +146,9 @@ class TestUniPacket(TestCase):
         }
 
         # delete the unsupported packet based on nic type
-        if "fortville" in self.nic or "fortpark_TLV" in self.nic or "carlsville" in self.nic or "columbiaville" in self.nic:
+        if "fortville" in self.nic or "fortpark_TLV" in self.nic or \
+           "carlsville" in self.nic or "columbiaville" in self.nic or \
+           "x722" in self.nic:
             pktType.pop("MAC_IPihl_PKT")
             pktType.pop("MAC_IPihl_SCTP_PKT")
         elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
@@ -156,7 +161,9 @@ class TestUniPacket(TestCase):
         """
         checked that whether IPv6 and L4 packet can be normally detected.
         """
-        if "fortville" in self.nic or "fortpark_TLV" in self.nic or "carlsville" in self.nic or "columbiaville" in self.nic:
+        if "fortville" in self.nic or "fortpark_TLV" in self.nic or \
+           "carlsville" in self.nic or "columbiaville" in self.nic or \
+           "x722" in self.nic:
             outerL4Type = "L4_NONFRAG"
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN"]
         elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
@@ -172,7 +179,9 @@ class TestUniPacket(TestCase):
         }
 
         # delete the unsupported packet based on nic type
-        if "fortville" in self.nic or "fortpark_TLV" in self.nic or "carlsville" in self.nic or "columbiaville" in self.nic:
+        if "fortville" in self.nic or "fortpark_TLV" in self.nic or \
+           "carlsville" in self.nic or "columbiaville" in self.nic or \
+           "x722" in self.nic:
             pktType.pop("MAC_IPv6FRAG_PKT_N")
         elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
             pktType.pop("MAC_IPv6FRAG_PKT_F")
