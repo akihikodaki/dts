@@ -108,11 +108,13 @@ Test Case1: NTB test with file-trans fwd mode using igb_uio
 
     ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
+    >start
 
 3. Launch ntb_fwd sample on Machine2::
 
     ./examples/ntb/build/ntb_fwd -l 28-32 -n 6 -- -i --buf-size=65407
     >set fwd file-trans
+    >start
 
 4. Send file from Machine1::
 
@@ -173,7 +175,7 @@ Test Case3: NTB test with rxonly/txonly fwd mode using igb_uio
 4. Check throughput with log info on two machines.
 
 Test Case4: NTB test with rxonly/txonly fwd mode using vfio-pci
-===============================================================
+==============================================================
 
 1. Insmod kernel module and bind Non-Transparent Bridge to vfio-pci driver on two host machines separately::
 
@@ -224,7 +226,7 @@ Test flow: TG <-> NIC1 <-> NTB1 <-> NTB2 <-> NIC2 <-> TG
     >start
     >show port stats
 
-4. Check throughput with log info on two machines.
+4. Send packets (dest mac= nic mac address) with TG and check throughput with log info on two machines.
 
 Test Case6: NTB test with io fwd mode using vfio-pci
 ====================================================
@@ -254,4 +256,4 @@ Test flow: TG <-> NIC1 <-> NTB1 <-> NTB2 <-> NIC2 <-> TG
     >start
     >show port stats
 
-4. Check throughput with log info on two machines.
+4. Send packets (dest mac= nic mac address) with TG and check throughput with log info on two machines.
