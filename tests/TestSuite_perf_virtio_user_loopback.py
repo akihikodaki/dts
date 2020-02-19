@@ -107,7 +107,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_host,
                         no_pci=True, prefix='vhost')
         command_line_client = self.dut.target + "/app/testpmd %s " + \
-                              "--socket-mem %s --legacy-mem  --vdev " + \
+                              "--socket-mem %s --vdev " + \
                               "'net_vhost0,iface=vhost-net,queues=%d' -- -i --nb-cores=%d " + \
                               "--rxq=%d --txq=%d --txd=%d --rxd=%d"
         command_line_client = command_line_client % (
@@ -124,7 +124,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_user,
                         no_pci=True, prefix='virtio')
         command_line_user = self.dut.target + "/app/testpmd %s " + \
-                            " --socket-mem %s --legacy-mem " + \
+                            " --socket-mem %s " + \
                             "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s " + \
                             "-- -i %s --rss-ip --nb-cores=%d --rxq=%d --txq=%d --txd=%d --rxd=%d"
         command_line_user = command_line_user % (
