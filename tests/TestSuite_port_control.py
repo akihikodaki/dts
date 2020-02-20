@@ -156,7 +156,7 @@ class TestPortControl(TestCase):
         vf_pci = re.findall(r"(\d+.\d+.\d+.\d+)", drive_info.split("kernel")[1])
         terminal.send_expect("ifconfig %s hw ether %s" % (vf_if[1], self.vf_mac), "#")
         terminal.send_expect("ifconfig %s up" % vf_if[1], "#")
-        terminal.send_expect("./usertools/dpdk-devbind.py -b %s %s" % (self.pf_default_driver, vf_pci[1]), "#")
+        terminal.send_expect("./usertools/dpdk-devbind.py -b igb_uio %s" % vf_pci[1], "#")
         cmd = "./%s/app/testpmd -n 1 -w %s -- -i" % (self.target, vf_pci[1])
         terminal.send_expect(cmd, "testpmd>", 10)
 
