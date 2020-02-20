@@ -689,7 +689,7 @@ class Tester(Crb):
         for txport, rxport in portList:
             txIntf = self.get_interface(txport)
             rxIntf = self.get_interface(rxport)
-            print(GREEN("Preparing transmit packets, please wait few minutes..."))
+            self.logger.info(GREEN("Preparing transmit packets, please wait few minutes..."))
             pkt = pkt_c()
             pkt.generate_random_pkts(pktnum=pktnum, random_type=random_type, ip_increase=True, random_payload=True,
                                      options={"layers_config": params})
@@ -712,7 +712,7 @@ class Tester(Crb):
             for i in filenames:
                 flag = self.send_expect('ps -ef |grep %s|grep -v grep' % i, expected='# ')
                 if flag:
-                    print('wait for the completion of sending pkts...')
+                    self.logger.info('wait for the completion of sending pkts...')
                     sleep(1.5)
                     continue
         prev_id = -1
@@ -721,13 +721,13 @@ class Tester(Crb):
             recv_pkts = p.pktgen.pkts
             # only report when received number not matched
             if len(tx_pkts[txport].pktgen.pkts) > len(recv_pkts):
-                print(("Pkt number not matched,%d sent and %d received\n" % (
+                self.logger.info(("Pkt number not matched,%d sent and %d received\n" % (
                 len(tx_pkts[txport].pktgen.pkts), len(recv_pkts))))
                 if allow_miss is False:
                     return False
 
             # check each received packet content
-            print(GREEN("Comparing sniffed packets, please wait few minutes..."))
+            self.logger.info(GREEN("Comparing sniffed packets, please wait few minutes..."))
             for idx in range(len(recv_pkts)):
                 try:
                     l3_type = p.strip_element_layer2('type', p_index=idx)
@@ -745,16 +745,16 @@ class Tester(Crb):
 
                 if seq_check:
                     if t_idx <= prev_id:
-                        print("Packet %d sequence not correct" % t_idx)
+                        self.logger.info("Packet %d sequence not correct" % t_idx)
                         return False
                     else:
                         prev_id = t_idx
 
                 if compare_f(tx_pkts[txport].pktgen.pkts[t_idx], recv_pkts[idx], "L4") is False:
-                    print("Pkt received index %d not match original " \
+                    self.logger.warning("Pkt received index %d not match original " \
                           "index %d" % (idx, t_idx))
-                    print("Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[t_idx], "L4"))
-                    print("Recv: %s" % strip_f(recv_pkts[idx], "L4"))
+                    self.logger.info("Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[t_idx], "L4"))
+                    self.logger.info("Recv: %s" % strip_f(recv_pkts[idx], "L4"))
                     return False
 
         return True
