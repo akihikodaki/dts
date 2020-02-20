@@ -2625,5 +2625,20 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+    "vf_vlan_rx": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
 }
