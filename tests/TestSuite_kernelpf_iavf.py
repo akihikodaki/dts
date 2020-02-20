@@ -483,6 +483,8 @@ class TestKernelpfIavf(TestCase):
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
         self.vm_testpmd.execute_cmd("port stop all")
         self.vm_testpmd.execute_cmd("tx_vlan set 0 %s" % random_vlan)
+        self.vm_testpmd.execute_cmd("vlan set filter on 0")
+        self.vm_testpmd.execute_cmd("rx_vlan add %s 0" % random_vlan)
         self.vm_testpmd.execute_cmd("port start all")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
