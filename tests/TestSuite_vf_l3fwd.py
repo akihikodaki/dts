@@ -107,27 +107,30 @@ class TestVfL3fwd(TestCase):
         """
         self.setup_vf_env_flag = 0
 
-    def setup_vf_env(self, host_driver='default'):
+    def setup_vf_env(self, host_driver='default', vf_driver='vfio-pci'):
         """
         require enough PF ports,using kernel or dpdk driver, create 1 VF from each PF.
         """
+        if host_driver != "default" and host_driver != "igb_uio":
+            self.logger.error("only support kernel driver and igb_uio!")
         self.used_dut_port = [port for port in self.dut_ports]
         self.sriov_vfs_port = []
         for i in valports:
-            if host_driver != '':
-                self.dut.generate_sriov_vfs_by_port(self.used_dut_port[i], 1)
+            if host_driver == 'default':
+                h_driver  = self.dut.ports_info[i]['port'].default_driver
+                self.dut.generate_sriov_vfs_by_port(self.used_dut_port[i], 1, driver=h_driver)
             else:
-                self.dut.generate_sriov_vfs_by_port(self.used_dut_port[i], 1, host_driver)
+                self.dut.generate_sriov_vfs_by_port(self.used_dut_port[i], 1, driver=host_driver)
             sriov_vfs_port = self.dut.ports_info[self.used_dut_port[i]]['vfs_port']
             self.sriov_vfs_port.append(sriov_vfs_port)
         # bind vf to vf driver
         try:
             for i in valports:
                 for port in self.sriov_vfs_port[i]:
-                    port.bind_driver(self.vf_driver)
+                    port.bind_driver(vf_driver)
             time.sleep(1)
             # set vf mac address.
-            if host_driver == '':
+            if host_driver == 'default':
                 for i in valports:
                     pf_intf = self.dut.ports_info[i]['port'].get_interface_name()
                     self.dut.send_expect("ip link set %s vf 0 mac %s" % (pf_intf, self.vfs_mac[i]), "#")
@@ -154,14 +157,10 @@ class TestVfL3fwd(TestCase):
             self.host_testpmd.execute_cmd('quit', '# ')
             self.host_testpmd = None
         for i in valports:
-            if getattr(self, '%d' % self.used_dut_port[i], None) is not None:
+            if 'vfs_port' in self.dut.ports_info[self.used_dut_port[i]].keys():
                 self.dut.destroy_sriov_vfs_by_port(self.used_dut_port[i])
                 port = self.dut.ports_info[self.used_dut_port[i]]['port']
-                port.bind_driver()
                 self.used_dut_port[i] = None
-        for port_id in self.dut_ports:
-            port = self.dut.ports_info[port_id]['port']
-            port.bind_driver()
         self.setup_vf_env_flag = 0
 
     def flows(self):
@@ -260,11 +259,11 @@ class TestVfL3fwd(TestCase):
         self.dut.close_session(l3fwd_session)
         self.result_table_print()
 
-    def measure_vf_performance(self, host_driver='default'):
+    def measure_vf_performance(self, host_driver='default', vf_driver='vfio-pci'):
         """
         start l3fwd and run the perf test
         """
-        self.setup_vf_env(host_driver)
+        self.setup_vf_env(host_driver, vf_driver)
         eal_param = ""
         for i in valports:
             eal_param += " -w " + self.sriov_vfs_port[i][0].pci
@@ -281,17 +280,54 @@ class TestVfL3fwd(TestCase):
             for j in range(self.queue):
                 queue_config += "({0}, {1}, {2})," .format(i, j, core_list[m])
                 m += 1
-        cmdline = "./examples/l3fwd/build/l3fwd -c {0} -n 4 {1} -- -p {2} --config '{3}' ". \
+        cmdline = "./examples/l3fwd/build/l3fwd -c {0} -n 4 {1} -- -p {2} --config '{3}' --parse-ptype". \
             format(core_mask, eal_param, port_mask, queue_config)
         self.perf_test(cmdline)
 
-    def test_perf_kernel_pf_dpdk_vf_perf_host_only(self):
+    def get_kernel_pf_vf_driver(self):
+        if self.vf_driver == "igb_uio" or self.vf_driver == "vfio-pci":
+            vf_driver = self.vf_driver
+        elif self.drivername == "igb_uio" or self.drivername == "vfio-pci":
+            vf_driver = self.drivername
+        else:
+            vf_driver = "vfio-pci"
+        return vf_driver
 
-        self.measure_vf_performance(host_driver='')
+    def test_perf_kernel_pf_dpdk_vf_perf_host_only(self):
+        self.measure_vf_performance(host_driver='default', vf_driver=self.get_kernel_pf_vf_driver())
 
     def test_perf_dpdk_pf_dpdk_vf_perf_host_only(self):
+        for idx in self.dut_ports:
+            self.verify(self.dut.ports_info[idx]['port'].default_driver != 'ice', 'Columbiaville do not support generate vfs from igb_uio')
 
-        self.measure_vf_performance(host_driver=self.vf_driver)
+        if self.drivername != "igb_uio":
+            self.logger.warning("Use igb_uio as host driver for testing instead of %s" % self.drivername)
+
+        self.dut.setup_modules_linux(self.target, 'igb_uio', '')
+        self.measure_vf_performance(host_driver='igb_uio', vf_driver='igb_uio')
+
+    def test_perf_kernel_pf_dpdk_iavf_perf_host_only(self):
+        """
+        Need to change dpdk code to test FVL iavf.
+        CVL iavf testing is same as FVL VF, so use dpdk_pf_dpdk_vf_perf_host_only to test CVL iavf
+        """
+        for idx in self.dut_ports:
+            self.verify(self.dut.ports_info[idx]['port'].default_driver == 'i40e', 'The case is only designed for Fortville')
+
+        self.build_iavf()
+        self.dut.build_dpdk_apps("./examples/l3fwd")
+        self.measure_vf_performance(host_driver='default', vf_driver=self.get_kernel_pf_vf_driver())
+
+    def build_iavf(self):
+        self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
+        self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
+        self.dut.build_install_dpdk(self.target)
+
+    def restore_dpdk(self):
+        if self.running_case == "test_perf_kernel_pf_dpdk_iavf_perf_host_only":
+            self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) }/d' drivers/net/iavf/iavf_ethdev.c", "# ")
+            self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
+            self.dut.build_install_dpdk(self.target)
 
     def set_fields(self):
         """
@@ -301,11 +337,8 @@ class TestVfL3fwd(TestCase):
         return fields_config
 
     def tear_down(self):
-
-        if self.setup_vf_env_flag == 1:
-            self.destroy_vf_env()
-        for port_id in self.dut_ports:
-            self.dut.destroy_sriov_vfs_by_port(port_id)
+        self.destroy_vf_env()
+        self.restore_dpdk()
 
     def tear_down_all(self):
-        pass
+        self.dut.bind_interfaces_linux(self.drivername)
