@@ -197,20 +197,7 @@ class TestNicSingleCorePerf(TestCase):
         self.verify(self.nb_ports >= 1, "At least 1 port is required to test")
         self.perf_test(self.nb_ports)
         self.handle_results()
-
-        # check the gap between expected throughput and actual throughput
-        try:
-            for frame_size in list(self.test_parameters.keys()):
-                for nb_desc in self.test_parameters[frame_size]:
-                    cur_gap = (self.expected_throughput[frame_size][nb_desc] - self.throughput[frame_size][nb_desc])
-                    self.verify(cur_gap < self.gap, "Beyond Gap, Possible regression")
-        except Exception as e:
-            self.logger.error(e)
-            self.handle_expected()
-            raise VerifyFailure(
-                "Possible regression, Check your configuration please")
-        else:
-            self.handle_expected()
+        self.handle_expected()
 
     def handle_expected(self):
         """
@@ -336,27 +323,32 @@ class TestNicSingleCorePerf(TestCase):
         if self.save_result_flag is True
         '''
         json_obj = dict()
-        json_obj['nic_type'] = self.nic
-        json_obj['results'] = list()
+        case_name = self.running_case
+        json_obj[case_name] = list()
+        status_result = []
         for frame_size in list(self.test_parameters.keys()):
             for nb_desc in self.test_parameters[frame_size]:
                 row_in = self.test_result[frame_size][nb_desc]
-                row_dict = dict()
-                row_dict['parameters'] = dict()
-                row_dict['parameters']['frame_size'] = dict(
-                    value=row_in['Frame Size'], unit='bytes')
-                row_dict['parameters']['txd/rxd'] = dict(
-                    value=row_in['TXD/RXD'], unit='descriptors')
-                delta = (float(row_in['Throughput'].split()[0]) -
-                         float(row_in['Expected Throughput'].split()[0]))
-                if delta >= -self.gap:
-                    result = 'PASS'
+                row_dict0 = dict()
+                row_dict0['performance'] = list()
+                row_dict0['parameters'] = list()
+                result_throughput = float(row_in['Throughput'].split()[0])
+                expected_throughput = float(row_in['Expected Throughput'].split()[0])
+                # delta value and accepted tolerance in percentage
+                delta = result_throughput - expected_throughput
+                if delta > -self.gap:
+                    row_dict0['status'] = 'PASS'
                 else:
-                    result = 'FAIL'
-                row_dict['throughput'] = dict(
-                    delta=delta, unit=row_in['Throughput'].split()[1],
-                    result=result)
-                json_obj['results'].append(row_dict)
+                    row_dict0['status'] = 'FAIL'
+                row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
+                row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
+                row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
+                row_dict0['performance'].append(row_dict1)
+                row_dict0['parameters'].append(row_dict2)
+                row_dict0['parameters'].append(row_dict3)
+                json_obj[case_name].append(row_dict0)
+                status_result.append(row_dict0['status'])
+        self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
         with open(os.path.join(rst.path2Result,
                                '{0:s}_single_core_perf.json'.format(
                                    self.nic)), 'w') as fp:
