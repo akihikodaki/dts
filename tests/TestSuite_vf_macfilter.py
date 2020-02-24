@@ -192,7 +192,10 @@ class TestVfMacFilter(TestCase):
         What's more, send packets with a wrong MAC address to the VF, check
         the VF will not RX packets.
         """
-        self.verify(self.nic.startswith('fortville') == True, "NIC is [%s], skip this case" %self.nic)
+        if 'niantic' == self.nic: 
+            self.verify(self.nic.startswith('niantic') == True, "NIC is [%s], skip this case" %self.nic)
+        else:
+            self.verify(self.nic.startswith('fortville') == True, "NIC is [%s], skip this case" %self.nic)
         self.setup_2pf_2vf_1vm_env(False,driver='igb_uio')
         self.send_packet_and_verify()
 
@@ -245,12 +248,23 @@ class TestVfMacFilter(TestCase):
         print("\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all'))
         self.verify(result2 != False, "VF0 failed to forward packets to VF1")
 
-        print("\nThirdly, negative test, send packets to a wrong MAC, expected result is RX packets=0\n")
-        dst_mac = self.vf0_wrongmac
+        print ("\Thirdly, remove the added mac address then send packets to the deleted MAC, expected result is RX packets=0\n")
+        ret = self.vm0_testpmd.execute_cmd('mac_addr remove 0 %s' %self.vf0_setmac)
+        # check the operation is supported or not.
+        print (ret)
+
+        dst_mac = self.vf0_setmac
         pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
         result3 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
         print("\nshow port stats in testpmd for double check: \n", self.vm0_testpmd.execute_cmd('show port stats all'))
         self.verify(result3 != True, "VF0 failed to forward packets to VF1")
+
+        print ("\nFourthly, negative test, send packets to a wrong MAC, expected result is RX packets=0\n")
+        dst_mac = self.vf0_wrongmac
+        pkt_param=[("ether", {'dst': dst_mac, 'src': src_mac})]
+        result4 = self.tester.check_random_pkts(tgen_ports, pktnum=100, allow_miss=False, params=pkt_param)
+        print ("\nshow port stats in testpmd for double check: %s\n" % self.vm0_testpmd.execute_cmd('show port stats all'))
+        self.verify(result4 != True, "VF0 failed to forward packets to VF1")
 
  
     def tear_down(self):
