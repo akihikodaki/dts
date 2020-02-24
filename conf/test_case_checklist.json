@@ -2641,5 +2641,40 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+    "nic_multi_queues_interrupt_VF_vfio_pci": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+		"sagepond",
+		"sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
+    "nic_multi_queues_interrupt_VM_vfio_pci": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "sagepond",
+                "sageville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
     ]
+
 }
