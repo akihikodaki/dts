@@ -42,7 +42,6 @@ from test_case import TestCase
 from packet import Packet
 from settings import UPDATE_EXPECTED, load_global_setting
 from copy import deepcopy
-from prettytable import PrettyTable
 
 
 class TestVirtioSingleCorePerf(TestCase):
@@ -63,6 +62,7 @@ class TestVirtioSingleCorePerf(TestCase):
         self.save_result_flag = True
         socket_num = len(set([int(core['socket']) for core in self.dut.cores]))
         self.socket_mem = ','.join(['1024']*socket_num)
+        self.json_obj = dict()
 
     def set_up(self):
         """
@@ -332,12 +332,11 @@ class TestVirtioSingleCorePerf(TestCase):
     def save_result(self, data):
         '''
         Saves the test results as a separated file named with
-        self.nic+_single_core_perf.json in output folder
+        self.nic+_perf_virtio_user_pvp.json in output folder
         if self.save_result_flag is True
         '''
-        json_obj = dict()
         case_name = self.running_case
-        json_obj[case_name] = list()
+        self.json_obj[case_name] = list()
         status_result = []
         for frame_size in self.test_parameters.keys():
             for nb_desc in self.test_parameters[frame_size]:
@@ -366,12 +365,12 @@ class TestVirtioSingleCorePerf(TestCase):
                 row_dict0['performance'].append(row_dict1)
                 row_dict0['parameters'].append(row_dict2)
                 row_dict0['parameters'].append(row_dict3)
-                json_obj[case_name].append(row_dict0)
+                self.json_obj[case_name].append(row_dict0)
                 status_result.append(row_dict0['status'])
         with open(os.path.join(rst.path2Result,
-                               '{0:s}_single_core_perf.json'.format(
-                                   self.nic)), 'w') as fp:
-            json.dump(json_obj, fp)
+                               '{0:s}_{1}.json'.format(
+                                   self.nic, self.suite_name)), 'w') as fp:
+            json.dump(self.json_obj, fp)
         self.verify("Fail" not in status_result, "Exceeded Gap")
 
     def tear_down(self):
