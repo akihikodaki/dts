@@ -2257,7 +2257,9 @@
                 "fortpark_TLV",
                 "cavium_a063",
                 "fortpark_TLV_vf",
-                "cavium_a064"
+                "cavium_a064",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
@@ -2603,22 +2605,6 @@
             "NIC": [
                 "cavium_a063",
                 "cavium_a064"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "the nic not support this case"
-        }
-    ],
-    "retrieve_reg": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "columbiaville_25g",
-                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
