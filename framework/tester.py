@@ -366,6 +366,7 @@ class Tester(Crb):
         ''' packet generator port setting 
         Currently, trex run on tester node
         '''
+        new_ports_info = []
         pktgen_ports_info = self.pktgen.get_ports()
         for pktgen_port_info in pktgen_ports_info:
             pktgen_port_type = pktgen_port_info['type']
@@ -383,6 +384,22 @@ class Tester(Crb):
                 port_info['type'] = pktgen_port_type
                 port_info['mac'] = pktgen_mac
                 break
+            # Since tester port scanning work flow change, non-functional port 
+            # mapping config will be ignored. Add tester port mapping if no
+            # port in ports info 
+            else:
+                addr_array = pktgen_pci.split(':')
+                port = GetNicObj(self, addr_array[0], addr_array[1], addr_array[2])
+                new_ports_info.append({
+                    'port': port,
+                    'intf': pktgen_port_name,
+                    'type': pktgen_port_type,
+                    'pci': pktgen_pci,
+                    'mac': pktgen_mac,
+                    'ipv4': None,
+                    'ipv6': None })
+        if new_ports_info:
+            self.ports_info = self.ports_info + new_ports_info
 
     def scan_ports(self):
         """
