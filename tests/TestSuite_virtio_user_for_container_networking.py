@@ -164,7 +164,7 @@ class TestVirtioUserForContainer(TestCase):
             command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
                             '-v /mnt/huge:/dev/hugepages ' + \
                             '-v %s:%s %s .%s/%s/app/testpmd -c %s -n %d ' + \
-                            '-m 1024 --no-pci --file-prefix=container --single-file-segments ' + \
+                            '-m 1024 --no-pci --file-prefix=container ' + \
                             '--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d ' + \
                             '-- -i --rxq=%d --txq=%d --nb-cores=%d'
         command_line_user = command_line_user % (self.container_base_dir,
