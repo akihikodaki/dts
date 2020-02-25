@@ -44,6 +44,8 @@ from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE, PROTOCOL_PACKET_SIZE
 from exception import VerifyFailure
+from qemu_kvm import QEMUKvm
+from settings import get_nic_name
 
 #
 #
@@ -51,6 +53,7 @@ from exception import VerifyFailure
 #
 
 
+VM_CORES_MASK = 'all'
 class TestShutdownApi(TestCase):
 
     #
@@ -58,7 +61,7 @@ class TestShutdownApi(TestCase):
     #
     # Test cases.
     #
-
+    supported_vf_driver = ['pci-stub', 'vfio-pci']
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -73,6 +76,7 @@ class TestShutdownApi(TestCase):
                 self.tester.get_interface(self.tester.get_local_port(port)), 5000), "# ")
 
         self.pmdout = PmdOutput(self.dut)
+        self.vm_env_done = False
 
     def get_stats(self, portid):
         """
@@ -186,6 +190,130 @@ class TestShutdownApi(TestCase):
         Run before each test case.
         """
         pass
+
+    def check_linkspeed_config(self, configs):
+        ret_val = False
+        if (configs == None):
+            self.verify(False, "Link speed config error.")
+            ret_val = False
+        elif (len(configs) < 1):
+            self.verify(False, "Link speed config error.")
+            ret_val = False
+        elif len(configs) < 2:
+            print("\nOnly one link speed, can't be changed.\n")
+            ret_val = False
+        else:
+            ret_val = True
+
+        return ret_val
+
+    def check_vf_link_status(self):
+        self.dut_testpmd.start_testpmd("Default", "--port-topology=chained")
+        self.vm0_testpmd.start_testpmd(VM_CORES_MASK, '--port-topology=chained')
+        for i in range(10):
+            out = self.vm0_testpmd.execute_cmd('show port info 0')
+            print(out)
+            if 'Link status: down' in out:
+                self.dut_testpmd.execute_cmd('port stop all')
+                self.dut_testpmd.execute_cmd('port start all')
+                time.sleep(2)
+            else :
+                break
+        self.verify("Link status: up" in out, "VF link down!!!")
+
+    def bind_nic_driver(self, ports, driver=""):
+        if driver == "igb_uio":
+            for port in ports:
+                netdev = self.dut.ports_info[port]['port']
+                driver = netdev.get_nic_driver()
+                if driver != 'igb_uio':
+                    netdev.bind_driver(driver='igb_uio')
+        else:
+            for port in ports:
+                netdev = self.dut.ports_info[port]['port']
+                driver_now = netdev.get_nic_driver()
+                if driver == "":
+                    driver = netdev.default_driver
+                if driver != driver_now:
+                    netdev.bind_driver(driver=driver)
+
+    def setup_vm_env(self, driver='default'):
+        """
+        Create testing environment with 1VF generated from 1PF
+        """
+        if self.vm_env_done:
+            return
+
+        # initialize vm
+        self.dut_ports = self.dut.get_ports(self.nic)
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
+        self.vm0 = None
+
+        # set vf assign method and vf driver
+        self.vf_driver = self.get_suite_cfg()['vf_driver']
+        if self.vf_driver is None:
+            self.vf_driver = 'pci-stub'
+        self.verify(self.vf_driver in self.supported_vf_driver, "Unspported vf driver")
+        if self.vf_driver == 'pci-stub':
+            self.vf_assign_method = 'pci-assign'
+        else:
+            self.vf_assign_method = 'vfio-pci'
+            self.dut.send_expect('modprobe vfio-pci', '#')
+
+        self.bind_nic_driver(self.dut_ports[:1], driver="igb_uio")
+        self.used_dut_port = self.dut_ports[0]
+        tester_port = self.tester.get_local_port(self.used_dut_port)
+        self.tester_intf = self.tester.get_interface(tester_port)
+
+        self.dut.generate_sriov_vfs_by_port(
+            self.used_dut_port, 2, driver=driver)
+        self.sriov_vfs_port = self.dut.ports_info[
+            self.used_dut_port]['vfs_port']
+        for port in self.sriov_vfs_port:
+            port.bind_driver(self.vf_driver)
+        time.sleep(1)
+        self.dut_testpmd = PmdOutput(self.dut)
+        self.dut_testpmd.start_testpmd(
+            "Default", "--rxq=4 --txq=4 --port-topology=chained")
+        self.dut_testpmd.execute_cmd("start")
+        time.sleep(5)
+
+        vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
+
+        # set up VM0 ENV
+        self.vm0 = QEMUKvm(self.dut, 'vm0', 'shutdown_api')
+        self.vm0.set_vm_device(driver=self.vf_assign_method, **vf0_prop)
+        try:
+            self.vm0_dut = self.vm0.start()
+            if self.vm0_dut is None:
+                raise Exception("Set up VM0 ENV failed!")
+        except Exception as e:
+            self.destroy_vm_env()
+            raise Exception(e)
+
+        self.vm0_dut_ports = self.vm0_dut.get_ports('any')
+        self.vm0_testpmd = PmdOutput(self.vm0_dut)
+
+        self.vm_env_done = True
+        self.dut_testpmd.quit()
+
+    def destroy_vm_env(self):
+        if not self.vm_env_done:
+            return
+        if getattr(self, 'vm0', None):
+            self.vm0_dut.kill_all()
+            self.vm0_testpmd = None
+            self.vm0_dut_ports = None
+            # destroy vm0
+            self.vm0.stop()
+            self.vm0 = None
+
+        if getattr(self, 'used_dut_port', None):
+            self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
+            port = self.dut.ports_info[self.used_dut_port]['port']
+            self.used_dut_port = None
+
+        self.vm_env_done = False
 
     def test_stop_restart(self):
         """
@@ -306,7 +434,6 @@ class TestShutdownApi(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
 
-
     def test_change_linkspeed(self):
         """
         Change Link Speed.
@@ -320,20 +447,21 @@ class TestShutdownApi(TestCase):
 
         out = self.tester.send_expect(
             "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(self.ports[0])), "# ")
-        if 'fortville_spirit' == self.nic:
-            result_scanner = r"([0-9]+)baseSR4/([A-Za-z]+)"
-        else:
-            result_scanner = r"([0-9]+)baseT/([A-Za-z]+)"
+
+        self.verify("Supports auto-negotiation: Yes" in out, "Auto-negotiation not support.")
+
+        result_scanner = r"([0-9]+)base\S*/([A-Za-z]+)"
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.findall(out)
         configs = m[:-int(len(m) / 2)]
+
+        if not self.check_linkspeed_config(configs):
+            return;
+
         for config in configs:
             print(config)
             if self.nic in ["ironpond"]:
                 if config[0] != '1000' or '10000':
-                    continue
-            elif self.nic in ["fortville_eagle"]:
-                if config[0] != '10000':
                     continue
             elif self.nic in ["sagepond"]:
                 if config[0] != '1000' and '10000':
@@ -341,10 +469,10 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("port stop all", "testpmd> ", 100)
             for port in self.ports:
                 self.dut.send_expect("port config %d speed %s duplex %s" % (port,
-                                                                            config[0], config[1].lower()), "testpmd> ")
+                            config[0], config[1].lower()), "testpmd> ")
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("port start all", "testpmd> ", 100)
-            time.sleep(5)  # sleep few seconds for link stable
+            time.sleep(8)  # sleep few seconds for link stable
 
             for port in self.ports:
                 out = self.tester.send_expect(
@@ -356,6 +484,61 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("start", "testpmd> ")
             self.check_forwarding()
             self.dut.send_expect("stop", "testpmd> ")
+
+    def test_change_linkspeed_vf(self):
+        """
+        Change Link Speed VF .
+        """
+        self.setup_vm_env()
+        self.check_vf_link_status()
+        out = self.tester.send_expect(
+            "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(self.ports[0])), "# ", 100)
+
+        self.verify("Supports auto-negotiation: Yes" in out, "Auto-negotiation not support.")
+
+        result_scanner = r"([0-9]+)base\S*/([A-Za-z]+)"
+        scanner = re.compile(result_scanner, re.DOTALL)
+        m = scanner.findall(out)
+        configs = m[:-int(len(m) / 2)]
+
+        if not self.check_linkspeed_config(configs):
+            return;
+
+        result_linkspeed_scanner = r"Link\s*speed:\s([0-9]+)\s*Mbps"
+        linkspeed_scanner = re.compile(result_linkspeed_scanner, re.DOTALL)
+        result_linktype_scanner = r"Link\s*duplex:\s*(\S*)\s*-\s*duplex"
+        linktype_scanner = re.compile(result_linktype_scanner, re.DOTALL)
+
+        for config in configs:
+            print(config)
+            if self.nic in ["ironpond"]:
+                if config[0] != '1000' or '10000':
+                    continue
+            elif self.nic in ["sagepond"]:
+                if config[0] != '1000' and '10000':
+                    continue
+            self.dut.send_expect("port stop all", "testpmd> ", 100)
+            for port in self.ports:
+                self.dut.send_expect("port config %d speed %s duplex %s" % (port,
+                                     config[0], config[1].lower()), "testpmd> ")
+            self.dut.send_expect("set fwd mac", "testpmd>")
+            self.dut.send_expect("port start all", "testpmd> ", 100)
+            time.sleep(8)  # sleep few seconds for link stable
+            # check changing VF link speed is supported or not.
+            out = self.vm0_testpmd.execute_cmd('show port info all')
+
+            linkspeed = linkspeed_scanner.findall(out)
+            linktype = linktype_scanner.findall(out)
+
+            self.verify(config[0] in linkspeed,
+                        "Wrong VF speed reported by the self.tester.")
+            self.verify(config[1].lower() == linktype[0].lower(),
+                        "Wrong VF link type reported by the self.tester.")
+        # quit vm
+        self.vm0_testpmd.quit()
+        self.dut_testpmd.quit()
+        time.sleep(3)
+        self.vm0_dut.kill_all()
 
     def test_enable_disablejumbo(self):
         """
@@ -582,3 +765,4 @@ class TestShutdownApi(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
+        self.destroy_vm_env()
