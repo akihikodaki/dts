@@ -57,7 +57,6 @@ class TestVirtioIdxInterrupt(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
                             == self.ports_socket])
-        self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pf_pci = self.dut.ports_info[0]['pci']
@@ -86,7 +85,6 @@ class TestVirtioIdxInterrupt(TestCase):
                     "There has not enough cores to test this case %s" %
                     self.running_case)
         self.core_list = self.dut.get_core_list(self.core_config)
-        self.core_mask = utils.create_mask(self.core_list)
 
     def start_vhost_testpmd(self):
         """
@@ -94,12 +92,11 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         # get the core mask depend on the nb_cores number
         self.get_core_mask()
-        command_line = self.dut.target + "/app/testpmd -c %s -n %d -w %s " + \
-                "--socket-mem 2048,2048 --legacy-mem --file-prefix=vhost " + \
-                "--vdev 'net_vhost,iface=%s/vhost-net,queues=%d' -- -i " + \
-                "--nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d"
-        command_line = command_line % (self.core_mask, self.mem_channels, self.pf_pci,
-                        self.base_dir, self.queues, self.nb_cores, self.queues, self.queues)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"--vdev 'net_vhost,iface=%s/vhost-net,queues=%d' -- -i " % (self.base_dir, self.queues)]
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pf_pci], vdevs=vdev)
+        para = " --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (self.nb_cores, self.queues, self.queues)
+        command_line = testcmd + eal_params + para
         self.vhost.send_expect(command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
