@@ -71,9 +71,9 @@ class TestVfL3fwd(TestCase):
         self.l3fwd_test_results = {'header': [], 'data': []}
         self.logger.info("Configure RX/TX descriptor to 2048, and re-build ./examples/l3fwd")
         self.dut.send_expect("sed -i -e 's/define RTE_TEST_RX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
+                             + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
         self.dut.send_expect("sed -i -e 's/define RTE_TEST_TX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/main.c", "#", 20)
+                             + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
         out = self.dut.build_dpdk_apps("./examples/l3fwd")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")

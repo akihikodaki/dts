@@ -350,12 +350,12 @@ class L3fwdBase(object):
             "sed -i -e 's/"
             "define RTE_TEST_RX_DESC_DEFAULT.*$/"
             "define RTE_TEST_RX_DESC_DEFAULT 2048/' "
-            "./examples/l3fwd/main.c"))
+            "./examples/l3fwd/l3fwd.h"))
         self.d_con((
             "sed -i -e 's/"
             "define RTE_TEST_TX_DESC_DEFAULT.*$/"
             "define RTE_TEST_TX_DESC_DEFAULT 2048/' "
-            "./examples/l3fwd/main.c"))
+            "./examples/l3fwd/l3fwd.h"))
         self.__l3fwd_em = self.__init_l3fwd(EM)
         self.__l3fwd_lpm = self.__init_l3fwd(LPM)
 
