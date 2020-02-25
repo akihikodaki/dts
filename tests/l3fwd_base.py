@@ -336,7 +336,7 @@ class L3fwdBase(object):
 
     def __preset_compilation(self):
         # Update config file and rebuild to get best perf on FVL
-        if self.nic in ["fortville_sprit", "fortville_eagle", "fortville_25g"]:
+        if self.nic in ["fortville_spirit", "fortville_eagle", "fortville_25g"]:
             self.d_con(
                 ("sed -i -e 's/"
                  "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/"
