@@ -2650,7 +2650,10 @@
             "NIC": [
                 "niantic",
 		"sagepond",
-		"sageville"
+		"sageville",
+		"fortville_eagle",
+		"fortville_25g",
+		"fortpark_TLV"
             ],
             "Target": [
                 "ALL"
@@ -2667,7 +2670,10 @@
             "NIC": [
                 "niantic",
                 "sagepond",
-                "sageville"
+                "sageville",
+		"fortville_eagle",
+		"fortville_25g",
+                "fortpark_TLV"
             ],
             "Target": [
                 "ALL"
