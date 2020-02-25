@@ -35,7 +35,7 @@ import os
 from settings import TIMEOUT, IXIA
 from ssh_connection import SSHConnection
 from logger import getLogger
-from config import PortConf, PORTCONF
+from config import PortConf, PORTCONF, PktgenConf
 
 """
 CRB (customer reference board) basic functions and handlers
@@ -60,6 +60,7 @@ class Crb(object):
         self.sessions = []
         self.stage = 'pre-init'
         self.name = name
+        self.trex_prefix = None
 
         self.logger = getLogger(name)
         self.session = SSHConnection(self.get_ip_address(), name,
@@ -466,10 +467,34 @@ class Crb(object):
             f.write(contents)
         self.session.copy_file_to(fileName, password=self.get_password())
 
+    def check_trex_process_existed(self):
+        """
+        if the tester and dut on same server
+        and pktgen is trex, do not kill the process
+        """
+        if self.crb['pktgen'].lower() == 'trex':
+            if self.crb['IP'] == self.crb['tester IP'] and self.trex_prefix is None:
+                conf_inst = PktgenConf('trex')
+                conf_info = conf_inst.load_pktgen_config()
+                if 'config_file' in conf_info:
+                    config_file = conf_info['config_file']
+                else:
+                    config_file = '/etc/trex_cfg.yaml'
+                fd = open(config_file, 'r')
+                output = fd.read()
+                fd.close()
+                prefix = re.search("prefix\s*:\s*(\S*)", output)
+                if prefix is not None:
+                    self.trex_prefix = prefix.group(1)
+        return self.trex_prefix
+
     def get_dpdk_pids(self, prefix_list, alt_session):
         """
         get all dpdk applications on CRB.
         """
+        trex_prefix = self.check_trex_process_existed()
+        if trex_prefix is not None and trex_prefix in prefix_list:
+            prefix_list.remove(trex_prefix)
         file_directorys = ['/var/run/dpdk/%s/config' % file_prefix for file_prefix in prefix_list]
         pids = []
         pid_reg = r'p(\d+)'
