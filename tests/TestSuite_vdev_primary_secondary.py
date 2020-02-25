@@ -63,6 +63,7 @@ class TestVdevPrimarySecondary(TestCase):
         self.coremask = utils.create_mask(cores)
         self.verify(len(self.coremask) >= 6, "The machine has too few cores.")
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
         """
@@ -103,11 +104,12 @@ class TestVdevPrimarySecondary(TestCase):
         """
         launch testpmd
         """
-        cmd = "./%s/app/testpmd -l 1-6 -n %d --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost" + \
-              " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" + \
-              " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" + \
-              " -- -i --nb-cores=4 --rxq=%d --txq=%d --txd=1024 --rxd=1024"
-        start_cmd = cmd % (self.target, self.mem_channels, self.base_dir, self.queues, self.base_dir, self.queues, self.queues, self.queues)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev1 = " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" % (self.base_dir, self.queues)
+        vdev2 = " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" % (self.base_dir, self.queues)
+        eal_params = self.dut.create_eal_parameters(cores="1S/12C/1T", prefix='vhost', ports=[self.pci_info])
+        para = " -- -i --nb-cores=4 --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.queues, self.queues)
+        start_cmd = testcmd + eal_params + vdev1 + vdev2 + para
         self.dut.send_expect(start_cmd, "testpmd> ", 120)
         self.dut.send_expect("set fwd txonly", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
