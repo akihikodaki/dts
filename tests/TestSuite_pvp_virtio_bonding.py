@@ -88,7 +88,7 @@ class TestPVPVirtIOBonding(TestCase):
         for i in range(self.queues):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
         params = "--port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024"
-        eal_param = "--socket-mem 2048,2048 --legacy-mem --file-prefix=vhost %s " % vdev_info
+        eal_param = "--file-prefix=vhost %s " % vdev_info
         self.vhost_testpmd = PmdOutput(self.dut)
         self.vhost_testpmd.start_testpmd(self.core_config, params, eal_param=eal_param)
         self.vhost_testpmd.execute_cmd('set fwd mac')
