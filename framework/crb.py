@@ -472,7 +472,7 @@ class Crb(object):
         if the tester and dut on same server
         and pktgen is trex, do not kill the process
         """
-        if self.crb['pktgen'].lower() == 'trex':
+        if 'pktgen' in self.crb and (self.crb['pktgen'] is not None) and (self.crb['pktgen'].lower() == 'trex'):
             if self.crb['IP'] == self.crb['tester IP'] and self.trex_prefix is None:
                 conf_inst = PktgenConf('trex')
                 conf_info = conf_inst.load_pktgen_config()
