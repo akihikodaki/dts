@@ -138,8 +138,6 @@ class TestPVPShareLib(TestCase):
         """
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost',
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1'])
-        if self.check_2M_env:
-            eal_param += " --single-file-segments"
         eal_param += " -d librte_pmd_vhost.so -d librte_pmd_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
         command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i'
 
