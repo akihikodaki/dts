@@ -65,9 +65,7 @@ class TestPvpVirtioUser4kPages(TestCase):
             self.core_config, socket=self.ports_socket)
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
-        self.core_mask_virtio_user = utils.create_mask(self.core_list_virtio_user)
-        self.core_mask_vhost_user = utils.create_mask(self.core_list_vhost_user)
-        self.mem_channels = self.dut.get_memory_channels()
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.logger.info("You can config packet_size in file %s.cfg," % self.suite_name + \
@@ -131,12 +129,11 @@ class TestPvpVirtioUser4kPages(TestCase):
         """
         Start testpmd on vhost
         """
-        command_line_client = "%s/app/testpmd -c %s -n %d " + \
-                              "--file-prefix=vhost  -m 1024 --no-huge " + \
-                              "--vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i " + \
-                              "--no-numa --socket-num=%d"
-        command_line_client = command_line_client % (self.target,
-                            self.core_mask_vhost_user, self.mem_channels, self.ports_socket)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = " -m 1024 --no-huge --vdev 'net_vhost0,iface=vhost-net,queues=1'"
+        para = " -- -i --no-numa --socket-num=%d" % self.ports_socket
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info])
+        command_line_client = testcmd + eal_params + vdev + para
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
@@ -144,11 +141,10 @@ class TestPvpVirtioUser4kPages(TestCase):
         """
         Start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            "--no-huge -m 1024 --file-prefix=virtio-user " + \
-                            "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
-        command_line_user = command_line_user % (self.target,
-                self.mem_channels, self.core_mask_virtio_user)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = " --no-huge -m 1024 --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, prefix='virtio-user', ports=[self.pci_info])
+        command_line_user = testcmd + eal_params + vdev
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
