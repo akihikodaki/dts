@@ -2637,9 +2637,7 @@
                 "niantic",
 		"sagepond",
 		"sageville",
-		"fortville_eagle",
-		"fortville_25g",
-		"fortpark_TLV"
+		"fortville_25g"
             ],
             "Target": [
                 "ALL"
@@ -2657,9 +2655,7 @@
                 "niantic",
                 "sagepond",
                 "sageville",
-		"fortville_eagle",
-		"fortville_25g",
-                "fortpark_TLV"
+		"fortville_25g"
             ],
             "Target": [
                 "ALL"
