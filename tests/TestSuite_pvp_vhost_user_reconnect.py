@@ -56,10 +56,9 @@ class TestPVPVhostUserReconnect(TestCase):
         # Get the port's socket
         self.pf = self.dut_ports[0]
         netdev = self.dut.ports_info[self.pf]['port']
+        self.pci_info = self.dut.ports_info[0]['pci']
         self.socket = netdev.get_nic_socket()
         self.cores = self.dut.get_core_list("1S/2C/1T", socket=self.socket)
-        self.coremask = utils.create_mask(self.cores)
-        self.memory_channel = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         # set diff arg about mem_socket base on socket number
         if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
@@ -101,14 +100,10 @@ class TestPVPVhostUserReconnect(TestCase):
         vdev_info = ""
         for i in range(self.vm_num):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
-        self.vhostapp_testcmd = self.dut.base_dir + \
-                    "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
-                    " --file-prefix=vhost %s" + \
-                    " -- -i --port-topology=chained --nb-cores=1" + \
-                    " --txd=1024 --rxd=1024"
-        self.vhostapp_testcmd = self.vhostapp_testcmd % (self.target,
-                                self.coremask, self.memory_channel,
-                                self.socket_mem, vdev_info)
+        testcmd = self.dut.base_dir + "/%s/app/testpmd " % self.target
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info])
+        para = " -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024"
+        self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
         self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 40)
         self.vhost_user.send_expect("start", "testpmd> ", 40)
@@ -120,13 +115,10 @@ class TestPVPVhostUserReconnect(TestCase):
         vdev_info = ""
         for i in range(self.vm_num):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
-        self.vhostapp_testcmd = self.dut.base_dir + \
-                    "/%s/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" + \
-                    " --no-pci --file-prefix=vhost %s" + \
-                    " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        self.vhostapp_testcmd = self.vhostapp_testcmd % (self.target,
-                                self.coremask, self.memory_channel,
-                                self.socket_mem, vdev_info)
+        testcmd = self.dut.base_dir + "/%s/app/testpmd " % self.target
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, no_pci=True, prefix='vhost', ports=[self.pci_info])
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
         self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
         self.vhost_user.send_expect("start", "testpmd> ", 40)
 
