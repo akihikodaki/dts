@@ -172,8 +172,6 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost')
-        if self.check_2M_env:
-            eal_param += " --single-file-segments"
         command_line_client = "./examples/vhost/build/app/vhost-switch " + eal_param + ' -- -p 0x1 --mergeable 0 --vm2vm 1 --builtin-net-driver --socket-file ./vhost-net> ./vhost.out &'
         self.vhost_switch.send_expect(command_line_client, "# ", 120)
         time.sleep(15)
