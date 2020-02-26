@@ -108,8 +108,6 @@ class TestPVPVirtioMultiQueues(TestCase):
         """
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_host, prefix='vhost',
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=2,client=0'])
-        if self.check_2M_env:
-            eal_param += " --single-file-segments"
         command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i --nb-cores=2 --rxq=2 --txq=2 --rss-ip'
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
