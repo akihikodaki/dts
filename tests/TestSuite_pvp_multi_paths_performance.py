@@ -129,8 +129,6 @@ class TestPVPMultiPathPerformance(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost',
                                                    ports=[self.dut.ports_info[self.dut_ports[0]]['pci']],
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
-        if self.check_2M_env:
-            eal_param += " --single-file-segments"
         command_line_client = "./%s/app/testpmd " % self.target + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
