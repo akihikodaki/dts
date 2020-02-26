@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -173,6 +173,7 @@ class TestVmPwMgmtPolicy(TestCase):
             for layer in list(pkt_layers.keys()):
                 pkt.config_layer(layer, pkt_layers[layer])
             streams.append(pkt.pktgen.pkt)
+            self.logger.debug(pkt.pktgen.pkt.command())
 
         return streams
 
@@ -230,6 +231,8 @@ class TestVmPwMgmtPolicy(TestCase):
             'rate_percent': rate,
             'traffic_opt': {
                 'method': 'throughput',
+                'callback': self.query_cpu_freq,
+                'interval': duration - 2,
                 'duration': duration,
             }}
         # begin traffic checking
@@ -320,7 +323,8 @@ class TestVmPwMgmtPolicy(TestCase):
         self.verify(self.vm_dut, "create vm_dut fail !")
         self.add_console(self.vm_dut.session)
         # get virtual machine cpu cores
-        self.vcpu_map = self.vm.get_vm_cpu()
+        _vcpu_map = self.vm.get_vm_cpu()
+        self.vcpu_map = [int(item) for item  in _vcpu_map]
 
     def close_vm(self):
         # close vm
@@ -403,7 +407,7 @@ class TestVmPwMgmtPolicy(TestCase):
         time.sleep(2)
 
     def guest_set_vm_turbo_status(self, vcpu, status):
-        vcpu_index = self.vcpu_map.index(str(self.check_core))
+        vcpu_index = self.vcpu_map.index(self.check_core)
         cmd = ["set_cpu_freq %d %s" % (vcpu_index, status),
                "vmpower\(guest\)>", 5]
         output = self.vm_g_con(cmd)
@@ -447,46 +451,12 @@ class TestVmPwMgmtPolicy(TestCase):
         self.vm_testpmd.quit()
         self.is_pmd_on = False
 
-    def init_query_script(self):
-        self.query_cur_freq = os.path.join(
-            self.output_path, 'cpu_cur_freq.log')
-        script_content = textwrap.dedent("""
-            # $1: core number
-            sleep 8
-            echo "begin get core "$1" current frequency " > {0}
-            while :
-            do
-                sleep 1
-                cat /sys/devices/system/cpu/cpu$1/cpufreq/cpuinfo_cur_freq >> {0}
-            done
-        """).format(self.query_cur_freq)
-        fileName = 'vm_power_core.sh'
-        query_script = os.path.join(self.output_path, fileName)
-        with open(query_script, 'wb') as fp:
-            fp.write('#!/bin/bash' + os.linesep + script_content)
-        self.dut.session.copy_file_to(query_script, self.target_dir)
-        self.query_tool = ';'.join([
-            'cd {}'.format(self.target_dir),
-            'chmod 777 {}'.format(fileName),
-            './' + fileName])
-
-    def start_query(self, core):
-        cmd = self.query_tool + ' {0} > /dev/null 2>&1 &'.format(core)
-        self.d_a_con(cmd)
-        self.is_query_on = True
-
-    def stop_query(self):
-        if not self.is_query_on:
-            return
-        ps_name = os.path.basename(self.query_tool)
-        cmd = "ps aux | grep -i '%s' | grep -v grep | awk {'print $2'}" % (
-            ps_name)
-        out = self.d_a_con(cmd)
-        if out != "":
-            cmd = 'pkill -f {}'.format(ps_name)
-            self.d_a_con(cmd)
-        self.is_query_on = False
-        self.dut.session.copy_file_from(self.query_cur_freq, self.output_path)
+    def query_cpu_freq(self):
+        cmd = ("cat "
+            "/sys/devices/system/cpu/cpu{}/cpufreq/cpuinfo_cur_freq").format(
+            self.check_core)
+        output = self.d_a_con(cmd)
+        self.cur_cpu_freq = 0 if not output else int(output.splitlines()[0])
 
     def set_desired_time(self, time_stage):
         if not time_stage:
@@ -504,8 +474,8 @@ class TestVmPwMgmtPolicy(TestCase):
         cmd = ';'.join([
             "{0}",
             "{0} -s '{1}'",
-            "clock -w"]).format(date_tool, timestamp)
-        self.d_a_con(cmd)
+            "hwclock -w"]).format(date_tool, timestamp)
+        self.d_a_con([cmd, '# ', 20])
         cmd = "{0} '+%H:00'".format(date_tool)
         output = self.d_a_con(cmd)
         msg = "desired time fails to set" \
@@ -529,9 +499,9 @@ class TestVmPwMgmtPolicy(TestCase):
         cmd = ';'.join([
             "{0}",
             "{0} -s '{1}'",
-            "clock -w",
+            "hwclock -w",
             "{0}", ]).format(date_tool, real_time)
-        self.d_a_con(cmd)
+        self.d_a_con([cmd, '# ', 20])
 
     def preset_core_freq(self):
         info = self.cpu_info.get(self.check_core, {})
@@ -663,12 +633,8 @@ class TestVmPwMgmtPolicy(TestCase):
         low workload: minimum cpu frequency
         '''
         check_item = content.get('check')
-        query_cur_freq = os.path.join(
-            self.output_path, os.path.basename(self.query_cur_freq))
-        with open(query_cur_freq, 'rb') as fp:
-            content = fp.read()
-        self.logger.debug(content)
-        real_freq = int(content.splitlines()[2].strip())
+        real_freq = self.cur_cpu_freq
+        self.logger.warning(real_freq)
         expected_freq = self.get_expected_freq(self.check_core, check_item)
         msg = (
             'core <{0}> freq <{1}> are not '
@@ -692,7 +658,6 @@ class TestVmPwMgmtPolicy(TestCase):
 
     def run_test_post(self):
         # close all binary processes
-        self.stop_query()
         self.close_vm_testpmd()
         self.close_guest_mgr()
         self.close_vm_power_mgr()
@@ -703,12 +668,9 @@ class TestVmPwMgmtPolicy(TestCase):
         self.start_guest_mgr(content.get('option', ''))
         # set binary process command
         self.guest_send_policy()
-        # start query
-        self.start_query(self.check_core)
 
     def run_guest_post(self):
         # close guest
-        self.stop_query()
         self.close_guest_mgr()
 
     def traffic_policy(self, name, content):
@@ -736,7 +698,7 @@ class TestVmPwMgmtPolicy(TestCase):
                 # run time policy, wait 10 second to make sure system ready
                 # and get enough query data
                 time.sleep(15)
-            self.stop_query()
+                self.query_cpu_freq()
             # check cpu core status
             self.check_core_freq(content)
         except Exception as e:
@@ -833,7 +795,7 @@ class TestVmPwMgmtPolicy(TestCase):
             keys = list(_common_config['option'].keys())
             opt_fmt = _common_config['opt_fmt']
             for item in product(*values):
-                _options = dict(zip(keys, item))
+                _options = dict(list(zip(keys, item)))
                 _options['policy'] = policy_name
                 _opt_fmt = " ".join(opt_fmt)
                 _config = deepcopy(config)
@@ -912,7 +874,7 @@ class TestVmPwMgmtPolicy(TestCase):
         self.verify(status, msg)
 
     def preset_test_environment(self):
-        self.is_mgr_on = self.is_pmd_on = self.is_query_on = None
+        self.is_mgr_on = self.is_pmd_on = None
         self.ext_con = {}
         # get cpu cores information
         self.dut.init_core_list_uncached_linux()
@@ -929,9 +891,9 @@ class TestVmPwMgmtPolicy(TestCase):
         self.init_vm_power_mgr()
         self.init_vm_testpmd()
         self.init_guest_mgr()
-        self.init_query_script()
         # set branch ratio test value
         self.check_core = int(self.vcpu_map[0])
+        self.cur_cpu_freq = None
         # used to control testing range. When run with full test, cover all
         # possible command line options combination, it will be long time.
         self.full_test = False
