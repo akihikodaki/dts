@@ -1,4 +1,4 @@
-.. Copyright (c) <2019>, Intel Corporation
+.. Copyright (c) <2020>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -89,3 +89,17 @@ Reordered ratio: ratio between out of order packets and total sent packets.
 Run the app with below sample command::
 
     ./examples/packet_ordering/build/packet_ordering -c coremask  -- -p portmask
+
+Test Case: keep the packet ordering
+===================================
+
+This is a basic functional test.
+The packets order which will pass through a same flow should be guaranteed.
+
+1. Run the sample with below command::
+
+    ./examples/packet_ordering/build/packet_ordering -c coremask  -- -p portmask
+
+2. Send 1000 packets with the same 5-tuple traffic from Scapy
+
+3. Observe the packets received and check the packets order.
