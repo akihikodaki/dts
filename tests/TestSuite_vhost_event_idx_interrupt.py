@@ -108,7 +108,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
         example_para = "./examples/l3fwd-power/build/app/l3fwd-power "
         para = " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s'" % (vdev_info, port_info, config_info)
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info])
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True)
         command_line_client = example_para + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
@@ -126,6 +126,10 @@ class TestVhostEventIdxInterrupt(TestCase):
         relauch l3fwd-power sample for port up
         """
         self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        # make sure l3fwd-power be killed
+        pid = self.dut.send_expect("ps -ef |grep l3|grep -v grep |awk '{print $2}'", "#")
+        if pid:
+            self.dut.send_expect("kill -9 %s" % pid, "#")
         self.lanuch_l3fwd_power()
 
     def set_vm_cpu_number(self, vm_config):
@@ -162,7 +166,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         start qemus
         """
         for i in range(vm_num):
-            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
+            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_event_idx_interrupt')
             vm_info.load_config()
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
@@ -180,7 +184,7 @@ class TestVhostEventIdxInterrupt(TestCase):
             self.check_qemu_version(vm_info)
             vm_dut = None
             try:
-                vm_dut = vm_info.start(load_config=False)
+                vm_dut = vm_info.start(load_config=False,set_target=False)
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
