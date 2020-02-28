@@ -57,14 +57,13 @@ class TestVirtioPVPRegression(TestCase):
         self.pf = self.dut_ports[0]
         # Get the port's socket
         netdev = self.dut.ports_info[self.pf]['port']
+        self.pci_info = self.dut.ports_info[self.pf]['pci']
         self.socket = netdev.get_nic_socket()
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
 
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.verify(len(self.cores) >= 3,
                     "There has not enought cores to test this suite")
-        self.coremask = utils.create_mask(self.cores)
-        self.memory_channel = self.dut.get_memory_channels()
         self.port_number = 2
         self.queues_number = 2
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
@@ -248,15 +247,11 @@ class TestVirtioPVPRegression(TestCase):
         """
         Launch the vhost testpmd
         """
-        command_line_client = self.dut.target + "/app/testpmd -n %d -c %s \
-            --socket-mem %s --file-prefix=vhost -w %s \
-            --vdev 'eth_vhost0,iface=%s/vhost-net,queues=%d,client=1' -- \
-            -i --nb-cores=%d --rxq=%d --txq=%d  --txd=1024 --rxd=1024"
-        command_line_client = command_line_client % (
-                        self.memory_channel, self.coremask, self.socket_mem,
-                        self.dut.ports_info[self.pf]['pci'], self.base_dir,
-                        self.queues_number, self.queues_number, self.queues_number,
-                        self.queues_number)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=%d,client=1'" % (self.base_dir, self.queues_number)]
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --nb-cores=%d --rxq=%d --txq=%d  --txd=1024 --rxd=1024" % (self.queues_number, self.queues_number, self.queues_number)
+        command_line_client = testcmd + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
