@@ -60,6 +60,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.virtio_user1 = None
         self.flag_compiled = False
         self.backup_speed = self.dut.skip_setup
+        self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
         """
@@ -102,16 +103,13 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         launch the testpmd on vhost side
         """
-        vhost_mask = utils.create_mask(self.cores_list[0:2])
-        self.command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
-            "--socket-mem %s --legacy-mem --no-pci --file-prefix=vhost " + \
-            "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " + \
-            "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " + \
-            "-- -i --nb-cores=1 --txd=1024 --rxd=1024"
-
-        self.command_line = self.command_line % (
-                            vhost_mask, self.memory_channel, self.socket_mem,
-                            self.base_dir, self.base_dir)
+        vhost_mask = self.cores_list[0:2]
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " % self.base_dir
+        vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " % self.base_dir
+        eal_params = self.dut.create_eal_parameters(cores=vhost_mask, no_pci=True, prefix='vhost', ports=[self.pci_info])
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        self.command_line = testcmd + eal_params + vdev1 + vdev2 + para
         self.vhost_user.send_expect(self.command_line, "testpmd> ", 30)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost_user.send_expect("start", "testpmd> ", 30)
@@ -121,13 +119,12 @@ class TestVM2VMVirtioPMD(TestCase):
         launch the testpmd as virtio with vhost_net1
         """
         self.virtio_user1 = self.dut.new_session(suite="virtio_user1")
-        virtio_mask = utils.create_mask(self.cores_list[2:4])
-        command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
-            "--socket-mem %s --no-pci --file-prefix=virtio " + \
-            "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s " + \
-            "-- -i --nb-cores=1 --txd=1024 --rxd=1024 %s"
-        command_line = command_line % (virtio_mask, self.memory_channel,
-                    self.socket_mem, path_mode, extern_param)
+        virtio_mask = self.cores_list[2:4]
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s " % path_mode
+        eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio', ports=[self.pci_info])
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024 %s" % extern_param
+        command_line = testcmd + eal_params + vdev + para
         self.virtio_user1.send_expect(command_line, 'testpmd> ', 30)
         self.virtio_user1.send_expect('set fwd rxonly', 'testpmd> ', 30)
         self.virtio_user1.send_expect('start', 'testpmd> ', 30)
@@ -137,13 +134,12 @@ class TestVM2VMVirtioPMD(TestCase):
         launch the testpmd as virtio with vhost_net0
         """
         self.virtio_user0 = self.dut.new_session(suite="virtio_user0")
-        virtio_mask = utils.create_mask(self.cores_list[4:6])
-        command_line = self.dut.target + "/app/testpmd -c %s -n %d " + \
-            "--socket-mem %s --no-pci --file-prefix=virtio0 " + \
-            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s " + \
-            "-- -i --nb-cores=1 --txd=1024 --rxd=1024 %s"
-        command_line = command_line % (virtio_mask, self.memory_channel,
-                    self.socket_mem, path_mode, extern_param)
+        virtio_mask = self.cores_list[4:6]
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s " % path_mode
+        eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio0', ports=[self.pci_info])
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024 %s" % extern_param
+        command_line = testcmd + eal_params + vdev + para
         self.virtio_user0.send_expect(command_line, 'testpmd> ', 30)
         self.virtio_user0.send_expect('set txpkts 2000,2000,2000,2000', 'testpmd> ', 30)
         self.virtio_user0.send_expect('set burst 1', 'testpmd> ', 30)
