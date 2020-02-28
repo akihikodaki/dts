@@ -61,7 +61,6 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.core_list = self.dut.get_core_list(
             self.core_config, socket=self.ports_socket)
-        self.core_mask = utils.create_mask(self.core_list)
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.vm_dut = None
         self.virtio1_mac = "52:54:00:00:00:01"
@@ -72,6 +71,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
         """
@@ -94,13 +94,11 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        command_client = self.dut.target + "/app/testpmd " + \
-                         " -n %d -c %s --socket-mem 1024,1024 " + \
-                         " --legacy-mem --file-prefix=vhost " + \
-                         " --vdev 'net_vhost0,iface=vhost-net,queues=1' " + \
-                         " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_client = command_client % (
-            self.dut.get_memory_channels(), self.core_mask)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=vhost-net,queues=1'"]
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        command_line_client = testcmd + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
