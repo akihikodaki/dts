@@ -48,7 +48,6 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        self.memory_channel = self.dut.get_memory_channels()
         self.pci0 = self.dut.ports_info[0]['pci']
         pf_info = self.dut_ports[0]
         netdev = self.dut.ports_info[pf_info]['port']
@@ -112,12 +111,12 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         cores_config = '1S/%sC/1T' % cores_number
         cores_list = self.dut.get_core_list(cores_config, socket=self.socket)
         self.verify(len(cores_list) >= cores_number, "Failed to get cores list")
-        core_mask = utils.create_mask(cores_list[0:2])
-        self.testcmd = self.target + "/app/testpmd -c %s -n %d -w %s  --socket-mem %s" \
-                        + " --vdev=virtio_user0,mac=%s,path=/dev/vhost-net,"\
-                        "queue_size=1024,queues=%s -- -i --rxd=1024 --txd=1024 %s"
-        self.testcmd_start = self.testcmd % (core_mask, self.memory_channel,
-                self.pci0, self.socket_mem, self.virtio_mac, self.queue, comment)
+        core_mask = cores_list[0:2]
+        testcmd = self.target + "/app/testpmd "
+        vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net," % self.virtio_mac
+        eal_params = self.dut.create_eal_parameters(cores=core_mask, ports=[self.pci0])
+        para = " queue_size=1024,queues=%s -- -i --rxd=1024 --txd=1024 %s" % (self.queue, comment)
+        self.testcmd_start = testcmd + eal_params + vdev + para
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd>", 120)
@@ -128,12 +127,11 @@ class TestVirtioUserAsExceptionalPath(TestCase):
             self.dut.send_expect("taskset -pc %s %s" % (cores_list[-2], vhost_pid_list[2]), "# ")
 
     def launch_testpmd_exception_path(self):
-        self.testcmd = self.target + "/app/testpmd -c %s -n %d --socket-mem %s --legacy-mem" \
-                + " --vdev=virtio_user0,mac=%s,path=/dev/vhost-net,queue_size=1024 -- -i" \
-                + " --rxd=1024 --txd=1024"
-        self.coremask = utils.create_mask(self.cores)
-        self.testcmd_start = self.testcmd % (self.coremask, self.memory_channel,
-                                    self.socket_mem, self.virtio_mac)
+        testcmd = self.target + "/app/testpmd "
+        vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net,queue_size=1024" % self.virtio_mac
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci0])
+        para = " -- -i --rxd=1024 --txd=1024"
+        self.testcmd_start = testcmd + eal_params + vdev + para
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect("modprobe vhost-net", "#", 120)
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
