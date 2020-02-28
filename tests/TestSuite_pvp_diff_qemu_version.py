@@ -63,8 +63,6 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.verify(self.cores_num >= 3,
                     "There has not enought cores to test this suite")
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
-        self.coremask = utils.create_mask(self.cores)
-        self.memory_channel = 4
         self.vm_dut = None
         self.packet_params_set()
 
@@ -82,6 +80,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
         """
@@ -201,12 +200,11 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         Launch the vhost testpmd
         """
-        command_line_client = self.dut.target + "/app/testpmd -n %d -c %s \
-            --socket-mem 1024,1024 --file-prefix=vhost \
-            --vdev 'eth_vhost0,iface=%s/vhost-net,queues=1' -- \
-            -i --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_client = command_line_client % (
-                              self.memory_channel, self.coremask, self.base_dir)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=1'" % self.base_dir]
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        command_line_client = testcmd + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
