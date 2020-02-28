@@ -61,9 +61,6 @@ class TestPVPVirtioWith2Mhuge(TestCase):
 
         self.core_list_virtio_user = self.core_list[0:2]
         self.core_list_vhost_user = self.core_list[2:4]
-        self.core_mask_virtio_user = utils.create_mask(self.core_list_virtio_user)
-        self.core_mask_vhost_user = utils.create_mask(self.core_list_vhost_user)
-        self.mem_channels = self.dut.get_memory_channels()
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.header_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['tcp']
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
@@ -77,6 +74,7 @@ class TestPVPVirtioWith2Mhuge(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
         """
@@ -129,11 +127,10 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         start testpmd on vhost
         """
-        command_line_client = "%s/app/testpmd -c %s -n %d " + \
-                              "--socket-mem 1024,1024 --file-prefix=vhost " + \
-                              "--vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i"
-        command_line_client = command_line_client % (self.target,
-                        self.core_mask_vhost_user, self.mem_channels)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = [r"'net_vhost0,iface=vhost-net,queues=1'"]
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
+        command_line_client = testcmd + eal_params + " -- -i"
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
@@ -141,12 +138,10 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         start testpmd on virtio
         """
-        command_line_user = "./%s/app/testpmd -n %d -c %s " + \
-                            "--no-pci --socket-mem 1024,1024 " + \
-                            "--file-prefix=virtio-user --single-file-segments " + \
-                            "--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
-        command_line_user = command_line_user % (self.target,
-                self.mem_channels, self.core_mask_virtio_user)
+        testcmd = self.dut.target + "/app/testpmd "
+        vdev = " --single-file-segments --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', ports=[self.pci_info])
+        command_line_user = testcmd + eal_params + vdev
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
