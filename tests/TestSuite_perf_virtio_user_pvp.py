@@ -358,7 +358,6 @@ class TestVirtioSingleCorePerf(TestCase):
                     row_dict0['status'] = 'PASS'
                 else:
                     row_dict0['status'] = 'FAIL'
-                self.verify(row_dict0['status'] == 'PASS', 'The throughput is not in correct range')
                 row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
                 row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
                 row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
@@ -371,7 +370,7 @@ class TestVirtioSingleCorePerf(TestCase):
                                '{0:s}_{1}.json'.format(
                                    self.nic, self.suite_name)), 'w') as fp:
             json.dump(self.json_obj, fp)
-        self.verify("Fail" not in status_result, "Exceeded Gap")
+        self.verify("FAIL" not in status_result, "Exceeded Gap")
 
     def tear_down(self):
         """
