@@ -82,23 +82,30 @@ class VirtioCryptodevPerfTest(TestCase):
         self.cores = self.dut.get_core_list("1S/3C/1T")
         self.mem_channel = self.dut.get_memory_channels()
 
-        self.bind_script_path = self.dut.get_dpdk_bind_script()
-
-        self.vfio_pci = self.get_suite_cfg()["vfio_pci"]
-        for each in self.vfio_pci.split():
-            cmd = "echo {} > /sys/bus/pci/devices/{}/driver/unbind".format(each, each.replace(":", "\:"))
-            self.dut_execut_cmd(cmd)
-
         if not cc.is_build_skip(self):
-            self.tar_dpdk()
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
-            self.build_vhost_app()
-        cc.bind_qat_device(self, "vfio-pci")
+        self.build_vhost_app()
+        cc.bind_qat_device(self)
+
+        self.vf_assign_method = "vfio-pci"
+        self.dut.setup_modules(None, self.vf_assign_method, None)
+
+        self.dut.restore_interfaces()
+        self.used_dut_port = self.dut_ports[0]
+        self.dut.generate_sriov_vfs_by_port(
+            self.used_dut_port, 1, driver='default')
+        self.sriov_vfs_port = self.dut.ports_info[
+            self.used_dut_port]['vfs_port']
+        for port in self.sriov_vfs_port:
+            port.bind_driver(self.vf_assign_method)
+
+        intf = self.dut.ports_info[self.used_dut_port]['intf']
+        vf_mac = "52:00:00:00:00:01"
+        self.dut.send_expect("ip link set %s vf 0 mac %s" %
+                (intf, vf_mac), "# ")
 
         self.launch_vhost_switch()
-        self.bind_vfio_pci()
-
         self.vm0, self.vm0_dut = self.launch_virtio_dut("vm0")
 
     def set_up(self):
@@ -107,27 +114,21 @@ class VirtioCryptodevPerfTest(TestCase):
     def dut_execut_cmd(self, cmdline, ex='#', timout=30):
         return self.dut.send_expect(cmdline, ex, timout)
 
-    def tar_dpdk(self):
-        self.dut_execut_cmd("tar -czf %s/dep/dpdk.tar.gz ../dpdk" % os.getcwd(), '#', 100)
-
     def build_user_dpdk(self, user_dut):
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
+        user_dut.send_expect(
+            "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
+        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 900)
 
-        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 600)
-        assert ("Error" not in out), "Compilation error..."
+        self.verify("Error" not in out, "compilation error 1")
+        self.verify("No such file" not in out, "compilation error 2")
 
     def build_vhost_app(self):
-        self.dut_execut_cmd("export RTE_SDK=`pwd`")
-        self.dut_execut_cmd("export RTE_TARGET=%s" % self.target)
         out = self.dut_execut_cmd("make -C ./examples/vhost_crypto")
-        self.verify("Error" not in out, "compilation error")
 
-    def build_user_app(self, user_dut):
-        user_dut.send_expect("export RTE_SDK=`pwd`", '#', 30)
-        user_dut.send_expect("export RTE_TARGET=%s" % self.target, '#', 30)
-        out = user_dut.send_expect("make -C ./%s test-build" % self.target, '#', 600)
-        self.verify("Error" not in out, "compilation error")
+        self.verify("Error" not in out, "compilation error 1")
+        self.verify("No such file" not in out, "compilation error 2")
 
     def get_vhost_eal(self):
         default_eal_opts = {
@@ -160,13 +161,10 @@ class VirtioCryptodevPerfTest(TestCase):
         config = '"(%s,0,0),(%s,0,0)"' % tuple(self.cores[-2:])
         socket_file = "%s,/tmp/vm0_crypto0.sock --socket-file=%s,/tmp/vm0_crypto1.sock" % tuple(self.cores[-2:])
         self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(self.sample_app, eal_opt_str,
-                                    '--config %s --socket-file %s' % (config, socket_file))
+                '--config %s --socket-file %s' % (config, socket_file))
 
-        self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
-
-    def bind_vfio_pci(self):
-        subprocess.getoutput("modprobe vfio-pci")
-        subprocess.getoutput('%s -b vfio-pci %s' % (os.path.join(self.dut.base_dir, self.bind_script_path), self.vfio_pci))
+        out = self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
+        self.logger.info(out)
 
     def set_virtio_pci(self, dut):
         out = dut.send_expect("lspci -d:1054|awk '{{print $1}}'", "# ", 10)
@@ -178,26 +176,38 @@ class VirtioCryptodevPerfTest(TestCase):
             dut.send_expect(cmd, "# ", 10)
         dut.send_expect('echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id', "# ", 10)
 
+        return virtio_list
+
     def launch_virtio_dut(self, vm_name):
         # start vm
         vm = QEMUKvm(self.dut, vm_name, 'virtio_perf_cryptodev_func')
 
+        vf0 = {'opt_host': self.sriov_vfs_port[0].pci}
+        vm.set_vm_device(driver=self.vf_assign_method, **vf0)
+        skip_setup = self.dut.skip_setup
+
         try:
-            vm_dut = vm.start(set_target=False)
+            self.dut.skip_setup = True
+            vm_dut = vm.start()
             if vm_dut is None:
                 print(('{} start failed'.format(vm_name)))
         except Exception as err:
             raise err
 
+        self.dut.skip_setup = skip_setup
         vm_dut.restore_interfaces()
 
         if not self.dut.skip_setup:
             self.build_user_dpdk(vm_dut)
-            self.build_user_app(vm_dut)
 
         vm_dut.setup_modules(self.target, "igb_uio", None)
         vm_dut.bind_interfaces_linux('igb_uio')
-        self.set_virtio_pci(vm_dut)
+        vm.virtio_list = self.set_virtio_pci(vm_dut)
+        self.logger.info("{} virtio list: {}".format(vm_name, vm.virtio_list))
+        vm.cores = vm_dut.get_core_list("all")
+        self.logger.info("{} core list: {}".format(vm_name, vm.cores))
+        vm.ports = [port["pci"] for port in vm_dut.ports_info]
+        self.logger.info("{} port list: {}".format(vm_name, vm.ports))
 
         return vm, vm_dut
 
@@ -216,7 +226,7 @@ class VirtioCryptodevPerfTest(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
+        eal_opt_str = cc.get_eal_opt_str(self, {"w": self.vm0.virtio_list[0], "vdev":None})
         crypto_perf_opt_str = cc.get_opt_str(self, self._default_crypto_perf_opts)
         out = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
         self.logger.info(out)
@@ -240,10 +250,14 @@ class VirtioCryptodevPerfTest(TestCase):
         pass
 
     def tear_down_all(self):
-        if self.vm0:
+        if getattr(self, 'vm0', None):
+            self.vm0_dut.kill_all()
             self.vm0.stop()
-            self.dut.virt_exit()
             self.vm0 = None
+
+        if getattr(self, 'used_dut_port', None) != None:
+            self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
+            self.used_dut_port = None
 
         self.dut_execut_cmd("^C", "# ")
         self.dut_execut_cmd("killall -s INT vhost-crypto")
