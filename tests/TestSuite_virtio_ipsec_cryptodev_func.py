@@ -58,12 +58,14 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.dut.skip_setup = True
 
         self.dut_ports = self.dut.get_ports(self.nic)
+        self.verify(len(self.dut_ports) >= 4, 'Insufficient ports for test')
         self.cores = self.dut.get_core_list("1S/5C/1T")
         self.mem_channel = self.dut.get_memory_channels()
         self.port_mask = utils.create_mask([self.dut_ports[0]])
+        self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
 
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
-        self.rx_port = self.tester.get_local_port(self.dut_ports[1])
+        self.rx_port = self.tester.get_local_port(self.dut_ports[-1])
 
         self.tx_interface = self.tester.get_interface(self.tx_port)
         self.rx_interface = self.tester.get_interface(self.rx_port)
@@ -71,22 +73,16 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.logger.info("tx interface = " + self.tx_interface)
         self.logger.info("rx interface = " + self.rx_interface)
 
-        self.bind_script_path = self.dut.get_dpdk_bind_script()
-        self.vfio_pci = self.get_suite_cfg()["vfio_pci"]
-        for each in self.vfio_pci.split():
-            cmd = "echo {} > /sys/bus/pci/devices/{}/driver/unbind".format(each, each.replace(":", "\:"))
-            self.dut_execut_cmd(cmd)
-        self.dut.restore_interfaces()
+        self.sriov_port = self.bind_vfio_pci()
 
         if not cc.is_build_skip(self):
-            self.tar_dpdk()
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
-            self.build_vhost_app()
-        cc.bind_qat_device(self, "vfio-pci")
+        cc.bind_qat_device(self)
+        self.build_vhost_app()
+        self.bind_vfio_pci()
 
         self.launch_vhost_switch()
-        self.bind_vfio_pci()
 
         self.vm0, self.vm0_dut = self.launch_virtio_dut("vm0")
         self.vm1, self.vm1_dut = self.launch_virtio_dut("vm1")
@@ -97,28 +93,22 @@ class VirtioCryptodevIpsecTest(TestCase):
     def dut_execut_cmd(self, cmdline, ex='#', timout=30):
         return self.dut.send_expect(cmdline, ex, timout)
 
-    def tar_dpdk(self):
-        self.dut_execut_cmd("tar -czf %s/dep/dpdk.tar.gz ../dpdk" % os.getcwd(), '#', 100)
-
     def build_user_dpdk(self, user_dut):
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
-        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 900)
+        user_dut.send_expect(
+            "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
+        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 1200)
+        #user_dut.build_install_dpdk(self.target)
+        out = user_dut.build_dpdk_apps("./examples/ipsec-secgw")
         self.logger.info(out)
-        assert ("Error" not in out), "Compilation error..."
+        self.verify("Error" not in out, "Compilation error 1")
+        self.verify("No such" not in out, "Compilation error 2")
 
     def build_vhost_app(self):
         out = self.dut.build_dpdk_apps("./examples/vhost_crypto")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-
-    def build_user_app(self, user_dut):
-        user_dut.send_expect("export RTE_SDK=`pwd`", '#', 30)
-        user_dut.send_expect("export RTE_TARGET=%s" % self.target, '#', 30)
-        out = user_dut.send_expect("make -C ./examples/ipsec-secgw", '#', 600)
-        self.logger.info(out)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
+        self.verify("Error" not in out, "Compilation error 1")
+        self.verify("No such" not in out, "Compilation error 2")
 
     def get_vhost_eal(self):
         default_eal_opts = {
@@ -197,13 +187,19 @@ class VirtioCryptodevIpsecTest(TestCase):
         --socket-file=%s,/tmp/vm1_crypto1.sock"% tuple(self.cores[-4:])
         self.vhost_switch_cmd = cc.get_dpdk_app_cmd_str(self.sample_app, eal_opt_str,
                                     '--config %s --socket-file %s' % (config, socket_file))
-
         self.dut_execut_cmd("rm -r /tmp/*")
-        self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
+        out = self.dut_execut_cmd(self.vhost_switch_cmd, "socket created", 30)
+        self.logger.info(out)
 
     def bind_vfio_pci(self):
-        subprocess.getoutput("modprobe vfio-pci")
-        subprocess.getoutput('%s -b vfio-pci %s' % (os.path.join(self.dut.base_dir, self.bind_script_path), self.vfio_pci))
+        self.vf_assign_method = "vfio-pci"
+        self.dut.setup_modules(None, self.vf_assign_method, None)
+
+        sriov_ports = []
+        for port in self.dut.ports_info:
+            port["port"].bind_driver("vfio-pci")
+            sriov_ports.append(port["port"])
+        return sriov_ports
 
     def set_virtio_pci(self, dut):
         out = dut.send_expect("lspci -d:1054|awk '{{print $1}}'", "# ", 10)
@@ -219,18 +215,30 @@ class VirtioCryptodevIpsecTest(TestCase):
 
     def launch_virtio_dut(self, vm_name):
         vm = QEMUKvm(self.dut, vm_name, 'virtio_ipsec_cryptodev_func')
+        if vm_name == "vm0":
+            vf0 = {'opt_host': self.sriov_port[0].pci}
+            vf1 = {'opt_host': self.sriov_port[1].pci}
+        elif vm_name == "vm1":
+            vf0 = {'opt_host': self.sriov_port[2].pci}
+            vf1 = {'opt_host': self.sriov_port[3].pci}
+
+        vm.set_vm_device(driver=self.vf_assign_method, **vf0)
+        vm.set_vm_device(driver=self.vf_assign_method, **vf1)
+        skip_setup = self.dut.skip_setup
 
         try:
-            vm_dut = vm.start(set_target=False)
+            self.dut.skip_setup = True
+            vm_dut = vm.start()
             if vm_dut is None:
                 print(('{} start failed'.format(vm_name)))
         except Exception as err:
             raise err
+
+        self.dut.skip_setup = skip_setup
         vm_dut.restore_interfaces()
 
         if not self.dut.skip_setup:
             self.build_user_dpdk(vm_dut)
-            self.build_user_app(vm_dut)
 
         vm_dut.setup_modules(self.target, "igb_uio", None)
         vm_dut.bind_interfaces_linux('igb_uio')
@@ -253,17 +261,16 @@ class VirtioCryptodevIpsecTest(TestCase):
         payload = 256 * ['11']
 
         pkt = Packet()
-
         pkt.assign_layers(["ether", "ipv4", "udp", "raw"])
         pkt.config_layer("ether", {"src": "52:00:00:00:00:00", "dst": "52:00:00:00:00:01"})
         src_ip = "192.168.105.200"
         dst_ip = "192.168.105.100"
         pkt.config_layer("ipv4", {"src": src_ip, "dst": dst_ip})
-        pkt.config_layer("udp", {"dst": 0})
+        pkt.config_layer("udp", {"src": 1111, "dst": 2222})
         pkt.config_layer("raw", {"payload": payload})
         pkt.send_pkt(self.tester, tx_port=self.tx_interface, count=PACKET_COUNT)
-
         pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
+
         self.logger.info("dump: {} packets".format(len(pkt_rec)))
         if len(pkt_rec) != PACKET_COUNT:
             self.logger.info("dump pkg: {}, the num of pkg dumped is incorrtct!".format(len(pkt_rec)))
@@ -273,8 +280,10 @@ class VirtioCryptodevIpsecTest(TestCase):
                 self.logger.info("the ip of pkg dumped is incorrtct!")
                 status = False
 
-            dump_text = binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load"))
+            dump_text = str(binascii.b2a_hex(pkt_rec[i]["Raw"].getfieldval("load")), encoding='utf-8')
             if dump_text != ''.join(payload):
+                self.logger.info(dump_text)
+                self.logger.info(''.join(payload))
                 self.logger.info("the text of pkg dumped is incorrtct!")
                 status = False
 
@@ -349,10 +358,15 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.vm1_dut.send_expect("^C", "# ")
 
     def tear_down_all(self):
-        if self.vm0:
+        if getattr(self, 'vm0', None):
+            self.vm0_dut.kill_all()
             self.vm0.stop()
-            self.dut.virt_exit()
             self.vm0 = None
+
+        if getattr(self, 'vm1', None):
+            self.vm1_dut.kill_all()
+            self.vm1.stop()
+            self.vm1 = None
 
         if self.vm1:
             self.vm1.stop()
