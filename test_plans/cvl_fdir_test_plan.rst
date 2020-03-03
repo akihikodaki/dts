@@ -96,6 +96,7 @@ Action type
     passthru
     count identifier 0x1234 shared on|off
     mark id
+    mark/rss
 
 
 Prerequisites
@@ -920,10 +921,10 @@ Test case: MAC_IPV4_UDP passthru/mark
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions passthru / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions passthru / end
 
-2. send matched packets, check the packets are redirected by RSS with FDIR ID.
-   send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+2. send matched packets, check the packets are redirected by RSS.
+   send mismatched packets, check the packets are redirected by RSS.
 
 3. verify rules can be listed and destroyed::
 
@@ -934,7 +935,7 @@ Test case: MAC_IPV4_UDP passthru/mark
 
     testpmd> flow destroy 0 rule 0
 
-   verify matched packet is redirected to the same queue without FDIR ID.
+   verify matched packet is redirected to the same queue.
    check there is no rule listed.
 
 Test case: MAC_IPV4_TCP passthru/mark
@@ -1244,6 +1245,373 @@ Test case: MAC_IPV4_TUN_MAC_IPV4_SCTP passthru/mark
 
    verify matched packet is redirected to the same queue without FDIR ID.
    check there is no rule listed.
+
+Test case: MAC_IPV4_PAY mark/rss
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_UDP mark/rss
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions mark / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 0.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 0.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TCP mark/rss
+================================
+
+1. create filter rules::
+
+   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_SCTP mark/rss
+=================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / sctp src is 22 dst is 23 tag is 1 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_PAY mark/rss
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 1 hop is 2 tc is 1 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_UDP mark/rss
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_TCP mark/rss
+================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_SCTP mark/rss
+=================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / sctp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_PAY mark/rss
+=========================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 0.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 0.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_UDP mark/rss
+=========================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_TCP mark/rss
+=========================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_IPV4_SCTP mark/rss
+==========================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_PAY mark/rss
+=============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_UDP mark/rss
+=============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_TCP mark/rss
+=============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_TUN_MAC_IPV4_SCTP mark/rss
+==============================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packet is redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: mark/rss wrong parameters
+====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions rss / end
+
+2. The rule failed to be created, report proper error message.
+
+3. list the flow::
+
+    testpmd> flow list 0
+
+   there is no flow listed.
 
 Test case: MAC_IPV4_PAY drop
 ============================
@@ -2022,6 +2390,28 @@ Test case: MAC_IPV4_GTPU_EH passthru/mark
    verify matched packets are redirected to the same queue without FDIR ID.
    check there is no rule listed.
 
+Test case: MAC_IPV4_GTPU_EH mark/rss
+====================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
 Test case: MAC_IPV4_GTPU_EH drop
 ================================
 
@@ -2097,6 +2487,28 @@ Test case: MAC_IPV4_GTPU passthru/mark
 
 2. send matched packets, check the packets are redirected by RSS with FDIR ID.
    send mismatched packets, check the packets are redirected by RSS without FDIR ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify matched packets are redirected to the same queue without FDIR ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU mark/rss
+=================================
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
 
 3. verify rules can be listed and destroyed::
 
@@ -2405,7 +2817,7 @@ Test case: MAC_IPV4_GTPU_EH wrong parameters
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x100 / end actions queue index 1 / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x100000000 / gtp_psc qfi is 0x5 / end actions queue index 2 / end
 
-   the two flows can not be created successfully.
+   the two flows can not be created successfully, report proper error message.
 
 2. list the flow::
 
