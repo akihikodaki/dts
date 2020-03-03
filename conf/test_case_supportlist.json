@@ -1734,5 +1734,20 @@
             "Bug ID": "",
             "Comments": "this case only support on fortville"
         }
+    ],
+    "ixgbe_vf_jumboframe": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case currently support for niantic"
+        }
     ]
 }
