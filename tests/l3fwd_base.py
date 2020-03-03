@@ -37,12 +37,12 @@ import time
 import traceback
 import texttable
 import json
+from enum import Enum
 from pprint import pformat
 from itertools import product
 from copy import deepcopy
 
 from config import SuiteConf
-from settings import HEADER_SIZE
 from packet import Packet
 from pktgen import TRANSMIT_CONT, PKTGEN_TREX, PKTGEN_IXIA
 from utils import convert_int2ip, convert_ip2int
@@ -50,13 +50,48 @@ from exception import VerifyFailure
 import utils
 
 
+class MATCH_MODE(Enum):
+    # LPM(longest prefix match) mode
+    LPM = 'lpm'
+    # EM(Exact-Match) mode
+    EM = 'em'
+
 # LPM(longest prefix match) mode
-LPM = 'lpm'
+LPM = MATCH_MODE.LPM
 # EM(Exact-Match) mode
-EM = 'em'
-# stream types
-L3_IPV6 = 'ipv6'
-L3_IPV4 = 'ipv4'
+EM = MATCH_MODE.EM
+
+
+# stream internet protocol layer types
+class IP_TYPE(Enum):
+    V6 = 'ipv6'
+    V4 = 'ipv4'
+
+L3_IPV6 = IP_TYPE.V6
+L3_IPV4 = IP_TYPE.V4
+
+
+class STREAM_TYPE(Enum):
+    UDP = 'UDP'
+    RAW = 'RAW'
+
+
+HEADER_SIZE = {
+    'ether': 18,
+    'ipv4': 20,
+    'ipv6': 40,
+    'udp': 8,
+    'tcp': 20,
+    'vlan': 8, }
+
+
+def get_enum_name(value, enum_cls):
+    for _, enum_name in list(enum_cls.__members__.items()):
+        if value == enum_name.value:
+            return enum_name
+    else:
+        msg = f"{value} not define in Enum class {enum_cls}"
+        raise Exception(msg)
 
 
 class L3fwdBase(object):
@@ -66,10 +101,15 @@ class L3fwdBase(object):
         self.__white_list = None
         self.__socket = socket
         self.__nic_name = self.nic
-        self.__pkt_typ = 'udp'
+        self.__pkt_typ = STREAM_TYPE.RAW
         # for result
         self.__cur_case = None
         self.__json_results = {}
+        # binary file process
+        self.__l3fwd_restart = True
+        self.__pre_l3fwd_cmd = None
+        self.__l3fwd_wait_up = 0
+        self.__traffic_stop_wait_time = 0
 
     @property
     def output_path(self):
@@ -120,30 +160,52 @@ class L3fwdBase(object):
                 'action': 'random', }, }, }
         return layers, fields_config
 
+    def ___get_pkt_layers(self, pkt_type):
+        if pkt_type in list(Packet.def_packet.keys()):
+            return deepcopy(Packet.def_packet.get(pkt_type).get('layers'))
+        local_def_packet = {
+            'IPv6_RAW': ['ether', 'ipv6', 'raw'],
+        }
+        layers = local_def_packet.get(pkt_type)
+        if not layers:
+            msg = f"{pkt_type} not set in framework/packet.py, nor in local"
+            raise VerifyFailure(msg)
+        return layers
+
     def __get_pkt_len(self, pkt_type, ip_type='ip', frame_size=64):
-        headers_size = sum(
-            map(lambda x: HEADER_SIZE[x], ['eth', ip_type, pkt_type]))
+        layers = self.___get_pkt_layers(pkt_type)
+        if 'raw' in layers:
+            layers.remove('raw')
+        headers_size = sum(map(lambda x: HEADER_SIZE[x], layers))
         pktlen = frame_size - headers_size
         return pktlen
 
     def __get_frame_size(self, name, frame_size):
-        _frame_size = 66 if name == L3_IPV6 and frame_size == 64 else \
+        _frame_size = 66 if name is IP_TYPE.V6 and frame_size == 64 else \
             frame_size
         return _frame_size
+
+    def __get_pkt_type_name(self, ip_layer):
+        if ip_layer is IP_TYPE.V4:
+            name = 'IP_RAW' if self.__pkt_typ == STREAM_TYPE.RAW else \
+                   self.__pkt_typ.value
+        else:
+            name = 'IPv6_' + self.__pkt_typ.value
+        return name
 
     def __config_stream(self, stm_name, layers=None, frame_size=64):
         _framesize = self.__get_frame_size(stm_name, frame_size)
         payload_size = self.__get_pkt_len(
-            self.__pkt_typ,
-            'ip' if stm_name == L3_IPV4 else 'ipv6', _framesize)
+            self.__get_pkt_type_name(stm_name),
+            'ip' if stm_name is IP_TYPE.V4 else 'ipv6', _framesize)
         # set streams for traffic
         pkt_configs = {
-            L3_IPV4: {
-                'type': self.__pkt_typ.upper(),
+            IP_TYPE.V4: {
+                'type': self.__get_pkt_type_name(IP_TYPE.V4),
                 'pkt_layers': {
                     'raw': {'payload': ['58'] * payload_size}}},
-            L3_IPV6: {
-                'type': 'IPv6_' + self.__pkt_typ.upper(),
+            IP_TYPE.V6: {
+                'type': self.__get_pkt_type_name(IP_TYPE.V6),
                 'pkt_layers': {
                     'raw': {'payload': ['58'] * payload_size}}}, }
         if stm_name not in pkt_configs.keys():
@@ -160,8 +222,16 @@ class L3fwdBase(object):
     def __get_pkt_inst(self, pkt_config):
         pkt_type = pkt_config.get('type')
         pkt_layers = pkt_config.get('pkt_layers')
-        pkt = Packet(pkt_type=pkt_type)
-        for layer in pkt_layers.keys():
+        _layers = self.___get_pkt_layers(pkt_type)
+        if pkt_type not in Packet.def_packet.keys():
+            pkt = Packet()
+            pkt.pkt_cfgload = True
+            pkt.assign_layers(_layers)
+        else:
+            pkt = Packet(pkt_type=pkt_type)
+        for layer in list(pkt_layers.keys()):
+            if layer not in _layers:
+                continue
             pkt.config_layer(layer, pkt_layers[layer])
         self.logger.debug(pformat(pkt.pktgen.pkt.command()))
 
@@ -174,9 +244,11 @@ class L3fwdBase(object):
             raise VerifyFailure(msg)
         flows_configs = {}
         for name, mode_configs in flows.items():
+            _name = get_enum_name(name.lower(), IP_TYPE)
             for mode, configs in mode_configs.items():
+                _mode = get_enum_name(mode.lower(), MATCH_MODE)
                 for index, config in enumerate(configs):
-                    if mode == LPM:
+                    if _mode is MATCH_MODE.LPM:
                         # under LPM mode, one port only set one stream
                         if index >= len(self.__valports):
                             break
@@ -185,7 +257,7 @@ class L3fwdBase(object):
                         _layer = {'ether': {'dst': dmac, }, }
                         _layer2, fields_config = \
                             self.__get_ipv4_lpm_vm_config(config) \
-                            if name == L3_IPV4 else \
+                            if _name is IP_TYPE.V4 else \
                             self.__get_ipv6_lpm_vm_config(config)
                         _layer.update(_layer2)
                     else:
@@ -197,7 +269,7 @@ class L3fwdBase(object):
                         _layer = {'ether': {'dst': dmac, }, }
                         _layer.update(config)
                         fields_config = None
-                    flows_configs.setdefault((name, mode), []).append(
+                    flows_configs.setdefault((_name, _mode), []).append(
                         [_layer, fields_config])
         return flows_configs
 
@@ -261,6 +333,9 @@ class L3fwdBase(object):
         stream_ids = self.__add_stream_to_pktgen(streams, stream_option)
         # run packet generator
         result = self.tester.pktgen.measure(stream_ids, traffic_opt)
+        self.logger.debug(
+            f"wait {self.__traffic_stop_wait_time} second after traffic stop")
+        time.sleep(self.__traffic_stop_wait_time)
         return result
 
     def __throughput(self, l3_proto, mode, frame_size):
@@ -356,16 +431,16 @@ class L3fwdBase(object):
             "define RTE_TEST_TX_DESC_DEFAULT.*$/"
             "define RTE_TEST_TX_DESC_DEFAULT 2048/' "
             "./examples/l3fwd/l3fwd.h"))
-        self.__l3fwd_em = self.__init_l3fwd(EM)
-        self.__l3fwd_lpm = self.__init_l3fwd(LPM)
+        self.__l3fwd_em = self.__init_l3fwd(MATCH_MODE.EM)
+        self.__l3fwd_lpm = self.__init_l3fwd(MATCH_MODE.LPM)
 
     def __init_l3fwd(self, mode):
         """
         Prepare long prefix match table, __replace P(x) port pattern
         """
-        l3fwd_method = '_'.join(['l3fwd', mode])
+        l3fwd_method = '_'.join(['l3fwd', mode.value])
         self.d_con("make clean -C examples/l3fwd")
-        flg = 1 if LPM in l3fwd_method else 0
+        flg = 1 if mode is MATCH_MODE.LPM else 0
         out = self.dut.build_dpdk_apps(
             "./examples/l3fwd",
             "USER_FLAGS=-DAPP_LOOKUP_METHOD={}".format(flg))
@@ -379,7 +454,7 @@ class L3fwdBase(object):
         return l3fwd_bin
 
     def __start_l3fwd(self, mode, core_mask, config, frame_size):
-        bin = self.__l3fwd_em if mode == EM else self.__l3fwd_lpm
+        bin = self.__l3fwd_em if mode is MATCH_MODE.EM else self.__l3fwd_lpm
         # Start L3fwd application
         command_line = (
             "{bin} "
@@ -400,14 +475,38 @@ class L3fwdBase(object):
             command_line += " --parse-ptype"
         if frame_size > 1518:
             command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
+        # ignore duplicate start binary with the same option
+        if self.__l3fwd_restart_check(command_line):
+            return
         self.d_con([command_line, "L3FWD:", 120])
         self.__is_l3fwd_on = True
         # wait several second for l3fwd checking ports link status.
-        # It is aimed to make sure trex detect link up status.
-        time.sleep(2 * len(self.__valports))
+        # It is aimed to make sure packet generator detect link up status.
+        wait_time = self.__l3fwd_wait_up if self.__l3fwd_wait_up else \
+                    2 * len(self.__valports)
+        self.logger.debug(f"wait {wait_time} seconds for port link up")
+        time.sleep(wait_time)
+
+    def __l3fwd_restart_check(self, command_line):
+        if self.__l3fwd_restart:
+            self.__pre_l3fwd_cmd = None
+            return False
+
+        if self.__pre_l3fwd_cmd and self.__pre_l3fwd_cmd == command_line:
+            self.logger.debug(
+                ('<{}> is the same command as previous one, '
+                 'ignore re-start l3fwd').format(command_line))
+            return True
+        else:
+            self.__pre_l3fwd_cmd = None
+            self.__close_l3fwd()
+            self.__pre_l3fwd_cmd = command_line
+            return False
 
     def __close_l3fwd(self):
         if not self.__is_l3fwd_on:
+            return
+        if not self.__l3fwd_restart and self.__pre_l3fwd_cmd:
             return
         self.d_con("^C")
         self.__is_l3fwd_on = False
@@ -610,11 +709,12 @@ class L3fwdBase(object):
                 self.__close_l3fwd()
                 if result:
                     results.append([config, frame_size, result])
-            self.__check_throughput_result(l3_proto, results, mode)
+            self.__check_throughput_result(l3_proto, results, mode.value)
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
         finally:
+            self.__pre_l3fwd_cmd = None
             self.__close_l3fwd()
 
         # re-raise verify exception result
@@ -638,11 +738,12 @@ class L3fwdBase(object):
                 self.__close_l3fwd()
                 if result:
                     results.append([config, frame_size, result])
-            self.__check_rfc2544_result(l3_proto, results, mode)
+            self.__check_rfc2544_result(l3_proto, results, mode.value)
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
         finally:
+            self.__pre_l3fwd_cmd = None
             self.__close_l3fwd()
 
         # re-raise verify exception result
@@ -694,7 +795,19 @@ class L3fwdBase(object):
         suite_conf = SuiteConf('l3fwd_base')
         flows = suite_conf.suite_cfg.get('l3fwd_flows')
         test_content['flows'] = flows
-        # parse port config of l3fwd
+        # set stream format type
+        stream_type = suite_conf.suite_cfg.get('stream_type')
+        if stream_type and isinstance(stream_type, str):
+            self.__pkt_typ = get_enum_name(stream_type.upper(), STREAM_TYPE)
+        else:
+            msg = f"use default stream format {self.__pkt_typ.value}"
+            self.logger.warning(msg)
+        # binary file process setting
+        self.__l3fwd_wait_up = test_content.get('l3fwd_wait_up', 0)
+        self.__l3fwd_restart = test_content.get('l3fwd_restart', True)
+        self.__traffic_stop_wait_time = \
+            test_content.get('traffic_stop_wait_time', 0)
+        # parse port config of l3fwd suite
         port_configs, frame_sizes = self.__get_test_configs(
             test_content.get('test_parameters'),
             len(self.__valports), self.__socket)
