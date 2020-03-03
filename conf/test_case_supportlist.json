@@ -1749,5 +1749,22 @@
             "Bug ID": "",
             "Comments": "This case currently support for niantic"
         }
+    ],
+    "perf_kernel_pf_dpdk_iavf_perf_host_only": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "this case only support on fortville"
+        }
     ]
 }
