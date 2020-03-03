@@ -222,7 +222,7 @@ class DPDKdut(Dut):
         """
         Build DPDK source code on linux with specified target.
         """
-        build_time = 300
+        build_time = 600
         if "icc" in target:
             build_time = 900
         # clean all
