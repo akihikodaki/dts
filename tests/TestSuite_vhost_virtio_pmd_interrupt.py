@@ -144,7 +144,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             info = {'core': core_list_l3fwd[queue], 'port': 0, 'queue': queue}
             self.verify_info.append(info)
 
-        command_client = "./examples/l3fwd-power/build/app/l3fwd-power " + \
+        command_client = "./examples/l3fwd-power/build/l3fwd-power " + \
                          "-c %s -n 4 --log-level='user1,7' -- -p 1 -P " + \
                          "--config '%s' --no-numa  --parse-ptype "
         command_line_client = command_client % (core_mask_l3fwd, config_info)

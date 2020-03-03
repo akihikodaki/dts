@@ -106,7 +106,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
         port_info = "0x1" if self.vm_num == 1 else "0x3"
 
-        example_para = "./examples/l3fwd-power/build/app/l3fwd-power "
+        example_para = "./examples/l3fwd-power/build/l3fwd-power "
         para = " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s'" % (vdev_info, port_info, config_info)
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True)
         command_line_client = example_para + eal_params + para

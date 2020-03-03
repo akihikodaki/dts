@@ -193,7 +193,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_l2fwd round %d" % (i + 1))
-            self.dut.send_expect("./examples/l2fwd/build/app/l2fwd -n 4 -c 0xf -- -p 0x3 &", "L2FWD: entering main loop", 60)
+            self.dut.send_expect("./examples/l2fwd/build/l2fwd -n 4 -c 0xf -- -p 0x3 &", "L2FWD: entering main loop", 60)
             self.check_forwarding([0, 1], self.nic)
 
             # kill with different Signal
@@ -209,7 +209,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_l3fwd round %d" % (i + 1))
-            self.dut.send_expect("./examples/l3fwd/build/app/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
+            self.dut.send_expect("./examples/l3fwd/build/l3fwd -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &", "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 
             # kill with different Signal

@@ -57,7 +57,7 @@ class TestCmdline(TestCase):
         # Run cmdline app
         cores = self.dut.get_core_list('1S/1C/1T')
         coreMask = utils.create_mask(cores)
-        self.dut.send_expect("./examples/cmdline/build/app/cmdline -n 1 -c " + coreMask, "> ", 10)
+        self.dut.send_expect("./examples/cmdline/build/cmdline -n 1 -c " + coreMask, "> ", 10)
 
     def set_up(self):
         """

@@ -341,7 +341,7 @@ class TestKni(TestCase):
         config_param = self.build_config_param()
 
         out_kni = self.dut.send_expect(
-            './examples/kni/build/app/kni -c %s -n %d -- -P -p %s %s -m &' %
+            './examples/kni/build/kni -c %s -n %d -- -P -p %s %s -m &' %
             (core_mask, self.dut.get_memory_channels(), port_mask, config_param),
             "Link Up", 20)
 

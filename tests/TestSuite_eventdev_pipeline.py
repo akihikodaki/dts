@@ -98,7 +98,7 @@ class TestEventdevPipeline(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list,
                     ports=[self.dut.ports_info[0]['pci']])
         command_line = "taskset -c %s " + self.app_command + \
-                       "/build/app/eventdev_pipeline %s " + \
+                       "/build/eventdev_pipeline %s " + \
                        "--vdev event_sw0 -- -r%s -t%s -e%s -w %s -s1 -n0 -c32 -W1000 %s -D"
         command_line = command_line % (
                     self.taskset_core_list, eal_params, self.core_mask_rx,

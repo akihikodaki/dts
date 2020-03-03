@@ -140,7 +140,7 @@ class TestCBDMA(TestCase):
         '''
         # flush other output
         self.dut.get_session_output(timeout=1)
-        cmd_command = './examples/ioat/build/app/ioatfwd ' + eal_params + \
+        cmd_command = './examples/ioat/build/ioatfwd ' + eal_params + \
                       '-- -p %s -q %d %s -c %s' % (hex(port_info),
                       self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num, mac_info,
                       self.cbdma_copy_mode)
