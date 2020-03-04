@@ -168,7 +168,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_testpmd round %d" % (i + 1))
-            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "link state change event", 120)
+            self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 -- -i --portmask=0x3" % self.target, "testpmd>", 120)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
