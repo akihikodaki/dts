@@ -87,6 +87,15 @@ Notes: 1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) 
        2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
        3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
 
+Function type
+-------------
+
+    create
+    list
+    destroy
+    flush
+    query
+
 Action type
 -----------
 
@@ -95,7 +104,7 @@ Action type
     rss queues
     passthru
     count identifier 0x1234 shared on|off
-    mark id
+    mark
     mark/rss
 
 
@@ -251,17 +260,16 @@ Send packets
 
    matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/IPv6ExtHdrFragment(1000)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
 
    mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:56")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2022", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::1", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:56")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2022", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::1", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=2, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=2, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=5)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=2, hlim=2)/("X"*480)], iface="enp175s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=5)/("X"*480)], iface="enp175s0f0")
 
 * MAC_IPV6_UDP
 
@@ -459,19 +467,28 @@ Test case: MAC_IPV4_PAY selected inputset queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 1 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 17 / end actions queue index 2 / end
 
 2. send matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=1) / Raw('x' * 80)],iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4) /UDP(sport=22,dport=23)/Raw('x' * 80)],iface="enp175s0f0")
+    pkt1 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=1) / Raw('x' * 80)
+    pkt2 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=1) / Raw('x' * 80)
+    pkt3 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", ttl=2, tos=4) /UDP(sport=22,dport=23)/Raw('x' * 80)
+    pkt4 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, ttl=2, tos=4) /UDP(sport=22,dport=23)/Raw('x' * 80)
+    pkt5 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=17, ttl=2, tos=4)/Raw('x' * 80)
+    pkt6 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1, proto=17, ttl=2, tos=4)/Raw('x' * 80)
 
-   check the packets are distributed to queue 1.
+   check the pkt1 and pkt2 are redirected to queue 1.
+   check the pkt3-pkt6 are redirected to queue 2
    send mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.22") / Raw('x' * 80)],iface="enp175s0f0")
+    pkt7 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.22", proto=1) / Raw('x' * 80)
+    pkt8 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=6) / Raw('x' * 80)
+    pkt9 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/ Raw('x' * 80)
+    pkt10 = Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", frag=1)/TCP(sport=22,dport=23)/ Raw('x' * 80)
 
-   check the packets are not distributed to queue 1.
+   check the packets are not distributed to queue 1 or queue 2.
 
 3. verify rules can be listed and destroyed::
 
@@ -480,9 +497,9 @@ Test case: MAC_IPV4_PAY selected inputset queue index
    check the existing rule.
    destroy the rule::
 
-    testpmd> flow destroy 0 rule 0
+    testpmd> flow flush 0
 
-   verify pkt1 is not distributed to queue 1.
+   verify matched packets are not distributed to expected queue.
    check there is no rule listed.
 
 Test case: MAC_IPV4_UDP queue index
@@ -556,7 +573,7 @@ Test case: MAC_IPV6_PAY queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 1 hop is 2 tc is 1 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 proto is 0 hop is 2 tc is 1 / end actions queue index 1 / end
 
 2. send matched packets, check the packets is distributed to queue 1.
    send mismatched packets, check the packets are not distributed to queue 1.
@@ -578,19 +595,27 @@ Test case: MAC_IPV6_PAY selected inputset queue index
 
 1. create filter rules::
 
-    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 44 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 proto is 6 / end actions queue index 2 / end
 
 2. send matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment(1000)/("X"*480)], iface="enp175s0f0")
+    pkt1 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=44, tc=1, hlim=2)/("X"*480)
+    pkt2 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment(1000)/("X"*480)
+    pkt3 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=44)/TCP(sport=22,dport=23)/("X"*480)
+    pkt4 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment(1000)/TCP(sport=22,dport=23)/("X"*480)
+    pkt5 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)
+    pkt6 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)
 
-   check the packets are distributed to queue 1.
+   check pkt1-pkt4 are redirected to queue 1.
+   check pkt5 and pkt6 are redirected to queue 2.
    send mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)], iface="enp175s0f0")
+    pkt7 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", nh=44)/("X"*480)
+    pkt8 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)
+    pkt9 = Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=17)/("X"*480)
 
-   check the packets are not distributed to queue 1.
+   check the packets are not distributed to queue 1 or queue 2.
 
 3. verify rules can be listed and destroyed::
 
@@ -601,7 +626,7 @@ Test case: MAC_IPV6_PAY selected inputset queue index
 
     testpmd> flow destroy 0 rule 0
 
-   verify matched packet are not distributed to queue 1.
+   verify matched packet are not distributed to expected queue.
    check there is no rule listed.
 
 Test case: MAC_IPV6_UDP queue index
@@ -2942,7 +2967,7 @@ Test case: multi patterns count query
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /TCP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /UDP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21") /SCTP(sport=22, dport=23)/ Raw('x' * 80)],iface="enp175s0f0", count=10)
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0", count=10)
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=4790)/VXLAN(flags=0xc)/IP(dst="192.168.0.21", src="192.168.0.20")/UDP(sport=22,dport=23)/("X"*480)], iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN(vni=2)/Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20")/TCP(dport=23)/("X"*480)], iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN(vni=2)/Ether()/IP(src='192.168.0.20', dst='192.168.0.21')/SCTP(sport=22,dport=23)/("X"*480)], iface="enp175s0f0", count=10)
@@ -3000,13 +3025,34 @@ Test case: multi patterns count query
 
     testpmd> flow list 0
 
-   check the existing rule.
-   destroy the rule::
+   There are 7 rules listed.
+   destroy the rule 0::
+
+    testpmd> flow destroy 0 rule 0
+
+   verify the packet matching rule 0 is not distributed to queue 1.
+   check rule 1-6 listed.
+
+5. destroy the rule 6::
+
+    testpmd> flow destroy 0 rule 6
+
+   verify the packet matching rule 6 is not distributed to queue 5.
+   check rule 1-5 listed.
+
+6. destroy the rule 3::
+
+    testpmd> flow destroy 0 rule 3
+
+   verify the packet matching rule 3 is not distributed to queue 1.
+   check rule 1/2/4/5 listed.
+
+7. flush the all the rules::
 
     testpmd> flow flush 0
 
-   verify matched packet are not distributed to same queue.
-   check there is no rule listed.
+   verify the matched packets are not distributed to the same queue.
+   check no rule listed.
 
 Test case: two ports multi patterns count query
 ===============================================
@@ -3029,7 +3075,7 @@ Test case: two ports multi patterns count query
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1, hlim=2)/TCP(sport=22,dport=23)/("X"*480)], iface="enp175s0f1", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN()/Ether()/IP(src='192.168.0.20', dst='192.168.0.21')/("X"*480)], iface="enp175s0f1", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.21", ttl=2, tos=4)/TCP(sport=22,dport=23)/Raw(load="X"*480)], iface="enp175s0f0", count=10)
-    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=1, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0", count=10)
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=0, tc=1, hlim=2)/("X"*480)], iface="enp175s0f0", count=10)
     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.21", ttl=2, tos=4)/TCP(sport=22,dport=23)/Raw(load="X"*480)], iface="enp175s0f1", count=10)
 
    check the packets,
