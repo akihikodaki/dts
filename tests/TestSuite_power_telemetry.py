@@ -63,16 +63,15 @@ class TestPowerTelemetry(TestCase):
         return target_dir
 
     def d_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         return self.dut.send_expect(*_cmd)
 
     def d_a_con(self, cmd):
-        _cmd = [cmd, '# ', 10] if isinstance(cmd, (str, unicode)) else cmd
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
         return self.dut.alt_session.send_expect(*_cmd)
 
     def get_pkt_len(self, pkt_type, frame_size=64):
-        headers_size = sum(map(lambda x: HEADER_SIZE[x],
-                               ['eth', 'ip', pkt_type]))
+        headers_size = sum([HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
         pktlen = frame_size - headers_size
         return pktlen
 
@@ -87,7 +86,7 @@ class TestPowerTelemetry(TestCase):
         pkt_type = values.get('type')
         pkt_layers = values.get('pkt_layers')
         pkt = Packet(pkt_type=pkt_type)
-        for layer in pkt_layers.keys():
+        for layer in list(pkt_layers.keys()):
             pkt.config_layer(layer, pkt_layers[layer])
         return pkt.pktgen.pkt
 
@@ -154,6 +153,7 @@ class TestPowerTelemetry(TestCase):
         self.l3fwd_power = self.prepare_binary('l3fwd-power')
 
     def start_l3fwd_power(self, core_config='1S/2C/1T'):
+        core_mask, core = '0x6', 2
         option = (' '
                   '-c {core_mask} '
                   '-n {mem_channel} '
@@ -162,9 +162,10 @@ class TestPowerTelemetry(TestCase):
                   '--telemetry '
                   '-p 0x1 '
                   '-P '
-                  '--config="(0,0,2)" '
+                  '--config="(0,0,{core})" '
                   ).format(**{
-                      'core_mask': self.get_cores_mask(core_config),
+                      'core_mask': core_mask,
+                      'core': core,
                       'mem_channel': self.dut.get_memory_channels(), })
         prompt = 'L3FWD_POWER: entering main telemetry loop'
         cmd = [' '.join([self.l3fwd_power, option]), prompt, 60]
@@ -174,8 +175,8 @@ class TestPowerTelemetry(TestCase):
     def close_l3fwd_power(self):
         if not self.is_l3fwd_on:
             return
-        cmd = 'killall ' + os.path.basename(self.l3fwd_power)
-        self.d_a_con(cmd)
+        cmd = "^C"
+        self.d_con(cmd)
 
     def create_query_script(self):
         '''
@@ -224,8 +225,8 @@ class TestPowerTelemetry(TestCase):
         """)
         fileName = 'query_tool.py'
         query_script = os.path.join(self.output_path, fileName)
-        with open(query_script, 'wb') as fp:
-            fp.write('#! /usr/bin/env python' + os.linesep + script_content)
+        with open(query_script, 'w') as fp:
+            fp.write('#! /usr/bin/env python' + os.linesep + str(script_content))
         self.dut.session.copy_file_to(query_script, self.target_dir)
         script_file = os.path.join(self.target_dir, fileName)
         cmd = 'chmod 777 {}'.format(script_file)
@@ -251,7 +252,7 @@ class TestPowerTelemetry(TestCase):
         pipe = '/var/run/some_client'
         cmd = "{0} -j {1} -f {2}".format(self.query_tool, json_file, pipe)
         output = self.d_a_con(cmd)
-        msg = 'faile to query metric data'
+        msg = 'failed to query metric data'
         self.verify("Get metrics done" in output, msg)
         dst_file = os.path.join(self.output_path, json_name)
         self.dut.session.copy_file_from(json_file, dst_file)
@@ -392,11 +393,12 @@ class TestPowerTelemetry(TestCase):
         except_content = None
         try:
             self.start_l3fwd_power()
+            duration = 20
             option = {
                 'traffic_opt': {
                     'method': 'throughput',
-                    'duration': 15,
-                    'interval': 10,
+                    'duration': duration,
+                    'interval': duration - 2,
                     'callback': self.telemetry_query_on_traffic, }}
             self.run_traffic(option)
             time.sleep(5)
