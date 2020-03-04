@@ -187,7 +187,7 @@ class TestMetrics(TestCase):
         self.is_pmd_on = False
 
     def init_proc_info_tool(self):
-        option = ' -v -- --metrics'
+        option = f' -v --file-prefix={self.prefix} -- --metrics'
         self.dpdk_proc = os.path.join(
             self.target_dir, self.target, "app", "dpdk-procinfo" + option)
         self.metrics_stat = []
@@ -785,6 +785,7 @@ class TestMetrics(TestCase):
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Not enough ports")
+        self.prefix = "dpdk_" + self.dut.prefix_subfix
         # prepare testing environment
         self.preset_test_environment()
 
