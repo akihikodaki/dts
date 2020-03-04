@@ -1741,13 +1741,14 @@
                 "ALL"
             ],
             "NIC": [
-                "niantic"
+                "sageville",
+		"twinpond"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "This case currently support for niantic"
+            "Comments": "This case currently support for x550/x540"
         }
     ],
     "perf_kernel_pf_dpdk_iavf_perf_host_only": [
