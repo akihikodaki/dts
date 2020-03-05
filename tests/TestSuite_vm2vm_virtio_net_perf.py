@@ -88,7 +88,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " % (self.base_dir, zerocopy_arg)
         vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " % (self.base_dir, zerocopy_arg)
         eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=True)
-        para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        para = " -- -i --nb-cores=2 --txd=1024 --rxd=1024"
         self.command_line = testcmd + eal_params + vdev1 + vdev2 + para
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('start', timeout=30)
@@ -118,7 +118,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
             vm_info.set_vm_device(**vm_params)
             time.sleep(3)
             try:
-                vm_dut = vm_info.start()
+                vm_dut = vm_info.start(set_target=False)
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
@@ -155,12 +155,12 @@ class TestVM2VMVirtioNetPerf(TestCase):
         # clear the port xstats before iperf
         self.vhost.send_expect("clear port xstats all", "testpmd> ", 10)
 
-        if mode == "tso":
-            iperf_server = "iperf -s -i 1"
-            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30"
-        elif mode == "ufo":
+        if mode == "ufo":
             iperf_server = "iperf -s -u -i 1"
             iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
+        else:
+            iperf_server = "iperf -s -i 1"
+            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30"
         self.vm_dut[0].send_expect("%s > iperf_server.log &" % iperf_server, "", 10)
         self.vm_dut[1].send_expect("%s > iperf_client.log &" % iperf_client, "", 60)
         time.sleep(90)
@@ -273,11 +273,30 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.prepare_test_env(zerocopy, path_mode)
         self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
 
+    def test_vm2vm_split_ring_dequeue_zero_copy_with_tso(self):
+        """
+        VM2VM split ring vhost-user/virtio-net zero copy test with tcp traffic
+        """
+        zerocopy = True
+        path_mode = "tso"
+        self.prepare_test_env(zerocopy, path_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
+
     def test_vm2vm_packed_ring_iperf_with_tso(self):
         """
         VM2VM packed ring vhost-user/virtio-net test with tcp traffic
         """
         zerocopy = False
+        path_mode = "tso"
+        packed_mode = True
+        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
+
+    def test_vm2vm_packed_ring_dequeue_zero_copy_with_tso(self):
+        """
+        VM2VM packed ring vhost-user/virtio-net zero copy test with tcp traffic
+        """
+        zerocopy = True
         path_mode = "tso"
         packed_mode = True
         self.prepare_test_env(zerocopy, path_mode, packed_mode)
