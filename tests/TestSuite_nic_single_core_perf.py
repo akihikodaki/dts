@@ -196,8 +196,8 @@ class TestNicSingleCorePerf(TestCase):
         self.nb_ports = len(self.dut_ports)
         self.verify(self.nb_ports >= 1, "At least 1 port is required to test")
         self.perf_test(self.nb_ports)
-        self.handle_results()
         self.handle_expected()
+        self.handle_results()
 
     def handle_expected(self):
         """
@@ -252,7 +252,7 @@ class TestNicSingleCorePerf(TestCase):
                 # run packet generator
                 streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
                 # set traffic option
-                traffic_opt = {'delay': 30}
+                traffic_opt = {'duration': self.test_duration}
                 # _, pps = self.tester.traffic_generator_throughput(tgenInput, rate_percent=100, delay=30)
                 _, packets_received = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
                 self.verify(packets_received > 0, "No traffic detected")
@@ -348,11 +348,11 @@ class TestNicSingleCorePerf(TestCase):
                 row_dict0['parameters'].append(row_dict3)
                 json_obj[case_name].append(row_dict0)
                 status_result.append(row_dict0['status'])
-        self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
         with open(os.path.join(rst.path2Result,
                                '{0:s}_single_core_perf.json'.format(
                                    self.nic)), 'w') as fp:
             json.dump(json_obj, fp)
+        self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
 
     def set_fields(self):
         """
