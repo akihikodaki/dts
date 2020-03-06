@@ -78,6 +78,8 @@ class TestUnitTestsPmdPerf(TestCase):
         self.dut.build_install_dpdk(self.target)
         out = self.dut.build_dpdk_apps('./app/test/')
         self.verify('make: Leaving directory' in out, "Compilation failed")
+        socket_id = self.dut.ports_info[0]['port'].socket
+        self.cores = self.dut.get_core_list(config='1S/4C/1T', socket=socket_id)
 
     def set_up(self):
         """
@@ -90,8 +92,7 @@ class TestUnitTestsPmdPerf(TestCase):
         Run pmd stream control mode burst test case.
         """
 
-        socket_id = self.dut.ports_info[0]['port'].socket
-        eal_params = self.dut.create_eal_parameters(socket=socket_id)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
         self.dut.send_expect("./app/test/test %s" % (eal_params), "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
@@ -112,8 +113,7 @@ class TestUnitTestsPmdPerf(TestCase):
         self.table_header = ['Mode']
         self.table_header += self.anchors
         self.result_table_create(self.table_header)
-        socket_id = self.dut.ports_info[0]['port'].socket
-        eal_params = self.dut.create_eal_parameters(socket=socket_id)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
         print((self.table_header))
 
         for mode in self.rxtx_modes:
