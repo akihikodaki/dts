@@ -77,6 +77,7 @@ class Dut(Crb):
         self.virt_pids = []
         self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
         self.prefix_list = []
+        self.hugepage_path = None
 
     def filter_cores_from_crb_cfg(self):
         # get core list from crbs.cfg
@@ -175,7 +176,8 @@ class Dut(Crb):
                     file_prefix = config['prefix'] + '_' + self.prefix_subfix
             else:
                 file_prefix = 'dpdk' + '_' + self.prefix_subfix
-            self.prefix_list.append(file_prefix)
+            if file_prefix not in self.prefix_list:
+                self.prefix_list.append(file_prefix)
 
             # deal with vdev
             if 'vdevs' in config and len(config['vdevs']) != 0:
