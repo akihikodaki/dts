@@ -527,6 +527,12 @@ class Crb(object):
             cmd = 'rm -rf %s' % directory
             self.send_expect(cmd, "# ", 20, alt_session)
 
+        # delete hugepage on mnt path
+        if getattr(self, 'hugepage_path', None):
+            for file_prefix in prefix_list:
+                cmd = 'rm %s/%s*' % (self.hugepage_path, file_prefix)
+                self.send_expect(cmd, '# ', 20, alt_session)
+
     def kill_all(self, alt_session=True):
         """
         Kill all dpdk applications on CRB.
