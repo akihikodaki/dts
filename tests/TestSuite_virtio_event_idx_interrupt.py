@@ -93,9 +93,9 @@ class TestVirtioIdxInterrupt(TestCase):
         # get the core mask depend on the nb_cores number
         self.get_core_mask()
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = [r"--vdev 'net_vhost,iface=%s/vhost-net,queues=%d' -- -i " % (self.base_dir, self.queues)]
+        vdev = ['net_vhost,iface=%s/vhost-net,queues=%d ' % (self.base_dir, self.queues)]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pf_pci], vdevs=vdev)
-        para = " --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (self.nb_cores, self.queues, self.queues)
+        para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (self.nb_cores, self.queues, self.queues)
         command_line = testcmd + eal_params + para
         self.vhost.send_expect(command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
