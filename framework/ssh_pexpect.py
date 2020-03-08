@@ -109,16 +109,11 @@ class SSHPexpect:
         """
         ignore_keyintr()
         self.session.PROMPT = self.magic_prompt
-        try:
-            self.session.prompt(timeout)
-        except Exception as e:
-            pass
-
+        output = self.session.try_read_prompt(timeout)
         aware_keyintr()
-        before = self.get_output_all()
         self.__flush()
 
-        return before
+        return output
 
     def __flush(self):
         """
