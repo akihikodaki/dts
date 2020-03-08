@@ -451,8 +451,8 @@ class DPDKdut(Dut):
         """
         Get RTE configuration from config/defconfig_*.
         """
-        out = self.session.send_command("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
-                                        % self.target, 1)
+        out = self.send_expect("cat config/defconfig_%s | sed '/^#/d' | sed '/^\s*$/d'"
+                                        % self.target, "# ")
 
         def_rte_config = re.findall(config+'=(\S+)', out)
         if def_rte_config:
