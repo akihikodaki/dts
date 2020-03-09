@@ -146,6 +146,7 @@ Test Case: Change Link Speed
 
 Test Case: Change Link Speed VF
 ----------------------------
+This case support all the nic with driver i40e and ixgbe.
 
 1. bind a PF to DPDK::
     ./usertools/dpdk-devbind.py -b igb_uio 1b:00.0
