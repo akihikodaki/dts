@@ -50,18 +50,15 @@ class TestLoopbackMultiQueues(TestCase):
         """
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.verify_queue = [1, 8]
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == 0])
+        self.dut_ports = self.dut.get_ports()
+        port_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.core_list = self.dut.get_core_list(config='all', socket=port_socket)
+        self.cores_num = len(self.core_list)
         self.logger.info("you can config packet_size in file %s.cfg," % self.suite_name + \
                         "in region 'suite' like packet_sizes=[64, 128, 256]")
         # get the frame_sizes from cfg file
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
-
-        # set diff arg about mem_socket base on socket number
-        if len(set([int(core['socket']) for core in self.dut.cores])) == 1:
-            self.socket_mem = '1024'
-        else:
-            self.socket_mem = '1024,1024'
 
     def set_up(self):
         """
@@ -81,13 +78,11 @@ class TestLoopbackMultiQueues(TestCase):
         """
         get the coremask about vhost and virito depend on the queue number
         """
-        self.core_config = "1S/%dC/1T" % (2*self.nb_cores+2)
-        self.verify(self.cores_num >= (2*self.nb_cores+2),
+        self.verify(self.cores_num > (2*self.nb_cores + 2),
                         "There has not enought cores to test this case %s" %
                         self.running_case)
-        self.core_list = self.dut.get_core_list(self.core_config)
-        self.core_list_user = self.core_list[0:self.nb_cores + 1]
-        self.core_list_host = self.core_list[self.nb_cores + 1:2 * self.nb_cores + 2]
+        self.core_list_user = self.core_list[1:self.nb_cores + 2]
+        self.core_list_host = self.core_list[self.nb_cores + 2:2 * self.nb_cores + 3]
 
     def start_vhost_testpmd(self):
         """
