@@ -320,7 +320,6 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_testpmd_start()
             self.send_and_verify(vm_cycle, "reconnet from VM")
         self.result_table_print()
-        self.stop_all_apps()
 
     def test_perf_split_ring_reconnet_two_vms(self):
         """
@@ -352,7 +351,6 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_testpmd_start()
             self.send_and_verify(vm_cycle, "reconnet from VM")
         self.result_table_print()
-        self.stop_all_apps()
 
     def test_perf_split_ring_vm2vm_virtio_net_reconnet_two_vms(self):
         """
@@ -419,7 +417,6 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_testpmd_start()
             self.send_and_verify(vm_cycle, "reconnet from VM")
         self.result_table_print()
-        self.stop_all_apps()
 
     def test_perf_packed_ring_reconnet_two_vms(self):
         """
@@ -451,7 +448,6 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_testpmd_start()
             self.send_and_verify(vm_cycle, "reconnet from VM")
         self.result_table_print()
-        self.stop_all_apps()
 
     def test_perf_packed_ring_virtio_net_reconnet_two_vms(self):
         """
@@ -492,12 +488,18 @@ class TestPVPVhostUserReconnect(TestCase):
         #
         # Run after each test case.
         #
-        self.dut.send_expect("killall -s INT testpmd", "# ")
-        self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
+        try:
+            self.stop_all_apps()
+        except Exception as e:
+            self.logger.warning(e)
+        finally:
+            self.dut.kill_all()
+            self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
         time.sleep(2)
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
+        self.dut.kill_all()
         pass
