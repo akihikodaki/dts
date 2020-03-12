@@ -229,7 +229,8 @@ class TestVhostPmdXstats(TestCase):
         """
         Run after each test case.
         """
-        self.vm._stop_vm()
+        if hasattr(self, "vm"):
+            self.vm._stop_vm()
         self.dut.kill_all()
         time.sleep(2)
 
