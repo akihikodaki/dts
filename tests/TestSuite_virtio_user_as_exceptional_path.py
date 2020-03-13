@@ -129,7 +129,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
     def launch_testpmd_exception_path(self):
         testcmd = self.target + "/app/testpmd "
         vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net,queue_size=1024" % self.virtio_mac
-        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci0])
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci])
         para = " -- -i --rxd=1024 --txd=1024"
         self.testcmd_start = testcmd + eal_params + vdev + para
         self.vhost_user = self.dut.new_session(suite="user")
