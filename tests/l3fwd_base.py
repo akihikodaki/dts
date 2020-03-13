@@ -390,6 +390,7 @@ class L3fwdBase(object):
             'rate': max_rate,
             'traffic_opt': {
                 'method': 'rfc2544_dichotomy',
+                'throughput_stat_flag': True,
                 'max_rate': max_rate,
                 'min_rate': min_rate,
                 'accuracy': accuracy,
@@ -399,7 +400,7 @@ class L3fwdBase(object):
         result = self.__send_packets_by_pktgen(option)
         # statistics result
         if result:
-            _, tx_pkts, rx_pkts = result
+            _, tx_pkts, rx_pkts, _ = result
             self.verify(tx_pkts > 0, "No traffic detected")
             self.verify(rx_pkts > 0, "No packet transfer detected")
         else:
@@ -519,11 +520,11 @@ class L3fwdBase(object):
         return {"unit": "Mpps", "name": "Throughput",
                 "value": value[0], "delta": value[1]}
 
-    def __json_line_rate(self, value):
+    def __json_rate_percent(self, value):
         return {"unit": "", "name": "% of Line Rate", "value": value}
 
     def __json_port_config(self, value):
-        return {"unit": "", "name": "Number of Cores/Queues/Threads",
+        return {"unit": "", "name": "Number of Cores/Threads/Queues",
                 "value": value}
 
     def __json_frame_size(self, value):
@@ -531,38 +532,36 @@ class L3fwdBase(object):
                 "value": value}
 
     def __save_throughput_result(self, case_name, result):
-        suite_results = {}
-        case_result = suite_results[case_name] = []
+        case_result = []
         for sub_result in result:
-            status, throughput, line_rate, port_config, frame_size = sub_result
+            status, throughput, rate_percent, port_config, frame_size = sub_result
             one_result = {
                 "status": status,
                 "performance": [
                     self.__json_throughput(throughput),
-                    self.__json_line_rate(line_rate), ],
+                    self.__json_rate_percent(rate_percent), ],
                 "parameters": [
                     self.__json_port_config(port_config),
                     self.__json_frame_size(frame_size), ]}
             case_result.append(one_result)
-        self.logger.debug(pformat(suite_results))
-        self.__json_results[case_name] = suite_results
+        self.logger.debug(pformat(case_result))
+        self.__json_results[case_name] = case_result
 
     def __save_rfc2544_result(self, case_name, result):
-        suite_results = {}
-        case_result = suite_results[case_name] = []
+        case_result = []
         for sub_result in result:
-            status, rfc2544, line_rate, port_config, frame_size = sub_result
+            status, rfc2544, rate_percent, port_config, frame_size = sub_result
             one_result = {
                 "status": status,
                 "performance": [
                     self.__json_rfc2544(rfc2544),
-                    self.__json_line_rate(line_rate), ],
+                    self.__json_rate_percent(rate_percent), ],
                 "parameters": [
                     self.__json_port_config(port_config),
                     self.__json_frame_size(frame_size), ]}
             case_result.append(one_result)
-        self.logger.debug(pformat(suite_results))
-        self.__json_results[case_name] = suite_results
+        self.logger.debug(pformat(case_result))
+        self.__json_results[case_name] = case_result
 
     def l3fwd_save_results(self, json_file=None):
         if not self.__json_results:
@@ -627,7 +626,7 @@ class L3fwdBase(object):
                        'ignore check').format(config, frame_size)
                 self.logger.warning(msg)
                 status = 'pass'
-            js_results.append([status, result, linerate, config, frame_size])
+            js_results.append([status, [pps, linerate - pps], percentage, config, frame_size])
         # save data with json format
         self.__save_throughput_result(self.__cur_case, js_results)
         # display result table
@@ -656,18 +655,23 @@ class L3fwdBase(object):
                 self.__test_content.get('expected_rfc2544', {}).get(
                 self.__cur_case, {}).get(self.__nic_name, {}).get(
                 config, {}).get(str(frame_size), {})
-            zero_loss_rate, tx_pkts, rx_pkts = result if result else [None] * 3
+            zero_loss_rate, tx_pkts, rx_pkts, pps = result if result else [None] * 3
+            mpps = pps / 1000000.0
             # expected line rate
             _frame_size = self.__get_frame_size(stm_name, frame_size)
             linerate = self.wirespeed(
                 self.nic, _frame_size, len(self.__valports))
-            throughput = linerate * zero_loss_rate / 100
+            actual_rate_percent = mpps * 100 / linerate
             # append data for display
             pdr = expected_cfg.get('traffic_opt', {}).get('pdr')
             values.append([
                 config, frame_size, mode.upper(),
-                str(throughput),
+                str(linerate),
+                str(mpps),
                 str(zero_loss_rate),
+                str(actual_rate_percent),
+                str(tx_pkts),
+                str(rx_pkts),
             ])
             # check data with expected values
             expected_rate = float(expected_cfg.get('rate') or 100.0)
@@ -675,7 +679,9 @@ class L3fwdBase(object):
                 if zero_loss_rate and zero_loss_rate > expected_rate \
                 else 'failed'
             js_results.append(
-                [status, [zero_loss_rate, 0], linerate, config, frame_size])
+                [status,
+                 [mpps, linerate - mpps], actual_rate_percent,
+                 config, frame_size])
         # save data in json file
         self.__save_rfc2544_result(self.__cur_case, js_results)
         # display result table
@@ -683,8 +689,12 @@ class L3fwdBase(object):
             'Total Cores/Threads/Queues per port',
             "Frame Size",
             "Mode",
-            'Theory line rate (Mpps) '.format(mode.upper()),
-            '{} Mode Zero Loss Rate % '.format(mode.upper()),
+            'Expected Throughput (Mpps)',
+            'Actual line rate (Mpps) ',
+            '{} Mode config line rate % '.format(mode.upper()),
+            '{} Mode actual line rate % '.format(mode.upper()),
+            'tx_pkts',
+            'rx_pkts',
         ]
 
         _data = {
