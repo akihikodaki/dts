@@ -530,7 +530,7 @@ class Crb(object):
         # delete hugepage on mnt path
         if getattr(self, 'hugepage_path', None):
             for file_prefix in prefix_list:
-                cmd = 'rm %s/%s*' % (self.hugepage_path, file_prefix)
+                cmd = 'rm -rf %s/%s*' % (self.hugepage_path, file_prefix)
                 self.send_expect(cmd, '# ', 20, alt_session)
 
     def kill_all(self, alt_session=True):
