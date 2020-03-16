@@ -40,12 +40,14 @@ import utils
 import time
 import re
 import os
+import random
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import HEADER_SIZE, PROTOCOL_PACKET_SIZE
 from exception import VerifyFailure
 from qemu_kvm import QEMUKvm
 from settings import get_nic_name
+from random import randint
 
 #
 #
@@ -743,6 +745,26 @@ class TestShutdownApi(TestCase):
         time.sleep(5)
         self.check_ports(status=True)
         self.check_forwarding()
+
+    def test_check_rxtx_desc_status(self):
+        """
+        Check tx and rx descriptors status.
+        """
+        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+
+        for i in range(3):
+            self.desc = randint(0, 4095)
+            out = self.dut.send_expect("show port %s rxq 0 desc %s status" % (self.ports[0], self.desc), "testpmd> ")
+            self.verify(
+               "Desc status = AVAILABLE" in out, "RX descriptor status is improper")
+            self.verify(
+               "Bad arguments" not in out, "RX descriptor status is not supported")
+            self.desc = randint(0, 511)
+            out = self.dut.send_expect("show port %s txq 0 desc %s status" % (self.ports[0], self.desc), "testpmd> ")
+            self.verify(
+               "Desc status = FULL" in out, "TX descriptor status is improper")
+            self.verify(
+               "Bad arguments" not in out, "TX descriptor status is not supported")
 
     def tear_down(self):
         """
