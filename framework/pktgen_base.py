@@ -263,6 +263,7 @@ class PacketGenerator(object):
         """
         delay = options.get('delay')
         duration = options.get('duration') or 10
+        throughput_stat_flag = options.get('throughput_stat_flag') or False
         self._prepare_transmission(stream_ids=stream_ids)
         # start warm up traffic
         self.__warm_up_pktgen(stream_ids, options, delay)
@@ -270,6 +271,8 @@ class PacketGenerator(object):
         self._start_transmission(stream_ids, options)
         # keep traffic within a duration time
         time.sleep(duration)
+        if throughput_stat_flag:
+            _throughput_stats = self.__get_single_throughput_statistic(stream_ids)
         self._stop_transmission(None)
         result = {}
         used_rx_port = []
@@ -287,7 +290,10 @@ class PacketGenerator(object):
                 if loss_rate < 0:
                     loss_rate = 0
             result[port_id] = (loss_rate, tx_pkts, rx_pkts)
-        return result
+        if throughput_stat_flag:
+            return result, _throughput_stats
+        else:
+            return result
 
     def measure_loss(self, stream_ids=[], options={}):
         '''
@@ -491,6 +497,7 @@ class PacketGenerator(object):
         accuracy = options.get('accuracy') or 0.001
         permit_loss_rate = options.get('pdr') or 0.0
         duration = options.get('duration') or 10.0
+        throughput_stat_flag = options.get('throughput_stat_flag') or False
         # start warm up traffic
         delay = options.get('delay')
         _options = {'duration': duration}
@@ -505,10 +512,14 @@ class PacketGenerator(object):
         traffic_rate_min = min_rate
         while True:
             # run loss rate testing
-            _options = {'duration': duration}
+            _options = {
+                'throughput_stat_flag': throughput_stat_flag,
+                'duration': duration, }
             result = self._measure_loss(stream_ids, _options)
             loss_rate_table.append([rate, result])
-            status = self._check_loss_rate(result, permit_loss_rate)
+            status = self._check_loss_rate(
+                result[0] if throughput_stat_flag else result,
+                permit_loss_rate)
             # if upper bound rate percent hit, quit the left flow
             if rate == max_rate and status:
                 hit_result = result
@@ -528,16 +539,28 @@ class PacketGenerator(object):
             # set stream rate percent to custom value
             self._set_stream_rate_percent(rate)
 
-        if not hit_result:
-            msg = ('expected permit loss rate <{0}> '
-                   'not between rate {1} and rate {2}').format(
-                        permit_loss_rate, max_rate, min_rate)
-            self.logger.error(msg)
-            self.logger.info(pformat(loss_rate_table))
-            ret_value = 0, result[0][1], result[0][2]
+        if throughput_stat_flag:
+            if not hit_result or not hit_result[0]:
+                msg = ('expected permit loss rate <{0}> '
+                       'not between rate {1} and rate {2}').format(
+                            permit_loss_rate, max_rate, min_rate)
+                self.logger.error(msg)
+                self.logger.info(pformat(loss_rate_table))
+                ret_value = 0, result[0][0][1], result[0][0][2], 0
+            else:
+                self.logger.debug(pformat(loss_rate_table))
+                ret_value = rate, hit_result[0][0][1], hit_result[0][0][2], hit_result[1][1]
         else:
-            self.logger.debug(pformat(loss_rate_table))
-            ret_value = rate, hit_result[0][1], hit_result[0][2]
+            if not hit_result:
+                msg = ('expected permit loss rate <{0}> '
+                       'not between rate {1} and rate {2}').format(
+                            permit_loss_rate, max_rate, min_rate)
+                self.logger.error(msg)
+                self.logger.info(pformat(loss_rate_table))
+                ret_value = 0, result[0][1], result[0][2]
+            else:
+                self.logger.debug(pformat(loss_rate_table))
+                ret_value = rate, hit_result[0][1], hit_result[0][2]
         self.logger.info("zero loss rate is %f" % rate)
 
         return ret_value
