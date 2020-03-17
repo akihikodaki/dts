@@ -2664,6 +2664,24 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "change_linkspeed": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "springville",
+                "columbiaville_25g",
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only i40e and ixgbe driver support this case"
+        }
+    ],
     "change_linkspeed_vf": [
         {
             "OS": [
