@@ -326,7 +326,8 @@ class TestVhostMultiQueueQemu(TestCase):
         Run after each test case.
         Clear vhost-switch and qemu to avoid blocking the following TCs
         """
-        self.vm.stop()
+        if hasattr(self, "vm"):
+            self.vm.stop()
         self.dut.kill_all()
         time.sleep(2)
 
