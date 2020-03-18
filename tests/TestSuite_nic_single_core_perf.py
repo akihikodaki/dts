@@ -231,7 +231,9 @@ class TestNicSingleCorePerf(TestCase):
             param += " --rxq=2 --txq=2"
         # columbiaville use one queue per port for best performance.
         elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
-            param += "  --rxq=%d --rxq=%d" % (port_num, port_num)
+            param += " --rxq=1 --txq=1"
+            # workaround for that testpmd can't forward packets in io forward mode
+            param += " --port-topology=loop"
 
         for frame_size in list(self.test_parameters.keys()):
             self.throughput[frame_size] = dict()
