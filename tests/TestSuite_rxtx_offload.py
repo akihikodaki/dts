@@ -89,7 +89,7 @@ class TestRxTx_Offload(TestCase):
         """
         # Support i40e/ixgbe NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T",
                                  "niantic", "twinpond", "sagepond", "sageville"], "NIC Unsupported: " + str(self.nic))
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -502,7 +502,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
         self.check_port_config("tx", "NULL")
@@ -542,7 +542,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
         offload = ["vlan_insert"]
@@ -657,7 +657,7 @@ class TestRxTx_Offload(TestCase):
         capabilities = self.check_port_capability("tx")
         # Disable per queue capability first, if it is FVL/Fortpark.
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
             self.dut.send_expect("port start 0", "testpmd> ")
@@ -676,7 +676,7 @@ class TestRxTx_Offload(TestCase):
         """
         # Only support i40e NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support rx offload setting by queue." % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"], "%s nic not support rx offload setting by queue." % self.nic)
         # Check offload configuration by port and by queue.
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         offload = ["mbuf_fast_free"]

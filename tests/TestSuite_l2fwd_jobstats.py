@@ -48,7 +48,7 @@ class TestL2fwdJobstats(TestCase):
         """
 
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortville_25g", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T"],
                     "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")

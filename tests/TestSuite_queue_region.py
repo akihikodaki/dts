@@ -58,7 +58,7 @@ class TestQueue_region(TestCase):
         Queue region Prerequisites
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "fortpark_TLV", "carlsville"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","carlsville"], "NIC Unsupported: " + str(self.nic))
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -217,7 +217,7 @@ class TestQueue_region(TestCase):
         self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 33", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 4 flowtype 35", "testpmd> ")
         self.dut.send_expect("set port 0 queue-region region_id 6 flowtype 36", "testpmd> ")
-        if self.nic in ["fortpark_TLV"]:
+        if self.nic in ["fortpark_TLV","fortpark_BASE-T"]:
             self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 39", "testpmd> ")
         else:
             self.dut.send_expect("set port 0 queue-region region_id 2 flowtype 41", "testpmd> ")
@@ -242,7 +242,7 @@ class TestQueue_region(TestCase):
         queue_udp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="udp")
 
         # fortville can't parse the TCP SYN type packet, fortpark can parse it.
-        if(self.nic in ["fortpark_TLV"]):
+        if(self.nic in ["fortpark_TLV","fortpark_BASE-T"]):
             queue_region = ["3", "4"]
             self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="tcp", flags="S")
         else:
@@ -265,7 +265,7 @@ class TestQueue_region(TestCase):
         # fortville can't parse the TCP SYN type packet, fortpark can parse it.
         # default is SYN mode.
         # not assign ipv4-tcp SYN packet to any queue region, the packet to queue region 0.
-        if(self.nic in ["fortpark_TLV"]):
+        if(self.nic in ["fortpark_TLV","fortpark_BASE-T"]):
             queue_region = ["1"]
             queue_ipv6tcp = self.send_and_check(queue_region, mac=self.pf_mac, pkt_type="ipv6_tcp", flags="S")
         else:

@@ -287,12 +287,12 @@ class TestGeneric_flow_api(TestCase):
         if "validate" in flow_cmd:
             # ethertype invalid or queue id exceeds max queue number.
             if "86dd" in flow_cmd or "0800" in flow_cmd or "index %s" % str(MAX_QUEUE + 1) in flow_cmd:
-                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV",
+                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T",
                                 "niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
                                 "powerville"]:
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
-                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV"]:
+                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
             elif (("vf0" in flow_action['flows']) or ("vf1" in flow_action['flows']) or (
@@ -304,12 +304,12 @@ class TestGeneric_flow_api(TestCase):
         elif "create" in flow_cmd:
             # ethertype invalid or queue id exceeds max queue number.
             if "86dd" in flow_cmd or "0800" in flow_cmd or "index %s" % str(MAX_QUEUE + 1) in flow_cmd:
-                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV",
+                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T",
                                 "niantic", "kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
                                 "powerville"]:
                     self.dut.send_expect(flow_cmd, "error")
             elif "type is 0x8100" in flow_cmd:
-                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV"]:
+                if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]:
                     self.dut.send_expect(flow_cmd, "error")
             # vf queue id exceeds max vf queue number.
             elif (("vf0" in flow_action['flows']) or ("vf1" in flow_action['flows']) or (
@@ -772,7 +772,7 @@ class TestGeneric_flow_api(TestCase):
         """
         self.verify(self.nic in ["niantic", "columbiaville_25g","columbiaville_100g","kawela_4", "kawela", "bartonhills", "twinville", "sagepond", "sageville",
                                  "powerville", "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support ethertype filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"], "%s nic not support ethertype filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -782,7 +782,7 @@ class TestGeneric_flow_api(TestCase):
 
         # i40e,ixgbe and igb support different packet types.
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV","columbiaville_25g","columbiaville_100g"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"]):
 
             basic_flow_actions = [
                 {'create': 'validate', 'flows': ['ether', 'arp'], 'actions': ['queue']},
@@ -868,7 +868,7 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir L2 payload filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"], "%s nic not support fdir L2 payload filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -889,7 +889,7 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"], "%s nic not support fdir vlan filter" % self.nic)
         self.setup_env()
         # start testpmd on pf
         self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
@@ -981,11 +981,11 @@ class TestGeneric_flow_api(TestCase):
         """
         self.verify(self.nic in ["niantic", "columbiaville_25g","columbiaville_100g","twinville", "sagepond", "sageville",
                                  "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"],
                     "%s nic not support fdir ipv4 filter" % self.nic)
         # i40e
         if (self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.setup_env()
             # start testpmd on pf
             self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
@@ -1090,11 +1090,11 @@ class TestGeneric_flow_api(TestCase):
         """
         self.verify(self.nic in ["niantic", "twinville", "sagepond", "sageville","columbiaville_25g","columbiaville_100g",
                                  "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"],
                     "%s nic not support fdir ipv6 filter" % self.nic)
         # i40e
         if (self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.setup_env()
             self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -1210,11 +1210,11 @@ class TestGeneric_flow_api(TestCase):
         """
         self.verify(self.nic in ["niantic", "twinville", "sagepond", "sageville",
                                  "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"],
                     "%s nic not support fdir flexbytes filter" % self.nic)
         # i40e
         if (self.nic in ["fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortpark_TLV"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
             self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -1538,7 +1538,7 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
-                                 "fortville_spirit_single", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"],
                     "%s nic not support tunnel vxlan filter" % self.nic)
 
         self.setup_env()
@@ -1602,7 +1602,7 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","columbiaville_25g","columbiaville_100g",
-                                 "fortville_spirit_single", "fortpark_TLV"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"],
                     "%s nic not support tunnel nvgre filter" % self.nic)
 
         self.setup_env()

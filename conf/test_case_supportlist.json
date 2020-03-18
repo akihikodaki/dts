@@ -179,8 +179,9 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-		"fortpark_TLV",
-	        "carlsville",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "carlsville",
                 "columbiaville_25g",
                 "columbiaville_100g"
             ],
@@ -582,6 +583,7 @@
                 "fortville_25g",
                 "fortpark",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "fortpark_TLV_vf",
                 "fvl10g_vf",
 		"carlsville"
@@ -603,7 +605,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -622,7 +625,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -641,7 +645,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -660,7 +665,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -698,7 +704,8 @@
                 "fortville_spirit_single",
                 "fortville_25g",
                 "fortpark",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -716,7 +723,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -806,7 +814,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -824,7 +833,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -846,7 +856,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -881,7 +892,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -908,6 +920,7 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
 		"carlsville"
             ],
             "Target": [
@@ -962,7 +975,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -980,7 +994,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"

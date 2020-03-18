@@ -415,12 +415,12 @@ class TestPmdrssHash(TestCase):
 
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
                     "fortville_spirit_single", "redrockcanyou", "atwood",
-                    "boulderrapid", "fortpark_TLV", "fortville_25g", "niantic", "carlsville"],
+                    "boulderrapid", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "niantic", "carlsville"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
         global iptypes
 
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortville_25g", "carlsville"]:
+        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "carlsville"]:
             reta_num = 512
         elif self.nic in ["niantic"]:
             reta_num = 128
@@ -614,7 +614,7 @@ class TestPmdrssHash(TestCase):
         
         # setup testpmd and finish bond config
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
-                    "fortpark_TLV", "fortville_25g", "carlsville"],
+                    "fortpark_TLV","fortpark_BASE-T", "fortville_25g", "carlsville"],
                     "NIC Unsupported: " + str(self.nic))
 
         self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i" % (self.target, self.coremask, self.dut.get_memory_channels()), "testpmd> ", 120)

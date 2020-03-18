@@ -19,6 +19,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -67,6 +68,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -95,6 +97,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -116,6 +119,7 @@
                 "fortville_25g",
                 "springville",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -145,6 +149,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -172,6 +177,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -198,6 +204,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -224,6 +231,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -252,6 +260,7 @@
                 "cavium_a034",
                 "cavium_a011",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "carlsville"
             ],
             "Target": [
@@ -275,6 +284,7 @@
                 "springville",
                 "fortville_25g",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "cavium_a063",
                 "cavium_a064",
                 "carlsville",
@@ -299,6 +309,7 @@
                 "fortville_spirit_single",
                 "fortville_25g",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "cavium_a063",
                 "cavium_a064",
                 "carlsville",
@@ -405,7 +416,8 @@
                 "springville",
                 "cavium_a034",
                 "cavium_0011",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -442,7 +454,8 @@
                 "springville",
                 "cavium_a034",
                 "cavium_0011",
-                "fortpark_TLV"
+                "fortpark_TLV",
+                "fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
@@ -517,6 +530,7 @@
                 "fortville_spirit_single",
                 "fortville_25g",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "sagepond",
                 "sageville",
                 "carlsville",
@@ -541,6 +555,7 @@
                 "fortville_spirit_single",
                 "fortville_25g",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "sagepond",
                 "sageville",
                 "carlsville",
@@ -1999,6 +2014,7 @@
                 "fortville_25g",
                 "fortpark",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "fortpark_TLV_vf"
             ],
             "Target": [
@@ -2163,6 +2179,7 @@
                 "cavium_a063",
                 "fortville_25g",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "cavium_a064",
                 "carlsville"
             ],
@@ -2255,6 +2272,7 @@
                 "fortville_25g",
                 "fortpark",
                 "fortpark_TLV",
+                "fortpark_BASE-T",
                 "cavium_a063",
                 "fortpark_TLV_vf",
                 "cavium_a064",

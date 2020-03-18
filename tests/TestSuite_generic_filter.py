@@ -81,7 +81,7 @@ class TestGeneric_filter(TestCase):
         """
          set port queue mapping, fortville not support this function
         """
-        if self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"]:
+        if self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T", "carlsville"]:
             self.dut.send_expect(
                 "set stat_qmap rx %s 0 0" % valports[0], "testpmd> ")
             self.dut.send_expect(
@@ -372,7 +372,7 @@ class TestGeneric_filter(TestCase):
 
         self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", 
                            "powerville", "fortville_eagle", "fortville_spirit",
-                           "fortville_spirit_single", "fortpark_TLV", "fortville_25g","cavium_a063", "carlsville"], "%s nic not support syn filter" % self.nic)
+                           "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g","cavium_a063", "carlsville"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
@@ -633,7 +633,7 @@ class TestGeneric_filter(TestCase):
             self.verify(False, "%s nic not support this test" % self.nic)
     def test_jumbo_frame_size(self):
         
-        self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "carlsville"], "%s nic not support this test" % self.nic)
+        self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T", "carlsville"], "%s nic not support this test" % self.nic)
         if (self.nic in ["cavium_a063", "cavium_a064"]):
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200" % portMask)

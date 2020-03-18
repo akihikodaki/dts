@@ -47,7 +47,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
     max_white_per_testpmd = 18
 
     def set_up_all(self):
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g", "fortpark_TLV"],
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g", "fortpark_TLV","fortpark_BASE-T"],
                     "Only supported by Fortville")
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports')
@@ -72,7 +72,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         """
         if self.nic in ['fortville_eagle']:
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 32, driver=driver)
-        elif self.nic in ['fortville_25g', 'fortville_spirit', 'fortpark_TLV']:
+        elif self.nic in ['fortville_25g', 'fortville_spirit', 'fortpark_TLV',"fortpark_BASE-T"]:
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 64, driver=driver)
 
         self.sriov_vfs_port_0 = self.dut.ports_info[self.used_dut_port]['vfs_port']
@@ -156,7 +156,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
             left_queues = 384 - 65 - 32 * 4
             vf1_white_index = left_queues / 16
             vf2_queue_number = left_queues % 16
-        elif self.nic in ['fortville_25g', 'fortville_spirit', 'fortpark_TLV']:
+        elif self.nic in ['fortville_25g', 'fortville_spirit', 'fortpark_TLV',"fortpark_BASE-T"]:
             left_queues = 768 - 65 - 64 * 4
             vf1_white_index = left_queues / 16
             vf2_queue_number = left_queues % 16

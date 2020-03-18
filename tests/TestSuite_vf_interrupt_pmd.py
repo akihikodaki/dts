@@ -319,7 +319,7 @@ class TestVfInterruptPmd(TestCase):
         """
         Check Interrupt for VF with vfio driver, need test with i40e driver
         """
-        self.verify(self.nic in ['fortville_eagle', 'fortville_spirit', 'fortville_spirit_single', 'fortpark_TLV'], '%s nic port not support vf multi-queues interrupt' % str(self.nic))
+        self.verify(self.nic in ['fortville_eagle', 'fortville_spirit', 'fortville_spirit_single', 'fortpark_TLV',"fortpark_BASE-T"], '%s nic port not support vf multi-queues interrupt' % str(self.nic))
         self.queues = 4
         self.prepare_l3fwd_power(self.dut)
         self.set_NIC_link()
@@ -349,7 +349,7 @@ class TestVfInterruptPmd(TestCase):
         """
         Check for interrupts within the VM, need test with i40e driver
         """
-        self.verify(self.nic in ['fortville_eagle', 'fortville_spirit', 'fortville_spirit_single', 'fortpark_TLV'], '%s nic port not support vf multi-queues interrupt' % str(self.nic))
+        self.verify(self.nic in ['fortville_eagle', 'fortville_spirit', 'fortville_spirit_single','fortpark_TLV', 'fortpark_BASE-T'], '%s nic port not support vf multi-queues interrupt' % str(self.nic))
         self.setup_vm_env()
         self.vm0_dut.send_expect("ip link set %s vf 0 mac %s" %
                                  (self.host_intf0, self.vf0_mac), "# ")
