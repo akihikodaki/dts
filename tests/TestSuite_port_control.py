@@ -131,7 +131,7 @@ class TestPortControl(TestCase):
                 netdev = self.dut.ports_info[port]['port']
                 driver = netdev.get_nic_driver()
                 if driver != 'vfio-pci':
-                    netdev.bind_driver(driver=self.d)
+                    netdev.bind_driver(driver='vfio-pci')
 
         elif driver == "igb_uio":
             # igb_uio should insmod as default, no need to check
