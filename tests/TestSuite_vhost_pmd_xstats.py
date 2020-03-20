@@ -56,69 +56,37 @@ class TestVhostPmdXstats(TestCase):
         self.unbind_ports = copy.deepcopy(self.dut_ports)
         self.unbind_ports.remove(0)
         self.dut.unbind_interfaces_linux(self.unbind_ports)
-        cores = self.dut.get_core_list("1S/4C/1T")
-        self.coremask = utils.create_mask(cores)
         txport = self.tester.get_local_port(self.dut_ports[0])
         self.txItf = self.tester.get_interface(txport)
-
         self.scapy_num = 0
         self.dmac = self.dut.get_mac_address(self.dut_ports[0])
         self.virtio1_mac = "52:54:00:00:00:01"
-        self.pci_info = self.dut.ports_info[0]['pci']
-
-        # build sample app
-        out = self.dut.build_dpdk_apps("./examples/vhost")
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
-        self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.core_config = "1S/6C/1T"
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
+                              == self.ports_socket])
+        self.verify(self.cores_num >= 6,
+                    "There has not enough cores to test this case")
+        self.core_list = self.dut.get_core_list(
+            self.core_config, socket=self.ports_socket)
+        self.core_list_user = self.core_list[0:3]
+        self.core_list_host = self.core_list[3:6]
+        self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
 
     def set_up(self):
         """ 
         Run before each test case.
         Launch vhost sample using default params
         """
-        self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall vhost-switch", "#")
-        dut_arch = self.dut.send_expect("uname -m", "#")
-        self.dut.send_expect("killall qemu-system-%s" % dut_arch, "#")
+        self.dut.send_expect("rm -rf ./vhost-net*", "#")
+        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.virtio_user = self.dut.new_session(suite="virtio-user")
 
-    def vm_testpmd_start(self):
-        """
-        Start testpmd in vm
-        """
-        self.vm_testpmd = "./%s/app/testpmd -c 0x3 -n 4 -- -i --tx-offloads=0" % self.target
-        if self.vm_dut is not None:
-            self.vm_dut.send_expect(self.vm_testpmd, "testpmd>", 60)
-
-    def vm_tx_first_start(self):
-        """
-        Start tx_first
-        """
-        if self.vm_dut is not None:
-            # Start tx_first
-            self.vm_dut.send_expect("set fwd mac", "testpmd>")
-            self.vm_dut.send_expect("start tx_first", "testpmd>")
-
-    def start_onevm(self):
-        """
-        Start One VM with one virtio device
-        """
-        self.vm_dut = None
-        self.vm = QEMUKvm(self.dut, 'vm0', 'vhost_pmd_xstats')
-        vm_params = {}
-        vm_params['driver'] = 'vhost-user'
-        vm_params['opt_path'] = self.base_dir + '/vhost-net'
-        vm_params['opt_mac'] = self.virtio1_mac
-        self.vm.set_vm_device(**vm_params)
-
-        try:
-            self.vm_dut = self.vm.start()
-            if self.vm_dut is None:
-                raise Exception("Set up VM ENV failed")
-        except Exception as e:
-            self.logger.error("Failure for %s" % str(e))
-        return True
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
 
     def scapy_send_packet(self, pktsize, dmac, num=1):
         """
@@ -126,116 +94,237 @@ class TestVhostPmdXstats(TestCase):
         """
         self.scapy_num += 1
         pkt = Packet(pkt_type='TCP', pkt_len=pktsize)
-        pkt.config_layer('ether', {'dst': dmac, })
+        pkt.config_layer('ether', {'dst': dmac})
         pkt.send_pkt(self.tester, tx_port=self.txItf, count=num)
 
     def send_verify(self, scope, mun):
         """
         according the scope to check results
         """
-        out = self.dut.send_expect(
-            "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
-        packet = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
-        sum_packet = packet.group(1)
-        self.verify(int(sum_packet) >= mun,
-                    "Insufficient the received package")
+        out = self.vhost_user.send_expect(
+            "show port xstats 1", "testpmd>", 60)
+        packet_rx = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
+        sum_packet_rx = packet_rx.group(1)
+        packet_tx = re.search("tx_%s_packets:\s*(\d*)" % scope, out)
+        sum_packet_tx = packet_tx.group(1)
+        self.verify(int(sum_packet_rx) >= mun,
+                    "Insufficient the received packets from nic")
+        self.verify(int(sum_packet_tx) >= mun,
+                    "Insufficient the received packets from virtio")
 
-    def prepare_start(self):
+    def start_vhost_testpmd(self):
         """
-        prepare all of the conditions for start
+        start testpmd on vhost
         """
-        testcmd = self.target + "/app/testpmd "
-        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=1'" % self.base_dir]
-        eal_params = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci_info], vdevs=vdev)
-        para = " -- -i --nb-cores=1"
-        cmd = testcmd + eal_params + para
-        self.dut.send_expect(cmd, "testpmd>", 60)
-        self.start_onevm()
-        self.vm_testpmd_start()
-        self.dut.send_expect("set fwd mac", "testpmd>", 60)
-        self.dut.send_expect("start tx_first", "testpmd>", 60)
-        self.vm_tx_first_start()
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_host, prefix='vhost',
+                                                   vdevs=['net_vhost0,iface=vhost-net,queues=2,client=0'])
+        command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i --nb-cores=2 --rxq=2 --txq=2 --rss-ip'
+        self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
+        self.vhost_user.send_expect("set fwd io", "testpmd> ", 120)
+        self.vhost_user.send_expect("start", "testpmd> ", 120)
 
-    def test_based_size(self):
+    def start_virtio_testpmd(self, args):
+        """
+        start testpmd on virtio
+        """
+        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_user, prefix='virtio',
+                                                   no_pci=True, vdevs=[
+                'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,%s' % args["version"]])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i %s --rss-ip --nb-cores=2 --rxq=2 --txq=2" % \
+                            args["path"]
+        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
+        self.virtio_user.send_expect("set fwd io", "testpmd> ", 120)
+        self.virtio_user.send_expect("start", "testpmd> ", 120)
+
+    def xstats_number_and_type_verify(self):
         """
         Verify receiving and transmitting packets correctly in the Vhost PMD xstats
         """
-        self.prepare_start()
-        out = self.dut.send_expect(
-            "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
+        out = self.vhost_user.send_expect(
+            "show port xstats 1", "testpmd>", 60)
         p = re.compile(r'rx_size_[0-9]+_[to_\w+]*packets')
         categories = p.findall(out)
+        categories = categories[:-1]
         self.verify(len(categories) > 0, 'Unable to find the categories of RX packet size!')
         for cat in categories:
             scope = re.search(r'(?<=rx_)\w+(?=_packets)', cat).group(0)
             pktsize = int(re.search(r'(?<=rx_size_)\d+', cat).group(0))
             if pktsize > 1518:
                 self.tester.send_expect('ifconfig %s mtu %d' % (self.txItf, ETHER_JUMBO_FRAME_MTU), '# ')
+            types = ['ff:ff:ff:ff:ff:ff', '01:00:00:33:00:01']
+            for p in types:
+                if p == 'ff:ff:ff:ff:ff:ff':
+                    scope = 'broadcast'
+                    self.dmac = 'ff:ff:ff:ff:ff:ff'
+                elif p == '01:00:00:33:00:01':
+                    scope = 'multicast'
+                    self.dmac = '01:00:00:33:00:01'
+                self.scapy_send_packet(int(pktsize + 4), self.dmac, 10000)
+                self.send_verify(scope, 10000)
+                self.clear_port_xstats(scope)
+            self.tester.send_expect('ifconfig %s mtu %d' % (self.txItf, DEFAULT_JUMBO_FRAME_MTU), '# ')
 
-            self.scapy_send_packet(pktsize, self.dmac, 10000)
-            self.send_verify(scope, 10000)
-            self.clear_port_xstats(scope)
-        self.tester.send_expect('ifconfig %s mtu %d' % (self.txItf, DEFAULT_JUMBO_FRAME_MTU), '# ')
-
-    def clear_port_xstats(self, scope):
-
-        self.dut.send_expect("clear port xstats all", "testpmd>", 60)
-        out = self.dut.send_expect(
-            "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
-        packet = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
-        sum_packet = packet.group(1)
-        self.verify(int(sum_packet) == 0, "Insufficient the received package")
-
-    def test_based_types(self):
+    def test_vhost_xstats_virtio11_mergeable(self):
         """
-        Verify different type of packets receiving and transmitting packets correctly in the Vhost PMD xstats
-        """
-        self.prepare_start()
-        types = ['ff:ff:ff:ff:ff:ff', '01:00:00:33:00:01']
-        scope = ''
-        for p in types:
-            if p == 'ff:ff:ff:ff:ff:ff':
-                scope = 'broadcast'
-                self.dmac = 'ff:ff:ff:ff:ff:ff'
-            elif p == '01:00:00:33:00:01':
-                scope = 'multicast'
-                self.dmac = '01:00:00:33:00:01'
-            self.scapy_send_packet(64, self.dmac, 10000)
-            self.send_verify(scope, 10000)
-            self.clear_port_xstats(scope)
-
-    def test_stability(self):
-        """
-        Verify stability case with multiple queues for Vhost PMD xstats
-        Send packets for 2 minutes, check the xstats still can work correctly
+        performance for Vhost PVP virtio1.1 Mergeable Path.
         """
         self.scapy_num = 0
-        self.prepare_start()
+        virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=1",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        # stability test with basic packets number check
+        self.scapy_num = 0
         date_old = datetime.datetime.now()
         date_new = date_old + datetime.timedelta(minutes=2)
-        while(1):
+        while (1):
             date_now = datetime.datetime.now()
+            scope = 'broadcast'
+            self.dmac = '01:00:00:33:00:01'
             self.scapy_send_packet(64, self.dmac, 1)
             if date_now >= date_new:
                 break
-        out_0 = self.dut.send_expect(
-            "show port xstats %s" % self.dut_ports[0], "testpmd>", 60)
-        rx_packet = re.search("rx_size_64_packets:\s*(\d*)", out_0)
-        rx_packets = rx_packet.group(1)
-        self.verify(self.scapy_num == int(rx_packets), "Error for rx_packets:%s != tx_packets :%s" % (
-            self.scapy_num, int(rx_packets)))
+        self.send_verify(scope, self.scapy_num)
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_virtio11_no_mergeable(self):
+        """
+        performance for Vhost PVP virtio1.1 no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=0,packed_vq=1,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_virtio11_inorder_mergeable(self):
+        """
+        performance for Vhost PVP virtio1.1 inorder Mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=1",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_virtio11_inorder_no_mergeable(self):
+        """
+        performance for Vhost PVP virtio1.1 inorder no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_virtio11_vector(self):
+        """
+        performance for Vhost PVP virtio1.1 inorder no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,lro=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        # stability test with basic packets number check
+        self.scapy_num = 0
+        date_old = datetime.datetime.now()
+        date_new = date_old + datetime.timedelta(minutes=2)
+        while (1):
+            date_now = datetime.datetime.now()
+            scope = 'broadcast'
+            self.dmac = 'ff:ff:ff:ff:ff:ff'
+            self.scapy_send_packet(64, self.dmac, 1)
+            if date_now >= date_new:
+                break
+        self.send_verify(scope, self.scapy_num)
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_inorder_mergeable(self):
+        """
+        performance for Vhost PVP In_order mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_inorder_no_mergeable(self):
+        """
+        performance for Vhost PVP In_order no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0",
+                        "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_mergeable(self):
+        """
+        performance for Vhost PVP Mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_no_mergeable(self):
+        """
+        performance for Vhost PVP no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_vector_rx(self):
+        """
+        performance for Vhost PVP Vector_RX Path
+        """
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+                            "path": "--tx-offloads=0x0"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        self.close_all_testpmd()
+
+    def close_all_testpmd(self):
+        """
+        close all testpmd of vhost and virtio
+        """
+        self.vhost_user.send_expect("quit", "#", 60)
+        self.virtio_user.send_expect("quit", "#", 60)
+
+    def clear_port_xstats(self, scope):
+
+        self.vhost_user.send_expect("clear port xstats 1", "testpmd>", 60)
+        out = self.vhost_user.send_expect(
+            "show port xstats 1", "testpmd>", 60)
+        packet = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
+        sum_packet = packet.group(1)
+        self.verify(int(sum_packet) == 0, "Insufficient the received package")
 
     def tear_down(self):
         """
         Run after each test case.
         """
-        if hasattr(self, "vm"):
-            self.vm._stop_vm()
-        self.dut.kill_all()
-        time.sleep(2)
+        self.dut.send_expect("killall -s INT testpmd", "#")
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        self.dut.bind_interfaces_linux(nics_to_bind=self.unbind_ports)
+        pass
