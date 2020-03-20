@@ -262,6 +262,7 @@ class TestShutdownApi(TestCase):
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
 
+        self.dut.setup_modules_linux(self.target, 'igb_uio', '')
         self.bind_nic_driver(self.dut_ports[:1], driver="igb_uio")
         self.used_dut_port = self.dut_ports[0]
         tester_port = self.tester.get_local_port(self.used_dut_port)
@@ -298,6 +299,7 @@ class TestShutdownApi(TestCase):
 
         self.vm_env_done = True
         self.dut_testpmd.quit()
+        self.bind_nic_driver(self.dut_ports[:1], driver=self.vf_driver)
 
     def destroy_vm_env(self):
         if not self.vm_env_done:
@@ -541,6 +543,7 @@ class TestShutdownApi(TestCase):
         self.dut_testpmd.quit()
         time.sleep(3)
         self.vm0_dut.kill_all()
+        self.destroy_vm_env()
 
     def test_enable_disablejumbo(self):
         """
@@ -786,5 +789,6 @@ class TestShutdownApi(TestCase):
         """
         Run after each test suite.
         """
+        if self.vm_env_done:
+            self.destroy_vm_env()
         self.dut.kill_all()
-        self.destroy_vm_env()
