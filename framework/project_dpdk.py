@@ -317,7 +317,7 @@ class DPDKdut(Dut):
             # unpack dpdk
             out = self.send_expect("tar zxf %s%s -C %s" %
                                    (dst_dir, self.package.split('/')[-1], p_dir),
-                                   "# ", 20, verify=True)
+                                   "# ", 30, verify=True)
             if out == -1:
                 raise ValueError("Extract dpdk package to %s failure,"
                                  "please check params -d"
