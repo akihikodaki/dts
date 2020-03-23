@@ -45,7 +45,7 @@ Prerequisites
 =======================
 1. Modify and build DPDK source code to enable IAVF function for I40E NIC::
 
-    sed -i -e '/IAVF_DEV_ID_ADAPTIVE_VF/s/0x1889/0x154c/g' drivers/net/iavf/base/iavf_devids.h
+    sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c
     sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h
 
     make install RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
@@ -79,7 +79,7 @@ Prerequisites
 
 5. Modify and build DPDK source code to enable IAVF function for I40E NIC in VM::
 
-    sed -i -e '/IAVF_DEV_ID_ADAPTIVE_VF/s/0x1889/0x154c/g' drivers/net/iavf/base/iavf_devids.h
+    sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c
     sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h
 
     make install RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
