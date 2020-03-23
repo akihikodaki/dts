@@ -1,4 +1,4 @@
-.. Copyright (c) <2016>, Intel Corporation
+.. Copyright (c) <2020>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -30,12 +30,12 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=============================================
-Primary/secondary process with vdev test plan
-=============================================
+==============================================
+Virtio-pmd primary/secondary process test plan
+==============================================
 
-This test plan will test vdev primary/secondary by symmetric multi-process example, which demonstrates how a set of processes can run in parallel,
-with each process performing the same set of packet processing operations.
+This test plan will test vdev primary/secondary with symmetric_mp, which demonstrates how a set of processes can run in parallel,
+with each process performing the same set of packet processing operations. Also test vdev primary/secondary with hotplug_mp example.
 
 Symmetric MP Application Description
 ------------------------------------
@@ -88,8 +88,37 @@ To run only 1 or 2 instances, the above parameters to the 1 or 2 instances being
 run should remain the same, except for the ``num-procs`` value, which should be
 adjusted appropriately.
 
-Test Case 1: Virtio primary and secondary process test
-======================================================
+Hotplug MP Application Description
+----------------------------------
+
+Currently secondary process will only sync ethdev from primary process at
+init stage, but it will not be aware if device is attached/detached on
+primary process at runtime.
+
+While there is the requirement from application that take
+primary-secondary process model. The primary process work as a resource
+management process, it will create/destroy virtual device at runtime,
+while the secondary process deal with the network stuff with these devices.
+
+So the orignial intention is to fix this gap, but beyond that the patch
+set provide a more comprehesive solution to handle different hotplug
+cases in multi-process situation, it cover below scenario:
+
+* Attach a device from the primary
+* Detach a device from the primary
+* Attach a device from a secondary
+* Detach a device from a secondary
+
+In primary-secondary process model, we assume ethernet devices are shared
+by default, that means attach or detach a device on any process will
+broadcast to all other processes through mp channel then device
+information will be synchronized on all processes.
+
+Any failure during attaching process will cause inconsistent status
+between processes, so proper rollback action should be considered.
+
+Test Case 1: Virtio-pmd primary and secondary process symmetric test
+====================================================================
 
 SW preparation: Change one line of the symmetric_mp sample and rebuild::
 
@@ -104,15 +133,17 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
 
 2. Launch VM with two virtio ports, must set queues=2 as app receive packets from special queue which index same with proc-id::
 
-    qemu-system-x86_64 -name us-vhost-vm \
-     -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
-     -smp cores=4,sockets=1 -drive file=/home/osimg/ubuntu16.img \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
-     -chardev socket,id=char,path=./vhost-net,server -netdev type=vhost-user,id=mynet1,chardev=char,vhostforce,queues=2 \
-     -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,mq=on,vectors=15  \
-     -chardev socket,id=char1,path=./vhost-net1,server -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=2 \
-     -device virtio-net-pci,mac=52:54:00:00:00:03,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=15  \
-     -vnc :10 -daemonize
+    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 4 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,id=char,path=./vhost-net,server -netdev type=vhost-user,id=mynet1,chardev=char,vhostforce,queues=2 \
+    -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,mq=on,vectors=15  \
+    -chardev socket,id=char1,path=./vhost-net1,server -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=2 \
+    -device virtio-net-pci,mac=52:54:00:00:00:03,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=15  -vnc :10 -daemonize
 
 3.  Bind virtio port to igb_uio::
 
@@ -121,10 +152,71 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
 
 4. Launch two process by example::
 
-    examples/multi_process/symmetric_mp -l 1 -n 4 --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
-    examples/multi_process/symmetric_mp -l 2 -n 4 --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
+    ./examples/multi_process/symmetric_mp/build/symmetric_mp -l 1 -n 4 --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
+    ./examples/multi_process/symmetric_mp/build/symmetric_mp -l 2 -n 4 --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
 
 5. Quit all process, check the packets number in rx/tx statistic like below for both primary process and secondary process::
 
     Port 0: RX - 27511680, TX - 256, Drop - 27499168
     Port 1: RX - 27499424, TX - 256, Drop - 27511424
+
+Test Case 2: Virtio-pmd primary and secondary process hotplug test
+==================================================================
+
+1. Launch testpmd by below command::
+
+    ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
+    testpmd>set fwd txonly
+    testpmd>start
+
+2. Launch VM with two virtio ports, must set queues=2 as app receive packets from special queue which index same with proc-id::
+
+    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 4 -m 4096 \
+    -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
+    -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
+    -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -chardev socket,id=char,path=./vhost-net,server -netdev type=vhost-user,id=mynet1,chardev=char,vhostforce,queues=2 \
+    -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet1,mrg_rxbuf=on,csum=on,mq=on,vectors=15  \
+    -chardev socket,id=char1,path=./vhost-net1,server -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=2 \
+    -device virtio-net-pci,mac=52:54:00:00:00:03,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=15  -vnc :10 -daemonize
+
+3.  Bind virtio port to igb_uio::
+
+    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
+    ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
+
+4. Start sample code as primary process::
+
+    ./examples/multi_process/hotplug_mp/build/hotplug_mp --proc-type=auto -- -p 3 --num-procs=2 --proc-id=0
+    example> list
+    list all etherdev
+    0       0000:00:05.0
+    1       0000:00:06.0
+
+5. Start sample code as secondary process::
+
+    ./examples/multi_process/hotplug_mp/build/hotplug_mp --proc-type=secondary -- -p 3 --num-procs=2 --proc-id=1
+    example> list
+    list all etherdev
+    0       0000:00:05.0
+    1       0000:00:06.0
+
+6. Detach the virtual device from primary, check primary and secondary processes detach the share device successfully::
+
+    example> detach 0000:00:05.0
+    example> list
+    list all etherdev
+    1       0000:00:06.0
+
+7. Attach a virtual device from secondary, check primary and secondary processes attach the share device successfully::
+
+    example> attach 0000:00:05.0
+    example> list
+    list all etherdev
+    0       0000:00:05.0
+    1       0000:00:06.0
+
+8. Repeat above attach and detach for 2 times.
