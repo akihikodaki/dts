@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,11 +35,13 @@ import random
 import json
 import re
 import shutil
+import traceback
 from collections import Counter
 from pprint import pformat
 
 # import dts libs
 from test_case import TestCase
+from exception import VerifyFailure
 from utils import create_mask
 
 
@@ -61,7 +63,7 @@ class TestPowerPbf(TestCase):
 
     @property
     def output_path(self):
-        suiteName = self.__class__.__name__[4:].lower()
+        suiteName = self.suite_name
         if self.logger.log_path.startswith(os.sep):
             output_path = os.path.join(self.logger.log_path, suiteName)
         else:
@@ -95,10 +97,8 @@ class TestPowerPbf(TestCase):
         for item in cmds:
             expected_items = item[1]
             if expected_items and isinstance(expected_items, (list, tuple)):
-                check_output = True
                 expected_str = expected_items[0] or '# '
             else:
-                check_output = False
                 expected_str = expected_items or '# '
 
             try:
@@ -120,10 +120,10 @@ class TestPowerPbf(TestCase):
         time.sleep(2)
         return outputs
 
-    def d_console(self, cmds):
+    def d_con(self, cmds):
         return self.execute_cmds(cmds, con_name='dut')
 
-    def d_a_console(self, cmds):
+    def d_a_con(self, cmds):
         return self.execute_cmds(cmds, con_name='dut_alt')
 
     def get_cores_mask(self, config='all'):
@@ -140,13 +140,13 @@ class TestPowerPbf(TestCase):
         self.verify("No such" not in out, "Compilation error")
         binary_dir = os.path.join(self.target_dir, example_dir, 'build')
         cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.d_a_console(cmd)
+        exec_file = self.d_a_con(cmd)
         binary_file = os.path.join(binary_dir, exec_file[:-1])
         return binary_file
 
     def create_powermonitor_folder(self):
         cmd = 'mkdir -p {0}; chmod 777 {0}'.format('/tmp/powermonitor')
-        self.d_console(cmd)
+        self.d_con(cmd)
 
     def init_test_binary_file(self):
         self.create_powermonitor_folder()
@@ -155,43 +155,56 @@ class TestPowerPbf(TestCase):
                "CONFIG_RTE_LIBRTE_POWER_DEBUG=n$/"
                "CONFIG_RTE_LIBRTE_POWER_DEBUG=y/"
                "' {0}/config/common_base").format(self.target_dir)
-        self.d_a_console(cmd)
+        self.d_a_con(cmd)
         self.dut.skip_setup = False
         self.dut.build_install_dpdk(self.target)
         # set up vm power management binary process setting
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
         # set up distributor binary process setting
         self.distributor = self.prepare_binary('distributor')
+        self.is_mgr_on = self.is_distributor_on = None
 
     def start_vm_power_mgr(self):
+        if self.is_mgr_on:
+            return
         bin_file = os.sep.join([self.target_dir, ''])
         config = "1S/4C/1T"
-        eal_option = '-c {0} -n {1} --file-prefix=vmpower --no-pci'.format(
+        option = '-v -c {0} -n {1} --file-prefix=vmpower --no-pci'.format(
             self.get_cores_mask(config),
             self.memory_channels)
         prompt = 'vmpower>'
-        cmd = [' '.join([self.vm_power_mgr, eal_option]), prompt, 30]
-        output = self.d_console(cmd)
+        cmd = [' '.join([self.vm_power_mgr, option]), prompt, 30]
+        output = self.d_con(cmd)
+        self.is_mgr_on = True
+        
         return output
 
     def close_vm_power_mgr(self):
-        output = self.d_console('quit')
+        if not self.is_mgr_on:
+            return
+        output = self.d_con('quit')
+        self.is_mgr_on = False
         return output
 
     def start_distributor(self, high_core_num=1):
+        if self.is_distributor_on:
+            return
         cores_mask, high_freq_cores = self.get_high_freq_core_mask(
             high_core_num)
-        eal_option = ' -c {0} -n {1} -- -p 0x1'.format(
+        option = '-v -c {0} -n {1} -- -p 0x1'.format(
             cores_mask, self.memory_channels)
         prompt = 'Distributor thread'
-        cmd = [' '.join([self.distributor, eal_option]), prompt, 30]
-        output = self.d_console(cmd)
+        cmd = [' '.join([self.distributor, option]), prompt, 30]
+        output = self.d_con(cmd)
+        self.is_distributor_on = True
         return high_freq_cores, output
 
     def close_distributor(self):
-        cmds = ['killall distributor_app', '# ', 10]
-        output = self.d_a_console(cmds)
-        return output
+        if not self.is_distributor_on:
+            return
+        cmd = "^C"
+        self.d_con(cmd)
+        self.is_distributor_on = False
 
     def __preset_single_core_json_cmd(self, core_index, unit, name):
         command = {
@@ -205,7 +218,7 @@ class TestPowerPbf(TestCase):
         json_file = os.sep.join([self.output_path, json_name])
         with open(json_file, 'w') as fp:
             json.dump(command, fp, indent=4, separators=(',', ': '),
-                      encoding="utf-8", sort_keys=True)
+                      sort_keys=True)
             fp.write(os.linesep)
         self.dut.session.copy_file_to(json_file, self.target_dir)
         # save a backup json file to retrace test command
@@ -230,30 +243,30 @@ class TestPowerPbf(TestCase):
         for core_index in _cores:
             cmds.append(
                 self.__preset_single_core_json_cmd(core_index, unit, name))
-        self.d_a_console(';'.join(cmds))
+        self.d_a_con(';'.join(cmds))
 
     def get_core_cur_freq(self, core_index):
         cpu_attr = r'/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_cur_freq'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     def get_core_scaling_max_freq(self, core_index):
         cpu_attr = r'/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_max_freq'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     def get_core_scaling_min_freq(self, core_index):
         cpu_attr = r'/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_min_freq'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     def get_core_scaling_base_freq(self, core_index):
         cpu_attr = r'/sys/devices/system/cpu/cpu{0}/cpufreq/base_frequency'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     @property
@@ -261,15 +274,15 @@ class TestPowerPbf(TestCase):
         # check if cpu support bpf feature
         cpu_attr = r'/sys/devices/system/cpu/cpu0/cpufreq/base_frequency'
         cmd = "ls {0}".format(cpu_attr)
-        self.d_a_console(cmd)
+        self.d_a_con(cmd)
         cmd = "echo $?"
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         ret = True if output == "0" else False
         return ret
 
     def get_sys_power_driver(self):
         drv_file = r"/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
-        output = self.d_a_console('cat ' + drv_file)
+        output = self.d_a_con('cat ' + drv_file)
         if not output:
             msg = 'unknown power driver'
             self.verify(False, msg)
@@ -295,7 +308,7 @@ class TestPowerPbf(TestCase):
             cmds = []
             for cpu_id in sorted(cpu_info.keys()):
                 cmds.append('cat {0}'.format(freq(cpu_id, key_value)))
-            output = self.d_a_console(';'.join(cmds))
+            output = self.d_a_con(';'.join(cmds))
             freqs = [int(item) for item in output.splitlines()]
             for index, cpu_id in enumerate(sorted(cpu_info.keys())):
                 cpu_info[cpu_id][key_value] = freqs[index]
@@ -334,9 +347,9 @@ class TestPowerPbf(TestCase):
     def get_high_freq_core_mask(self, number=1, min_cores=5):
         index_list = []
         # get high frequency core first
-        cores_index = self.get_high_freq_cores_index(number)
+        cores_index = self.get_high_freq_cores_index(number + 1)
         [index_list.append(core_index) for core_index in cores_index]
-        high_freq_cores = index_list[:]
+        high_freq_cores = index_list[1:]
         # get normal cores to make sure minimum cores are enough
         cores_index = self.get_normal_cores_index()
         for core_index in cores_index:
@@ -428,6 +441,7 @@ class TestPowerPbf(TestCase):
             SCALE_MIN
         Check the CPU frequency is changed accordingly in this list
         '''
+        except_content = None
         try:
             self.start_vm_power_mgr()
             # random select one high priority core to run testing
@@ -446,10 +460,14 @@ class TestPowerPbf(TestCase):
             # test cpu core frequency change with unit command
             for test_item in test_items:
                 self.check_core_freq_for_unit(*test_item)
-            self.close_vm_power_mgr()
         except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
             self.close_vm_power_mgr()
-            raise Exception(e)
+
+        if except_content:
+            raise VerifyFailure(except_content)
 
     def verify_high_priority_core_turbo_status(self):
         '''
@@ -460,6 +478,7 @@ class TestPowerPbf(TestCase):
             ENABLE_TURBO
         Check the CPU frequency is changed accordingly in this list
         '''
+        except_content = None
         try:
             self.start_vm_power_mgr()
             # random select one high priority core to run testing
@@ -473,15 +492,20 @@ class TestPowerPbf(TestCase):
             # test cpu core frequency change with unit command
             for test_item in test_items:
                 self.check_core_freq_for_unit(*test_item)
-            self.close_vm_power_mgr()
         except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
             self.close_vm_power_mgr()
-            raise Exception(e)
+
+        if except_content:
+            raise VerifyFailure(except_content)
 
     def verify_distributor_high_priority_core(self):
         '''
         check distributor example use high priority core as distribute core
         '''
+        except_content = None
         try:
             high_freq_cores, output = self.start_distributor()
             self.close_distributor()
@@ -490,19 +514,25 @@ class TestPowerPbf(TestCase):
             self.verify(expected_str in output,
                         "'{}' not display".format(expected_str))
         except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
             self.close_distributor()
-            raise Exception(e)
+
+        if except_content:
+            raise VerifyFailure(except_content)
 
     def verify_distributor_high_priority_core_txrx(self):
         '''
         check distributor sample will use high priority core for
         distribute core and rx/tx core
         '''
+        except_content = None
         try:
             high_freq_cores, output = self.start_distributor(3)
             self.close_distributor()
             # check the high priority core are assigned as rx core in log
-            pat = 'Core (\\d+) doing packet RX.'
+            pat = 'Core (\d+) doing packet RX.'
             result = re.findall(pat, output, re.M)
             if len(result) == 1:
                 core_index = int(result[0])
@@ -512,7 +542,7 @@ class TestPowerPbf(TestCase):
             msg = "No high frequency core doing packet RX"
             self.verify(core_index in high_freq_cores, msg)
             # Check the high priority core are assigned as tx core in log
-            pat = 'Core (\\d+) doing packet TX.'
+            pat = 'Core (\d+) doing packet TX.'
             result = re.findall(pat, output, re.M)
             if len(result) == 1:
                 core_index = int(result[0])
@@ -523,7 +553,7 @@ class TestPowerPbf(TestCase):
             self.verify(core_index in high_freq_cores, msg)
             # check the high priority core is assigned as distributor core in
             # log
-            pat = r'Core (\\d+) acting as distributor core.'
+            pat = r'Core (\d+) acting as distributor core.'
             result = re.findall(pat, output, re.M)
             if len(result) == 1:
                 core_index = int(result[0])
@@ -533,8 +563,13 @@ class TestPowerPbf(TestCase):
             msg = "No high frequency core acting as distributor core"
             self.verify(core_index in high_freq_cores, msg)
         except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
             self.close_distributor()
-            raise Exception(e)
+
+        if except_content:
+            raise VerifyFailure(except_content)
 
     def verify_pbf_supported(self):
         if self.is_support_pbf:
@@ -543,7 +578,7 @@ class TestPowerPbf(TestCase):
         raise Exception(msg)
 
     def verify_power_driver(self):
-        expected_drv = 'acpi-cpufreq'
+        expected_drv = 'intel_pstate'
         power_drv = self.get_sys_power_driver()
         msg = "power pbf should work with {} driver".format(expected_drv)
         self.verify(power_drv == expected_drv, msg)
@@ -560,7 +595,7 @@ class TestPowerPbf(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         # get dut node cores information
-        self.d_a_console('modprobe msr')
+        self.d_a_con('modprobe msr')
         self.dut.init_core_list_uncached_linux()
         # check if cpu support bpf feature
         self.verify_pbf_supported()
