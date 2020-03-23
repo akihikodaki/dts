@@ -128,11 +128,11 @@ Test Case 1: vf reset -- create two vfs on one pf
 9. Reset the vfs, run the command::
 
      testpmd> stop
-     testpmd> port reset 0
-     testpmd> port reset 1
+     testpmd> port stop all
+     testpmd> port reset all
+     testpmd> port start all
      testpmd> start
 
-   or just run the command "port reset all".
    Send the same 1000 packets with scapy from tester, verify the packets can be
    received by one VF and can be forward to another VF correctly,
    check the port info::
@@ -269,7 +269,9 @@ Test Case 4: vlan rx restore -- vf reset all ports
 4. Reset both vfs::
 
      testpmd> stop
+     testpmd> port stop all
      testpmd> port reset all
+     testpmd> port start all
      testpmd> start
 
    Send the packets in step2 from tester,
@@ -313,7 +315,9 @@ test Case 5: vlan rx restore -- vf reset one port
 3. Pf reset, then reset vf0, send packets from tester::
 
      testpmd> stop
+     testpmd> port stop 0
      testpmd> port reset 0
+     testpmd> port start 0
      testpmd> start
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -333,7 +337,9 @@ test Case 5: vlan rx restore -- vf reset one port
 4. Reset vf1::
 
      testpmd> stop
+     testpmd> port stop 1
      testpmd> port reset 1
+     testpmd> port start 1
      testpmd> start
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
@@ -400,7 +406,9 @@ Test Case 6: vlan rx restore -- create one vf on each pf
 4. Reset both vfs, send packets from tester::
 
      testpmd> stop
+     testpmd> port stop all
      testpmd> port reset all
+     testpmd> port start all
      testpmd> start
      sendp([Ether(dst="00:11:22:33:44:11")/IP()/Raw('x'*1000)], \
      iface="ens3f0",count=1000)
