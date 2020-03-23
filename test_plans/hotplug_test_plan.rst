@@ -335,3 +335,30 @@ Test Case 6: port detach & attach for virtual devices, with "--vdev"
       run "port detach 0", check the error message of port not stopped.
 
       run "stop", then "show port stats 0", check forwarding packages stopped.
+
+Test Case 7: port detach & attach for vhost-user/virtio-user with "--vdev"
+==========================================================================
+
+1. Start testpmd with one vhost port::
+
+      $ ./testpmd -c 0xf -n 4 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- -i
+
+2. Detach port 0 after port closed::
+
+      run "port stop 0".
+      run "port detach 0", check port detached successful.
+
+3. Re-attach port 0::
+
+      run "port attach eth_vhost1,iface=vhost-net1,queues=1"
+      run "port start 0". #then check socket generated
+
+4. Launch virtio-user and attach one virtio-user port::
+
+      ./testpmd -n 4 -l 7-8 --socket-mem 1024,1024 --no-pci --file-prefix=virtio1 -- -i
+      testpmd>port attach net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0
+      testpmd>port start 0
+
+5. Run "start" on vhost port and run "start tx_first 32" on virtio-user port.
+
+6. Run "show port stats all", check port 0 can rx/tx packets on both side.
