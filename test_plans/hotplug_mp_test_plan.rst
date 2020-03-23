@@ -237,3 +237,75 @@ secondary processes fail to detach same device again
 Repeat above attach and detach for 2 times
 
 Quit primary and secondary processes
+
+Test Case: Repeat to attach/detach vhost-user from primary or secondary
+=======================================================================
+Start sample code as primary then secondary::
+
+     ./hotplug_mp --proc-type=auto
+
+Check primary and secondary processes don't have any device::
+
+     example> list
+     list all etherdev
+
+Attach a virtual device from primary or secondary, check primary and
+secondary processes attach the share device successfully::
+
+    example> attach net_vhost0,iface=vhost-net,queues=1,client=0
+    example> list
+    list all etherdev
+    0       net_vhost0
+
+Attach the same virtual device from primary or secondary, check primary and
+secondary processes fail to attach same device again
+
+Detach the virtual device from primary or secondary, check primary and
+secondary processes detach the share device successfully::
+
+    example> detach net_vhost0
+    example> list
+    list all etherdev
+
+Detach the same virtual device from primary or secondary, check primary and
+secondary processes fail to detach same device again
+
+Repeat above attach and detach for 2 times
+
+Quit primary and secondary processes
+
+Test Case: Repeat to attach/detach virtio-user from primary or secondary
+=======================================================================
+Start sample code as primary then secondary::
+
+     ./hotplug_mp --proc-type=auto
+
+Check primary and secondary processes don't have any device::
+
+     example> list
+     list all etherdev
+
+Attach a virtual device from primary or secondary, check primary and
+secondary processes attach the share device successfully::
+
+    example> attach net_virtio_user0,mac=00:01:02:03:04:05,path=/home/yinan/dpdk/vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=0
+    example> list
+    list all etherdev
+    0       net_virtio_user0
+
+Attach the same virtual device from primary or secondary, check primary and
+secondary processes fail to attach same device again
+
+Detach the virtual device from primary or secondary, check primary and
+secondary processes detach the share device successfully::
+
+    example> detach net_virtio_user0
+    example> list
+    list all etherdev
+
+Detach the same virtual device from primary or secondary, check primary and
+secondary processes fail to detach same device again
+
+Repeat above attach and detach for 2 times
+
+Quit primary and secondary processes
