@@ -31,7 +31,7 @@
 
 """
 DPDK Test suite.
-virtual power manager test suite.
+power bidirection channel test suite.
 """
 import os
 import time
@@ -44,8 +44,6 @@ from test_case import TestCase
 
 
 class TestPowerBidirectionChannel(TestCase):
-    # temporary file directory
-    output_path = '/tmp'
 
     @property
     def target_dir(self):
@@ -95,7 +93,7 @@ class TestPowerBidirectionChannel(TestCase):
         console, msg_pipe = self.get_console(name)
         if len(cmds) == 0:
             return
-        if isinstance(cmds, (str, unicode)):
+        if isinstance(cmds, str):
             cmds = [cmds, '# ', 5]
         if not isinstance(cmds[0], list):
             cmds = [cmds]
@@ -103,10 +101,8 @@ class TestPowerBidirectionChannel(TestCase):
         for item in cmds:
             expected_items = item[1]
             if expected_items and isinstance(expected_items, (list, tuple)):
-                check_output = True
                 expected_str = expected_items[0] or '# '
             else:
-                check_output = False
                 expected_str = expected_items or '# '
 
             try:
@@ -195,14 +191,14 @@ class TestPowerBidirectionChannel(TestCase):
 
         # get high priority core and normal core
         base_freqs_info = {}
-        for core_index, value in cpu_info.iteritems():
+        for core_index, value in cpu_info.items():
             base_frequency = value.get('base_frequency')
             base_freqs_info.setdefault(base_frequency, []).append(core_index)
-        base_freqs = base_freqs_info.keys()
+        base_freqs = list(base_freqs_info.keys())
         # cpu should have high priority core and normal core
         # high priority core frequency is higher than normal core frequency
         if len(base_freqs) <= 1 or \
-           not all([len(value) for value in base_freqs_info.values()]):
+           not all([len(value) for value in list(base_freqs_info.values())]):
             msg = 'current cpu has no high priority core'
             raise Exception(msg)
 
@@ -273,15 +269,14 @@ class TestPowerBidirectionChannel(TestCase):
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
 
     def start_vm_power_mgr(self):
-        eal_option = (
-            ' '
+        option = (
+            ' -v '
             '-c {core_mask} '
             '-n {mem_channel} '
             '--no-pci ').format(**{
                 'core_mask': self.get_cores_mask("1S/3C/1T"),
                 'mem_channel': self.dut.get_memory_channels(), })
         prompt = 'vmpower>'
-        option = eal_option
         cmd = [' '.join([self.vm_power_mgr, option]), prompt, 30]
         self.d_con(cmd)
         self.is_mgr_on = True
@@ -321,7 +316,7 @@ class TestPowerBidirectionChannel(TestCase):
     def start_guest_mgr(self):
         prompt = r"vmpower\(guest\)>"
         option = (
-            ' '
+            ' -v '
             '-c {core_mask} '
             '-n {memory_channel} '
             '-m {memory_size} '
