@@ -592,7 +592,7 @@ the default mastercore 1 and the RX, WT and TX cores only.
 Test Case: Two Subports, different pipe profiles, different number of pipes I
 =============================================================================
 *Note: the sample can't be set to two subports,
- so the two supports case can't be verified.*
+so the two supports case can't be verified.*
 
 1. Configure the profile.cfg file with two subports, two different pipe
    profiles and different number of pipes::
@@ -640,7 +640,7 @@ Test Case: Two Subports, different pipe profiles, different number of pipes I
 Test Case: Two Subports, different pipe profiles, different number of pipes II
 ==============================================================================
 *Note: the sample can't be set to two subports,
- so the two supports case can't be verified.*
+so the two supports case can't be verified.*
 
 1. Configure the profile.cfg file the same with last case I.
 
