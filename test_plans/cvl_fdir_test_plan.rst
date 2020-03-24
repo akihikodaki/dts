@@ -83,7 +83,7 @@ Pattern and input set
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
 Notes: 1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
-          support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
+      support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
        2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
        3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
 
@@ -529,7 +529,7 @@ Test case: MAC_IPV4_TCP queue index
 
 1. create filter rules::
 
-   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 63 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 63 / end
 
 2. send matched packets, check the packets is distributed to queue 63.
    send mismatched packets, check the packets are not distributed to queue 63.
@@ -968,7 +968,7 @@ Test case: MAC_IPV4_TCP passthru/mark
 
 1. create filter rules::
 
-   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions passthru / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions passthru / mark / end
 
 2. send matched packets, check the packets are redirected by RSS with FDIR ID.
    send mismatched packets, check the packets are redirected by RSS without FDIR ID.
@@ -1320,7 +1320,7 @@ Test case: MAC_IPV4_TCP mark/rss
 
 1. create filter rules::
 
-   flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 1 / rss / end
 
 2. send matched packets, check the packets are redirected by RSS with FDIR ID 1.
    send mismatched packets, check the packets are redirected by RSS without FDIR ID 1.
