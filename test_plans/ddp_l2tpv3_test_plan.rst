@@ -700,20 +700,20 @@ Test Case: L2TPv3 with specific IPv4 SIP and IPv6 SIP configured together
 10. Send L2TPv3 IPv6 packet with SIP and session ID matching the configured
     rule, Packets should be received on queue 20::
 
-    p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xe8')/
-    Raw('x' * 20)
+     p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xe8')/
+     Raw('x' * 20)
 
 11. Send L2TPv3 IPv6 packet with session ID not matching the configured
     rule, Packet should be received on queue 0::
 
-    p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xff')
-    /Raw('x' * 20)
+     p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xff')
+     /Raw('x' * 20)
 
 12. Send L2TPv3 IPv6 packet with SIP not matching the configured rule,
     Packet should be received on queue 0::
 
-    p=Ether()/IPv6(src="1111:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xe8')
-    /Raw('x' * 20)
+     p=Ether()/IPv6(src="1111:2:3:4:5:6:7:8",nh=115)/Raw('\x00\x00\x03\xe8')
+     /Raw('x' * 20)
 
 Test Case: L2TPv3 with specific IPv4 DIP and IPv6 DIP configured together
 =========================================================================
@@ -779,20 +779,20 @@ Test Case: L2TPv3 with specific IPv4 DIP and IPv6 DIP configured together
 10. Send L2TPv3 packet with session ID, DIP matching the configured rule,
     Packets should be received on queue 20::
 
-    p=Ether()/IPv6(dst="8:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xe8')/
-    Raw('x' * 20)
+     p=Ether()/IPv6(dst="8:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xe8')/
+     Raw('x' * 20)
 
 11. Send L2TPv3 packet with session ID not matching the configured rule,
     Packet should be received on queue 0::
 
-    p=Ether()/IPv6(dst="8:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xff')/
-    Raw('x' * 20)
+     p=Ether()/IPv6(dst="8:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xff')/
+     Raw('x' * 20)
 
 12. Send L2TPv3 packet with DIP not matching the configured rule, Packet
     should be received on queue 0::
 
-    p=Ether()/IPv6(dst="8888:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xe8')/
-    Raw('x' * 20)
+     p=Ether()/IPv6(dst="8888:7:6:5:4:3:2:1",nh=115)/Raw('\x00\x00\x03\xe8')/
+     Raw('x' * 20)
 
 Test Case: L2TPv3 with IPv4 SIP, DIP and IPv6 SIP, DIP configured together
 ==========================================================================
@@ -866,35 +866,35 @@ Test Case: L2TPv3 with IPv4 SIP, DIP and IPv6 SIP, DIP configured together
 9. Send L2TPv3 IPv4 packet with SIP not matching the configured rule,
    Packets should be received on queue 0::
 
-    p=Ether()/IP(src="100.10.10.1", dst= "20.10.10.20",proto=115)/
-    Raw('\x00\x00\x00\x01')/Raw('x' * 20)
+     p=Ether()/IP(src="100.10.10.1", dst= "20.10.10.20",proto=115)/
+     Raw('\x00\x00\x00\x01')/Raw('x' * 20)
 
 10. Send L2TPv3 IPv4 packet with DIP not matching the configured rule, Packet
-   should be received on queue 0::
+    should be received on queue 0::
 
-    p=Ether()/IP(src="10.10.10.1", dst="220.10.10.20",proto=115)/
-    Raw('\x00\x00\x00\x01')/Raw('x' * 20)
+     p=Ether()/IP(src="10.10.10.1", dst="220.10.10.20",proto=115)/
+     Raw('\x00\x00\x00\x01')/Raw('x' * 20)
 
 11. Send L2TPv3 IPv6 packet with SIP, DIP and session ID matching the
     configured rule, Packets should be received on queue 20::
 
-    p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)/
-    Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
+     p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)/
+     Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
 
 12. Send L2TPv3 IPv6 packet with session ID not matching the configured rule,
     Packet should be received on queue 0::
 
-    p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)/
-    Raw('\x00\x00\x03\xF8')/Raw('x' * 20)
+     p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)/
+     Raw('\x00\x00\x03\xF8')/Raw('x' * 20)
 
 13. Send L2TPv3 IPv6 packet with SIP not matching the configured rule, Packet
     should be received on queue 0::
 
-    p=Ether()/IPv6(src="1111:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)
-    /Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
+     p=Ether()/IPv6(src="1111:2:3:4:5:6:7:8",ipv6 dst="8:7:6:5:4:3:2:1",nh=115)
+     /Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
 
 14. Send L2TPv3 IPv6 packet with DIP not matching the configured rule, Packet
     should be received on queue 0::
 
-    p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8888:7:6:5:4:3:2:1",nh=115)/
-    Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
+     p=Ether()/IPv6(src="1:2:3:4:5:6:7:8",ipv6 dst="8888:7:6:5:4:3:2:1",nh=115)/
+     Raw('\x00\x00\x03\xe8')/Raw('x' * 20)
