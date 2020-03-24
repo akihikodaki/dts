@@ -442,7 +442,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
       testpmd>stop
 
 Test Case 8: loopback reconnect test with packed ring mergeable path and server mode
-===================================================================================
+====================================================================================
 
 1. launch vhost as client mode with 2 queues::
 
@@ -503,18 +503,18 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+     testpmd>stop
+     testpmd>port stop 0
+     testpmd>port start 0
+     testpmd>start tx_first 32
+     testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+     testpmd>stop
 
 Test Case 9: loopback reconnect test with packed ring non-mergeable path and server mode
-=======================================================================================
+========================================================================================
 
 1. launch vhost as client mode with 2 queues::
 
@@ -575,18 +575,18 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+     testpmd>stop
+     testpmd>port stop 0
+     testpmd>port start 0
+     testpmd>start tx_first 32
+     testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+     testpmd>stop
 
 Test Case 10: loopback reconnect test with packed ring inorder mergeable path and server mode
-===========================================================================================
+=============================================================================================
 
 1. launch vhost as client mode with 2 queues::
 
@@ -647,18 +647,18 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+     testpmd>stop
+     testpmd>port stop 0
+     testpmd>port start 0
+     testpmd>start tx_first 32
+     testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+     testpmd>stop
 
 Test Case 11: loopback reconnect test with packed ring inorder non-mergeable path and server mode
-===============================================================================================
+=================================================================================================
 
 1. launch vhost as client mode with 2 queues::
 
@@ -719,12 +719,12 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 
 10. Port restart at vhost side by below command and re-calculate the average throughput::
 
-    testpmd>stop
-    testpmd>port stop 0
-    testpmd>port start 0
-    testpmd>start tx_first 32
-    testpmd>show port stats all
+     testpmd>stop
+     testpmd>port stop 0
+     testpmd>port start 0
+     testpmd>start tx_first 32
+     testpmd>show port stats all
 
 11. Check each RX/TX queue has packets::
 
-    testpmd>stop
+     testpmd>stop
