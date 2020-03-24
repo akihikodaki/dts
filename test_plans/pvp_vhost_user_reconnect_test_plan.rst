@@ -389,7 +389,7 @@ Similar as Test Case 7, all steps are similar except step 6.
 7. Reboot two VMs, then re-launch VMs, repeat it 3-5 times, check if the reconnect can work and ensure the traffic can continue.
 
 Test Case10: vhost-user/virtio-pmd pvp packed ring reconnect from vhost-user
-===========================================================================
+============================================================================
 Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio, then launch vhost with client mode by below commands::
