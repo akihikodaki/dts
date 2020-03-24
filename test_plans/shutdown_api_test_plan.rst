@@ -145,7 +145,7 @@ Test Case: Change Link Speed
 7. Repeat this process for every compatible speed depending on the NIC driver.
 
 Test Case: Change Link Speed VF
-----------------------------
+-------------------------------
 This case support all the nic with driver i40e and ixgbe.
 
 1. bind a PF to DPDK::
