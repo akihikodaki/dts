@@ -293,20 +293,20 @@ Test Case 7: pvp test with virtio 1.1 mergeable path
 
 2. Check dut machine already has installed qemu 4.2.0, then launch VM::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 3 -m 4096 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 3 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
-    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2  \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed_vq=1 \
-    -vnc :10
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed=on -vnc :10
 
 3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
 
-    ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
+    ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -332,20 +332,20 @@ Test Case 8: pvp test with virtio 1.1 non-mergeable path
 
 2. Check dut machine already has installed qemu 4.2.0, then launch VM::
 
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 3 -m 4096 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 3 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+    -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
-    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2  \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed_vq=1 \
-    -vnc :10
+    -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=2 \
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,rx_queue_size=1024,tx_queue_size=1024,mq=on,vectors=15,packed=on -vnc :10
 
 3. On VM, bind virtio net to igb_uio and run testpmd without tx-offloads::
 
-    ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip\
+    ./testpmd -c 0x7 -n 4 -- -i --enable-hw-vlan-strip \
     --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
