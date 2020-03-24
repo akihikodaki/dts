@@ -37,7 +37,7 @@ The following are the test plans for the DPDK DTS automated test system.
     :maxdepth: 1
     :numbered:
 
-
+    ABI_stable_test
     blacklist_test_plan
     checksum_offload_test_plan
     cloud_filter_test_plan
@@ -45,12 +45,12 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_advanced_rss_test_plan
     cvl_fdir_test_plan
     cvl_switch_filter_test_plan
-    loopback_virtio_user_packed_ring_server_mode_test_plan
     crypto_perf_cryptodev_perf_test_plan
     ddp_gtp_qregion_test_plan
     ddp_gtp_test_plan
     ddp_mpls_test_plan
     ddp_ppp_l2tp_test_plan
+    ddp_l2tpv3_test_plan
     dual_vlan_test_plan
     dynamic_config_test_plan
     dynamic_flowtype_test_plan
@@ -94,6 +94,10 @@ The following are the test plans for the DPDK DTS automated test system.
     NICStatistics_test_plan
     ntb_test_plan
     nvgre_test_plan
+    perf_virtio_user_loopback_test_plan
+    perf_virtio_user_pvp_test_plan
+    perf_vm2vm_virtio_net_perf_test_plan
+    pvp_virtio_user_multi_queues_port_restart_test_plan
     pmd_bonded_8023ad_test_plan
     pmd_bonded_test_plan
     pmd_stacked_bonded_test_plan
@@ -104,7 +108,6 @@ The following are the test plans for the DPDK DTS automated test system.
     ptype_mapping_test_plan
     pvp_multi_paths_performance_test_plan
     pvp_multi_paths_vhost_single_core_performance_test_plan
-    pvp_packed_ring_vhost_user_reconnect_test_plan
     pvp_multi_paths_virtio_single_core_performance_test_plan
     qinq_filter_test_plan
     qos_api_test_plan
@@ -159,9 +162,9 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_vlan_test_plan
     kernelpf_iavf_test_plan
     vhost_multi_queue_qemu_test_plan
-    vhost_pmd_xstats_test_plan
     vhost_qemu_mtu_test_plan
     vhost_user_live_migration_test_plan
+    vhost_xstats_test_plan
     vm_power_manager_test_plan
     vm_pw_mgmt_policy_test_plan
     power_bidirection_channel_test_plan
@@ -193,7 +196,6 @@ The following are the test plans for the DPDK DTS automated test system.
     pvp_share_lib_test_plan
     pvp_vhost_user_built_in_net_driver_test_plan
     pvp_virtio_user_2M_hugepages_test_plan
-    pvp_virtio_user_multi_queues_test_plan
     virtio_unit_cryptodev_func_test_plan
     virtio_user_for_container_networking_test_plan
     eventdev_perf_test_plan
