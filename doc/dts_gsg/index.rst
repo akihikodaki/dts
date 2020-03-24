@@ -47,3 +47,4 @@ Getting Started Guide
     migrate_from_etgen_to_pktgen
     trex
     trex_known_issue
+    usage_of_create_eal_and_start_testpmd
