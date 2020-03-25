@@ -121,15 +121,21 @@ class TestLoopbackPortRestart(TestCase):
                 break
             time.sleep(3)
             loop = loop + 1
-
         self.verify("down" not in port_status, "port can not up after restart")
 
-    def port_restart(self):
-        self.vhost.send_expect("stop", "testpmd> ", 120)
-        self.vhost.send_expect("port stop 0", "testpmd> ", 120)
-        self.check_port_throughput_after_port_stop()
-        self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
-        self.vhost.send_expect("port start all", "testpmd> ", 120)
+    def port_restart(self, restart_times=1):
+        if restart_times == 1:
+            self.vhost.send_expect("stop", "testpmd> ", 120)
+            self.vhost.send_expect("port stop 0", "testpmd> ", 120)
+            self.check_port_throughput_after_port_stop()
+            self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
+            self.vhost.send_expect("port start all", "testpmd> ", 120)
+        else:
+            for i in range(restart_times):
+                self.vhost.send_expect("stop", "testpmd> ", 120)
+                self.vhost.send_expect("port stop 0", "testpmd> ", 120)
+                self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
+                self.vhost.send_expect("port start all", "testpmd> ", 120)
         self.check_port_link_status_after_port_restart()
         self.vhost.send_expect("set burst 1", "testpmd> ", 120)
         self.vhost.send_expect("start tx_first 1", "testpmd> ", 120)
@@ -156,7 +162,7 @@ class TestLoopbackPortRestart(TestCase):
         self.verify(Mpps > 0, "%s can not receive packets" % self.running_case)
         return Mpps
 
-    def send_and_verify(self, case_info, frame_size):
+    def send_and_verify(self, case_info, frame_size, restart_times=1):
         """
         start to send packets and calculate the average throughput
         """
@@ -166,7 +172,7 @@ class TestLoopbackPortRestart(TestCase):
         Mpps = self.calculate_avg_throughput()
         self.update_table_info(case_info, frame_size, Mpps, "Before Restart")
 
-        self.port_restart()
+        self.port_restart(restart_times)
         Mpps = self.calculate_avg_throughput()
         self.update_table_info(case_info, frame_size, Mpps, "After Restart and set burst to 1")
 
@@ -184,7 +190,7 @@ class TestLoopbackPortRestart(TestCase):
         self.dut.close_session(self.vhost)
         self.dut.close_session(self.virtio_user)
 
-    def test_vhost_loopback_virtio11_mergeable_mac(self):
+    def test_loopback_test_with_packed_ring_mergeable_path(self):
         """
         performance for [frame_sizes] and restart port on virtio1.1 mergeable path
         """
@@ -193,11 +199,11 @@ class TestLoopbackPortRestart(TestCase):
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtio1.1 mergeable", frame_size)
+            self.send_and_verify("packed ring mergeable", frame_size)
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_vhost_loopback_virtio11_normal_mac(self):
+    def test_loopback_test_with_packed_ring_nonmergeable_path(self):
         """
         performance for [frame_sizes] and restart port ob virtio1.1 normal path
         """
@@ -206,63 +212,86 @@ class TestLoopbackPortRestart(TestCase):
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtio1.1 normal", frame_size)
+            self.send_and_verify("packed ring non-mergeable", frame_size)
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_vhost_loopback_virtiouser_inorder_mergeable_mac(self):
+    def test_lookback_test_with_packed_ring_inorder_mergeable_path(self):
+        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=1,in_order=1",
+                   "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        for frame_size in self.frame_sizes:
+            self.start_vhost_testpmd()
+            self.start_virtio_user_testpmd(pmd_arg)
+            self.send_and_verify("packed ring non-mergeable", frame_size)
+            self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_lookback_test_with_packed_ring_inorder_nonmergeable_path(self):
         """
         performance for [frame_sizes] and restart port on inorder mergeable path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1 ",
+        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1",
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
+        for frame_size in self.frame_sizes:
+            self.start_vhost_testpmd()
+            self.start_virtio_user_testpmd(pmd_arg)
+            self.send_and_verify("packed ring inorder non-mergeable", frame_size)
+            self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_lookback_test_with_split_ring_inorder_mergeable_path(self):
+        """
+        performance for [frame_sizes] and restart port on inorder normal path
+        """
+        pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("inorder mergeable", frame_size)
+            self.send_and_verify("split ring inorder mergeable", frame_size)
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_vhost_loopback_virtiouser_inorder_mergeable_off_mac(self):
+    def test_lookback_test_with_split_ring_inorder_nonmergeable_path(self):
         """
-        performance for [frame_sizes] and restart port on inorder normal path
+        performance for [frame_sizes] and restart port on virtio normal path
         """
         pmd_arg = {"version": "packed_vq=0,in_order=1,mrg_rxbuf=0 ",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("inorder normal", frame_size)
+            self.send_and_verify("split ring inorder non-mergeable", frame_size)
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_vhost_loopback_virtiouser_mergeable_mac(self):
-        """
-        performance for [frame_sizes] and restart port on virtio mergeable path
-        """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1 ",
-                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
-        for frame_size in self.frame_sizes:
-            self.start_vhost_testpmd()
-            self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtiouser mergeable", frame_size)
-            self.close_all_testpmd()
-        self.result_table_print()
-
-    def test_vhost_loopback_virtiouser_normal_mac(self):
+    def test_lookback_test_with_split_ring_mergeable_path(self):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0 ",
+        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtiouser normal", frame_size)
+            self.send_and_verify("split ring mergeable", frame_size, restart_times=100)
             self.close_all_testpmd()
         self.result_table_print()
 
-    def test_vhost_loopback_virtiouser_vector_rx_mac(self):
+    def test_lookback_test_with_split_ring_nonmergeable_path(self):
+        """
+        performance for [frame_sizes] and restart port on virtio normal path
+        """
+        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+                          "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
+        for frame_size in self.frame_sizes:
+            self.start_vhost_testpmd()
+            self.start_virtio_user_testpmd(pmd_arg)
+            self.send_and_verify("split ring non-mergeable", frame_size)
+            self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_loopback_test_with_split_ring_vector_rx_path(self):
         """
         performance for frame_sizes and restart port on virtio vector rx
         """
@@ -271,7 +300,7 @@ class TestLoopbackPortRestart(TestCase):
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
-            self.send_and_verify("virtiouser vector_rx", frame_size)
+            self.send_and_verify("split ring vector_rx", frame_size)
             self.close_all_testpmd()
         self.result_table_print()
 
