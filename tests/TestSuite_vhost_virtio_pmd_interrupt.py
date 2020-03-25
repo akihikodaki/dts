@@ -117,7 +117,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         # get the core list depend on current nb_cores number
         self.get_core_list()
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=%d'" % (self.base_dir, self.queues)]
+        vdev = ['net_vhost0,iface=%s/vhost-net,queues=%d' % (self.base_dir, self.queues)]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip" % (self.nb_cores, self.queues, self.queues)
         command_line_client = testcmd + eal_params + para
@@ -166,7 +166,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             if list(self.vm.params[i].keys())[0] == 'cpu':
                 self.vm.params[i]['cpu'][0]['number'] = self.queues
 
-    def start_vms(self, mode=0):
+    def start_vms(self, mode=0, packed=False):
         """
         start qemus
         """
@@ -177,7 +177,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = "00:11:22:33:44:55"
         vm_params['opt_queue'] = self.queues
-        opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d" % (2*self.queues+2)
+        opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d" % (2*self.queues+2) if not packed else "mrg_rxbuf=on,csum=on,mq=on,vectors=%d,packed=on" % (2*self.queues+2)
         if mode == 0:
             vm_params['opt_settings'] = "disable-modern=true," + opt_param
         elif mode == 1:
@@ -310,6 +310,19 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.prepare_vm_env()
         self.launch_l3fwd_power_in_vm()
         self.send_and_verify()
+
+    def test_perf_packed_ring_virtio_interrupt_with_16queues(self):
+        """
+        wake up virtio_user 0.95 core with l3fwd-power sample
+        """
+        self.queues = 16
+        self.nb_cores = 16
+        self.start_testpmd_on_vhost()
+        self.start_vms(mode=0, packed=True)
+        self.prepare_vm_env()
+        self.launch_l3fwd_power_in_vm()
+        self.send_and_verify()
+
 
     def tear_down(self):
         """
