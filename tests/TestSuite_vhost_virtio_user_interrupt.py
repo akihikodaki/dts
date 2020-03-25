@@ -89,13 +89,13 @@ class TestVirtioUserInterrupt(TestCase):
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
-    def launch_l3fwd(self, path):
+    def launch_l3fwd(self, path, packed=False):
         self.core_interrupt = self.core_list_l3fwd[0]
         example_para = "./examples/l3fwd-power/build/l3fwd-power "
-        vdev = " --log-level='user1,7' --vdev=virtio_user0,path=%s,cq=1 -- -p 1" % path
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info])
+        vdev = "virtio_user0,path=%s,cq=1" % path if not packed else "virtio_user0,path=%s,cq=1,packed_vq=1" % path
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
         para = " --config='(0,0,%s)' --parse-ptype" % self.core_interrupt
-        cmd_l3fwd = example_para + eal_params + vdev + para
+        cmd_l3fwd = example_para + eal_params + " --log-level='user1,7' -- -p 1 " + para
         self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
         time.sleep(10)
@@ -110,27 +110,27 @@ class TestVirtioUserInterrupt(TestCase):
         start testpmd on vhost side
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = [r"'net_vhost0,iface=vhost-net,queues=1,client=0'"]
+        vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0"]
         para = " -- -i --rxq=1 --txq=1"
         if len(pci) == 0:
             eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=[self.pci_info], vdevs=vdev)
         else:
-            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, ports=[self.pci_info], vdevs=vdev)
+            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
         cmd_vhost_user = testcmd + eal_params + para
 
         self.vhost.send_expect(cmd_vhost_user, "testpmd>", 30)
         self.vhost.send_expect("set fwd mac", "testpmd>", 30)
         self.vhost.send_expect("start", "testpmd>", 30)
 
-    def start_virtio_user(self):
+    def start_virtio_user(self, packed=False):
         """
         start testpmd on virtio side
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = " --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net"
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='virtio', no_pci=True, ports=[self.pci_info])
+        vdev = "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net" if not packed else "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1"
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='virtio', no_pci=True, vdevs=[vdev])
         para = " -- -i --txd=512 --rxd=128 --tx-offloads=0x00"
-        cmd_virtio_user = testcmd + eal_params + vdev + para
+        cmd_virtio_user = testcmd + eal_params + para
         self.virtio.send_expect(cmd_virtio_user, "testpmd>", 120)
         self.virtio.send_expect("set fwd mac", "testpmd>", 20)
         self.virtio.send_expect("start", "testpmd>", 20)
@@ -154,7 +154,7 @@ class TestVirtioUserInterrupt(TestCase):
         else:
             self.logger.error("Wrong link status not right, status is %s" % result)
 
-    def test_interrupt_with_vhost_net_as_backed(self):
+    def test_split_ring_virtio_user_interrupt_with_vhost_net_as_backed(self):
         """
         Check the virtio-user interrupt can work when use vhost-net as backend
         """
@@ -175,7 +175,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.check_interrupt_log(status="waked up")
         self.dut.send_expect("killall -s INT ping", "#")
 
-    def test_interrupt_with_vhost_user_as_backed(self):
+    def test_split_ring_virtio_user_interrupt_with_vhost_user_as_backed(self):
         """
         Check the virtio-user interrupt can work when use vhost-user as backend
         """
@@ -189,12 +189,58 @@ class TestVirtioUserInterrupt(TestCase):
             time.sleep(3)
             self.check_interrupt_log(status="waked up")
 
-    def test_lsc_event_between_vhost_and_virtio_user(self):
+    def test_lsc_event_between_vhost_user_and_virtio_user_with_split_ring(self):
         """
         LSC event between vhost-user and virtio-user
         """
         self.start_vhost_testpmd(pci="--no-pci")
         self.start_virtio_user()
+        self.check_virtio_side_link_status("up")
+
+        self.vhost.send_expect("quit", "#", 20)
+        self.check_virtio_side_link_status("down")
+
+    def test_packed_ring_virtio_user_interrupt_with_vhost_user_as_backed(self):
+        """
+        Check the virtio-user interrupt can work when use vhost-user as backend
+        """
+        self.start_vhost_testpmd(pci="")
+        self.launch_l3fwd(path="./vhost-net", packed=True)
+        # double check the status of interrupt core
+        for i in range(2):
+            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
+            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_execute()
+            time.sleep(3)
+            self.check_interrupt_log(status="waked up")
+
+    def test_packed_ring_virtio_user_interrupt_with_vhost_net_as_backed(self):
+        """
+        Check the virtio-user interrupt can work when use vhost-net as backend
+        """
+        self.launch_l3fwd(path="/dev/vhost-net", packed=True)
+        self.virtio.send_expect("ifconfig tap0 up", "#", 20)
+        self.virtio.send_expect("ifconfig tap0 1.1.1.2", "#", 20)
+        # start to ping, check the status of interrupt core
+        self.virtio.send_command("ping -I tap0 1.1.1.1 > aa &", 20)
+        time.sleep(3)
+        self.check_interrupt_log(status="waked up")
+        # stop ping, check the status of interrupt core
+        self.dut.send_expect("killall -s INT ping", "#")
+        time.sleep(2)
+        self.check_interrupt_log(status="sleeps")
+        # restart ping, check the status of interrupt core
+        self.virtio.send_command("ping -I tap0 1.1.1.1 > aa &", 20)
+        time.sleep(3)
+        self.check_interrupt_log(status="waked up")
+        self.dut.send_expect("killall -s INT ping", "#")
+
+    def test_lsc_event_between_vhost_user_and_virtio_user_with_packed_ring(self):
+        """
+        LSC event between vhost-user and virtio-user
+        """
+        self.start_vhost_testpmd(pci="--no-pci")
+        self.start_virtio_user(packed=True)
         self.check_virtio_side_link_status("up")
 
         self.vhost.send_expect("quit", "#", 20)
