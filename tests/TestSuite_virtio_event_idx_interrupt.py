@@ -100,7 +100,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.vhost.send_expect(command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
-    def start_vms(self):
+    def start_vms(self, packed=False):
         """
         start qemus
         """
@@ -113,6 +113,8 @@ class TestVirtioIdxInterrupt(TestCase):
         if self.queues > 1:
             vm_params['opt_queue'] = self.queues
             opt_args = opt_args + ",mq=on,vectors=%d" % (2*self.queues + 2)
+        if packed:
+            opt_args = opt_args + ',packed=on'
         vm_params['opt_settings'] = opt_args
         self.vm.set_vm_device(**vm_params)
         try:
@@ -224,7 +226,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.vm.stop()
         self.vhost.send_expect("quit", "#", 20)
 
-    def test_perf_virito_idx_interrupt_with_virtio_pci_driver_reload(self):
+    def test_perf_split_ring_virito_pci_driver_reload(self):
         """
         virtio-pci driver reload test
         """
@@ -237,7 +239,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.verify(res is True, "Should increase the wait times of ixia")
         self.stop_all_apps()
 
-    def test_perf_virtio_idx_interrupt_with_multi_queue(self):
+    def test_perf_wake_up_split_ring_virtio_net_cores_with_event_idx_interrupt_mode_16queue(self):
         """
         wake up virtio-net cores with event idx interrupt mode 16 queues test
         """
@@ -245,6 +247,32 @@ class TestVirtioIdxInterrupt(TestCase):
         self.nb_cores = 16
         self.start_vhost_testpmd()
         self.start_vms()
+        self.config_virito_net_in_vm()
+        self.start_to_send_packets(delay=15)
+        self.check_each_queue_has_packets_info_on_vhost()
+        self.stop_all_apps()
+
+    def test_perf_packed_ring_virito_pci_driver_reload(self):
+        """
+        virtio-pci driver reload test
+        """
+        self.queues = 1
+        self.nb_cores = 1
+        self.start_vhost_testpmd()
+        self.start_vms(packed=True)
+        self.config_virito_net_in_vm()
+        res = self.check_packets_after_reload_virtio_device(reload_times=30)
+        self.verify(res is True, "Should increase the wait times of ixia")
+        self.stop_all_apps()
+
+    def test_perf_wake_up_packed_ring_virtio_net_cores_with_event_idx_interrupt_mode_16queue(self):
+        """
+        wake up virtio-net cores with event idx interrupt mode 16 queues test
+        """
+        self.queues = 16
+        self.nb_cores = 16
+        self.start_vhost_testpmd()
+        self.start_vms(packed=True)
         self.config_virito_net_in_vm()
         self.start_to_send_packets(delay=15)
         self.check_each_queue_has_packets_info_on_vhost()
