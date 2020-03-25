@@ -198,7 +198,7 @@ class TestVirtioPVPRegression(TestCase):
                 if 'cpupin' in list(self.vm.params[i]['cpu'][0].keys()):
                     self.vm.params[i]['cpu'][0].pop('cpupin')
 
-    def start_vm(self, qemu_path, qemu_version, modem, virtio_path):
+    def start_vm(self, qemu_path, qemu_version, modem, virtio_path, packed=False):
         """
         start vm
         """
@@ -227,6 +227,8 @@ class TestVirtioPVPRegression(TestCase):
             opt_args = 'disable-modern=false,' + opt_args
         elif(modem == 0):
             opt_args = 'disable-modern=true,' + opt_args
+        if packed:
+            opt_args = opt_args + ',packed=on'
         vm_params['opt_settings'] = opt_args
         self.vm.set_vm_device(**vm_params)
         self.vm.load_config()
@@ -344,7 +346,7 @@ class TestVirtioPVPRegression(TestCase):
         self.dut.send_expect('killall -s INT qemu-system-x86_64', '# ')
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
-    def pvp_regression_run(self, case_info, modem, virtio_path):
+    def pvp_regression_run(self, case_info, modem, virtio_path, packed=False):
         """
         run different qemu verssion on different virtio path of pvp regression
         modem = 0, start vm as virtio 0.95
@@ -357,7 +359,7 @@ class TestVirtioPVPRegression(TestCase):
             version = self.qemu_list[i]["version"]
             self.start_testpmd_as_vhost()
             # use different modem and different path to start vm
-            self.start_vm(path, version, modem, virtio_path)
+            self.start_vm(path, version, modem, virtio_path, packed=packed)
             self.start_testpmd_in_vm(virtio_path)
             self.logger.info("now testing the qemu path of %s" % path)
             time.sleep(5)
@@ -370,7 +372,7 @@ class TestVirtioPVPRegression(TestCase):
 
             self.logger.info('now reconnect from vm')
             self.dut.send_expect('killall -s INT qemu-system-x86_64', '# ')
-            self.start_vm(path, version, modem, virtio_path)
+            self.start_vm(path, version, modem, virtio_path, packed=packed)
             self.start_testpmd_in_vm(virtio_path)
             self.send_verify(case_info, version, "reconnect from vm")
 
@@ -397,7 +399,7 @@ class TestVirtioPVPRegression(TestCase):
         virtio_path = 'mergeable'
         self.pvp_regression_run(case_info, modem, virtio_path)
 
-    def test_perf_pvp_regression_normal_path(self):
+    def test_perf_pvp_regression_non_mergeable_path(self):
         """
         Test the performance of one vm with virtio 0.95 on normal path
         diff qemu + multi queue + reconnect
@@ -407,7 +409,7 @@ class TestVirtioPVPRegression(TestCase):
         virtio_path = 'normal'
         self.pvp_regression_run(case_info, modem, virtio_path)
 
-    def test_perf_pvp_regression_modern_normal_path(self):
+    def test_perf_pvp_regression_modern_non_mergeable_path(self):
         """
         Test the performance of one vm with virtio 1.0 on normal path
         diff qemu + multi queue + reconnect
@@ -436,6 +438,26 @@ class TestVirtioPVPRegression(TestCase):
         modem = 1
         virtio_path = 'vector_rx'
         self.pvp_regression_run(case_info, modem, virtio_path)
+
+    def test_perf_pvp_with_virtio11_mergeable_path(self):
+        """
+        Test the performance of one vm with virtio 1.1 on mergeable path
+        diff qemu + multi queue + reconnect
+        """
+        case_info = 'virtio-1.1 mergeable'
+        modem = 1
+        virtio_path = 'mergeable'
+        self.pvp_regression_run(case_info, modem, virtio_path, packed=True)
+
+    def test_perf_pvp_with_virtio11_non_mergeable_path(self):
+        """
+        Test the performance of one vm with virtio 1.1 on mergeable path
+        diff qemu + multi queue + reconnect
+        """
+        case_info = 'virtio-1.1 normal'
+        modem = 1
+        virtio_path = 'normal'
+        self.pvp_regression_run(case_info, modem, virtio_path, packed=True)
 
     def tear_down(self):
         """
