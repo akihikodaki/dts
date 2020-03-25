@@ -130,21 +130,21 @@ class TestPvpVirtioUser4kPages(TestCase):
         Start testpmd on vhost
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = " -m 1024 --no-huge --vdev 'net_vhost0,iface=vhost-net,queues=1'"
+        vdev = 'net_vhost0,iface=vhost-net,queues=1'
         para = " -- -i --no-numa --socket-num=%d" % self.ports_socket
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info])
-        command_line_client = testcmd + eal_params + vdev + para
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info], vdevs=[vdev])
+        command_line_client = testcmd + eal_params + ' -m 1024 --no-huge' + para
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
-    def start_testpmd_as_virtio(self):
+    def start_testpmd_as_virtio(self, packed=False):
         """
         Start testpmd on virtio
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = " --no-huge -m 1024 --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, prefix='virtio-user', ports=[self.pci_info])
-        command_line_user = testcmd + eal_params + vdev
+        vdev = "net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1" if not packed else "net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,packed_vq=1,queues=1"
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, prefix='virtio-user', ports=[self.pci_info], vdevs=[vdev])
+        command_line_user = testcmd + eal_params + ' --no-huge -m 1024 -- -i'
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
@@ -168,7 +168,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
-    def test_perf_pvp_virtio_user_with_4K_pages(self):
+    def test_perf_pvp_virtio_user_split_ring_with_4K_pages(self):
         """
         Basic test for virtio-user 4K pages
         """
@@ -178,6 +178,18 @@ class TestPvpVirtioUser4kPages(TestCase):
         self.send_and_verify()
         self.result_table_print()
         self.close_all_apps()
+
+    def test_perf_pvp_virtio_user_packed_ring_with_4K_pages(self):
+        """
+        Basic test for virtio-user 4K pages
+        """
+        self.start_testpmd_as_vhost()
+        self.prepare_tmpfs_for_4k()
+        self.start_testpmd_as_virtio(packed=True)
+        self.send_and_verify()
+        self.result_table_print()
+        self.close_all_apps()
+
 
     def tear_down(self):
         """
