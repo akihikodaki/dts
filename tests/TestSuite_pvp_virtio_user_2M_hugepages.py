@@ -128,20 +128,20 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         start testpmd on vhost
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = [r"'net_vhost0,iface=vhost-net,queues=1'"]
+        vdev = ["net_vhost0,iface=vhost-net,queues=1"]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
         command_line_client = testcmd + eal_params + " -- -i"
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
-    def start_testpmd_as_virtio(self):
+    def start_testpmd_as_virtio(self, packed=False):
         """
         start testpmd on virtio
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = " --single-file-segments --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1 -- -i"
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', ports=[self.pci_info])
-        command_line_user = testcmd + eal_params + vdev
+        vdev = 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1' if not packed else 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1'
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', ports=[self.pci_info], vdevs=[vdev])
+        command_line_user = testcmd + eal_params + ' --single-file-segments -- -i'
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
@@ -154,12 +154,22 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
 
-    def test_perf_pvp_virtio_user_with_2M_hugepages(self):
+    def test_perf_pvp_virtio_user_split_ring_2M_hugepages(self):
         """
         Basic test for virtio-user 2M hugepage
         """
         self.start_testpmd_as_vhost()
         self.start_testpmd_as_virtio()
+        self.send_and_verify()
+        self.result_table_print()
+        self.close_all_apps()
+
+    def test_perf_pvp_virtio_user_packed_ring_2M_hugepages(self):
+        """
+        Basic test for virtio-user 2M hugepage
+        """
+        self.start_testpmd_as_vhost()
+        self.start_testpmd_as_virtio(packed=True)
         self.send_and_verify()
         self.result_table_print()
         self.close_all_apps()
