@@ -83,14 +83,14 @@ class TestVhostEnqueueInterrupt(TestCase):
         self.core_list_virtio = core_list[0: self.queues+1]
         self.core_list_l3fwd = core_list[self.queues+1: need_num]
 
-    def lanuch_virtio_user(self):
+    def lanuch_virtio_user(self, packed=False):
         """
         launch virtio-user with server mode
         """
-        vdev = "--vdev=net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d" % (self.vmac, self.queues)
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio, prefix='virtio', no_pci=True, ports=[self.pci_info])
+        vdev = "net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d" % (self.vmac, self.queues) if not packed else "net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d,packed_vq=1" % (self.vmac, self.queues)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio, prefix='virtio', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
         para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
-        command_line_client =  self.dut.target + "/app/testpmd " + eal_params + vdev + para
+        command_line_client =  self.dut.target + "/app/testpmd " + eal_params + para
         self.virtio_user.send_expect(command_line_client, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
 
@@ -109,9 +109,9 @@ class TestVhostEnqueueInterrupt(TestCase):
             self.verify_info.append(info)
 
         example_cmd = "./examples/l3fwd-power/build/l3fwd-power "
-        vdev = [r"'net_vhost0,iface=vhost-net,queues=%d,client=1'" % self.queues]
+        vdev = 'net_vhost0,iface=vhost-net,queues=%d,client=1' % self.queues
         para = " -- -p 0x1 --parse-ptype 1 --config '%s' " % config_info
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info], vdevs=vdev)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info], vdevs=[vdev])
         command_line_client = example_cmd + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
@@ -156,7 +156,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         self.dut.close_session(self.vhost)
         self.dut.close_session(self.virtio_user)
 
-    def test_virtio_user_interrupt(self):
+    def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample(self):
         """
         Check the virtio-user interrupt can work when use vhost-net as backend
         """
@@ -166,13 +166,33 @@ class TestVhostEnqueueInterrupt(TestCase):
         self.lanuch_l3fwd_power()
         self.send_and_verify()
 
-    def test_virtio_user_interrupt_with_multi_queue(self):
+    def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
         """
         Check the virtio-user interrupt can work with multi queue
         """
         self.queues = 4
         self.get_core_list()
         self.lanuch_virtio_user()
+        self.lanuch_l3fwd_power()
+        self.send_and_verify()
+
+    def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample(self):
+        """
+        Check the virtio-user interrupt can work when use vhost-net as backend
+        """
+        self.queues = 1
+        self.get_core_list()
+        self.lanuch_virtio_user(packed=True)
+        self.lanuch_l3fwd_power()
+        self.send_and_verify()
+
+    def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
+        """
+        Check the virtio-user interrupt can work with multi queue
+        """
+        self.queues = 4
+        self.get_core_list()
+        self.lanuch_virtio_user(packed=True)
         self.lanuch_l3fwd_power()
         self.send_and_verify()
 
