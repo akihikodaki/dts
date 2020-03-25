@@ -2699,6 +2699,35 @@
             "Bug ID": "",
             "Comments": "only i40e and ixgbe driver support this case"
         }
+    ],
+    "perf_pvp_split_ring_dequeue_zero_copy": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "niantic not support this case"
+        }
+    ],
+    "perf_pvp_packed_ring_dequeue_zero_copy": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "niantic not support this case"
+        }
     ]
-
 }
