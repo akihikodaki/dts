@@ -161,7 +161,7 @@ class TestVhostEventIdxInterrupt(TestCase):
                     'This qemu version should greater than 2.7 ' + \
                     'in this suite, please config it in vhost_sample.cfg file')
 
-    def start_vms(self, vm_num=1):
+    def start_vms(self, vm_num=1, packed=False):
         """
         start qemus
         """
@@ -178,6 +178,8 @@ class TestVhostEventIdxInterrupt(TestCase):
                 opt_args = "csum=on,mq=on,vectors=%d" % (2*self.queues + 2)
             else:
                 opt_args = "csum=on"
+            if packed:
+                opt_args = opt_args + ',packed=on'
             vm_params['opt_settings'] = opt_args
             vm_info.set_vm_device(**vm_params)
             self.set_vm_cpu_number(vm_info)
@@ -250,9 +252,9 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         for i in range(len(self.vm)):
             self.vm[i].stop()
-        self.vhost.send_expect("^c", "#", 10)
+        self.dut.send_expect("killall l3fwd-power", "#", timeout=2)
 
-    def test_vhost_idx_interrupt(self):
+    def test_wake_up_split_ring_vhost_user_core_with_event_idx_interrupt(self):
         """
         wake up vhost-user core with l3fwd-power sample
         """
@@ -265,7 +267,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.send_and_verify()
         self.stop_all_apps()
 
-    def test_vhost_idx_interrupt_with_multi_queue(self):
+    def test_wake_up_split_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues(self):
         """
         wake up vhost-user core with l3fwd-power sample when multi queues are enabled
         """
@@ -279,7 +281,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.send_and_verify()
         self.stop_all_apps()
 
-    def test_vhost_idx_interrupt_with_multi_vms(self):
+    def test_wake_up_split_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt(self):
         """
         wake up vhost-user cores with l3fwd-power sample and multi VMs
         """
@@ -288,6 +290,46 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.get_core_mask()
         self.lanuch_l3fwd_power()
         self.start_vms(vm_num=self.vm_num)
+        self.relanuch_l3fwd_power()
+        self.send_and_verify()
+        self.stop_all_apps()
+
+    def test_wake_up_packed_ring_vhost_user_core_with_event_idx_interrupt(self):
+        """
+        wake up vhost-user core with l3fwd-power sample
+        """
+        self.vm_num = 1
+        self.queues = 1
+        self.get_core_mask()
+        self.lanuch_l3fwd_power()
+        self.start_vms(vm_num=self.vm_num, packed=True)
+        self.relanuch_l3fwd_power()
+        self.send_and_verify()
+        self.stop_all_apps()
+
+    def test_wake_up_packed_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues(self):
+        """
+        wake up vhost-user core with l3fwd-power sample when multi queues are enabled
+        """
+        self.vm_num = 1
+        self.queues = 16
+        self.get_core_mask()
+        self.lanuch_l3fwd_power()
+        self.start_vms(vm_num=self.vm_num, packed=True)
+        self.relanuch_l3fwd_power()
+        self.config_virito_net_in_vm()
+        self.send_and_verify()
+        self.stop_all_apps()
+
+    def test_wake_up_packed_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt(self):
+        """
+        wake up vhost-user cores with l3fwd-power sample and multi VMs
+        """
+        self.vm_num = 2
+        self.queues = 1
+        self.get_core_mask()
+        self.lanuch_l3fwd_power()
+        self.start_vms(vm_num=self.vm_num, packed=True)
         self.relanuch_l3fwd_power()
         self.send_and_verify()
         self.stop_all_apps()
