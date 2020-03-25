@@ -151,7 +151,7 @@ class TestVhostUserLiveMigration(TestCase):
         if zero_copy is True:
             zero_copy_str = ',dequeue-zero-copy=1'
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=%d%s'" % (self.base_dir, self.queue_number, zero_copy_str)]
+        vdev = ['eth_vhost0,iface=%s/vhost-net,queues=%d%s' % (self.base_dir, self.queue_number, zero_copy_str)]
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (self.queue_number, self.queue_number, self.queue_number)
         eal_params_first = self.dut.create_eal_parameters(cores=self.core_list0, prefix='vhost', ports=[self.host_pci_info], vdevs=vdev)
         eal_params_secondary = self.dut.create_eal_parameters(cores=self.core_list1, prefix='vhost', ports=[self.backup_pci_info], vdevs=vdev)
@@ -166,7 +166,7 @@ class TestVhostUserLiveMigration(TestCase):
         self.backup_dut.send_expect('set fwd %s' % fwd_mode, 'testpmd> ', 30)
         self.backup_dut.send_expect('start', 'testpmd> ', 30)
 
-    def setup_vm_env_on_both_dut(self, driver='default'):
+    def setup_vm_env_on_both_dut(self, driver='default', packed=False):
         """
         Create testing environment on Host and Backup
         """
@@ -183,6 +183,8 @@ class TestVhostUserLiveMigration(TestCase):
             if self.queue_number > 1:
                 vhost_params['opt_queue'] = self.queue_number
                 opt_params = 'mrg_rxbuf=on,mq=on,vectors=%d' % (2*self.queue_number + 2)
+            if packed:
+                opt_params = opt_params + ',packed=on'
             vhost_params['opt_settings'] = opt_params
             self.host_vm.set_vm_device(**vhost_params)
 
@@ -385,7 +387,7 @@ class TestVhostUserLiveMigration(TestCase):
         # make sure still can receive packets
         verify_fun(self.vm_dut_backup)
 
-    def test_migrate_with_virtio_net(self):
+    def test_migrate_with_split_ring_virtio_net(self):
         """
         Verify migrate virtIO device from host to backup host,
         Verify before/in/after migration, device with kernel driver can receive packets
@@ -402,7 +404,7 @@ class TestVhostUserLiveMigration(TestCase):
 
         self.send_and_verify(self.verify_kernel)
 
-    def test_migrete_with_vritio_net_with_multi_queue(self):
+    def test_adjust_split_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(self):
         self.queue_number = 4
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
@@ -414,7 +416,7 @@ class TestVhostUserLiveMigration(TestCase):
 
         self.send_and_verify(self.verify_kernel, True)
 
-    def test_migrate_with_virtio_pmd(self):
+    def test_migrate_with_split_ring_virtio_pmd(self):
         self.queue_number = 1
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
@@ -426,7 +428,7 @@ class TestVhostUserLiveMigration(TestCase):
 
         self.send_and_verify(self.verify_dpdk)
 
-    def test_migrate_with_zero_copy_virtio_pmd(self):
+    def test_migrate_with_split_ring_virtio_pmd_zero_copy(self):
         self.queue_number = 1
         zero_copy = True
         # start testpmd and qemu on dut
@@ -441,6 +443,63 @@ class TestVhostUserLiveMigration(TestCase):
         self.start_testpmd_on_vm(self.vm_dut_host)
 
         self.send_and_verify(self.verify_dpdk)
+
+    def test_migrate_with_packed_ring_virtio_pmd(self):
+        self.queue_number = 1
+        self.launch_testpmd_as_vhost_on_both_dut()
+        self.start_testpmd_with_fwd_mode_on_both_dut()
+        self.setup_vm_env_on_both_dut(packed=True)
+
+        # bind virtio-net to igb_uio
+        self.bind_nic_driver_of_vm(self.vm_dut_host, driver="igb_uio")
+        self.start_testpmd_on_vm(self.vm_dut_host)
+
+        self.send_and_verify(self.verify_dpdk)
+
+    def test_migrate_with_packed_ring_virtio_pmd_zero_copy(self):
+        self.queue_number = 1
+        zero_copy = True
+        # start testpmd and qemu on dut
+        # after qemu start ok, then send 'start' command to testpmd
+        # if send 'start' command before start qemu, maybe qemu will start failed
+        self.launch_testpmd_as_vhost_on_both_dut(zero_copy)
+        self.setup_vm_env_on_both_dut(packed=True)
+        self.start_testpmd_with_fwd_mode_on_both_dut()
+
+        # bind virtio-net to igb_uio
+        self.bind_nic_driver_of_vm(self.vm_dut_host, driver="igb_uio")
+        self.start_testpmd_on_vm(self.vm_dut_host)
+
+        self.send_and_verify(self.verify_dpdk)
+
+    def test_migrate_with_packed_ring_virtio_net(self):
+        """
+        Verify migrate virtIO device from host to backup host,
+        Verify before/in/after migration, device with kernel driver can receive packets
+        """
+        self.queue_number = 1
+        self.launch_testpmd_as_vhost_on_both_dut()
+        self.start_testpmd_with_fwd_mode_on_both_dut()
+        self.setup_vm_env_on_both_dut(packed=True)
+
+        # bind virtio-net back to virtio-pci
+        self.bind_nic_driver_of_vm(self.vm_dut_host, driver="")
+        # start screen and tcpdump on vm
+        self.start_tcpdump_on_vm(self.vm_dut_host)
+
+        self.send_and_verify(self.verify_kernel)
+
+    def test_adjust_packed_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(self):
+        self.queue_number = 4
+        self.launch_testpmd_as_vhost_on_both_dut()
+        self.start_testpmd_with_fwd_mode_on_both_dut()
+        self.setup_vm_env_on_both_dut(packed=True)
+
+        # bind virtio-net back to virtio-pci
+        self.bind_nic_driver_of_vm(self.vm_dut_host, driver="")
+        self.start_tcpdump_on_vm(self.vm_dut_host)
+
+        self.send_and_verify(self.verify_kernel, True)
 
     def tear_down(self):
         self.destroy_vm_env()
