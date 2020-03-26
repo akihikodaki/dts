@@ -98,7 +98,11 @@ class SSHPexpect:
         except Exception as e:
             raise(e)
 
-        return self.get_session_before(timeout=timeout)
+        output =  self.get_session_before(timeout=timeout)
+        self.session.PROMPT = self.session.UNIQUE_PROMPT
+        self.session.prompt(0.1)
+
+        return output
 
     def clean_session(self):
         self.get_session_before(timeout=0.01)
@@ -109,11 +113,16 @@ class SSHPexpect:
         """
         ignore_keyintr()
         self.session.PROMPT = self.magic_prompt
-        output = self.session.try_read_prompt(timeout)
+        try:
+            self.session.prompt(timeout)
+        except Exception as e:
+            pass
+
         aware_keyintr()
+        before = self.get_output_all()
         self.__flush()
 
-        return output
+        return before
 
     def __flush(self):
         """
