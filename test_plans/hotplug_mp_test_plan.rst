@@ -275,7 +275,7 @@ Repeat above attach and detach for 2 times
 Quit primary and secondary processes
 
 Test Case: Repeat to attach/detach virtio-user from primary or secondary
-=======================================================================
+========================================================================
 Start sample code as primary then secondary::
 
      ./hotplug_mp --proc-type=auto

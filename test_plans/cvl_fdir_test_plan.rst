@@ -82,10 +82,12 @@ Pattern and input set
     |                              | MAC_IPV4_GTPU_EH           | [TEID], [QFI]                                                                 |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
-Notes: 1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not
-          support outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
-       2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
-       3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
+.. note::
+
+   1. Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package) , share code not support
+      outer header as inputset, so Out Dest IP and VNI/GRE_KEY may not able to be implemented.
+   2. For VXLAN case MAC_IPV4_TUN_*** means MAC_IPV4_UDP_VXLAN_***
+   3. For Dest MAC, there is package /sharecode limitation on multicast dst mac support for FDIR
 
 Function type
 -------------
@@ -573,7 +575,7 @@ Test case: negative validation
 
 10. invalid port::
 
-    flow validate 2 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
+     flow validate 2 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
 
    get the message::
 
@@ -581,7 +583,7 @@ Test case: negative validation
 
 11. check the flow list::
 
-    testpmd> flow list 0
+     testpmd> flow list 0
 
    there is no rule listed.
 

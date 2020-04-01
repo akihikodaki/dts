@@ -87,66 +87,68 @@ Reuse our existing test suites for ABI stable checking.
 Execute Test Suites
 ===================
 
+.. table::
+
+  +-------------------------------+------------------------+
+  |       Test Suites             |          Type          |
   +===============================+========================+
-  |       Test Suites              |          Type           |
-  +===============================+========================+
-  |   unit_tests_cmdline           |     functional          |
+  |   unit_tests_cmdline          |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_crc               |     functional          |
+  |   unit_tests_crc              |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_dump              |     functional          |
+  |   unit_tests_dump             |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_eal               |     functional          |
+  |   unit_tests_eal              |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_kni               |     functional          |
+  |   unit_tests_kni              |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_loopback          |     functional          |
+  |   unit_tests_loopback         |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_lpm               |     functional          |
+  |   unit_tests_lpm              |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_mbuf              |     functional          |
+  |   unit_tests_mbuf             |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_mempool           |     functional          |
+  |   unit_tests_mempool          |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_pmd_perf          |     functional          |
+  |   unit_tests_pmd_perf         |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_power             |     functional          |
+  |   unit_tests_power            |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_qos               |     functional          |
+  |   unit_tests_qos              |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_ringpmd           |     functional          |
+  |   unit_tests_ringpmd          |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_ring              |     functional          |
+  |   unit_tests_ring             |     functional         |
   +-------------------------------+------------------------+
-  |   unit_tests_timer             |     functional          |
+  |   unit_tests_timer            |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_1024_ethports          |     functional          |
+  |   vhost_1024_ethports         |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_dequeue_zero_copy      |     functional          |
+  |   vhost_dequeue_zero_copy     |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_enqueue_interrupt      |     functional          |
+  |   vhost_enqueue_interrupt     |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_event_idx_interrupt    |     functional          |
+  |   vhost_event_idx_interrupt   |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_multi_queue_qemu       |     functional          |
+  |   vhost_multi_queue_qemu      |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_pmd_xstats             |     functional          |
+  |   vhost_pmd_xstats            |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_virtio_user_interrupt  |     functional          |
+  |   vhost_virtio_user_interrupt |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_user_live_migration    |     functional          |
+  |   vhost_user_live_migration   |     functional         |
   +-------------------------------+------------------------+
-  |   flow_classify                |     functional          |
+  |   flow_classify               |     functional         |
   +-------------------------------+------------------------+
-  |   flow_classify_softnic        |     functional          |
+  |   flow_classify_softnic       |     functional         |
   +-------------------------------+------------------------+
-  |   vhost_virtio_pmd_interrupt   |     functional          |
+  |   vhost_virtio_pmd_interrupt  |     functional         |
   +-------------------------------+------------------------+
-  |   l2fwd                        |     performance         |
+  |   l2fwd                       |     performance        |
   +-------------------------------+------------------------+
-  |   nic_single_core_perf         |     performance         |
+  |   nic_single_core_perf        |     performance        |
   +-------------------------------+------------------------+
-  |   l3fwd                        |     performance         |
+  |   l3fwd                       |     performance        |
   +-------------------------------+------------------------+
 
 
