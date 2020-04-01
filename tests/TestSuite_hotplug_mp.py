@@ -8,6 +8,7 @@ Hotplug Multi-process Test.
 import utils
 import time
 from test_case import TestCase
+import itertools
 
 test_loop = 2
 
@@ -29,6 +30,7 @@ class TestHotplugMp(TestCase):
         # Start two new sessions to run secondary process
         self.session_sec_1 = self.dut.new_session()
         self.session_sec_2 = self.dut.new_session()
+        self.session_vhost = self.dut.new_session()
         if self.drivername != "":
             self.dut.bind_interfaces_linux(self.kdriver)
 
@@ -81,7 +83,7 @@ class TestHotplugMp(TestCase):
             if flg_exist == 0:
                 self.verify(dev not in out, "Fail that have the device!")
 
-    def attach_detach(self, process="pri", is_dev=1, opt_plug="plugin", flg_loop=0, dev="0000:00:00.0"):
+    def attach_detach(self, process="pri", is_dev=1, opt_plug="plugin", flg_loop=0, dev="0000:00:00.0", iface=None):
         """
         Attach or detach physical/virtual device from primary/secondary
         process.
@@ -99,23 +101,33 @@ class TestHotplugMp(TestCase):
         dev: define physical device PCI "0000:00:00.0" or virtual device
              "net_af_packet"
         """
-
+        iface = self.intf0 if not iface else iface
         if opt_plug == "plugin":
             self.verify_devlist(dev, flg_exist=0)
             for i in range(test_loop):
                 if process == "pri":
                     if is_dev == 0:
-                        self.session_pri.send_expect(
-                            "attach %s,iface=%s"
-                            % (dev, self.intf0), "example>", 100)
+                        if not 'virtio' in dev:
+                            self.session_pri.send_expect(
+                                "attach %s,iface=%s"
+                                % (dev, iface), "example>", 100)
+                        else:
+                            self.session_pri.send_expect(
+                                "attach %s,%s"
+                                % (dev, iface), "example>", 100)
                     else:
                         self.session_pri.send_expect(
                             "attach %s" % dev, "example>", 100)
                 if process == "sec":
                     if is_dev == 0:
-                        self.session_sec_1.send_expect(
-                            "attach %s,iface=%s"
-                            % (dev, self.intf0), "example>", 100)
+                        if not 'virtio' in dev:
+                            self.session_sec_1.send_expect(
+                                "attach %s,iface=%s"
+                                % (dev, iface), "example>", 100)
+                        else:
+                            self.session_sec_1.send_expect(
+                                "attach %s,%s"
+                                % (dev, iface), "example>", 100)
                     else:
                         self.session_sec_1.send_expect(
                             "attach %s" % dev, "example>", 100)
@@ -168,7 +180,7 @@ class TestHotplugMp(TestCase):
         self.multi_process_quit()
         self.dut.bind_interfaces_linux(self.kdriver)
 
-    def attach_detach_vdev(self, process="pri", opt_plug="plugin", flg_loop=0, dev="net_af_packet"):
+    def attach_detach_vdev(self, process="pri", opt_plug="plugin", flg_loop=0, dev="net_af_packet", iface=None):
         """
         Attach or detach virtual device from primary/secondary process.
         Check port interface is at link up status before hotplug test.
@@ -176,23 +188,24 @@ class TestHotplugMp(TestCase):
         rte_pmd_init_internals(): net_af_packet: ioctl failed (SIOCGIFINDEX)
         EAL: Driver cannot attach the device (net_af_packet)
         """
-        self.dut.send_expect("ifconfig %s up" % self.intf0, "#")
-        time.sleep(5)
-        out = self.dut.send_expect("ethtool %s" % self.intf0, "#")
-        self.verify("Link detected: yes" in out, "Wrong link status")
+        if not iface:
+            self.dut.send_expect("ifconfig %s up" % self.intf0, "#")
+            time.sleep(5)
+            out = self.dut.send_expect("ethtool %s" % self.intf0, "#")
+            self.verify("Link detected: yes" in out, "Wrong link status")
 
         self.multi_process_setup()
         for i in range(test_loop):
-            self.attach_detach(process, 0, "plugin", flg_loop, dev)
+            self.attach_detach(process, 0, "plugin", flg_loop, dev, iface=iface)
             if opt_plug in ["plugout", "hotplug", "crossplug"]:
                 if opt_plug == "crossplug":
                     if process == "pri":
                         cross_proc = "sec"
                     elif process == "sec":
                         cross_proc = "pri"
-                    self.attach_detach(cross_proc, 0, "plugout", flg_loop, dev)
+                    self.attach_detach(cross_proc, 0, "plugout", flg_loop, dev, iface=iface)
                 else:
-                    self.attach_detach(process, 0, "plugout", flg_loop, dev)
+                    self.attach_detach(process, 0, "plugout", flg_loop, dev, iface=iface)
 
             if opt_plug == "plugin" or opt_plug == "plugout":
                 break
@@ -298,6 +311,39 @@ class TestHotplugMp(TestCase):
         from primary.
         """
         self.attach_detach_vdev("sec", "crossplug", 1, "net_af_packet")
+
+    def test_attach_detach_vhost_user(self):
+        """
+        Repeat to attach and detach vhost-user device
+        """
+        vdev = "net_vhost0"
+        self.attach_detach_vdev("pri", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0")
+        self.attach_detach_vdev("sec", "hotplug", 1, vdev, iface="vhost-net,queues=1,client=0")
+        self.attach_detach_vdev("pri", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0")
+        self.attach_detach_vdev("sec", "crossplug", 1, vdev, iface="vhost-net,queues=1,client=0")
+
+    def test_attach_detach_virtio_user(self):
+        """
+        Repeat to attach and detach virtio-user device
+        """
+        vdev = "net_virtio_user0"
+        self.path = "/home/vhost-net"
+        self.session_vhost.send_expect("rm -rf %s" % self.path, "#")
+        eal_param = self.dut.create_eal_parameters(no_pci=True, prefix='vhost',vdevs=["eth_vhost0,iface=%s" % self.path])
+        param = ' -- -i'
+        testpmd_cmd = "./%s/app/testpmd " % self.target + eal_param + param
+        self.session_vhost.send_expect(testpmd_cmd, 'testpmd> ', timeout=60)
+        try:
+            self.attach_detach_vdev("pri", "hotplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
+            self.attach_detach_vdev("sec", "hotplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
+            self.attach_detach_vdev("pri", "crossplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
+            self.attach_detach_vdev("sec", "crossplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
+        except Exception as e:
+            self.logger.info(e)
+            raise Exception(e)
+        finally:
+            self.dut.send_expect("rm -rf %s" % self.path, "#")
+            self.dut.kill_all()
 
     def tear_down(self):
         """
