@@ -34,12 +34,14 @@
 vhost/virtio pvp multi-paths virtio single core test plan
 =========================================================
 
-Benchmark pvp virtio single core performance with 9 tx/rx paths.
-Includes mergeable, non-mergeable, vector_rx, inorder mergeable,
-inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，
-virtio 1.1 inorder mergeable, virtio 1.1 inorder non-mergeable path.
-Give 2 cores for vhost and 1 core for virtio, set io fwd at vhost side
-to lower the vhost workload.
+Benchmark PVP virtio single core performance with 10 tx/rx paths. Includes mergeable, non-mergeable, vectorized_rx,
+inorder mergeable, inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，virtio 1.1 inorder
+mergeable, virtio 1.1 inorder non-mergeable, virtio1.1 vectorized path.
+Give 2 cores for vhost and 1 core for virtio, set io fwd at vhost side to lower the vhost workload.
+Note: Virtio 1.1 vectorizedized path need below three initial requirements:
+    1. AVX512 is allowed in config file and supported by compiler
+    2. Host cpu support AVX512F
+    3. ring size is power of two
 
 Test flow
 =========
@@ -178,7 +180,7 @@ Test Case 6: virtio single core performance test with non-mergeable path
 
 3. Send packet with packet generator with different packet size, check the throughput.
 
-Test Case 7: virtio single core performance test with vector_rx path
+Test Case 7: virtio single core performance test with vectorized_rx path
 ====================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
@@ -237,8 +239,29 @@ Test Case 9: virtio single core performance test with virtio 1.1 inorder non-mer
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packet with packet generator with different packet size, check the throughput.
+
+Test Case 10: virtio single core performance test with virtio 1.1 vectorized path
+=============================================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4  --no-pci \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --txd=1024 --rxd=1024
+    testpmd>set fwd io
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
