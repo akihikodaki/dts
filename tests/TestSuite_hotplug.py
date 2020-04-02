@@ -40,6 +40,7 @@ import re
 import utils
 from test_case import TestCase
 from packet import Packet
+import os
 
 class TestPortHotPlug(TestCase):
     """
@@ -144,6 +145,52 @@ class TestPortHotPlug(TestCase):
         self.verify(int(sum_packet) == 1, "Insufficient the received package")
         self.dut.send_expect("quit","#",60)
 
+    def test_port_detach_attach_for_vhost_user_virtio_user(self):
+        vdev = "eth_vhost0,iface=vhost-net,queues=1"
+        iface = "vhost-net1"
+        path = self.dut.base_dir + os.path.sep + iface
+        path = path.replace("~", "/root")
+        self.dut.send_expect("rm -rf %s" % iface, "# ")
+        cores = self.dut.get_core_list("all")
+        self.verify(len(cores) > 8, "insufficient cores for this case")
+        eal_param = self.dut.create_eal_parameters(no_pci=True, cores=cores[1:5], vdevs=[vdev], prefix="vhost")
+        testpmd_cmd = "./%s/app/testpmd " % self.target + eal_param + ' -- -i'
+        self.dut.send_expect(testpmd_cmd, "testpmd>", timeout=60)
+        self.dut.send_expect("port stop 0", "testpmd>")
+        self.dut.send_expect("port detach 0", "Device is detached")
+        stats = self.dut.send_expect("ls %s" % path, "#", timeout=3,
+                                   alt_session=True, verify=True)
+        self.verify(stats==2, 'port detach failed')
+        time.sleep(1)
+        self.dut.send_expect("port attach eth_vhost1,iface=%s,queues=1" % iface, "Port 0 is attached.")
+        self.dut.send_expect("port start 0", "testpmd>")
+        out = self.dut.send_expect("ls %s" % path, "#", timeout=3,
+                                   alt_session=True, verify=True)
+        self.verify(iface in out , 'port attach failed')
+
+        self.session2 = self.dut.create_session(name="virtio_user")
+        eal_param = self.dut.create_eal_parameters(no_pci=True, fixed_prefix="virtio1", cores=cores[5:9])
+        testpmd_cmd2 = "%s/%s/app/testpmd " % (self.dut.base_dir,self.target) + eal_param + ' -- -i'
+        self.session2.send_expect(testpmd_cmd2, "testpmd>", timeout=60)
+        self.session2.send_expect("port attach net_virtio_user1,mac=00:01:02:03:04:05,path=%s,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0" % path, "testpmd")
+        self.session2.send_expect("port start 0", "testpmd>", timeout=60)
+        out = self.dut.send_expect("ls %s" % path, "#", timeout=3,
+                                   alt_session=True, verify=True)
+        self.verify(iface in out, 'port attach failed')
+        self.dut.send_expect("start", "testpmd")
+        self.session2.send_expect("start tx_first 32", "testpmd")
+        out = self.session2.send_expect("show port stats 0", "testpmd")
+        rx_pkts = int(re.search("RX-packets: (\d+)", out).group(1))
+        tx_pkts = int(re.search("TX-packets: (\d+)", out).group(1))
+        self.logger.info("rx packets: %d" % rx_pkts)
+        self.logger.info("tx packets: %d" % tx_pkts)
+        self.verify(rx_pkts != 0 and tx_pkts != 0, "not received packets or transport packets")
+        self.session2.send_expect("show port stats 0", "testpmd", timeout=2)
+        self.session2.send_expect("stop", "testpmd", timeout=2)
+        self.session2.send_expect("quit", "#", timeout=2)
+        self.dut.send_expect("stop", "testpmd", timeout=2)
+        self.dut.send_expect("quit", "#", timeout=2)
+        self.session2.close()
 
     def tear_down(self):
         """
