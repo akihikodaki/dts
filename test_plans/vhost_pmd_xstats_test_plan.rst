@@ -37,11 +37,14 @@ vhost PMD Xstats Tests restart test plan
 Description
 ===========
 
-This test plan will cover the basic vhost pmd xstats test with each path of split ring
-and packed ring, includes split virtqueue in-order mergeable, in-order non-mergeable,
-mergeable, non-mergeable, vector_rx path test and packed virtqueue in-order mergeable,
-in-order non-mergeable, mergeable, non-mergeable path, also cover a stability case. 
+This test plan will cover the basic vhost pmd xstats test with with 10 tx/rx paths. Includes mergeable, non-mergeable, vectorized_rx,
+inorder mergeable, inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，virtio 1.1 inorder
+mergeable, virtio 1.1 inorder non-mergeable, virtio1.1 vectorized path, also cover stability cases. 
 Note IXIA or Scapy packes includes 4 CRC bytes and vhost side will remove the CRC when receive packests.
+Note Virtio 1.1 vectorizedized path need below three initial requirements:
+    1. AVX512 is allowed in config file and supported by compiler
+    2. Host cpu support AVX512F
+    3. ring size is power of two
 
 Test flow
 =========
@@ -293,7 +296,35 @@ Test Case 9: xstats test with packed ring inorder non-mergeable path
 
     ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
+    >set fwd mac
+    >start
+
+3. Let TG generate send 10000 packets for each packet sizes(64,128,255, 512, 1024, 1523).
+
+4. On host run "show port xstats 1", and check the statistic type and number is correct.
+
+5. Let TG generate send 10000 packets for each different types (broadcast, multicast, ucast).
+
+6. On host run "show port xstats 1", and check the statistic type and number is correct.
+
+Test Case 10: xstats test with packed ring vectorized path
+=========================================================
+
+1. Bind one port to vfio-pci, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2 --rxq=2 --txq=2
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
