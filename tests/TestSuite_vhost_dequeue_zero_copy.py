@@ -91,6 +91,11 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.vm_dut = None
         self.big_pkt_record = {}
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def get_core_list(self):
         """
         check whether the server has enough cores to run case
@@ -150,6 +155,8 @@ class TestVhostDequeueZeroCopy(TestCase):
         para = " -- -i --tx-offloads=0x0 --nb-cores=%d --txd=1024 --rxd=1024" % self.nb_cores
         eal_params = self.dut.create_eal_parameters(cores=core_list[len(self.core_list):],
                         prefix='virtio', no_pci=True)
+        if self.check_2M_env:
+            eal_params += " --single-file-segments"
         command_line = testcmd + eal_params + vdev + para
         self.virtio_user.send_expect(command_line, 'testpmd> ', 120)
         self.virtio_user.send_expect('set fwd mac', 'testpmd> ', 120)
