@@ -1423,3 +1423,509 @@ Test case: igb flexbytes
     testpmd> flow list 0
     testpmd> flow flush 0
     testpmd> flow list 0
+
+Test case: Fortville fdir for l2 mac
+====================================
+    Prerequisites:
+
+    bind the PF to dpdk driver::
+        ./usertools/dpdk-devbind.py -b igb_uio 0000:81:00.0
+
+    launch testpmd::
+        ./x86_64-native-linuxapp-gcc/app/testpmd -l 0-3 -n 4 -w 0000:81:00.0 -- -i --rxq=4 --txq=4
+
+1. basic test for ipv4-other
+
+    1) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    2) create a rule::
+        testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    3) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    4) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    5) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    6) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    7) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    8) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    9) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    10) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    11) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    12) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    13) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    14) destory the rule::
+        testpmd> flow destroy 0 rule 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    15) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+2. basic test for ipv4-udp
+
+    1) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    2) create a rule::
+        testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    3) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    4) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    5) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    6) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    7) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    8) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    9) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    10) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    11) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    12) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    13) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    14) destory the rule::
+        testpmd> flow destroy 0 rule 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/UDP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    15) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+3. basic test for ipv4-tcp
+
+    1) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    2) create a rule::
+        testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    3) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    4) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    5) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    6) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    7) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    8) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    9) flush the rule::
+        testpmd> flow flush 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    10) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+    11) validate a rule::
+        testpmd> flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        Verify the commend can validete::
+            Flow rule validated
+
+    12) create a rule::
+        testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        send packets not match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(src='88:88:88:88:88:88',dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    13) list the rule::
+        testpmd> flow list 0
+
+        Verify there are one rule.
+
+    14) destory the rule::
+        testpmd> flow destroy 0 rule 0
+
+        send packets match rule 0::
+            sendp(Ether(src='99:99:99:99:99:99',dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/TCP()/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    15) list the rule::
+        testpmd> flow list 0
+
+        Verify there are no rule.
+
+4. complex test
+
+    1) create rules and destory the first::
+        create three rules::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are three rules.
+
+        send packets::
+            sendp(Ether(dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='33:33:33:33:33:33')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        destory the first rule::
+            testpmd> flow destroy 0 rule 0
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are rule 1 and rule 2.
+
+        send packets match rule 0::
+            sendp(Ether(dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+        send packets match rule 1 and rule 2::
+            sendp(Ether(dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='33:33:33:33:33:33')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        flush rules::
+            testpmd> flow flush 0
+
+        send packets match rule 0, rule 1 and rule 2::
+            sendp(Ether(dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='33:33:33:33:33:33')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+    2) create rules and destory the second::
+        create three rules::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are three rules.
+
+        destory the second rule::
+            testpmd> flow destroy 0 rule 1
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are rule 0 and rule 2.
+
+        send packets match rule 1::
+            sendp(Ether(dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+        send packets match rule 0 and rule 2::
+            sendp(Ether(dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='33:33:33:33:33:33')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+        flush rules::
+            testpmd> flow flush 0
+
+   3) create rules and destory the third::
+        create three rules::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are three rules.
+
+        destory the second rule::
+            testpmd> flow destroy 0 rule 2
+
+        list the rules::
+            testpmd> flow list 0
+
+        Verify there are rule 0 and rule 1.
+
+        send packets match rule 2::
+            sendp(Ether(dst='33:33:33:33:33:33')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can not mark.
+
+        send packets match rule 0 and rule 1::
+            sendp(Ether(dst='11:11:11:11:11:11')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+            sendp(Ether(dst='22:22:22:22:22:22')/IP(src=RandIP(),dst='2.2.2.5')/"Hello!0",iface="enp129s0f1")
+
+        Verify all packets can rss and mark.
+
+5. negative test
+
+    1) ip in command::
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 dst is 1.1.1.1 / end actions mark id 2 / rss / end
+            Verify rule can not be created.
+
+    2) udp in command::
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp dst is 111 / end actions mark id 2 / rss / end
+            Verify rule can not be created.
+
+    3) tcp in command::
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp dst is 111 / end actions mark id 2 / rss / end
+            Verify rule can not be created.
+
+    4) kinds rule conflict::
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end
+            testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end
+            Verify second rule can not be created.
+
+        flush rules::
+            testpmd> flow flush 0
+
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end
+            testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+        Verify second rule can not be created.
+
+        flush rules::
+            testpmd> flow flush 0
+
+        creat rule::
+            testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+            testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end
+        Verify second rule can not be created.
