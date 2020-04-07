@@ -884,6 +884,433 @@ class TestGeneric_flow_api(TestCase):
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)
 
+    def sendpkt_check_result(self, src_mac, dst_mac, mark, mark_id, rss, pctype=""):
+
+        mark_info = "FDIR matched ID=0x%d" % mark_id
+
+        if pctype == "ipv4-other":
+            # packet type:I40E_FILTER_PCTYPE_NONF_IPV4_OTHER
+            self.sendpkt(pktstr='Ether(src="%s",dst="%s")/IP()' % (src_mac, dst_mac))
+        elif pctype == "ipv4-udp":
+            # packet type:I40E_FILTER_PCTYPE_NONF_IPV4_UDP
+            self.sendpkt(pktstr='Ether(src="%s",dst="%s")/IP()/UDP()' % (src_mac, dst_mac))
+        elif pctype == "ipv4-tcp":
+            # packet type:I40E_FILTER_PCTYPE_NONF_IPV4_UDP
+            self.sendpkt(pktstr='Ether(src="%s",dst="%s")/IP()/TCP()' % (src_mac, dst_mac))
+
+        out_pf = self.dut.get_session_output(timeout=2)
+        if mark == 1:
+            self.verify(mark_info in out_pf, "the packet not mark the expect index.")
+        else:
+            if mark_info in out_pf:
+                raise Exception("the packet should not mark the expect index.")
+        if rss == 1:
+            self.verify("RSS queue=" in out_pf, "the packet not rss.")
+
+    def test_fdir_L2_mac_filter_basic_for_ipv4_other(self):
+        """
+        only supported by i40e
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.dut.send_expect("port config all rss all", "testpmd> ", 120)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # only dst mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-other")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+
+        self.compare_memory_rules(0)
+
+        # only src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+
+        self.compare_memory_rules(0)
+
+        # dst mac and src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-other")
+        self.sendpkt_check_result('88:88:88:88:88:88', '22:22:22:22:22:22', 0, 1, 0, "ipv4-other")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # destroy
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0)
+
+        self.compare_memory_rules(0)
+
+    def test_fdir_L2_mac_filter_basic_for_ipv4_udp(self):
+        """
+        only supported by i40e
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.dut.send_expect("port config all rss all", "testpmd> ", 120)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # only dst mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-udp")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-udp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-udp")
+
+        self.compare_memory_rules(0)
+
+        # only src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-udp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-udp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-udp")
+
+        self.compare_memory_rules(0)
+
+        # dst mac and src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / udp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-udp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-udp")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-udp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '22:22:22:22:22:22', 0, 1, 0, "ipv4-udp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # destroy
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-udp")
+
+        self.compare_memory_rules(0)
+
+    def test_fdir_L2_mac_filter_basic_for_ipv4_tcp(self):
+        """
+        only supported by i40e
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.dut.send_expect("port config all rss all", "testpmd> ", 120)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # only dst mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-tcp")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-tcp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-tcp")
+
+        self.compare_memory_rules(0)
+
+        # only src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-tcp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-tcp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # flush
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-tcp")
+
+        self.compare_memory_rules(0)
+
+        # dst mac and src mac
+        # validate
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "validated")
+
+        # create
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / tcp / end actions mark id 1 / rss / end",
+            "created")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-tcp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '11:11:11:11:11:11', 0, 1, 0, "ipv4-tcp")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 1, 0, "ipv4-tcp")
+        self.sendpkt_check_result('88:88:88:88:88:88', '22:22:22:22:22:22', 0, 1, 0, "ipv4-tcp")
+
+        # list
+        self.compare_memory_rules(1)
+
+        # destroy
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-tcp")
+
+        self.compare_memory_rules(0)
+
+    def test_fdir_L2_mac_filter_complex(self):
+        """
+        only supported by i40e
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.dut.send_expect("port config all rss all", "testpmd> ", 120)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # delete the first rule of three rules
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end",
+            "created")
+
+        self.compare_memory_rules(3)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 1, 2, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '33:33:33:33:33:33', 1, 3, 1, "ipv4-other")
+
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
+
+        self.compare_memory_rules(2)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 1, 2, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '33:33:33:33:33:33', 1, 3, 1, "ipv4-other")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 0, 1, 0, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 2, 0, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '33:33:33:33:33:33', 0, 3, 0, "ipv4-other")
+
+        # delete the second rule of three rules
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end",
+            "created")
+
+        self.dut.send_expect("flow destroy 0 rule 1", "testpmd> ", 120)
+
+        self.compare_memory_rules(2)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 0, 2, 0, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '33:33:33:33:33:33', 1, 3, 1, "ipv4-other")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+        # delete the third rule of three rules
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 22:22:22:22:22:22 / ipv4 / end actions mark id 2 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 33:33:33:33:33:33 / ipv4 / end actions mark id 3 / rss / end",
+            "created")
+
+        self.dut.send_expect("flow destroy 0 rule 2", "testpmd> ", 120)
+
+        self.compare_memory_rules(2)
+
+        self.sendpkt_check_result('99:99:99:99:99:99', '11:11:11:11:11:11', 1, 1, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '22:22:22:22:22:22', 1, 2, 1, "ipv4-other")
+        self.sendpkt_check_result('99:99:99:99:99:99', '33:33:33:33:33:33', 0, 3, 0, "ipv4-other")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+
+    def test_fdir_L2_mac_filter_negative(self):
+        """
+        only supported by i40e
+        """
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
+        self.dut.send_expect("set verbose 1", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 120)
+        time.sleep(2)
+
+        # ip in command
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 dst is 1.1.1.1 / end actions mark id 2 / rss / end",
+            "error")
+
+        # udp in command
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp dst is 111 / end actions mark id 2 / rss / end",
+            "error")
+
+        # tcp in command
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp dst is 111 / end actions mark id 2 / rss / end",
+            "error")
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end",
+            "Invalid")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ", 120)
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "Invalid")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ", 120)
+
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end",
+            "created")
+        self.dut.send_expect(
+            "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end",
+            "Invalid")
+
     def test_fdir_for_vlan(self):
         """
         only supported by i40e
