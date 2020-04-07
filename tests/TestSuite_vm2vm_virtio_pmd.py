@@ -167,10 +167,16 @@ class TestVM2VMVirtioPMD(TestCase):
         bootup pdump in VM
         """
         self.pdump_session = client_dut.new_session(suite="pdump")
-        command_line = self.target + "/app/dpdk-pdump " + \
+        if hasattr(client_dut, "vm_name"):
+            command_line = self.target + "/app/dpdk-pdump " + \
                     "-v --file-prefix=virtio -- " + \
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
-        self.pdump_session.send_expect(command_line % (dump_port, self.dump_pcap), 'Port')
+            self.pdump_session.send_expect(command_line % (dump_port, self.dump_pcap), 'Port')
+        else:
+            command_line = self.target + "/app/dpdk-pdump " + \
+                    "-v --file-prefix=virtio_%s -- " + \
+                    "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
+            self.pdump_session.send_expect(command_line % (self.dut.prefix_subfix, dump_port, self.dump_pcap), 'Port')
 
     def start_vms(self, mode=0, mergeable=True):
         """
