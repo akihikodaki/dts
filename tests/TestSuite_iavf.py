@@ -729,6 +729,7 @@ class TestIavf(TestCase):
 
     def test_vf_rx_interrupt(self):
         # build l3fwd-power
+        self.vm_dut_alt = self.vm_dut_0.create_session(name="vm_dut_alt")
         out = self.vm_dut_0.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -755,13 +756,14 @@ class TestIavf(TestCase):
         out = self.vm_dut_0.get_session_output()
         self.verify('L3FWD_POWER: lcore 0 is waked up from rx interrupt' in out, 'lcore 0 is not waked up')
         self.verify('L3FWD_POWER: lcore 1 is waked up from rx interrupt' in out, 'lcore 1 is not waked up')
-        self.vm_dut_0.send_expect("^C", "# ", 60)
+        self.vm_dut_alt.send_expect("killall l3fwd-power", "# ", 10)
         self.vm_dut_0.bind_interfaces_linux(driver="igb_uio")
         self.interrupt_flag = True
 
     def tear_down(self):
         if self.running_case == "test_vf_rx_interrupt":
-            self.vm_dut_0.send_expect("^C", "# ", 60)
+            self.vm_dut_alt.send_expect("killall l3fwd-power", "# ", 10)
+            self.vm_dut_alt.close()
         else:
             self.vm0_testpmd.quit()
 
