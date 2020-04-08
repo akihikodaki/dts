@@ -397,7 +397,7 @@ class TestVfInterruptPmd(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("^c", "#", 20)
+        self.dut.send_expect("killall l3fwd-power", "# ", 10, alt_session=True)
 
     def tear_down_all(self):
         """
