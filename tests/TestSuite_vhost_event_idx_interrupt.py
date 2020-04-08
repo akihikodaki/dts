@@ -61,7 +61,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         # Clean the execution ENV
         self.verify_info = []
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost-l3fwd")
@@ -339,7 +339,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         Run after each test case.
         """
         self.dut.close_session(self.vhost)
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
     def tear_down_all(self):
