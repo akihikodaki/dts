@@ -59,7 +59,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         # Clean the execution ENV
         self.verify_info = []
         self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.vhost = self.dut.new_session(suite="vhost-l3fwd")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
@@ -201,7 +201,7 @@ class TestVhostEnqueueInterrupt(TestCase):
         Run after each test case.
         """
         self.close_testpmd_and_session()
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.kill_all()
 
