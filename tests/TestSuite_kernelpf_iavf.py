@@ -836,7 +836,7 @@ class TestKernelpfIavf(TestCase):
         out = self.dut.get_session_output()
         self.verify('L3FWD_POWER: lcore 6 is waked up from rx interrupt' in out, 'lcore 6 is not waked up')
         self.verify('L3FWD_POWER: lcore 7 is waked up from rx interrupt' in out, 'lcore 7 is not waked up')
-        self.dut.send_expect("^C", "# ", 60)
+        self.dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
         self.interrupt_flag = True
         time.sleep(1)
         self.destroy_2vf_in_2pf()
