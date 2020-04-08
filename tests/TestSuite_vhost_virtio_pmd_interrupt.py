@@ -268,12 +268,17 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         close all vms
         """
-        self.vm_dut.send_expect("^c", "#", 15)
-        self.vm_dut.send_expect("cp /tmp/main.c ./examples/l3fwd-power/", "#", 15)
-        out = self.vm_dut.build_dpdk_apps('examples/l3fwd-power')
-        self.vm.stop()
+        if self.vm_dut is not None:
+            vm_dut2 = self.vm_dut.create_session(name="vm_dut2")
+            vm_dut2.send_expect("killall l3fwd-power", "# ", 10)
+            # self.vm_dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
+            self.vm_dut.send_expect("cp /tmp/main.c ./examples/l3fwd-power/", "#", 15)
+            out = self.vm_dut.build_dpdk_apps('examples/l3fwd-power')
+            self.vm.stop()
+            self.dut.close_session(vm_dut2)
         self.vhost_user.send_expect("quit", "#", 10)
         self.dut.close_session(self.vhost_user)
+
 
     def test_perf_virtio_pmd_interrupt_with_4queues(self):
         """
@@ -329,7 +334,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         Run after each test case.
         """
         self.stop_all_apps()
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.kill_all()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
     def tear_down_all(self):
