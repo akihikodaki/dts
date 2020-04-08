@@ -68,7 +68,7 @@ class TestVirtioUserInterrupt(TestCase):
         run before each test case.
         """
         self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("rm -rf vhost-net*", "#")
 
         self.l3fwd = self.dut.new_session(suite="l3fwd")
@@ -250,7 +250,7 @@ class TestVirtioUserInterrupt(TestCase):
         """
         run after each test case.
         """
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall l3fwd-power", "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.close_all_session()
 
