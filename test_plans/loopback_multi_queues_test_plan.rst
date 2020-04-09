@@ -34,7 +34,14 @@
 vhost/virtio-user loopback with multi-queues test plan
 ======================================================
 
-This test plan test vhost/virtio-user loopback multi-queues with split virtqueue and packed virtqueue different rx/tx paths, includes split virtqueue in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path test, and packed virtqueue in-order mergeable, in-order non-mergeable, mergeable, non-mergeable path. And virtio-user support 8 queues in maximum, check performance could be linear growth when enable 8 queues and 8 cores, notice cores should in same socket.
+This test plan test loopback multi-queues with split virtqueue mergeable, non-mergeable, vectorized_rx,
+inorder mergeable, inorder non-mergeable path, and packed virtqueue mergeable, non-mergeable，inorder mergeable,
+inorder non-mergeable, vectorized path. And virtio-user support 8 queues in maximum, check performance could be
+linear growth when enable 8 queues and 8 cores, notice cores should in same socket.
+Note: Packed virtqueue vectorized path need below three initial requirements:
+    1. AVX512 is allowed in config file and supported by compiler
+    2. Host cpu support AVX512F
+    3. ring size is power of two
 
 Test Case 1: loopback with virtio 1.1 mergeable path using 1 queue and 8 queues
 ===============================================================================
@@ -502,7 +509,7 @@ Test Case 8: loopback with virtio 1.1 inorder mergeable path using 1 queue and 8
 
     ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -522,7 +529,65 @@ Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue a
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
+    -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+4. Get throughput 10 times and calculate the average throughput::
+
+    testpmd>show port stats all
+
+5. Check each RX/TX queue has packets, then quit testpmd::
+
+    testpmd>stop
+    testpmd>quit
+
+6. Launch testpmd by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -l 1-9 -n 4 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
+    -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+7. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+    testpmd>start
+
+8. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+9. Get throughput 10 times and calculate the average throughput，check the throughput of 8 queues is eight times of 1 queue::
+
+    testpmd>show port stats all
+
+Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queues
+=================================================================================
+
+1. Launch testpmd by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -531,7 +596,7 @@ Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue a
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -562,7 +627,7 @@ Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue a
 
     ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
