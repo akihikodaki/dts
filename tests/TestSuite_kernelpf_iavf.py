@@ -171,10 +171,21 @@ class TestKernelpfIavf(TestCase):
         except Exception as e:
             self.destroy_vm_env()
             raise Exception(e)
-
+        netdev = self.dut.ports_info[0]['port']
+        nic_drive = netdev.get_nic_driver()
+        if nic_drive == "i40e":
+            self.vm_dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
+            self.vm_dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
+            self.vm_dut.build_install_dpdk(self.target)
         self.env_done = True
 
     def destroy_vm_env(self):
+        netdev = self.dut.ports_info[0]['port']
+        nic_drive = netdev.get_nic_driver()
+        if nic_drive == "i40e":
+            self.vm_dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },/d' drivers/net/iavf/iavf_ethdev.c", "# ")
+            self.vm_dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g' drivers/net/i40e/base/i40e_devids.h", "# ")
+            self.vm_dut.build_install_dpdk(self.target)
         if getattr(self, 'vm', None):
             if getattr(self, 'vm_dut', None):
                 self.vm_dut.kill_all()
@@ -502,23 +513,58 @@ class TestKernelpfIavf(TestCase):
     def test_vf_vlan_strip(self):
         random_vlan = random.randint(1, MAX_VLAN)
         self.vm_testpmd.start_testpmd("all")
+        self.vm_testpmd.execute_cmd("port stop all")
+        self.vm_testpmd.execute_cmd("vlan set filter off 0")
+        self.vm_testpmd.execute_cmd("vlan set strip off 0")
         self.vm_testpmd.execute_cmd("vlan set strip on 0")
+        self.vm_testpmd.execute_cmd("port start all")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         self.vm_testpmd.execute_cmd("start")
         self.start_tcpdump(self.tester_intf)
-        out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
+        self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'Failed to received vlan packet!!!')
 
         # disable strip
         self.vm_testpmd.execute_cmd("vlan set strip off 0")
-        if self.nic.startswith('columbiaville'):
-            self.vm_testpmd.execute_cmd("vlan set filter on 0")
-            self.vm_testpmd.execute_cmd("rx_vlan add %d 0" % random_vlan)
         self.start_tcpdump(self.tester_intf)
+        self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
+        tcpdump_out = self.get_tcpdump_package()
+        receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
+        self.verify(len(receive_pkt) == 2, 'Failed to not received vlan packet!!!')
+
+    def test_vf_vlan_filter(self):
+        random_vlan = random.randint(2, MAX_VLAN)
+        self.vm_testpmd.start_testpmd("all")
+        self.vm_testpmd.execute_cmd("port stop all")
+        self.vm_testpmd.execute_cmd("set promisc all off")
+        self.vm_testpmd.execute_cmd("vlan set filter on 0")
+        self.vm_testpmd.execute_cmd("rx_vlan add %d 0" % random_vlan) 
+        self.vm_testpmd.execute_cmd("vlan set strip on 0")
+        self.vm_testpmd.execute_cmd("vlan set strip off 0")
+        self.vm_testpmd.execute_cmd("port start all")
+        self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set verbose 1")
+        self.vm_testpmd.execute_cmd("start")
+
+        # error vlan id
+        out = self.send_and_getout(vlan=random_vlan - 1, pkt_type="VLAN_UDP")
+        receive_pkt = re.findall('received 1 packets', out)
+        self.verify(len(receive_pkt) == 0, 'Failed error received vlan packet!')
+
+        # passed vlan id
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
+        receive_pkt = re.findall('received 1 packets', out)
+        self.verify(len(receive_pkt) == 1, 'Failed pass received vlan packet!')
+
+        # disable filter
+        self.vm_testpmd.execute_cmd("rx_vlan rm %d 0" % random_vlan)
+        self.vm_testpmd.execute_cmd("vlan set filter off 0")
+        self.start_tcpdump(self.tester_intf)
+        self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
+        time.sleep(1)
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
         self.verify(len(receive_pkt) == 2, 'Failed to received vlan packet!!!')
@@ -741,6 +787,7 @@ class TestKernelpfIavf(TestCase):
         time.sleep(2)
 
     def get_tcpdump_package(self):
+        time.sleep(1)
         self.tester.send_expect("killall tcpdump", "#")
         return self.tester.send_expect("tcpdump -A -nn -e -vv -r getPackageByTcpdump.cap", "#")
 
@@ -841,7 +888,48 @@ class TestKernelpfIavf(TestCase):
         time.sleep(1)
         self.destroy_2vf_in_2pf()
 
-    def scapy_send_packet(self, mac, testinterface, count=1):
+    def test_vf_unicast(self):
+        self.vm_testpmd.start_testpmd("all")
+        self.vm_testpmd.execute_cmd('set verbose 1')
+        self.vm_testpmd.execute_cmd('set fwd mac')
+        self.vm_testpmd.execute_cmd("set promisc all off")
+        self.vm_testpmd.execute_cmd("set allmulti all off")
+        self.vm_testpmd.execute_cmd('set fwd mac')
+        self.vm_testpmd.execute_cmd("start")
+        self.scapy_send_packet(self.wrong_mac, self.tester_intf, count=10)
+        out = self.vm_dut.get_session_output()
+        packets = len(re.findall('received 1 packets', out))
+        self.verify(packets == 0, "Not receive expected packet")
+
+        self.scapy_send_packet(self.vf_mac, self.tester_intf, count=10)
+        out = self.vm_dut.get_session_output()
+        packets = len(re.findall('received 1 packets', out))
+        self.verify(packets == 10, "Not receive expected packet")
+
+    def test_vf_vlan_promisc(self):
+        self.vm_testpmd.start_testpmd("all")
+        self.vm_testpmd.execute_cmd("port stop all")
+        self.vm_testpmd.execute_cmd("set promisc all on")
+        self.vm_testpmd.execute_cmd("set fwd mac")
+        self.vm_testpmd.execute_cmd("set verbose 1")
+        self.vm_testpmd.execute_cmd("vlan set filter off 0")
+        self.vm_testpmd.execute_cmd("vlan set strip off 0")
+        self.vm_testpmd.execute_cmd("port start all")
+        self.vm_testpmd.execute_cmd("start")
+
+        # send 10 tagged packets, and check 10 tagged packets received
+        self.scapy_send_packet(self.vf_mac, self.tester_intf, vlan_flags=True, count=10)
+        out = self.vm_dut.get_session_output()
+        packets = len(re.findall('received 1 packets', out))
+        self.verify(packets == 10, "Not receive expected packet")
+
+        # send 10 untagged packets, and check 10 untagged packets received
+        self.scapy_send_packet(self.vf_mac, self.tester_intf, count=10)
+        out = self.vm_dut.get_session_output()
+        packets = len(re.findall('received 1 packets', out))
+        self.verify(packets == 10, "Not receive expected packet")
+
+    def scapy_send_packet(self, mac, testinterface, vlan_flags=False, count=1):
         """
         Send a packet to port
         """
@@ -850,10 +938,15 @@ class TestKernelpfIavf(TestCase):
                 'sendp([Ether(dst="%s")/IP()/UDP()/'\
                         'Raw(\'X\'*18)], iface="%s")' % (mac, testinterface))
         else:
-            for i in range(16):
-                self.tester.scapy_append(
-                    'sendp([Ether(dst="%s")/IP(dst="127.0.0.%d")/UDP()/'\
-                            'Raw(\'X\'*18)], iface="%s")' % (mac, i, testinterface))
+            for i in range(count):
+                if vlan_flags:
+                    self.tester.scapy_append(
+                        'sendp([Ether(dst="%s")/Dot1Q(id=0x8100, vlan=100)/IP(dst="127.0.0.%d")/UDP()/Raw(\'X\'*18)], '
+                        'iface="%s")' % (mac, i, testinterface))
+                else:
+                    self.tester.scapy_append(
+                        'sendp([Ether(dst="%s")/IP(dst="127.0.0.%d")/UDP()/Raw(\'X\'*18)], '
+                        'iface="%s")' % (mac, i, testinterface))
         self.tester.scapy_execute()
 
     def create_2vf_in_host(self, driver=''):
