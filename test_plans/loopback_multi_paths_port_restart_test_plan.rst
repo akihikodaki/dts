@@ -34,7 +34,14 @@
 vhost/virtio loopback with multi-paths and port restart test plan
 =================================================================
 
-This test plan includes split virtqueue in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path, and packed virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable path test. Also test port restart and only send one packet each time using testpmd.
+This test plan includes split virtqueue mergeable, non-mergeable, vectorized_rx,
+inorder mergeable, inorder non-mergeable path, and packed virtqueue mergeable,
+non-mergeable，inorder mergeable, inorder non-mergeable, vectorized path test.
+Also test port restart and only send one packet each time using testpmd.
+Note: Packed virtqueue vectorized path need below three initial requirements:
+    1. AVX512 is allowed in config file and supported by compiler
+    2. Host cpu support AVX512F
+    3. ring size is power of two
 
 Test Case 1: loopback test with packed ring mergeable path
 ==========================================================
@@ -173,8 +180,8 @@ Test Case 4: loopback test with packed ring inorder non-mergeable path
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
@@ -379,6 +386,46 @@ Test Case 9: loopback test with split ring vector_rx path
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packets with vhost-testpmd, [frame_size] is the parameter changs in [64, 128, 256, 512, 1024, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+4. Get throughput 10 times and calculate the average throughput::
+
+    testpmd>show port stats all
+
+5. Stop port at vhost side and re-calculate the average throughput, verify the throughput is zero after port stop::
+
+    testpmd>stop
+    testpmd>port stop 0
+    testpmd>show port stats all
+
+6. Restart port at vhost side and re-calculate the average throughput, verify the throughput is not zero after port restart::
+
+    testpmd>port start 0
+    testpmd>set burst 1
+    testpmd>start tx_first 1
+    testpmd>show port stats all
+
+Test Case 10: loopback test with packed ring vectorized path
+============================================================
+
+1. Launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4 --no-pci \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,in_order=0,mrg_rxbuf=0,packed_vec=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
