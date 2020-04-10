@@ -156,7 +156,8 @@ class TestPortControl(TestCase):
         vf_pci = re.findall(r"(\d+.\d+.\d+.\d+)", drive_info.split("kernel")[1])
         terminal.send_expect("ifconfig %s hw ether %s" % (vf_if[1], self.vf_mac), "#")
         terminal.send_expect("ifconfig %s up" % vf_if[1], "#")
-        terminal.send_expect("./usertools/dpdk-devbind.py -b igb_uio %s" % vf_pci[1], "#")
+        terminal.send_expect("ip addr flush %s " % vf_if[1], "#")
+        terminal.send_expect("./usertools/dpdk-devbind.py -b igb_uio --force %s" % vf_pci[1], "#")
         cmd = "./%s/app/testpmd -n 1 -w %s -- -i" % (self.target, vf_pci[1])
         terminal.send_expect(cmd, "testpmd>", 10)
 
@@ -178,7 +179,7 @@ class TestPortControl(TestCase):
         terminal.execute_cmd("stop")
         terminal.execute_cmd("port stop all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville') or terminal is self.vm_testpmd:
+        if self.nic.startswith('columbiaville') or (getattr(self, 'vm_testpmd', None) and terminal is self.vm_testpmd):
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
@@ -187,7 +188,7 @@ class TestPortControl(TestCase):
     def reset_pmd_port(self, terminal):
         terminal.execute_cmd("port reset all")
         ret = terminal.get_port_link_status(self.port_id_0)
-        if self.nic.startswith('columbiaville') or terminal is self.vm_testpmd:
+        if self.nic.startswith('columbiaville') or (getattr(self, 'vm_testpmd', None) and terminal is self.vm_testpmd):
             self.verify(ret != "", "port status error!")
         else:
             self.verify(ret == "down", "port not down!")
