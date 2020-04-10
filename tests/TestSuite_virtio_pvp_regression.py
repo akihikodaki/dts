@@ -357,6 +357,10 @@ class TestVirtioPVPRegression(TestCase):
             self.result_table_create(self.header_row)
             path = self.qemu_list[i]["path"]
             version = self.qemu_list[i]["version"]
+            version_number = float(version.split('-')[-1])
+            if "virtio11" in self.running_case and version_number < 4.2:
+                self.logger.info("%s not support %s, skip" % (version, self.running_case))
+                continue
             self.start_testpmd_as_vhost()
             # use different modem and different path to start vm
             self.start_vm(path, version, modem, virtio_path, packed=packed)
