@@ -580,7 +580,7 @@ class TestGeneric_flow_api(TestCase):
                 if 'vni' in flows:
                     vni = self.generate_random_int(0, MAX_VLAN)
                     flow_str += "vni is %d " % vni
-                    pkt += "/VXLAN(vni=%d)" % vni
+                    pkt += "/VXLAN(vni=%d, flags=8)" % vni
                     extrapacket['vni'] = str(vni)
                 else:
                     pkt += "/VXLAN()"
