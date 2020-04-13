@@ -906,7 +906,7 @@ class TestSriovKvm(TestCase):
         for vf_mac in ["00:11:22:33:44:55", "00:55:44:33:22:11"]:
             if self.nic.startswith('niantic') or self.nic.startswith('sage'):
                 set_mac_cmd = "mac_addr add port %d vf %d %s"
-            elif self.nic.startswith('fortville') or self.nic.startswith('fortpark'):
+            elif self.nic.startswith('fortville') or self.nic.startswith('fortpark') or  self.nic.startswith('carlsville'):
                 set_mac_cmd = "set port %d vf %d %s exact-mac-vlan on"
             self.host_testpmd.execute_cmd(set_mac_cmd % (port_id_0, vf_num, vf_mac))
 
