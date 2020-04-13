@@ -139,7 +139,7 @@ class TestVxlanGpeSupportInI40e(TestCase):
         vxlan Prerequisites
         """
         # this feature only enable in FVL now
-        if self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g"]:
+        if self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"]:
             self.verify(False, "%s not support this vxlan-gpe" % self.nic)
         # Based on h/w type, choose how many ports to use
         ports = self.dut.get_ports()
