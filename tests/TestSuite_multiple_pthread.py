@@ -124,7 +124,12 @@ class TestMultiplePthread(TestCase):
         self.result_table_create(header_row)
         self.out_view['data'] = []
 
-        cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i' % (self.target, lcores)
+        # Allocate enough streams based on the number of CPUs
+        if len(cpu_list) > 2:
+            queue_num = len(cpu_list)
+            cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (self.target, lcores, queue_num, queue_num)
+        else:
+            cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i' % (self.target, lcores)
         # start application
         self.dut.send_expect(cmdline, "testpmd", 60)
 
@@ -178,7 +183,7 @@ class TestMultiplePthread(TestCase):
                       "cpu_list":n[2:4],
                       "core_list":n[4:]},
                      {"lcores": "(%s,%s,%s,%s)@(%s,%s)" % (n[0], n[1], n[2], n[3], n[4], n[5]),
-                      "cpu_list":n[1:3],
+                      "cpu_list":n[1:4],
                       "core_list":n[4:6]},
                      {"lcores": "%s,(%s,%s,%s)@%s" % (n[0], n[1], n[2], n[3], n[4]),
                       "cpu_list":n[1:4],
