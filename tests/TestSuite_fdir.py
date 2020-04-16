@@ -242,7 +242,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
                 self.flexbytes = '0x0,0x0,0x0,0x20,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0'
             self.payload = b'\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x77\x77'
             self.flexlength = 16
-        elif (self.nic in ["niantic"]):
+        elif (self.nic in ["niantic", "sagepond"]):
             self.flexbytes = "0x00,0x00"
             self.payload = b'\x11\x11\x22\x22\x33\x33\x44\x44\x55\x55\x66\x66\x77\x77\x77\x77'
             self.flexlength = 2
@@ -329,7 +329,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
 
         self.dut.kill_all()
-        if self.nic in ["niantic"]:
+        if self.nic in ["niantic", "sagepond"]:
             # Niantic ipv6 only support signature mode
             self.dut.send_expect("./%s/app/testpmd -c %s -n 4 -- -i --portmask=%s --disable-rss  --rxq=4 --txq=4 --nb-cores=4  --nb-ports=1 --pkt-filter-mode=signature" % (self.target, self.coreMask, utils.create_mask([self.dut_ports[0]])), "testpmd>", 120)
         elif self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "carlsville"]:
@@ -614,7 +614,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
 
         self.dut.kill_all()
         # fwd testing with flexword
-        if self.nic in ["niantic"]:
+        if self.nic in ["niantic", "sagepond"]:
             # Niantic ipv6 only support signature mode
             self.dut.send_expect("./%s/app/testpmd -c %s -n 4 -- -i --portmask=%s --disable-rss  --rxq=4 --txq=4 --nb-cores=4  --nb-ports=1 --pkt-filter-mode=signature" % (self.target, self.coreMask, utils.create_mask([self.dut_ports[0]])), "testpmd>", 120)
         elif self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g", "carlsville"]:
