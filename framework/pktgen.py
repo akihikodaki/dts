@@ -167,7 +167,10 @@ class PacketGeneratorHelper(object):
                 action = config.get('action') or 'default'
                 range = config.get('range') or 64
                 # ignore 'L' suffix
-                start_vlan = int(pcap_fields.get(layer_name)[:-1])
+                if 'L' in pcap_fields.get(layer_name):
+                    start_vlan = int(pcap_fields.get(layer_name)[:-1])
+                else:
+                    start_vlan = int(pcap_fields.get(layer_name))
                 end_vlan = start_vlan + range - 1
                 fields_config[layer_name][name] = {}
                 fields_config[layer_name][name]['start'] = start_vlan
