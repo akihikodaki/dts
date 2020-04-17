@@ -709,7 +709,7 @@ class TestShutdownApi(TestCase):
         tgenInput = []
         for port in self.ports:
             dmac=self.dut.get_mac_address(port)
-            self.tester.scapy_append('wrpcap("test%d.pcap",[Ether(src="02:00:00:00:00:0%d",dst=%s)/IP()/UDP()/()])'% (port, port, dmac))
+            self.tester.scapy_append('wrpcap("test%d.pcap",[Ether(src="02:00:00:00:00:0%d",dst="%s")/IP()/UDP()/()])'% (port, port, dmac))
             tgenInput.append((self.tester.get_local_port(port), self.tester.get_local_port(port), "test%d.pcap" % port))
         for _ in range(stress_iterations):
             self.dut.send_expect("port stop all", "testpmd> ", 100)
