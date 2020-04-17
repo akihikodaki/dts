@@ -64,6 +64,22 @@ class TestInterruptPmd(TestCase):
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
+        self.default_driver = self.get_nic_driver()
+        test_driver = "vfio-pci"
+        if test_driver != self.default_driver:
+            self.dut.send_expect("modprobe %s" % test_driver, "#")
+        self.set_nic_driver(test_driver)
+
+    def get_nic_driver(self, port_id=0):
+        port = self.dut.ports_info[port_id]["port"]
+        return port.get_nic_driver()
+
+    def set_nic_driver(self, set_driver='vfio-pci'):
+        for i in self.dut_ports:
+            port = self.dut.ports_info[i]["port"]
+            driver = port.get_nic_driver()
+            if driver != set_driver:
+                port.bind_driver(driver=set_driver)
 
     def set_up(self):
         """
@@ -113,7 +129,7 @@ class TestInterruptPmd(TestCase):
                 txItf = self.tester.get_interface(txport)
                 self.tester.scapy_append(
                     'sendp([Ether()/IP(dst="198.0.0.%d")/UDP()/Raw(\'X\'*18)], iface="%s")' % (j, txItf))
-                self.tester.scapy_execute()
+        self.tester.scapy_execute()
 
     def tear_down(self):
         """
@@ -126,3 +142,4 @@ class TestInterruptPmd(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
+        self.set_nic_driver(self.default_driver)
