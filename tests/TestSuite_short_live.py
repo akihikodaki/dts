@@ -102,7 +102,7 @@ class TestShortLiveApp(TestCase):
         if (txPort == rxPort):
             count = 2
 
-        filter_list = [{'layer': 'ether', 'config': {'type': 'not IPv6'}}]
+        filter_list = [{'layer': 'ether', 'config': {'type': 'not IPv6'}}, {'layer': 'userdefined', 'config': {'pcap-filter': 'not udp'}}]
         inst = self.tester.tcpdump_sniff_packets(rxitf, count=count,filters=filter_list)
 
         pktlen = pktSize - 14
@@ -124,7 +124,9 @@ class TestShortLiveApp(TestCase):
         delay = 0
         while delay < delay_max:
             process = self.dut.send_expect("lsof %s | wc -l" % process_file, "#")
-            if process != '0':
+            # as FUSE filesystem may not be accessible for root, so the output might include some warning info
+            res = process.splitlines()[-1].strip()
+            if res != '0':
                 time.sleep(1)
                 delay = delay + 1
             else:
