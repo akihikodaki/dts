@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,29 +31,27 @@
 
 """
 DPDK Test suite.
-l3fwd-power power management test suite.
+power empty poll test suite.
 """
 import os
 import time
-import textwrap
 import traceback
 from copy import deepcopy
+from pprint import pformat
 
 from utils import create_mask as dts_create_mask
+from exception import VerifyFailure
 from test_case import TestCase
-
+from settings import HEADER_SIZE, PKTGEN_TREX
 from packet import Packet
 from pktgen import TRANSMIT_CONT
 
 
-class TestPowerEmptPoll(TestCase):
+class TestPowerEmptyPoll(TestCase):
     TRAIN = 'train'
     NOTRAIN = 'no-train'
     MED = 'med_threshold'
     HIGH = 'high_threshold'
-    query_min_freq = '/tmp/cpu_min.log'
-    query_max_freq = '/tmp/cpu_max.log'
-    output_path = '/tmp'
 
     @property
     def target_dir(self):
@@ -62,6 +60,12 @@ class TestPowerEmptPoll(TestCase):
                      if self.dut.base_dir.startswith('~') else \
                      self.dut.base_dir
         return target_dir
+
+    @property
+    def is_use_trex(self):
+        return (hasattr(self.tester, 'is_pktgen') and
+                self.tester.is_pktgen and
+                self.tester.pktgen.pktgen_type == PKTGEN_TREX)
 
     def d_con(self, cmd):
         _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
@@ -85,7 +89,7 @@ class TestPowerEmptPoll(TestCase):
     def get_cores_mask(self, cores_list):
         return dts_create_mask(cores_list)
 
-    def set_pktgen_stream(self, txport, rxport, send_pkts, option):
+    def add_stream_to_pktgen(self, txport, rxport, send_pkts, option):
         stream_ids = []
         cnt = 0
         for pkt in send_pkts:
@@ -108,29 +112,36 @@ class TestPowerEmptPoll(TestCase):
         rate_percent = option.get('rate', float(100))
         duration = option.get('duration', 10)
         send_pkts = self.set_stream(stm_type)
+        # clear streams before add new streams
+        self.tester.pktgen.clear_streams()
         # set stream into pktgen
-        option = {
+        s_option = {
             'stream_config': {
                 'txmode': {},
                 'transmit_mode': TRANSMIT_CONT,
                 'rate': rate_percent, }
         }
-        stream_ids = self.set_pktgen_stream(txport, rxport, send_pkts, option)
+        stream_ids = self.add_stream_to_pktgen(txport, rxport, send_pkts, s_option)
         # run traffic options
-        traffic_opt = {
-            'method': 'throughput',
-            'duration': duration, }
+        traffic_opt = option.get('traffic_opt')
         # run pktgen(ixia/trex) traffic
         result = self.tester.pktgen.measure(stream_ids, traffic_opt)
 
         return result
+
+    def get_pkt_len(self, pkt_type, frame_size):
+        headers_size = sum([HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
+        pktlen = frame_size - headers_size
+        return pktlen
 
     def set_stream(self, stm_names=None):
         # set streams for traffic
         pkt_configs = {
             'UDP_1': {
                 'type': 'UDP',
-                'pkt_layers': {'ipv4': {'dst': '1.1.1.1'}, }},
+                'pkt_layers': {
+                    'ipv4': {'dst': '1.1.1.1'},
+                    'raw': {'payload': ['58'] * self.get_pkt_len('udp', frame_size=1024)}}},
         }
         # create packet instance for send
         streams = []
@@ -150,7 +161,7 @@ class TestPowerEmptPoll(TestCase):
     @property
     def empty_poll_options(self):
         table = {
-            'train': '1,0,0,',
+            'train': '1,0,0',
             'no-train': '0,350000,500000', }
         return table
 
@@ -159,58 +170,60 @@ class TestPowerEmptPoll(TestCase):
 
     def start_l3fwd_power(self, core):
         train_mode = self.empty_poll_options.get(self.train_mode)
-        option = (' '
+        option = ('-v '
                   '-c {core_mask} '
                   '-n {mem_channel} '
                   '-- '
-                  '-p 0x1 '
+                  '-p 0x3 '
                   '-P '
-                  '--config="(0,0,2)" '
-                  '-l 10 -m 6 -h 1'
+                  '--config="(0,0,{core}),(1,0,{core})" '
+                  '-l 10 -m 6 -h 1 '
                   '--empty-poll="{empty-poll}" '
                   ).format(**{
+                      'core': core[-1],
                       'core_mask': self.get_cores_mask(core),
                       'mem_channel': self.dut.get_memory_channels(),
                       'empty-poll': train_mode, })
-        prompt = 'L3FWD_POWER: entering main loop on lcore'
-        cmd = [' '.join([self.l3fwd_power, option]), prompt, 60]
+        prompts = {
+            self.NOTRAIN: 'POWER: Bring up the Timer',
+            self.TRAIN: 'POWER: Training is Complete'}
+        prompt = prompts.get(self.train_mode)
+        cmd = [' '.join([self.l3fwd_power, option]), prompt, 120]
         self.d_con(cmd)
+        self.is_l3fwd_on = True
 
     def close_l3fwd_power(self):
-        cmd = 'killall l3fwd-power'
-        self.d_a_con(cmd)
+        if not self.is_l3fwd_on:
+            return
+        cmd = "^C"
+        self.d_con(cmd)
 
-    def init_query_script(self):
-        script_content = textwrap.dedent("""
-            # $1: delay time before traffic start
-            # $2: core number
-            sleep 5
-            while :
-            do
-                sleep 1
-                cat /sys/devices/system/cpu/cpu$1/cpufreq/scaling_min_freq >> {0}
-                cat /sys/devices/system/cpu/cpu$1/cpufreq/scaling_max_freq >> {1}
-            done
-        """).format(self.query_min_freq, self.query_max_freq)
-        fileName = 'vm_power_core.sh'
-        query_script = os.path.join(self.output_path, fileName)
-        with open(query_script, 'wb') as fp:
-            fp.write('#! /bin/sh' + os.linesep + script_content)
-        self.dut.session.copy_file_to(query_script, self.target_dir)
-        self.query_tool = ';'.join([
-            'cd {}'.format(self.target_dir),
-            'chmod 777 {}'.format(fileName),
-            './' + fileName])
+    def is_hyper_threading(self):
+        cpu_index = list(self.cpu_info.keys())[-1]
+        core_num = self.cpu_info[cpu_index].get('core')
+        return (cpu_index + 1) / 2 == (core_num + 1)
 
-    def start_query(self, core):
-        cmd = self.query_tool + ' {0} > /dev/null 2>&1 &'.format(core)
+    def is_support_pbf(self):
+        # check if cpu support bpf feature
+        cpu_attr = r'/sys/devices/system/cpu/cpu0/cpufreq/base_frequency'
+        cmd = "ls {0}".format(cpu_attr)
         self.d_a_con(cmd)
+        cmd = "echo $?"
+        output = self.d_a_con(cmd)
+        ret = True if output == "0" else False
+        return ret
 
-    def stop_query(self):
-        cmd = 'pkill {}'.format(os.path.basename(self.query_tool))
-        self.d_a_con(cmd)
-        self.dut.session.copy_file_from(self.query_min_freq, self.output_path)
-        self.dut.session.copy_file_from(self.query_max_freq, self.output_path)
+    def query_cpu_freq(self):
+        cmd = (
+            "cat /sys/devices/system/cpu/cpu{0}/cpufreq/scaling_min_freq;"
+            "cat /sys/devices/system/cpu/cpu{0}/cpufreq/scaling_max_freq;"
+        ).format(self.check_core[1])
+        output = self.d_a_con(cmd)
+        if not output:
+            self.scaling_min_freq, self.scaling_max_freq = 0, 0
+        else:
+            values = [int(item) for item in output.splitlines()]
+            self.scaling_min_freq, self.scaling_max_freq = values
 
     def get_sys_power_driver(self):
         drv_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
@@ -221,8 +234,61 @@ class TestPowerEmptPoll(TestCase):
         drv_name = output.splitlines()[0].strip()
         return drv_name
 
-    def get_no_turbo_max(self):
-        cmd = 'rdmsr -p 1 0x0CE -f 15:8 -d'
+    def get_all_cpu_attrs(self):
+        ''' get all cpus' base_frequency value '''
+        key_values = ['base_frequency',
+                      'cpuinfo_max_freq',
+                      'cpuinfo_min_freq']
+        freq = '/sys/devices/system/cpu/cpu{0}/cpufreq/{1}'.format
+        # use dut alt session to get dut platform cpu base frequency attribute
+        cpu_topos = self.dut.get_all_cores()
+        cpu_info = {}
+        for cpu_topo in cpu_topos:
+            cpu_id = int(cpu_topo['thread'])
+            cpu_info[cpu_id] = {}
+            cpu_info[cpu_id]['socket'] = cpu_topo['socket']
+            cpu_info[cpu_id]['core'] = cpu_topo['core']
+
+        for key_value in key_values:
+            cmds = []
+            for cpu_id in sorted(cpu_info.keys()):
+                cmds.append('cat {0}'.format(freq(cpu_id, key_value)))
+            output = self.d_a_con(';'.join(cmds))
+            freqs = [int(item) for item in output.splitlines()] \
+                if key_value != 'scaling_available_frequencies' else \
+                    [item for item in output.splitlines()]
+            for index, cpu_id in enumerate(sorted(cpu_info.keys())):
+                if key_value == 'scaling_available_frequencies':
+                    cpu_info[cpu_id][key_value] = \
+                        [int(item) for item in sorted(freqs[index].split())]
+                else:
+                    cpu_info[cpu_id][key_value] = freqs[index]
+
+        # get high priority core and normal core
+        base_freqs_info = {}
+        for core_index, value in list(cpu_info.items()):
+            base_frequency = value.get('base_frequency')
+            base_freqs_info.setdefault(base_frequency, []).append(core_index)
+        base_freqs = list(base_freqs_info.keys())
+        # cpu should have high priority core and normal core
+        # high priority core frequency is higher than normal core frequency
+        if len(base_freqs) <= 1 or \
+           not all([len(value) for value in list(base_freqs_info.values())]):
+            msg = 'current cpu has no high priority core'
+            raise VerifyFailure(msg)
+        self.logger.debug(pformat(base_freqs_info))
+
+        return cpu_info, base_freqs_info
+
+    def get_normal_cores_index(self, number):
+        normal_freq = min(self.base_freqs_info.keys())
+        cores_index = self.base_freqs_info[normal_freq][1:number] \
+            if self.base_freqs_info[normal_freq][0] == 0 else \
+            self.base_freqs_info[normal_freq][:number]
+        return cores_index
+
+    def get_no_turbo_max(self, core):
+        cmd = 'rdmsr -p {} 0x0CE -f 15:8 -d'.format(core)
         output = self.d_a_con(cmd)
         freq = output.strip() + '00000'
         return int(freq)
@@ -232,21 +298,18 @@ class TestPowerEmptPoll(TestCase):
         check the cores frequency when running traffic
              highest frequency[no_turbo_max]: cur_min=cur_max=no_turbo_max
         '''
-        self.stop_query()
-        freq = self.get_no_turbo_max()
-        expected_freq = str(freq if mode == self.HIGH else (freq - 500000))
-        query_max_freq = os.path.join(
-            self.output_path, os.path.basename(self.query_max_freq))
-        with open(query_max_freq, 'rb') as fp:
-            content = fp.read()
-        msg = 'max freq are not the same as highest frequency <{0}>'
-        self.verify(expected_freq in content, msg.format(expected_freq))
-        query_min_freq = os.path.join(
-            self.output_path, os.path.basename(self.query_min_freq))
-        with open(query_min_freq, 'rb') as fp:
-            content = fp.read()
-        msg = 'min freq are not the same as highest frequency <{0}>'
-        self.verify(expected_freq in content, msg.format(expected_freq))
+        freq = self.get_no_turbo_max(core_index)
+        expected_freq = freq if mode == self.HIGH else (freq - 500000)
+        msg = 'max freq is failed to get.'
+        self.verify(self.scaling_max_freq, msg)
+        msg = 'max freq is not the same as highest frequency <{0}>'
+        self.verify(expected_freq == self.scaling_max_freq,
+                    msg.format(expected_freq))
+        msg = 'min freq is failed to get.'
+        self.verify(self.scaling_min_freq, msg)
+        msg = 'min freq is not the same as highest frequency <{0}>'
+        self.verify(expected_freq == self.scaling_min_freq,
+                    msg.format(expected_freq))
         msg = 'core <{0}>: max freq/min_freq/expected freq<{1}> are the same'
         self.logger.info(msg.format(core_index, expected_freq))
 
@@ -254,6 +317,19 @@ class TestPowerEmptPoll(TestCase):
         output = self.dut.get_session_output(timeout=2)
         msg = 'training steps should not be executed'
         self.verify('POWER: Training is Complete' not in output, msg)
+
+    @property
+    def train_mode_check_item(self):
+        # Injected Rate:
+        #      10G -> 0.1G -> 10G -> 0.1G -> 10G -> 0.1G
+        check_item = [
+            [100, self.HIGH],
+            [1, self.MED],
+            [100, self.HIGH],
+            [1, self.MED],
+            [100, self.HIGH],
+            [1, self.MED], ]
+        return check_item
 
     def verify_train_mode(self):
         except_content = None
@@ -263,26 +339,22 @@ class TestPowerEmptPoll(TestCase):
             if self.train_mode == self.NOTRAIN:
                 self.check_no_train()
             else:
-                # Injected Rate(64B, dst_ip=1.1.1.1):
-                #      10G -> 0.1G -> 10G -> 0.1G -> 10G -> 0.1G
-                check_item = [
-                    [100, self.HIGH],
-                    [1, self.MED],
-                    [100, self.HIGH],
-                    [1, self.MED],
-                    [100, self.HIGH],
-                    [1, self.MED], ]
+                time.sleep(10) # wait some time for stable training
                 msg = '{0} begin test mode <{1}> with traffic rate percent {2}%'
-                for rate, mode in check_item:
+                for rate, mode in self.train_mode_check_item:
                     self.logger.info(msg.format(self.train_mode, mode, rate))
-                    self.start_query(self.check_core[1])
+                    duration = 20 if self.is_use_trex else 10
                     info = {
+                        'traffic_opt': {
+                            'method': 'throughput',
+                            'interval': duration - 2,
+                            'duration': duration,
+                            'callback': self.query_cpu_freq},
                         'stm_types': ['UDP_1'],
                         'rate': rate}
                     # run traffic
                     self.run_traffic(info)
-                    time.sleep(2)
-                    self.stop_query()
+                    time.sleep(15 if self.is_use_trex else 2)
                     # check test result
                     self.check_core_freq_in_traffic(self.check_core[1], mode)
         except Exception as e:
@@ -293,7 +365,7 @@ class TestPowerEmptPoll(TestCase):
 
         # check verify result
         if except_content:
-            raise Exception(except_content)
+            raise VerifyFailure(except_content)
         else:
             msg = "test <{0}> successful !!!".format(self.train_mode)
             self.logger.info(msg)
@@ -305,13 +377,25 @@ class TestPowerEmptPoll(TestCase):
             self.suite_name, expected_drv)
         self.verify(power_drv == expected_drv, msg)
 
+    def verify_hyper_threading(self):
+        msg = "{} should work under hyper threading close status"
+        self.verify(not self.is_hyper_threading(), msg.format(self.suite_name))
+
+    def verify_pbf_supported(self):
+        if self.is_support_pbf():
+            return
+        msg = "dut cpu doesn't support priority base frequency feature"
+        raise VerifyFailure(msg)
+
     def preset_test_environment(self):
-        self.check_core = [1, 2]
+        self.is_l3fwd_on = None
+        self.cpu_info, self.base_freqs_info = self.get_all_cpu_attrs()
+        self.check_core = self.get_normal_cores_index(2)
+        self.verify_hyper_threading()
         # modprobe msr module to let the application can get the CPU HW info
         self.d_a_con('modprobe msr')
         # init binary
         self.init_l3fwd_power()
-        self.init_query_script()
     #
     # Test cases.
     #
@@ -321,6 +405,8 @@ class TestPowerEmptPoll(TestCase):
         Run at the start of each test suite.
         """
         self.verify_power_driver()
+        # check if cpu support bpf feature
+        self.verify_pbf_supported()
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Not enough ports")
         # prepare testing environment
