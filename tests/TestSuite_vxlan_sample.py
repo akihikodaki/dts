@@ -78,7 +78,7 @@ class TestVxlanSample(TestCase):
 
         # this feature only enable in FVL now
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"],
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g", "carlsville"],
                     "Vxlan Only supported by Fortville")
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()
