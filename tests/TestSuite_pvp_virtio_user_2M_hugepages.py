@@ -140,9 +140,10 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         testcmd = self.dut.target + "/app/testpmd "
         vdev = 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1' if not packed else 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1'
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', ports=[self.pci_info], vdevs=[vdev])
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', vdevs=[vdev])
         command_line_user = testcmd + eal_params + ' --single-file-segments -- -i'
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
+        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
     def close_all_apps(self):
