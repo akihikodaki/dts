@@ -63,6 +63,10 @@ class TestPmdPcap(TestCase):
         # because if there is any interface bonded to igb_uio,
         # it will result in packet transmitting failed
         self.dut.restore_interfaces()
+        os_type = self.dut.get_os_type()
+        if os_type == "freebsd":
+            self.dut.send_expect("kldload contigmem", "#",20)
+            self.dut.send_expect("kldload nic_uio", "#",20)
 
     def get_pcap_compile_config(self):
         config_head = "common_"
