@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,19 +31,21 @@
 
 import os
 import time
-import random
 import json
 import shutil
+import traceback
 from collections import Counter
 from pprint import pformat
 
 # import dts libs
 from test_case import TestCase
+from exception import VerifyFailure
 from utils import create_mask
 
 
-class TestPowerPbf(TestCase):
+class TestPowerPstate(TestCase):
 
+    @property
     def timestamp(self):
         curTime = time.localtime()
         timestamp = "%04d%02d%02d_%02d-%02d-%02d" % (
@@ -60,7 +62,7 @@ class TestPowerPbf(TestCase):
 
     @property
     def output_path(self):
-        suiteName = self.__class__.__name__[4:].lower()
+        suiteName = self.suite_name
         if self.logger.log_path.startswith(os.sep):
             output_path = os.path.join(self.logger.log_path, suiteName)
         else:
@@ -94,10 +96,8 @@ class TestPowerPbf(TestCase):
         for item in cmds:
             expected_items = item[1]
             if expected_items and isinstance(expected_items, (list, tuple)):
-                check_output = True
                 expected_str = expected_items[0] or '# '
             else:
-                check_output = False
                 expected_str = expected_items or '# '
 
             try:
@@ -120,10 +120,10 @@ class TestPowerPbf(TestCase):
 
         return outputs
 
-    def d_console(self, cmds):
+    def d_con(self, cmds):
         return self.execute_cmds(cmds, con_name='dut')
 
-    def d_a_console(self, cmds):
+    def d_a_con(self, cmds):
         return self.execute_cmds(cmds, con_name='dut_alt')
 
     def get_cores_mask(self, config='all'):
@@ -133,9 +133,13 @@ class TestPowerPbf(TestCase):
         mask = create_mask(self.dut.get_core_list(config, socket=port_socket))
         return mask
 
+    @property
+    def memory_channels(self):
+        return self.dut.get_memory_channels()
+
     def create_powermonitor_folder(self):
         cmd = 'mkdir -p {0}; chmod 777 {0}'.format('/tmp/powermonitor')
-        self.d_console(cmd)
+        self.d_con(cmd)
 
     def prepare_binary(self, name):
         example_dir = "examples/" + name
@@ -144,7 +148,7 @@ class TestPowerPbf(TestCase):
         self.verify("No such" not in out, "Compilation error")
         binary_dir = os.path.join(self.target_dir, example_dir, 'build')
         cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.d_a_console(cmd)
+        exec_file = self.d_a_con(cmd)
         binary_file = os.path.join(binary_dir, exec_file[:-1])
         return binary_file
 
@@ -152,19 +156,24 @@ class TestPowerPbf(TestCase):
         self.create_powermonitor_folder()
         # set up vm power binary process setting
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
+        self.is_mgr_on = None
 
     def start_vm_power_mgr(self):
         config = "1S/4C/1T"
-        eal_option = '-c {0} -n {1} --file-prefix=vmpower --no-pci'.format(
+        option = '-v -c {0} -n {1} --file-prefix=vmpower --no-pci'.format(
             self.get_cores_mask(config),
             self.memory_channels)
         prompt = 'vmpower>'
-        cmd = [' '.join([self.vm_power_mgr, eal_option]), prompt, 30]
-        output = self.d_console(cmd)
+        cmd = [' '.join([self.vm_power_mgr, option]), prompt, 30]
+        output = self.d_con(cmd)
+        self.is_mgr_on = True
         return output
 
     def close_vm_power_mgr(self):
-        output = self.d_console('quit')
+        if not self.is_mgr_on:
+            return
+        output = self.d_con('quit')
+        self.is_mgr_on = False
         return output
 
     def __preset_single_core_json_cmd(self, core_index, unit, name):
@@ -179,11 +188,11 @@ class TestPowerPbf(TestCase):
         json_file = os.sep.join([self.output_path, json_name])
         with open(json_file, 'w') as fp:
             json.dump(command, fp, indent=4, separators=(',', ': '),
-                      encoding="utf-8", sort_keys=True)
+                      sort_keys=True)
             fp.write(os.linesep)
         self.dut.session.copy_file_to(json_file, self.target_dir)
         # save a backup json file to retrace test command
-        backup_file = json_file + self.timestamp()
+        backup_file = json_file + self.timestamp
         shutil.move(json_file, backup_file)
         # send action JSON file to vm_power_mgr's fifo channel
         cmd = 'cat {0}/{2} > /tmp/powermonitor/fifo{1}'.format(
@@ -204,18 +213,17 @@ class TestPowerPbf(TestCase):
         for core_index in _cores:
             cmds.append(
                 self.__preset_single_core_json_cmd(core_index, unit, name))
-        self.d_a_console(';'.join(cmds))
+        self.d_a_con(';'.join(cmds))
 
     def get_sys_power_driver(self):
         drv_file = "/sys/devices/system/cpu/cpu0/cpufreq/scaling_driver"
-        output = self.d_a_console('cat ' + drv_file)
+        output = self.d_a_con('cat ' + drv_file)
         if not output:
             msg = 'unknown power driver'
             self.verify(False, msg)
         drv_name = output.splitlines()[0].strip()
         return drv_name
 
-    @property
     def is_hyper_threading(self):
         cpu_index = list(self.cpu_info.keys())[-1]
         core_num = self.cpu_info[cpu_index].get('core')
@@ -224,18 +232,18 @@ class TestPowerPbf(TestCase):
     def get_core_scaling_max_freq(self, core_index):
         cpu_attr = '/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_max_freq'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     def get_core_scaling_min_freq(self, core_index):
         cpu_attr = '/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_min_freq'
         cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         return int(output)
 
     def get_no_turbo_max(self):
         cmd = 'rdmsr -p 1 0x0CE -f 15:8 -d'
-        output = self.d_a_console(cmd)
+        output = self.d_a_con(cmd)
         freq = output.strip() + '00000'
         return int(freq)
 
@@ -256,7 +264,7 @@ class TestPowerPbf(TestCase):
             cmds = []
             for cpu_id in sorted(cpu_info.keys()):
                 cmds.append('cat {0}'.format(freq(cpu_id, key_value)))
-            output = self.d_a_console(';'.join(cmds))
+            output = self.d_a_con(';'.join(cmds))
             freqs = [int(item) for item in output.splitlines()]
             for index, cpu_id in enumerate(sorted(cpu_info.keys())):
                 cpu_info[cpu_id][key_value] = freqs[index]
@@ -289,11 +297,11 @@ class TestPowerPbf(TestCase):
 
     def verify_hyper_threading(self):
         msg = "power pstate should work under hyper threading close status"
-        self.verify(not self.is_hyper_threading, msg)
+        self.verify(not self.is_hyper_threading(), msg)
 
     def verify_pstate_basic_action(self):
         '''
-        random select cpu core to run testing
+        select cpu core to run testing
         Send different command to power sample:
         Command Steps:
             ENABLE_TURBO
@@ -304,6 +312,7 @@ class TestPowerPbf(TestCase):
             SCALE_DOWN
         Check the CPU frequency is changed accordingly in this list
         '''
+        except_content = None
         try:
             self.start_vm_power_mgr()
             # select one core to run testing
@@ -323,10 +332,14 @@ class TestPowerPbf(TestCase):
             # test cpu core frequency change with unit command
             for test_item in test_items:
                 self.check_core_freq_for_unit(*test_item)
-            self.close_vm_power_mgr()
         except Exception as e:
+            self.logger.error(traceback.format_exc())
+            except_content = e
+        finally:
             self.close_vm_power_mgr()
-            raise Exception(e)
+
+        if except_content:
+            raise VerifyFailure(except_content)
     #
     # Test cases.
     #
@@ -338,12 +351,11 @@ class TestPowerPbf(TestCase):
         # get ports information
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
-        self.d_a_console('modprobe msr')
+        self.d_a_con('modprobe msr')
         # get dut node cores information
         self.dut.init_core_list_uncached_linux()
         self.cpu_info = self.get_all_cpu_attrs()
-        self.logger.info(pformat(self.cpu_info))
-        self.memory_channels = self.dut.get_memory_channels()
+        self.logger.debug(pformat(self.cpu_info))
         self.verify_power_driver()
         self.verify_hyper_threading()
         self.init_test_binary_file()
