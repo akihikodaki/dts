@@ -101,10 +101,16 @@ state. If this is not supplied, the application will apply the default value of
 
 Preparation Work for Settings
 =============================
-1. Turn on Speedstep option in BIOS
-2. Turn on Turbo in BIOS
-3. Use intel_pstate driver for CPU frequency control
-4. modprobe msr
+BIOS setting::
+
+    1. Turn on Speedstep option in BIOS
+    2. Turn on Turbo in BIOS
+    3. Turn off Hyper Threading
+
+Linux setting::
+
+    1. Use intel_pstate driver for CPU frequency control
+    2. modprobe msr
 
 sys_min=/sys/devices/system/cpu/cpu{}/cpufreq/cpuinfo_min_freq
 sys_max=/sys/devices/system/cpu/cpu{}/cpufreq/cpuinfo_max_freq
@@ -122,7 +128,7 @@ Step 1. Bind One NIC to DPDK driver, launch l3fwd-power with empty-poll enabled
 
 Step 2. Check the log also when changing the inject packet rate as following:
 
-    Injected Rate(64B, dst_ip=1.1.1.1): 10G -> 0.1G -> 10G -> 0.1G -> 10G ->
+    Injected Rate(1024B, dst_ip=1.1.1.1): 10G -> 0.1G -> 10G -> 0.1G -> 10G ->
     0.1G The frequency will be set to MED when we inject 0.1G and return to HGH
     when inject 10G Rate, check the frequency of the forwarding core(core 2)
     When traffic is 10G:  cur_min=cur_max=no_turbo_max
