@@ -2750,5 +2750,36 @@
             "Bug ID": "",
             "Comments": "niantic not support this case"
         }
+    ],
+    "check_double_VLAN_fields_in_RXD_8021ad": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "CVL_100G kennel not support double VLAN"
+        }
+    ],
+    "check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only i40e and ixgbe driver support this case"
+        }
     ]
 }
