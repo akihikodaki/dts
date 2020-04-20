@@ -204,7 +204,7 @@ class TestGeneric_filter(TestCase):
         """
         Enable receipt of SYN packets
         """
-        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "powerville"], "%s nic not support syn filter" % self.nic)
+        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "powerville", "sagepond"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
@@ -247,7 +247,7 @@ class TestGeneric_filter(TestCase):
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
 
-        if self.nic == "niantic":
+        if self.nic in ["niantic", "sagepond"]:
             cmd = "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask 0x1f tcp_flags 0x0 priority 3 queue 3 " % (
                 valports[0])
             self.dut.send_expect("%s" % cmd, "testpmd> ")
@@ -307,7 +307,7 @@ class TestGeneric_filter(TestCase):
         """
         five tuple filter
         """
-        if self.nic in ["niantic", "kawela_4"]:
+        if self.nic in ["niantic", "kawela_4", "sagepond"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -315,14 +315,14 @@ class TestGeneric_filter(TestCase):
             mask = ['0x1f', '0x0']
             for case in mask:
                 if case == "0x1f":
-                    if self.nic == "niantic":
+                    if self.nic in ["niantic", "sagepond"]:
                         cmd = "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x0 priority 3 queue 3" % (
                             valports[0], case)
                     if self.nic == "kawela_4":
                         cmd = "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x02 priority 3 queue 3" % (
                             valports[0], case)
                 else:
-                    if self.nic == "niantic":
+                    if self.nic in ["niantic", "sagepond"]:
                         cmd = "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x0 priority 3 queue 3" % (
                             valports[0], case)
                     if self.nic == "kawela_4":
@@ -345,14 +345,14 @@ class TestGeneric_filter(TestCase):
                 out = self.dut.send_expect("stop", "testpmd> ")
                 self.verify_result(out, tx_pkts="1", expect_queue="0")
                 if case == "0x1f":
-                    if self.nic == "niantic":
+                    if self.nic in ["niantic", "sagepond"]:
                         cmd = "5tuple_filter %s del dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x0 priority 3 queue 3" % (
                             valports[0], case)
                     if self.nic == "kawela_4":
                         cmd = "5tuple_filter %s del dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x02 priority 3 queue 3" % (
                             valports[0], case)
                 else:
-                    if self.nic == "niantic":
+                    if self.nic in ["niantic", "sagepond"]:
                         cmd = "5tuple_filter %s del dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port 1 src_port 1 protocol 0x06 mask %s tcp_flags 0x0 priority 3 queue 3" % (
                             valports[0], case)
                     if self.nic == "kawela_4":
@@ -370,7 +370,7 @@ class TestGeneric_filter(TestCase):
 
     def test_ethertype_filter(self):
 
-        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", 
+        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "sagepond",
                            "powerville", "fortville_eagle", "fortville_spirit",
                            "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g","cavium_a063", "carlsville"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
@@ -395,7 +395,7 @@ class TestGeneric_filter(TestCase):
         self.dut.send_expect("clear port stats all", "testpmd> ")
 
         self.verify_result(out, tx_pkts="1", expect_queue="2")
-        if self.nic == "niantic":
+        if self.nic in ["niantic", "sagepond"]:
             self.dut.send_expect("start", "testpmd> ")
             self.filter_send_packet("arp_prio")
             time.sleep(2)
@@ -417,7 +417,7 @@ class TestGeneric_filter(TestCase):
         self.verify_result(out, tx_pkts="1", expect_queue="0")
 
     def test_multiple_filters_10GB(self):
-        if self.nic == "niantic":
+        if self.nic in ["niantic", "sagepond"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -501,7 +501,7 @@ class TestGeneric_filter(TestCase):
 
     def test_twotuple_filter(self):
 
-        if self.nic in ["powerville", "bartonhills", "cavium_a063"]:
+        if self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -534,7 +534,7 @@ class TestGeneric_filter(TestCase):
             self.verify(False, "%s nic not support two tuple filter" % self.nic)
 
     def test_flex_filter(self):
-        self.verify(self.nic in ["powerville", "bartonhills", "cavium_a063"], '%s not support flex filter' % self.nic)
+        self.verify(self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond"], '%s not support flex filter' % self.nic)
 
         masks = ['000C', '000C']
         self.pmdout.start_testpmd(
@@ -589,7 +589,7 @@ class TestGeneric_filter(TestCase):
 
     def test_multiple_filters_1GB(self):
 
-        if self.nic in ["powerville", "kawela_4", "bartonhills"]:
+        if self.nic in ["powerville", "kawela_4", "bartonhills", "sagepond"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
