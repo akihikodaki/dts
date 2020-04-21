@@ -7,7 +7,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_25g"
+                "fortville_25g",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -828,7 +829,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -848,6 +850,7 @@
                 "fortville_spirit_single",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
+                "carlsville",
 		"foxville"
             ],
             "Target": [
@@ -910,6 +913,7 @@
                 "fortville_spirit_single",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
+                "carlsville",
 		"foxville"
             ],
             "Target": [
@@ -997,6 +1001,7 @@
                 "fortville_spirit_single",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
+                "carlsville",
 		"foxville"
             ],
             "Target": [
@@ -1017,6 +1022,7 @@
                 "fortville_spirit_single",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
+                "carlsville",
 		"foxville"
             ],
             "Target": [
@@ -1699,7 +1705,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_25g"
+                "fortville_25g",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -1716,7 +1723,8 @@
             "NIC": [
                 "fortville_eagle",
                 "fortville_spirit",
-                "fortville_25g"
+                "fortville_25g",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
