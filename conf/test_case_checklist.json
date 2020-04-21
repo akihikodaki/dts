@@ -2063,7 +2063,8 @@
                 "fortpark",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "fortpark_TLV_vf"
+                "fortpark_TLV_vf",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -2156,7 +2157,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -2204,7 +2206,8 @@
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g"
+                "fortville_25g",
+                "carlsville"
             ],
             "Target": [
                 "ALL"
@@ -2326,6 +2329,7 @@
                 "cavium_a064",
                 "columbiaville_25g",
                 "columbiaville_100g",
+                "carlsville",
 		"foxville"
             ],
             "Target": [
