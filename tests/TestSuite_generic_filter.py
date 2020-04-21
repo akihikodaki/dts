@@ -204,7 +204,7 @@ class TestGeneric_filter(TestCase):
         """
         Enable receipt of SYN packets
         """
-        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "powerville", "sagepond"], "%s nic not support syn filter" % self.nic)
+        self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "powerville", "sagepond", "foxville"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
@@ -285,7 +285,7 @@ class TestGeneric_filter(TestCase):
             self.filter_send_packet("fivetuple")
             out = self.dut.send_expect("stop", "testpmd> ")
             self.verify_result(out, tx_pkts="1", expect_queue="3")
-        elif self.nic in ["bartonhills", "powerville"]:
+        elif self.nic in ["bartonhills", "powerville", "foxville"]:
             self.dut.send_expect(
                 "flex_filter %s add len 16 bytes 0x0123456789abcdef0000000008000000 mask 000C priority 2 queue 1" % (valports[0]), "testpmd> ")
             self.dut.send_expect(
@@ -307,7 +307,7 @@ class TestGeneric_filter(TestCase):
         """
         five tuple filter
         """
-        if self.nic in ["niantic", "kawela_4", "sagepond"]:
+        if self.nic in ["niantic", "kawela_4", "sagepond", "foxville"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -372,7 +372,7 @@ class TestGeneric_filter(TestCase):
 
         self.verify(self.nic in ["niantic", "kawela_4", "bartonhills", "sagepond",
                            "powerville", "fortville_eagle", "fortville_spirit",
-                           "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g","cavium_a063", "carlsville"], "%s nic not support syn filter" % self.nic)
+                           "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g","cavium_a063", "carlsville", "foxville"], "%s nic not support syn filter" % self.nic)
         self.pmdout.start_testpmd(
             "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
         self.port_config()
@@ -501,7 +501,7 @@ class TestGeneric_filter(TestCase):
 
     def test_twotuple_filter(self):
 
-        if self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond"]:
+        if self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond", "foxville"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -534,7 +534,7 @@ class TestGeneric_filter(TestCase):
             self.verify(False, "%s nic not support two tuple filter" % self.nic)
 
     def test_flex_filter(self):
-        self.verify(self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond"], '%s not support flex filter' % self.nic)
+        self.verify(self.nic in ["powerville", "bartonhills", "cavium_a063", "sagepond", "foxville"], '%s not support flex filter' % self.nic)
 
         masks = ['000C', '000C']
         self.pmdout.start_testpmd(
@@ -589,7 +589,7 @@ class TestGeneric_filter(TestCase):
 
     def test_multiple_filters_1GB(self):
 
-        if self.nic in ["powerville", "kawela_4", "bartonhills", "sagepond"]:
+        if self.nic in ["powerville", "kawela_4", "bartonhills", "sagepond", "foxville"]:
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1" % portMask)
             self.port_config()
@@ -634,7 +634,7 @@ class TestGeneric_filter(TestCase):
     def test_jumbo_frame_size(self):
         
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T", "carlsville"], "%s nic not support this test" % self.nic)
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if (self.nic in ["cavium_a063", "cavium_a064", "foxville"]):
             self.pmdout.start_testpmd(
                 "%s" % self.cores, "--disable-rss --rxq=4 --txq=4 --portmask=%s --nb-cores=4 --nb-ports=1 --mbcache=200 --mbuf-size=2048 --max-pkt-len=9200" % portMask)
         else:

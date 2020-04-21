@@ -112,6 +112,7 @@ class TestUnitTestsLoopback(TestCase):
         Run pmd stream control mode burst test case.
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 1/lpbk_mode = 0/' app/test/test_pmd_perf.c", "# ", 30)
+        self.dut.send_expect("sed -i -e '/check_all_ports_link_status(nb_ports, RTE_PORT_ALL);/a\        sleep(6);' app/test/test_pmd_perf.c", "# ", 30)
         out = self.dut.build_dpdk_apps('app/test')
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
@@ -139,6 +140,7 @@ class TestUnitTestsLoopback(TestCase):
         Run after each test suite.
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
+        self.dut.send_expect("sed -i -e '/sleep(6)/d' app/test/test_pmd_perf.c", "# ", 30)
         self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
         out = self.dut.build_dpdk_apps('app/test')
         self.verify("Error" not in out, "Compilation error")

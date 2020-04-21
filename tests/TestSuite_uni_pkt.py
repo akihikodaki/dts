@@ -131,7 +131,7 @@ class TestUniPacket(TestCase):
            "x722" in self.nic or "fortpark_BASE-T" in self.nic :
             outerL4Type = "L4_NONFRAG"
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4_EXT_UNKNOWN"]
-        elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower() or 'foxville' in self.nic.lower():
             outerL4Type = ""
             ipv4_default_packet_type = ["L2_ETHER", "L3_IPV4"]
         pktType = {
@@ -166,7 +166,7 @@ class TestUniPacket(TestCase):
            "x722" in self.nic or "fortpark_BASE-T" in self.nic:
             outerL4Type = "L4_NONFRAG"
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6_EXT_UNKNOWN"]
-        elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower():
+        elif "niantic" in self.nic.lower() or "powerville" in self.nic.lower() or "cavium" in self.nic.lower() or "twinpond" in self.nic.lower() or "twinville" in self.nic.lower() or "sageville" in self.nic.lower() or "sagepond" in self.nic.lower() or "springville" in self.nic.lower() or 'foxville' in self.nic.lower():
             outerL4Type = ""
             ipv6_default_packet_type = ["L2_ETHER", "L3_IPV6"]
 
@@ -221,7 +221,7 @@ class TestUniPacket(TestCase):
         detected.
         """
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "niantic", "fortville_eagle", "fortville_spirit","powerville", "fortpark_TLV","fortpark_BASE-T",
-            "fortville_25g", "fortville_spirit_single", "carlsville"], "not support %s" % self.nic)
+            "fortville_25g", "fortville_spirit_single", "carlsville", "foxville"], "not support %s" % self.nic)
         pktType = {
             "MAC_IP_IPv6_PKT":            ["L2_ETHER", "L3_IPV4", "TUNNEL_IP",  "INNER_L3_IPV6"],
             "MAC_IP_IPv6EXT2_PKT":        ["L2_ETHER", "L3_IPV4", "TUNNEL_IP",  "INNER_L3_IPV6_EXT"],

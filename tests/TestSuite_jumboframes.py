@@ -218,7 +218,7 @@ class TestJumboframes(TestCase):
         """
         On 1G NICs, when the jubmo frame MTU set as 9000, the software adjust it to 9004.
         """
-        if self.nic in ["powerville", "springville", "kawela_4"]:
+        if self.nic in ["powerville", "springville", "kawela_4", "foxville"]:
             self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU + 4 + 1, False)
         else:
             self.jumboframes_send_packet(ETHER_JUMBO_FRAME_MTU + 1, False)

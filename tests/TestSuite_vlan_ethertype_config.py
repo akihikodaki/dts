@@ -290,7 +290,7 @@ class TestVlanEthertypeConfig(TestCase):
         self.dut.send_expect("start", "testpmd> ")
 
         # caium_a063 card support only default '0x8100' tpid in rx mode
-        if (self.nic in ["cavium_a063", "cavium_a064"]):
+        if (self.nic in ["cavium_a063", "cavium_a064", "foxville"]):
             tpids = [0x8100]
         else:
             tpids = [0x8100, 0xA100]

@@ -43,7 +43,7 @@ class TestFlexibleRxd(TestCase):
         """
         run at the start of each test suite.
         """
-        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g"],
+        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "foxville"],
                     "flexible rxd only supports CVL NIC.")
         self.nb_core = 2
         self.pkg_count = 1
@@ -88,7 +88,8 @@ class TestFlexibleRxd(TestCase):
         """
         start testpmd
         """
-        para = '--rxq=32 --txq=32 --portmask=0x1 --nb-cores=%d' % self.nb_core
+        num = '4' if self.nic == 'foxville' else '32'
+        para = '--rxq=%s --txq=%s --portmask=0x1 --nb-cores=%d' % (num, num, self.nb_core)
         self.pmdout.start_testpmd("1S/3C/1T", param=para, ports=[self.pci_info], port_options={self.pci_info: 'proto_xtr=%s' % proto_xdr})
         self.pmdout.execute_cmd("set verbose 1", "testpmd> ", 120)
         self.pmdout.execute_cmd("set fwd io", "testpmd> ", 120)
@@ -107,6 +108,7 @@ class TestFlexibleRxd(TestCase):
     def send_pkts_and_get_output(self, pkts_str):
         pkt = Packet(pkts_str)
         pkt.send_pkt(self.tester, tx_port=self.tx_interface, count=self.pkg_count, timeout=30)
+        time.sleep(3)
         out_info = self.dut.get_session_output(timeout=3)
         return out_info
 

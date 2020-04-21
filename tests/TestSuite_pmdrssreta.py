@@ -160,7 +160,7 @@ class TestPmdrssreta(TestCase):
                 hash_index = int(hash_index_tmp) % 64
             elif(self.nic in ["hi1822"]):
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 256
-            elif (self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid"]):
+            elif (self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid", "foxville"]):
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 128
             else:
@@ -212,7 +212,8 @@ class TestPmdrssreta(TestCase):
                    }
 
         self.dut.kill_all()
-
+        if self.nic == 'foxville':
+            testQueues = [2]
         # test with different rss queues
         for queue in testQueues:
             if(queue == 16):
@@ -243,7 +244,7 @@ class TestPmdrssreta(TestCase):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
                             "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-                elif (self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid"]):
+                elif (self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid", "foxville"]):
                     for i in range(128):
                         reta_entries.insert(i, random.randint(0, queue - 1))
                         self.dut.send_expect(
@@ -259,7 +260,7 @@ class TestPmdrssreta(TestCase):
             self.dut.send_expect("quit", "# ", 30)
 
     def test_rss_key_size(self):
-        nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "redrockcanyou": 40, "atwood": 40,  "boulderrapid": 40, "fortpark_TLV": 52,"fortpark_BASE-T": 52, "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52, "sagepond": 40, "sageville": 40}
+        nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52, "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40, "redrockcanyou": 40, "atwood": 40,  "boulderrapid": 40, "fortpark_TLV": 52,"fortpark_BASE-T": 52, "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52, "sagepond": 40, "sageville": 40, "foxville": 40}
         self.verify(self.nic in list(nic_rss_key_size.keys()), "Not supporte rss key on %s" % self.nic)
 
         dutPorts = self.dut.get_ports(self.nic)

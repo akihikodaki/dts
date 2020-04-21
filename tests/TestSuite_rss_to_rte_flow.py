@@ -190,6 +190,8 @@ class TestRSS_to_Rteflow(TestCase):
         # Disable RSS hash function
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types none end / end", "created")
+		if self.nic == 'foxville':
+            self.dut.send_expect("flow flush 0", "testpmd> ")
         self.dut.send_expect(
             "show port 0 rss-hash", "RSS disabled")
         # send the packets and verify the results
@@ -264,21 +266,28 @@ class TestRSS_to_Rteflow(TestCase):
         """
         Set valid and invalid parameter.
         """
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
+        num = '4' if self.nic == "foxville" else '8'
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%s --txq=%s --port-topology=chained" % (num, num))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
         # Create a rss queue rule
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss queues 1 4 7 end / end", "created")
+        if self.nic == 'foxville':
+            self.dut.send_expect(
+                #"flow create 0 ingress pattern end actions rss queues 1 4 7 end / end", "created")
+                "flow create 0 ingress pattern end actions rss queues 1 2 3 end / end", "created")
+        else:
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss queues 1 4 7 end / end", "created")
+
         # send the packets and verify the results
         # ipv4-other and ipv6-other is enabled by default.
         # i40e
+        rss_queue = ["1", "4", "7"]
         if (self.nic in ["fortville_eagle", "fortville_spirit",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
-            rss_queue = ["1", "4", "7"]
             self.send_and_check(self.pkt4, rss_queue)
             self.send_and_check(self.pkt8, rss_queue)
             rss_queue = ["0"]
@@ -289,7 +298,8 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt6, rss_queue)
             self.send_and_check(self.pkt7, rss_queue)
         else:
-            rss_queue = ["1", "4", "7"]
+            if self.nic == 'foxville':
+			    rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt1, rss_queue)
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
@@ -337,26 +347,37 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss queues 8 end / end", "error")
         # Set all the queues to the rule
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss queues 0 1 2 3 4 5 6 7 end / end", "created")
+        if self.nic == 'foxville':
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss queues 0 1 2 3 end / end", "created")
+        else:
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss queues 0 1 2 3 4 5 6 7 end / end", "created")
 
     def test_different_types_rss_queue_rule(self):
         """
         Set valid and invalid parameter.
         """
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
+        num = '4' if self.nic == "foxville" else '8'
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%s --txq=%s --port-topology=chained" % (num, num))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
         # Create a rss queue rule
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 4 7 end / end", "created")
+        if self.nic == 'foxville':
+            self.dut.send_expect(
+                #"flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 4 7 end / end", "created")
+                "flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 2 3 end / end", "created")
+        else:
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 4 7 end / end", "created")
+
         # send the packets and verify the results
+        rss_queue = ["1", "4", "7"]
         if (self.nic in ["fortville_eagle", "fortville_spirit",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
-            rss_queue = ["1", "4", "7"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
             self.send_and_check(self.pkt4, rss_queue)
@@ -367,12 +388,15 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt7, rss_queue)
             self.send_and_check(self.pkt8, rss_queue)
         elif(self.nic in ["cavium_a063", "cavium_a064"]):
-            rss_queue = ["1", "4", "7"]
+            self.send_and_check(self.pkt2, rss_queue)
+            self.send_and_check(self.pkt3, rss_queue)
+            self.send_and_check(self.pkt6, rss_queue)
+	    elif(self.nic in ["foxville"]):
+            rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
             self.send_and_check(self.pkt6, rss_queue)
         else:
-            rss_queue = ["1", "4", "7"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
             self.send_and_check(self.pkt6, rss_queue)
@@ -469,7 +493,8 @@ class TestRSS_to_Rteflow(TestCase):
         """
         Set RSS queue rule while disable RSS in command-line.
         """
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --disable-rss --port-topology=chained")
+        num = '4' if self.nic == "foxville" else '8'
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%s --txq=%s --disable-rss --port-topology=chained" % (num, num))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -483,18 +508,22 @@ class TestRSS_to_Rteflow(TestCase):
         self.check_packet_queue("all", out)
         self.dut.send_expect("quit", "# ")
 
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --disable-rss --port-topology=chained")
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%s --txq=%s --disable-rss --port-topology=chained" % (num, num))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # Create a rss queue rule
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 5 6 7 end / end", "created")
+		if self.nic == 'foxville':
+		    self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 1 2 3 end / end", "created")
+	    else:
+	        self.dut.send_expect(
+	            "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 5 6 7 end / end", "created")
         # send the packets and verify the results
+		rss_queue = ["5", "6", "7"]
         if (self.nic in ["fortville_eagle", "fortville_spirit",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
-            rss_queue = ["5", "6", "7"]
             self.send_and_check(self.pkt1, rss_queue)
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt5, rss_queue)
@@ -505,7 +534,8 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt4, rss_queue)
             self.send_and_check(self.pkt6, rss_queue)
         else:
-            rss_queue = ["5", "6", "7"]
+		    if self.nic == 'foxville':
+			    rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt7, rss_queue)
             rss_queue = ["0"]
@@ -532,20 +562,25 @@ class TestRSS_to_Rteflow(TestCase):
         """
         Set RSS queue rule and flow director rule in meantime.
         """
-        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --pkt-filter-mode=perfect")
+        num = '4' if self.nic == "foxville" else '8'
+        self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%s --txq=%s --pkt-filter-mode=perfect" % (num, num))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
         # Create a rss queue rule
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types udp end queues 3 4 5 end / end", "created")
+		if self.nic == 'foxville':
+		    self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss types udp end queues 1 2 3 end / end", "created")
+		else:
+	        self.dut.send_expect(
+	            "flow create 0 ingress pattern end actions rss types udp end queues 3 4 5 end / end", "created")
         # send the packets and verify the results
-        rss_queue = ["3", "4", "5"]
+        rss_queue = ["1", "2", "3"] if self.nic == 'foxville' else ["3", "4", "5"]
         self.send_and_check(self.pkt2, rss_queue)
         # Create a flow director rule
-        if (self.nic in ["bartonhills", "powerville"]):
+        if (self.nic in ["bartonhills", "powerville", "foxville"]):
             # Create a flow director rule
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth / ipv4 proto is 6 / udp dst is 50 / end actions queue index 1 / end", "created")
@@ -561,7 +596,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt2, rss_queue)
         # There can't be more than one RSS queue rule existing.
         self.dut.send_expect("flow destroy 0 rule 1", "testpmd> ")
-        rss_queue = ["3", "4", "5"]
+        rss_queue = ["1", "2", "3"] if self.nic == 'foxville' else ["3", "4", "5"]
         self.send_and_check(self.pkt2, rss_queue)
 
     def test_queue_region_with_rss_rule_api(self):

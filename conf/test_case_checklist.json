@@ -21,7 +21,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -41,7 +42,8 @@
                 "springfountain",
                 "cavium_a034",
                 "cavium_a011",
-                "twinpond"
+                "twinpond",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -70,7 +72,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -99,7 +102,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -151,7 +155,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -206,7 +211,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -233,7 +239,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -262,7 +269,8 @@
                 "cavium_a011",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-                "carlsville"
+                "carlsville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -317,7 +325,8 @@
                 "powerville",
                 "columbiaville_25g",
                 "columbiaville_100g",
-                "springville"
+                "springville",
+	        "foxville"
             ],
             "Target": [
                 "ALL"
@@ -360,7 +369,8 @@
                 "ironpond",
                 "cavium_a034",
                 "cavium_0011",
-                "cavium_a064"
+                "cavium_a064",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -456,7 +466,8 @@
                 "cavium_a034",
                 "cavium_0011",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -492,7 +503,8 @@
                 "kawela_4",
                 "springville",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -511,7 +523,8 @@
                 "kawela_4",
                 "springville",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -702,7 +715,8 @@
                 "springfountain",
                 "twinpond",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -843,7 +857,8 @@
                 "springfountain",
                 "twinpond",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -867,7 +882,8 @@
                 "niantic",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -1453,6 +1469,19 @@
             ],
             "Bug ID": "",
             "Comments": "32 bit not support this case/not enough queue"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "nic not support this case"
         }
     ],
     "simple_symmetric": [
@@ -1476,7 +1505,8 @@
             "NIC": [
                 "redrockcanyou",
                 "atwood",
-                "boulderrapid"
+                "boulderrapid",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -1507,7 +1537,8 @@
             "NIC": [
                 "redrockcanyou",
                 "atwood",
-                "boulderrapid"
+                "boulderrapid",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -1538,7 +1569,8 @@
             "NIC": [
                 "redrockcanyou",
                 "atwood",
-                "boulderrapid"
+                "boulderrapid",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -1909,6 +1941,19 @@
             ],
             "Bug ID": "",
             "Comments": "link_status_interrupt application assumes one certain CPU frequency, test fails on thunder boards"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "arm64-thunderx-linuxapp-gcc"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
         }
     ],
     "add_remove_mac_address": [
@@ -2280,7 +2325,8 @@
                 "fortpark_TLV_vf",
                 "cavium_a064",
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -2316,6 +2362,7 @@
                 "twinville",
                 "sagepond",
                 "sageville",
+		"foxville",
 		"springville"
             ],
             "Target": [
@@ -2380,7 +2427,8 @@
             ],
             "NIC": [
                 "cavium_a063",
-                "cavium_a064"
+                "cavium_a064",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -2481,7 +2529,8 @@
             ],
             "NIC": [
                 "cavium_a063",
-                "cavium_a064"
+                "cavium_a064",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -2712,13 +2761,134 @@
                 "powerville",
                 "springville",
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+		"foxville"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
             "Comments": "only i40e and ixgbe driver support this case"
+        }
+    ],
+    "hash_readwrite_perf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"ipv6_5tuple_hash_table": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+    "fdir_for_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"L2_tunnel_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_L2_payload": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"n_tuple_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"flexbytes_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
         }
     ],
     "perf_pvp_split_ring_dequeue_zero_copy": [
@@ -2780,6 +2950,216 @@
             ],
             "Bug ID": "",
             "Comments": "only i40e and ixgbe driver support this case"
+        }
+	],
+    "tunnel_filter_nvgre": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_flexbytes": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_mac_vlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"tunnel_filter_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_ipv4": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"fdir_for_vxlan": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"link_status_interrupt_change": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"load_balancer": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Feature will be ready in next stage(P3)"
+        }
+    ],
+	"multicast_forwarding": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Feature will be ready in next stage(P3)"
+        }
+    ],
+	"update_system": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Feature will be ready in next stage(P3)"
+        }
+    ],
+	"ptpclient": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Feature will be ready in next stage(P3)"
+        }
+    ],
+	"IPv4_L4": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
+        }
+    ],
+	"l2pkt_detect": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "Feature will be ready in next stage(P3)"
+        }
+    ],
+	"dump_driver_info": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC not support this case"
         }
     ]
 }

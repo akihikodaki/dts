@@ -235,7 +235,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         Fdir get flexbytes and payload according NIC
         """
 
-        if(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "carlsville"]):
+        if(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "carlsville", "foxville"]):
             if not sctp:
                 self.flexbytes = "0x11,0x11,0x22,0x22,0x33,0x33,0x44,0x44,0x55,0x55,0x66,0x66,0x77,0x77,0x77,0x77"
             else:
@@ -784,7 +784,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         Expand Flow Director for fortville to support ipv4 TOS, ipv4 PROTO, ipv4 TTL
         """
-        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"]:
+        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville", "foxville"]:
             self.verify(False, "This case only support fortville nic")
         self.dut.kill_all()
         self.dut.send_expect("./%s/app/testpmd -c %s -n 4 -- -i --portmask=%s --disable-rss --rxq=4 --txq=4 --nb-cores=4 --nb-ports=1 --pkt-filter-mode=perfect" % (self.target, self.coreMask, utils.create_mask([self.dut_ports[0]])), "testpmd>", 120)
@@ -905,7 +905,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         Expand Flow Director for fortville to support ipv6 TC, next-header, hop-limits
         """
-        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"]:
+        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville", "foxville"]:
             self.verify(False, "This case only support fortville nic")
         self.dut.kill_all()
         self.dut.send_expect("./%s/app/testpmd -c %s -n 4 -- -i --portmask=%s --disable-rss --rxq=4 --txq=4 --nb-cores=4 --nb-ports=1 --pkt-filter-mode=perfect" % (self.target, self.coreMask, utils.create_mask([self.dut_ports[0]])), "testpmd>", 120)
@@ -1026,7 +1026,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         """
         Expand Flow Director for fortville to support ipv4 TOS, ipv4 PROTO, ipv4 TTL
         """
-        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville"]:
+        if not self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "carlsville", "foxville"]:
             self.verify(False, "This case only support fortville nic")
         self.dut.kill_all()
         self.dut.send_expect("./%s/app/testpmd -c %s -n 4 -- -i --portmask=%s --disable-rss --rxq=4 --txq=4 --nb-cores=4 --nb-ports=1 --pkt-filter-mode=perfect" % (self.target, self.coreMask, utils.create_mask([self.dut_ports[0]])), "testpmd>", 120)

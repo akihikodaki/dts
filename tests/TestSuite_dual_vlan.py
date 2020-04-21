@@ -361,6 +361,8 @@ class TestDualVlan(TestCase):
         self.verify("vlan %s" % outvlan not in out, "vlan strip enable error: " + out)
 
         self.mode_config(stripq="off")
+        if self.nic == 'foxville':
+            self.mode_config(strip="off")
         self.vlan_send_packet(outvlan)
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % outvlan in out, "vlan strip queue disable error: " + out)

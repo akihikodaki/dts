@@ -130,6 +130,7 @@
             ],
             "NIC": [
                 "forrpark_TLV",
+                "foxville",
                 "fortville_eagle",
                 "fortville_spirit",
                 "fortville_spirit_single",
@@ -183,7 +184,8 @@
                 "fortpark_BASE-T",
                 "carlsville",
                 "columbiaville_25g",
-                "columbiaville_100g"
+                "columbiaville_100g",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -521,6 +523,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
@@ -540,6 +543,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
@@ -559,6 +563,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
@@ -684,7 +689,8 @@
                 "niantic",
                 "twinpond",
                 "sagepond",
-                "sageville"
+                "sageville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -700,6 +706,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
@@ -721,6 +728,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -740,7 +748,8 @@
             ],
             "NIC": [
                 "bartonhills",
-                "powerville"
+                "powerville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -757,7 +766,8 @@
             "NIC": [
                 "twinville",
                 "sagepond",
-                "sageville"
+                "sageville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -774,7 +784,8 @@
             "NIC": [
                 "twinville",
                 "sagepond",
-                "sageville"
+                "sageville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -792,7 +803,8 @@
                 "niantic",
                 "kawela_4",
                 "kawela",
-                "twinville"
+                "twinville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -808,6 +820,7 @@
             ],
             "NIC": [
                 "niantic",
+                "foxville",
                 "twinville",
                 "sagepond",
                 "sageville",
@@ -834,7 +847,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -857,7 +871,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -874,7 +889,8 @@
             "NIC": [
                 "twinville",
                 "sagepond",
-                "sageville"
+                "sageville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -893,7 +909,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -921,7 +938,8 @@
                 "fortville_spirit_single",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
-		"carlsville"
+                "carlsville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -937,7 +955,8 @@
             ],
             "NIC": [
                 "bartonhills",
-                "powerville"
+                "powerville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -953,7 +972,8 @@
             ],
             "NIC": [
                 "sagepond",
-                "sageville"
+                "sageville",
+                "foxville"
             ],
             "Target": [
                 "ALL"
@@ -976,7 +996,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"
@@ -995,7 +1016,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
-                "fortpark_BASE-T"
+                "fortpark_BASE-T",
+		"foxville"
             ],
             "Target": [
                 "ALL"

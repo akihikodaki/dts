@@ -90,7 +90,7 @@ class TestRxTx_Offload(TestCase):
         # Support i40e/ixgbe NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T",
-                                 "niantic", "twinpond", "sagepond", "sageville"], "NIC Unsupported: " + str(self.nic))
+                                 "niantic", "twinpond", "sagepond", "sageville", "foxville"], "NIC Unsupported: " + str(self.nic))
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
@@ -345,10 +345,11 @@ class TestRxTx_Offload(TestCase):
         pkt1_queue = self.get_queue_number(self.jumbo_pkt1)
         pkt2_queue = self.get_queue_number(self.jumbo_pkt2)
 
-        # Failed to disable jumboframe per_queue
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port 0 rxq %s rx_offload jumbo_frame off" % pkt1_queue, "testpmd> ")
-        self.verify_result(self.jumbo_pkt1, 1, pkt1_queue)
+        # Failed to disable jumboframe per_queue, foxvillee 2.5g not support
+        if self.nic != 'foxville':
+            self.dut.send_expect("port stop 0", "testpmd> ")
+            self.dut.send_expect("port 0 rxq %s rx_offload jumbo_frame off" % pkt1_queue, "testpmd> ")
+            self.verify_result(self.jumbo_pkt1, 1, pkt1_queue)
 
         # Succeed to disable jumboframe per_port
         self.dut.send_expect("port stop 0", "testpmd> ")
@@ -430,6 +431,8 @@ class TestRxTx_Offload(TestCase):
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         capabilities = self.check_port_capability("rx")
         for capability in capabilities:
+            if self.nic == 'foxville' and capability == 'sctp_cksum':
+                continue
             if capability != "jumboframe":
                 self.dut.send_expect("port stop 0", "testpmd> ")
                 self.dut.send_expect("port config 0 rx_offload %s on" % capability, "testpmd> ")
@@ -444,7 +447,7 @@ class TestRxTx_Offload(TestCase):
         Set Rx offload by queue.
         """
         # Only support ixgbe NICs
-        self.verify(self.nic in ["niantic", "twinpond", "sagepond", "sageville"], "%s nic not support rx offload setting by queue." % self.nic)
+        self.verify(self.nic in ["niantic", "twinpond", "sagepond", "sageville", "foxville"], "%s nic not support rx offload setting by queue." % self.nic)
         # Define the vlan packets
         self.vlan_pkt1 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
         self.vlan_pkt2 = r'sendp([Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="192.168.0.2",dst="192.168.0.3")/UDP(sport=33, dport=34)/Raw("x"*20)], iface="%s")' % (self.pf_mac, self.tester_itf0)
