@@ -175,7 +175,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Show port default RSS functions
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other ip")
@@ -203,7 +203,7 @@ class TestRSS_to_Rteflow(TestCase):
         # Enable RSS hash function all
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types all end / end", "created")
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "all ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ipv6-frag ipv6-tcp ipv6-udp ipv6-sctp ipv6-other l2-payload ip udp tcp sctp")
@@ -226,7 +226,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Show port default RSS fucntions
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit","carlsville"
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.dut.send_expect(
                 "show port 0 rss-hash", "ipv4-frag ipv4-other ipv6-frag ipv6-other ip")
@@ -240,7 +240,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         self.send_packet("ipv4-udp", self.tester_itf)
         out = self.dut.send_expect("stop", "testpmd> ", 120)
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit","carlsville"
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.check_packet_queue("0", out)
         else:
@@ -286,7 +286,7 @@ class TestRSS_to_Rteflow(TestCase):
         # ipv4-other and ipv6-other is enabled by default.
         # i40e
         rss_queue = ["1", "4", "7"]
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville"
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.send_and_check(self.pkt4, rss_queue)
             self.send_and_check(self.pkt8, rss_queue)
@@ -319,7 +319,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss queues 3 end / end", "created")
         # Send the packets and verify the results
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit","carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             rss_queue = ["3"]
             self.send_and_check(self.pkt4, rss_queue)
@@ -376,7 +376,7 @@ class TestRSS_to_Rteflow(TestCase):
 
         # send the packets and verify the results
         rss_queue = ["1", "4", "7"]
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
@@ -416,7 +416,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set key and key_len.
         """
         # Only supported by i40e
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville"
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"], "NIC Unsupported: " + str(self.nic))
         pkt1 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=200)/('X'*48)" % self.pf_mac
         pkt2 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=201)/('X'*48)" % self.pf_mac
@@ -522,7 +522,7 @@ class TestRSS_to_Rteflow(TestCase):
 	            "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 5 6 7 end / end", "created")
         # send the packets and verify the results
 		rss_queue = ["5", "6", "7"]
-        if (self.nic in ["fortville_eagle", "fortville_spirit",
+        if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.send_and_check(self.pkt1, rss_queue)
             self.send_and_check(self.pkt2, rss_queue)
@@ -648,7 +648,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule with invalid parameter in queue region API.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g", "carlsville"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=16 --txq=16 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -673,7 +673,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule with old API, while setting RSS queue rule.
         The queue region is priority to RSS queue rule.
         """
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=16 --txq=16 --port-topology=chained")
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
