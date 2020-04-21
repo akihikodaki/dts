@@ -89,7 +89,7 @@ class TestRxTx_Offload(TestCase):
         """
         # Support i40e/ixgbe NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T",
+                                 "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville",
                                  "niantic", "twinpond", "sagepond", "sageville", "foxville"], "NIC Unsupported: " + str(self.nic))
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
@@ -505,7 +505,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
         self.check_port_config("tx", "NULL")
@@ -545,7 +545,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
         offload = ["vlan_insert"]
@@ -660,7 +660,7 @@ class TestRxTx_Offload(TestCase):
         capabilities = self.check_port_capability("tx")
         # Disable per queue capability first, if it is FVL/Fortpark.
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
             self.dut.send_expect("port start 0", "testpmd> ")
