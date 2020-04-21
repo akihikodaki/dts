@@ -342,19 +342,19 @@ class TestEtag(TestCase):
         self.check_packet_transmission(pkt_types)
         time.sleep(1)
         pkts = self.tester.load_tcpdump_sniff_packets(inst)
-        self.host_testpmd.execute_cmd('E-tag set insertion off port-tag-id 1000 port 0 vf 0')
+        self.host_testpmd.execute_cmd('E-tag set insertion off port 0 vf 0')
 
         # load sniff pcap file, check received packet's content
         packetContentFile = "/tmp/packetContent.log"
-        pcap_file = "/tmp/sniff_%s.pcap"%intf
-        fp=open(packetContentFile,'w')
-        backup_out=sys.stdout
-        sys.stdout=fp
-        pkts=rdpcap(pcap_file)
+        pcap_file = "/tmp/tester/sniff_%s.pcap" % intf
+        fp = open(packetContentFile, 'w')
+        backup_out = sys.stdout
+        sys.stdout = fp
+        pkts = rdpcap(pcap_file)
         pkts.show()
         fp.close()
-        sys.stdout=backup_out
-        fp=open(packetContentFile,'r')
+        sys.stdout = backup_out
+        fp = open(packetContentFile, 'r')
         out = fp.read()
         fp.close()
         if self.printFlag:# debug output
