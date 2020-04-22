@@ -55,7 +55,7 @@ class TestSoftnic(TestCase):
 
         # Verify that enough ports are available
         self.verify(len(ports) >= 1, "Insufficient ports for testing")
-
+        self.def_driver = self.dut.ports_info[ports[0]]['port'].get_nic_driver()
         self.ports_socket = self.dut.get_numa_id(ports[0])
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/1C/1T")
@@ -223,4 +223,4 @@ class TestSoftnic(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.bind_interfaces_linux(driver=self.def_driver, nics_to_bind=self.dut.get_ports())
