@@ -247,16 +247,28 @@ class TestVmHotplug(TestCase):
             result.append(cap_num[0])
         return result
 
+    def check_link_status(self, vm_info):
+        loop = 1
+        while (loop <= 3):
+            out = vm_info.execute_cmd("show port info all", "testpmd> ", 120)
+            port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
+            if ("down" not in port_status):
+                break
+            time.sleep(3)
+            loop += 1
+        self.verify("down" not in port_status, "port can not up after start")
+
     def verify_rxtx_only(self):
         # rxonly
         self.vm_testpmd.execute_cmd('set fwd rxonly')
         self.vm_testpmd.execute_cmd('set verbose 1')
         self.vm_testpmd.execute_cmd('port start all')
         self.vm_testpmd.execute_cmd('start')
-        time.sleep(1)
+        self.check_link_status(self.vm_testpmd)
 
         self.send_packet()
         out = self.vm0_dut.get_session_output()
+        time.sleep(1)
         self.verify(self.vf0_mac in out, 'vf0 receive packet fail')
         if self.device == 2:
             self.verify(self.vf1_mac in out, 'vf1 receive packet fail')
@@ -279,7 +291,7 @@ class TestVmHotplug(TestCase):
     def check_vf_device(self, has_device=True, device=1):
         time.sleep(1)
         sign = 'Connection'
-        lis1 = ['fortville_spirit', 'fortville_eagle']
+        lis1 = ['fortville_spirit', 'fortville_eagle', 'sagepond', 'twinpond', 'sageville']
         lis2 = ['fortpark_TLV', 'fortville_25g',"fortpark_BASE-T"]
         if self.nic in lis1:
             sign = 'Ethernet'
@@ -300,6 +312,7 @@ class TestVmHotplug(TestCase):
         self.host_session.send_expect('device_add vfio-pci,host=%s,id=dev1' % self.dut.ports_info[0]['pci'], '(qemu)')
         if device == 2:
             self.host_session.send_expect('device_add vfio-pci,host=%s,id=dev2' % self.dut.ports_info[1]['pci'], '(qemu)')
+        time.sleep(3)
         self.check_vf_device(has_device=True, device=device)
         self.vm_session.send_expect('./usertools/dpdk-devbind.py -b vfio-pci %s' % self.vf_pci0, '#')
         if device == 2:
