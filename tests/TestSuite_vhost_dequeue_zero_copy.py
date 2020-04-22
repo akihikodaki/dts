@@ -60,6 +60,11 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+        self.def_driver = self.dut.ports_info[self.dut_ports[0]]["port"].get_nic_driver()
+        if self.def_driver != "igb_uio":
+            self.dut.setup_modules_linux(self.target, 'igb_uio', '')
+            self.dut.bind_interfaces_linux('igb_uio', nics_to_bind=self.dut_ports)
+            self.driver_chg = True
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -504,5 +509,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         """
         Run after each test suite.
         """
+        if getattr(self, "driver_chg", None):
+            self.dut.bind_interfaces_linux(self.def_driver, nics_to_bind=self.dut_ports)
         if getattr(self, 'vhost_user', None):
             self.dut.close_session(self.vhost_user)
