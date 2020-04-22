@@ -279,7 +279,8 @@ class TestPVPVhostUserReconnect(TestCase):
             traffic_opt = {'delay': 30, }
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 5, "can not receive packets of frame size %d" % (frame_size))
+            check_speed = 5 if frame_size == 64 else 1
+            self.verify(Mpps > check_speed, "can not receive packets of frame size %d" % (frame_size))
             pct = Mpps * 100 / \
                 float(self.wirespeed(self.nic, frame_size, 1))
             if cycle == 0:
