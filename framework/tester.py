@@ -767,10 +767,10 @@ class Tester(Crb):
                     else:
                         prev_id = t_idx
 
-                if compare_f(tx_pkts[txport].pktgen.pkts[t_idx], recv_pkts[idx], "L4") is False:
+                if compare_f(tx_pkts[txport].pktgen.pkts[idx], recv_pkts[idx], "L4") is False:
                     self.logger.warning("Pkt received index %d not match original " \
-                          "index %d" % (idx, t_idx))
-                    self.logger.info("Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[t_idx], "L4"))
+                          "index %d" % (idx, idx))
+                    self.logger.info("Sent: %s" % strip_f(tx_pkts[txport].pktgen.pkts[idx], "L4"))
                     self.logger.info("Recv: %s" % strip_f(recv_pkts[idx], "L4"))
                     return False
 
