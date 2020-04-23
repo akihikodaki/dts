@@ -678,7 +678,7 @@ class TestRxTx_Offload(TestCase):
         Set Rx offload by queue.
         """
         # Only support i40e NICs
-        self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
+        self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"], "%s nic not support rx offload setting by queue." % self.nic)
         # Check offload configuration by port and by queue.
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
