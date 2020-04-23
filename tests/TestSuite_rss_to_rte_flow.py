@@ -190,7 +190,7 @@ class TestRSS_to_Rteflow(TestCase):
         # Disable RSS hash function
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types none end / end", "created")
-		if self.nic == 'foxville':
+        if self.nic == 'foxville':
             self.dut.send_expect("flow flush 0", "testpmd> ")
         self.dut.send_expect(
             "show port 0 rss-hash", "RSS disabled")
@@ -299,7 +299,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt7, rss_queue)
         else:
             if self.nic == 'foxville':
-			    rss_queue = ["1", "2", "3"]
+                rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt1, rss_queue)
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
@@ -391,7 +391,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
             self.send_and_check(self.pkt6, rss_queue)
-	    elif(self.nic in ["foxville"]):
+        elif(self.nic in ["foxville"]):
             rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt3, rss_queue)
@@ -514,14 +514,14 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # Create a rss queue rule
-		if self.nic == 'foxville':
-		    self.dut.send_expect(
+        if self.nic == 'foxville':
+            self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 1 2 3 end / end", "created")
-	    else:
-	        self.dut.send_expect(
-	            "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 5 6 7 end / end", "created")
+        else:
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp sctp ipv6-other end queues 5 6 7 end / end", "created")
         # send the packets and verify the results
-		rss_queue = ["5", "6", "7"]
+        rss_queue = ["5", "6", "7"]
         if (self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "fortville_25g"]):
             self.send_and_check(self.pkt1, rss_queue)
@@ -534,8 +534,8 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt4, rss_queue)
             self.send_and_check(self.pkt6, rss_queue)
         else:
-		    if self.nic == 'foxville':
-			    rss_queue = ["1", "2", "3"]
+            if self.nic == 'foxville':
+                rss_queue = ["1", "2", "3"]
             self.send_and_check(self.pkt2, rss_queue)
             self.send_and_check(self.pkt7, rss_queue)
             rss_queue = ["0"]
@@ -570,12 +570,12 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Create a rss queue rule
-		if self.nic == 'foxville':
-		    self.dut.send_expect(
+        if self.nic == 'foxville':
+            self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types udp end queues 1 2 3 end / end", "created")
-		else:
-	        self.dut.send_expect(
-	            "flow create 0 ingress pattern end actions rss types udp end queues 3 4 5 end / end", "created")
+        else:
+            self.dut.send_expect(
+                "flow create 0 ingress pattern end actions rss types udp end queues 3 4 5 end / end", "created")
         # send the packets and verify the results
         rss_queue = ["1", "2", "3"] if self.nic == 'foxville' else ["3", "4", "5"]
         self.send_and_check(self.pkt2, rss_queue)

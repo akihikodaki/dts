@@ -212,6 +212,7 @@ class TestPmdrssreta(TestCase):
                    }
 
         self.dut.kill_all()
+        global testQueues
         if self.nic == 'foxville':
             testQueues = [2]
         # test with different rss queues
