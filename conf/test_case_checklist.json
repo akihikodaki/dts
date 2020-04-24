@@ -2903,6 +2903,82 @@
             "Comments": "NIC not support this case"
         }
     ],
+        "fdir_L2_mac_filter_negative": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only support by i40e"
+        }
+    ],
+        "fdir_L2_mac_filter_basic_for_ipv4_other": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only support by i40e"
+        }
+    ],
+       "fdir_L2_mac_filter_basic_for_ipv4_tcp": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only support by i40e"
+        }
+    ],
+      "fdir_L2_mac_filter_complex": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only support by i40e"
+        }
+    ],
+      "fdir_L2_mac_filter_basic_for_ipv4_udp": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "only support by i40e"
+        }
+    ],
+
     "perf_pvp_split_ring_dequeue_zero_copy": [
         {
             "OS": [
