@@ -2909,6 +2909,7 @@
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "niantic"
             ],
             "Target": [
@@ -2924,6 +2925,7 @@
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "niantic"
             ],
             "Target": [
@@ -2939,6 +2941,7 @@
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "niantic"
             ],
             "Target": [
@@ -2954,6 +2957,7 @@
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "niantic"
             ],
             "Target": [
@@ -2969,6 +2973,7 @@
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "niantic"
             ],
             "Target": [
@@ -3235,18 +3240,19 @@
             "Comments": "Feature will be ready in next stage(P3)"
         }
     ],
-	"dump_driver_info": [
+    "dump_driver_info": [
         {
             "OS": [
                 "ALL"
             ],
             "NIC": [
+                "sagepond",
                 "foxville"
             ],
             "Target": [
                 "ALL"
             ],
-            "Bug ID": "",
+            "Bug ID": "DPDK-14025",
             "Comments": "NIC not support this case"
         }
     ]
