@@ -66,7 +66,6 @@ class TestPmdPcap(TestCase):
         os_type = self.dut.get_os_type()
         if os_type == "freebsd":
             self.dut.send_expect("kldload contigmem", "#",20)
-            self.dut.send_expect("kldload nic_uio", "#",20)
 
     def get_pcap_compile_config(self):
         config_head = "common_"
