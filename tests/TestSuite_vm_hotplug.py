@@ -292,7 +292,7 @@ class TestVmHotplug(TestCase):
         time.sleep(1)
         sign = 'Connection'
         lis1 = ['fortville_spirit', 'fortville_eagle', 'sagepond', 'twinpond', 'sageville']
-        lis2 = ['fortpark_TLV', 'fortville_25g',"fortpark_BASE-T"]
+        lis2 = ['fortpark_TLV', 'fortville_25g',"fortpark_BASE-T", "carlsville"]
         if self.nic in lis1:
             sign = 'Ethernet'
         elif self.nic in lis2:
