@@ -644,7 +644,8 @@ class Crb(object):
                 "lscpu -p=CPU,CORE,SOCKET,NODE|grep -v \#",
                 "#", alt_session=True)
 
-        cpuinfo = cpuinfo.split()
+        #cpuinfo = cpuinfo.split()
+        cpuinfo = [i for i in cpuinfo.split() if re.match("^\d.+", i)]
         # haswell cpu on cottonwood core id not correct
         # need additional coremap for haswell cpu
         core_id = 0
