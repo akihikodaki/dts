@@ -817,7 +817,7 @@ class TestSriovKvm(TestCase):
         self.set_port_pool_mirror(port_id_0, '0x1 dst-pool 1 on')
         self.set_port_downlink_mirror(port_id_0, 'dst-pool 1 on')
 
-        if self.nic.startswith('niantic') or self.nic.startswith('sage'):
+        if self.nic.startswith('niantic') or self.nic.startswith('sage') or self.nic.startswith('twinpond'):
             self.set_port_uplink_mirror(port_id_0, 'dst-pool 1 on')
 
             # get vm port stats
@@ -865,7 +865,7 @@ class TestSriovKvm(TestCase):
         vm1_ret_stats = self.calculate_stats(vm1_start_stats, vm1_end_stats)
 
         try:
-            if self.nic.startswith('niantic') or self.nic.startswith('sage'):
+            if self.nic.startswith('niantic') or self.nic.startswith('sage') or self.nic.startswith('twinpond'):
                 self.verify(vm0_ret_stats['RX-packets'] == packet_num and vm1_ret_stats['RX-packets'] == packet_num,
                             "vlan mirror failed between VM0 and VM1")
             else:
