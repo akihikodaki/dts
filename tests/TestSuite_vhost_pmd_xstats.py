@@ -182,7 +182,7 @@ class TestVhostPmdXstats(TestCase):
         date_new = date_old + datetime.timedelta(minutes=2)
         while (1):
             date_now = datetime.datetime.now()
-            scope = 'broadcast'
+            scope = 'multicast'
             self.dmac = '01:00:00:33:00:01'
             self.scapy_send_packet(64, self.dmac, 1)
             if date_now >= date_new:
@@ -216,8 +216,8 @@ class TestVhostPmdXstats(TestCase):
         """
         performance for Vhost PVP virtio1.1 inorder no_mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
+                            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.xstats_number_and_type_verify()
@@ -227,8 +227,31 @@ class TestVhostPmdXstats(TestCase):
         """
         performance for Vhost PVP virtio1.1 inorder no_mergeable Path.
         """
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,lro=0",
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.xstats_number_and_type_verify()
+        # stability test with basic packets number check
+        self.scapy_num = 0
+        date_old = datetime.datetime.now()
+        date_new = date_old + datetime.timedelta(minutes=2)
+        while (1):
+            date_now = datetime.datetime.now()
+            scope = 'broadcast'
+            self.dmac = 'ff:ff:ff:ff:ff:ff'
+            self.scapy_send_packet(64, self.dmac, 1)
+            if date_now >= date_new:
+                break
+        self.send_verify(scope, self.scapy_num)
+        self.close_all_testpmd()
+
+    def test_vhost_xstats_virtio11_vector_ringsize_not_powerof_2(self):
+        """
+        performance for Vhost PVP virtio1.1 inorder no_mergeable Path.
+        """
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1,queue_size=1221",
+                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --rxd=1221 --txd=1221"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.xstats_number_and_type_verify()
@@ -283,7 +306,7 @@ class TestVhostPmdXstats(TestCase):
         """
         performance for Vhost PVP no_mergeable Path.
         """
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
@@ -294,7 +317,7 @@ class TestVhostPmdXstats(TestCase):
         """
         performance for Vhost PVP Vector_RX Path
         """
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
