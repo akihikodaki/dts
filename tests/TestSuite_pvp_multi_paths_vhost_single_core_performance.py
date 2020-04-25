@@ -114,7 +114,6 @@ class TestPVPMultiPathVhostPerformance(TestCase):
                 self.dut_ports[0])
             destination_mac = self.dut.get_mac_address(
                 self.dut_ports[0])
-
             pkt = Packet(pkt_type='UDP', pkt_len=frame_size)
             pkt.config_layer('ether', {'dst': '%s' % destination_mac})
             pkt.save_pcapfile(self.tester, "%s/multi_path.pcap" % (self.out_path))
@@ -122,15 +121,13 @@ class TestPVPMultiPathVhostPerformance(TestCase):
 
             self.tester.pktgen.clear_streams()
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
-            traffic_opt = {'delay': 5}
-            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
+            _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
             self.verify(Mpps > 0.0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
 
             linerate = Mpps * 100 / \
                          float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
             self.throughput[frame_size][self.nb_desc] = Mpps
-
             results_row = [frame_size]
             results_row.append(case_info)
             results_row.append(Mpps)
@@ -343,7 +340,24 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
+                            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip"}
+        self.start_vhost_testpmd()
+        self.start_virtio_testpmd(virtio_pmd_arg)
+        self.send_and_verify("virtio_1.1 inorder normal")
+        self.close_all_testpmd()
+        self.logger.info('result of all framesize result')
+        self.result_table_print()
+        self.handle_expected()
+        self.handle_results()
+
+    def test_perf_vhost_single_core_virtio11_vectorized(self):
+        """
+        performance for Vhost PVP virtio1.1 vectorized Path.
+        """
+        self.test_target = self.running_case
+        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
@@ -371,9 +385,9 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.handle_expected()
         self.handle_results()
 
-    def test_perf_vhost_single_core_inorder_no_mergeable(self):
+    def test_perf_vhost_single_core_inorder_no_normal(self):
         """
-        performance for Vhost PVP In_order no_mergeable Path.
+        performance for Vhost PVP In_order normal Path.
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
