@@ -125,33 +125,33 @@ class TestVM2VMVirtioUser(TestCase):
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('set fwd %s' % fwd_mode)
 
-    def start_virtio_testpmd_with_vhost_net1(self, path_mode, extern_params=''):
+    def start_virtio_testpmd_with_vhost_net1(self, path_mode, extern_params, ringsize):
         """
         launch the testpmd as virtio with vhost_net1
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio1,
                 no_pci=True, prefix=self.virtio_prefix, fixed_prefix=True)
-        vdev_params = '--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s ' % path_mode
+        vdev_params = '--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
         command_line = self.dut.target + "/app/testpmd %s " + \
-            "--socket-mem %s %s -- -i --nb-cores=1 --txd=256 --rxd=256 %s"
+            "--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s"
         command_line = command_line % (eal_params, self.socket_mem,
-                                    vdev_params, extern_params)
+                                    vdev_params, ringsize, ringsize, extern_params)
         self.pmd_virtio1.execute_cmd(command_line, timeout=30)
         self.pmd_virtio1.execute_cmd('set fwd rxonly')
         self.pmd_virtio1.execute_cmd('start')
 
-    def start_virtio_testpmd_with_vhost_net0(self, path_mode, extern_params=''):
+    def start_virtio_testpmd_with_vhost_net0(self, path_mode, extern_params, ringsize):
         """
         launch the testpmd as virtio with vhost_net0
         and start to send 251 small packets with diff burst
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio0,
                 no_pci=True, prefix='virtio0')
-        vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s ' % path_mode
+        vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
         command_line = self.dut.target + '/app/testpmd %s ' + \
-            '--socket-mem %s %s -- -i --nb-cores=1 --txd=256 --rxd=256 %s'
+            '--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s'
         command_line = command_line % (eal_params, self.socket_mem,
-                                vdev_params, extern_params)
+                                vdev_params, ringsize, ringsize, extern_params)
 
         self.pmd_virtio0.execute_cmd(command_line, timeout=30)
         self.pmd_virtio0.execute_cmd('set burst 1')
@@ -179,7 +179,7 @@ class TestVM2VMVirtioUser(TestCase):
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
         self.pdump_session.send_expect(command_line % (eal_params, dump_port, filename), 'Port')
 
-    def get_dump_file_of_virtio_user(self, path_mode, extern_param=''):
+    def get_dump_file_of_virtio_user(self, path_mode, extern_param, ringsize):
         """
         get the dump file of virtio user
         the virtio_user0 always send 251 small pkts + 32 large pkts(8k) to verify
@@ -187,10 +187,10 @@ class TestVM2VMVirtioUser(TestCase):
         """
         dump_port = 'device_id=net_virtio_user1'
         self.launch_vhost_testpmd(vdev_num=2)
-        self.start_virtio_testpmd_with_vhost_net1(path_mode, extern_param)
+        self.start_virtio_testpmd_with_vhost_net1(path_mode, extern_param, ringsize)
         self.launch_pdump_to_capture_pkt(dump_port, self.virtio_prefix, self.dump_virtio_pcap)
         # the virtio0 will send 251 small pkts
-        self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_param)
+        self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_param, ringsize)
         # then send 32 large pkts
         self.pmd_virtio0.execute_cmd('stop')
         self.pmd_virtio0.execute_cmd('set burst 32')
@@ -199,7 +199,7 @@ class TestVM2VMVirtioUser(TestCase):
         # packet will fwd after vhost testpmd start
         self.pmd_vhost.execute_cmd('start')
 
-    def get_dump_file_of_vhost_user(self, path_mode, extern_param=''):
+    def get_dump_file_of_vhost_user(self, path_mode, extern_params, ringsize):
         """
         get the dump file of vhost testpmd
         the virtio0 will alway send 251 small pkts + some large pkts(depend on
@@ -210,7 +210,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.pmd_vhost.execute_cmd('start')
         self.launch_pdump_to_capture_pkt(dump_port, self.vhost_prefix, self.dump_vhost_pcap)
         # the virtio0 send 251 small pkts
-        self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_param)
+        self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_params, ringsize)
         # if the path_mode is mergeable, then send large pkt to verify
         # and packed mergeable and split mergeable is diff about large pkt
         # in packed mergeable, 1 large pkt will occupies 5 ring, so send 1 large pkt to verify
@@ -233,7 +233,7 @@ class TestVM2VMVirtioUser(TestCase):
         """
         # stop pdump
         total_pkts_num = small_pkts_num + large_8k_pkts_num + large_2k_pkts_num
-        time.sleep(2)
+        time.sleep(20)
         self.pdump_session.send_expect('^c', '# ', 60)
         # quit testpmd
         self.quit_all_testpmd()
@@ -301,17 +301,19 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 1
         large_2k_pkts_num = 32
         path_mode = 'packed_vq=1,mrg_rxbuf=1,in_order=0'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
         # then resend 32 large pkts, all will received
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.resend_32_large_pkt_from_virtio0()
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.resend_32_large_pkt_from_virtio0()
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
@@ -329,15 +331,17 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 1
         large_2k_pkts_num = 0
         path_mode = 'packed_vq=1,mrg_rxbuf=1,in_order=1'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -352,16 +356,18 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 0
         large_2k_pkts_num = 0
         path_mode = 'packed_vq=1,mrg_rxbuf=0,in_order=0'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
         # the no-mergeable path can not received large pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -375,17 +381,71 @@ class TestVM2VMVirtioUser(TestCase):
         small_pkts_num = 251
         large_8k_pkts_num = 0
         large_2k_pkts_num = 0
-        path_mode = 'packed_vq=1,mrg_rxbuf=0,in_order=1'
+        path_mode = 'packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1'
+        extern_params = '--rx-offloads=0x10'
+        ringsize = 256
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
         # the no-mergeable path can not received large pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
+        self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+
+        self.logger.info('diff the pcap file of vhost and virtio')
+        self.check_vhost_and_virtio_pkts_content()
+
+    def test_vm2vm_virtio_user_packed_virtqueue_vectorized_path(self):
+        """
+        packed virtqueue vm2vm inorder non-mergeable path test
+        about non-mergeable path, it can not received large pkts
+        """
+        small_pkts_num = 251
+        large_8k_pkts_num = 0
+        large_2k_pkts_num = 0
+        path_mode = 'packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1'
+        extern_params = ''
+        ringsize = 256
+        # get dump pcap file of virtio
+        # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
+        # the no-mergeable path can not received large pkts
+        self.logger.info('check pcap file info about virtio')
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
+        self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+
+        # get dump pcap file of vhost
+        self.logger.info('check pcap file info about vhost')
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
+        self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+
+        self.logger.info('diff the pcap file of vhost and virtio')
+        self.check_vhost_and_virtio_pkts_content()
+
+    def test_vm2vm_virtio_user_packed_virtqueue_vectorized_path_ringsize_not_powerof_2(self):
+        """
+        packed virtqueue vm2vm inorder non-mergeable path test
+        about non-mergeable path, it can not received large pkts
+        """
+        small_pkts_num = 251
+        large_8k_pkts_num = 0
+        large_2k_pkts_num = 0
+        path_mode = 'packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1'
+        extern_params = ''
+        ringsize = 255
+        # get dump pcap file of virtio
+        # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
+        # the no-mergeable path can not received large pkts
+        self.logger.info('check pcap file info about virtio')
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
+        self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+
+        # get dump pcap file of vhost
+        self.logger.info('check pcap file info about vhost')
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -401,18 +461,20 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 5
         large_2k_pkts_num = 32
         path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=0'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 256 pkts
         # then virtio send 32 large pkts, the virtio will all received
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
-        self.resend_32_large_pkt_from_virtio0()
-        self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
+        #self.resend_32_large_pkt_from_virtio0()
+        self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
-        self.resend_32_large_pkt_from_virtio0()
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
+        #self.resend_32_large_pkt_from_virtio0()
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -429,15 +491,17 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 1
         large_2k_pkts_num = 0
         path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=1'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -451,17 +515,18 @@ class TestVM2VMVirtioUser(TestCase):
         small_pkts_num = 251
         large_8k_pkts_num = 0
         large_2k_pkts_num = 0
-        path_mode = 'packed_vq=0,mrg_rxbuf=0,in_order=0'
+        path_mode = 'packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1'
+        ringsize = 256
         extern_params = '--enable-hw-vlan-strip'
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode, extern_params)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode, extern_params)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -476,15 +541,17 @@ class TestVM2VMVirtioUser(TestCase):
         large_8k_pkts_num = 0
         large_2k_pkts_num = 0
         path_mode = 'packed_vq=0,mrg_rxbuf=0,in_order=1'
+        ringsize = 256
+        extern_params = '--rx-offloads=0x10'
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -498,16 +565,18 @@ class TestVM2VMVirtioUser(TestCase):
         small_pkts_num = 251
         large_8k_pkts_num = 0
         large_2k_pkts_num = 0
-        path_mode = 'packed_vq=0,mrg_rxbuf=0,in_order=0'
+        path_mode = 'packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1'
+        ringsize = 256
+        extern_params = ''
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 251 pkts
         self.logger.info('check pcap file info about virtio')
-        self.get_dump_file_of_virtio_user(path_mode)
+        self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        self.get_dump_file_of_vhost_user(path_mode)
+        self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
