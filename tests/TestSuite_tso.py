@@ -407,7 +407,7 @@ class TestTSO(TestCase):
             else:
                 queues = 1
 
-            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask)
+            command_line = "./%s/app/testpmd -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.target, self.coreMask, self.dut.get_memory_channels(), self.blacklist, self.portMask, TSO_MTU)
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.logger.info(info)
             self.rst_report(info, annex=True)
