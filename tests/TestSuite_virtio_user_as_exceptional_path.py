@@ -48,6 +48,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+        self.def_driver = self.dut.ports_info[self.dut_ports[0]]['port'].get_nic_driver()
         self.pci0 = self.dut.ports_info[0]['pci']
         pf_info = self.dut_ports[0]
         netdev = self.dut.ports_info[pf_info]['port']
@@ -96,9 +97,8 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         for i in self.dut_ports:
             port = self.dut.ports_info[i]['port']
             port.bind_driver()
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b igb_uio %s" %
-            self.pci, '#', 30)
+        bind_script_path = self.dut.get_dpdk_bind_script()
+        self.dut.send_expect('%s --bind=%s %s' % (bind_script_path, self.def_driver, self.pci), '# ')
         self.peer_pci_setup = True
 
     def launch_testpmd_vhost(self):
