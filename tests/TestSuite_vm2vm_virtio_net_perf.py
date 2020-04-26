@@ -97,7 +97,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         start two VM, each VM has one virtio device
         """
-        setting_args = "mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
+        setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         if mode == "ufo":
             setting_args += ",guest_ufo=on,host_ufo=on"
         elif mode == "mergeable":
