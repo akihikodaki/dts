@@ -114,6 +114,30 @@ Test Case: Set promiscuous mode
    and receive packets, and check that testpmd is able to receive and forward packets
    successfully.
 
+Test Case: Set allmulticast mode
+--------------------------------
+
+1. If the testpmd application is not launched, run it as above command. Follow
+   below steps to check if allmulticast mode setting works well after reconfiguring
+   it while all ports are stopped.
+2. Run ``set promisc all off`` to disable promiscuous mode on all ports.
+3. Run ``set allmulti all off`` to disable allmulticast mode on all ports.
+4. Run ``start`` again to restart the forwarding.
+5. Send packets with dst same to port address.
+6. Check that testpmd is able to receive and forward packets successfully.
+7. Send packets with unicast dst not same to port address.
+8. Check that testpmd is NOT able to receive and forward packets successfully.
+9. Send packets with multicast dst ``01:00:00:33:00:01`` packets.
+10. Check that testpmd is NOT able to receive and forward packets successfully.
+11. Run ``set allmulti all on`` to enable allmulticast mode on all ports.
+12. Send packets with multicast dst ``01:00:00:33:00:01`` packets.
+13. Check that testpmd is able to receive and forward packets successfully.
+14. Send packets with unicast dst not same to port address.
+15. Check that testpmd is NOT able to receive and forward packets successfully.
+16. Run ``set promisc all on`` to enable promiscuous mode on all ports.
+17. Send packets with unicast dst not same to port address.
+18. Check that testpmd is able to receive and forward packets successfully.
+
 Test Case: Reconfigure All Ports With The Same Configurations (CRC)
 -------------------------------------------------------------------
 
