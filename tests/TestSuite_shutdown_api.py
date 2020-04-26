@@ -89,14 +89,14 @@ class TestShutdownApi(TestCase):
         stats = output.get_pmd_stats(portid)
         return stats
 
-    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
+    def check_forwarding(self, ports=None, pktSize=68, received=True, vlan=False, promisc=False, allmulti=False, vlan_strip=False):
         if ports is None:
             ports = self.ports
         if len(ports) == 1:
-            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc, vlan_strip)
+            self.send_packet(ports[0], ports[0], pktSize, received, vlan, promisc, allmulti, vlan_strip)
             return
 
-    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False, vlan_strip=False):
+    def send_packet(self, txPort, rxPort, pktSize=68, received=True, vlan=False, promisc=False, allmulti=False, vlan_strip=False):
         """
         Send packages according to parameters.
         """
@@ -117,7 +117,8 @@ class TestShutdownApi(TestCase):
         # when promisc is true, destination mac should be fake
         if promisc:
             dmac = "00:00:00:00:00:01"
-
+        if allmulti:
+            dmac = "01:00:00:33:00:01"
         if vlan:
             padding = pktSize - HEADER_SIZE['eth'] - HEADER_SIZE['ip'] -4
             pkg = 'Ether(src="%s", dst="%s")/Dot1Q(vlan=1)/IP()/Raw(load="P" * %d)' % (smac, dmac, padding)
@@ -366,15 +367,42 @@ class TestShutdownApi(TestCase):
             print(("   !!! DEBUG IT: " + e.message))
             self.verify(False, e.message)
 
+        self.check_forwarding(ports, received=False, promisc=True)
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("set promisc all on", "testpmd> ")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         self.dut.send_expect("show config rxtx", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding(ports, promisc=True)
+        self.check_forwarding(ports)
         self.dut.send_expect("port stop all", "testpmd> ", 100)
         self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
+        self.dut.send_expect("quit", "# ", 30)
+
+    def test_set_allmulticast(self):
+        """
+        Allmulticast mode.
+        """
+        ports = [self.ports[0]]
+
+        portmask = utils.create_mask(ports)
+        self.pmdout.start_testpmd("Default", "--portmask=%s  --port-topology=loop" % portmask, socket = self.ports_socket)
+
+        self.dut.send_expect("set promisc all off", "testpmd> ")
+        self.dut.send_expect("set allmulti all off", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ")
+
+        self.check_forwarding(ports)
+        self.check_forwarding(ports, received=False, promisc=True)
+        self.check_forwarding(ports, received=False, allmulti=True)
+        self.dut.send_expect("set allmulti all on", "testpmd> ")
+        self.check_forwarding(ports)
+        self.check_forwarding(ports, allmulti=True)
+        self.check_forwarding(ports, received=False, promisc=True)
+        self.dut.send_expect("set promisc all on", "testpmd> ")
+        self.check_forwarding(ports)
+        self.check_forwarding(ports, promisc=True)
         self.dut.send_expect("quit", "# ", 30)
 
     def test_reset_queues(self):
@@ -479,6 +507,13 @@ class TestShutdownApi(TestCase):
             time.sleep(8)  # sleep few seconds for link stable
 
             for port in self.ports:
+                out = self.dut.send_expect("show port info %s" % port, "testpmd>")
+                self.verify("Link status: up" in out,
+                            "Wrong link status reported by the dut")
+                self.verify("Link speed: %s Mbps" % config[0] in out,
+                            "Wrong speed reported by the dut")
+                self.verify("Link duplex: %s-duplex" % config[1].lower() in out,
+                            "Wrong link type reported by the dut")
                 out = self.tester.send_expect(
                     "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(port)), "# ")
                 self.verify("Speed: %sMb/s" % config[0] in out,
