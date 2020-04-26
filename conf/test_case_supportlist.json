@@ -1835,5 +1835,115 @@
             "Bug ID": "",
             "Comments": "This case currently support for cavium_a063 and cavium_a064 "
         }
+    ],
+    "fdir_L2_mac_filter_basic_for_ipv4_udp": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "fdir_L2_mac_filter_basic_for_ipv4_tcp": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "fdir_L2_mac_filter_negative": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "fdir_L2_mac_filter_basic_for_ipv4_other": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "fdir_L2_mac_filter_complex": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
     ]
 }
