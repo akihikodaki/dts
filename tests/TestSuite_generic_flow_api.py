@@ -914,7 +914,8 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortpark_BASE-T","fortville_25g","carlsville"], "%s nic not support fdir vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
@@ -1002,7 +1003,8 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortpark_BASE-T","fortville_25g","carlsville"], "%s nic not support fdir vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
@@ -1090,7 +1092,8 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortpark_BASE-T","fortville_25g","carlsville"], "%s nic not support fdir vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
@@ -1178,7 +1181,8 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortpark_BASE-T","fortville_25g","carlsville"], "%s nic not support fdir vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("port config all rss all", "testpmd> ", 120)
@@ -1265,7 +1269,8 @@ class TestGeneric_flow_api(TestCase):
         only supported by i40e
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV"], "%s nic not support fdir vlan filter" % self.nic)
+                                 "fortville_spirit_single", "fortpark_TLV",
+                                 "fortpark_BASE-T","fortville_25g","carlsville"], "%s nic not support fdir vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
