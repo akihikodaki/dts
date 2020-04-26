@@ -1,4 +1,4 @@
-.. Copyright (c) <2019>, Intel Corporation
+.. Copyright (c) <2020>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -69,7 +69,7 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -80,7 +80,7 @@ Test Case 1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -125,7 +125,7 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net dequeue zero-copy test with 
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -136,7 +136,7 @@ Test Case 2: VM2VM split ring vhost-user/virtio-net dequeue zero-copy test with 
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -180,7 +180,7 @@ Test Case 3: VM2VM split ring vhost-user/virtio-net test with udp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -191,7 +191,7 @@ Test Case 3: VM2VM split ring vhost-user/virtio-net test with udp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -235,7 +235,7 @@ Test Case 4: Check split ring virtio-net device capability
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -246,7 +246,7 @@ Test Case 4: Check split ring virtio-net device capability
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 3. Check UFO and TSO offload status on for the Virtio-net driver on VM1 and VM2::
 
@@ -283,7 +283,7 @@ Test Case 5: VM2VM virtio-net split ring mergeable zero copy test with large pac
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -294,7 +294,7 @@ Test Case 5: VM2VM virtio-net split ring mergeable zero copy test with large pac
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -331,7 +331,7 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable zero copy test with large
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -342,7 +342,7 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable zero copy test with large
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -379,7 +379,7 @@ Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -390,7 +390,7 @@ Test Case 7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -434,7 +434,7 @@ Test Case 8: VM2VM packed ring vhost-user/virtio-net dequeue zero-copy test with
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -445,7 +445,7 @@ Test Case 8: VM2VM packed ring vhost-user/virtio-net dequeue zero-copy test with
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -480,16 +480,16 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
 
 2. Launch VM1 and VM2::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 1 -m 4096 \
+    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 40 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
-    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
+    -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -500,7 +500,7 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -524,7 +524,7 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
     Port 1 should have rx packets above 1522
 
 Test Case 10: Check packed ring virtio-net device capability
-============================================================
+===========================================================
 
 1. Launch the Vhost sample by below commands::
 
@@ -544,7 +544,7 @@ Test Case 10: Check packed ring virtio-net device capability
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -555,7 +555,7 @@ Test Case 10: Check packed ring virtio-net device capability
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,host_ufo=on,guest_ufo=on,guest_ecn=on,packed=on -vnc :12
 
 3. Check UFO and TSO offload status on for the Virtio-net driver on VM1 and VM2::
 
@@ -592,7 +592,7 @@ Test Case 11: VM2VM packed ring virtio-net mergeable dequeue zero copy test with
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -603,7 +603,7 @@ Test Case 11: VM2VM packed ring virtio-net mergeable dequeue zero copy test with
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
@@ -640,7 +640,7 @@ Test Case 12: VM2VM packed ring virtio-net non-mergeable dequeue zero copy test 
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net0 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 1 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -651,7 +651,7 @@ Test Case 12: VM2VM packed ring virtio-net non-mergeable dequeue zero copy test 
     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1 \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
+    -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :12
 
 3. On VM1, set virtio device IP and run arp protocal::
 
