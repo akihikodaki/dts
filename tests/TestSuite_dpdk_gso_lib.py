@@ -54,6 +54,7 @@ class TestDPDKGsoLib(TestCase):
 
         # unbind the port which config in ports.cfg
         self.dut_ports = self.dut.get_ports()
+        self.def_driver = self.dut.ports_info[self.dut_ports[0]]['port'].get_nic_driver()
         for i in self.dut_ports:
             port = self.dut.ports_info[i]['port']
             port.bind_driver()
@@ -67,9 +68,8 @@ class TestDPDKGsoLib(TestCase):
                     and len(self.peer_pci) != 0
                     and len(self.nic_in_kernel) != 0,
                     'Pls config the direct connection info in vhost_peer_conf.cfg')
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b igb_uio %s" %
-            self.pci, '#', 30)
+        bind_script_path = self.dut.get_dpdk_bind_script()
+        self.dut.send_expect('%s --bind=%s %s' % (bind_script_path, self.def_driver, self.pci), '# ')
 
         # get the numa info about the pci info which config in peer cfg
         bus = int(self.pci[5:7], base=16)
@@ -262,7 +262,7 @@ class TestDPDKGsoLib(TestCase):
 
         time.sleep(5)
         try:
-            self.vm1_dut = self.vm1.start(load_config=False)
+            self.vm1_dut = self.vm1.start(load_config=False, set_target=False)
             if self.vm1_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
