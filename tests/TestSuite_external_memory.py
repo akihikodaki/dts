@@ -81,6 +81,8 @@ class TestExternalMemory(TestCase):
             self.dut.send_expect("modprobe vfio", "#", 10)
             self.dut.send_expect("modprobe vfio_pci", "#", 10)
             out = self.dut.send_expect("lsmod | grep vfio_iommu_type1", "#")
+            if not out:
+                out = self.dut.send_expect("ls /sys/module |grep vfio_pci", "#")
             assert ("vfio_pci" in out), "Failed to insmod vfio_pci"
 
             self.dut.bind_interfaces_linux(driver="vfio-pci")
