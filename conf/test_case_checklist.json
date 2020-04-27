@@ -3255,5 +3255,21 @@
             "Bug ID": "DPDK-14025",
             "Comments": "NIC not support this case"
         }
+    ],
+    "GRE_ipv6_packet_detect": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "DPDK-18754",
+            "Comments": "CVL NIC doesn't support the VLAN in pkg ptype"
+        }
     ]
 }
