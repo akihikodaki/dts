@@ -1,3 +1,4 @@
+710703wyn
 # BSD LICENSE
 #
 # Copyright(c) <2019> Intel Corporation.
@@ -58,8 +59,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.enable_pcap_lib_in_dpdk(self.dut)
         self.virtio_user0 = None
         self.virtio_user1 = None
-        self.flag_compiled = False
-        self.backup_speed = self.dut.skip_setup
         self.pci_info = self.dut.ports_info[0]['pci']
 
     def set_up(self):
@@ -145,22 +144,28 @@ class TestVM2VMVirtioPMD(TestCase):
         self.virtio_user0.send_expect('set burst 1', 'testpmd> ', 30)
         self.virtio_user0.send_expect('start tx_first 10', 'testpmd> ', 30)
 
-    def start_vm_testpmd(self, vm_client, path_mode, extern_param=""):
+    def start_vm_testpmd(self, vm_client, path_mode, extern_param="", virtio_net_pci=""):
         """
         launch the testpmd in vm
         """
+        # deal with ports
+        w_pci_list = []
+        w_pci_list.append('-w %s,%s' % (virtio_net_pci, 'vectorized=1'))
+        w_pci_str = ' '.join(w_pci_list)
         if path_mode == "mergeable":
             command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
                         "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
                         "--enable-hw-vlan-strip --txd=1024 --rxd=1024 %s"
+            vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "normal":
             command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
                         "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
                         "--enable-hw-vlan-strip --txd=1024 --rxd=1024 %s"
+            vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "vector_rx":
             command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
-                        "--file-prefix=virtio -- -i --txd=1024 --rxd=1024 %s"
-        vm_client.send_expect(command % extern_param, "testpmd> ", 20)
+                        "--file-prefix=virtio %s -- -i --txd=1024 --rxd=1024 %s"
+            vm_client.send_expect(command % (w_pci_str, extern_param), "testpmd> ", 20)
 
     def launch_pdump_to_capture_pkt(self, client_dut, dump_port):
         """
@@ -184,12 +189,12 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         # for virtio 0.95, start vm with "disable-modern=true"
         # for virito 1.0, start vm with "disable-modern=false"
-        if self.flag_compiled:
-            self.dut.skip_setup = True
         if mode == 0:
             setting_args = "disable-modern=true"
-        else:
+        elif mode == 1:
             setting_args = "disable-modern=false"
+        elif mode == 2:
+            setting_args = "disable-modern=false,packed=on"
         if mergeable is True:
             setting_args += "," + "mrg_rxbuf=on"
         else:
@@ -213,10 +218,8 @@ class TestVM2VMVirtioPMD(TestCase):
             except Exception as e:
                 print((utils.RED("Failure for %s" % str(e))))
                 raise e
-
             self.vm_dut.append(vm_dut)
             self.vm.append(vm_info)
-        self.flag_compiled = True
 
     def calculate_avg_throughput(self):
         results = 0.0
@@ -316,11 +319,11 @@ class TestVM2VMVirtioPMD(TestCase):
         self.get_core_list(2)
         self.start_vhost_testpmd()
         self.start_vms(mode=0, mergeable=False)
-        self.start_vm_testpmd(self.vm_dut[0], path_mode)
-        self.start_vm_testpmd(self.vm_dut[1], path_mode)
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, virtio_net_pci = self.vm_dut[0].ports_info[0]['pci'])
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, virtio_net_pci = self.vm_dut[1].ports_info[0]['pci'])
         self.send_and_verify(mode="virtio 0.95 vector_rx", path=path_mode)
 
-    def test_vhost_vm2vm_virtioi10_pmd_with_vector_rx_path(self):
+    def test_vhost_vm2vm_virtio_10_pmd_with_vector_rx_path(self):
         """
         vhost-user + virtio1.0-pmd with vector_rx path
         """
@@ -328,8 +331,8 @@ class TestVM2VMVirtioPMD(TestCase):
         self.get_core_list(2)
         self.start_vhost_testpmd()
         self.start_vms(mode=1, mergeable=False)
-        self.start_vm_testpmd(self.vm_dut[0], path_mode)
-        self.start_vm_testpmd(self.vm_dut[1], path_mode)
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, virtio_net_pci = self.vm_dut[0].ports_info[0]['pci'])
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, virtio_net_pci = self.vm_dut[1].ports_info[0]['pci'])
         self.send_and_verify(mode="virtio 1.0 vector_rx", path=path_mode)
 
     def test_vhost_vm2vm_virito_pmd_with_mergeable_path(self):
@@ -390,19 +393,46 @@ class TestVM2VMVirtioPMD(TestCase):
         # reset the evn in vm
         self.disable_pcap_lib_in_dpdk(self.vm_dut[0])
 
-    def test_vhost_vm2vm_virtio_11_pmd_with_mergeable_path(self):
+    def test_vhost_vm2vm_virito_11_pmd_with_normal_path(self):
         """
-        vm2vm vhost-user/virtio1.1-pmd mergeable path test with payload check
+        vhost-user + virtio1.0-pmd with normal path
         """
-        mode_info = 'packed_vq=1,mrg_rxbuf=1,in_order=0'
-        extern_param = '--max-pkt-len=9600'
-        dump_port = 'device_id=net_virtio_user1'
-        self.get_core_list(6)
+        path_mode = "normal"
+        self.get_core_list(2)
         self.start_vhost_testpmd()
-        self.start_virtio_testpmd_with_vhost_net1(mode_info, extern_param)
-        self.launch_pdump_to_capture_pkt(self.dut, dump_port)
-        self.start_virtio_testpmd_with_vhost_net0(mode_info, extern_param)
-        self.check_packet_payload_valid(self.dut)
+        self.start_vms(mode=2, mergeable=False)
+        self.start_vm_testpmd(self.vm_dut[0], path_mode)
+        self.start_vm_testpmd(self.vm_dut[1], path_mode)
+        self.send_and_verify(mode="virtio 1.0 normal path", path=path_mode)
+
+    def test_vhost_vm2vm_virito_11_pmd_with_mergeable_path(self):
+        """
+        vhost-user + virtio1.0-pmd with mergeable path test with payload check
+        """
+        path_mode = "mergeable"
+        extern_param = '--max-pkt-len=9600'
+        dump_port = 'port=0'
+        self.get_core_list(2)
+        self.start_vhost_testpmd()
+        self.start_vms(mode=2, mergeable=True)
+        # enable pcap in VM0
+        self.enable_pcap_lib_in_dpdk(self.vm_dut[0])
+        # git the vm enough huge to run pdump
+        self.vm_dut[0].set_huge_pages(2048)
+        # start testpmd and pdump in VM0
+        self.start_vm_testpmd(self.vm_dut[0], path_mode, extern_param)
+        self.vm_dut[0].send_expect('set fwd rxonly', 'testpmd> ', 30)
+        self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
+        self.launch_pdump_to_capture_pkt(self.vm_dut[0], dump_port)
+        # start testpmd in VM1 and start to send packet
+        self.start_vm_testpmd(self.vm_dut[1], path_mode, extern_param)
+        self.vm_dut[1].send_expect('set txpkts 2000,2000,2000,2000', 'testpmd> ', 30)
+        self.vm_dut[1].send_expect('set burst 1', 'testpmd> ', 30)
+        self.vm_dut[1].send_expect('start tx_first 10', 'testpmd> ', 30)
+         # check the packet in vm0
+        self.check_packet_payload_valid(self.vm_dut[0])
+        # reset the evn in vm
+        self.disable_pcap_lib_in_dpdk(self.vm_dut[0])
 
     def tear_down(self):
         #
@@ -419,4 +449,3 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.disable_pcap_lib_in_dpdk(self.dut)
         self.dut.close_session(self.vhost_user)
-        self.dut.skip_setup = self.backup_speed
