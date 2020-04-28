@@ -49,7 +49,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
+        self.frame_sizes = [64, 1518]
         self.core_config = "1S/5C/1T"
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
@@ -230,7 +230,20 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on inorder mergeable path
         """
-        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1",
+        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
+                          "path": "--rx-offloads=0x10 --enable-hw-vlan-strip"}
+        for frame_size in self.frame_sizes:
+            self.start_vhost_testpmd()
+            self.start_virtio_user_testpmd(pmd_arg)
+            self.send_and_verify("packed ring inorder non-mergeable", frame_size)
+            self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_lookback_test_with_packed_ring_vectorized_path(self):
+        """
+        performance for [frame_sizes] and restart port on inorder mergeable path
+        """
+        pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
@@ -282,7 +295,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for [frame_sizes] and restart port on virtio normal path
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip "}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
@@ -295,8 +308,8 @@ class TestLoopbackPortRestart(TestCase):
         """
         performance for frame_sizes and restart port on virtio vector rx
         """
-        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0 ",
-                          "path": ""}
+        pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
+                          "path": "--tx-offloads=0x0 "}
         for frame_size in self.frame_sizes:
             self.start_vhost_testpmd()
             self.start_virtio_user_testpmd(pmd_arg)
