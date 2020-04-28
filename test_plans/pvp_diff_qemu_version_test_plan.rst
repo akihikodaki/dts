@@ -107,7 +107,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
     -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \
-    -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,mrg_rxbuf=on \
+    -device virtio-net-pci,netdev=netdev1,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on \
     -vnc :10
 
 3. On VM, bind virtio net to igb_uio and run testpmd::
