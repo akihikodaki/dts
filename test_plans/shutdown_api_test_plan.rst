@@ -245,3 +245,12 @@ Test Case: link stats
 7. Run ``set link-up port X`` to set all port link up
 8. Start packet generator to transmit and receive packets
    successfully.
+
+Test Case: RX/TX descriptor status
+----------------------------------
+
+1. Lauch testpmd with rx/tx queue number ``--txq=16 --rxq=16`` and rx/tx descriptor size ``--txd=4096 --rxd=4096``
+2. Run ``show port 0 rxq * desc * status`` to check rx descriptor status.
+3. Check rx descriptor status can be ``AVAILABLE``, ``DONE`` or ``UNAVAILABLE``.
+4. Run ``show port 0 txq * desc * status`` to check tx descriptor status.
+5. Check tx descriptor status can be ``FULL``, ``DONE`` or ``UNAVAILABLE``.
