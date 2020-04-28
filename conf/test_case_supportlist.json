@@ -1820,22 +1820,6 @@
             "Comments": "this case only support on fortville"
         }
     ],
-    "check_rxtx_desc_status": [
-        {
-            "OS": [
-                "ALL"
-            ],
-            "NIC": [
-                "cavium_a064",
-                "cavium_a063"
-            ],
-            "Target": [
-                "ALL"
-            ],
-            "Bug ID": "",
-            "Comments": "This case currently support for cavium_a063 and cavium_a064 "
-        }
-    ],
     "fdir_L2_mac_filter_basic_for_ipv4_udp": [
         {
             "OS": [
