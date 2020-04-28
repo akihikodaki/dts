@@ -895,7 +895,7 @@ def get_from_list(host, domain_id, bus_id, devfun_id):
     for nic in NICS_LIST:
         if host == nic['host']:
             pci = ':'.join((domain_id, bus_id, devfun_id))
-            if pci == nic['pci']:
+            if pci == nic['pci'] and nic['port'].crb.session:
                 return nic['port']
     return None
 
