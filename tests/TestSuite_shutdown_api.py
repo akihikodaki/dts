@@ -787,22 +787,30 @@ class TestShutdownApi(TestCase):
     def test_check_rxtx_desc_status(self):
         """
         Check tx and rx descriptors status.
+        When rx_descriptor_status is used, status can be “AVAILABLE”, “DONE” or “UNAVAILABLE”.
+        When tx_descriptor_status is used, status can be “FULL”, “DONE” or “UNAVAILABLE.”
         """
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
+        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --txq=16 --rxq=16 --txd=4096 --rxd=4096" % utils.create_mask(self.ports), socket=self.ports_socket)
 
         for i in range(3):
+            rxqid = randint(0, 16)
             self.desc = randint(0, 4095)
-            out = self.dut.send_expect("show port %s rxq 0 desc %s status" % (self.ports[0], self.desc), "testpmd> ")
+            out = self.dut.send_expect("show port %s rxq %s desc %s status" % (self.ports[0], rxqid, self.desc), "testpmd> ")
             self.verify(
-               "Desc status = AVAILABLE" in out, "RX descriptor status is improper")
+                "Desc status = AVAILABLE" in out or "Desc status = DONE" in out or "Desc status = UNAVAILABLE" in out,
+                "RX descriptor status is improper")
             self.verify(
-               "Bad arguments" not in out, "RX descriptor status is not supported")
+                "Bad arguments" not in out and "Invalid queueid" not in out,
+                "RX descriptor status is not supported")
+            txqid = randint(0, 16)
             self.desc = randint(0, 511)
-            out = self.dut.send_expect("show port %s txq 0 desc %s status" % (self.ports[0], self.desc), "testpmd> ")
+            out = self.dut.send_expect("show port %s txq %s desc %s status" % (self.ports[0], txqid, self.desc), "testpmd> ")
             self.verify(
-               "Desc status = FULL" in out, "TX descriptor status is improper")
+                "Desc status = FULL" in out or "Desc status = DONE" in out or "Desc status = UNAVAILABLE" in out,
+                "TX descriptor status is improper")
             self.verify(
-               "Bad arguments" not in out, "TX descriptor status is not supported")
+                "Bad arguments" not in out and "Invalid queueid" not in out,
+                "TX descriptor status is not supported")
 
     def tear_down(self):
         """
