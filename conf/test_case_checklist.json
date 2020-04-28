@@ -3256,6 +3256,21 @@
             "Comments": "NIC not support this case"
         }
     ],
+    "queue_start_stop": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        }
+    ],
     "GRE_ipv6_packet_detect": [
         {
             "OS": [
