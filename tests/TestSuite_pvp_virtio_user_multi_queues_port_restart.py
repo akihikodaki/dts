@@ -98,21 +98,14 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
 
-    def start_virtio_user_testpmd(self, flag):
+    def start_virtio_user_testpmd(self, vdevs, vector_flag=False):
         """
         start testpmd in vm depend on different path
         """
         testcmd = self.dut.target + "/app/testpmd "
-        vdev = 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2'
-        if 'packed_ring' in flag:
-            vdev += ',packed_vq=1'
-        if 'nonmergeable' in flag or 'vector' in flag:
-            vdev += ',mrg_rxbuf=0'
-        if 'inorder' not in flag:
-            vdev += ',in_order=0'
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[5:8], prefix='virtio', no_pci=True,
-                                                    vdevs=[vdev])
-        if 'vector' not in flag:
+                                                    vdevs=[vdevs])
+        if vector_flag:
             para = " -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=%s --txq=%s --rss-ip" % (
             self.queue_number, self.queue_number)
         else:
@@ -219,63 +212,63 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
 
     def test_perf_pvp_2queues_test_with_packed_ring_mergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="packed_ring_mergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0,queue_size=255')
         self.send_and_verify("packed_ring_mergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_packed_ring_nonmergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="packed_ring_nonmergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0,queue_size=255')
         self.send_and_verify("packed_ring_nonmergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_split_ring_inorder_mergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="split_ring_inorder_mergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=1,mrg_rxbuf=1')
         self.send_and_verify("split_ring_inorder_mergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_split_ring_inorder_nonmergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="split_ring_inorder_nonmergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=1,mrg_rxbuf=0,vectorized=1')
         self.send_and_verify("split_ring_inorder_nonmergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_split_ring_mergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="split_ring_mergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=1')
         self.send_and_verify("split_ring_mergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_split_ring_nonmergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="split_ring_nonmergeable")
+        self.start_virtio_user_testpmd(vdevs='net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=0,vectorized=1')
         self.send_and_verify("split_ring_nonmergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_split_ring_vector_rx_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="split_ring_vector_rx")
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=255", vector_flag=True)
         self.send_and_verify("split_ring_vector_rx")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_packed_ring_inorder_mergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="packed_ring_inorder_mergeable")
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255")
         self.send_and_verify("packed_ring_inorder_mergeable")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_packed_ring_inorder_nonmergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(flag="packed_ring_inorder_nonmergeable")
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255")
         self.send_and_verify("packed_ring_inorder_nonmergeable")
         self.close_all_testpmd()
         self.result_table_print()
