@@ -233,8 +233,8 @@ Test Case 5: pvp split ring dequeue zero-copy test with vector_rx path
 
     rm -rf vhost-net*
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dequeue-zero-copy=1' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992 --txrs=32
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=1,dequeue-zero-copy=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
     testpmd>start
 
@@ -242,7 +242,7 @@ Test Case 5: pvp split ring dequeue zero-copy test with vector_rx path
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --legacy-mem --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,queue_size=1024 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1,queue_size=1024,server=1 \
     -- -i --tx-offloads=0x0 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
@@ -388,3 +388,30 @@ Test Case 8: pvp packed ring dequeue zero-copy test with driver reload test
 8. Check each queue's rx/tx packet numbers at vhost side::
 
     testpmd>stop
+
+Test Case 9: pvp packed ring dequeue zero-copy test with ring size is not power of 2
+====================================================================================
+
+1. Bind one port to igb_uio, then launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=1,dequeue-zero-copy=1' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Launch virtio-user by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --legacy-mem --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=1,packed_vq=1,queue_size=1025,server=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1025 --rxd=1025
+    >set fwd mac
+    >start
+
+3. Send packet with packet generator with different packet size,includes [64, 128, 256, 512, 1024, 1518], check the throughput with below command::
+
+    testpmd>show port stats all
+
+4. Repeat the test with dequeue-zero-copy=0, compare the performance gains or degradation. For small packet, we may expect ~20% performance drop, but for big packet, we expect ~20% performance gains.
