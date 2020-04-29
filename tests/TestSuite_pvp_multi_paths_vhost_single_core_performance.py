@@ -340,8 +340,8 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
-                            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip"}
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=0",
+                            "path": "--enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1 inorder normal")
@@ -358,7 +358,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=1",
-                            "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
+                            "path": "--enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
         self.send_and_verify("virtio_1.1 inorder normal")
@@ -385,7 +385,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.handle_expected()
         self.handle_results()
 
-    def test_perf_vhost_single_core_inorder_no_normal(self):
+    def test_perf_vhost_single_core_inorder_normal(self):
         """
         performance for Vhost PVP In_order normal Path.
         """
@@ -425,7 +425,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
@@ -442,7 +442,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": "--tx-offloads=0x0"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
