@@ -164,7 +164,7 @@ Test Case 6: vhost single core performance test with non-mergeable path
 
     ./testpmd -l 7-9 -n 4 --file-prefix=virtio \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,in_order=0,mrg_rxbuf=0,vectorized=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
+    -- -i --enable-hw-vlan-strip --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
     >start
 
@@ -185,7 +185,7 @@ Test Case 7: vhost single core performance test with vectorized_rx path
 
     ./testpmd -l 7-9 -n 4 --file-prefix=virtio \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,in_order=0,mrg_rxbuf=0,vectorized=1 \
-    -- -i --tx-offloads=0x0 --nb-cores=2 --txd=1024 --rxd=1024
+    -- -i --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
     >start
 
@@ -226,8 +226,8 @@ Test Case 9: vhost single core performance test with virtio 1.1 inorder non-merg
 2. Launch virtio-user by below command::
 
     ./testpmd -l 7-9 -n 4 --file-prefix=virtio \
-    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
-    -- -i --rx-offloads=0x10 --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
+    --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=0 \
+    -- -i --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
     >start
 
