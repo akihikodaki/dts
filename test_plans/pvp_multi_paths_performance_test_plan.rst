@@ -37,17 +37,14 @@ vhost/virtio pvp multi-paths performance test plan
 Benchmark PVP multi-paths performance with 10 tx/rx paths. Includes mergeable, non-mergeable, vectorized_rx,
 inorder mergeable, inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，virtio 1.1 inorder
 mergeable, virtio 1.1 inorder non-mergeable, virtio1.1 vectorized path. Give 1 core for vhost and virtio respectively.
-
-Packed ring vectorized path will be selected when:
-    vectorized option is enabled
+Packed ring vectorized path need:
     AVX512F and required extensions are supported by compiler and host
-    virtio VERSION_1 and IN_ORDER features are negotiated
-    virtio mergeable feature is not negotiated
+    VERSION_1 and IN_ORDER features are negotiated
+    mergeable feature is not negotiated
     LRO offloading is disabled
-Split ring vectorized rx path will be selected when:
-    vectorized option is enabled
-    virtio mergeable and IN_ORDER features are not negotiated
-    LRO, chksum and vlan strip offloading are disabled
+Split ring vectorized rx path need:
+    mergeable and IN_ORDER features are not negotiated
+    LRO, chksum and vlan strip offloadings are disabled
 
 Test flow
 =========
@@ -190,7 +187,7 @@ Test Case 6: pvp test with non-mergeable path
 
     ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
@@ -214,7 +211,7 @@ Test Case 7: pvp test with vectorized_rx path
 
     ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
-    -- -i --tx-offloads=0x0 --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
@@ -262,7 +259,7 @@ Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 
     ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
-    -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
@@ -285,7 +282,7 @@ Test Case 10: pvp test with virtio 1.1 vectorized path
 
     ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
 
