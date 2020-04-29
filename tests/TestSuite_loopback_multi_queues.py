@@ -48,7 +48,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1518]
+        self.frame_sizes = [64, 1518]
         self.verify_queue = [1, 8]
         self.dut_ports = self.dut.get_ports()
         port_socket = self.dut.get_numa_id(self.dut_ports[0])
@@ -283,7 +283,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         performance for Vhost PVP Normal Path.
         """
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": "--enable-hw-vlan-strip"}
         for i in self.verify_queue:
             self.nb_cores = i
@@ -301,7 +301,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         performance for Vhost PVP Vector_RX Path
         """
-        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0",
+        virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=0,vectorized=1",
                             "path": ""}
         for i in self.verify_queue:
             self.nb_cores = i
@@ -337,8 +337,26 @@ class TestLoopbackMultiQueues(TestCase):
         """
         performance for Vhost PVP Vector_RX Path
         """
-        virtio_pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1",
-                            "path": ""}
+        virtio_pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
+                            "path": "--rx-offloads=0x10 --enable-hw-vlan-strip "}
+        for i in self.verify_queue:
+            self.nb_cores = i
+            self.queue_number = i
+            self.get_core_mask()
+            self.start_vhost_testpmd()
+            self.start_virtio_testpmd(virtio_pmd_arg)
+            self.send_and_verify("virtio 1.1 inorder non-mergeable")
+            self.close_all_testpmd()
+
+        self.result_table_print()
+        self.verify_liner_for_multi_queue()
+
+    def test_loopback_with_virtio11_vectorized_path_multi_queue(self):
+        """
+        performance for Vhost PVP Vector_RX Path
+        """
+        virtio_pmd_arg = {"version": "packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1",
+                            "path": "--enable-hw-vlan-strip "}
         for i in self.verify_queue:
             self.nb_cores = i
             self.queue_number = i
