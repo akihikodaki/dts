@@ -560,7 +560,7 @@ class TestVfKernel(TestCase):
         self.verify(self.dmac.upper() in out, "PF can't receive packet")
 
         # Change kernel VF mtu as 3000,check no confusion/crash on DPDK PF
-        if self.nic.startswith('fortville') or self.nic.startswith('carlsville'):
+        if self.nic.startswith('fortville') or self.nic.startswith('carlsville') or self.nic.startswith('fortpark_BASE-T'):
             self.vm0_dut.send_expect(
                 "ifconfig %s mtu 3000" % self.vm0_intf0, "#")
 
