@@ -393,6 +393,9 @@ class TestDPDKGROLib(TestCase):
         """
         Run after each test suite.
         """
+        for i in self.dut_ports:
+            port = self.dut.ports_info[i]['port']
+            port.bind_driver(self.def_driver)
         self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "# ", 30)
         self.dut.send_expect(
