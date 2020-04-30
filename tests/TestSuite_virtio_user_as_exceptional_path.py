@@ -322,6 +322,10 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         """
         Run after each test suite.
         """
+        # bind the port conf in ports.cfg
+        for i in self.dut_ports:
+            port = self.dut.ports_info[i]['port']
+            port.bind_driver(self.def_driver)
         self.unprepare_dpdk()
         if self.peer_pci_setup:
             self.dut.send_expect(
