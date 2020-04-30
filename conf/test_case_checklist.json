@@ -1988,6 +1988,40 @@
             "Comments": ""
         }
     ],
+    "flags": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc",
+                "i686-native-linuxapp-clang"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit address space limited"
+        }
+    ],
+    "qinq_packet_filter_VF_queues": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc",
+                "i686-native-linuxapp-clang"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bit address space limited"
+        }
+    ],
     "multiprocess": [
         {
             "OS": [
