@@ -2192,7 +2192,8 @@
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortville_25g",
-                "carlsville"
+                "carlsville",
+		"fortpark_BASE-T"
             ],
             "Target": [
                 "ALL"
