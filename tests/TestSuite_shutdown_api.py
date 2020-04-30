@@ -354,6 +354,7 @@ class TestShutdownApi(TestCase):
         self.pmdout.start_testpmd("Default", "--portmask=%s  --port-topology=loop" % portmask, socket = self.ports_socket)
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
+        self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect("port start all", "testpmd> ", 100)
         self.dut.send_expect("show config rxtx", "testpmd> ")
@@ -391,6 +392,7 @@ class TestShutdownApi(TestCase):
 
         self.dut.send_expect("set promisc all off", "testpmd> ")
         self.dut.send_expect("set allmulti all off", "testpmd> ")
+        self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("start", "testpmd> ")
 
         self.check_forwarding(ports)
