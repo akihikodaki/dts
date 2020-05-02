@@ -643,7 +643,7 @@ class Dut(Crb):
             self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
         for eventdev_port in eventdev_ports:
             if eventdev_port == port:
-                self.send_expect('echo 0 >  /sys/bus/pci/devices/%s/limits/tim' % (eventdev_port), '#')
+                self.send_expect('echo 1 >  /sys/bus/pci/devices/%s/limits/tim' % (eventdev_port), '#')
                 self.send_expect('echo 1 >  /sys/bus/pci/devices/%s/limits/npa' % (eventdev_port), '#')
                 self.send_expect('echo 10 >  /sys/bus/pci/devices/%s/limits/sso' % (eventdev_port), '#')
                 self.send_expect('echo 32 >  /sys/bus/pci/devices/%s/limits/ssow' % (eventdev_port), '#')
