@@ -145,6 +145,8 @@ class TestKernelpfIavf(TestCase):
             self.used_dut_port]['vfs_port']
         out = self.dut.send_expect('ethtool %s' % self.host_intf, '#')
         self.speed = re.findall('Speed: (\d*)', out)[0]
+        if self.nic.startswith('columbiaville'):
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" %(self.host_intf), "# ")
         if self.running_case == "test_vf_multicast":
             self.dut.send_expect("ethtool --set-priv-flags %s vf-true-promisc-support on" %(self.host_intf), "# ")
         if set_vf_mac is True:
