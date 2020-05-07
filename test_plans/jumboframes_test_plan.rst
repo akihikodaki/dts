@@ -39,6 +39,11 @@ to receive Jumbo Frames with a configurable maximum packet length that is
 greater than the standard maximum Ethernet frame length (1518 bytes), up to
 a maximum value imposed by the hardware.
 
+.. note::
+
+   Maximum Packet Length = MTU(Maximum Transmission Unit) + 14(src mac + dst mac) + 4(CRC)
+   e.g., 1518 = 1500 + 14 + 4
+
 Prerequisites
 =============
 
@@ -54,13 +59,12 @@ Assuming that ports ``0`` and ``1`` of the test target are directly connected
 to the traffic generator, launch the ``testpmd`` application with the following
 arguments::
 
-  ./build/app/testpmd -c ffffff -n 3 -- -i --rxd=1024 --txd=1024 \
-  --burst=144 --txpt=32 --txht=0 --txfreet=0 --rxfreet=64 \
-  --mbcache=200 --portmask=0x3 --mbuf-size=2048 --max-pkt-len=9600
+  ./build/app/testpmd -c ffffff -n 6 -- -i --portmask=0x3 --max-pkt-len=9600 \
+  --tx-offloads=0x00008000
 
 The -n command is used to select the number of memory channels. It should match the number of memory channels on that setup.
 
-Setting the size of the mbuf data buffer to 2048 and the maximum packet length
+Setting tx-offload to 0x8000 and the maximum packet length
 to 9600 (CRC included) makes input Jumbo Frames to be stored in multiple
 buffers by the hardware RX engine.
 
