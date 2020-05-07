@@ -123,6 +123,11 @@ steps
     testpmd> create bonded device 4 0
     testpmd> add bonding slave 0 2
     testpmd> add bonding slave 1 2
+    testpmd> set bonding lacp dedicated_queues 2 enable
+    testpmd> set allmulti 0 on
+    testpmd> set allmulti 1 on
+    testpmd> set allmulti 2 on
+    testpmd> set portlist 2
 
 #. loop execute this step 10 times, check if bonded device still work::
 
@@ -203,6 +208,11 @@ steps
     testpmd> create bonded device 4 0
     testpmd> add bonding slave 0 2
     testpmd> add bonding slave 1 2
+    testpmd> set bonding lacp dedicated_queues 2 enable
+    testpmd> set allmulti 0 on
+    testpmd> set allmulti 1 on
+    testpmd> set allmulti 2 on
+    testpmd> set portlist 2
 
 #. stop bonded device and check bonded device/slaves link status::
 
@@ -300,6 +310,11 @@ steps
     testpmd> create bonded device 4 0
     testpmd> add bonding slave 0 2
     testpmd> add bonding slave 1 2
+    testpmd> set bonding lacp dedicated_queues 2 enable
+    testpmd> set allmulti 0 on
+    testpmd> set allmulti 1 on
+    testpmd> set allmulti 2 on
+    testpmd> set portlist 2
     testpmd> port start all
     testpmd> show bonding config 2
     testpmd> set bonding agg_mode 2 <agg_option>
