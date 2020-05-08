@@ -469,7 +469,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.logger.info('check pcap file info about virtio')
         self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
         self.resend_32_large_pkt_from_virtio0()
-        self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+        self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
