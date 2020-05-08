@@ -52,7 +52,7 @@ class TestLinkFlowctrl(TestCase):
     pause_frame_control = "\\x00\\xFF"
     pause_frame_paddign = "\\x00" * 42
 
-    pause_frame = '[Ether(src="%s",dst="%s",type=%s)/("%s%s%s")]'
+    pause_frame = '[Ether(src="%s",dst="%s",type=%s)/(b"%s%s%s")]'
 
     frames_to_sent = 12
 
