@@ -84,8 +84,6 @@ class TestVhostUserLiveMigration(TestCase):
         backup_socket_num = len(set([int(core['socket']) for core in self.backup_dut.cores]))
         self.host_socket_mem = ','.join(['1024']*host_socket_num)
         self.backup_socket_mem = ','.join(['1024']*backup_socket_num)
-        self.backup_speed = self.dut.skip_setup
-        self.flag_compiled = False
 
     def set_up(self):
         self.host_dut.send_expect('rm ./vhost-net*', '# ', 30)
@@ -170,8 +168,6 @@ class TestVhostUserLiveMigration(TestCase):
         """
         Create testing environment on Host and Backup
         """
-        if self.flag_compiled:
-            self.dut.skip_setup = True
         try:
             # set up host virtual machine
             self.host_vm = VM(self.duts[0], 'host', '%s' % self.suite_name)
@@ -193,8 +189,6 @@ class TestVhostUserLiveMigration(TestCase):
 
             if self.vm_dut_host is None:
                 raise Exception("Set up host VM ENV failed!")
-            self.flag_compiled = True
-
             self.logger.info("Start virtual machine on backup host")
             # set up backup virtual machine
             self.backup_vm = VM(self.duts[1], 'backup', 'vhost_user_live_migration')
@@ -236,8 +230,8 @@ class TestVhostUserLiveMigration(TestCase):
         try:
             if self.backup_vm is not None:
                 if self.migration_done:
-                    self.vm_dut_backup.kill_all()
                     self.vm_dut_backup.send_expect('pkill screen', '# ')
+                    self.vm_dut_backup.kill_all()
                 self.backup_vm.stop()
                 self.backup_vm = None
         except Exception as e:
@@ -320,7 +314,6 @@ class TestVhostUserLiveMigration(TestCase):
         vm_dut.send_expect('export TERM=screen', '# ')
         vm_dut.send_command('screen -r %s' % self.screen_name)
         # clean the output info before verify
-        vm_dut.get_session_output(timeout=1)
         time.sleep(5)
         out = vm_dut.get_session_output(timeout=1)
         print(out)
@@ -332,12 +325,10 @@ class TestVhostUserLiveMigration(TestCase):
     def start_tcpdump_on_vm(self, vm_dut):
         vm_dut.send_expect('export TERM=screen', '# ')
         vm_dut.send_expect('screen -S %s' % self.screen_name, '# ', 120)
-
         # get host interface
         vm_intf = vm_dut.ports_info[0]['port'].get_interface_name()
         # start tcpdump the interface
         vm_dut.send_expect("ifconfig %s up" % vm_intf, "# ")
-
         direct_pat = re.compile(r"(\s+)\[ (\S+) in\|out\|inout \]")
         vm_dut.send_expect("tcpdump -h", "# ")
         out = vm_dut.get_session_output(timeout=1)
@@ -367,9 +358,7 @@ class TestVhostUserLiveMigration(TestCase):
 
         self.logger.info("Migrate host VM to backup host")
         # start live migration
-        ret = self.host_vm.start_migration(self.backup_dut_ip, self.backup_vm.migrate_port)
-        self.verify(ret, "Failed to migration, please check VM and qemu version")
-
+        self.host_vm.start_migration(self.backup_dut_ip, self.backup_vm.migrate_port)
         if multi_queue is True:
             vm_intf = self.vm_dut_host.ports_info[0]['port'].get_interface_name()
             out = self.vm_dut_host.send_expect('ethtool -L %s combined 4' % vm_intf, '# ')
@@ -378,6 +367,7 @@ class TestVhostUserLiveMigration(TestCase):
         self.logger.info("Waiting migration process done")
         # wait live migration done
         self.host_vm.wait_migration_done()
+
         self.migration_done = True
 
         self.logger.info("Migration process done, then go to backup VM")
@@ -396,12 +386,10 @@ class TestVhostUserLiveMigration(TestCase):
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
         self.setup_vm_env_on_both_dut()
-
         # bind virtio-net back to virtio-pci
         self.bind_nic_driver_of_vm(self.vm_dut_host, driver="")
         # start screen and tcpdump on vm
         self.start_tcpdump_on_vm(self.vm_dut_host)
-
         self.send_and_verify(self.verify_kernel)
 
     def test_adjust_split_ring_virtio_net_queue_numbers_while_migreting_with_virtio_net(self):
@@ -421,7 +409,6 @@ class TestVhostUserLiveMigration(TestCase):
         self.launch_testpmd_as_vhost_on_both_dut()
         self.start_testpmd_with_fwd_mode_on_both_dut()
         self.setup_vm_env_on_both_dut()
-
         # bind virtio-net to igb_uio
         self.bind_nic_driver_of_vm(self.vm_dut_host, driver="igb_uio")
         self.start_testpmd_on_vm(self.vm_dut_host)
@@ -510,5 +497,4 @@ class TestVhostUserLiveMigration(TestCase):
         pass
 
     def tear_down_all(self):
-        self.dut.skip_setup = self.backup_speed
         pass
