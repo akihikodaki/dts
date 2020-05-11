@@ -557,12 +557,12 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     stats_report = StatsReporter(output_dir + '/statistics.txt')
     result = Result()
 
-    crbInsts = []
     crbs_conf = CrbsConf()
     crbs = crbs_conf.load_crbs_config()
 
     # for all Execution sections
     for section in config.sections():
+        crbInsts = list()
         dts_parse_param(config, section)
 
         # verify if the delimiter is good if the lists are vertical
