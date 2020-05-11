@@ -571,9 +571,9 @@ class TestKni(TestCase):
             v_intf_ip = f"192.168.{port}.1"
             tx_intf_ip = f"192.168.{port}.2"
             self.dut.send_expect(
-                 "ifconfig %s %s netmask 255.255.255.192" % (v_intf_ip, port), "# ")
+                 "ifconfig %s %s netmask 255.255.255.192" % (virtual_interface, v_intf_ip), "# ")
             self.tester.send_expect(
-                 "ifconfig %s %s netmask 255.255.255.192" % (tx_intf_ip, port), "# ")
+                 "ifconfig %s %s netmask 255.255.255.192" % (tx_interface, tx_intf_ip), "# ")
             ports_ips[port] = [tx_intf_ip, v_intf_ip]
             self.tester.enable_ipv6(tx_interface)
             time.sleep(5)
@@ -588,35 +588,45 @@ class TestKni(TestCase):
 
             out = self.dut.send_expect(
                 "ping -w 2 -I %s 192.168.%d.2" % (v_intf_ip, port), "# ", 10)
-            self.verify("64 bytes from 192.168.%d.2:" %
-                        port in out, "ping not supported")
-
+            out1 = self.dut.send_expect(
+                "ping -w 2 -I %s 192.168.%d.2" % (virtual_interface, port), "# ", 10)
+            expected_str = "64 bytes from 192.168.%d.2:" % port
+            self.verify(any([expected_str in out, expected_str in out1]),
+                        "ping not supported")
             out = self.tester.send_expect(
                 "ping -w 1 -I %s 192.168.%d.1" % (tx_intf_ip, port), "# ", 10)
-            self.verify("64 bytes from 192.168.%d.1:" %
-                        port in out, "kni cannot reply ping packet")
-
+            out1 = self.tester.send_expect(
+                "ping -w 1 -I %s 192.168.%d.1" % (tx_interface, port), "# ", 10)
+            expected_str = "64 bytes from 192.168.%d.1:" % port
+            self.verify(any([expected_str in out, expected_str in out1]),
+                        "kni cannot reply ping packet")
             out = self.dut.send_expect(
                 "ping -w 1 -I %s 192.168.%d.123" % (v_intf_ip, port), "# ", 10)
-            self.verify(
-                "0 received, 100% packet loss" in out, "ping not supported")
-
+            out1 = self.dut.send_expect(
+                "ping -w 1 -I %s 192.168.%d.123" % (virtual_interface, port), "# ", 10)
+            expected_str = "0 received, 100% packet loss"
+            self.verify(all([expected_str in out, expected_str in out1]),
+                        "ping not supported")
             out = self.dut.send_expect(
                 "ip -family inet6 address show dev %s | awk '/inet6/ { print $2 }'| cut -d'/' -f1" % virtual_interface, "# ", 10)
             ipv6_address = out.split('\r\n')[0]
-
+            self.tester.send_expect("ifconfig %s up" % tx_interface, "# ")
             out = self.dut.send_expect("ping6 -w 1 -I %s %s" %
                                        (v_intf_ip, str(ipv6_address)), "# ", 10)
+            out1 = self.dut.send_expect("ping6 -w 1 -I %s %s" %
+                                       (virtual_interface, str(ipv6_address)), "# ", 10)
             # FC25 ping6 output info is "64 bytes from ipv6_address%v: icmp_seq=1 ttl=64"
             # other os ping6 output is "64 bytes from ipv6_address: icmp_seq=1 ttl=64"
-            self.verify("64 bytes from %s" %
-                        ipv6_address in out, "ping6 not supported")
-
+            expected_str = "64 bytes from %s" % ipv6_address
+            self.verify(any([expected_str in out, expected_str in out1]),
+                        "ping6 not supported")
             out = self.tester.send_expect(
                 "ping6 -w 1 -I %s %s" % (tx_intf_ip, str(ipv6_address)), "# ", 10)
-            self.verify("64 bytes from %s" %
-                        ipv6_address in out, "kni cannot reply ping6 packet")
-
+            out1 = self.tester.send_expect(
+                "ping6 -w 1 -I %s %s" % (tx_interface, str(ipv6_address)), "# ", 10)
+            expected_str = "64 bytes from %s" % ipv6_address
+            self.verify(any([expected_str in out, expected_str in out1]),
+                        "kni cannot reply ping6 packet")
             ipv6list = list(ipv6_address)
             for j in range(10):
                 if str(j) == ipv6list[-1]:
@@ -627,8 +637,11 @@ class TestKni(TestCase):
 
             out = self.dut.send_expect("ping6 -w 1 -I %s %s" %
                                        (v_intf_ip, ''.join(ipv6list)), "# ", 10)
-            self.verify(
-                "0 received, 100% packet loss" in out, "ping6 not supported")
+            out1 = self.dut.send_expect("ping6 -w 1 -I %s %s" %
+                                       (virtual_interface, ''.join(ipv6list)), "# ", 10)
+            expected_str = "0 received, 100% packet loss"
+            self.verify(any([expected_str in out, expected_str in out1]),
+                        "ping6 not supported")
             # remove ip from tester
             self.tester.send_expect(
                  "ip addr del 192.168.%d.2 dev %s" % (port, tx_interface), "# ")
