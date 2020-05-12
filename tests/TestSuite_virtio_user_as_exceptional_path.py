@@ -197,7 +197,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
         self.dut.build_install_dpdk(self.dut.target)
 
-    def iperf_result_verify(self, vm_client):
+    def iperf_result_verify(self, vm_client, direction):
         '''
         Get the iperf test result
         '''
@@ -205,7 +205,15 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         print(fmsg)
         iperfdata = re.compile('[\d+]*.[\d+]* [M|G]bits/sec').findall(fmsg)
         print(iperfdata)
-        self.verify(iperfdata, 'There no data about this case')
+        data_str = iperfdata[-1].split()
+        data=iperfdata[-1].split()[0]
+        unit=iperfdata[-1].split()[1]
+        if direction == "direction_TAP_original":
+            self.verify(unit =="Gbits/sec", 'The unit of throughput is not Gbits/sec')
+            self.verify(float(data) > 4.0, 'No data or bandwith not achieve target value 3Gbits/sec about this case')
+        elif direction == "direction_NIC_original":
+            self.verify(unit =="Gbits/sec", 'The unit of throughput is not Gbits/sec')
+            self.verify(float(data) > 2.0, 'No data or bandwith not achieve target value 3Gbits/sec about this case')
         self.result_table_create(['Data', 'Unit'])
         results_row = ['exception path']
         results_row.append(iperfdata[-1])
@@ -258,7 +266,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.iperf.send_expect('iperf -c 1.1.1.8 -i 1 -t 10 > /root/iperf_client.log &', '', 180)
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
-        self.iperf_result_verify(self.iperf)
+        self.iperf_result_verify(self.iperf, "direction_TAP_original")
         self.logger.info("TAP->virtio-user->Kernel_NIC %s " % (self.output_result))
         self.iperf.send_expect('rm /root/iperf_client.log', '#', 10)
         self.vhost_user.send_expect("quit", "#", 120)
@@ -280,7 +288,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.dut.send_expect('ip netns exec ns1 iperf -c 1.1.1.2 -i 1 -t 10 > /root/iperf_client.log &', '', 10)
         time.sleep(30)
         self.iperf.send_expect('^C', '#', 10)
-        self.iperf_result_verify(self.dut)
+        self.iperf_result_verify(self.dut, "direction_NIC_original")
         self.dut.get_session_output(timeout=2)
         self.logger.info("Kernel_NIC<-virtio-user<-TAP %s " % (self.output_result))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
