@@ -36,6 +36,7 @@ Test device blacklisting.
 import utils
 from test_case import TestCase
 from pmd_output import PmdOutput
+from settings import DRIVERS
 
 class TestBlackList(TestCase):
     def set_up_all(self):
@@ -48,11 +49,7 @@ class TestBlackList(TestCase):
         self.ports = self.dut.get_ports(self.nic)
         self.verify(len(self.ports) >= 2, "Insufficient ports for testing")
         [arch, machine, self.env, toolchain] = self.target.split('-')
-
-        if self.env == 'bsdapp':
-            self.regexp_blacklisted_port = "EAL: PCI device 0000:%02x:%s on NUMA socket [-0-9]+[^\n]*\nEAL:   Device is blacklisted, not initializing"
-        else:
-            self.regexp_blacklisted_port = "EAL: PCI device %s on NUMA socket [-0-9]+[^\n]*\nEAL:   Device is blacklisted, not initializing"
+        self.regexp_blacklisted_port = "Probe PCI driver: net_%s \(%s\) device: %s \(socket [-0-9]+\)"
         self.pmdout = PmdOutput(self.dut)
 
     def set_up(self):
@@ -73,17 +70,18 @@ class TestBlackList(TestCase):
             # Look for the PCI ID of each card followed by
             # "Device is blacklisted, not initializing" but avoid to consume more
             # than one device.
-            if self.env == 'bsdapp':
-                pci = self.dut.ports_info[port]['pci']
-                regexp_blacklisted_port = self.regexp_blacklisted_port % (int(pci.split(':')[0], 16), pci.split(':')[1])
-            else:
-                regexp_blacklisted_port = self.regexp_blacklisted_port % self.dut.ports_info[port]['pci']
+            port_pci = self.dut.ports_info[port]['pci']
+            if self.env == "bsdapp":
+                port_pci = ':'.join(["0000", port_pci])
+            regexp_blacklisted_port = self.regexp_blacklisted_port % (
+                DRIVERS.get(self.nic), self.dut.ports_info[port]['type'],
+                port_pci)
             matching_ports = utils.regexp(output, regexp_blacklisted_port, True)
             if blacklisted:
-                self.verify(len(matching_ports) == 1,
+                self.verify(len(matching_ports) == 0,
                             "Blacklisted port is being initialized")
             else:
-                self.verify(len(matching_ports) == 0,
+                self.verify(len(matching_ports) == 1,
                             "Not blacklisted port is being blacklisted")
 
     def test_bl_noblacklisted(self):
