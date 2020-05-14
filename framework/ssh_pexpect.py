@@ -133,7 +133,7 @@ class SSHPexpect:
 
     def __prompt(self, command, timeout):
         if not self.session.prompt(timeout):
-            raise TimeoutException(command, self.get_output_all())
+            raise TimeoutException(command, self.get_output_all()) from None
 
     def __sendline(self, command):
         if not self.isalive():
