@@ -1,4 +1,3 @@
-710703wyn
 # BSD LICENSE
 #
 # Copyright(c) <2019> Intel Corporation.
