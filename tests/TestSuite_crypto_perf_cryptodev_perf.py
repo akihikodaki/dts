@@ -269,6 +269,50 @@ class PerfTestsCryptodev(TestCase):
                                                   "sw_aes_gcm")
         self.verify(result, "Test failed")
 
+    def test_qat_encrypt_aes_docsisbpi(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
+        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
+        result = self._run_crypto_perf_throughput(eal_opt_str,
+                                                  crypto_perf_opt_str,
+                                                  "qat_encrypt_aes_docsisbpi")
+        self.verify(result, "Test failed")
+
+    def test_sw_encrypt_aes_docsisbpi(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
+        result = self._run_crypto_perf_throughput(eal_opt_str,
+                                                  crypto_perf_opt_str,
+                                                  "sw_encrypt_aes_docsisbpi")
+        self.verify(result, "Test failed")
+
+    def test_qat_decrypt_aes_docsisbpi(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
+        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
+        result = self._run_crypto_perf_throughput(eal_opt_str,
+                                                  crypto_perf_opt_str,
+                                                  "qat_decrypt_aes_docsisbpi")
+        self.verify(result, "Test failed")
+
+    def test_sw_decrypt_aes_docsisbpi(self):
+        if cc.is_test_skip(self):
+            return
+
+        eal_opt_str = cc.get_eal_opt_str(self)
+        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
+        result = self._run_crypto_perf_throughput(eal_opt_str,
+                                                  crypto_perf_opt_str,
+                                                  "sw_decrypt_aes_docsisbpi")
+        self.verify(result, "Test failed")
+
     def test_qat_kasumi(self):
         if cc.is_test_skip(self):
             return
