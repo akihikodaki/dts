@@ -94,7 +94,30 @@ class TestBonding8023AD(TestCase):
             err_fmt = "link bonding mode 4 (802.3ad) set {0} failed"
             self.verify(expected_msg in out, err_fmt.format(status))
 
+    def set_special_command(self, bond_port):
+        cmds = [
+            "set bonding lacp dedicated_queues {} enable".format(bond_port),
+            "set allmulti 0 on",
+            "set allmulti 1 on",
+            "set allmulti {} on".format(bond_port),
+            "set portlist {}".format(bond_port), ]
+        [self.bond_inst.d_console([cmd, 'testpmd>', 15]) for cmd in cmds]
+
     def set_8023ad_bonded(self, slaves, bond_mode, ignore=True):
+        ''' set 802.3ad bonded mode for the specified bonding mode '''
+        specified_socket = self.dut.get_numa_id(slaves[0])
+        # create bonded device, add slaves in it
+        bond_port = self.bond_inst.create_bonded_device(bond_mode, specified_socket)
+        if not ignore:
+            # when no slave attached, mac should be 00:00:00:00:00:00
+            self.bonding_8023ad_check_macs_without_slaves(bond_port)
+        # add slave
+        self.bond_inst.add_slave(bond_port, False, '', *slaves)
+        # set special command
+        self.set_special_command(bond_port)
+        return bond_port
+
+    def set_8023ad_bonded2(self, slaves, bond_mode, ignore=True):
         ''' set 802.3ad bonded mode for the specified bonding mode '''
         specified_socket = self.dut.get_numa_id(slaves[0])
         # create bonded device, add slaves in it
@@ -332,7 +355,7 @@ class TestBonding8023AD(TestCase):
         for mode in self.DEDICATED_QUEUES:
             try:
                 self.bond_inst.start_testpmd()
-                bond_port = self.set_8023ad_bonded(slaves, bond_mode)
+                bond_port = self.set_8023ad_bonded2(slaves, bond_mode)
                 self.set_8023ad_dedicated_queues(bond_port, mode)
             except Exception as e:
                 check_results.append(e); print(traceback.format_exc())
