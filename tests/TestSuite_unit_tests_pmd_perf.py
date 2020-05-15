@@ -35,7 +35,6 @@ DPDK Test suite.
 This TestSuite runs the unit tests included in DPDK for pmd performance.
 """
 
-import utils
 import re
 from test_case import TestCase
 
@@ -61,23 +60,11 @@ class TestUnitTestsPmdPerf(TestCase):
         """
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        [self.arch, machine, _, toolchain] = self.target.split('-')
+        self.arch = self.target.split('-')[0]
         self.verify(self.arch in ["x86_64", "arm64"], "pmd perf request running in x86_64 or arm64")
         self.burst_ctlmodes = ['poll_before_xmit', 'poll_after_xmit']
         self.rxtx_modes = ['vector', 'scalar', 'full', 'hybrid']
         self.anchors = ['rxtx', 'rxonly', 'txonly']
-
-        # for better scalar performance data, need disable CONFIG_RTE_IXGBE_INC_VECTOR
-        [arch, machine, _, toolchain] = self.target.split('-')
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=y/CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_base", "# ", 30)
-        self.dut.build_install_dpdk(self.target)
-        out = self.dut.build_dpdk_apps('./app/test/')
-        self.verify('make: Leaving directory' in out, "Compilation failed")
-        self.dut.send_expect("mv -f ./app/test/test ./app/test/test_scalar", "# ")
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=n/CONFIG_RTE_IXGBE_INC_VECTOR=y/' config/common_base", "# ", 30)
-        self.dut.build_install_dpdk(self.target)
-        out = self.dut.build_dpdk_apps('./app/test/')
-        self.verify('make: Leaving directory' in out, "Compilation failed")
         socket_id = self.dut.ports_info[0]['port'].socket
         self.cores = self.dut.get_core_list(config='1S/4C/1T', socket=socket_id)
 
@@ -93,7 +80,7 @@ class TestUnitTestsPmdPerf(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
-        self.dut.send_expect("./app/test/test %s" % (eal_params), "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -115,13 +102,8 @@ class TestUnitTestsPmdPerf(TestCase):
         self.result_table_create(self.table_header)
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
         print((self.table_header))
-
+        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
         for mode in self.rxtx_modes:
-            if mode is "scalar":
-                self.dut.send_expect("./app/test/test_scalar %s " % (eal_params), "R.*T.*E.*>.*>", 60)
-            else:
-                self.dut.send_expect("./app/test/test %s " % (eal_params), "R.*T.*E.*>.*>", 60)
-
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
             self.dut.send_expect("set_rxtx_mode %s" % mode, "RTE>>",10)
@@ -133,10 +115,8 @@ class TestUnitTestsPmdPerf(TestCase):
                 result = m.search(out)
                 self.verify(result, "Failed to get result")
                 table_row.append(result.group(1))
-
-            self.dut.send_expect("quit", "# ")
             self.result_table_add(table_row)
-
+        self.dut.send_expect("quit", "# ")
         self.result_table_print()
 
     def tear_down(self):
