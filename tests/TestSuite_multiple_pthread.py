@@ -196,9 +196,8 @@ class TestMultiplePthread(TestCase):
                       "cpu_list":[n[1], n[2], n[3], n[5]],
                       "core_list":n[1:6]}
                      ]
-        params_list = random.sample(test_list, 1)
-        params = params_list[0]
-        self.multiple_pthread_test(params["lcores"], params["cpu_list"], params["core_list"])
+        for params in test_list:
+            self.multiple_pthread_test(params["lcores"], params["cpu_list"], params["core_list"])
 
     def test_negative(self):
         """
