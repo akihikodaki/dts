@@ -99,78 +99,78 @@ class TestDdpL2tpv3(TestCase):
         pkt = []
         if keyword is not 'def':
             if keyword is "l2tpv3oipv4":
-                pkt.append("Ether()/IP(proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(proto=115)/Raw('\\x00\\x00\\x03\\fe9')")
+                pkt.append("Ether()/IP(proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(proto=115)/Raw(b'\\x00\\x00\\x03\\fe9')")
             if keyword is "l2tpv3oipv4_dst":
-                pkt.append("Ether()/IP(dst=\"8.8.8.8\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(dst=\"8.8.8.8\",proto=115)/Raw('\\x00\\x00\\x03\\xb9')")
-                pkt.append("Ether()/IP(dst=\"88.8.8.8\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(dst=\"8.8.8.8\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(dst=\"8.8.8.8\",proto=115)/Raw(b'\\x00\\x00\\x03\\xb9')")
+                pkt.append("Ether()/IP(dst=\"88.8.8.8\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oipv4_src":
-                pkt.append("Ether()/IP(src=\"1.1.1.1\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"1.1.1.1\",proto=115)/Raw('\\x00\\x00\\x03\\xa9')")
-                pkt.append("Ether()/IP(src=\"11.1.1.1\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"1.1.1.1\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"1.1.1.1\",proto=115)/Raw(b'\\x00\\x00\\x03\\xa9')")
+                pkt.append("Ether()/IP(src=\"11.1.1.1\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oipv4_src_dst":
-                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw('\\x00\\x00\\x03\\xf9')")
-                pkt.append("Ether()/IP(src=\"55.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"22.2.2.2\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IP(src=\"55.5.5.5\",dst=\"2.2.2.2\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"5.5.5.5\",dst=\"22.2.2.2\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oipv6":
-                pkt.append("Ether()/IPv6(nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(nh=115)/Raw('\\x00\\x00\\x03\\xc9')")
+                pkt.append("Ether()/IPv6(nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(nh=115)/Raw(b'\\x00\\x00\\x03\\xc9')")
             if keyword is "l2tpv3oipv6_dst":
-                pkt.append("Ether()/IPv6(dst=\"8:7:6:5:4:3:2:1\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(dst=\"8:7:6:5:4:3:2:1\",nh=115)/Raw('\\x00\\x00\\x03\\xd9')")
-                pkt.append("Ether()/IPv6(dst=\"8888:7:6:5:4:3:2:1\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(dst=\"8:7:6:5:4:3:2:1\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(dst=\"8:7:6:5:4:3:2:1\",nh=115)/Raw(b'\\x00\\x00\\x03\\xd9')")
+                pkt.append("Ether()/IPv6(dst=\"8888:7:6:5:4:3:2:1\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oipv6_src":
-                pkt.append("Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",nh=115)/Raw('\\x00\\x00\\x03\\xf9')")
-                pkt.append("Ether()/IPv6(src=\"1111:2:3:4:5:6:7:8\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",nh=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IPv6(src=\"1111:2:3:4:5:6:7:8\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oipv6_src_dst":
                 pkt.append(
-                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw('\\x00\\x00\\x03\\xf9')")
+                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"2222:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"2222:3:4:5:6:7:8:9\",dst=\"6:5:4:3:2:1:8:9\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6666:5:4:3:2:1:8:9\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"2:3:4:5:6:7:8:9\",dst=\"6666:5:4:3:2:1:8:9\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3_ipv4_ipv6":
-                pkt.append("Ether()/IP(proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(proto=115)/Raw('\\x00\\x00\\x03\\xf9')")
-                pkt.append("Ether()/IPv6(nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(nh=115)/Raw('\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IP(proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(proto=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IPv6(nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(nh=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
             if keyword is "l2tpv3oip_v4src_v6src":
-                pkt.append("Ether()/IP(src=\"1.3.5.7\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"1.3.5.7\",proto=115)/Raw('\\x00\\x00\\x03\\xa9')")
-                pkt.append("Ether()/IP(src=\"11.3.5.7\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(src=\"1:3:5:7:9:2:4:6\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(src=\"1:3:5:7:9:2:4:6\",nh=115)/Raw('\\x00\\x00\\x03\\xf9')")
-                pkt.append("Ether()/IPv6(src=\"1111:3:5:7:9:2:4:6\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"1.3.5.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"1.3.5.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xa9')")
+                pkt.append("Ether()/IP(src=\"11.3.5.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(src=\"1:3:5:7:9:2:4:6\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(src=\"1:3:5:7:9:2:4:6\",nh=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IPv6(src=\"1111:3:5:7:9:2:4:6\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oip_v4dst_v6dst":
-                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw('\\x00\\x00\\x03\\xb9')")
-                pkt.append("Ether()/IP(dst=\"99.7.5.3\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw('\\x00\\x00\\x03\\xd9')")
-                pkt.append("Ether()/IPv6(dst=\"2222:4:6:8:1:3:5:7\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw(b'\\x00\\x00\\x03\\xb9')")
+                pkt.append("Ether()/IP(dst=\"99.7.5.3\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw(b'\\x00\\x00\\x03\\xd9')")
+                pkt.append("Ether()/IPv6(dst=\"2222:4:6:8:1:3:5:7\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oip_v4srcdst_v6srcdst":
-                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw('\\x00\\x00\\x03\\xf9')")
-                pkt.append("Ether()/IP(src=\"99.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"44.5.6.7\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
+                pkt.append("Ether()/IP(src=\"99.8.7.6\",dst=\"4.5.6.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(src=\"9.8.7.6\",dst=\"44.5.6.7\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw('\\x00\\x00\\x03\\xf9')")
+                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw(b'\\x00\\x00\\x03\\xf9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"1111:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"1111:2:3:4:5:6:7:8\",dst=\"9:8:7:6:5:4:3:2\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
                 pkt.append(
-                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9999:8:7:6:5:4:3:2\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
+                    "Ether()/IPv6(src=\"1:2:3:4:5:6:7:8\",dst=\"9999:8:7:6:5:4:3:2\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
             if keyword is "l2tpv3oip_v4_v6_udp":
-                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw('\\x00\\x00\\x03\\xb9')")
-                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw('\\x00\\x00\\x03\\xe9')")
-                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw('\\x00\\x00\\x03\\xd9')")
+                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IP(dst=\"9.7.5.3\",proto=115)/Raw(b'\\x00\\x00\\x03\\xb9')")
+                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw(b'\\x00\\x00\\x03\\xe9')")
+                pkt.append("Ether()/IPv6(dst=\"2:4:6:8:1:3:5:7\",nh=115)/Raw(b'\\x00\\x00\\x03\\xd9')")
                 pkt.append("Ether()/IP()/UDP()")
         return pkt
 
@@ -209,7 +209,7 @@ class TestDdpL2tpv3(TestCase):
         qdef = []
         qnum = self.send_and_verify(keyword)
         for i in range(len(qnum)):
-            self.verify(qnum[i] == 0, "Receive packet from wrong queue!!!")
+            self.verify(qnum[i] == 0, "Receive packet from wrong queue{}!!!".format(qnum[i]))
 
         queue = random.randint(1, self.PF_QUEUE - 1)
 
@@ -356,7 +356,7 @@ class TestDdpL2tpv3(TestCase):
 
         qnum = self.send_and_verify(keyword)
         for i in range(len(qdef)):
-            self.verify(qdef[i] == qnum[i], "Receive packet from wrong queue!!!")
+            self.verify(qdef[i] == qnum[i], "Receive packet from wrong queue{}_{}!!!".format(qdef[i],qnum[i]))
         self.dut_testpmd.execute_cmd("flow flush 0")  # Delete all the flow director rules
 
     def test_l2tpv3oipv4(self):
