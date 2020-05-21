@@ -357,7 +357,7 @@ class TestFloatingVEBSwitching(TestCase):
         """
         self.setup_env(driver=self.drivername, vf_num=4)
         # start PF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 \"-w %s,enable_floating_veb=1,floating_veb_list=0;2-3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;2-3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
         self.dut.send_expect("port start all", "testpmd>")
         time.sleep(2)
         # VF1->VF0
@@ -486,7 +486,7 @@ class TestFloatingVEBSwitching(TestCase):
         """
         self.setup_env(driver=self.drivername, vf_num=4)
         # VF0->PF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 \"-w %s,enable_floating_veb=1,floating_veb_list=0;3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
