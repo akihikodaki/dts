@@ -171,6 +171,34 @@ Perform the test with external-mbufs option and dynamic huffman-enc.
 
 Test all the file types in calgary corpus, all files should pass the test.
 
+Test Case: Compressdev QAT PMD im buffer split op fixed function test
+-------------------------------------------------------------------------
+Run Compressdev qat pmd test with below sample commands::
+
+    ./app/dpdk-test-compress-perf  -w qat_device_bus_id -l 4 \
+    -- --driver-name compress_qat --input-file file_name \
+    --compress-level level --num-iter number --seg-sz segsize \
+    --max-num-sgl-segs seg --extended-input-sz size \
+    --huffman-enc fixed
+
+Perform the test with extended-input-sz, max-num-sgl-segs option and fixed huffman-enc.
+
+Test all the file types in calgary corpus, all files should pass the test.
+
+Test Case: Compressdev QAT PMD im buffer split op dynamic function test
+--------------------------------------------------------------------------
+Run Compressdev qat pmd test with below sample commands::
+
+    ./app/dpdk-test-compress-perf  -w qat_device_bus_id -l 4 \
+    -- --driver-name compress_qat --input-file file_name \
+    --compress-level level --num-iter number --seg-sz segsize \
+    --max-num-sgl-segs seg --extended-input-sz size \
+    --huffman-enc dynamic
+
+Perform the test with extended-input-sz, max-num-sgl-segs option and dynamic huffman-enc.
+
+Test all the file types in calgary corpus, all files should pass the test.
+
 Test Case: Compressdev QAT PMD fixed performance test
 --------------------------------------------------------------------------
 Run Compressdev qat pmd test with below sample commands::
