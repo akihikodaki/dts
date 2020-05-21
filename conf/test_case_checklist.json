@@ -3409,5 +3409,21 @@
             "Bug ID": "",
             "Comments": "NIC not support this case"
         }
+    ],
+    "port_detach_attach_for_vhost_user_virtio_user": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "ALL"
+            ],
+            "Target": [
+                "i686-native-linuxapp-gcc",
+                "i686-native-linuxapp-icc"
+            ],
+            "Bug ID": "",
+            "Comments": "32 bites not support this case(memoory not enough)."
+        }
     ]
 }
