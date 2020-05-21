@@ -1210,7 +1210,11 @@ class TestKni(TestCase):
         """
         Run after each test case.
         """
-        pass
+        if self._suite_result.test_case == "test_ping":
+            for port in self.config['ports']:
+                tx_port = self.tester.get_local_port(port)
+                tx_interface = self.tester.get_interface(tx_port)
+                self.tester.send_expect("ip addr flush %s" % tx_interface, "# ")
 
     def tear_down_all(self):
         """
