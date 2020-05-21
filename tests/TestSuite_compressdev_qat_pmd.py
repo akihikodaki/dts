@@ -123,6 +123,18 @@ class TestCompressdevQatPmd(TestCase):
             "seg-sz": 2048, "external-mbufs": '', "extended-input-sz": 300000})
         result = cc.run_compress_func(self)
 
+    def test_qat_pmd_im_fixed_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "fixed", "seg-sz": 59460,
+            "max-num-sgl-segs": 54, "extended-input-sz": 3251493})
+        result = cc.run_compress_func(self)
+
+    def test_qat_pmd_im_dynamic_func(self):
+        cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
+        cc.default_opts.update({"huffman-enc": "dynamic", "seg-sz": 59460,
+            "max-num-sgl-segs": 54, "extended-input-sz": 3251493})
+        result = cc.run_compress_func(self)
+
     def test_qat_pmd_fixed_perf(self):
         cc.default_eals['w'] = ' -w '.join(self.get_perf_default_device())
         cc.default_opts.update({"huffman-enc": "fixed", "extended-input-sz": 3244032,
