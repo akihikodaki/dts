@@ -35,7 +35,20 @@ import re
 from utils import GREEN, RED
 
 # switch filter common functions
-def get_packet_number(out,match_string):
+def get_suite_config(test_case):
+    """
+    get the suite config from conf/cvl_dcf_switch_filter.cfg.
+    """
+    suite_config = {}
+    if "ice_driver_file_location" in test_case.get_suite_cfg():
+        ice_driver_file_location = test_case.get_suite_cfg()["ice_driver_file_location"]
+        suite_config["ice_driver_file_location"] = ice_driver_file_location
+    if "os_default_package_file_location" in test_case.get_suite_cfg():
+        os_default_package_file_location = test_case.get_suite_cfg()["os_default_package_file_location"]
+        suite_config["os_default_package_file_location"] = os_default_package_file_location
+    return suite_config
+
+def get_rx_packet_number(out,match_string):
     """
     get the rx packets number.
     """
@@ -55,7 +68,7 @@ def get_port_rx_packets_number(out,port_num):
     get the port rx packets number.
     """
     match_string="---------------------- Forward statistics for port %d" % port_num
-    pkt_num = get_packet_number(out,match_string)
+    pkt_num = get_rx_packet_number(out,match_string)
     return pkt_num
 
 def get_queue_rx_packets_number(out, port_num, queue_id):
@@ -63,7 +76,7 @@ def get_queue_rx_packets_number(out, port_num, queue_id):
     get the queue rx packets number.
     """
     match_string="------- Forward Stats for RX Port= %d/Queue= %d" % (port_num, queue_id)
-    pkt_num = get_packet_number(out,match_string)
+    pkt_num = get_rx_packet_number(out,match_string)
     return pkt_num
 
 def check_output_log_in_queue(out, func_param, expect_results):
@@ -195,14 +208,89 @@ def check_output_log_drop_mismatched(out, func_param, expect_results):
         log_msg = "drop mismatched: port %d receive %d packets, should receive %d packet" % (expect_port, pkt_num, expect_pkts)
         return False, log_msg
 
+def check_vf_rx_packets_number(out, func_param, expect_results, need_verify=True):
+    """
+    check the vf receives the correct number packets
+    """
+    expect_port = func_param["expect_port"]
+    expect_pkts = expect_results["expect_pkts"]
+
+    if isinstance(expect_port, list):
+        results = []
+        for i in range(0,len(expect_port)):
+            pkt_num = get_port_rx_packets_number(out, expect_port[i])
+            results.append(pkt_num)
+        if need_verify:
+            verify(results == expect_pkts, "failed: packets number not correct. expect %s, result %s" % (expect_pkts, results))
+        else:
+            return results
+    else:
+        pkt_num = get_port_rx_packets_number(out, expect_port)
+        if need_verify:
+            verify(pkt_num == expect_pkts, "failed: packets number not correct. expect %s, result %s" % (expect_pkts, pkt_num))
+        else:
+            return pkt_num
+
+def check_vf_rx_tx_packets_number(out, rx_func_param, rx_expect_results, tx_func_param, tx_expect_results):
+    """
+    check the vf receives and forwards the correct number packets
+    """
+    rx_expect_port = rx_func_param["expect_port"]
+    rx_expect_pkts = rx_expect_results["expect_pkts"]
+    tx_expect_port = tx_func_param["expect_port"]
+    tx_expect_pkts = tx_expect_results["expect_pkts"]
+
+    #check port receives and forwards the correct number packets
+    if isinstance(rx_expect_port, list):
+        results_rx_packets = []
+        results_tx_packets = []
+        for i in range(0,len(rx_expect_port)):
+            p = re.compile(
+                'Forward\sstatistics\s+for\s+port\s+%d\s+.*\n.*RX-packets:\s(\d+)\s+RX-dropped:\s\d+\s+RX-total:\s\d+\s+.*\n.*TX-packets:\s(\d+)\s+TX-dropped:\s\d+\s+' % rx_expect_port[i])
+            pkt_li = p.findall(out)
+            results = list(map(int, list(pkt_li[0])))
+            results_rx_packets.append(results[0])
+            results_tx_packets.append(results[1])
+        verify(results_rx_packets == rx_expect_pkts and results_tx_packets == tx_expect_pkts, "failed: packets number not correct. expect_rx %s, result_rx %s, expect_tx %s, results_tx %s" % (rx_expect_pkts, results_rx_packets, tx_expect_pkts, results_tx_packets))
+    else:
+        p = re.compile(
+                'Forward\sstatistics\s+for\s+port\s+%d\s+.*\n.*RX-packets:\s(\d+)\s+RX-dropped:\s\d+\s+RX-total:\s\d+\s+.*\n.*TX-packets:\s(\d+)\s+TX-dropped:\s\d+\s+' % rx_expect_port)
+        pkt_li = p.findall(out)
+        results = list(map(int, list(pkt_li[0])))
+        verify(results[0] == rx_expect_pkts and results[1] == tx_expect_pkts, "failed: packets number not correct. expect_rx %s, result_rx %s, expect_tx %s, result_tx %s" % (rx_expect_pkts, results[0], tx_expect_pkts, results[1]))
+
+    #check no packets are dropped for all ports
+    p = re.compile(
+                'Accumulated\sforward\sstatistics\s+for\s+all\s+ports.*\n.*RX-packets:\s\d+\s+RX-dropped:\s\d+\s+RX-total:\s\d+\s+.*\n.*TX-packets:\s\d+\s+TX-dropped:\s(\d+)\s+')
+    pkt_li = p.findall(out)
+    results_dropped = int(pkt_li[0])
+    verify(results_dropped == 0, "failed: dropped packets should be 0.")
+
+def check_kernel_vf_rx_packets_number(out_vfs, expect_results):
+    """
+    check the kernel vf receives the correct number packets by command ifconfig
+    """
+    p = re.compile(r"RX\s+packets\s?(\d+)")
+    results = []
+    for out in out_vfs:
+        m = p.search(out)
+        if m:
+            pkt_num = int(m.group(1))
+            results.append(pkt_num)
+        else:
+            results.append(False)
+    verify(results == expect_results, "failed: packets number not correct. expect %s, result %s" % (expect_results, results))
+
 def check_rule_in_list_by_id(out, rule_num, only_last=True):
     """
     check if the rule with ID "rule_num" is in list, after
     executing the command "flow list 0".
     """
-    out_lines=out.splitlines()
-    if len(out_lines) == 1:
+    p = re.compile(r"ID\s+Group\s+Prio\s+Attr\s+Rule")
+    m = p.search(out)
+    if not m:
         return False
+    out_lines=out.splitlines()
     if only_last:
         last_rule = out_lines[len(out_lines)-1]
         last_rule_list = last_rule.split('\t')
