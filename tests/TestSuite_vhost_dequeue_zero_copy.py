@@ -363,7 +363,7 @@ class TestVhostDequeueZeroCopy(TestCase):
             value_without_zero_copy = self.big_pkt_record['dequeue-zero-copy=0']
         self.verify(value_with_zero_copy != 0 and value_without_zero_copy != 0,
                 'can not get the value of big pkts, please check self.frame_sizes')
-        self.verify(value_with_zero_copy - value_without_zero_copy >= value_with_zero_copy*0.1,
+        self.verify(value_with_zero_copy - value_without_zero_copy >= value_with_zero_copy*0.05,
                 'the drop with dequeue-zero-copy=0 is not as expected')
 
     def close_all_testpmd_and_vm(self):
@@ -447,7 +447,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.nb_cores = 4
         self.queue_number = 16
         self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
-                    vhost_client_mode=True, vm_testpmd_fwd_mode='rxonly', packed_mode=False)
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='rxonly', packed_mode=False)
         self.send_and_verify_throughput(cycle="before relaunch", fwd_mode="rxonly")
 
         # relaunch testpmd at virtio side in VM for driver reloading
@@ -462,7 +462,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.nb_cores = 4
         self.queue_number = 16
         self.prepare_test_evn(vhost_txfreet_mode='normal', vhost_zero_copy=True,
-                    vhost_client_mode=True, vm_testpmd_fwd_mode='rxonly', packed_mode=True)
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='rxonly', packed_mode=True)
         self.send_and_verify_throughput(cycle="before relaunch", fwd_mode="rxonly")
 
         # relaunch testpmd at virtio side in VM for driver reloading
@@ -477,7 +477,7 @@ class TestVhostDequeueZeroCopy(TestCase):
         self.nb_cores = 4
         self.queue_number = 16
         self.prepare_test_evn(vhost_txfreet_mode='maximum', vhost_zero_copy=True,
-                    vhost_client_mode=True, vm_testpmd_fwd_mode='mac', packed_mode=False)
+                    vhost_client_mode=False, vm_testpmd_fwd_mode='mac', packed_mode=False)
         self.send_and_verify_throughput(cycle='dequeue-zero-copy=1')
         self.result_table_print()
 
