@@ -168,6 +168,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vm_power_manager_test_plan
     vm_pw_mgmt_policy_test_plan
     power_bidirection_channel_test_plan
+    power_branch_ratio_test_plan
     power_empty_poll_test_plan
     power_pbf_test_plan
     power_pstate_test_plan
