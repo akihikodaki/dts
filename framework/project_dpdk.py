@@ -107,7 +107,10 @@ class DPDKdut(Dut):
             self.send_expect("modprobe vfio", "#", 70)
             self.send_expect("modprobe vfio-pci", "#", 70)
             out = self.send_expect("lsmod | grep vfio_iommu_type1", "#")
-            assert ("vfio_iommu_type1" in out), "Failed to setup vfio-pci"
+            if not out:
+                out = self.send_expect("ls /sys/module |grep vfio_pci", "#")
+            assert ("vfio_pci" in out), "Failed to insmod vfio_pci"
+
 
             if drivermode == "noiommu":
                 self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
