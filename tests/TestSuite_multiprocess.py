@@ -59,7 +59,8 @@ class TestMultiprocess(TestCase):
 
         self.verify(len(self.dut.get_all_cores()) >= 4, "Not enough Cores")
         self.tester.extend_external_packet_generator(TestMultiprocess, self)
-
+        self.dut_ports = self.dut.get_ports()
+        self.socket = self.dut.get_numa_id(self.dut_ports[0])
         out = self.dut.build_dpdk_apps("./examples/multi_process/")
         self.verify('Error' not in out, "Compilation failed")
 
@@ -94,7 +95,7 @@ class TestMultiprocess(TestCase):
         Basic operation.
         """
         # Send message from secondary to primary
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask),
                              "Finished Process Init", 100)
@@ -110,7 +111,7 @@ class TestMultiprocess(TestCase):
         self.dut.send_expect("quit", "# ")
         self.verify("Received 'hello_primary'" in out, "Message not received on primary process")
         # Send message from primary to secondary
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.session_secondary.send_expect(
             "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary " % (self.target, coremask), "Finished Process Init", 100)
@@ -131,7 +132,7 @@ class TestMultiprocess(TestCase):
         Load test of Simple MP application.
         """
 
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask),
                                            "Finished Process Init", 100)
@@ -157,7 +158,7 @@ class TestMultiprocess(TestCase):
         """
 
         # Send message from secondary to primary (auto process type)
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto " % (self.target, coremask),
                                    "Finished Process Init", 100)
@@ -176,7 +177,7 @@ class TestMultiprocess(TestCase):
         self.verify("Received 'hello_primary'" in out, "Message not received on primary process")
 
         # Send message from primary to secondary (auto process type)
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         out = self.session_secondary.send_expect(
             "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
@@ -199,7 +200,7 @@ class TestMultiprocess(TestCase):
         Multiple processes without "--proc-type" flag.
         """
 
-        cores = self.dut.get_core_list('1S/2C/1T')
+        cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s -m 64" % (self.target, coremask),
                                            "Finished Process Init", 100)
@@ -217,11 +218,10 @@ class TestMultiprocess(TestCase):
         # """
         packet_count = 16
         self.dut.send_expect("fg", "# ")
-        dutPorts = self.dut.get_ports()
-        txPort = self.tester.get_local_port(dutPorts[0])
-        rxPort = self.tester.get_local_port(dutPorts[1])
+        txPort = self.tester.get_local_port(self.dut_ports[0])
+        rxPort = self.tester.get_local_port(self.dut_ports[1])
         mac = self.tester.get_mac(txPort)
-        dmac = self.dut.get_mac_address(dutPorts[0])
+        dmac = self.dut.get_mac_address(self.dut_ports[0])
         tgenInput = []
 
         # create mutative src_ip+dst_ip package
@@ -239,11 +239,11 @@ class TestMultiprocess(TestCase):
             if len(self.dut.get_core_list(execution['cores'])) == execution['nprocs']:
                 validExecutions.append(execution)
 
-        portMask = utils.create_mask([dutPorts[0], dutPorts[1]])
+        portMask = utils.create_mask(self.dut_ports)
 
         for n in range(len(validExecutions)):
             execution = validExecutions[n]
-            coreMask = utils.create_mask(self.dut.get_core_list(execution['cores']))
+            coreMask = utils.create_mask(self.dut.get_core_list(execution['cores'], socket=self.socket))
             self.session_secondary.send_expect(
                 "./examples/multi_process/symmetric_mp/%s/symmetric_mp -c %s --proc-type=auto -- -p %s --num-procs=%d --proc-id=%d" % (
                     self.target, coreMask, portMask, execution['nprocs'], n), "Finished Process Init")
@@ -276,12 +276,11 @@ class TestMultiprocess(TestCase):
         """
         self.dut.kill_all()
         self.dut.send_expect("fg", "# ")
-        dutPorts = self.dut.get_ports()
-        txPort = self.tester.get_local_port(dutPorts[0])
-        rxPort = self.tester.get_local_port(dutPorts[1])
+        txPort = self.tester.get_local_port(self.dut_ports[0])
+        rxPort = self.tester.get_local_port(self.dut_ports[1])
         mac = self.tester.get_mac(txPort)
 
-        self.tester.scapy_append('dmac="%s"' % self.dut.get_mac_address(dutPorts[0]))
+        self.tester.scapy_append('dmac="%s"' % self.dut.get_mac_address(self.dut_ports[0]))
         self.tester.scapy_append('smac="%s"' % mac)
         self.tester.scapy_append('flows = [Ether(src=smac, dst=dmac)/IP(src="192.168.1.1", dst="192.168.1.1")/("X"*26)]')
 
@@ -295,10 +294,10 @@ class TestMultiprocess(TestCase):
                 validExecutions.append(execution)
 
         for execution in validExecutions:
-            coreList = self.dut.get_core_list(execution['cores'])
+            coreList = self.dut.get_core_list(execution['cores'], socket=self.socket)
 
             coreMask = utils.create_mask(self.dut.get_core_list('1S/1C/1T'))
-            portMask = utils.create_mask([dutPorts[0], dutPorts[1]])
+            portMask = utils.create_mask(self.dut_ports)
             self.dut.send_expect("./examples/multi_process/client_server_mp/mp_server/%s/mp_server -n %d -c %s -- -p %s -n %d" % (
                 self.target, self.dut.get_memory_channels(), "0xA0", portMask, execution['nprocs']), "Finished Process Init", 20)
             self.dut.send_expect("^Z", "\r\n")
