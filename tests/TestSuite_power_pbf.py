@@ -367,6 +367,9 @@ class TestPowerPbf(TestCase):
         pat_begin = (
             'POWER: power_set_governor_performance: Power management '
             'governor of lcore (\\d+) is already performance')
+        pat_begin2 = (
+            'Power management governor of lcore (\d+) '
+            'has been set to performance successfully')
         pat_end = \
             'POWER: Initialized successfully for lcore (\\d+) power management'
         pat_freq = (
@@ -378,8 +381,12 @@ class TestPowerPbf(TestCase):
         for line in output.splitlines():
             # if core output begin message
             result = re.findall(pat_begin, line)
-            if result:
-                core_id = int(result[0])
+            result2 = re.findall(pat_begin2, line)
+            if result or result2:
+                if result:
+                    core_id = int(result[0])
+                elif result2:
+                    core_id = int(result2[0])
                 flag = True
             if flag:
                 result = re.findall(pat_freq, line)
