@@ -408,10 +408,15 @@ class TestKernelpfIavf(TestCase):
         self.verify(len(receive_pkt) == 1, "tester received wrong vlan packet!!!")
 
         # remove vlan
+        self.vm_testpmd.execute_cmd("stop")
+        self.vm_testpmd.execute_cmd("port stop all")
         self.dut.send_expect("ip link set %s vf 0 vlan 0" % self.host_intf, "# ")
         out = self.dut.send_expect("ip link show %s" % self.host_intf, "# ")
         self.verify("vlan %d" % random_vlan not in out, "Failed to remove pvid on VF0")
         # send packet without vlan
+        self.vm_testpmd.execute_cmd("port reset 0")
+        self.vm_testpmd.execute_cmd("port start all")
+        self.vm_testpmd.execute_cmd("start")
         out = self.send_and_getout(vlan=0, pkt_type="UDP")
         self.verify(self.vf_mac in out, "Not received packet without vlan!!!")
 
