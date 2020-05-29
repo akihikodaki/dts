@@ -473,7 +473,7 @@ class TestVmPwMgmtPolicy(TestCase):
         date_tool = "date"
         cmd = ';'.join([
             "{0}",
-            "{0} -s '{1}'",
+            "{0} -s \'{1}\'",
             "hwclock -w"]).format(date_tool, timestamp)
         self.d_a_con([cmd, '# ', 20])
         cmd = "{0} '+%H:00'".format(date_tool)
@@ -494,11 +494,11 @@ class TestVmPwMgmtPolicy(TestCase):
         cur_time = datetime.now()
         interval = (cur_time - pre_time).seconds
         timestamp = ori_sys_time + timedelta(seconds=interval)
-        FMT = '%Y-%m-%d %H:%M:%S'
+        FMT = '\'%Y-%m-%d %H:%M:%S\''
         real_time = timestamp.strftime(FMT)
         cmd = ';'.join([
             "{0}",
-            "{0} -s '{1}'",
+            "{0} -s \'{1}\'",
             "hwclock -w",
             "{0}", ]).format(date_tool, real_time)
         self.d_a_con([cmd, '# ', 20])
