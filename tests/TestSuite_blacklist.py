@@ -49,7 +49,7 @@ class TestBlackList(TestCase):
         self.ports = self.dut.get_ports(self.nic)
         self.verify(len(self.ports) >= 2, "Insufficient ports for testing")
         [arch, machine, self.env, toolchain] = self.target.split('-')
-        self.regexp_blacklisted_port = "Probe PCI driver: net_%s \(%s\) device: %s \(socket [-0-9]+\)"
+        self.regexp_blacklisted_port = "Probe PCI driver: net.*%s \(%s\) device: .*%s \(socket [-0-9]+\)"
         self.pmdout = PmdOutput(self.dut)
 
     def set_up(self):
@@ -71,8 +71,6 @@ class TestBlackList(TestCase):
             # "Device is blacklisted, not initializing" but avoid to consume more
             # than one device.
             port_pci = self.dut.ports_info[port]['pci']
-            if self.env == "bsdapp":
-                port_pci = ':'.join(["0000", port_pci])
             regexp_blacklisted_port = self.regexp_blacklisted_port % (
                 DRIVERS.get(self.nic), self.dut.ports_info[port]['type'],
                 port_pci)
