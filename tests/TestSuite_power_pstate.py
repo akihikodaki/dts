@@ -316,7 +316,7 @@ class TestPowerPstate(TestCase):
         try:
             self.start_vm_power_mgr()
             # select one core to run testing
-            core_index = 1
+            core_index = self.test_content.get('check_core') or 20
             # Enable turbo Boost for this core
             self.send_json_command(core_index, 'ENABLE_TURBO')
             # these test items sequence can't changed
@@ -359,6 +359,7 @@ class TestPowerPstate(TestCase):
         self.verify_power_driver()
         self.verify_hyper_threading()
         self.init_test_binary_file()
+        self.test_content = self.get_suite_cfg()
 
     def set_up(self):
         """
