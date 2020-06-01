@@ -153,8 +153,24 @@ Pattern and input set
   +---------------------+-------------------------------+-------------------------------------------+
   |    VLAN filter      | VLAN filter                   | [VLAN]                                    |
   +---------------------+-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV4_L2TPv3               | [Source IP], [Dest IP], [Session_id]      |
+  |        L2TPv3       +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV6_L2TPv3               | [Source IP], [Dest IP], [Session_id]      |
+  +---------------------+-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV4_ESP                  | [Source IP], [Dest IP], [SPI]             |
+  |                     +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV6_ESP                  | [Source IP], [Dest IP], [SPI]             |
+  |                     +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV4_AH                   | [Source IP], [Dest IP], [SPI]             |
+  |         ESP         +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV6_AH                   | [Source IP], [Dest IP], [SPI]             |
+  |                     +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV4_NAT-T-ESP            | [Source IP], [Dest IP], [SPI]             |
+  |                     +-------------------------------+-------------------------------------------+
+  |                     | MAC_IPV6_NAT-T-ESP            | [Source IP], [Dest IP], [SPI]             |
+  +---------------------+-------------------------------+-------------------------------------------+
 
-
+  
 Supported function type
 -----------------------
 
@@ -1755,6 +1771,262 @@ Test case: VLAN filter
    send matched packets, check the packets are not to port 1.
 
 
+Test case: MAC_IPV4_L2TPv3
+==========================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst='00:11:22:33:44:12')/IP(src='192.168.0.2', proto=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst='00:11:22:33:44:12')/IP(src='192.168.0.2', proto=115)/L2TP('\x00\x00\x00\x02')/('X'*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst='00:11:22:33:44:12')/IP(src='192.168.1.2', proto=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst='00:11:22:33:44:12')/IP(dst='192.168.0.2', proto=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV6_L2TPv3
+==========================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\x00\x00\x00\x02')/('X'*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:9999', nh=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst='00:11:22:33:44:13')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\x00\x00\x00\x01')/('X'*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV4_ESP
+=======================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=50)/ESP(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.1.2", proto=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV6_ESP
+=======================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999", nh=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV4_AH
+======================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=51)/AH(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.1.2", proto=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2", proto=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV6_AH
+======================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999", nh=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+   
+Test case: MAC_IPV4_NAT-T-ESP
+=============================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2")/UDP(dport=4500)/ESP(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(src="192.168.1.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
+Test case: MAC_IPV6_NAT-T-ESP
+=============================
+
+1. create a rule::
+
+     testpmd> flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 1 / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+     sendp([Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=1)/("X"*480)], iface="enp27s0f0", count=1)
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets, check the packets are not to port 1.
+
+
 Test case: negative cases
 =========================
 
@@ -1831,7 +2103,7 @@ Subcase 4: unsupported pattern in os default, but supported in comms
 
    check the rule not exists in the list.
 
-5. repeat step 2-5 with also not supported pattern MAC_IPV4_PFCP_NODE, get the same result.
+5. repeat step 2-5 with also not supported pattern MAC_IPV4_PFCP_NODE/MAC_IPV4_L2TPv3/MAC_IPV4_ESP, get the same result.
 
 Subcase 5: unsupported input set
 --------------------------------
