@@ -56,6 +56,7 @@ from Dot1BR import Dot1BR
 from nsh import NSH
 from mpls import MPLS
 from igmp import IGMP
+from pfcp import PFCP
 
 from utils import convert_ip2int
 from utils import convert_int2ip

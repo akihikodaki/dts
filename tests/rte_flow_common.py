@@ -37,7 +37,7 @@ from utils import GREEN, RED
 # switch filter common functions
 def get_suite_config(test_case):
     """
-    get the suite config from conf/cvl_dcf_switch_filter.cfg.
+    get the suite config from conf/suite.cfg.
     """
     suite_config = {}
     if "ice_driver_file_location" in test_case.get_suite_cfg():
@@ -46,6 +46,12 @@ def get_suite_config(test_case):
     if "os_default_package_file_location" in test_case.get_suite_cfg():
         os_default_package_file_location = test_case.get_suite_cfg()["os_default_package_file_location"]
         suite_config["os_default_package_file_location"] = os_default_package_file_location
+    if "comms_package_file_location" in test_case.get_suite_cfg():
+        comms_package_file_location = test_case.get_suite_cfg()["comms_package_file_location"]
+        suite_config["comms_package_file_location"] = comms_package_file_location
+    if "package_file_location" in test_case.get_suite_cfg():
+        package_file_location = test_case.get_suite_cfg()["package_file_location"]
+        suite_config["package_file_location"] = package_file_location
     return suite_config
 
 def get_rx_packet_number(out,match_string):
@@ -386,6 +392,94 @@ def check_mark(out, pkt_num, check_param, stats=True):
             check_queue(out[1], pkt_num, check_param, stats)
         else:
             check_drop(out[1], pkt_num, check_param, stats)
+        verify(not res, "should has no mark_id in %s" % res)
+
+# IAVF fdir common functions
+def check_iavf_fdir_queue(out, pkt_num, check_param, stats=True):
+    port_id = check_param["port_id"] if check_param.get("port_id") is not None else 0
+    queue = check_param["queue"]
+    p = re.compile(
+        r"Forward Stats for RX Port=\s?%s/Queue=(\s?\d+)\s.*\n.*RX-packets:(\s?\d+)\s+TX-packets" % port_id)
+    res = p.findall(out)
+    if res:
+        res_queue = [int(i[0]) for i in res]
+        pkt_li = [int(i[1]) for i in res]
+        res_num = sum(pkt_li)
+        verify(res_num == pkt_num, "fail: got wrong number of packets, expect pakcet number %s, got %s." % (pkt_num, res_num))
+        if stats:
+            if isinstance(queue, int):
+                verify(all(q == queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
+                print((GREEN("pass: queue id %s matched" % res_queue)))
+            elif isinstance(queue, list):
+                verify(all(q in queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
+                print((GREEN("pass: queue id %s matched" % res_queue)))
+            else:
+                raise Exception("wrong queue value, expect int or list")
+        else:
+            if isinstance(queue, int):
+                verify(not any(q == queue for q in res_queue), "fail: queue id should not matched, expect queue %s, got %s" % (queue, res_queue))
+                print((GREEN("pass: queue id %s not matched" % res_queue)))
+            elif isinstance(queue, list):
+                verify_iavf_fdir_directed_by_rss(out, rxq=16, stats=True)
+                print((GREEN("pass: queue id %s not matched" % res_queue)))
+            else:
+                raise Exception("wrong action value, expect queue_index or queue_group")
+    else:
+        raise Exception("got wrong output, not match pattern %s" % p.pattern)
+
+def verify_iavf_fdir_directed_by_rss(out, rxq=16, stats=True):
+    p = re.compile("RSS hash=(0x\w+) - RSS queue=(0x\w+)")
+    pkt_info = p.findall(out)
+    if stats:
+        for i in pkt_info:
+            verify((int(i[0],16) % rxq == int(i[1],16)), "some packets are not directed by RSS")
+            print(GREEN("pass: queue id %s is redirected by RSS hash value %s" % (i[1], i[0])))
+    else:
+        for i in pkt_info:
+            verify((int(i[0],16) % rxq != int(i[1],16)), "some packets are not directed by RSS")
+
+def check_iavf_fdir_passthru(out, pkt_num, check_param, stats=True):
+    # check the actual queue is distributed by RSS
+    port_id = check_param["port_id"] if check_param.get("port_id") is not None else 0
+    p = re.compile('port\s*%s/queue\s?[0-9]+' % port_id)
+    pkt_li = p.findall(out)
+    verify(pkt_num == len(pkt_li), "fail: got wrong number of packets, expect pakcet number %s, got %s." % (pkt_num, len(pkt_li)))
+    p = re.compile('RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)')
+    pkt_hash = p.findall(out)
+    verify(pkt_num == len(pkt_hash), "fail: got wrong number of passthru packets, expect passthru packet number %s, got %s." % (pkt_num, len(pkt_hash)))
+    verify_iavf_fdir_directed_by_rss(out, rxq=16, stats=True)
+
+def check_iavf_fdir_mark(out, pkt_num, check_param, stats=True):
+    mark_scanner = "FDIR matched ID=(0x\w+)"
+    res = re.findall(mark_scanner, out)
+    print(out)
+    if stats:
+        if check_param.get("drop") is not None:
+            check_drop(out, pkt_num, check_param, stats)
+            verify(not res, "should has no mark_id in %s" % res)
+        elif check_param.get("mark_id") is not None:
+            mark_list = [i for i in res]
+            print("mark list is: ", mark_list)
+            verify(len(res) == pkt_num, "get wrong number of packet with mark_id")
+            verify(all([int(i, 16) == check_param["mark_id"] for i in res]),
+                        "failed: some packet mark id of %s not match" % mark_list)
+            if check_param.get("queue") is not None:
+                check_iavf_fdir_queue(out, pkt_num, check_param, stats)
+            elif check_param.get("passthru") is not None:
+                check_iavf_fdir_passthru(out, pkt_num, check_param, stats)
+        else:
+            if check_param.get("queue") is not None:
+                check_iavf_fdir_queue(out, pkt_num, check_param, stats)
+            elif check_param.get("passthru") is not None:
+                check_iavf_fdir_passthru(out, pkt_num, check_param, stats)
+            verify(not res, "should has no mark_id in %s" % res)
+    else:
+        if check_param.get("queue") is not None:
+            check_iavf_fdir_queue(out, pkt_num, check_param, stats)
+        elif check_param.get("drop") is not None:
+            check_drop(out, pkt_num, check_param, stats)
+        elif check_param.get("passthru") is not None:
+            check_iavf_fdir_passthru(out, pkt_num, check_param, stats)
         verify(not res, "should has no mark_id in %s" % res)
 
 # rss common functions
