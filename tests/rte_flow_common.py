@@ -567,3 +567,69 @@ def find_queueid_rxpackets_list(id, q_rx_list):
         if (int(item[0]) == id):
             return int(item[1])
     return 0
+
+def check_iavf_packets_rss_queue(out, count, rss_match=True):
+    """
+    check each queue has receive packets
+    """
+    out = out.split("Forward statistics for port 0")[0]
+    lines = out.split("\r\n")
+    queue_flag = 0
+    packet_sumnum = 0
+
+    for line in lines:
+        line = line.strip()
+        if "Forward Stats" in line.strip():
+            result_scanner = r"RX Port= \d+/Queue=\s?([0-9]+)"
+            scanner = re.compile(result_scanner, re.DOTALL)
+            m = scanner.search(line)
+            queue_num = m.group(1)
+            if queue_num is not None:
+                queue_flag = queue_flag + 1
+
+        elif line.strip().startswith("RX-packets"):
+            result_scanner = r"RX-packets:\s?([0-9]+)"
+            scanner = re.compile(result_scanner, re.DOTALL)
+            m = scanner.search(line)
+            packet_num = m.group(1)
+            if len(packet_num) != 0:
+                packet_sumnum = packet_sumnum + int(packet_num)
+
+    if rss_match:
+        if queue_flag >= 10 and packet_sumnum == count:
+            log_msg = "Packets has send to %s queues" % queue_flag
+            return True, log_msg
+        else:
+            log_msg = "Packets not send to different queues"
+            return False, log_msg
+    else:
+        if queue_flag == 1 and packet_sumnum == count:
+            log_msg = "Packets not match rule"
+            return True, log_msg
+        else:
+            log_msg = "Packets send to different queues"
+            return False, log_msg
+
+
+def check_pf_rss_queue(out, count):
+    """
+    check each queue has receive packets
+    """
+    lines = out.split("\r\n")
+    queue_num = []
+    packet_sumnum = 0
+
+    for line in lines:
+        line = line.strip()
+        if "_packets" in line.strip():
+            result_scanner = r"rx_queue_\d+_packets:\s?(\d+)"
+            scanner = re.compile(result_scanner, re.DOTALL)
+            m = scanner.search(line)
+            queue_pkg = m.group(1)
+            queue_num.append(queue_pkg)
+            packet_sumnum = packet_sumnum + int(queue_pkg)
+
+    if packet_sumnum == count and len(queue_num) == 10:
+        return True
+    else:
+        return False
