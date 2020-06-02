@@ -198,6 +198,19 @@ Pattern and input set
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
     |                               | MAC_IPV6_SIMPLE_XOR       | [Dest MAC]，[Source IP], [Dest IP]                                              |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
+    |                               | MAC_IPV4_L2TPv3           | [Session ID]                                                                   |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
+    |                               | MAC_IPV6_L2TPv3           | [Session ID]                                                                   |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+  
+    |                               | MAC_IPV4_ESP              | [SPI]                                                                          |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
+    |                               | MAC_IPV6_ESP              | [SPI]                                                                          |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+  
+    |                               | MAC_IPV4_AH               | [SPI]                                                                          |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
+    |                               | MAC_IPV6_AH               | [SPI]                                                                          |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+  
+
 
 Default parameters
 ------------------
@@ -2121,7 +2134,187 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6_ICMP:
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
-   
+
+Test case: MAC_IPV4_L2TPv3:
+===========================
+#. DUT create rule for the RSS type for MAC_IPV4_L2TPv3::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV4_L2TPv3 pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3", proto=115)/L2TP('\x00\x00\x00\x11')/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV4 L2TPV3OIP => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV4_L2TPv3 pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3", proto=115)/L2TP('\x00\x00\x00\x11')/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: MAC_IPV6_L2TPv3:
+===========================
+#. DUT create rule for the RSS type for MAC_IPV6_L2TPv3::
+
+        testpmd>flow create 0 ingress pattern eth / ipv6 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV6_L2TPv3 pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=115)/L2TP('\x00\x00\x00\x11')/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV6 L2TPV3OIP => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV6_L2TPv3 pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=115)/L2TP('\x00\x00\x00\x11')/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: MAC_IPV4_ESP:
+========================
+#. DUT create rule for the RSS type for MAC_IPV4_ESP::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / esp / end actions rss types esp end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV4_ESP pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=50)/ESP(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV4 ESP => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV4_ESP pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=50)/ESP(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: MAC_IPV6_ESP:
+========================
+#. DUT create rule for the RSS type for MAC_IPV6_ESP::
+
+        testpmd>flow create 0 ingress pattern eth / ipv6 / esp / end actions rss types esp end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV6_ESP pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=50)/ESP(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV6 ESP => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV6_ESP pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=50)/ESP(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: MAC_IPV4_AH:
+=======================
+#. DUT create rule for the RSS type for MAC_IPV4_AH::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / ah / end actions rss types esp end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV4_AH pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=51)/AH(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV4 AH => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV4_AH pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=51)/AH(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: MAC_IPV6_AH:
+=======================
+#. DUT create rule for the RSS type for MAC_IPV6_AH::
+
+        testpmd>flow create 0 ingress pattern eth / ipv6 / ah / end actions rss types esp end key_len 0 queues end / end
+        testpmd>start
+
+#. Tester use scapy to send the 100 MAC_IPV6_AH pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=51)/AH(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+
+        testpmd> stop
+
+#. check the flow can be listed and destory rule on port 0::
+
+        testpmd> flow list 0
+        ID      Group   Prio    Attr    Rule
+        0       0       0       i--     ETH IPV6 AH => RSS
+        testpmd> flow flush 0
+
+#. Tester use scapy to send the 100 MAC_IPV6_AH pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=51)/AH(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
 Test case: SIMPLE_XOR:
 ======================
 #. create rule for the rss type simple_xor::
@@ -3651,6 +3844,36 @@ Test case: Use OS default package for the MAC_IPV4_GTPU_FRAG and IPV4 L3 src onl
         iavf_flow_create(): Failed to create flow
         port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
 
+Test case: Use OS default package for the MAC_IPV4_L2TPv3:
+==========================================================
+#. Load OS package
+
+#. Create rule for the rss type MAC_IPV4_L2TPv3::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end
+
+#. Tester use scapy to send the 100 MAC_IPV4_L2TPv3 pkts with different session ID::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3", proto=115)/L2TP('\x00\x00\x00\x11')/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
+Test case: Use OS default package for the MAC_IPV6_ESP:
+==========================================================
+#. Load OS package
+
+#. Create rule for the rss type MAC_IPV6_ESP::
+
+        testpmd>flow create 0 ingress pattern eth / ipv6 / esp / end actions rss types l2tpv3 end key_len 0 queues end / end
+
+#. Tester use scapy to send the 100 MAC_IPV6_ESP pkts with different spi::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(nh=50)/ESP(spi=11)/Raw('x'*480)], iface="enp134s0f0") 
+        ...
+
+#. Verify 100 pkts has been sent, and check the 100 pkts has been recieved by DUT in the same queue.
+
 Test case: Check rssh hash in mutil VFS
 =======================================
 1. Generate 2 VFs on PF0 and set mac address for each VF::
@@ -3875,6 +4098,7 @@ both of the rules can't be created successfully.
    iavf_hash_create(): fail to add RSS configure
    iavf_flow_create(): Failed to create flow
    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
+
 
 
 
