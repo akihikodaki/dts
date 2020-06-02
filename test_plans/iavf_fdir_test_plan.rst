@@ -77,6 +77,22 @@ Pattern and input set
     +------------------------------+----------------------------+-------------------------------------------------------------------+
     |                              |      MAC_IPV4_GTPU_EH      | [TEID], [QFI]                                                     |
     +------------------------------+----------------------------+-------------------------------------------------------------------+
+    | L2TPv3                       |      MAC_IPV4_L2TPv3       | [Session ID]                                                      |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |      MAC_IPV6_L2TPv3       | [Session ID]                                                      |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    | ESP                          |      MAC_IPV4_ESP          | [SPI]                                                             |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |      MAC_IPV6_ESP          | [SPI]                                                             |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |      MAC_IPV4_AH           | [SPI]                                                             |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |      MAC_IPV6_AH           | [SPI]                                                             |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |     MAC_IPV4_NAT-T-ESP     | [Source IP], [Dest IP], [SPI]                                     |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |     MAC_IPV6_NAT-T-ESP     | [Source IP], [Dest IP], [SPI]                                     |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
 
 
 Supported function type
@@ -425,6 +441,96 @@ Send packets
    MAC_IPV6_PFCP_NODE::
 
     sendp(Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=8805)/PFCP(Sfield=1, SEID=256),iface="enp134s0f1")
+
+* MAC_IPV4_L2TPv3
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src='192.168.1.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV6_L2TPv3
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:9999',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV4_ESP
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.3",proto=50)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.1.3",proto=50)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.3",proto=50)/ESP(spi=17)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV6_ESP
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=50)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999",nh=50)/ESP(spi=7)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=50)/ESP(spi=17)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV4_AH
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.3",proto=51)/AH(spi=7)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.1.3",proto=51)/AH(spi=7)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.3",proto=51)/AH(spi=17)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV6_AH
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=51)/AH(spi=7)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999",nh=51)/AH(spi=7)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=51)/AH(spi=17)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV4_NAT-T-ESP
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.20")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.10.20")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(src="192.168.0.20")/UDP(dport=4500)/ESP(spi=12)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IP(dst="192.168.0.20")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV6_NAT-T-ESP
+
+   matched packets::
+
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+   
+   mismatched packets::
+    
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=12)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+    sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
 
 
 Test case: flow validation
@@ -1606,6 +1712,454 @@ Subcase 6: PFCP mark
    get the same result.
 
 
+Test case: MAC_IPV4_L2TPv3 pattern
+==================================
+
+Subcase 1: MAC_IPV4_L2TPv3 queue index
+--------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_L2TPv3 rss queues
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_L2TPv3 mark
+-------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_L2TPv3 pattern
+==================================
+
+Subcase 1: MAC_IPV6_L2TPv3 queue index
+--------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_L2TPv3 rss queues
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_L2TPv3 mark
+-------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 17 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV4_ESP pattern
+===============================
+
+Subcase 1: MAC_IPV4_ESP queue index
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_ESP rss queues
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_ESP mark
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_ESP pattern
+===============================
+
+Subcase 1: MAC_IPV6_ESP queue index
+-----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_ESP rss queues
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_ESP mark
+----------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV4_AH pattern
+==============================
+
+Subcase 1: MAC_IPV4_AH queue index
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_AH rss queues
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_AH mark
+---------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_AH pattern
+==============================
+
+Subcase 1: MAC_IPV6_AH queue index
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_AH rss queues
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_AH mark
+---------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV4_NAT-T-ESP pattern
+=====================================
+
+Subcase 1: MAC_IPV4_NAT-T-ESP queue index
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_NAT-T-ESP rss queues
+----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_NAT-T-ESP mark
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_NAT-T-ESP pattern
+=====================================
+
+Subcase 1: MAC_IPV6_NAT-T-ESP queue index
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 192.168.0.20 / udp / esp spi is 2 / end actions queue index 13 / mark id 7 / end
+
+2. send matched packets, check the packets are distributed to queue 13 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 13 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 13 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_NAT-T-ESP rss queues
+----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 192.168.0.20 / udp / esp spi is 2 / end actions rss queues 1 2 3 4 end / mark id 6 / end
+
+2. send matched packets, check the packets are distributed to queue 1 or 2 or 3 or 4 with FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 1 or 2 or 3 or 4 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_NAT-T-ESP mark
+----------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 192.168.0.20 / udp / esp spi is 2 / end actions mark id 15 / end
+
+2. send matched packets, check the packets are received with FDIR matched ID.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   check there is no rule listed.
+
+
 Test case: negative cases
 =========================
 
@@ -1827,6 +2381,26 @@ Subcase 12: unsupported pattern with OS package
     Add filter rule failed.: Operation not permitted
 
 2. check there is no rule listed.
+
+3. Create a L2TPv3 rule with OS default package::
+
+    flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions queue index 3 / mark id 7 / end
+
+   Failed to create flow, report error message::
+
+    Add filter rule failed.: Operation not permitted
+
+4. check there is no rule listed.
+
+5. Create a ESP rule with OS default package::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / esp spi is 17 / end actions rss queues 2 3 end / mark id 7 / end
+
+   Failed to create flow, report error message::
+
+    Add filter rule failed.: Operation not permitted
+
+6. check there is no rule listed.
 
 Subcase 13: invalid port
 ------------------------
