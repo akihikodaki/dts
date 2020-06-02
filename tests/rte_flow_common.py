@@ -324,35 +324,37 @@ def verify(passed, description):
     if not passed:
         raise AssertionError(description)
 
-def check_queue(out, pkt_num, check_param, stats=True):
+
+def check_queue(out, check_param, stats=True):
     port_id = check_param["port_id"] if check_param.get("port_id") is not None else 0
     queue = check_param["queue"]
-    p = re.compile(
-        r"Forward Stats for RX Port= %s/Queue=(\s?\d+)\s.*\n.*RX-packets:(\s?\d+)\s+TX-packets" % port_id)
+    p = re.compile(r"port\s+%s/queue(.+?):\s+received\s+(\d+)\s+packets" % port_id)
     res = p.findall(out)
     if res:
-        res_queue = [int(i[0]) for i in res]
-        pkt_li = [int(i[1]) for i in res]
-        res_num = sum(pkt_li)
-        verify(res_num == pkt_num, "fail: got wrong number of packets, expect pakcet number %s, got %s." % (pkt_num, res_num))
+        pkt_queue = set([int(i[0]) for i in res])
         if stats:
             if isinstance(queue, int):
-                verify(all(q == queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
-                print((GREEN("pass: queue id %s matched" % res_queue)))
+                verify(all(q == queue for q in pkt_queue),
+                       "fail: queue id not matched, expect queue %s, got %s" % (queue, pkt_queue))
+                print((GREEN("pass: queue id %s matched" % pkt_queue)))
             elif isinstance(queue, list):
-                verify(all(q in queue for q in res_queue), "fail: queue id not matched, expect queue %s, got %s" % (queue, res_queue))
-                print((GREEN("pass: queue id %s matched" % res_queue)))
+                verify(all(q in queue for q in pkt_queue),
+                       "fail: queue id not matched, expect queue %s, got %s" % (queue, pkt_queue))
+                print((GREEN("pass: queue id %s matched" % pkt_queue)))
             else:
                 raise Exception("wrong queue value, expect int or list")
         else:
             if isinstance(queue, int):
-                verify(not any(q == queue for q in res_queue), "fail: queue id should not matched, expect queue %s, got %s" % (queue, res_queue))
-                print((GREEN("pass: queue id %s not matched" % res_queue)))
+                verify(not any(q == queue for q in pkt_queue),
+                       "fail: queue id should not matched, expect queue %s, got %s" % (queue, pkt_queue))
+                print((GREEN("pass: queue id %s not matched" % pkt_queue)))
             elif isinstance(queue, list):
-                verify(not any(q in queue for q in res_queue), "fail: each queue in %s should not in queue %s" % (res_queue, queue))
-                print((GREEN("pass: queue id %s not matched" % res_queue)))
+                verify(not any(q in queue for q in pkt_queue),
+                       "fail: each queue in %s should not in queue %s" % (pkt_queue, queue))
+                print((GREEN("pass: queue id %s not matched" % pkt_queue)))
             else:
                 raise Exception("wrong action value, expect queue_index or queue_group")
+        return pkt_queue
     else:
         raise Exception("got wrong output, not match pattern %s" % p.pattern)
 
@@ -365,34 +367,70 @@ def check_drop(out, pkt_num, check_param, stats=True):
     pkt_li = p.findall(out)
     if pkt_li:
         res = {k: v for k, v in zip(title_li, list(map(int, list(pkt_li[0]))))}
-        verify(pkt_num == res["rx-total"], "failed: get wrong amount of packet %d, expected %d" % (res["rx-total"], pkt_num))
+        verify(pkt_num == res["rx-total"],
+               "failed: get wrong amount of packet %d, expected %d" % (res["rx-total"], pkt_num))
         if stats:
             verify(res["rx-dropped"] == pkt_num, "failed: dropped packets number %s not match" % res["rx-dropped"])
         else:
-            verify(res["rx-dropped"] == 0 and res["rx-packets"] == pkt_num, "failed: dropped packets number should be 0")
+            verify(res["rx-dropped"] == 0 and res["rx-packets"] == pkt_num,
+                   "failed: dropped packets number should be 0")
     else:
         raise Exception("got wrong output, not match pattern %s" % p.pattern)
 
 
 def check_mark(out, pkt_num, check_param, stats=True):
-    mark_scanner = "FDIR matched ID=(0x\w+)"
-    res = re.findall(mark_scanner, out[0])
+    mark_id = check_param.get("mark_id")
+    queue = check_param.get("queue")
+    rss_flag = check_param.get("rss")
+    rxq = check_param['rxq'] if check_param.get("rxq") is not None else 64
+    drop_flag = check_param.get("drop")
+    port_id = check_param["port_id"] if check_param.get("port_id") is not None else 0
+    fdir_scanner = re.compile("FDIR matched ID=(0x\w+)")
+    fdir_flag = fdir_scanner.search(out)
+    pkt_queue = None
     if stats:
-        if check_param.get("queue") is not None:
-            check_queue(out[1], pkt_num, check_param, stats)
-            mark_list = [i[0] for i in res]
-            verify(len(res) == pkt_num, "get wrong number of packet with mark_id")
-            verify(all([int(i, 16) == check_param["mark_id"] for i in res]),
-                        "failed: some packet mark id of %s not match" % mark_list)
+        if drop_flag is None:
+            p = re.compile(r"port\s+%s/queue(.+?):\s+received\s+(\d+)\s+packets" % port_id)
+            res = p.findall(out)
+            if res:
+                pkt_li = [int(i[1]) for i in res]
+                res_num = sum(pkt_li)
+                verify(res_num == pkt_num,
+                       "fail: got wrong number of packets, expect pakcet number %s, got %s." % (pkt_num, res_num))
+            else:
+                raise Exception("got wrong output, not match pattern %s" % p.pattern)
+            if mark_id is not None:
+                mark_list = set(int(i, 16) for i in fdir_scanner.findall(out))
+                verify(all([i == check_param["mark_id"] for i in mark_list]),
+                       "failed: some packet mark id of %s not match" % mark_list)
+            else:
+                verify(not fdir_flag, "output should not include mark id")
+            if queue is not None:
+                check_queue(out, check_param, stats)
+            if rss_flag:
+                pkt_queue = verify_directed_by_rss(out, rxq, stats=True)
         else:
-            check_drop(out[1], pkt_num, check_param, stats)
-            verify(not res, "should has no mark_id in %s" % res)
+            check_drop(out, pkt_num, check_param, stats)
+            verify(not fdir_flag, "should has no mark_id in %s" % out)
     else:
-        if check_param.get("queue") is not None:
-            check_queue(out[1], pkt_num, check_param, stats)
+        if drop_flag is None:
+            pkt_queue = verify_directed_by_rss(out, rxq, stats=True)
         else:
-            check_drop(out[1], pkt_num, check_param, stats)
-        verify(not res, "should has no mark_id in %s" % res)
+            check_drop(out, pkt_num, check_param, stats)
+        verify(not fdir_flag, "should has no mark_id in %s" % out)
+    return pkt_queue
+
+
+def verify_directed_by_rss(out, rxq=64, stats=True):
+    p = re.compile('RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)')
+    pkt_info = p.findall(out)
+    pkt_queue = set([int(i[1], 16) for i in pkt_info])
+    if stats:
+        verify(all([int(i[0], 16) % rxq == int(i[1], 16) for i in pkt_info]), 'some pkt not directed by rss.')
+    else:
+        verify(not any([int(i[0], 16) % rxq == int(i[1], 16) for i in pkt_info]), 'some pkt directed by rss')
+    return pkt_queue
+
 
 # IAVF fdir common functions
 def check_iavf_fdir_queue(out, pkt_num, check_param, stats=True):
