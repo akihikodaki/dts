@@ -3251,47 +3251,6 @@ Subcase 8: PF reset VF and delete the rule
 
 8. send matched packets, check them redirected to expected queue with FDIR matched ID.
 
-Subcase 9: create 2048 rules on VF00 and VF01 and VF10 and VF11 at meantime
----------------------------------------------------------------------------
-
-1. start testpmd on vf00::
-
-    ./testpmd -c 0x3 -n 6 -w 86:01.0 --file-prefix=vf00 -- -i --rxq=4 --txq=4
-
-   start testpmd on vf01::
-
-    ./testpmd -c 0xc -n 6 -w 86:01.1 --file-prefix=vf01 -- -i --rxq=4 --txq=4
-
-   start testpmd on vf10::
-
-    ./testpmd -c 0x30 -n 6 -w 86:11.0 --file-prefix=vf10 -- -i --rxq=4 --txq=4
-
-   start testpmd on vf11::
-
-    ./testpmd -c 0xc0 -n 6 -w 86:11.1 --file-prefix=vf11 -- -i --rxq=4 --txq=4
-
-2. create 2048 rules on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.1 / end actions queue index 1 / mark / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.7.255 / end actions queue index 1 / mark / end
-
-   created successfully, check 2048 rules are listed.
-   create 2048 rules on vf01/vf10/vf11 at meantime::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.1 / end actions queue index 1 / mark / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.7.255 / end actions queue index 1 / mark / end
-
-   all the rules are created successfully.
-   check the rule list, there listed 2048 rules.
-   send packet to the four vfs, the packets can be redirected to expected queue with mark ID.
-
-3. flush all the rules on four VFs at meantime, there is no error reported.
-   send packet to the four vfs, the packets are distributed by RSS without mark ID.
-
 Test case: PFCP coverage test
 =============================
 Subcase 1: PFCP FDIR vlan strip on HW checksum offload check
