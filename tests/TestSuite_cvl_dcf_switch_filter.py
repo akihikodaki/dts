@@ -556,6 +556,126 @@ tv_vlan_filter = {
                   "expect_results":{"expect_pkts":0}}
 }
 
+tv_mac_ipv4_l2tpv3 = {
+    "name":"tv_mac_ipv4_l2tpv3",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":["Ether(dst='00:11:22:33:44:12')/IP(src='192.168.0.2', proto=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)"],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":["Ether(dst='00:11:22:33:44:12')/IP(src='192.168.0.2', proto=115)/L2TP('\\x00\\x00\\x00\\x02')/('X'*480)",
+                               "Ether(dst='00:11:22:33:44:12')/IP(src='192.168.1.2', proto=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)",
+                               "Ether(dst='00:11:22:33:44:12')/IP(dst='192.168.0.2', proto=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)"],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv6_l2tpv3 = {
+    "name":"tv_mac_ipv6_l2tpv3",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / l2tpv3oip session_id is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":["Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)"],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":["Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\\x00\\x00\\x00\\x02')/('X'*480)",
+                               "Ether(dst='00:11:22:33:44:13')/IPv6(dst='1111:2222:3333:4444:5555:6666:7777:9999', nh=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)",
+                               "Ether(dst='00:11:22:33:44:13')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888', nh=115)/L2TP('\\x00\\x00\\x00\\x01')/('X'*480)"],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv4_esp = {
+    "name":"tv_mac_ipv4_esp",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:22")/IP(src="192.168.0.2", proto=50)/ESP(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:22")/IP(src="192.168.1.2", proto=50)/ESP(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv6_esp = {
+    "name":"tv_mac_ipv6_esp",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / esp spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999", nh=50)/ESP(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888", nh=50)/ESP(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv4_ah = {
+    "name":"tv_mac_ipv4_ah",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=51)/AH(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2", proto=51)/AH(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IP(src="192.168.10.2", proto=51)/AH(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2", proto=51)/AH(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv6_ah = {
+    "name":"tv_mac_ipv6_ah",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / ah spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999", nh=51)/AH(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888", nh=51)/AH(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv4_nat_t_esp = {
+    "name":"tv_mac_ipv4_nat_t_esp",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IP(src="192.168.0.2")/UDP(dport=4500)/ESP(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IP(src="192.168.1.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IP(dst="192.168.0.2")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_ipv6_nat_t_esp = {
+    "name":"tv_mac_ipv6_nat_t_esp",
+    "rte_flow_pattern":"flow create 0 priority 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 1 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=4500)/ESP(spi=1)/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:13")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=1)/("X"*480)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
 tv_actions_vf_id_0 = {
     "name":"tv_actions_vf_id_0",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 0 / end",
@@ -1157,6 +1277,38 @@ class SwitchFilterTest(TestCase):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_vlan_filter)
 
+    def test_mac_ipv4_l2tpv3(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_l2tpv3)
+
+    def test_mac_ipv6_l2tpv3(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv6_l2tpv3)
+
+    def test_mac_ipv4_esp(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_esp)
+
+    def test_mac_ipv6_esp(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv6_esp)
+
+    def test_mac_ipv4_ah(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_ah)
+
+    def test_mac_ipv6_ah(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv6_ah)
+
+    def test_mac_ipv4_nat_t_esp(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv4_nat_t_esp)
+
+    def test_mac_ipv6_nat_t_esp(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_ipv6_nat_t_esp)
+
     def test_actions_vf_id_0(self):
         #set up 4 vfs on 1 pf environment
         self.setup_1pf_vfs_env()
@@ -1215,6 +1367,18 @@ class SwitchFilterTest(TestCase):
         rule = "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end"
         out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
         self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the mac_ipv4_pfcp_node rule failed to create.")
+        #check the rule list
+        self.check_switch_filter_rule_list(0, [])
+        #create a l2tpv3 rule which is not supported in os default
+        rule = "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end"
+        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
+        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the l2tpv3 rule failed to create.")
+        #check the rule list
+        self.check_switch_filter_rule_list(0, [])
+        #create a esp rule which is not supported in os default
+        rule = "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end"
+        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
+        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the esp rule failed to create.")
         #check the rule list
         self.check_switch_filter_rule_list(0, [])
 
