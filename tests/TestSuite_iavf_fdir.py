@@ -218,6 +218,72 @@ MAC_IPV4_GTPU = {
         'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw("x"*20)']
 }
 
+MAC_IPV4_L2TPv3 = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.1.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
+    "mismatch": [
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
+}
+
+MAC_IPV6_L2TPv3 = {
+    "match": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:9999',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
+    "mismatch": [
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
+}
+
+MAC_IPV4_ESP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",proto=50)/ESP(spi=7)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3",proto=50)/ESP(spi=7)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",proto=50)/ESP(spi=17)/Raw("x"*480)']
+}
+
+MAC_IPV6_ESP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=50)/ESP(spi=7)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999",nh=50)/ESP(spi=7)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=50)/ESP(spi=17)/Raw("x"*480)']
+}
+
+MAC_IPV4_AH = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",proto=51)/AH(spi=7)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3",proto=51)/AH(spi=7)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",proto=51)/AH(spi=17)/Raw("x"*480)']
+}
+
+MAC_IPV6_AH = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=51)/AH(spi=7)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:9999",nh=51)/AH(spi=7)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",nh=51)/AH(spi=17)/Raw("x"*480)']
+}
+
+MAC_IPV4_NAT_T_ESP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.10.20")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20")/UDP(dport=4500)/ESP(spi=12)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.20")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)']
+}
+
+MAC_IPV6_NAT_T_ESP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=12)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)']
+}
+
 L2_Ethertype = [
     'Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)',
     'Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw("x" * 80)',
@@ -897,6 +963,173 @@ tv_mac_ipv4_gtpu_mark = {
     "check_param": {"port_id": 0, "mark_id": 4}
 }
 
+tv_mac_ipv4_l2tpv3_queue_index = {
+    "name": "test_mac_ipv4_l2tpv3_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV4_L2TPv3,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv4_l2tpv3_queue_group = {
+    "name": "test_mac_ipv4_l2tpv3_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV4_L2TPv3,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv4_l2tpv3_mark = {
+    "name": "test_mac_ipv4_l2tpv3_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV4_L2TPv3,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv6_l2tpv3_queue_index = {
+    "name": "test_mac_ipv6_l2tpv3_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 17 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV6_L2TPv3,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv6_l2tpv3_queue_group = {
+    "name": "test_mac_ipv6_l2tpv3_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV6_L2TPv3,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv6_l2tpv3_mark = {
+    "name": "test_mac_ipv6_l2tpv3_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / l2tpv3oip session_id is 17 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV6_L2TPv3,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv4_esp_queue_index = {
+    "name": "test_mac_ipv4_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV4_ESP,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv4_esp_queue_group = {
+    "name": "test_mac_ipv4_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV4_ESP,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv4_esp_mark = {
+    "name": "test_mac_ipv4_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV4_ESP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv6_esp_queue_index = {
+    "name": "test_mac_ipv6_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV6_ESP,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv6_esp_queue_group = {
+    "name": "test_mac_ipv6_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV6_ESP,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv6_esp_mark = {
+    "name": "test_mac_ipv6_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / esp spi is 7 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV6_ESP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv4_ah_queue_index = {
+    "name": "test_mac_ipv4_ah_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV4_AH,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv4_ah_queue_group = {
+    "name": "test_mac_ipv4_ah_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV4_AH,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv4_ah_mark = {
+    "name": "test_mac_ipv4_ah_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / ah spi is 7 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV4_AH,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv6_ah_queue_index = {
+    "name": "test_mac_ipv6_ah_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV6_AH,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv6_ah_queue_group = {
+    "name": "test_mac_ipv6_ah_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV6_AH,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv6_ah_mark = {
+    "name": "test_mac_ipv6_ah_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ah spi is 7 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV6_AH,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv4_nat_t_esp_queue_index = {
+    "name": "test_mac_ipv4_nat_t_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV4_NAT_T_ESP,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv4_nat_t_esp_queue_group = {
+    "name": "test_mac_ipv4_nat_t_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV4_NAT_T_ESP,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv4_nat_t_esp_mark = {
+    "name": "test_mac_ipv4_nat_t_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / esp spi is 2 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV4_NAT_T_ESP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
+
+tv_mac_ipv6_nat_t_esp_queue_index = {
+    "name": "test_mac_ipv6_nat_t_esp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 2 / end actions queue index 13 / mark id 7 / end",
+    "scapy_str": MAC_IPV6_NAT_T_ESP,
+    "check_param": {"port_id": 0, "queue": 13, "mark_id": 7}
+}
+
+tv_mac_ipv6_nat_t_esp_queue_group = {
+    "name": "test_mac_ipv6_nat_t_esp_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 2 / end actions rss queues 1 2 3 4 end / mark id 6 / end",
+    "scapy_str": MAC_IPV6_NAT_T_ESP,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 6}
+}
+
+tv_mac_ipv6_nat_t_esp_mark = {
+    "name": "test_mac_ipv6_nat_t_esp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is 1111:2222:3333:4444:5555:6666:7777:8888 / udp / esp spi is 2 / end actions mark id 15 / end",
+    "scapy_str": MAC_IPV6_NAT_T_ESP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
+}
 
 vectors_ipv4_pay = [tv_mac_ipv4_pay_queue_index, tv_mac_ipv4_pay_mark_rss,tv_mac_ipv4_pay_passthru,
                          tv_mac_ipv4_pay_drop, tv_mac_ipv4_pay_queue_group, tv_mac_ipv4_pay_mark]
@@ -933,6 +1166,22 @@ vectors_pfcp = [tv_pfcp_queue_index, tv_pfcp_queue_group, tv_pfcp_passthru, tv_p
 
 vectors_l2_ethertype = [tv_l2_ethertype_drop, tv_l2_ethertype_queue_index, tv_l2_ethertype_queue_group,
                              tv_l2_ethertype_passthru, tv_l2_ethertype_mark, tv_l2_ethertype_mark_rss]
+
+vectors_ipv4_l2tpv3 = [tv_mac_ipv4_l2tpv3_queue_index, tv_mac_ipv4_l2tpv3_queue_group, tv_mac_ipv4_l2tpv3_mark]
+
+vectors_ipv6_l2tpv3 = [tv_mac_ipv6_l2tpv3_queue_index, tv_mac_ipv6_l2tpv3_queue_group, tv_mac_ipv6_l2tpv3_mark]
+
+vectors_ipv4_esp = [tv_mac_ipv4_esp_queue_index, tv_mac_ipv4_esp_queue_group, tv_mac_ipv4_esp_mark]
+
+vectors_ipv6_esp = [tv_mac_ipv6_esp_queue_index, tv_mac_ipv6_esp_queue_group, tv_mac_ipv6_esp_mark]
+
+vectors_ipv4_ah = [tv_mac_ipv4_ah_queue_index, tv_mac_ipv4_ah_queue_group, tv_mac_ipv4_ah_mark]
+
+vectors_ipv6_ah = [tv_mac_ipv6_ah_queue_index, tv_mac_ipv6_ah_queue_group, tv_mac_ipv6_ah_mark]
+
+vectors_ipv4_nat_t_esp = [tv_mac_ipv4_nat_t_esp_queue_index, tv_mac_ipv4_nat_t_esp_queue_group, tv_mac_ipv4_nat_t_esp_mark]
+
+vectors_ipv6_nat_t_esp = [tv_mac_ipv6_nat_t_esp_queue_index, tv_mac_ipv6_nat_t_esp_queue_group, tv_mac_ipv6_nat_t_esp_mark]
 
 class TestIAVFFdir(TestCase):
 
@@ -1306,6 +1555,30 @@ class TestIAVFFdir(TestCase):
     def test_mac_ipv4_gtpu(self):
         self.rte_flow_process(vectors_gtpu)
 
+    def test_mac_ipv4_l2tpv3(self):
+        self.rte_flow_process(vectors_ipv4_l2tpv3)
+
+    def test_mac_ipv6_l2tpv3(self):
+        self.rte_flow_process(vectors_ipv6_l2tpv3)
+
+    def test_mac_ipv4_esp(self):
+        self.rte_flow_process(vectors_ipv4_esp)
+
+    def test_mac_ipv6_esp(self):
+        self.rte_flow_process(vectors_ipv6_esp)
+
+    def test_mac_ipv4_ah(self):
+        self.rte_flow_process(vectors_ipv4_ah)
+
+    def test_mac_ipv6_ah(self):
+        self.rte_flow_process(vectors_ipv6_ah)
+
+    def test_mac_ipv4_nat_t_esp(self):
+        self.rte_flow_process(vectors_ipv4_nat_t_esp)
+
+    def test_mac_ipv6_nat_t_esp(self):
+        self.rte_flow_process(vectors_ipv6_nat_t_esp)
+
     def test_mac_ipv4_protocol(self):
         rules = [
             "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 1 / end actions queue index 1 / mark id 1 / end",
@@ -1523,11 +1796,13 @@ class TestIAVFFdir(TestCase):
 
     def test_unsupported_pattern_with_OS_package(self):
         """
-        Create GTPU rule, PFCP rule and L2 Ethertype rule with OS default package
+        Create GTPU rule, PFCP rule, L2 Ethertype rule, l2tpv3 rule and esp rule with OS default package
         """
         rule = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end",
                 "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 1 / end",
-                "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end"]
+                "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end",
+                "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 end / mark id 6 / end",
+                "flow create 0 ingress pattern eth / ipv6 / udp / esp spi is 6 / end actions rss queues 1 2 end / mark id 6 / end"]
         self.destroy_env()
         os_package_location = self.suite_config["os_default_package_file_location"]
         comms_package_location = self.suite_config["comms_package_file_location"]
