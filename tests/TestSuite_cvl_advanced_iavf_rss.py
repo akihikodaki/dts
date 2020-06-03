@@ -542,6 +542,54 @@ tv_mac_ipv6_sctp_inputset = {
     "check_pf_rss_func": rfc.check_pf_rss_queue
 }
 
+tv_iavf_mac_ipv4_l2tpv3 = {
+    "name": "iavf_mac_ipv4_l2tpv3",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end",
+    "scapy_str": ['Ether(dst="%s")/IP(src="192.168.0.3", proto=115)/L2TP(hex(RandNum(16,255))[1:]+"\\x00\\x00\\x00")/Raw("X"*480)' % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
+tv_iavf_mac_ipv6_l2tpv3 = {
+    "name": "iavf_mac_ipv6_l2tpv3",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end",
+    "scapy_str": ['Ether(dst="%s")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888", nh=115)/L2TP(hex(RandNum(16,255))[1:]+"\\x00\\x00\\x00")/Raw("X"*480)' % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
+tv_iavf_mac_ipv4_esp = {
+    "name": "iavf_mac_ipv4_esp",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / esp / end actions rss types esp end key_len 0 queues end / end",
+    "scapy_str": ['Ether(dst="%s")/IP(src="192.168.0.3", proto=50)/ESP(spi=RandShort())/Raw("X"*480)' % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
+tv_iavf_mac_ipv6_esp = {
+    "name": "iavf_mac_ipv6_esp",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 / esp / end actions rss types esp end key_len 0 queues end / end",
+    "scapy_str": ["Ether(dst='%s')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888', nh=50)/ESP(spi=RandShort())/Raw('X'*480)" % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
+tv_iavf_mac_ipv4_ah = {
+    "name": "iavf_mac_ipv4_ah",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / ah / end actions rss types ah end key_len 0 queues end / end",
+    "scapy_str": ["Ether(dst='%s')/IP(src='192.168.0.3', proto=51)/AH(spi=RandShort())/Raw('X'*480)" % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
+tv_iavf_mac_ipv6_ah = {
+    "name": "iavf_mac_ipv6_ah",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv6 / ah / end actions rss types ah end key_len 0 queues end / end",
+    "scapy_str": ["Ether(dst='%s')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888', nh=51)/AH(spi=RandShort())/Raw('X'*480)" % vf0_mac],
+    "send_count": 100,
+    "check_func": rfc.check_iavf_packets_rss_queue
+}
+
 tvs_iavf_mac_eth_src = [
     tv_iavf_mac_eth_src_only,
 ]
@@ -650,6 +698,18 @@ tvs_check_pf_vf_inputset = [
     tv_mac_ipv6_udp_inputset,
     tv_mac_ipv6_sctp_inputset,
 ]
+
+tvs_iavf_mac_rss_ipv4_l2tpv3 = [tv_iavf_mac_ipv4_l2tpv3]
+
+tvs_iavf_mac_rss_ipv6_l2tpv3 = [tv_iavf_mac_ipv6_l2tpv3]
+
+tvs_iavf_mac_rss_ipv4_esp = [tv_iavf_mac_ipv4_esp]
+
+tvs_iavf_mac_rss_ipv6_esp = [tv_iavf_mac_ipv6_esp]
+
+tvs_iavf_mac_rss_ipv4_ah = [tv_iavf_mac_ipv4_ah]
+
+tvs_iavf_mac_rss_ipv6_ah = [tv_iavf_mac_ipv6_ah]
 
 
 class AdvancedIavfRSSTest(TestCase):
@@ -919,6 +979,30 @@ class AdvancedIavfRSSTest(TestCase):
     def test_iavf_ipv4_icmp_gtpu_updown(self):
         self.create_testpmd_command(self.vf0_prop)
         self._rte_flow_validate_pattern(tvs_iavf_gtpu_ipv4_icmp)
+
+    def test_iavf_rss_ipv4_l2tpv3(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv4_l2tpv3)
+
+    def test_iavf_rss_ipv6_l2tpv3(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv6_l2tpv3)
+
+    def test_iavf_rss_ipv4_esp(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv4_esp)
+
+    def test_iavf_rss_ipv6_esp(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv6_esp)
+
+    def test_iavf_rss_ipv4_ah(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv4_ah)
+
+    def test_iavf_rss_ipv6_ah(self):
+        self.create_testpmd_command(self.vf0_prop)
+        self._rte_flow_validate_pattern(tvs_iavf_mac_rss_ipv6_ah)
 
     # def test_iavf_ipv4_sctp_gtpu_updown(self):
     #     self.create_testpmd_command(self.vf0_prop)
