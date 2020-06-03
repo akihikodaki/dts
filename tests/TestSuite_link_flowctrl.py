@@ -367,7 +367,7 @@ class TestLinkFlowctrl(TestCase):
 
     def test_perf_flowctrl_on_pause_fwd_on(self):
         """
-        Disable link flow control and PAUSE frame forwarding
+        Enable link flow control and PAUSE frame forwarding
         """
 
         result = self.pause_frame_loss_test(rx_flow_control='on',
@@ -381,7 +381,7 @@ class TestLinkFlowctrl(TestCase):
 
     def test_perf_flowctrl_on_pause_fwd_off(self):
         """
-        Disable link flow control and enable PAUSE frame forwarding
+        Enable link flow control and disable PAUSE frame forwarding
         """
 
         result = self.pause_frame_loss_test(rx_flow_control='on',
@@ -399,7 +399,7 @@ class TestLinkFlowctrl(TestCase):
         """
 
         result = self.pause_frame_loss_test(rx_flow_control='on',
-                                            tx_flow_control='on',
+                                            tx_flow_control='off',
                                             pause_frame_fwd='off')
 
         self.logger.info("Packet loss: %.3f" % result)
@@ -409,7 +409,7 @@ class TestLinkFlowctrl(TestCase):
 
     def test_perf_flowctrl_off_pause_fwd_on(self):
         """
-        Enable link flow control and disable PAUSE frame forwarding
+        Disable link flow control and enable PAUSE frame forwarding
         """
 
         result = self.pause_frame_loss_test(rx_flow_control='off',
@@ -437,7 +437,7 @@ class TestLinkFlowctrl(TestCase):
 
     def test_perf_flowctrl_tx_on(self):
         """
-        Disable link flow control and PAUSE frame forwarding
+        Enable only tx link flow control
         """
 
         result = self.pause_frame_loss_test(rx_flow_control='off',
