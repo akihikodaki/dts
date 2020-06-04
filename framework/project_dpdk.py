@@ -309,6 +309,14 @@ class DPDKdut(Dut):
                 for p in self.patches:
                     self.session.copy_file_to('dep/' + p, dst_dir)
 
+            # copy QMP file to dut
+            if ':' not in self.session.name:
+                out = self.send_expect("ls -d ~/QMP", "# ", verify=True)
+                if isinstance(out, int):
+                    self.send_expect("mkdir -p ~/QMP", "# ")
+                self.session.copy_file_to('dep/QMP/qemu-ga-client', '~/QMP/')
+                self.session.copy_file_to('dep/QMP/qmp.py', '~/QMP/')
+
             self.kill_all()
 
             # enable core dump
