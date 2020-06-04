@@ -54,77 +54,63 @@ class UnitTestsCryptodev(TestCase):
         cc.clear_dpdk_config(self)
 
     def test_cryptodev_qat_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_qat_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_qat_autotest")
 
     def test_cryptodev_qat_asym_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_qat_asym_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_qat_asym_autotest")
 
     def _test_cryptodev_qat_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_qat_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_qat_perftest")
 
     def _test_cryptodev_qat_continual_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_qat_continual_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_qat_continual_perftest")
 
     def _test_cryptodev_qat_snow3g_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_qat_snow3g_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_qat_snow3g_perftest")
 
     def test_cryptodev_aesni_mb_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_aesni_mb_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_aesni_mb_autotest")
 
     def _test_cryptodev_aesni_mb_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_aesni_mb_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_aesni_mb_perftest")
 
     def test_cryptodev_aesni_gcm_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_aesni_gcm_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_aesni_gcm_autotest")
 
     def _test_cryptodev_aesni_gcm_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_aesni_gcm_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_aesni_gcm_perftest")
 
     def test_cryptodev_sw_snow3g_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_sw_snow3g_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_sw_snow3g_autotest")
 
     def _test_cryptodev_sw_snow3g_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_sw_snow3g_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_sw_snow3g_perftest")
 
     def test_cryptodev_sw_kasumi_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_sw_kasumi_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_sw_kasumi_autotest")
 
     def test_cryptodev_sw_zuc_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_sw_zuc_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_sw_zuc_autotest")
 
     def test_cryptodev_null_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_null_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_null_autotest")
 
     def test_cryptodev_openssl_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_openssl_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_openssl_autotest")
 
     def _test_cryptodev_openssl_perftest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_openssl_perftest", eal_opt_str)
+        self.__run_unit_test("cryptodev_openssl_perftest")
 
     def test_cryptodev_scheduler_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self)
-        self.__run_unit_test("cryptodev_scheduler_autotest", eal_opt_str)
+        self.__run_unit_test("cryptodev_scheduler_autotest")
 
-    def __run_unit_test(self, testsuite, eal_opt_str, timeout=600):
+    def __run_unit_test(self, testsuite, timeout=600):
+        eal_opt_str = cc.get_eal_opt_str(self)
+        w = cc.get_qat_devices(self, num=1)
+
         self.logger.info("STEP_TEST: " + testsuite)
         self.dut.send_expect("dmesg -C", "# ", 30)
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str)
+        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str + " --log-level=6 -w %s" % w[0])
         self.dut.send_expect(cmd_str, "RTE>>", 30)
 
         out = ""
