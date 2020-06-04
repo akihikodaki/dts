@@ -52,9 +52,8 @@ import cryptodev_common as cc
 class TestL2fwdCrypto(TestCase):
 
     def set_up_all(self):
-
-        self.core_config = "1S/2C/1T"
-        self.number_of_ports = 1
+        self.core_config = "1S/3C/1T"
+        self.number_of_ports = 2
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= self.number_of_ports,
                     "Not enough ports for " + self.nic)
@@ -65,13 +64,12 @@ class TestL2fwdCrypto(TestCase):
         self.logger.info("dut ports = " + str(self.dut_ports))
         self.logger.info("ports_socket = " + str(self.ports_socket))
 
-        self.core_mask = utils.create_mask(self.dut.get_core_list(
-                                         self.core_config,
-                                         socket=self.ports_socket))
-        self.port_mask = utils.create_mask([self.dut_ports[0]])
+        self.core_list = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
+        self.core_mask = utils.create_mask(self.core_list)
+        self.port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
 
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
-        self.rx_port = self.tester.get_local_port(self.dut_ports[0])
+        self.rx_port = self.tester.get_local_port(self.dut_ports[1])
 
         self.tx_interface = self.tester.get_interface(self.tx_port)
         self.rx_interface = self.tester.get_interface(self.rx_port)
@@ -91,593 +89,190 @@ class TestL2fwdCrypto(TestCase):
 
         cc.bind_qat_device(self)
 
-
     def set_up(self):
         pass
 
     def test_qat_AES_XTS_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_XTS_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_XTS_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_XTS_00")
 
     def test_qat_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_CBC_00")
 
     def test_qat_AES_CTR_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_CTR_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_CTR_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_CTR_00")
 
     def test_qat_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_GCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_GCM_00")
 
     def test_qat_AES_CCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_CCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_CCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_CCM_00")
 
     def test_qat_h_MD_SHA_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_h_MD_SHA_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_h_MD_SHA_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_h_MD_SHA_00")
 
     def test_qat_h_AES_XCBC_MAC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_h_AES_XCBC_MAC_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_h_AES_XCBC_MAC_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_h_AES_XCBC_MAC_01")
 
     def test_qat_3DES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_3DES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_3DES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_3DES_CBC_00")
 
     def test_qat_3DES_CTR_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_3DES_CTR_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_3DES_CTR_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_3DES_CTR_00")
 
     def test_qat_AES_DOCSISBPI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_AES_DOCSISBPI_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_AES_DOCSISBPI_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_AES_DOCSISBPI_01")
 
     def test_qat_DES_DOCSISBPI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_DES_DOCSISBPI_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_DES_DOCSISBPI_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_DES_DOCSISBPI_01")
 
     def test_qat_SNOW3G_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_c_UEA2_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_c_UEA2_01"):
-            result = False
-
-        self.logger.info("Test qat_h_UIA2_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_h_UIA2_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_snow3g_00")
 
     def test_qat_KASUMI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_kasumi_c_F8_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_kasumi_c_F8_01"):
-            result = False
-
-        self.logger.info("Test qat_kasumi_h_F9_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_kasumi_h_F9_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_kasumi_00")
 
     def test_qat_ZUC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_c_EEA3_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_c_EEA3_01"):
-            result = False
-
-        self.logger.info("Test qat_h_EIA3_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_h_EIA3_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_zuc_00")
 
     def test_qat_NULL_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test qat_NULL_auto")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "qat_NULL_auto"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "qat_NULL_auto")
 
     def test_aesni_mb_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_AES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_AES_CBC_00")
 
     def test_aesni_mb_AES_CTR_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_AES_CTR_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_AES_CTR_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_AES_CTR_00")
 
     def test_aesni_mb_AES_DOCSISBPI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_AES_DOCSISBPI_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_AES_DOCSISBPI_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_AES_DOCSISBPI_01")
 
     def test_aesni_mb_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_aead_AES_GCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_aead_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
-
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_aead_AES_GCM_00")
 
     def test_aesni_mb_AES_CCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_AES_CCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_AES_CCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_AES_CCM_00")
 
     def test_aesni_gcm_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_gcm_aead_AES_GCM_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_gcm_aead_AES_GCM_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_gcm_aead_AES_GCM_01")
 
     def test_aesni_mb_h_MD_SHA_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_h_MD_SHA_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_h_MD_SHA_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_h_MD_SHA_00")
 
     def test_aesni_mb_3DES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_3DES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_3DES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_3DES_CBC_00")
 
     def test_kasumi_KASUMI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test kasumi_c_F8_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "kasumi_c_F8_01"):
-            result = False
-
-        self.logger.info("Test kasumi_h_F9_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "kasumi_h_F9_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "kasumi_kasumi_00")
 
     def test_null_NULL_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test null_NULL_auto")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "null_NULL_auto"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "null_NULL_auto")
 
     def test_snow3g_SNOW3G_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test snow3g_c_UEA2_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "snow3g_c_UEA2_01"):
-            result = False
-
-        self.logger.info("Test snow3g_h_UIA2_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "snow3g_h_UIA2_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "snow3g_snow3g_00")
 
     def test_zuc_ZUC_auto(self):
-        if cc.is_test_skip(self):
-            return
+        self.__execute_l2fwd_crypto_test(test_vectors, "zuc_zuc_00")
 
-        result = True
-        self.logger.info("Test zuc_c_EEA3_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "zuc_c_EEA3_01"):
-            result = False
-
-        self.logger.info("Test zuc_h_EIA3_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "zuc_h_EIA3_01"):
-            result = False
-
-        self.verify(result, "Test failed")
-
-    # openssl pmd cases
     def test_openssl_3DES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_3DES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_3DES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_3DES_CBC_00")
 
     def test_openssl_3DES_CTR_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_3DES_CTR_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_3DES_CTR_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_3DES_CTR_00")
 
     def test_openssl_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_AES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_AES_CBC_00")
 
     def test_openssl_AES_CTR_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_AES_CTR_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_AES_CTR_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_AES_CTR_00")
 
     def test_openssl_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_AES_GCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_AES_GCM_00")
 
     def test_openssl_AES_CCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_AES_CCM_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_AES_CCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_AES_CCM_00")
 
     def test_openssl_h_MD_SHA_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_h_MD_SHA_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_h_MD_SHA_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_h_MD_SHA_00")
 
     def test_openssl_DES_DOCSISBPI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_DES_DOCSISBPI_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_DES_DOCSISBPI_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_DES_DOCSISBPI_01")
 
     def test_aesni_mb_DES_DOCSISBPI_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_DES_DOCSISBPI_01")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_DES_DOCSISBPI_01"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_DES_DOCSISBPI_01")
 
     def test_aesni_mb_DES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test aesni_mb_DES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "aesni_mb_DES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "aesni_mb_DES_CBC_00")
 
     def test_openssl_DES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test openssl_DES_CBC_00")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "openssl_DES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        self.__execute_l2fwd_crypto_test(test_vectors, "openssl_DES_CBC_00")
 
     def test_scheduler_rr_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_rr_AES_CBC")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_rr_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=3))
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,slave=%s_qat_sym,\
+                mode=round-robin" % tuple(cc.get_qat_devices(self, num=3))
+        test_vectors["scheduler_AES_CBC_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_CBC_00"]['mode'] = "rr"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_CBC_00")
 
     def test_scheduler_rr_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_rr_AES_GCM")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_rr_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = "-w 0000:00:00.0 --vdev crypto_aesni_mb1,name=aesni_mb_1"
+        vdev += " --vdev crypto_aesni_mb2,name=aesni_mb_2"
+        vdev += " --vdev crypto_aesni_mb3,name=aesni_mb_3"
+        vdev += " --vdev crypto_scheduler0,slave=aesni_mb_1,slave=aesni_mb_2,slave=aesni_mb_3,mode=round-robin"
+        test_vectors["scheduler_AES_GCM_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_GCM_00"]['mode'] = "rr"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_GCM_00")
 
     def test_scheduler_psb_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_psb_AES_CBC")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_psb_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=2))
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,\
+                mode=packet-size-distr" % tuple(cc.get_qat_devices(self, num=2))
+        test_vectors["scheduler_AES_CBC_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_CBC_00"]['mode'] = "psb"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_CBC_00")
 
     def test_scheduler_psb_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_psb_AES_GCM")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_psb_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=1))
+        vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+                mode=packet-size-distr"% tuple(cc.get_qat_devices(self, num=1))
+        test_vectors["scheduler_AES_GCM_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_GCM_00"]['mode'] = "psb"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_GCM_00")
 
     def test_scheduler_fo_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_fo_AES_CBC")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_fo_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=2))
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym,\
+                mode=fail-over" % tuple(cc.get_qat_devices(self, num=2))
+        test_vectors["scheduler_AES_CBC_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_CBC_00"]['mode'] = "fo"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_CBC_00")
 
     def test_scheduler_fo_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_fo_AES_GCM")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_fo_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=1))
+        vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+                mode=fail-over"% tuple(cc.get_qat_devices(self, num=1))
+        test_vectors["scheduler_AES_GCM_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_GCM_00"]['mode'] = "fo"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_GCM_00")
 
     def test_scheduler_mm_AES_CBC_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_mm_AES_CBC")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_mm_AES_CBC_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=2))
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=%s_qat_sym\
+                mode=multi-core" % tuple(cc.get_qat_devices(self, num=2))
+        test_vectors["scheduler_AES_CBC_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_CBC_00"]['mode'] = "mm"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_CBC_00")
 
     def test_scheduler_mm_AES_GCM_auto(self):
-        if cc.is_test_skip(self):
-            return
-
-        result = True
-        self.logger.info("Test scheduler_mm_AES_GCM")
-        if not self.__execute_l2fwd_crypto_test(
-                test_vectors, "scheduler_mm_AES_GCM_00"):
-            result = False
-
-        self.verify(result, "Test failed")
+        vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=1))
+        vdev += " --vdev crypto_aesni_mb1,name=aesni_mb_1"
+        vdev += " --vdev crypto_scheduler0,slave=%s_qat_sym,slave=aesni_mb_1,\
+                mode=multi-core"% tuple(cc.get_qat_devices(self, num=1))
+        test_vectors["scheduler_AES_GCM_00"]['vdev'] = vdev
+        test_vectors["scheduler_AES_GCM_00"]['mode'] = "mm"
+        self.__execute_l2fwd_crypto_test(test_vectors, "scheduler_AES_GCM_00")
 
     def __calculate_total_cases_numb(self):
         alg_map = {}
@@ -736,6 +331,8 @@ class TestL2fwdCrypto(TestCase):
         self.logger.info("Total cases:\t\t\t {0}".format(count))
 
     def __execute_l2fwd_crypto_test(self, test_vectors, test_vector_name):
+        if cc.is_test_skip(self):
+            return
 
         if test_vector_name not in test_vectors:
             self.logger.warning("SKIP : " + test_vector_name)
@@ -747,21 +344,34 @@ class TestL2fwdCrypto(TestCase):
                            core_mask=self.core_mask,
                            port_mask=self.port_mask)
 
-        result = True
         self.logger.info("Total Generated {0} Tests".format(len(test_vector_list)))
+
+        running_case = self.running_case
+        dut = self.dut.crb["IP"]
+        dut_index = self._suite_result.internals.index(dut)
+        target_index = self._suite_result.internals[dut_index+1].index(self.target)
+        suite_index = self._suite_result.internals[dut_index+1][target_index+2].index(self.suite_name)
+        if running_case in self._suite_result.internals[dut_index+1][target_index+2][suite_index+1]:
+            case_index = self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].index(running_case)
+            self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index+1)
+            self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index)
+
         for test_vector in test_vector_list:
+            result = True
             self.logger.debug(test_vector)
+            self.vector = []
             cmd_str = self.__test_vector_to_cmd(test_vector,
                                                 core_mask=self.core_mask,
                                                 port_mask=self.port_mask)
+            self._suite_result.test_case = '_'.join(self.vector)
             self.dut.send_expect(cmd_str, "==", 40)
             time.sleep(5)
 
             payload = self.__format_hex_to_list(test_vector["input"])
 
             inst = self.tester.tcpdump_sniff_packets(self.rx_interface,
-                                                     filters=[{'layer': 'ether',
-                                                     'config': {'dst': '52:00:00:00:00:01'}}])
+                    filters=[{'layer': 'ether',
+                        'config': {'dst': '52:00:00:00:00:01'}}])
 
             PACKET_COUNT = 65
             pkt = Packet()
@@ -772,7 +382,10 @@ class TestL2fwdCrypto(TestCase):
             pkt.send_pkt(self.tester, tx_port=self.tx_interface, count=PACKET_COUNT)
 
             pkt_rec = self.tester.load_tcpdump_sniff_packets(inst)
+
+            self.logger.info("Send pkgs: {}".format(PACKET_COUNT))
             self.logger.info("Receive pkgs: {}".format(len(pkt_rec)))
+            self.verify(len(pkt_rec), "Can not receive any package")
             for i in range(len(pkt_rec)):
                 packet_hex = pkt_rec[i]["Raw"].getfieldval("load")
                 if packet_hex == None:
@@ -814,12 +427,12 @@ class TestL2fwdCrypto(TestCase):
             # Close l2fwd-crypto process
             self.dut.kill_all()
 
-        if result:
-            self.logger.info("PASSED")
-        else:
-            self.logger.info("FAILED")
+            if result:
+                self._suite_result.test_case_passed()
+            else:
+                self._suite_result.test_case_failed("Test failed")
 
-        return result
+        self.verify(result, "Test Failed")
 
     def tear_down(self):
         self.dut.kill_all()
@@ -828,20 +441,30 @@ class TestL2fwdCrypto(TestCase):
         cc.clear_dpdk_config(self)
 
     def __test_vector_to_cmd(self, test_vector, core_mask="", port_mask=""):
-
-        eal_opt_str = cc.get_eal_opt_str(self, add_port=True)
+        cores = ','.join(self.core_list)
+        eal_opt_str = cc.get_eal_opt_str(self, {'l': cores}, add_port=True)
 
         EAL_SEP = " --"
         PORT_MASK = "" if port_mask == "" else " -p " + port_mask
         QUEUE_NUM = ""
 
         vdev = ""
-        if self.__check_field_in_vector(test_vector, "vdev"):
-            vdev = " --vdev " + test_vector["vdev"]
+        if test_vector["vdev"].find("scheduler") != -1:
+            vdev = test_vector["vdev"]
+            self.vector.append("Scheduler_" + test_vector["mode"])
+        elif self.__check_field_in_vector(test_vector, "vdev"):
+            vdev = "--vdev " + test_vector["vdev"] + "1" +\
+                    " --vdev " + test_vector["vdev"] + "2" +\
+                    " -w 0000:00:00.0"
+            self.vector.append(test_vector["vdev"].upper())
+        else:
+            vdev = '-w ' + ' -w '.join(cc.get_qat_devices(self, num=2))
+            self.vector.append("QAT")
 
         chain = ""
         if self.__check_field_in_vector(test_vector, "chain"):
             chain = " --chain " + test_vector["chain"]
+            self.vector.append(test_vector["chain"].lower())
 
         cdev_type = ""
         if self.__check_field_in_vector(test_vector, "cdev_type"):
@@ -858,64 +481,74 @@ class TestL2fwdCrypto(TestCase):
         aad = ""
         iv = ""
         digest_size = ""
+
         if test_vector["chain"].upper() == "AEAD":
             if self.__check_field_in_vector(test_vector, "cipher_algo"):
                 cipher_algo = " --aead_algo " + test_vector["cipher_algo"]
-
+                self.vector.append(test_vector["cipher_algo"])
             if self.__check_field_in_vector(test_vector, "cipher_op"):
                 cipher_op = " --aead_op " + test_vector["cipher_op"]
-
+                self.vector.append(test_vector["cipher_op"].lower())
             if self.__check_field_in_vector(test_vector, "cipher_key"):
                 cipher_key = " --aead_key " + self.__format_hex_to_param(test_vector["cipher_key"])
-
+                self.vector.append("aead_key_%d" % (len(test_vector["cipher_key"])//2))
             if self.__check_field_in_vector(test_vector, "iv"):
                 iv = " --aead_iv " + self.__format_hex_to_param(test_vector["iv"])
+                self.vector.append('iv_%d' % (len(test_vector["iv"])//2))
             if self.__check_field_in_vector(test_vector, "aad"):
                 aad = " --aad " + self.__format_hex_to_param(test_vector["aad"])
-
+                self.vector.append('aad_%d' % (len(test_vector["aad"])//2))
             if self.__check_field_in_vector(test_vector, "digest_size"):
                 digest_size = " --digest " + str(test_vector["digest_size"])
-
+                self.vector.append('digest_%d' % test_vector["digest_size"])
         else:
             if self.__check_field_in_vector(test_vector, "cipher_algo"):
                 cipher_algo = " --cipher_algo " + test_vector["cipher_algo"]
-
+                self.vector.append(test_vector["cipher_algo"])
             if self.__check_field_in_vector(test_vector, "cipher_op"):
                 cipher_op = " --cipher_op " + test_vector["cipher_op"]
+                self.vector.append(test_vector["cipher_op"].lower())
 
             if self.__check_field_in_vector(test_vector, "cipher_key"):
                 cipher_key = " --cipher_key " + self.__format_hex_to_param(test_vector["cipher_key"])
-
+                self.vector.append('cipher_key_%d' % (len(test_vector["cipher_key"])//2))
             if self.__check_field_in_vector(test_vector, "iv"):
                 iv = " --cipher_iv " + self.__format_hex_to_param(test_vector["iv"])
+                self.vector.append('cipher_iv_%d' % (len(test_vector["iv"])//2))
 
             if self.__check_field_in_vector(test_vector, "auth_algo"):
                 auth_algo = " --auth_algo " + test_vector["auth_algo"]
+                self.vector.append(test_vector["auth_algo"])
 
             if self.__check_field_in_vector(test_vector, "auth_op"):
                 auth_op = " --auth_op " + test_vector["auth_op"]
+                self.vector.append(test_vector["auth_op"].lower())
 
             if self.__check_field_in_vector(test_vector, "auth_key"):
                 auth_key = " --auth_key " + self.__format_hex_to_param(test_vector["auth_key"])
+                self.vector.append('auth_key_%d' % (len(test_vector["auth_key"])//2))
 
             if self.__check_field_in_vector(test_vector, "auth_key_random_size"):
                 auth_key_random_size = " --auth_key_random_size " + test_vector["auth_key_random_size"]
+                self.vector.append('auth_key_random_size_%d' % len(test_vector["auth_key_random_size"]))
 
             if self.__check_field_in_vector(test_vector, "aad"):
                 aad = " --auth_iv " + self.__format_hex_to_param(test_vector["aad"])
+                self.vector.append('auth_iv_%d' % (len(test_vector["aad"])//2))
 
             if self.__check_field_in_vector(test_vector, "aad_random_size"):
                 aad_random_size = " --aad_random_size " + test_vector["aad_random_size"]
+                self.vector.append('aad_random_size_%d' % len(test_vector["aad_random_size"]))
 
             if self.__check_field_in_vector(test_vector, "digest_size"):
                 digest_size = " --digest " + str(test_vector["digest_size"])
+                self.vector.append('digest_%d' % test_vector["digest_size"])
 
-        cmd_str = " ".join([self._app_path, eal_opt_str, vdev, vdev, EAL_SEP, PORT_MASK,
+        cmd_str = " ".join([self._app_path, eal_opt_str, vdev, EAL_SEP, PORT_MASK,
                             QUEUE_NUM, chain, cdev_type, cipher_algo,
                             cipher_op, cipher_key, iv, auth_algo, auth_op,
                             auth_key, auth_key_random_size, aad,
                             aad_random_size, digest_size, "--no-mac-updating"])
-
         return cmd_str
 
     def __check_field_in_vector(self, test_vector, field_name):
@@ -989,6 +622,7 @@ class TestL2fwdCrypto(TestCase):
     def __cryptography_cipher(self, vector):
         key = binascii.a2b_hex(vector["cipher_key"])
         iv = binascii.a2b_hex(vector["iv"])
+
         cipher_str = ""
         if vector["chain"].upper() != "AEAD":
             if vector["cipher_algo"] == "aes-cbc":
@@ -1006,7 +640,6 @@ class TestL2fwdCrypto(TestCase):
             elif vector["cipher_algo"] == "aes-xts":
                 cipher_algo = algorithms.AES(key)
                 cipher_mode = modes.XTS(iv)
-
             elif vector["cipher_algo"] == "des-cbc":
                 cipher = pyDes.des(key, pyDes.CBC, iv)
                 if vector["cipher_op"] == "DECRYPT":
@@ -1202,6 +835,7 @@ class TestL2fwdCrypto(TestCase):
             key = binascii.a2b_hex(vector["cipher_key"])
             iv = binascii.a2b_hex(vector["iv"])
             aesgcm = AESGCM(key)
+
             hash_str = aesgcm.encrypt(iv,
                                       binascii.a2b_hex(vector["input"]),
                                       binascii.a2b_hex(vector["aad"]))
@@ -1291,20 +925,18 @@ class TestL2fwdCrypto(TestCase):
                     },
                 "aes-gcm": {
                     "cipher_key": [16, 24, 32],
-                    "auth_key": [16, 24, 32],
                     "aad": [0, 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 24, 32, 64, 128, 155, 256, 1024, 65535],
-                    "iv": [12, 16],
+                    "iv": [12],
                     "digest_size": [8,12,16]
                     },
                 "aes-ccm": {
                     "cipher_key": [16, 24, 32],
-                    "auth_key": [16, 24, 32],
                     "aad": [0, 1, 2, 3, 4, 5, 6, 8, 9, 12, 16, 24, 32, 64, 128, 155, 256, 1024, 65535],
                     "iv": [7, 8, 9, 10, 11, 12, 13],
                     "digest_size": [4, 6, 8, 10, 12, 14, 16]
                 },
                 "aes-docsisbpi": {
-                    "cipher_key": [16],
+                    "cipher_key": [16, 32],
                     "iv": [16],
                     },
                 "des-docsisbpi": {
@@ -1515,7 +1147,7 @@ class TestL2fwdCrypto(TestCase):
 
     def __iter_auth_algo(self, vector, vector_list, core_mask="", port_mask=""):
         test_vector = vector.copy()
-        if test_vector["chain"] == "CIPHER_ONLY":
+        if test_vector["chain"] in ["CIPHER_ONLY", "AEAD"]:
             test_vector["auth_algo"] = ""
             self.__iter_auth_op(test_vector, vector_list, core_mask, port_mask)
         else:
@@ -1527,7 +1159,7 @@ class TestL2fwdCrypto(TestCase):
 
     def __iter_auth_op(self, vector, vector_list, core_mask="", port_mask=""):
         test_vector = vector.copy()
-        if test_vector["chain"] == "CIPHER_ONLY":
+        if test_vector["chain"] in ["CIPHER_ONLY", "AEAD"]:
             test_vector["auth_op"] = ""
             self.__iter_auth_key(test_vector, vector_list, core_mask, port_mask)
         else:
@@ -1541,7 +1173,7 @@ class TestL2fwdCrypto(TestCase):
 
     def __iter_auth_key(self, vector, vector_list, core_mask="", port_mask=""):
         test_vector = vector.copy()
-        if test_vector["chain"] == "CIPHER_ONLY":
+        if test_vector["chain"] in ["CIPHER_ONLY", "AEAD"]:
             test_vector["auth_key"] = ""
             self.__iter_aad(test_vector, vector_list, core_mask, port_mask)
         else:
@@ -1570,9 +1202,10 @@ class TestL2fwdCrypto(TestCase):
             for aad in aad_list:
                 test_vector = vector.copy()
                 if isinstance(aad, int):
-                    if self.__is_valid_size("aad",
-                            test_vector["auth_algo"],
-                            aad):
+                    if self.__is_valid_size("aad", test_vector["auth_algo"], aad) or\
+                            (test_vector["chain"] == "AEAD" and\
+                            self.__is_valid_size("aad", test_vector["cipher_algo"],
+                            aad)):
                         test_vector["aad"] = self.__gen_key(aad)
                         self.__digest_size(test_vector, vector_list,
                                 core_mask, port_mask)
@@ -1593,9 +1226,10 @@ class TestL2fwdCrypto(TestCase):
             for digest in digest_list:
                 test_vector = vector.copy()
                 if isinstance(digest, int):
-                    if self.__is_valid_size("digest_size",
-                            test_vector["auth_algo"],
-                            digest):
+                    if self.__is_valid_size("digest_size", test_vector["auth_algo"], digest)\
+                            or (test_vector["chain"] == "AEAD" and\
+                            self.__is_valid_size("digest_size", test_vector["cipher_algo"],
+                            digest)):
                         test_vector["digest_size"] = digest
                         self.__iter_input(test_vector, vector_list,
                                           core_mask, port_mask)
@@ -1686,7 +1320,7 @@ test_vectors = {
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -1706,7 +1340,7 @@ test_vectors = {
         "aad": [8],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -1821,9 +1455,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "output_hash": "*"
     },
 
-    "qat_c_UEA2_01": {
+    "qat_snow3g_00": {
         "vdev": "",
-        "chain": ["CIPHER_ONLY"],
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "HW",
         "cipher_algo": ["snow3g-uea2"],
         "cipher_op": ["ENCRYPT"],
@@ -1836,59 +1470,19 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "qat_h_UIA2_01": {
-        "vdev": "",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "HW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
-        "auth_algo": ["snow3g-uia2"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
         "digest_size": [4],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
-    "qat_kasumi_c_F8_01": {
+    "qat_kasumi_00": {
         "vdev": "",
-        "chain": ["CIPHER_ONLY"],
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "HW",
         "cipher_algo": ["kasumi-f8"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16],
         "iv": [8],
-        "auth_algo": ["kasumi-f9"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [8],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "qat_kasumi_h_F9_01": {
-        "vdev": "",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "HW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
         "auth_algo": ["kasumi-f9"],
         "auth_op": ["GENERATE"],
         "auth_key": [16],
@@ -1901,34 +1495,14 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "output_hash": "*"
     },
 
-    "qat_c_EEA3_01": {
+    "qat_zuc_00": {
         "vdev": "",
-        "chain": ["CIPHER_ONLY"],
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "HW",
         "cipher_algo": ["zuc-eea3"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16],
         "iv": [16],
-        "auth_algo": ["zuc-eia3"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "qat_h_EIA3_01": {
-        "vdev": "",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "HW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
         "auth_algo": ["zuc-eia3"],
         "auth_op": ["GENERATE"],
         "auth_key": [16],
@@ -2038,7 +1612,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [8],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
@@ -2092,20 +1666,20 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
         "iv": [12],
-        "auth_algo": ["aes-gcm", "aes-gmac"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
+        "auth_algo": ["aes-gcm"],
+        "auth_op": "",
+        "auth_key": "",
         "auth_key_random_size": "",
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
     "null_NULL_auto": {
-        "vdev": "crypto_null_pmd",
+        "vdev": "crypto_null",
         "chain": ["CIPHER_ONLY", "HASH_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["null"],
@@ -2126,7 +1700,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "aesni_gcm_aead_AES_GCM_01": {
-        "vdev": "crypto_aesni_gcm_pmd",
+        "vdev": "crypto_aesni_gcm",
         "chain": ["AEAD"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],
@@ -2140,13 +1714,13 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
     "aesni_gcm_aead_AES_CCM_01": {
-        "vdev": "crypto_aesni_gcm_pmd",
+        "vdev": "crypto_aesni_gcm",
         "chain": ["AEAD"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-ccm"],
@@ -2160,39 +1734,19 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
-    "kasumi_c_F8_01": {
-        "vdev": "crypto_kasumi_pmd",
-        "chain": ["CIPHER_ONLY"],
+    "kasumi_kasumi_00": {
+        "vdev": "crypto_kasumi",
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": ["kasumi-f8"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16],
         "iv": [8],
-        "auth_algo": ["kasumi-f9"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [8],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "kasumi_h_F9_01": {
-        "vdev": "crypto_kasumi_pmd",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "SW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
         "auth_algo": ["kasumi-f9"],
         "auth_op": ["GENERATE"],
         "auth_key": [16],
@@ -2205,9 +1759,9 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "output_hash": "*"
     },
 
-    "snow3g_c_UEA2_01": {
-        "vdev": "crypto_snow3g_pmd",
-        "chain": ["CIPHER_ONLY"],
+    "snow3g_snow3g_00": {
+        "vdev": "crypto_snow3g",
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": ["snow3g-uea2"],
         "cipher_op": ["ENCRYPT"],
@@ -2220,59 +1774,19 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "snow3g_h_UIA2_01": {
-        "vdev": "crypto_snow3g_pmd",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "SW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
-        "auth_algo": ["snow3g-uia2"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
         "digest_size": [4],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
-    "zuc_c_EEA3_01": {
-        "vdev": "crypto_zuc_pmd",
-        "chain": ["CIPHER_ONLY"],
+    "zuc_zuc_00": {
+        "vdev": "crypto_zuc",
+        "chain": ["CIPHER_ONLY", "HASH_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": ["zuc-eea3"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16],
         "iv": [16],
-        "auth_algo": ["zuc-eia3"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": "",
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "zuc_h_EIA3_01": {
-        "vdev": "crypto_zuc_pmd",
-        "chain": ["HASH_ONLY"],
-        "cdev_type": "SW",
-        "cipher_algo": "",
-        "cipher_op": "",
-        "cipher_key": "",
-        "iv": "",
         "auth_algo": ["zuc-eia3"],
         "auth_op": ["GENERATE"],
         "auth_key": [16],
@@ -2286,7 +1800,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_3DES_CBC_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["3des-cbc"],
@@ -2306,7 +1820,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_3DES_CTR_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["3des-ctr"],
@@ -2332,7 +1846,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_AES_CBC_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-cbc"],
@@ -2352,7 +1866,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_AES_CTR_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-ctr"],
@@ -2372,7 +1886,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_AES_GCM_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["AEAD"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-gcm"],
@@ -2393,7 +1907,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_AES_CCM_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["AEAD"],
         "cdev_type": "SW",
         "cipher_algo": ["aes-ccm"],
@@ -2407,13 +1921,13 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "aad": [16],
         "aad_random_size": "",
         "input": [256],
-        "digest_size": [16],
+        "digest_size": [8, 16],
         "output_cipher": "*",
         "output_hash": "*"
     },
 
     "openssl_h_MD_SHA_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["HASH_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": "",
@@ -2494,7 +2008,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_DES_DOCSISBPI_01": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY"],
         "cdev_type": "SW",
         "cipher_algo": "des-docsisbpi",
@@ -2554,7 +2068,7 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
     },
 
     "openssl_DES_CBC_00": {
-        "vdev": "crypto_openssl_pmd",
+        "vdev": "crypto_openssl",
         "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
         "cdev_type": "SW",
         "cipher_algo": ["des-cbc"],
@@ -2573,55 +2087,15 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "output_hash": "*"
     },
 
-    "scheduler_rr_AES_CBC_00": {
-        "vdev": "crypto_scheduler_rr",
-        "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "HW",
-        "cipher_algo": ["aes-cbc"],
-        "cipher_op": ["ENCRYPT"],
-        "cipher_key": [16],
-        "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [64],
-        "auth_key_random_size": "",
-        "aad": [0],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [20, 32],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_rr_AES_GCM_00": {
-        "vdev": "crypto_scheduler_rr",
-        "chain": ["AEAD"],
-        "cdev_type": "HW",
-        "cipher_algo": ["aes-gcm"],
-        "cipher_op": ["ENCRYPT"],
-        "cipher_key": [16, 24, 32],
-        "iv": [12],
-        "auth_algo": ["aes-gcm"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [16],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_psb_AES_CBC_00": {
-        "vdev": "crypto_scheduler_psb",
-        "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "SW",
+    "scheduler_AES_CBC_00": {
+        "vdev": "crypto_scheduler",
+        "chain": ["CIPHER_HASH"],
+        "cdev_type": "ANY",
         "cipher_algo": ["aes-cbc"],
         "cipher_op": ["ENCRYPT", "DECRYPT"],
         "cipher_key": [16],
         "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
+        "auth_algo": ["sha1-hmac"],
         "auth_op": ["GENERATE"],
         "auth_key": [64],
         "auth_key_random_size": "",
@@ -2633,90 +2107,10 @@ fc2ab337f7031a0f20636c82074a6bebcf91f06e04d45fa1dcc8454b6be54e53e3f9c99f0f830b16
         "output_hash": "*"
     },
 
-    "scheduler_psb_AES_GCM_00": {
-        "vdev": "crypto_scheduler_psb",
+    "scheduler_AES_GCM_00": {
+        "vdev": "crypto_scheduler",
         "chain": ["AEAD"],
-        "cdev_type": "SW",
-        "cipher_algo": ["aes-gcm"],
-        "cipher_op": ["ENCRYPT"],
-        "cipher_key": [16, 24, 32],
-        "iv": [12],
-        "auth_algo": ["aes-gcm"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [16],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_fo_AES_CBC_00": {
-        "vdev": "crypto_scheduler_fo",
-        "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "SW",
-        "cipher_algo": ["aes-cbc"],
-        "cipher_op": ["ENCRYPT", "DECRYPT"],
-        "cipher_key": [16],
-        "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [64],
-        "auth_key_random_size": "",
-        "aad": [0],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [20, 32],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_fo_AES_GCM_00": {
-        "vdev": "crypto_scheduler_fo",
-        "chain": ["AEAD"],
-        "cdev_type": "SW",
-        "cipher_algo": ["aes-gcm"],
-        "cipher_op": ["ENCRYPT"],
-        "cipher_key": [16, 24, 32],
-        "iv": [12],
-        "auth_algo": ["aes-gcm"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [16],
-        "auth_key_random_size": "",
-        "aad": [16],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [16],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_mm_AES_CBC_00": {
-        "vdev": "crypto_scheduler_mm",
-        "chain": ["CIPHER_ONLY", "CIPHER_HASH"],
-        "cdev_type": "SW",
-        "cipher_algo": ["aes-cbc"],
-        "cipher_op": ["ENCRYPT", "DECRYPT"],
-        "cipher_key": [16],
-        "iv": [16],
-        "auth_algo": ["sha1-hmac", "sha2-256-hmac"],
-        "auth_op": ["GENERATE"],
-        "auth_key": [64],
-        "auth_key_random_size": "",
-        "aad": [0],
-        "aad_random_size": "",
-        "input": [256],
-        "digest_size": [20, 32],
-        "output_cipher": "*",
-        "output_hash": "*"
-    },
-
-    "scheduler_mm_AES_GCM_00": {
-        "vdev": "crypto_scheduler_mm",
-        "chain": ["AEAD"],
-        "cdev_type": "SW",
+        "cdev_type": "ANY",
         "cipher_algo": ["aes-gcm"],
         "cipher_op": ["ENCRYPT"],
         "cipher_key": [16, 24, 32],
