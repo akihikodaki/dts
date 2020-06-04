@@ -29,32 +29,37 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+from net_device import GetNicObj
+from config import SuiteConf
+
+conf = SuiteConf('cryptodev_sample')
+
 
 def build_dpdk_with_cryptodev(test_case):
     # Rebuild the dpdk with cryptodev pmds
     snow3g_lib_path = "/root/libsso_snow3g/snow3g/"
-    if "snow3g_lib_path" in test_case.get_suite_cfg():
-        snow3g_lib_path = test_case.get_suite_cfg()["snow3g_lib_path"]
+    if "snow3g_lib_path" in conf.suite_cfg:
+        snow3g_lib_path = conf.suite_cfg["snow3g_lib_path"]
 
     zuc_lib_path = "/root/libsso_zuc.1.0.1.1-8/zuc"
-    if "zuc_lib_path" in test_case.get_suite_cfg():
-        zuc_lib_path = test_case.get_suite_cfg()["zuc_lib_path"]
+    if "zuc_lib_path" in conf.suite_cfg:
+        zuc_lib_path = conf.suite_cfg["zuc_lib_path"]
 
     kasumi_lib_path = "/root/LibSSO_0_3_1/isg_cid-wireless_libs/ciphers/kasumi/"
-    if "kasumi_lib_path" in test_case.get_suite_cfg():
-        kasumi_lib_path = test_case.get_suite_cfg()["kasumi_lib_path"]
+    if "kasumi_lib_path" in conf.suite_cfg:
+        kasumi_lib_path = conf.suite_cfg["kasumi_lib_path"]
 
     fip_cflags_path = "'-I/opt/openssl-fips-2.0.16/include/'"
-    if "fip_cflags_path" in test_case.get_suite_cfg():
-        fip_cflags_path = test_case.get_suite_cfg()["fip_cflags_path"]
+    if "fip_cflags_path" in conf.suite_cfg:
+        fip_cflags_path = conf.suite_cfg["fip_cflags_path"]
 
     fip_ldflags_path = "'-L/opt/openssl-fips-2.0.16/'"
-    if "fip_ldflags_path" in test_case.get_suite_cfg():
-        fip_cflags_path = test_case.get_suite_cfg()["fip_ldflags_path"]
+    if "fip_ldflags_path" in conf.suite_cfg:
+        fip_cflags_path = conf.suite_cfg["fip_ldflags_path"]
 
     fip_library_path = "/opt/openssl-fips-2.0.16/"
-    if "fip_library_path" in test_case.get_suite_cfg():
-        fip_cflags_path = test_case.get_suite_cfg()["fip_library_path"]
+    if "fip_library_path" in conf.suite_cfg:
+        fip_cflags_path = conf.suite_cfg["fip_library_path"]
 
     test_case.dut.send_expect(
         "export LIBSSO_SNOW3G_PATH={}".format(snow3g_lib_path), "#")
@@ -91,30 +96,61 @@ def build_dpdk_with_cryptodev(test_case):
 
 
 def bind_qat_device(test_case, driver = "igb_uio"):
-    if not driver:
-        test_case.logger.error("Please configure the driver of qat device to bind")
     if driver == 'vfio-pci':
+        test_case.dut.send_expect('modprobe vfio', '#', 10)
         test_case.dut.send_expect('modprobe vfio-pci', '#', 10)
 
-    if "crypto_dev_id" in test_case.get_suite_cfg():
-        crypto_dev_id = test_case.get_suite_cfg()["crypto_dev_id"]
+    if "crypto_dev_id" in conf.suite_cfg:
+        dev_id = conf.suite_cfg["crypto_dev_id"]
+        test_case.logger.info("specified the qat hardware device id in cfg: {}".format(dev_id))
+        out = test_case.dut.send_expect("lspci -D -d:{}|awk '{{print $1}}'".format(dev_id), "# ", 10)
     else:
-        crypto_dev_id = "443"
-    test_case.logger.info("crypto device id: " + crypto_dev_id)
+        out = test_case.dut.send_expect("lspci -D | grep QuickAssist |awk '{{print $1}}'", "# ", 10)
 
-    # Bind QAT VF devices
-    out = test_case.dut.send_expect("lspci -d:{}|awk '{{print $1}}'".format(crypto_dev_id), "# ", 10)
-    crypto_list = out.replace("\r", "\n").replace("\n\n", "\n").split("\n")
-    test_case._crypto_pci = crypto_list[0]
-    test_case.dut.send_expect(
-        'echo "8086 {}" > /sys/bus/pci/drivers/{}/new_id'.format(crypto_dev_id, driver), "# ", 10)
-    for line in crypto_list:
-        cmd = "echo 0000:{} > /sys/bus/pci/devices/0000\:{}/driver/unbind".format(
-            line, line.replace(":", "\:"))
-        test_case.dut.send_expect(cmd, "# ", 10)
-        cmd = "echo 0000:{} > /sys/bus/pci/drivers/{}/bind".format(
-            line, driver)
-        test_case.dut.send_expect(cmd, "# ", 10)
+    pf_list = out.replace("\r", "\n").replace("\n\n", "\n").split("\n")
+
+    dev = {}
+    for line in pf_list:
+        addr_array = line.strip().split(':')
+        if len(addr_array) !=3:
+            continue
+        domain_id = addr_array[0]
+        bus_id = addr_array[1]
+        devfun_id = addr_array[2]
+        pf_port = GetNicObj(test_case.dut, domain_id, bus_id, devfun_id)
+
+        sriov_vfs_pci = pf_port.get_sriov_vfs_pci()
+        if not sriov_vfs_pci:
+            raise Exception("can not get vf pci")
+
+        dev[line.strip()] = sriov_vfs_pci
+
+        test_case.dut.bind_eventdev_port(driver, ' '.join(sriov_vfs_pci))
+
+    if not dev:
+        raise Exception("can not find qat device")
+
+    test_case.dev = dev
+
+
+def get_qat_devices(test_case, cpm_num=None, num=1):
+    if not cpm_num:
+        cpm_num = len(test_case.dev.keys())
+    n, dev_list = 0, []
+    if cpm_num > len(test_case.dev.keys()):
+        self.logger.warning("QAT card only {} cpm, but {} required".format(
+            len(test_case.dev), cpm_num))
+        return []
+    for i in range(num):
+        for cpm in list(test_case.dev.keys())[:cpm_num]:
+            if n >= num:
+                break
+            if i < len(test_case.dev[cpm]):
+                dev_list.append(test_case.dev[cpm][i])
+            else:
+                self.logger.warning("not enough vf in cpm: {}".format(cpm))
+            n += 1
+    return dev_list
 
 
 def clear_dpdk_config(test_case):
@@ -147,6 +183,15 @@ default_eal_opts = {
 
 
 def get_eal_opt_str(test_case, override_eal_opts={}, add_port=False):
+    cores = ','.join(test_case.dut.get_core_list("1S/3C/1T"))
+    if "l" in conf.suite_cfg:
+        cores = conf.suite_cfg["l"]
+    default_eal_opts.update({'l': cores})
+    if "socket-mem" in conf.suite_cfg:
+        default_eal_opts.update({"socket-mem": (conf.suite_cfg["socket-mem"])})
+    mem_channel = test_case.dut.get_memory_channels()
+    default_eal_opts.update({'n': mem_channel})
+
     return get_opt_str(test_case, default_eal_opts, override_eal_opts, add_port)
 
 
@@ -158,14 +203,14 @@ def get_opt_str(test_case, default_opts, override_opts={}, add_port=False):
         if key in test_case.get_case_cfg():
             opts[key] = test_case.get_case_cfg()[key]
 
+    # Update options with func input
+    opts.update(override_opts)
+
     pci_list = [port["pci"] for port in test_case.dut.ports_info]
     if 'w' in list(opts.keys()) and opts['w']:
         pci_list.append(opts['w'])
     if add_port and pci_list:
         opts['w'] = " -w ".join(pci_list)
-
-    # Update options with func input
-    opts.update(override_opts)
 
     # Generate option string
     opt_str = ""
@@ -192,7 +237,7 @@ def is_test_skip(test_case):
 
 
 def is_build_skip(test_case):
-    if "build_skip" in test_case.get_suite_cfg() \
-       and test_case.get_suite_cfg()["build_skip"] == "Y":
+    if "build_skip" in conf.suite_cfg \
+       and conf.suite_cfg["build_skip"] == "Y":
         test_case.logger.info("Build Skip is YES")
         return True
