@@ -100,352 +100,160 @@ class PerfTestsCryptodev(TestCase):
     def tear_down(self):
         self.dut.kill_all()
 
-    def _run_func(self, eal_opt_str, crypto_func_opt_str, case_name):
+    def test_verify_aesni_mb(self):
+        self._run_crypto_func()
+
+    def test_verify_qat(self):
+        self._run_crypto_func()
+
+    def test_verify_openssl_qat(self):
+        self._run_crypto_func()
+
+    def test_verify_openssl(self):
+        self._run_crypto_func()
+
+    def test_latency_qat(self):
+        self._run_crypto_func()
+
+    def test_latency_auth_qat(self):
+        self._run_crypto_func()
+
+    def test_latency_aead_qat(self):
+        self._run_crypto_func()
+
+    def test_latency_aesni_gcm(self):
+        self._run_crypto_func()
+
+    def test_latency_auth_aesni_mb(self):
+        self._run_crypto_func()
+
+    def test_latency_aesni_mb(self):
+        self._run_crypto_func()
+
+    def test_qat_aes_cbc_sha1_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_aes_cbc_sha1_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_aes_cbc_sha2_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_aes_cbc_sha2_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_aes_gcm(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_aes_gcm(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_encrypt_aes_docsisbpi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_encrypt_aes_docsisbpi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_decrypt_aes_docsisbpi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_decrypt_aes_docsisbpi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_kasumi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_kasumi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_snow3g(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_snow3g(self):
+        self._run_crypto_perf_throughput()
+
+    def test_qat_zuc(self):
+        self._run_crypto_perf_throughput()
+
+    def test_sw_zuc(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_aes_cbc_sha1_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_aes_cbc_sha2_hmac(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_aes_gcm(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_kasumi(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_snow3g(self):
+        self._run_crypto_perf_throughput()
+
+    def test_scheduler_zuc(self):
+        self._run_crypto_perf_throughput()
+
+    # Private functions
+    def _run_crypto_func(self):
+        if cc.is_test_skip(self):
+            return
+
+        cores = ','.join(self.dut.get_core_list("1S/2C/1T"))
+        config = {'l': cores}
+        devices = self._get_crypto_device(1)
+        if not devices:
+            self.logger.info("can not get device or unsupported, skip.")
+            return
+
+        config.update(devices)
+        eal_opt_str = cc.get_eal_opt_str(self, config)
+        crypto_func_opt_str = self._get_crypto_perf_opt_str()
+
         cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
                                           eal_opt_str,
                                           crypto_func_opt_str)
-        self.logger.info(cmd_str)
         try:
-            out = self.dut.send_expect(cmd_str+">%s/%s.txt" % (self.dut_file_dir, case_name), "#", 600)
+            self.dut.send_expect(cmd_str + ">%s/%s.txt" % (
+                self.dut_file_dir, self.running_case), "#", 600)
         except Exception as ex:
             self.logger.error(ex)
             raise ex
-        out = self.dut.send_expect("cat %s/%s.txt | grep fail" % (self.dut_file_dir, case_name), "#")
-        return out
 
-    def test_verify_aesni_mb(self):
+        out = self.dut.send_command("cat %s/%s.txt" % (
+            self.dut_file_dir, self.running_case), 30)
+
+        self.verify('Error' not in out, "Test function failed")
+        self.verify('failed' not in out, "Test function failed")
+
+    def _run_crypto_perf(self):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_aesni_mb")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_verify_qat(self):
-        if cc.is_test_skip(self):
+        self.c_num, self.t_num = self._get_core_and_thread_num()
+        devices = self._get_crypto_device(self.t_num)
+        if not devices:
+            self.logger.info("can not get device or unsupported, skip.")
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_qat")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_verify_openssl_qat(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_openssl_qat")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_verify_openssl(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_verify_openssl")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_latency_qat(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_qat")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_latency_auth_qat(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_auth_qat")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_latency_aead_qat(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_aead_qat")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_latency_aesni_gcm(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str, crypto_func_opt_str, "test_latency_aesni_gcm")
-        self.verify(len(out) == 0, "Test function failed")
-
-    def test_latency_auth_aesni_mb(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str,crypto_func_opt_str,"test_latency_auth_aesni_mb")
-        self.verify(len(out) ==0 , "Test function failed")
-
-    def test_latency_aesni_mb(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_func_opt_str = self._get_crypto_perf_opt_str()
-        out = self._run_func(eal_opt_str,crypto_func_opt_str,"test_latency_aesni_mb")
-        self.verify(len(out) ==0 , "Test function failed")
-
-    def test_qat_aes_cbc_sha1_hmac(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
+        eal_opt_str = cc.get_eal_opt_str(self, devices)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_aes_cbc_sha1_hmac")
-        self.verify(result, "Test failed")
 
-    def test_sw_aes_cbc_sha1_hmac(self):
-        if cc.is_test_skip(self):
-            return
+        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
+                                          eal_opt_str,
+                                          crypto_perf_opt_str)
+        try:
+            out = self.dut.send_expect(cmd_str, "#", 600)
+        except Exception as ex:
+            self.logger.error(ex)
+            raise ex
 
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_aes_cbc_sha1_hmac")
-        self.verify(result, "Test failed")
+        results = self._parse_output(out)
 
-    def test_qat_aes_cbc_sha2_hmac(self):
-        if cc.is_test_skip(self):
-            return
+        return results
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_aes_cbc_sha2_hmac")
-        self.verify(result, "Test failed")
-
-    def test_sw_aes_cbc_sha2_hmac(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_aes_cbc_sha2_hmac")
-        self.verify(result, "Test failed")
-
-    def test_qat_aes_gcm(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_aes_gcm")
-        self.verify(result, "Test failed")
-
-    def test_sw_aes_gcm(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_aes_gcm")
-        self.verify(result, "Test failed")
-
-    def test_qat_encrypt_aes_docsisbpi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_encrypt_aes_docsisbpi")
-        self.verify(result, "Test failed")
-
-    def test_sw_encrypt_aes_docsisbpi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_encrypt_aes_docsisbpi")
-        self.verify(result, "Test failed")
-
-    def test_qat_decrypt_aes_docsisbpi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_decrypt_aes_docsisbpi")
-        self.verify(result, "Test failed")
-
-    def test_sw_decrypt_aes_docsisbpi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_decrypt_aes_docsisbpi")
-        self.verify(result, "Test failed")
-
-    def test_qat_kasumi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_kasumi")
-        self.verify(result, "Test failed")
-
-    def test_sw_kasumi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_kasumi")
-        self.verify(result, "Test failed")
-
-    def test_qat_snow3g(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_snow3g")
-        self.verify(result, "Test failed")
-
-    def test_sw_snow3g(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_snow3g")
-        self.verify(result, "Test failed")
-
-    def test_qat_zuc(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self, {"vdev":None})
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "qat_zuc")
-        self.verify(result, "Test failed")
-
-    def test_sw_zuc(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "sw_zuc")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_aes_cbc_sha1_hmac(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_aes_cbc_sha1_hmac")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_aes_cbc_sha2_hmac(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_aes_cbc_sha2_hmac")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_aes_gcm(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_aes_gcm")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_kasumi(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_kasumi")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_snow3g(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_snow3g")
-        self.verify(result, "Test failed")
-
-    def test_scheduler_zuc(self):
-        if cc.is_test_skip(self):
-            return
-
-        eal_opt_str = cc.get_eal_opt_str(self)
-        crypto_perf_opt_str = self._get_crypto_perf_opt_str()
-        result = self._run_crypto_perf_throughput(eal_opt_str,
-                                                  crypto_perf_opt_str,
-                                                  "scheduler_zuc")
-        self.verify(result, "Test failed")
-
-    # Private functions
     def _get_crypto_perf_opt_str(self, override_crypto_perf_opts={}):
         return cc.get_opt_str(self, self._default_crypto_perf_opts,
                               override_crypto_perf_opts)
@@ -456,16 +264,15 @@ class PerfTestsCryptodev(TestCase):
             line_nb = len(lines)
             self.logger.debug("Total output lines: " + str(line_nb))
 
-            # Find data line
             for line_index in range(line_nb):
                 if lines[line_index].startswith("    lcore id"):
                     self.logger.debug("data output line from: " + str(line_index))
                     break
-            data_line = line_index + 2
 
             results = []
             pattern = re.compile(r'\s+')
-            for line in lines[data_line:-1]:
+            for line in lines[line_index:]:
+                print(line)
                 result = {}
                 result_list = pattern.split(line.strip(" "))
                 if result_list[0] == "lcore id" or result_list[0] == "lcore" or not result_list[0]:
@@ -486,7 +293,7 @@ class PerfTestsCryptodev(TestCase):
             return results
         except Exception as ex:
             self.logger.error(ex)
-            raise ex
+            return []
 
     def _stat_results_by_buf_size(self, results):
         stats_results = {}
@@ -521,121 +328,180 @@ class PerfTestsCryptodev(TestCase):
         self.logger.debug(stats_results)
         return stats_results
 
-    def _run_crypto_perf(self, eal_opt_str, crypto_perf_opt_str):
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path,
-                                          eal_opt_str,
-                                          crypto_perf_opt_str)
-        self.logger.info(cmd_str)
-        try:
-            out = self.dut.send_expect(cmd_str, "#", 600)
-        except Exception as ex:
-            self.logger.error(ex)
-            raise ex
-
-        results = self._parse_output(out)
-
-        return results
-
     def _get_core_and_thread_num(self):
         cpu_info ={}
         out = self.dut.send_expect("lscpu", "#")
         for each_line in out.split('\n'):
+            if each_line.find(':') == -1:
+                continue
             key, value = each_line.split(':')
             cpu_info[key] = value.strip()
-
         core, thread = 0, 0
         lcores = self.get_case_cfg()["l"].split(",")
         for lcore in lcores[1:]:
-            if int(lcore) < int(cpu_info['Core(s) per socket']) * int(cpu_info['Socket(s)']):
+            if int(lcore.strip()) < int(cpu_info['Core(s) per socket']) * int(cpu_info['Socket(s)']):
                 core += 1
                 thread += 1
             elif int(lcore) < int(cpu_info['CPU(s)']):
                 thread += 1
         return core, thread
 
-    def _run_crypto_perf_throughput(self, eal_opt_str, crypto_perf_opt_str,
-                                    case_name):
-        c_num, t_num = self._get_core_and_thread_num()
-        try:
-            results = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
+    def _get_crypto_device(self, num):
+        device = {}
+        if self.get_case_cfg()["devtype"] == "crypto_aesni_mb":
+            dev = "crypto_aesni_mb"
+        elif self.get_case_cfg()["devtype"] == "crypto_qat":
+            w = cc.get_qat_devices(self, cpm_num=1, num=num)
+            device["w"] = ' -w '.join(w)
+            device["vdev"] = None
+        elif self.get_case_cfg()["devtype"] == "crypto_openssl":
+            dev = "crypto_openssl"
+        elif self.get_case_cfg()["devtype"] == "crypto_aesni_gcm":
+            dev = "crypto_aesni_gcm"
+        elif self.get_case_cfg()["devtype"] == "crypto_kasumi":
+            dev = "crypto_kasumi"
+        elif self.get_case_cfg()["devtype"] == "crypto_snow3g":
+            dev = "crypto_snow3g"
+        elif self.get_case_cfg()["devtype"] == "crypto_zuc":
+            dev = "crypto_zuc"
+        elif self.get_case_cfg()["devtype"] == "crypto_scheduler":
+            dev = "crypto_scheduler"
+            w = cc.get_qat_devices(self, cpm_num=3, num=num * 3)
+            if not w:
+                return {}
+            vdev_list = []
+            for i in range(num):
+                vdev = "{}{},slave={}_qat_sym,slave={}_qat_sym,slave={}_qat_sym,mode=round-robin".format(dev,
+                        i, w[i*3], w[i*3 + 1], w[i*3 + 2])
+                vdev_list.append(vdev)
+            device["w"] = ' -w '.join(w)
+            device["vdev"] = ' --vdev '.join(vdev_list)
+        else:
+            return {}
 
-            stats_results = self._stat_results_by_buf_size(results)
-            if not stats_results:
-                return False
+        if not device:
+            vdev_list = []
+            for i in range(num):
+                vdev = "{}{}".format(dev, i)
+                vdev_list.append(vdev)
+            device["w"] = "0000:00:00.0"
+            device["vdev"] = ' --vdev '.join(vdev_list)
 
-            json_result = []
-            for buf_size, values in list(stats_results.items()):
-                status, delta = "PASS", 0
-                # delta, status
-                if 'accepted_tolerance' in self.get_suite_cfg():
-                    self.accepted_gap = self.get_suite_cfg()['accepted_tolerance']
-                    self.expected_throughput =\
-                    self.get_suite_cfg()['expected_throughput'][case_name][buf_size]
-                    delta = (values["gbps"] - self.expected_throughput)/self.expected_throughput
-                    if abs(delta) > self.accepted_gap:
+        return device
+
+    def _run_crypto_perf_throughput(self):
+        results = self._run_crypto_perf()
+
+        stats_results = self._stat_results_by_buf_size(results)
+        json_result = []
+
+        framesizes = self.get_case_cfg()['buffer-sz'].split(',')
+        running_case = self.running_case
+        dut = self.dut.crb["IP"]
+        dut_index = self._suite_result.internals.index(dut)
+        target_index = self._suite_result.internals[dut_index+1].index(self.target)
+        suite_index = self._suite_result.internals[dut_index+1][target_index+2].index(self.suite_name)
+        case_index = self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].index(running_case)
+        self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index+1)
+        self._suite_result.internals[dut_index+1][target_index+2][suite_index+1].pop(case_index)
+
+        for buf_size in framesizes:
+            buf_size = int(buf_size)
+            status = "PASS"
+            self._suite_result.test_case = '_'.join([running_case,
+                str(buf_size), "{}C{}T".format(self.c_num, self.t_num)])
+            if buf_size in stats_results.keys():
+                try:
+                    values = stats_results[buf_size]
+                    perf_info = self.format_json(buf_size, values, status)
+                    json_result.append(perf_info)
+
+                    if perf_info['status'] == "PASS":
+                        self._suite_result.test_case_passed()
+                    else:
                         status = "FAIL"
+                        self._suite_result.test_case_failed("Test failed")
+                except Exception as ex:
+                    self.logger.error(ex)
+                    status = "FAIL"
+                    self._suite_result.test_case_failed("Test failed")
+            else:
+                status = "FAIL"
+                self._suite_result.test_case_failed("Test failed")
 
-                perf_info={
-                                "status": status,
-                                "performance":
-                                    [
-                                        {
-                                        "name": "throughput",
-                                        "value": values["gbps"],
-                                        "unit": "Gbps",
-                                        "delta": delta
-                                        },
-                                        {
-                                        "name":"failed_enq",
-                                        "unit": "ops",
-                                        "value": values["enqueue_failures"]
-                                        },
-                                        {
-                                        "name":"failed_deq",
-                                        "unit": "ops",
-                                        "value": values["dequeue_failures"]
-                                        },
-                                        {
-                                        "name":"throughput_mops",
-                                        "unit": "Mops",
-                                        "value": values["mops"]
-                                        },
-                                        {
-                                        "name":"cycle_buf",
-                                        "unit": "Cycles",
-                                        "value": values["cycle_buf"]/values["nr"]
-                                        },
-                                    ],
-                                "parameters":
-                                    [
-                                        {
-                                        "name": "core_num/thread_num",
-                                        "unit": "num/num",
-                                        "value": "{}/{}".format(c_num, t_num)
-                                        },
-                                        {
-                                        "name":"frame_size",
-                                        "unit": "bytes",
-                                        "value": buf_size
-                                        },
-                                        {
-                                        "name":"burst_size",
-                                        "unit": "bytes",
-                                        "value": values["burst_size"]
-                                        },
-                                        {
-                                        "name":"total_ops",
-                                        "unit": "ops",
-                                        "value": values["enqueue"]
-                                        },
-                                    ]
-                                }
+        self._perf_result[self.running_case] = json_result
+        self.logger.debug(self._perf_result)
+        self.verify(status == "PASS", "Test Failed")
 
-                self.logger.debug(perf_info)
-                json_result.append(perf_info)
-            self._perf_result[case_name] = json_result
-            self.logger.debug(self._perf_result)
-            return True
-        except Exception as ex:
-            self.logger.error(ex)
-            return False
+    def format_json(self, buf_size, values, status="PASS"):
+        status, delta = "PASS", 0
+        # delta, status
+        if 'accepted_tolerance' in self.get_suite_cfg():
+            self.accepted_gap = self.get_suite_cfg()['accepted_tolerance']
+            if self.running_case in self.get_suite_cfg()['expected_throughput']:
+                self.expected_throughput =\
+                        self.get_suite_cfg()['expected_throughput'][self.running_case][buf_size]
+                delta = (values["gbps"] - self.expected_throughput)/self.expected_throughput
+                delta = round(delta, 4)
+            if abs(delta) > self.accepted_gap:
+                self.logger.warning("Failed, buf_size: {}, delta: {}, > accepted tolerance {}"\
+                        .format(buf_size, delta, self.accepted_gap))
+                status = "FAIL"
+
+        perf_info={
+                "status": status,
+                "performance":
+                [
+                    {
+                        "name": "throughput",
+                        "value": values["gbps"],
+                        "unit": "Gbps",
+                        "delta": delta
+                    },
+                    {
+                        "name":"failed_enq",
+                        "unit": "ops",
+                        "value": values["enqueue_failures"]
+                    },
+                    {
+                        "name":"failed_deq",
+                        "unit": "ops",
+                        "value": values["dequeue_failures"]
+                    },
+                    {
+                        "name":"throughput_mops",
+                        "unit": "Mops",
+                        "value": values["mops"]
+                    },
+                    {
+                        "name":"cycle_buf",
+                        "unit": "Cycles",
+                        "value": values["cycle_buf"]/values["nr"]
+                    },
+                ],
+                "parameters":
+                [
+                    {
+                        "name": "core_num/thread_num",
+                        "unit": "C/T",
+                        "value": "{}/{}".format(self.c_num, self.t_num)
+                    },
+                    {
+                        "name":"frame_size",
+                        "unit": "bytes",
+                        "value": buf_size
+                    },
+                    {
+                        "name":"burst_size",
+                        "unit": "bytes",
+                        "value": values["burst_size"]
+                    },
+                    {
+                        "name":"total_ops",
+                        "unit": "ops",
+                        "value": values["enqueue"]
+                    },
+                    ]
+                }
+        return perf_info
+
