@@ -2202,8 +2202,6 @@ class TestCVLFdir(TestCase):
         self._rte_flow_validate(vectors_ipv4_udp)
 
     def test_mac_ipv4_tcp(self):
-        import pudb
-        pudb.set_trace()
         self._rte_flow_validate(vectors_ipv4_tcp)
 
     def test_mac_ipv4_sctp(self):
