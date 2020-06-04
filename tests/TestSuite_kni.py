@@ -613,8 +613,8 @@ class TestKni(TestCase):
             self.tester.send_expect("ifconfig %s up" % tx_interface, "# ")
             out = self.dut.send_expect("ping6 -w 1 -I %s %s" %
                                        (v_intf_ip, str(ipv6_address)), "# ", 10)
-            out1 = self.dut.send_expect("ping6 -w 1 -I %s %s" %
-                                       (virtual_interface, str(ipv6_address)), "# ", 10)
+            out1 = self.dut.send_expect("ping6 -w 1  %s%%%s" %
+                                       (str(ipv6_address),virtual_interface), "# ", 10)
             # FC25 ping6 output info is "64 bytes from ipv6_address%v: icmp_seq=1 ttl=64"
             # other os ping6 output is "64 bytes from ipv6_address: icmp_seq=1 ttl=64"
             expected_str = "64 bytes from %s" % ipv6_address
@@ -623,7 +623,7 @@ class TestKni(TestCase):
             out = self.tester.send_expect(
                 "ping6 -w 1 -I %s %s" % (tx_intf_ip, str(ipv6_address)), "# ", 10)
             out1 = self.tester.send_expect(
-                "ping6 -w 1 -I %s %s" % (tx_interface, str(ipv6_address)), "# ", 10)
+                "ping6 -w 1 %s%%%s" % (str(ipv6_address),tx_interface), "# ", 10)
             expected_str = "64 bytes from %s" % ipv6_address
             self.verify(any([expected_str in out, expected_str in out1]),
                         "kni cannot reply ping6 packet")
@@ -637,8 +637,8 @@ class TestKni(TestCase):
 
             out = self.dut.send_expect("ping6 -w 1 -I %s %s" %
                                        (v_intf_ip, ''.join(ipv6list)), "# ", 10)
-            out1 = self.dut.send_expect("ping6 -w 1 -I %s %s" %
-                                       (virtual_interface, ''.join(ipv6list)), "# ", 10)
+            out1 = self.dut.send_expect("ping6 -w 1 %s%%%s" %
+                                       (''.join(ipv6list),virtual_interface), "# ", 10)
             expected_str = "0 received, 100% packet loss"
             self.verify(any([expected_str in out, expected_str in out1]),
                         "ping6 not supported")
