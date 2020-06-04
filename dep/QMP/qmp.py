@@ -108,7 +108,7 @@ class QEMUMonitorProtocol:
                 been closed
         """
         try:
-            self.__sock.sendall(json.dumps(qmp_cmd))
+            self.__sock.sendall(str.encode(json.dumps(qmp_cmd)))
         except socket.error as err:
             if err[0] == errno.EPIPE:
                 return
@@ -135,7 +135,7 @@ class QEMUMonitorProtocol:
         if not ret:
             return
         else:
-            if 'error' in ret:
+            if 'error' in ret.keys():
                 raise Exception(ret['error']['desc'])
             return ret['return']
 
