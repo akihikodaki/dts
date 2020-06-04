@@ -790,6 +790,21 @@ class TrexPacketGenerator(PacketGenerator):
         rate_percent = "{0}%".format(options.get('rate') or
                                      self._traffic_opt.get('rate') or
                                      '100')
+        # check the link status before transmission
+        self.logger.info('check the trex port link status')
+        for port in self._traffic_ports:
+            try_times = 0
+            port_attr = self._conn.get_port_attr(port)
+            while try_times < 5:
+                self.logger.info(pformat(port_attr))
+                if 'link' in port_attr.keys() and port_attr['link'].lower() == 'down':
+                    time.sleep(2)
+                    try_times = try_times + 1
+                    port_attr = self._conn.get_port_attr(port)
+                else:
+                    break
+                if try_times == 5 and port_attr['link'].lower() == 'down':
+                    self.logger.error('the port: %d link status is down, the transmission can not work right' % port)
         try:
             # clear the stats before injecting
             self._conn.clear_stats()
