@@ -136,7 +136,7 @@ class TestVfL3fwd(TestCase):
                 self.host_testpmd = PmdOutput(self.dut)
                 eal_param = '--socket-mem=1024,1024 --file-prefix=pf'
                 for i in valports:
-                    eal_param += ' -b %s' % self.sriov_vfs_port[i][0].pci
+                    eal_param += ' -w %s' % self.dut.ports_info[i]['pci']
                 core_config = self.cores[:len(valports)]
                 self.host_testpmd.start_testpmd(core_config, "", eal_param=eal_param)
                 for i in valports:

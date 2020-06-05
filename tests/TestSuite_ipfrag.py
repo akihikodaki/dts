@@ -302,10 +302,13 @@ l3fwd_ipv4_route_array[] = {\\\n"
             core_mask = utils.create_mask(self.dut.get_core_list(lcore))
 
         portmask = utils.create_mask([P0, P1])
+        eal_param = ""
+        for i in [P0, P1]:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         self.dut.send_expect("^c", "# ", 120)
-        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d -- -p %s -q %s" % (
-            core_mask, self.dut.get_memory_channels(), portmask, num_pthreads), "IP_FRAG:", 120)
+        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d %s -- -p %s -q %s" % (
+            core_mask, self.dut.get_memory_channels(), eal_param, portmask, num_pthreads), "IP_FRAG:", 120)
 
         result = [2, lcore, num_pthreads]
         for size in size_list:

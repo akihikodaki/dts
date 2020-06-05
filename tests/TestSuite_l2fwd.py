@@ -172,6 +172,9 @@ class TestL2fwd(TestCase):
         cores = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
 
         eal_params = self.dut.create_eal_parameters(cores=cores)
+        eal_param = ""
+        for i in ports:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         for frame_size in self.frame_sizes:
 
@@ -193,8 +196,8 @@ class TestL2fwd(TestCase):
 
             for queues in self.test_queues:
 
-                command_line = "./examples/l2fwd/build/l2fwd %s -- -q %s -p %s &" % \
-                    (eal_params, str(queues['queues']), port_mask)
+                command_line = "./examples/l2fwd/build/l2fwd %s %s -- -q %s -p %s &" % \
+                    (eal_params, eal_param, str(queues['queues']), port_mask)
 
 #                self.dut.send_expect(command_line, "memory mapped", 60)
                 self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)

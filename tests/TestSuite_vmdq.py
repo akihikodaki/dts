@@ -82,9 +82,12 @@ class TestVmdq(TestCase):
         self.verify(core_list is not None, "Requested cores failed")
         core_mask = utils.create_mask(core_list)
         port_mask = utils.create_mask(self.dut_ports)
+        eal_param = ""
+        for i in self.dut_ports:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
         # Run the application
-        self.dut.send_expect("./examples/vmdq/build/vmdq_app -c %s -n 4 -- -p %s --nb-pools %s --enable-rss" %
-                             (core_mask, port_mask, str(npools)), "reading queues", 120)
+        self.dut.send_expect("./examples/vmdq/build/vmdq_app -c %s -n 4 %s -- -p %s --nb-pools %s --enable-rss" %
+                             (core_mask, eal_param, port_mask, str(npools)), "reading queues", 120)
 
     def get_tgen_input(self, prios):
         """

@@ -110,9 +110,12 @@ class TestVmdqDcb(TestCase):
         self.verify(core_list is not None, "Requested %d cores failed" % ntcs)
         core_mask = utils.create_mask(core_list)
         port_mask = utils.create_mask(self.dut_ports)
+        eal_param = ""
+        for i in self.dut_ports:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
         # Run the application
-        self.dut.send_expect("./examples/vmdq_dcb/build/vmdq_dcb_app -c %s -n 4 -- -p %s --nb-pools %s --nb-tcs %s "
-                             "--enable-rss" % (core_mask, port_mask, str(npools), str(ntcs)), "reading queues", 120)
+        self.dut.send_expect("./examples/vmdq_dcb/build/vmdq_dcb_app -c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s "
+                             "--enable-rss" % (core_mask, eal_param, port_mask, str(npools), str(ntcs)), "reading queues", 120)
 
     def create_pcaps(self, prios):
         """

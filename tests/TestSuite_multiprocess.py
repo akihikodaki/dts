@@ -71,6 +71,9 @@ class TestMultiprocess(TestCase):
         executions.append({'nprocs': 4, 'cores': '1S/4C/1T', 'pps': 0})
         executions.append({'nprocs': 8, 'cores': '1S/4C/2T', 'pps': 0})
 
+        self.eal_param = ""
+        for i in self.dut_ports:
+            self.eal_param += " -w %s" % self.dut.ports_info[i]['pci']
         # start new session to run secondary
         self.session_secondary = self.dut.new_session()
 
@@ -97,12 +100,12 @@ class TestMultiprocess(TestCase):
         # Send message from secondary to primary
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask),
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=primary" % (self.target, coremask, self.eal_param),
                              "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
         self.session_secondary.send_expect(
-            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask), "Finished Process Init",
+            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=secondary" % (self.target, coremask, self.eal_param), "Finished Process Init",
             100)
 
         self.session_secondary.send_expect("send hello_primary", ">")
@@ -114,10 +117,10 @@ class TestMultiprocess(TestCase):
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.session_secondary.send_expect(
-            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary " % (self.target, coremask), "Finished Process Init", 100)
+            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=primary " % (self.target, coremask, self.eal_param), "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask),
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=secondary" % (self.target, coremask, self.eal_param),
                              "Finished Process Init", 100)
         self.session_secondary.send_expect("send hello_secondary", ">")
         out = self.dut.get_session_output()
@@ -134,11 +137,11 @@ class TestMultiprocess(TestCase):
 
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=primary" % (self.target, coremask),
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=primary" % (self.target, coremask, self.eal_param),
                                            "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=secondary" % (self.target, coremask),
+        self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=secondary" % (self.target, coremask, self.eal_param),
                              "Finished Process Init", 100)
         stringsSent = 0
         for line in open('/usr/share/dict/words', 'r').readlines():
@@ -160,13 +163,13 @@ class TestMultiprocess(TestCase):
         # Send message from secondary to primary (auto process type)
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto " % (self.target, coremask),
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=auto " % (self.target, coremask, self.eal_param),
                                    "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
         out = self.session_secondary.send_expect(
-            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
+            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=auto" % (self.target, coremask, self.eal_param), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out,
                     "The type of process (SECONDARY) was not detected properly")
 
@@ -180,11 +183,11 @@ class TestMultiprocess(TestCase):
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         out = self.session_secondary.send_expect(
-            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask), "Finished Process Init", 100)
+            "./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=auto" % (self.target, coremask, self.eal_param), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s --proc-type=auto" % (self.target, coremask),
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s --proc-type=auto" % (self.target, coremask, self.eal_param),
                                    "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out, "The type of process (SECONDARY) was not detected properly")
         self.session_secondary.send_expect("send hello_secondary", ">", 100)
@@ -202,10 +205,10 @@ class TestMultiprocess(TestCase):
 
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s -m 64" % (self.target, coremask),
+        self.session_secondary.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s -m 64" % (self.target, coremask, self.eal_param),
                                            "Finished Process Init", 100)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s" % (self.target, coremask), "# ", 100)
+        out = self.dut.send_expect("./examples/multi_process/simple_mp/%s/simple_mp -n 1 -c %s %s" % (self.target, coremask, self.eal_param), "# ", 100)
 
         self.verify("Is another primary process running" in out,
                     "No other primary process detected")
@@ -245,8 +248,8 @@ class TestMultiprocess(TestCase):
             execution = validExecutions[n]
             coreMask = utils.create_mask(self.dut.get_core_list(execution['cores'], socket=self.socket))
             self.session_secondary.send_expect(
-                "./examples/multi_process/symmetric_mp/%s/symmetric_mp -c %s --proc-type=auto -- -p %s --num-procs=%d --proc-id=%d" % (
-                    self.target, coreMask, portMask, execution['nprocs'], n), "Finished Process Init")
+                "./examples/multi_process/symmetric_mp/%s/symmetric_mp -c %s %s --proc-type=auto -- -p %s --num-procs=%d --proc-id=%d" % (
+                    self.target, coreMask, self.eal_param, portMask, execution['nprocs'], n), "Finished Process Init")
 
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
@@ -298,16 +301,16 @@ class TestMultiprocess(TestCase):
 
             coreMask = utils.create_mask(self.dut.get_core_list('1S/1C/1T'))
             portMask = utils.create_mask(self.dut_ports)
-            self.dut.send_expect("./examples/multi_process/client_server_mp/mp_server/%s/mp_server -n %d -c %s -- -p %s -n %d" % (
-                self.target, self.dut.get_memory_channels(), "0xA0", portMask, execution['nprocs']), "Finished Process Init", 20)
+            self.dut.send_expect("./examples/multi_process/client_server_mp/mp_server/%s/mp_server -n %d -c %s %s -- -p %s -n %d" % (
+                self.target, self.dut.get_memory_channels(), "0xA0", self.eal_param, portMask, execution['nprocs']), "Finished Process Init", 20)
             self.dut.send_expect("^Z", "\r\n")
             self.dut.send_expect("bg", "# ")
 
             for n in range(execution['nprocs']):
                 time.sleep(5)
                 coreMask = utils.create_mask([coreList[n]])
-                self.dut.send_expect("./examples/multi_process/client_server_mp/mp_client/%s/mp_client -n %d -c %s --proc-type=secondary -- -n %d" % (
-                    self.target, self.dut.get_memory_channels(), coreMask, n), "Finished Process Init")
+                self.dut.send_expect("./examples/multi_process/client_server_mp/mp_client/%s/mp_client -n %d -c %s %s --proc-type=secondary -- -n %d" % (
+                    self.target, self.dut.get_memory_channels(), coreMask, self.eal_param, n), "Finished Process Init")
                 self.dut.send_expect("^Z", "\r\n")
                 self.dut.send_expect("bg", "# ")
 

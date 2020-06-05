@@ -189,14 +189,17 @@ class TestPerformanceThread(TestCase):
         self.test_results["header"] = header_row
         self.result_table_create(header_row)
         self.test_results["data"] = []
+        eal_param = ""
+        for i in valports:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         for cores in self.nb_cores:
             core_list, core_mask = self.create_cores(cores)
             lcore_config, rx, tx = self.config_rx_tx(cores, core_list)
             if self.running_case is "test_perf_n_lcore_per_pcore":
-                cmdline = "{} -n 4 --lcores='{}' {} --rx='{}' --tx='{}'".format(self.path, lcore_config, params, rx, tx)
+                cmdline = "{} -n 4 {} --lcores='{}' {} --rx='{}' --tx='{}'".format(self.path, eal_param, lcore_config, params, rx, tx)
             else:
-                cmdline = "{} -c {} {} --rx='{}' --tx='{}'".format(self.path, core_mask, params, rx, tx)
+                cmdline = "{} -c {} {} {} --rx='{}' --tx='{}'".format(self.path, core_mask, eal_param, params, rx, tx)
             self.dut.send_expect(cmdline, "L3FWD:", 120)
 
             for frame_size in self.frame_sizes:
