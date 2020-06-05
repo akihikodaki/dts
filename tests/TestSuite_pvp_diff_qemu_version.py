@@ -81,6 +81,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pci_info = self.dut.ports_info[0]['pci']
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -220,6 +221,15 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             self.vm_dut.send_expect("set fwd mac", "testpmd> ", 20)
             self.vm_dut.send_expect("start", "testpmd> ")
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.07, 128: 0.10, 256: 0.17, 512: 0.18, 1024: 0.35, 1280: 0.40, 1500: 0.45}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def send_verify(self, qemu_version, vlan_id1=0, tag="Performance"):
         self.result_table_create(self.header_row)
         for frame_size in self.frame_sizes:
@@ -243,7 +253,9 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
             pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
-            self.verify(Mpps != 0, "can not received data of frame size %d" % frame_size)
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
             # update print table info
             data_row = [qemu_version, frame_size, str(Mpps), str(pct), tag]
             self.result_table_add(data_row)
