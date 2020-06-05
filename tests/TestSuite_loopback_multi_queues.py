@@ -108,15 +108,15 @@ class TestLoopbackMultiQueues(TestCase):
         calculate the average throughput
         """
         results = 0.0
-        results_row = []
+        self.vhost.send_expect("show port stats all", "testpmd>", 60)
         for i in range(10):
             out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
-            time.sleep(5)
+            time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             results += float(result)
         Mpps = results / (1000000 * 10)
-        self.verify(Mpps > 0, "port can not receive packets")
+        self.verify(Mpps > 5, "port can not receive packets")
         return Mpps
 
     def update_result_table(self, frame_size, case_info, Mpps):
@@ -365,7 +365,6 @@ class TestLoopbackMultiQueues(TestCase):
             self.start_virtio_testpmd(virtio_pmd_arg)
             self.send_and_verify("virtio 1.1 inorder non-mergeable")
             self.close_all_testpmd()
-
         self.result_table_print()
         self.verify_liner_for_multi_queue()
 
