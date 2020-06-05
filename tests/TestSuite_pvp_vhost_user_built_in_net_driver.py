@@ -64,6 +64,7 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.mem_channels = self.dut.get_memory_channels()
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
         self.prepare_vhost_switch()
+        self.number_of_ports = 1
 
         self.logger.info("You can config packet_size in file %s.cfg," % self.suite_name + \
                         " in region 'suite' like packet_sizes=[64, 128, 256]")
@@ -129,6 +130,15 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.verify("Error" not in out, "compilation l3fwd-power error")
         self.verify("No such" not in out, "Compilation error")
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.085, 128: 0.12, 256: 0.20, 512: 0.35, 1024: 0.50, 1280: 0.55, 1518: 0.60}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def send_and_verify(self):
         """
         Send packet with packet generator and verify
@@ -150,7 +160,9 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
             trans_options={'delay':5, 'duration': 20}
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=trans_options)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
             throughput = Mpps * 100 / \
                      float(self.wirespeed(self.nic, frame_size, 1))
 
