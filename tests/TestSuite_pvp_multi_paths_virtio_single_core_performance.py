@@ -100,6 +100,15 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         self.test_result = {}
         self.nb_desc = self.test_parameters[64][0]
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.085, 128: 0.12, 256: 0.20, 512: 0.35, 1024: 0.50, 1280: 0.55, 1518: 0.60}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def send_and_verify(self, case_info):
         """
         Send packet with packet generator and verify
@@ -126,8 +135,9 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
             traffic_opt = {'delay': 5}
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 0.0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
-
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
             linerate = Mpps * 100 / \
                          float(self.wirespeed(self.nic, frame_size, self.number_of_ports))
             self.throughput[frame_size][self.nb_desc] = Mpps
