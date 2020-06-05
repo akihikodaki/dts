@@ -58,7 +58,7 @@ class TestVhostMultiQueueQemu(TestCase):
         self.cores = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.verify(len(self.cores) >= 3, "Insufficient cores for speed testing")
         self.pci_info = self.dut.ports_info[0]['pci']
-
+        self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         self.queue_number = 2
         # Using file to save the vhost sample output since in jumboframe case,
         # there will be lots of output
@@ -87,8 +87,6 @@ class TestVhostMultiQueueQemu(TestCase):
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -s INT testpmd", "#")
-
-        self.frame_sizes = [64, 128, 256, 512, 1024, 1500]
         self.vm_testpmd_vector = self.target + "/app/testpmd -c %s -n 3" + \
                                  " -- -i --tx-offloads=0x0 " + \
                                  " --rxq=%d --txq=%d --rss-ip --nb-cores=2" % (self.queue_number, self.queue_number)
@@ -137,6 +135,15 @@ class TestVhostMultiQueueQemu(TestCase):
         self.verify(len(cores) >= 3, "Insufficient cores for speed testing, add the cpu number in cfg file.")
         self.vm_coremask = utils.create_mask(cores)
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.09, 128: 0.15, 256: 0.25, 512: 0.40, 1024: 0.50, 1280: 0.55, 1500: 0.60}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def vhost_performance(self):
         """
         Verify the testpmd can receive and forward the data
@@ -168,7 +175,9 @@ class TestVhostMultiQueueQemu(TestCase):
                                      self.number_of_ports))
             data_row = [frame_size, str(Mpps), str(pct), "Mergeable Multiqueue Performance"]
             self.result_table_add(data_row)
-            self.verify(Mpps != 0, "The receive data of frame-size: %d is 0" % frame_size)
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
         self.result_table_print()
 
     def send_and_verify(self, verify_type):
