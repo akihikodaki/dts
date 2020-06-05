@@ -339,17 +339,15 @@ class TestPowerPbf(TestCase):
     def get_high_freq_cores_index(self, number=1):
         ''' get one random high frequency core index, ignore core 0 '''
         high_freq = max(self.base_freqs_info.keys())
-        cores_index = self.base_freqs_info[high_freq][1:number] \
-            if self.base_freqs_info[high_freq][0] == 0 else \
-            self.base_freqs_info[high_freq][:number]
+        cores_index = self.base_freqs_info[high_freq][-number:]
         return cores_index
 
     def get_high_freq_core_mask(self, number=1, min_cores=5):
         index_list = []
         # get high frequency core first
-        cores_index = self.get_high_freq_cores_index(number + 1)
+        cores_index = self.get_high_freq_cores_index(number)
         [index_list.append(core_index) for core_index in cores_index]
-        high_freq_cores = index_list[1:]
+        high_freq_cores = index_list[:]
         # get normal cores to make sure minimum cores are enough
         cores_index = self.get_normal_cores_index()
         for core_index in cores_index:
@@ -622,7 +620,7 @@ class TestPowerPbf(TestCase):
         """
         Run after each test case.
         """
-        pass
+        self.dut.kill_all()
 
     def tear_down_all(self):
         """
