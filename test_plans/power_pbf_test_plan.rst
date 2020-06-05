@@ -30,9 +30,9 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=================================================
+===============
 Power PBF Tests
-=================================================
+===============
 PBF(Priority Base Frequency) is new power feature on some Intel CPU SKU. This feature can
 support some core in core list have garenteed higher base frequency DPDK start support this feature from 19.05
 
@@ -48,6 +48,8 @@ Check the SKU of Processor: 6230N, 6252N and 5218N can support this feature
 7. Modprobe msr module
 8. DON'T set intel_pstate to disable in grub
 9. Turn on the debug log for DPDK power lib, CONFIG_RTE_LIBRTE_POWER_DEBUG=y
+10. Install the Jansson development package, ``apt-get install libjansson-dev`` or ``dnf -y install jansson-devel``.
+
 
 Test Case1 : Check High Priority Core Can Be Recognized By Power Lib
 ====================================================================
@@ -120,7 +122,7 @@ Step 4: Send different command to power sample, then check the frequency::
     :"DISABLE_TURBO": Disable Turbo Boost for this core
 
 Test Case3 : Check "DISABLE_TURBO" Action When Core is In Turbo Status for High Priority Core
-==============================================================================================
+=============================================================================================
 Step 1. Create powermonitor fold for::
 
    Create monitor channel folder, /tmp/powermonitor, give permission 777
@@ -149,7 +151,7 @@ Step 4. Check the CPU frequency will be set to No turbo max frequency when turbo
 
 
 Test Case4:  Check Distributor Sample Use High Priority Core as Distribute Core
-======================================================================================
+===============================================================================
 Step 1. Get the Priority core list on DUT in test case 1::
 
     For example:
