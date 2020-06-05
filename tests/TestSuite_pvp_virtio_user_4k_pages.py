@@ -79,6 +79,7 @@ class TestPvpVirtioUser4kPages(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -95,6 +96,15 @@ class TestPvpVirtioUser4kPages(TestCase):
         self.table_header.append("Queue Num")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
+
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.08, 128: 0.10, 256: 0.18, 512: 0.20, 1024: 0.40, 1280: 0.45, 1518: 0.50}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
 
     def send_and_verify(self):
         """
@@ -114,7 +124,9 @@ class TestPvpVirtioUser4kPages(TestCase):
                             None, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 0, "%s can not receive packets" % (self.running_case))
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
             throughput = Mpps * 100 / \
                      float(self.wirespeed(self.nic, 64, 1))
 
