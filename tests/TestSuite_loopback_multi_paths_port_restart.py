@@ -152,14 +152,15 @@ class TestLoopbackPortRestart(TestCase):
         calculate the average throughput
         """
         results = 0.0
+        self.vhost.send_expect("show port stats all", "testpmd>", 60)
         for i in range(10):
             out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
-            time.sleep(5)
+            time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             results += float(result)
         Mpps = results / (1000000 * 10)
-        self.verify(Mpps > 0, "%s can not receive packets" % self.running_case)
+        self.verify(Mpps > 0.5, "%s can not receive packets" % self.running_case)
         return Mpps
 
     def send_and_verify(self, case_info, frame_size, restart_times=1):
