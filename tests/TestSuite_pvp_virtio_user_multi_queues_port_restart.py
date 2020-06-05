@@ -70,6 +70,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.queue_number = 2
         self.dut.kill_all()
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -166,10 +167,21 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         traffic_opt = {'delay': 5}
         _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
         Mpps = pps / 1000000.0
-        self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
+        self.verify(Mpps > self.check_value[frame_size],
+                    "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
         throughput = Mpps * 100 / \
                     float(self.wirespeed(self.nic, frame_size, 1))
         return Mpps, throughput
+
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.07, 128: 0.09, 256: 0.17, 512: 0.25, 1024: 0.40, 1280: 0.45, 1518: 0.50}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
 
     def send_and_verify(self, case_info):
         """
