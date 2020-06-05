@@ -111,7 +111,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         start the testpmd of vhost-user and virtio-user
         start to send packets
         """
-        session_rx.send_expect("start", "testpmd> ", 30)
+        session_rx.send_command("start", 3)
         session_tx.send_expect("start tx_first 32", "testpmd> ", 30)
 
     def check_port_throughput_after_port_stop(self):
@@ -176,14 +176,15 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         results = 0.0
         results_row = []
+        self.vhost.send_expect("show port stats all", "testpmd>", 60)
         for i in range(10):
             out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
-            time.sleep(5)
+            time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             results += float(result)
         Mpps = results / (1000000 * 10)
-        self.verify(Mpps > 0, "port can not receive packets")
+        self.verify(Mpps > 5, "port can not receive packets")
 
         results_row.append(case_info)
         results_row.append('64')
