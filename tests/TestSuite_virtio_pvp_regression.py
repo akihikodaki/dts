@@ -55,6 +55,7 @@ class TestVirtioPVPRegression(TestCase):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.pf = self.dut_ports[0]
+        self.number_of_ports = 1
         # Get the port's socket
         netdev = self.dut.ports_info[self.pf]['port']
         self.pci_info = self.dut.ports_info[self.pf]['pci']
@@ -302,6 +303,15 @@ class TestVirtioPVPRegression(TestCase):
 
         self.vhost.send_expect("start", "testpmd> ", 60)
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.08, 128: 0.10, 256: 0.17, 512: 0.18, 1024: 0.40, 1280: 0.45, 1518: 0.50}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def send_verify(self, case_info, qemu_version, tag):
         for frame_size in self.frame_sizes:
             info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
@@ -326,7 +336,9 @@ class TestVirtioPVPRegression(TestCase):
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
             pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
-            self.verify(Mpps != 0, "can not received data of frame size %d" % frame_size)
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
             # check each queue has data
             self.check_packets_of_each_queue(frame_size)
             # update print table info
