@@ -71,6 +71,7 @@ class TestVirtioUserForContainer(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -101,6 +102,15 @@ class TestVirtioUserForContainer(TestCase):
         self.core_list_virtio_user = core_list[self.nb_cores+1:self.nb_cores*2+2]
         self.core_mask_virtio_user = utils.create_mask(core_list_virtio_user)
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.085, 128: 0.12, 256: 0.20, 512: 0.35, 1024: 0.50, 1280: 0.55, 1518: 0.60}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def send_and_verify(self):
         """
         Send packet with packet generator and verify
@@ -122,7 +132,9 @@ class TestVirtioUserForContainer(TestCase):
                         vm_config, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 0, '%s can not receive packets of frame size %d' % (self.running_case, frame_size))
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
             throughput = Mpps * 100 / \
                      float(self.wirespeed(self.nic, frame_size, 1))
 
