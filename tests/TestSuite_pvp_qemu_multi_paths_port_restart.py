@@ -72,6 +72,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.pci_info = self.dut.ports_info[0]['pci']
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -197,6 +198,15 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         results_row.append(Cycle)
         self.result_table_add(results_row)
 
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.075, 128: 0.10, 256: 0.10, 512: 0.20, 1024: 0.35, 1280: 0.40, 1518: 0.45}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
+
     def calculate_avg_throughput(self, frame_size):
         """
         start to send packet and get the throughput
@@ -214,7 +224,9 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         traffic_opt = {'delay': 5}
         _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
         Mpps = pps / 1000000.0
-        self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
+        self.verify(Mpps > self.check_value[frame_size],
+                    "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
         throughput = Mpps * 100 / \
                     float(self.wirespeed(self.nic, frame_size, 1))
         return Mpps, throughput
