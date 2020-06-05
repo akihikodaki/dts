@@ -82,6 +82,7 @@ class TestVhostDequeueZeroCopy(TestCase):
 
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.number_of_ports = 1
 
     def set_up(self):
         """
@@ -303,7 +304,9 @@ class TestVhostDequeueZeroCopy(TestCase):
             Mpps = stats[1] / 1000000.0
         # when the fwd mode is rxonly, we can not receive data, so should not verify it
         if fwd_mode != "rxonly":
-            self.verify(Mpps > 0, "can not receive packets of frame size %d" % (frame_size))
+            self.verify(Mpps > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], Mpps))
         throughput = Mpps * 100 / \
                     float(self.wirespeed(self.nic, frame_size, 1))
         return Mpps, throughput
@@ -334,6 +337,15 @@ class TestVhostDequeueZeroCopy(TestCase):
                       (frame_size, rx_packets, tx_packets))
 
         self.vhost_user.send_expect("start", "testpmd> ", 60)
+
+    @property
+    def check_value(self):
+        check_dict = dict.fromkeys(self.frame_sizes)
+        linerate = {64: 0.07, 128: 0.10, 256: 0.20, 512: 0.18, 1024: 0.10, 1280: 0.10, 1518: 0.10}
+        for size in self.frame_sizes:
+            speed = self.wirespeed(self.nic, size, self.number_of_ports)
+            check_dict[size] = round(speed * linerate[size], 2)
+        return check_dict
 
     def send_and_verify_throughput(self, cycle="", fwd_mode=""):
         """
