@@ -18,7 +18,7 @@ Setup Tester Environment
 
 .. note::
 
-   Please install the latest Fedora distribution on the tester before install DPDK Test Suite on tester. Currently we recommend Fedora 20 for tester. The setup instruction and required packages may be different on different operation systems.
+   Please install the latest ubuntu distribution on the tester before install DPDK Test Suite on tester. Currently we recommend ubuntu 18.04 for tester. The setup instruction and required packages may be different on different operation systems.
 
 To enable tester environment, you need to install script language, tool chain and third party packet generator, etc.
 
@@ -30,8 +30,8 @@ Since DPDK Test Suite Tester communicates with DUT via SSH, please install and s
 
 .. code-block:: console
 
-   yum install sshd                # download / install ssh software
-   systemctl enable sshd.service   # start ssh service
+   apt-get install sshd                # download / install ssh software
+   systemctl enable ssh                # start ssh service
 
 For create authorized login session, user needs to generate RSA authentication keys to ssh connection.
 
@@ -47,7 +47,7 @@ Since some third party tools required TCL (Tool Command Language) supports, plea
 
 .. code-block:: console
 
-   yum install tcl                 # download / install tcl software
+   apt-get install tcl                 # download / install tcl software
 
 Install Third Party python modules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -65,12 +65,8 @@ Please see installation instruction as the following:
 
 .. code-block:: console
 
-   yum install python-xlwt
-   yum install python-pexpect
-   yum install numpy
-   yum install python-docutils
-   yum install pcapy
-   yum install python-xlrd
+   apt-get install python3-pip
+   pip3 install -r ../../requirements.txt
 
 Setup and configure Scapy
 ~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -80,14 +76,7 @@ DTS uses python module scapy to forge or decode packets of a wide number of prot
 
 .. code-block:: console
 
-   yum install scapy
-
-Fedora20 default kernel will strip vlan header automatically and thus it will cause that scapy can’t detect vlan packet normally. To solve this issue, we need to configure scapy use libpcap which is a low-level network traffic monitoring tool.
-
-.. code-block:: console
-
-   vim /usr/lib/python2.7/site-packages/scapy/config.py  # open configure python files
-   use_pcap = True                                       # find use_pcap and set it to True
+   pip3 install scapy
 
 Install DPDK Test Suite on tester
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -119,12 +108,13 @@ Setup Target Environment
 
 This section describes how to deploy DPDK Test Suite packages into DUT target.So far, DPDK Test Suite supports the following OS on DUT:
 
-*   Fedora18/19/20/23/24/25
-*   Ubuntu12.04/14.04/16.04
-*   WindRiver 6.0/7.0
-*   FreeBSD 10
-*   RedHat 6.5/7.0/7.3
-*   SUSE 11
+*   Fedora 32
+*   Ubuntu 16.04/18.04/20.04
+*   FreeBSD 12.1
+*   RedHat 7.7/8.0
+*   SUSE 15
+*   Centos 7.7/8.0
+*   OpenWRT 19.07
 
 Before run DPDK Test Suite on target, we need to configure target environment, it includes BIOS setting, Network configure, compiler environment, etc.
 

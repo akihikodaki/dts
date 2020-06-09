@@ -91,10 +91,10 @@ resolved scheme
 ---------------
 
 #. backup your scapy::
-   cp -fr /usr/lib/python2.7/site-packages/scapy /usr/lib/python2.7/site-packages/scapy_backup
+   cp -fr /usr/lib/python3/site-packages/scapy /usr/lib/python3/site-packages/scapy_backup
 
 #. unify scapy version with trex::
-   cp -fr /opt/trex/v2.41/trex_client/external_libs/scapy-2.3.1/python2/scapy /usr/lib/python2.7/site-packages/scapy
+   cp -fr /opt/trex/v2.41/trex_client/external_libs/scapy-2.3.1/python3/scapy /usr/lib/python3/site-packages/scapy
 
 other issues
 ============
