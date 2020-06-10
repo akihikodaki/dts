@@ -2687,6 +2687,9 @@ Subcase 3: different patterns, different actions
 
 Test case: Max number
 =====================
+All the max number cases are designed based on 2*100G NIC.
+If the hardware is 4*25G NIC, the guaranteed rule number of PF is 512.
+So in subcase 3, there can be created at most 14848 rules on 1pf and 2vfs.
 
 Subcase 1: 14336 rules on 1 vf
 ------------------------------

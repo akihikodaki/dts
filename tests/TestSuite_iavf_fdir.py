@@ -537,12 +537,6 @@ tv_pfcp_drop = {
         {"port_id": 0, "passthru": 1}]
 }
 
-tv_add_2048_rules_on_4_VFs_at_meantime = {
-    "name": "test_add_2048_rules_on_4_VFs_at_meantime",
-    "scapy_str": CREATE_2048_RULES_4_VFS,
-    "check_param": {"port_id": 0, "queue": 1}
-}
-
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -2424,6 +2418,8 @@ class TestIAVFFdir(TestCase):
     def test_maxnum_15360rules_1pf_2vf(self):
         """
         2*100G NIC, each pf can create 1024 rules at least, vfs share 14336 rules table
+        4*25G NIC, each pf can create 512 rules at least, vfs share 14336 rules table
+        so if 2*25G NIC, max number is 14848 on 1pf and 2vfs.
         """
         self.dut.kill_all()
         self.session_secondary = self.dut.new_session()
@@ -2432,16 +2428,25 @@ class TestIAVFFdir(TestCase):
         src_file = 'iavf_fdir_15360_kernel_rules'
         flows=open(self.src_file_dir + src_file,mode='w')
         count=0
-        for i in range(4):
-            for j in range(256):
-                flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'%(i,j))
-                count=count+1
-        flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n')
-        count=count+1
-        flows.close()
-        self.verify(count == 1025, "failed to create 1025 fdir rules on pf.")
+        if self.nic in ["columbiaville_100g"]:
+            for i in range(4):
+                for j in range(256):
+                    flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'%(i,j))
+                    count=count+1
+            flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n')
+            count=count+1
+            flows.close()
+            self.verify(count == 1025, "failed to create 1025 fdir rules on pf.")
+        elif self.nic in ["columbiaville_25g"]:
+            for i in range(2):
+                for j in range(256):
+                    flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'%(i,j))
+                    count=count+1
+            flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n')
+            count=count+1
+            flows.close()
+            self.verify(count == 513, "failed to create 1025 fdir rules on pf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
-
         # create 1025 rules on pf0
         fkr = open(self.dut_file_dir + "iavf_fdir_15360_kernel_rules", "r+")
         kernel_rules = fkr.read()
