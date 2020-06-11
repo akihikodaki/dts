@@ -36,7 +36,6 @@ class TestVfVlan(TestCase):
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
 
-
     def set_up(self):
         self.setup_vm_env()
 
@@ -84,6 +83,8 @@ class TestVfVlan(TestCase):
             self.used_dut_port_0, 1, driver=driver)
         self.sriov_vfs_port_0 = self.dut.ports_info[
             self.used_dut_port_0]['vfs_port']
+        if self.kdriver == 'ice':
+            self.dut.send_expect("ip link set %s vf 0 spoofchk off" %(self.host_intf0), "# ")
         self.vf0_mac = "00:10:00:00:00:00"
         self.dut.send_expect("ip link set %s vf 0 mac %s" %
                              (self.host_intf0, self.vf0_mac), "# ")
@@ -231,12 +232,19 @@ class TestVfVlan(TestCase):
             "received" not in out, "Received pacekt with wrong vlan!!!")
 
         # remove vlan
-        self.dut.send_expect(
-            "ip link set %s vf 0 vlan 0" % self.host_intf0, "# ")
+        self.vm0_testpmd.execute_cmd("stop")
+        self.vm0_testpmd.execute_cmd("port stop all")
+        self.dut.send_expect("ip link set %s vf 0 vlan 0" % self.host_intf0, "# ")
+        out = self.dut.send_expect("ip link show %s" % self.host_intf0, "# ")
+        self.verify("vlan %d" % random_vlan not in out, "Failed to remove pvid on VF0")
 
         # send packet with vlan
+        self.vm0_testpmd.execute_cmd("port reset 0")
+        self.vm0_testpmd.execute_cmd("port start all")
+        self.vm0_testpmd.execute_cmd("start")
+
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.kdriver == "i40e":
+        if self.kdriver == "i40e" or self.kdriver == 'ice':
             self.verify("received" in out, "Failed to received vlan packet!!!")
         else:
             self.verify(
@@ -288,7 +296,7 @@ class TestVfVlan(TestCase):
             # for fortville ,
             # if you want insert tx_vlan,
             # please enable rx_vlan at the same time
-            if self.kdriver == "i40e":
+            if self.kdriver == "i40e" or self.kdriver == 'ice':
                 self.vm0_testpmd.execute_cmd('vlan set filter on 0')
                 self.vm0_testpmd.execute_cmd('rx_vlan add %d 0' % tx_vlan)
             self.vm0_testpmd.execute_cmd('stop')
@@ -358,7 +366,7 @@ class TestVfVlan(TestCase):
 
         # send packet with vlan
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
-        if self.kdriver == "i40e":
+        if self.kdriver == "i40e" or self.kdriver == 'ice':
             self.verify(
                 "received 1 packets" in out, "Received mismatched vlan packet while vlan filter on")
         else:
