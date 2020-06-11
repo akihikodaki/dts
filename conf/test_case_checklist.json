@@ -3425,5 +3425,69 @@
             "Bug ID": "",
             "Comments": "32 bites not support this case(memoory not enough)."
         }
+    ],
+    "dpdk_2pf_2vf_1vm_iplink_macfilter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "CVL not support DPDK PF + DPDK VF"
+        }
+    ],
+    "dpdk_2pf_2vf_1vm": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "CVL not support DPDK PF + DPDK VF"
+        }
+    ],
+    "dpdk_pf_vf_reset": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "CVL not support DPDK PF + DPDK VF"
+        }
+    ],
+    "VEB_switching_inter_vfs_and_pf": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "CVL not support DPDK PF + DPDK VF"
+        }
     ]
 }
