@@ -157,7 +157,8 @@ class TestVEBSwitching(TestCase):
         Prerequisite steps for each test suite.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "fortville_25g", "carlsville"],
+                    "fortville_spirit_single", "fortville_25g", "carlsville",
+                                 'columbiaville_100g', 'columbiaville_25g'],
                     "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
@@ -279,6 +280,8 @@ class TestVEBSwitching(TestCase):
 
         vf0_tx_stats = self.veb_get_pmd_stats("first", 0, "tx")
         vf1_rx_stats = self.veb_get_pmd_stats("second", 0, "rx")
+        if self.kdriver == 'ice':
+            vf1_rx_stats[-1] = vf1_rx_stats[-1] + 4
         self.verify(vf0_tx_stats[0] != 0, "no packet was sent by VF0")
         self.verify(vf0_tx_stats == vf1_rx_stats, "VF1 failed to receive packets from VF0")
     
