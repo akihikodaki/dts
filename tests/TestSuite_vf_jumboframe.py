@@ -190,7 +190,7 @@ class TestVfJumboFrame(TestCase):
         if received:
             self.verify((rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error")
 
-            if self.kdriver == "ixgbe":
+            if self.kdriver == "ixgbe" or self.kdriver == 'ice':
                 self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
             else:
                 self.verify(rx_bytes == pktsize, "Rx packet size should be equal to packet size")
