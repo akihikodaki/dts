@@ -209,6 +209,11 @@ class TestVhostDequeueZeroCopy(TestCase):
         """
         self.vm = VM(self.dut, 'vm0', 'vhost_sample')
         self.vm.load_config()
+        # use igb_uio driver in vm to get better performance
+        for i in self.vm.params:
+            if 'def_driver' in i:
+                i['def_driver'] = [{'driver_name': 'igb_uio'}]
+                break
         vm_params = {}
         vm_params['driver'] = 'vhost-user'
         vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
