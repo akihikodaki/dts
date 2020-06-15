@@ -67,7 +67,7 @@ class TestVfMacFilter(TestCase):
             if driver == 'igb_uio':
                 # start testpmd without the two VFs on the host
                 self.host_testpmd = PmdOutput(self.dut)
-                if (self.nic in ["niantic", "sageville", "sagepond"]):
+                if (self.nic in ["niantic", "sageville", "sagepond", "twinpond"]):
                     self.host_testpmd.start_testpmd("1S/9C/1T", "--txq=4 --rxq=4 ")
                 else:
                     self.host_testpmd.start_testpmd("1S/2C/2T")
