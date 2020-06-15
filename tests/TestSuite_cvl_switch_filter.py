@@ -34,6 +34,8 @@ import json
 import time
 import re
 import copy
+import random
+from itertools import groupby
 
 from test_case import TestCase
 from pmd_output import PmdOutput
@@ -2571,6 +2573,45 @@ class SwitchFilterTest(TestCase):
         result_flag, log_msg = dic["check_func"]["func"](out, dic["check_func"]["param"], dic["expect_results"])
         return result_flag, log_msg
 
+    def send_packet_get_queue(self, dic):
+        """
+        general packets processing workflow.
+        """
+        self.dut.send_expect("start", "testpmd> ")
+        # send packets
+        for per_packet in dic["scapy_str"]:
+            pkt = Packet(pkt_str=per_packet)
+            pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=1)
+        out = self.dut.send_expect("stop", "testpmd> ")
+        p = re.compile(r"Forward Stats for RX Port= \d+/Queue=(\s?\d+)")
+        res = p.findall(out)
+        default_queue = [int(i) for i in res]
+        return default_queue
+
+    def get_available_queue_num(self, default_queue, expect_queue, pmd_queue=8):
+        """
+        general packets processing workflow.
+        """
+        queue_list = list(range(1, pmd_queue))
+        # check if expect_queue length is power of 2
+        q_len = len(expect_queue)
+        self.verify(q_len & (q_len - 1) == 0, "defualt_queue length is not power of 2!")
+        for q in default_queue:
+            if q in queue_list:
+                queue_list.remove(q)
+        # according to expect_queue length get available queue
+        set_queue_list = []
+        if q_len == 1:
+            set_queue = random.choice(queue_list)
+            set_queue_list.append(set_queue)
+        else:
+            fun = lambda x: x[1] - x[0]
+            for k, g in groupby(enumerate(queue_list), fun):
+                list_group = [j for i, j in g]
+                if len(list_group) >= q_len:
+                    set_queue_list = list_group[:q_len]
+        return set_queue_list
+
     def save_results(self, pattern_name, flag, result_flag, log_msg, overall_result):
         """
         save results to dictionary: test_results.
@@ -2598,10 +2639,48 @@ class SwitchFilterTest(TestCase):
         overall_result = True
         test_results.clear()
         for tv in test_vectors:
+            # get packet default_queue number
+            mismatched_dic = tv["mismatched"]
+            default_queue = self.send_packet_get_queue(mismatched_dic)
+
+            # check if default_queue same with expect_queue
+            expect_queue = tv["mismatched"]["check_func"]["param"]["expect_queues"]
+            if expect_queue != "null":
+                if isinstance(expect_queue, int):
+                    eq_list = []
+                    eq_list.append(expect_queue)
+                elif isinstance(expect_queue, list):
+                    eq_list = expect_queue
+                recover_flag = list(set(eq_list) & set(default_queue))
+            else:
+                recover_flag = None
+
+            # if default_queue has same one with expect_queue, recover rule
+            if recover_flag:
+                # exclude defult_queue number and get set_queue
+                set_queue_list = self.get_available_queue_num(default_queue, eq_list)
+                # recover rule command and check queue
+                if isinstance(expect_queue, int):
+                    rule_command = tv["rte_flow_pattern"].replace("/ end actions queue index %s" % str(expect_queue),
+                                                                  "/ end actions queue index %s" % str(set_queue_list[0]))
+                    tv["matched"]["check_func"]["param"]["expect_queues"] = set_queue_list[0]
+                    tv["mismatched"]["check_func"]["param"]["expect_queues"] = set_queue_list[0]
+                elif isinstance(expect_queue, list):
+                    q = [str(i) for i in expect_queue]
+                    expect_queue_str = " ".join(q)
+                    s = [str(i) for i in set_queue_list]
+                    set_queue_str = " ".join(s)
+                    rule_command = tv["rte_flow_pattern"].replace("/ end actions rss queues %s" % expect_queue_str,
+                                                                  "/ end actions rss queues %s" % set_queue_str)
+                    tv["matched"]["check_func"]["param"]["expect_queues"] = set_queue_list
+                    tv["mismatched"]["check_func"]["param"]["expect_queues"] = set_queue_list
+            else:
+                rule_command = tv["rte_flow_pattern"]
+
             pattern_name = tv["name"]
             test_results[pattern_name] = OrderedDict()
 
-            out = self.dut.send_expect(tv["rte_flow_pattern"], "testpmd> ", 15)  #create a rule
+            out = self.dut.send_expect(rule_command, "testpmd> ", 15)  #create a rule
             #get the rule number
             rule_num = self.get_rule_number(out)
 
