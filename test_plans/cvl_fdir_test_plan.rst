@@ -2463,6 +2463,16 @@ Subcase 1: port stop/port start/port reset
 
 8. verify matched packet can be still redirected to queue 1 with FDIR matched ID=0x0.
 
+9. add a new rule::
+
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / end actions queue index 2 / mark id 1 / end
+
+10. list the rule and send matched packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.22",dst="192.168.0.23") / Raw('x' * 80)],iface="enp175s0f0")
+
+   check the packet are redirected to queue 2 with FDIR matched ID=0x1
+
 Subcase 2: add/delete rules
 ---------------------------
 
@@ -2579,6 +2589,9 @@ Subcase 3: delete rules
 
 Subcase 4: max rules
 --------------------
+This case is designed based on 2*100G NIC.
+If 4*25 NIC, each PF port has 512 fdir rules guaranteed.
+So there can be created 14848 fdir rules on 1 PF port.
 
 1. create 15360 rules on port 0::
 

@@ -2689,7 +2689,7 @@ Test case: Max number
 =====================
 All the max number cases are designed based on 2*100G NIC.
 If the hardware is 4*25G NIC, the guaranteed rule number of PF is 512.
-So in subcase 3, there can be created at most 14848 rules on 1pf and 2vfs.
+So in subcase 3 and subcase 4, there can be created at most 14848 rules on 1pf and 2vfs.
 
 Subcase 1: 14336 rules on 1 vf
 ------------------------------
@@ -2764,11 +2764,13 @@ Subcase 2: 14336 rules on 2 vfs of 2pfs
 
 5. verify matched packet received without FDIR matched ID.
 
-Subcase 3: 15360 rules on 1pf and 2vfs
---------------------------------------
+Subcase 3: 1025 rules on 1pf and 14335 rules on 2vfs
+----------------------------------------------------
 each pf can create 1024 rules at least in 2 ports card.
+each pf can create 512 rules at least in 4 ports card.
 there are 14k rules shared by pfs and vfs.
-so 1 pf and 2 vfs can create 15360 rules at most.
+so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card.
+1 pf and 2 vfs can create 14848 rules at most on 4 ports card.
 
 1. create 1025 rules on pf0::
 
@@ -2830,7 +2832,79 @@ so 1 pf and 2 vfs can create 15360 rules at most.
 
 8. verify matched packet received without FDIR matched ID.
 
-Subcase 4: 128 profiles
+Subcase 4: 15360 rules on 1pf and 0 rules on 2vfs
+-------------------------------------------------
+each pf can create 1024 rules at least in 2 ports card.
+each pf can create 512 rules at least in 4 ports card.
+there are 14k rules shared by pfs and vfs.
+so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card.
+1 pf and 2 vfs can create 14848 rules at most on 4 ports card.
+so if create 15360/14848 rules on 1 pf, there can't create rule on vf successfully.
+
+1. create 15360 rules on pf0::
+
+    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
+    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.1 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
+    ......
+    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.57.255 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
+
+   all the rules can be created successfully::
+
+    Added rule with ID <Rule ID>
+
+2. failed to create one more rule on pf0::
+
+    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.58.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
+
+3. start testpmd on vf00 and vf10::
+
+    ./testpmd -c 0xf -n 6 -w 86:01.0 -w 86:11.0 --file-prefix=vf00 -- -i --rxq=4 --txq=4
+
+   create 1 rule on vf00::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
+
+   failed to create the rule, check there is no rule listed.
+
+   create 1 rule on vf10::
+
+    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
+
+   failed to create the rule, check there is no rule listed.
+
+4. delete 1 rule on pf0::
+
+    ethtool -N enp134s0f0 delete <Rule ID>
+
+5. create 1 rule on vf00::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.254 / end actions queue index 1 / mark / end
+
+   the rule can be created successfully.
+
+   create 1 rule on vf10::
+
+    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
+
+   failed to create the rule, check there is no rule listed.
+
+6. send matched packet to vf00, it can be redirected to queue 1 with FDIR matched ID=0x0.
+   send matched packet to vf10, it is received without FDIR matched ID.
+
+7. delete 1 more rule on pf0::
+
+    ethtool -N enp134s0f0 delete <Rule ID>
+
+8. create 1 rule on vf10::
+
+    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
+
+   the rule can be created successfully.
+
+9. send matched packet to vf00, it can be redirected to queue 1 with FDIR matched ID=0x0.
+   send matched packet to vf10, it can be redirected to queue 1 with FDIR matched ID=0x0.
+
+Subcase 5: 128 profiles
 -----------------------
 
 1. create 16 vfs on pf0::

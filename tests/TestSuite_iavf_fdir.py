@@ -1381,7 +1381,7 @@ class TestIAVFFdir(TestCase):
         """
         remove and reload the ice driver
         """
-        self.dut.send_expect("rmmod ice", "# ", 20)
+        self.dut.send_expect("rmmod ice", "# ", 40)
         ice_driver_file_location = self.suite_config["ice_driver_file_location"]
         self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ")
         self.dut.send_expect("ifconfig %s up" % self.tester_iface0, "# ", 15)
@@ -2320,6 +2320,13 @@ class TestIAVFFdir(TestCase):
         out_14336 = self.send_pkts_getouput(pkts=pkt_14336, pf_id=0)
         rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 0, "queue": 5}, stats=False)
 
+        # delete one rule of vf0
+        self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", timeout=200)
+        self.create_fdir_rule(rule_0_vf1, check_stats=True)
+        pkt_0_vf1 = 'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+        out_0_vf1 = self.send_pkts_getouput(pkts=pkt_0_vf1, pf_id=0)
+        rfc.check_iavf_fdir_mark(out_0_vf1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
+
         # flush all the rules
         self.dut.send_expect("flow flush 0", "testpmd> ", timeout=200)
         self.check_fdir_rule(port_id=0, stats=False)
@@ -2329,10 +2336,8 @@ class TestIAVFFdir(TestCase):
         rfc.check_iavf_fdir_mark(out_14335, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=False)
 
         self.create_fdir_rule(rule_14336_vf0, check_stats=True)
-        self.create_fdir_rule(rule_0_vf1, check_stats=True)
         out_14336 = self.send_pkts_getouput(pkts=pkt_14336, pf_id=0)
         rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=True)
-
 
     def test_maxnum_14336rules_2vf(self):
         """
@@ -2424,40 +2429,38 @@ class TestIAVFFdir(TestCase):
         self.dut.kill_all()
         self.session_secondary = self.dut.new_session()
 
-        #create 1025 rules on pf0
-        src_file = 'iavf_fdir_15360_kernel_rules'
+        #create 1025 rules on pf1
+        src_file = 'create_1025_kernel_rules'
         flows=open(self.src_file_dir + src_file,mode='w')
         count=0
         if self.nic in ["columbiaville_100g"]:
             for i in range(4):
                 for j in range(256):
-                    flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'%(i,j))
+                    flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (self.pf1_intf,i,j))
                     count=count+1
-            flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n')
+            flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % self.pf1_intf)
             count=count+1
             flows.close()
             self.verify(count == 1025, "failed to create 1025 fdir rules on pf.")
         elif self.nic in ["columbiaville_25g"]:
             for i in range(2):
                 for j in range(256):
-                    flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'%(i,j))
+                    flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (self.pf1_intf,i,j))
                     count=count+1
-            flows.write('ethtool -N enp134s0f1 flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n')
+            flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % self.pf1_intf)
             count=count+1
             flows.close()
             self.verify(count == 513, "failed to create 1025 fdir rules on pf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
-        # create 1025 rules on pf0
-        fkr = open(self.dut_file_dir + "iavf_fdir_15360_kernel_rules", "r+")
+        # create 1025 rules on pf1
+        fkr = open(self.dut_file_dir + src_file, "r+")
         kernel_rules = fkr.read()
         fkr.close()
-        self.dut.send_expect(kernel_rules, "# ", 300)
-        # write the kernel rules result to file
-        fkw = open("1025_kernel_rules_result.txt", "w")
-        fkw.write(self.dut.send_expect("ethtool -n %s" % self.pf1_intf, "# ", 300))
+        self.dut.send_expect(kernel_rules, "# ")
+        time.sleep(15)
 
         #create 1 rule on vf00, and 14334 rules on vf01
-        src_file_vf = 'iavf_fdir_15360_vf_rules'
+        src_file_vf = 'create_14335_rules_on_2vfs'
         flows = open(self.src_file_dir + src_file_vf, mode='w')
         flows.write('flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 5 / mark / end \n')
         count=1
@@ -2494,7 +2497,6 @@ class TestIAVFFdir(TestCase):
 
         # delete a rule on pf0
         self.session_secondary.send_expect("ethtool -N %s delete 14847" % self.pf1_intf, "# ")
-        time.sleep(3)
 
         # then can create one more rule on vf01
         self.create_fdir_rule(rule_14334_vf1, check_stats=True)
@@ -2511,6 +2513,88 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("quit", "# ")
         self.dut.close_session(self.session_secondary)
         self.re_load_ice_driver()
+        self.setup_2pf_4vf_env()
+
+    def test_maxnum_15360rules_1pf_0_rules_vf(self):
+        """
+        2*100G NIC, each pf can create 1024 rules at least, vfs share 14336 rules table
+        4*25G NIC, each pf can create 512 rules at least, vfs share 14336 rules table
+        so if 2*25G NIC, max number is 14848 on 1pf and vfs.
+        create 15360/14848 rules on pf1, check failed to create rule on vf00 and vf10
+        """
+        self.dut.kill_all()
+        self.session_secondary = self.dut.new_session()
+
+        #create 15360 rules on pf1
+        src_file = 'create_15360_kernel_rules'
+        flows=open(self.src_file_dir + src_file,mode='w')
+        count=0
+        if self.nic in ["columbiaville_100g"]:
+            for i in range(60):
+                for j in range(256):
+                    flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (self.pf1_intf,i,j))
+                    count=count+1
+            flows.close()
+            self.verify(count == 15360, "failed to create 15360 fdir rules on pf.")
+        elif self.nic in ["columbiaville_25g"]:
+            for i in range(58):
+                for j in range(256):
+                    flows.write('ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (self.pf1_intf,i,j))
+                    count=count+1
+            flows.close()
+            self.verify(count == 14848, "failed to create 14848 fdir rules on pf.")
+        self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
+        # create 15360 rules on pf1
+        fkr = open(self.dut_file_dir + src_file, "r+")
+        kernel_rules = fkr.read()
+        fkr.close()
+        self.dut.send_expect(kernel_rules, "# ")
+        time.sleep(200)
+        # failed to create 1 more rule on pf1
+        self.dut.send_expect("ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8" % self.pf1_intf, "Cannot insert RX class rule: No space left on device")
+        # start testpmd with creating rules in commandline
+        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf1[0].pci)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        self.dut.send_expect(command, "testpmd> ", 20)
+
+        self.config_testpmd()
+        rule_0_vf00 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
+        pkt_0_vf00 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+        rule_0_vf10 = "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
+        pkt_0_vf10 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+
+        #failed to create rule on vf00 and vf10
+        self.create_fdir_rule(rule_0_vf00, check_stats=False)
+        self.create_fdir_rule(rule_0_vf10, check_stats=False)
+        self.check_rule_number(port_id=0, num=0)
+        self.check_rule_number(port_id=1, num=0)
+
+        # delete a rule on pf1
+        self.session_secondary.send_expect("ethtool -N %s delete 14847" % self.pf1_intf, "# ")
+
+        # then can create one rule on vf00
+        self.create_fdir_rule(rule_0_vf00, check_stats=True)
+        self.create_fdir_rule(rule_0_vf10, check_stats=False)
+        self.check_rule_number(port_id=0, num=1)
+        self.check_rule_number(port_id=1, num=0)
+
+        # delete a rule on pf1
+        self.session_secondary.send_expect("ethtool -N %s delete 14846" % self.pf1_intf, "# ")
+
+        # then can create one rule on vf10
+        self.create_fdir_rule(rule_0_vf10, check_stats=True)
+        self.check_rule_number(port_id=1, num=1)
+
+        out_0_vf00 = self.send_pkts_getouput(pkts=pkt_0_vf00, pf_id=0)
+        rfc.check_iavf_fdir_mark(out_0_vf00, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=True)
+
+        out_0_vf10 = self.send_pkts_getouput(pkts=pkt_0_vf10, pf_id=1)
+        rfc.check_iavf_fdir_mark(out_0_vf10, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
+
+        self.dut.send_expect("quit", "# ")
+        self.dut.close_session(self.session_secondary)
+        self.re_load_ice_driver()
+        self.setup_2pf_4vf_env()
 
     def test_maxnum_128_profiles(self):
         """
@@ -3270,7 +3354,11 @@ class TestIAVFFdir(TestCase):
     def tear_down(self):
         # destroy all flow rule on port 0
         self.dut.kill_all()
+        if getattr(self, 'session_secondary', None):
+            self.dut.close_session(self.session_secondary)
+        if getattr(self, 'session_third', None):
+            self.dut.close_session(self.session_third)
 
     def tear_down_all(self):
-        self.destroy_env()
         self.dut.kill_all()
+        self.destroy_env()
