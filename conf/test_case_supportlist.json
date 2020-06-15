@@ -1929,5 +1929,284 @@
             "Bug ID": "",
             "Comments": "This case only support i40e nic "
         }
+    ],
+    "queue_region_with_rte_flow_api": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "flow_director_rss_rule_combination": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "set_rss_queues": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "set_rss_types_rss_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "disable_rss_in_commandline": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "queue_region_in_rte_flow_with_invalid_parameter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "set_rss_types": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "carlsville",
+                "fortville_spirit_single",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+                "fortville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support i40e nic "
+        }
+    ],
+    "disable_rss_in_commandline_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
+    ],
+    "disable_enable_rss_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
+    ],
+    "rss_queue_rule_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
+    ],
+    "different_types_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
+    ],
+    "enable_ipv4_udp_rss_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
+    ],
+    "flow_director_rss_rule_combination_ixgbe_igb": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic "
+        }
     ]
 }
