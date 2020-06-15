@@ -2810,13 +2810,20 @@
                 "springville",
                 "columbiaville_25g",
                 "columbiaville_100g",
-		"foxville"
+		"foxville",
+                "fortville_eagle",
+                "fortville_spirit",
+	        "fortville_spirit_single",
+	        "fortpark",
+	        "fortpark_TLV",
+	        "fortville_25g",
+	        "carlsville"
             ],
             "Target": [
                 "ALL"
             ],
             "Bug ID": "",
-            "Comments": "only i40e and ixgbe driver support this case"
+            "Comments": "only ixgbe driver support this case"
         }
     ],
     "hash_readwrite_perf": [
