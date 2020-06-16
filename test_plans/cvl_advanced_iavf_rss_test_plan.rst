@@ -122,9 +122,9 @@ Pattern and input set
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_PPPOE_ICMP       | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP]                            |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_GTPUP       |  [TEID] |GTP_PDUSession_ExtensionHeader                                          |
+    |                               | MAC_IPV4_GTPU_GTPUP       |  [Source IP], [Dest IP] [Source Port], [Dest Port]                               |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_GTDWN       |  [TEID] |GTP_PDUSession_ExtensionHeader                                          |
+    |                               | MAC_IPV4_GTPU_GTDWN       |  [Source IP], [Dest IP] [Source Port], [Dest Port]                               |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_CVLAN            |  [VLAN ID]                                                                       |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
@@ -219,7 +219,7 @@ Default parameters
 
     VF0 [Dest MAC]: 00:11:22:33:44:55
     VF1 [Dest MAC]: 00:11:33:44:55:66
-	
+
    IPv4-Symmetric_toeplitz and simplexor::
 
     [Source IP]: 192.168.0.20
@@ -377,16 +377,16 @@ Test case: MAC_IPV4_L3SRC FRAG
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only packages::
 
-		sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 src has changed.
-			
-		sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src has no changed.
  
         testpmd> stop
@@ -412,16 +412,16 @@ Test case: MAC_IPV4_L3DST:
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+ 
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only packages::
-	
-		sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+ 
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+ 
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src has no changed.
-			
-		sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+ 
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+ 
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 dst has changed.
   
         testpmd> stop
@@ -666,7 +666,7 @@ Test case: MAC_IPV6_L3SRC_FRAG
 #. send the 100 IP change to l3-src-only packages::   
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="CDCD:910A:2222:5498:8475:1111:3900:8282",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
-		
+
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 src has changed.
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2626")/IPv6ExtHdrFragment()/("X" * 80)], iface="enp177s0f1", count=100)
@@ -1207,53 +1207,182 @@ Matched package case :
 #. Verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
 
-NO Matched package case :
+Dis-Matched package case :
 #. Create rule for the rss type GTPU UP and hash l3 src package keywords::
 
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
         testpmd>start
 
-#. To send no matched GTPU_UP pkts::
-        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f01", count=100) 
+#. To send normal matched GTPU_UP pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
-        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f1", count=100) 
+#. To send dismatch matched GTPU_UP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
-        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP())/("X"*480)],iface="enp177s0f1", count=100) 
+#. To send GTPU_UP pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
+
+#. Destory rule on port 0 
+         testpmd> flow flush 0
+
+Test case: MAC_IPV4_GTPU_GTPUP_L3SDST_ONLY_MATCH and NO MATCHED:
+==============================================================
+Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-DST-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send matched GTPU_UP pkts::
+
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
 
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. Verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
+   differently RSS random value
+
+Dis-Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src package keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send normal matched GTPU_UP pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU_UP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
+
+#. To send GTPU_UP pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. Destory rule on port 0 
+         testpmd> flow flush 0
+
+Test case: MAC_IPV4_GTPU_GTPDOWN_L3DST_ONLY_MATCH and NO MATCHED:
+================================================================
+Matched package case :
+#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-DST-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send matched GTPU_UP pkts::
+
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f1",count=100)
+        testpmd> stop
+
+#. Verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
+   differently RSS random value
+
+Dis-Matched package case :
+#. Create rule for the rss type GTPU DOWN and hash l3 src package keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send normal matched GTPU_DOWN pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU_DOWN pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
+
+#. To send GTPU_DOWN pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_GTPDOWN_L3SRC_ONLY_MATCH and NO MATCHED:
 ================================================================
-Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
-        testpmd>start
-#. To send matched GTPU_DOWN pkts::	
-        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f1", count=100) 	
-        testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
+Matched package case :
+#. Create rule for the rss type  GTPU DOWN and hash l3 src keywords::
 
-NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts:
-        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/("X"*480)],iface="enp177s0f1", count=100) 
+
+#. To send matched  GTPU DOWN pkts::
+
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP())/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+
+#. Verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
+   differently RSS random value
+
+Dis-Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src package keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send normal matched  GTPU DOWN pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched  GTPU DOWN pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. To send  GTPU DOWN pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
+
+Test case: MAC_IPV4_GTPU_GTPDOWN_L3DST_ONLY_MATCH and NO MATCHED:
+================================================================
+Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send matched  GTPU DOWN pkts::
+
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)],iface="enp177s0f1",count=100)
+        testpmd> stop
+
+#. Verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
+   differently RSS random value
+
+Dis-Matched package case :
+#. Create rule for the rss type GTPU DOWN and hash l3 src package keywords::
+
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send normal matched  GTPU DOWN pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU DOWNP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. To send  GTPU DOWN pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
+
+#. Destory rule on port 0 
+         testpmd> flow flush 0
+
 
 Test case: MAC_IPV4_GTPU_UP_IPV4_FRAG_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end 
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
+
         testpmd>start
 #. To send matched GTPU_UP pkts::
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP(),frag=6)/("X"*480)],iface="enp177s0f01", count=100)  
@@ -1261,13 +1390,20 @@ Matched package case:
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end 
+#. Create rule for the rss type GTPU UP and hash l3 src keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP(),frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+#. To send normal matched GTPU pkts::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
          testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send dismatch GTPU pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value should not change 
+
+#. To send dismatch GTPU pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.3",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+         testpmd> stop
+#. Verify 100 pkts has sent, but the RSS hash with fix value should to change 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
@@ -1284,23 +1420,30 @@ Matched package case:
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
+#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP(),frag=6)/("X"*480)],iface="enp177s0f01", count=100)  
-        testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send normal matched GTPU pkts::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+         testpmd> stop
+#. To send dismatch GTPU pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value should not change 
+
+#. To send dismatch GTPU pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.3",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
+         testpmd> stop
+#. Verify 100 pkts has sent, but the RSS hash with fix value should to change 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
 
 Test case: MAC_IPV4_GTPU_UP_UDP_FRAG_MATCH and NO MATCHED:
-=======================================================
+==========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types l3-src-only end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
         testpmd>start
 #. To send matched GTPU_UP pkts::
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/UDP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
@@ -1308,36 +1451,62 @@ Matched package case:
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types l3-src-only end key_len 0 queues end / end
+#. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-onlyend key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/UDP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)
+#. To send matched GTPU_UP pkts::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
+
+#. To send dist matched GTPU_UP pkts to change the l3 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should to change
+
+#. To send dist matched GTPU_UP pkts to change the l4 dst only::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should to change
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
-Test case: MAC_IPV4_GTPU_DOWN_UDP_FRAG_MATCH and NO MATCHED:
+Test case: MAC_IPV4_GTPU_DOWN_UDP_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
         testpmd>start
 #. To send matched GTPU_UP pkts::
-        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/UDP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types l3-dst-only end key_len 0 queues end / end
+#. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-onlyend key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/UDP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)
+#. To send matched GTPU_UP pkts::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, the  rss hash value should to change
+
+#. To send dist matched GTPU_UP pkts to change the l3 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
+
+#. To send dist matched GTPU_UP pkts to change the l4 dst only::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
@@ -1346,20 +1515,33 @@ Test case: MAC_IPV4_GTPU_UP_TCP_FRAG_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types l3-src-only end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
 #. To send matched GTPU_UP pkts::
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)()/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)],iface="enp177s0f1",count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types l3-src-only end key_len 0 queues end / end
+#. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)
+#. To send matched GTPU_UP pkts::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
+
+#. To send dist matched GTPU_UP pkts to change the l3 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should to change
+
+#. To send dist matched GTPU_UP pkts to change the l4 dst only::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should to change
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
@@ -1367,21 +1549,34 @@ NO Matched package case:
 Test case: MAC_IPV4_GTPU_DOWN_TCP_MATCH and NO MATCHED:
 =======================================================
 Matched package case:
-#. Create rule for the rss type GTPU UP and hash l3 src keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types l3-dst-only end key_len 0 queues end / end
-#. To send matched GTPU_UP pkts::
-        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
+#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
+#. To send matched GTPU_DOWN pkts::
+        sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/TCP(sport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types l3-dst-only end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
         testpmd>start
 #. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+#. To send dist matched GTPU_DOWN pkts to change the l3 dst and l4 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, the  rss hash value should to change
+
+#. To send dist matched GTPU_DOWN pkts to change the l3 src::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
+
+#. To send dist matched GTPU_DOWN pkts to change the l4 dst only::
+         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
+         testpmd> stop
+#. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
@@ -1397,14 +1592,23 @@ Matched package case:
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
-NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+Dis-Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src package keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/ICMP()/("X"*480)],iface="enp177s0f1", count=100)
-         testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+
+#. To send normal matched GTPU_UP pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU_UP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. To send GTPU_UP pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
@@ -1419,20 +1623,29 @@ Matched package case:
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
-NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
+Dis-Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src package keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP())/ICMP()/("X"*480)],iface="enp177s0f1", count=100)
-         testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
+
+#. To send normal matched GTPU_UP pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU_UP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
+
+#. To send GTPU_UP pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_UP_SCTP_MATCH and NO MATCHED:
-===========================================================
+======================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
@@ -1441,20 +1654,29 @@ Matched package case:
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
-NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+Dis-Matched package case :
+#. Create rule for the rss type GTPU UP and hash l3 src package keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
         testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/SCTP()/("X"*480)],iface="enp177s0f1", count=100)
-         testpmd> stop
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+
+#. To send normal matched GTPU_UP pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU_UP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. To send GTPU_UP pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_DOWN_SCTP_MATCH and NO MATCHED:
-===========================================================
+========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
@@ -1463,15 +1685,23 @@ Matched package case:
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
-NO Matched package case:
-#. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
-        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
-        testpmd>start
-#. To send matched GTPU_DOWN pkts::
-         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP())/SCTP()/("X"*480)],iface="enp177s0f1", count=100)
-         testpmd> stop
+Dis-Matched package case :
+#. Create rule for the rss type GTPU DOWN and hash l3 src package keywords::
 
-#. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue 
+        testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+        testpmd>start
+
+#. To send normal matched  GTPU DOWN pkts::
+        sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash with fix value. 
+
+#. To send dismatch matched GTPU DOWNP pkts to change the dst::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should not to change. 
+
+#. To send  GTPU DOWN pkts to change the src::
+         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
+#. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
