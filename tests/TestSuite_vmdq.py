@@ -166,11 +166,13 @@ class TestVmdq(TestCase):
         for _port in self.dut_ports:
             if _port % len(self.dut_ports) == 0 or len(self.dut_ports) % _port == 2:
                 txIntf = self.tester.get_local_port(self.dut_ports[_port + 1])
+                dst_port = _port + 1
             else:
                 txIntf = self.tester.get_local_port(self.dut_ports[_port - 1])
+                dst_port = _port - 1
             rxIntf = self.tester.get_local_port(self.dut_ports[_port])
-            self.tester.scapy_append('flows = [Ether(dst="%s")/Dot1Q(vlan=0)/("X"*%d)]'
-                                     % (self.destmac_port[txIntf], payload))
+            self.tester.scapy_append('flows = [Ether(dst="%s")/Dot1Q(vlan=0)/IP(src="1.2.3.4", dst="1.1.1.1")/("X"*%d)]'
+                                     % (self.destmac_port[dst_port], payload))
             pcap = os.sep.join([self.output_path, "%s-%d.pcap" % (self.suite_name, _port)])
             self.tester.scapy_append('wrpcap("%s", flows)' % pcap)
             self.tester.scapy_execute()
