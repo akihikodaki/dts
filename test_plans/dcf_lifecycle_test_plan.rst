@@ -47,13 +47,13 @@ The DCF can act as a special VF talking to the kernel PF over the same
 virtchannel mailbox to configure the underlying device (port) for the VFs.
 
 The test suite covers the lifecycle of DCF context in Kernel PF, such as
-launch, and exit, switch rules handling, reseting, and exception exit.
+launch, and exit, switch rules handling, resetting, and exception exit.
 
 
 Configuration
 =============
 
-NIC: 2x25G or 2x100G, serveral TC need breakout mode.
+NIC: 2x25G or 2x100G, several TC need breakout mode.
 NIC should have 2 PF ports at least, and connect to tester's ports.
 
 Topology
@@ -106,8 +106,7 @@ Launch dpdk on the VF, request DCF mode ::
 
 Expected: VF get DCF mode. There are outputs in testpmd launching ::
 
-    EAL: PCI device 0000:18:01.0 on NUMA socket 0
-    EAL: probe driver: 8086:1889 net_ice_dcf
+    EAL: Probe PCI driver: net_ice_dcf (8086:1889) device: 0000:18:01.0 (socket 0)
 
 
 TC02: DCF on 2 PFs, 1 trust VF on each PF
@@ -134,11 +133,9 @@ Launch dpdk on the VF on each PF, request DCF mode ::
 
 Expected: VF get DCF mode. There are outputs in each testpmd launching ::
 
-    EAL: PCI device 0000:18:01.0 on NUMA socket 0
-    EAL: probe driver: 8086:1889 net_ice_dcf
+    EAL: Probe PCI driver: net_ice_dcf (8086:1889) device: 0000:18:01.0 (socket 0)
 
-    EAL: PCI device 0000:18:11.0 on NUMA socket 0
-    EAL: probe driver: 8086:1889 net_ice_dcf
+    EAL: Probe PCI driver: net_ice_dcf (8086:1889) device: 0000:18:11.0 (socket 0)
 
 
 TC03: Check only VF zero can get DCF mode
@@ -159,13 +156,13 @@ Launch dpdk on the VF, request DCF mode ::
 
 Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 
-    ice_dcf_get_vf_resource(): Fail to get response of OP_GET_VF_RESOURCE
+    ice_dcf_get_vf_resource(): Failed to get response of OP_GET_VF_RESOURCE
     ice_dcf_init_hw(): Failed to get VF resource
     ice_dcf_dev_init(): Failed to init DCF hardware
 
 Error message in dmesg ::
 
-    ice 0000:18:00.0: Only VF0 can request for DCF.
+    ice 0000:18:00.0: VF 1 requested DCF capability, but only VF 0 is allowed to request DCF capability
     ice 0000:18:00.0: VF 1 failed opcode 3, retval: -5
 
 
@@ -187,13 +184,13 @@ Launch dpdk on the VF, request DCF mode ::
 
 Expected: VF can NOT get DCF mode. testpmd should provide a friendly output ::
 
-    ice_dcf_get_vf_resource(): Fail to get response of OP_GET_VF_RESOURCE
+    ice_dcf_get_vf_resource(): Failed to get response of OP_GET_VF_RESOURCE
     ice_dcf_init_hw(): Failed to get VF resource
     ice_dcf_dev_init(): Failed to init DCF hardware
 
 Error message in dmesg ::
 
-    ice 0000:18:00.0: DCF needs to be trusted.
+    ice 0000:18:00.0: VF needs to be trusted to configure DCF capability
     ice 0000:18:00.0: VF 0 failed opcode 3, retval: -5
 
 
@@ -269,7 +266,8 @@ Launch another testpmd on the VF1, and start mac forward ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -w 18:01.1 --file-prefix=vf -- -i
     set verbose 1
-    set fwd macstart
+    set fwd mac
+    start
 
 Set switch rule to VF1 0000:18:01.1 from DCF ::
 
@@ -280,7 +278,7 @@ Send a scapy packet to VF1 ::
     p = Ether(dst='xx:xx:xx:xx:xx:xx')/IP(src='192.168.0.2', dst='192.168.0.3')/Raw(64*'x')
     sendp(p, iface='testeri0', count=1)
 
-Check VF1 received the packet. Stats shows 1 packet received and forwarded. ::
+Check VF1 received the packet. Stats shows 1 packet received and forwarded ::
 
     show port stats all
 
@@ -317,7 +315,8 @@ Launch another testpmd on the VF1, and start mac forward ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -w 18:01.1 --file-prefix=vf -- -i
     set verbose 1
-    set fwd macstart
+    set fwd mac
+    start
 
 Set switch rule to VF1 0000:18:01.1 from DCF ::
 
@@ -337,11 +336,11 @@ Kill DCF process ::
     ps -ef |grep testpmd #Check the process id
     kill -9 <pid>
 
-Send scapy packet again. Check VF1 can't receive the packet ::
+Send scapy packet again. DCF flow rule is still valid, check VF1 can receive the packet ::
 
     show port stats all
 
-Expect: VF1 can't receive the packet
+Expect: VF1 can receive the packet
 
 
 TC13: Launch 2nd DCF process on the same VF
@@ -350,7 +349,7 @@ TC13: Launch 2nd DCF process on the same VF
 Launch 2nd DCF process on the same VF, PF shall reject the request.
 DPDK does not support to open 2nd DCF PMD driver on same VF.
 
-Generate 4 VFs on PF
+Generate 4 VFs on PF ::
 
     echo 4 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
 
@@ -460,7 +459,8 @@ Launch another testpmd on the VF1, and start mac forward ::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 11-14 -n 4 -w 18:01.1 -w 18:01.2 --file-prefix=vf -- -i
     set verbose 1
-    set fwd macstart
+    set fwd mac
+    start
 
 Set switch rule to VF1 0000:18:01.1 and VF2 0000:18:01.2 from DCF ::
 
@@ -484,7 +484,7 @@ Reset PF by lanconf command::
     Select "SV Menu" and then select "Reset Menu"
     Select "PF Reset" to trigger PF reset event
 
-Send scapy packet again. Check VF1 can't receive the packet
+Send scapy packet again. Check VF1 can't receive the packet::
 
     show port stats all
 
@@ -560,6 +560,7 @@ Remove ADQ on PF ::
     tc qdisc del dev enp24s0f0 root mqprio
     tc qdisc del dev enp24s0f0 ingress
     tc qdisc show dev enp24s0f0
+    ethtool -K enp24s0f0 hw-tc-offload off
 
 Launch dpdk on the VF, request DCF mode ::
 
@@ -568,8 +569,7 @@ Launch dpdk on the VF, request DCF mode ::
 
 Expect: testpmd can launch successfully. DCF mode can be grant ::
 
-    EAL: PCI device 0000:18:01.0 on NUMA socket 0
-    EAL: probe driver: 8086:1889 net_ice_dcf
+    EAL: Probe PCI driver: net_ice_dcf (8086:1889) device: 0000:18:01.0 (socket 0)
 
 
 TC20: When DCF mode enabled, ADQ setting on PF shall fail
@@ -667,8 +667,8 @@ Just change the ADQ commands to MAC-VLAN ::
 
 Remove MAC-VLAN commands ::
 
-  ip link del macvlan0
-  ethtool -K enp24s0f0 l2-fwd-offload off
+   ip link del macvlan0
+   ethtool -K enp24s0f0 l2-fwd-offload off
 
 
 TC23: When DCF mode enabled, PF can't set L2 forwarding
@@ -688,8 +688,8 @@ Just change the ADQ commands to MAC-VLAN ::
 
 Remove MAC-VLAN commands ::
 
-  ip link del macvlan0
-  ethtool -K enp24s0f0 l2-fwd-offload off
+    ip link del macvlan0
+    ethtool -K enp24s0f0 l2-fwd-offload off
 
 
 TC24: DCF and L2 forwarding can be enabled on different PF
@@ -702,12 +702,12 @@ Similar to ADQ test TC21
 
 Just change the ADQ commands to MAC-VLAN ::
 
-    ethtool -K enp24s0f0 l2-fwd-offload on
-    ip link add link macvlan0 link enp24s0f0 type macvlan
+    ethtool -K enp24s0f1 l2-fwd-offload on
+    ip link add link macvlan0 link enp24s0f1 type macvlan
     ifconfig macvlan0 192.168.1.111
     ipconfig macvlan0 up
 
 Remove MAC-VLAN commands ::
 
-  ip link del macvlan0
-  ethtool -K enp24s0f0 l2-fwd-offload off
+    ip link del macvlan0
+    ethtool -K enp24s0f1 l2-fwd-offload off
