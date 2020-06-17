@@ -45,6 +45,7 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_advanced_rss_test_plan
     cvl_fdir_test_plan
     cvl_switch_filter_test_plan
+    dcf_lifecycle_test_plan
     crypto_perf_cryptodev_perf_test_plan
     ddp_gtp_qregion_test_plan
     ddp_gtp_test_plan
