@@ -525,31 +525,26 @@ def check_packets_of_each_queue(out):
     """
     check each queue has receive packets
     """
-    queue_result = re.findall(r"-------(.*)-------\s*(.*)", out)
-    queueid_rxpackets_list = []
-    log_msg = ""
-    for q in queue_result:
-        queue_id =get_queue_id(q[0])
-        rx_packets=get_rxpackets(q[1])
-        if (queue_id != -1):
-            queueid_rxpackets_list.append([queue_id, rx_packets])
+    out = out.split("Forward statistics for port 0")[0]
+    lines = out.split("\r\n")
+    queue_flag = 0
 
-    if (len(queueid_rxpackets_list) == 10):
-        if (queueid_rxpackets_list > 0):
-            return True, log_msg
-        else :
-            log_msg = "The queue is rx-packets" % id
-            return False, log_msg
+    for line in lines:
+        line = line.strip()
+        if "Forward Stats" in line.strip():
+            result_scanner = r"RX Port= \d+/Queue=\s?([0-9]+)"
+            scanner = re.compile(result_scanner, re.DOTALL)
+            m = scanner.search(line)
+            queue_num = m.group(1)
+            if queue_num is not None:
+                queue_flag = queue_flag + 1
 
-    p = re.compile("\sForward Stats for RX Port=(.*?)/Queue=(.*?)\s->")
-    li = re.findall(p, out)
-    queue_set = set([int(i[1].strip()) for i in li])
-    verify_set = set(range(64))
-    log_msg = ""
-    if queue_set.issubset(verify_set):
+    if queue_flag != 1:
+        log_msg = "packets goes to %s different queues" % queue_flag
         return True, log_msg
     else:
-        return False, "queue %s out of range %s" % (queue_set, verify_set)
+        log_msg = "packets not goes to different queues"
+        return False, log_msg
 
 def check_symmetric_queue(out):
     """
@@ -634,7 +629,7 @@ def check_iavf_packets_rss_queue(out, count, rss_match=True):
                 packet_sumnum = packet_sumnum + int(packet_num)
 
     if rss_match:
-        if queue_flag >= 10 and packet_sumnum == count:
+        if queue_flag == 16 and packet_sumnum == count:
             log_msg = "Packets has send to %s queues" % queue_flag
             return True, log_msg
         else:
