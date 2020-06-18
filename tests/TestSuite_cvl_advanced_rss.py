@@ -736,8 +736,8 @@ tv_mac_ipv6_vxlan_icmp_symmetric_toeplitz= {
 tv_mac_ipv4_simple_xor= {
     "name":"tv_mac_ipv4_simple_xor",
     "rte_flow_pattern":"flow create 0 ingress pattern end actions rss func simple_xor key_len 0 queues end / end",
-    "scapy_str": ['Ether()/IP("src="1.1.4.1",dst="2.2.2.3")/("X"*480)',
-                  'Ether()/IP("src="2.2.2.3",dst="1.1.4.1")/("X"*480)'],
+    "scapy_str": ['Ether()/IP(src="1.1.4.1",dst="2.2.2.3")/("X"*480)',
+                  'Ether()/IP(src="2.2.2.3",dst="1.1.4.1")/("X"*480)'],
     "check_func": rfc.check_simplexor_queue,
     "check_func_param": {"expect_port":0}
 }
@@ -856,7 +856,6 @@ class AdvancedRSSTest(TestCase):
 
     def _rte_flow_validate_pattern(self, test_vectors, command, is_vxlan):
 
-        global test_results
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)  #print the log
         self.dut.send_expect("port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd", "testpmd> ", 15)
@@ -865,9 +864,10 @@ class AdvancedRSSTest(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
-        test_results.clear()
         self.count = 1
-        self.mac_count=100    
+        self.mac_count = 100
+        result_dic = dict()
+        result_flag = 0
         for tv in test_vectors:
             out = self.dut.send_expect(tv["rte_flow_pattern"], "testpmd> ", 15)  #create a rule
             print(out)
@@ -888,14 +888,26 @@ class AdvancedRSSTest(TestCase):
                     print("packet:")
                     print(tv["scapy_str"])
 
-            out = self.dut.send_expect("stop", "testpmd> ",60)
-            print(out)
-            log_msg =  tv["check_func"](out)
-            print(log_msg)
-            rfc.check_rx_tx_packets_match(out, self.mac_count)
+            if "symmetric" or "xor" in tv["name"]:
+                out = self.dut.get_session_output(timeout=3)
+                self.dut.send_expect("stop", "testpmd> ", 60)
+            else:
+                out = self.dut.send_expect("stop", "testpmd> ", 60)
+                result, ret_log = rfc.check_rx_tx_packets_match(out, self.mac_count)
+                self.verify(result is True, ret_log)
+            ret_result, log_msg = tv["check_func"](out)
+            print("%s result is: %s ,%s " % (tv["name"], ret_result, log_msg))
+
+            result_dic[tv["name"]] = ret_result
+
+        print(result_dic)
+
+        if False in result_dic.values():
+            result_flag = 1
 
         self.dut.send_expect("flow flush %d" % self.dut_ports[0], "testpmd> ")
         self.dut.send_expect("quit", "#")
+        self.verify(result_flag == 0, "Some case failed")
 
     def test_advance_rss_ipv4(self):
         command = self.create_testpmd_command()
