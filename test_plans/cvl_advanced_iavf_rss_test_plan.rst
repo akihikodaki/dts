@@ -402,7 +402,7 @@ Test case: MAC_IPV4_L3DST:
         testpmd> flow create 0 ingress pattern eth / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
         testpmd> start
 
-#. send the 100 IP +frag type pkts::
+#. send the 100 IP  type pkts::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP(dst=RandIP())/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -411,16 +411,16 @@ Test case: MAC_IPV4_L3DST:
 
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
  
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only packages::
  
-         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
  
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src has no changed.
  
-         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8")/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
  
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 dst has changed.
   
@@ -463,7 +463,7 @@ Test case: MAC_IPV4_L3SRC_FRAG_ICMP:
 #. Destory rule on port 0 
          testpmd> flow flush 0
    
-Test case: MAC_IPV4_L3DST_FRAG_ICMP:
+Test case: MAC_IPV4_L3DST_ICMP:
 ====================================
 #. create rule for the rss type for l3 dst only::
 
@@ -480,16 +480,16 @@ Test case: MAC_IPV4_L3DST_FRAG_ICMP:
    
 #. No match case::
 #. send the 100 IP change to l3-dst-only packages and match to the rule::
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value.		
 #. send the 100 IP change to l3-src-only packages::   
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5",frag=5)/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2",dst="192.168.0.5")/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should keep to previous hash value, because the l3 dst has no changed.
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8",frag=5)/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.8")/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should different to first hash value, because the l3 dst has changed.
 
@@ -749,16 +749,16 @@ Test case: MAC_IPV4_UDP:
    
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/UDP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only  and l4 dport packages::   
 
-         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5",frag=5)/UDP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5")/UDP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 src and l4 dst has changed.
 
-          sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9",frag=5)/UDP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+          sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src  and l4 dst has no changed.
 
@@ -767,9 +767,9 @@ Test case: MAC_IPV4_UDP:
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
-Test case: MAC_IPV4_UDP_FRAG:
+Test case: MAC_IPV4_L3_UDP_L4:
 =============================
-#. create rule for the rss type is ipv4 +UDP +frag::
+#. create rule for the rss type is ipv4 +UDP::
 
         testpmd> flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
         testpmd> start
@@ -845,11 +845,11 @@ Test case: MAC_IPV6_UDP:
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
-Test case: MAC_IPV6_UDP_FRAG:   
+Test case: MAC_IPV6_L3SRC_UDP:   
 =============================
 #. To send IPV6 pkts with IPV6 src +frag +UDP port::
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6())/IPv6ExtHdrFragment()/UDP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6())/UDP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
         testpmd> stop
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
@@ -858,8 +858,8 @@ Test case: MAC_IPV6_UDP_FRAG:
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
-Test case: MAC_IPV4_TCP_FRAG:
-=============================
+Test case: MAC_IPV4_TCP_L3SRC_L4DST:
+===================================
 #. create rule for the rss type is IPV4 + TCP L3 src and  L4 dst type hash::
 
         testpmd>flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -875,16 +875,16 @@ Test case: MAC_IPV4_TCP_FRAG:
    
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/TCP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/TCP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only  and l4 dport packages::   
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5",frag=5)/TCP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5")/TCP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 src and l4 dst has changed.
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9",frag=5)/TCP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src  and l4 dst has no changed.
 
@@ -910,9 +910,9 @@ Test case: MAC_IPV4_TCP_PAY
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(),dst=RandIP())/TCP()/("X"*480)], iface="enp177s0f1", count=100)
 
-#. To send IPV4 pkts with IP src and dst +frag and without TCP port::
+#. To send IPV4 pkts with IP src and dst and without TCP port::
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(),dst=RandIP(),frag=4)/TCP(sport=RandShort(),dport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(),dst=RandIP())/TCP(sport=RandShort(),dport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
@@ -976,7 +976,7 @@ Test case: MAC_IPV6_TCP
 #. Destory rule on port 0 
          testpmd> flow flush 0
 
-Test case: MAC_IPV6_TCP_FRAG:
+Test case: MAC_IPV6_TCP_L3_l4:
 =============================
 #. Create rule for the rss IPV6 tcp:: 
 
@@ -984,7 +984,7 @@ Test case: MAC_IPV6_TCP_FRAG:
         testpmd>start
 
 #. To send ipv6 pkts and IPV6 frag::
-        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6(),dst=RandIP6())/IPv6ExtHdrFragment()/TCP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6(),dst=RandIP6())/TCP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
         testpmd> stop
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
@@ -1009,15 +1009,15 @@ Test case: MAC_IPV4_SCTP:
    
 #. No match case::
 #. send the 100 IP change to l3-src-only packages and match to the rule::
-        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/SCTP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value.
 #. send the 100 IP change to l3-src-only  and l4 dport packages::   
-         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5",frag=5)/SCTP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4",dst="192.168.0.5")/SCTP((sport=22,dport=55)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should different to previous hash value, because the l3 src and l4 dst has changed.
 
-         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9",frag=5)/SCTP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
+         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9")/SCTP(sport=16,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
 #. Expected got a fixed Hash value, but hash value should keep to first hash value, because the l3 src  and l4 dst has no changed.
         testpmd> stop  
@@ -1095,7 +1095,7 @@ Test case: MAC_IPV6_SCTP_PAY:
 
 #. to send IPV6 pkts includ frag::
 
-        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6())/IPv6ExtHdrFragment()/SCTP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6())/SCTP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
         testpmd> stop
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
@@ -1710,7 +1710,7 @@ Test case: MAC_IPV4_CVLAN:
 ==========================
 #. Create rule for the rss type cVLAN and hash l3 src keywords::
 
-        testpmd>flow create 0 ingress pattern eth / ipv4 / end actions rss types c-vlan end key_len 0 queues end / end
+        testpmd>flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types c-vlan end key_len 0 queues end / end
         testpmd>start
 
 #. To send C-VLAN pkts WITH CTAG8100::
@@ -2181,11 +2181,11 @@ Test case: SYMMETRIC_TOEPLITZ_NVGRE_IPV6_UDP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / udp / end actions rss func symmetric_toeplitz types ipv6-udp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 frag and UDP ports::
+#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 and UDP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/UDP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send ip pkts with fix IPv6 includ frag and switch src and dst ip address and udp ports::
+#. to send ip pkts with fix IPv6 includ switch src and dst ip address and udp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2202,11 +2202,11 @@ Test case: SYMMETRIC_TOEPLITZ_NVGRE_IPV6_TCP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 frag and tcp ports::
+#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 and tcp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send ip pkts with fix IPv6 includ frag and switch src and dst ip address and tcp ports::
+#. to send ip pkts with fix IPv6 includ switch src and dst ip address and tcp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2223,11 +2223,11 @@ Test case: SYMMETRIC_TOEPLITZ_NVGRE_IPV6_SCTP
         testpmd>flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss func symmetric_toeplitz types ipv6-sctp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 frag and SCTP ports::
+#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 and SCTP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/SCTP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send ip pkts with fix IPv6 includ frag and switch src and dst ip address and SCTP ports::
+#. to send ip pkts with fix IPv6 includ switch src and dst ip address and SCTP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=33)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2245,11 +2245,11 @@ Test case: SYMMETRIC_TOEPLITZ_NVGRE_IPV6_ICMP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 frag and ICMP ports::
+#. to send ipv6 pkts with fix nvgre pkts with fixed address and includ ipv6 and ICMP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/ICMP()/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send ip pkts with fix IPv6 includ frag and switch src and dst ip address and ICMP ports::
+#. to send ip pkts with fix IPv6 includ switch src and dst ip address and ICMP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2266,11 +2266,11 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6_UDP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / udp / end actions rss func symmetric_toeplitz types ipv6-udp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 frag and UDP ports::
+#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 and UDP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/UDP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send VXLAN pkts with fix IPv6 includ frag and switch src and dst ip address and UDP ports::
+#. to send VXLAN pkts with fix IPv6 includ switch src and dst ip address and UDP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2288,11 +2288,11 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6:
         testpmd>flow create 0 ingress pattern eth / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 frag::
+#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 ::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send VXLAN pkts with fix IPv6 includ frag and switch src and dst ip address::
+#. to send VXLAN pkts with fix IPv6 includ switch src and dst ip address::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2309,11 +2309,11 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6_TCP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 frag and tcp ports::
+#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 and tcp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/TCP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send VXLAN pkts with fix IPv6 includ frag and switch src and dst ip address and tcp ports::
+#. to send VXLAN pkts with fix IPv6 includ switch src and dst ip address and tcp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2330,11 +2330,11 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6_SCTP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / sctp / end actions rss func symmetric_toeplitz types ipv6-sctp end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 frag and sctp ports::
+#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 and sctp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/SCTP(sport=30,dport=32)/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send VXLAN pkts with fix IPv6 includ frag and switch src and dst ip address and sctp ports::
+#. to send VXLAN pkts with fix IPv6 includ switch src and dst ip address and sctp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=30)/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -2351,11 +2351,11 @@ Test case: SYMMETRIC_TOEPLITZ_VXLAN_IPV6_ICMP:
         testpmd>flow create 0 ingress pattern eth / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
         testpmd>start
 
-#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 frag and ICMP ports::
+#. to send ipv6 pkts with fix vxlan pkts with fixed address and includ ipv6 and ICMP ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/ICMP()/("X"*480)],iface="enp177s0f1",count=100)
 
-#. to send VXLAN pkts with fix IPv6 includ frag and switch src and dst ip address and icmp ports::
+#. to send VXLAN pkts with fix IPv6 includ switch src and dst ip address and icmp ports::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)],iface="enp177s0f1",count=100)
         testpmd> stop
@@ -3897,7 +3897,7 @@ Test case: Error handle MAC_IPV4_UDP for the invalid pattern:
 
 Test case: Error handle MAC_IPV4_TCP for the invalid pattern:
 =====================================================================
-#. create rule for the rss type is IPV4 l3 src +NVGRE inner IPV4 +frag + ICMP::
+#. create rule for the rss type is IPV4 l3 src +NVGRE inner IPV4 + ICMP::
 
     testpmd> flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end
 
@@ -3905,7 +3905,7 @@ Test case: Error handle MAC_IPV4_TCP for the invalid pattern:
     iavf_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
 
-Test case 2: VF reset on set RSS case MAC_IPV4_L3DST_FRAG:
+Test case 2: VF reset on set RSS case MAC_IPV4_L3DST:
 =========================================================
 #. Generate 1 VFs on PF
     modprobe vfio-pci	
@@ -3928,11 +3928,11 @@ Test case 2: VF reset on set RSS case MAC_IPV4_L3DST_FRAG:
     testpmd> start
     testpmd> show port 0 rss-hash
              RSS functions:
-             all ipv4-frag ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ip udp tcp sctp
+             all ipv4-tcp ipv4-udp ipv4-sctp ipv4-other ip udp tcp sctp
 
-#. send the 100 IP frag pkts::
+#. send the 100 IP pkts::
 
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst=RandIP(), frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
 
     testpmd> stop
 
@@ -3951,9 +3951,9 @@ Test case 2: VF reset on set RSS case MAC_IPV4_L3DST_FRAG:
     testpmd> start
 
 #. Expected the port can be stop/reset/start normally without error message.
-#. send the 100 IP frag pkts::
+#. send the 100 IP pkts::
 
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst=RandIP(), frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
     testpmd> stop
 
 
@@ -3978,9 +3978,9 @@ Test case 2: VF reset on set RSS case MAC_IPV4_L3DST_FRAG:
     testpmd> start
 #. to check the port can be stop/reset/start normally without error message.
 check the rule status is valid
-#. send the 100 IP frag pkts::
+#. send the 100 IP pkts::
 
-     sendp([Ether(dst="000:11:33:44:66:77")/IP(dst=RandIP(), frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+     sendp([Ether(dst="000:11:33:44:66:77")/IP(dst=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
     testpmd> stop
 #. check the verify 100 pkts has received in VF0, and the RSS hash value should work, due to the after reset mac  to the rss has set to default enable status.
 
@@ -4060,7 +4060,7 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
 
 #. Destory rule on port 0 
          testpmd> flow flush 0   
-Test case: Use OS default package for the MAC_IPV4_GTPU_FRAG and IPV4 L3 src only :
+Test case: Use OS default package for the MAC_IPV4_GTPU and IPV4 L3 src only :
 ===================================================================================
 #. Load OS package
 #. Create rule for the rss type GTPU and hash l3 src keywords::
@@ -4130,9 +4130,9 @@ Test case: Check rssh hash in mutil VFS
 
 
 3. to send 100 packages to the VF1 with VF1 mac
-    sendp([Ether(dst="00:11:55:66:77:88")/IP(dst=RandIP(), frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+    sendp([Ether(dst="00:11:55:66:77:88")/IP(dst=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
 
-    sendp([Ether(dst="00:11:55:66:77:88")/IP(src=RandIP(), frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
+    sendp([Ether(dst="00:11:55:66:77:88")/IP(src=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
 
    Expect: RSS should work in VF1 and VF1 should received these 100 RSS hash packages , because the rss hash has enable default on VF1
    But VF0 should not recevied rss pakcages.
