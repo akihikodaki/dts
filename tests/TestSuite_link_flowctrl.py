@@ -75,7 +75,6 @@ class TestLinkFlowctrl(TestCase):
         self.tx_port = self.dutPorts[1]
 
         self.portMask = utils.create_mask([self.rx_port, self.tx_port])
-        self.memChannels = self.dut.get_memory_channels()
 
         self.pmdout = PmdOutput(self.dut)
         self.pmdout.start_testpmd("all", "--portmask=%s" % self.portMask)
@@ -89,9 +88,10 @@ class TestLinkFlowctrl(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
 
-    def pause_frame_loss_test(self, rx_flow_control='off',
-                              tx_flow_control='off',
-                              pause_frame_fwd='off'):
+    def get_tgen_input(self):
+        """
+        create streams for ports.
+        """
 
         tester_tx_port = self.tester.get_local_port(self.rx_port)
         tester_rx_port = self.tester.get_local_port(self.tx_port)
@@ -100,19 +100,13 @@ class TestLinkFlowctrl(TestCase):
         pcap = os.sep.join([self.output_path, "test.pcap"])
 
         tgenInput.append((tester_tx_port, tester_rx_port, pcap))
+        return tgenInput
 
-        self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg on %d " % (
-                             rx_flow_control,
-                             tx_flow_control,
-                             pause_frame_fwd,
-                             self.rx_port),
-                             "testpmd> ")
+    def start_traffic(self, tgenInput):
 
-        self.dut.send_expect("set fwd csum", "testpmd> ")
-        self.dut.send_expect("start", "testpmd> ", 60)
         pcap = os.sep.join([self.output_path, "test.pcap"])
         self.tester.scapy_append('wrpcap("%s",[Ether()/IP()/UDP()/("X"*%d)])' %
-                                 (pcap,TestLinkFlowctrl.payload_size))
+                                 (pcap, TestLinkFlowctrl.payload_size))
 
         self.tester.scapy_execute()
 
@@ -120,13 +114,35 @@ class TestLinkFlowctrl(TestCase):
         self.tester.pktgen.clear_streams()
         # run packet generator
         streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
-                                            None, self.tester.pktgen)
+                                                                 None, self.tester.pktgen)
         options = {'duration': 60}
         result = self.tester.pktgen.measure_loss(stream_ids=streams, options=options)
+        return result[0]
 
+    def set_flow_ctrl(self, rx_flow_control='off',
+                                  tx_flow_control='off',
+                                  pause_frame_fwd='off'):
+
+        self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg on %d " % (
+                              rx_flow_control,
+                              tx_flow_control,
+                              pause_frame_fwd,
+                              self.rx_port),
+                              "testpmd> ")
+
+        self.dut.send_expect("set fwd csum", "testpmd> ")
+        self.dut.send_expect("start", "testpmd> ", 60)
+
+    def pause_frame_loss_test(self, rx_flow_control='off',
+                              tx_flow_control='off',
+                              pause_frame_fwd='off'):
+
+        tgenInput = self.get_tgen_input()
+        self.set_flow_ctrl(rx_flow_control, tx_flow_control, pause_frame_fwd)
+        result = self.start_traffic(tgenInput)
         self.dut.send_expect("stop", "testpmd> ")
 
-        return result[0]
+        return result
 
     def get_testpmd_port_stats(self, ports):
         """
@@ -152,6 +168,29 @@ class TestLinkFlowctrl(TestCase):
 
         return port_stats
 
+    def send_packets(self, frame):
+        tester_tx_port = self.tester.get_local_port(self.rx_port)
+        tx_interface = self.tester.get_interface(tester_tx_port)
+        tester_rx_port = self.tester.get_local_port(self.tx_port)
+
+        tgenInput = []
+        tgenInput.append((tester_tx_port, tester_rx_port, "test.pcap"))
+        self.tester.scapy_foreground()
+        self.tester.scapy_append('sendp(%s, iface="%s", count=%d)' % (frame,
+                                                                      tx_interface,
+                                                                      TestLinkFlowctrl.frames_to_sent))
+
+        self.tester.scapy_execute()
+        # The following sleep is needed to allow all the packets to arrive.
+        # 1s works for Crown Pass (FC18) DUT, Lizard Head Pass (FC14) tester
+        # using Niantic. Increase it in case of packet loosing.
+        sleep(1)
+
+        self.dut.send_expect("stop", "testpmd> ")
+
+        port_stats = self.get_testpmd_port_stats((self.rx_port, self.tx_port))
+        return port_stats
+
     def pause_frame_test(self, frame, flow_control='off',
                          pause_frame_fwd='off'):
         """
@@ -161,22 +200,18 @@ class TestLinkFlowctrl(TestCase):
             Returns the testpmd port stats.
         """
 
-        tester_tx_port = self.tester.get_local_port(self.rx_port)
-        tx_interface = self.tester.get_interface(tester_tx_port)
-        tester_rx_port = self.tester.get_local_port(self.tx_port)
-
-        tgenInput = []
-        tgenInput.append((tester_tx_port, tester_rx_port, "test.pcap"))
-
         if (self.nic in ["cavium_a063", "cavium_a064"]):
-             self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 autoneg %s %d " % (
+            self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 autoneg %s %d " % (
                              flow_control,
                              flow_control,
                              flow_control,
                              self.rx_port),
                              "testpmd> ")
+        elif self.running_case == "test_pause_fwd_port_stop_start":
+            self.dut.send_expect("set flow_ctrl mac_ctrl_frame_fwd %s %d " % (pause_frame_fwd,
+                                                                              self.rx_port), "testpmd> ")
         else:
-             self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg %s %d " % (
+            self.dut.send_expect("set flow_ctrl rx %s tx %s 300 50 10 1 mac_ctrl_frame_fwd %s autoneg %s %d " % (
                              flow_control,
                              flow_control,
                              pause_frame_fwd,
@@ -188,22 +223,7 @@ class TestLinkFlowctrl(TestCase):
         self.dut.send_expect("start", "testpmd> ")
         self.dut.send_expect("clear port stats all", "testpmd> ")
 
-        self.tester.scapy_foreground()
-        self.tester.scapy_append('sendp(%s, iface="%s", count=%d)' % (frame,
-                                                                      tx_interface,
-                                                                      TestLinkFlowctrl.frames_to_sent))
-
-        self.tester.scapy_execute()
-
-        # The following sleep is needed to allow all the packets to arrive.
-        # 1s works for Crown Pass (FC18) DUT, Lizard Head Pass (FC14) tester
-        # using Niantic. Increase it in case of packet loosing.
-        sleep(1)
-
-        self.dut.send_expect("stop", "testpmd> ")
-
-        port_stats = self.get_testpmd_port_stats((self.rx_port, self.tx_port))
-
+        port_stats = self.send_packets(frame)
         return port_stats
 
     def check_pause_frame_test_result(self, result, expected_rx=False, expected_fwd=False):
@@ -365,6 +385,38 @@ class TestLinkFlowctrl(TestCase):
                                            pause_frame_fwd='on')
         self.check_pause_frame_test_result(port_stats, True, True)
 
+    def test_pause_fwd_port_stop_start(self):
+        """
+        Check werther the MAC Control Frame Forwarding setting still working after port stop/start.
+        """
+
+        # Regular frames, check for no frames received
+        pause_frame = self.build_pause_frame()
+
+        # Enable mac control Frame Forwarding, and validate packets are received.
+        port_stats = self.pause_frame_test(pause_frame, pause_frame_fwd='on')
+        self.check_pause_frame_test_result(port_stats, True, True)
+
+        # test again after port stop/start
+        self.dut.send_expect("port stop 0", "testpmd> ")
+        self.dut.send_expect("port start 0", "testpmd> ", 60)
+        self.dut.send_expect("start", "testpmd> ", 60)
+        self.dut.send_expect("clear port stats all", "testpmd> ")
+        port_stats = self.send_packets(pause_frame)
+        self.check_pause_frame_test_result(port_stats, True, True)
+
+        # Disable mac control Frame Forwarding, and validate no packets are received.
+        port_stats = self.pause_frame_test(pause_frame, pause_frame_fwd='off')
+        self.check_pause_frame_test_result(port_stats)
+
+        # test again after port stop/start
+        self.dut.send_expect("port stop 0", "testpmd> ")
+        self.dut.send_expect("port start 0", "testpmd> ", 60)
+        self.dut.send_expect("start", "testpmd> ", 60)
+        self.dut.send_expect("clear port stats all", "testpmd> ")
+        port_stats = self.send_packets(pause_frame)
+        self.check_pause_frame_test_result(port_stats)
+
     def test_perf_flowctrl_on_pause_fwd_on(self):
         """
         Enable link flow control and PAUSE frame forwarding
@@ -448,6 +500,52 @@ class TestLinkFlowctrl(TestCase):
 
         self.verify(result <= 0.01,
                     "Link flow control fail, the loss percent is more than 1%")
+
+    def test_perf_flowctrl_on_port_stop_start(self):
+        """
+        Check werther the link flow control setting is still working after port stop/start.
+        """
+
+        # Enable link flow control and PAUSE frame forwarding
+        result = self.pause_frame_loss_test(rx_flow_control='on',
+                                            tx_flow_control='on',
+                                            pause_frame_fwd='off')
+        self.logger.info("Packet loss: %.3f" % result)
+        self.verify(result <= 0.01,
+                    "Link flow control fail, the loss percent is more than 1%")
+
+        # test again after port stop/start
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop 0", "testpmd> ")
+        self.dut.send_expect("port start 0", "testpmd> ", 60)
+        self.dut.send_expect("start", "testpmd> ", 60)
+
+        tgenInput = self.get_tgen_input()
+        result = self.start_traffic(tgenInput)
+        self.logger.info("Packet loss: %.3f" % result)
+        self.verify(result <= 0.01,
+                    "Link flow control fail after port stop/start, the loss percent is more than 1%")
+        self.dut.send_expect("stop", "testpmd> ")
+
+        # Disable link flow control and PAUSE frame forwarding
+        self.set_flow_ctrl(rx_flow_control="off",
+                           tx_flow_control='off',
+                           pause_frame_fwd='off')
+        result = self.start_traffic(tgenInput)
+        self.logger.info("Packet loss: %.3f" % result)
+        self.verify(result >= 0.5,
+                    "Link flow control fail after port stop/start, the loss percent is more than 50%")
+
+        # test again after port Stop/start
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("port stop 0", "testpmd> ")
+        self.dut.send_expect("port start 0", "testpmd> ", 60)
+        self.dut.send_expect("start", "testpmd> ", 60)
+        result = self.start_traffic(tgenInput)
+        self.logger.info("Packet loss: %.3f" % result)
+        self.verify(result >= 0.5,
+                    "Link flow control fail after port stop/start, the loss percent is more than 50%")
+        self.dut.send_expect("stop", "testpmd> ")
 
     def tear_down_all(self):
         """
