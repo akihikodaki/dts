@@ -667,7 +667,7 @@ Note: some of the error messages may be differernt.
 
 10. invalid port::
 
-    flow validate 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
+      flow validate 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end
 
    get the message::
 
@@ -675,7 +675,7 @@ Note: some of the error messages may be differernt.
 
 11. check the flow list::
 
-    testpmd> flow list 0
+      testpmd> flow list 0
 
    there is no rule listed.
 
@@ -2344,7 +2344,7 @@ Subcase 9: delete a non-existent rule
     port_flow_complain(): Caught PMD error type 1 (cause unspecified): No such device: No such device
 
 Subcase 10: unsupported input set field
---------------------------------------
+---------------------------------------
 
 1. Create a IPV4_PAY rule with TC input set::
 
