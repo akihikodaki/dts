@@ -2469,7 +2469,7 @@ Subcase 1: port stop/port start/port reset
 
 10. list the rule and send matched packet::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.22",dst="192.168.0.23") / Raw('x' * 80)],iface="enp175s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.22",dst="192.168.0.23") / Raw('x' * 80)],iface="enp175s0f0")
 
    check the packet are redirected to queue 2 with FDIR matched ID=0x1
 
