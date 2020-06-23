@@ -75,7 +75,7 @@ the target port, checking that the same amount of frames and bytes
 are received back by the Traffic Generator from the port.
 
 Functional Tests of Status Checks
-================================
+=================================
 
 Testing the support of Status Checks in Poll Mode Drivers consists of
 configuring the gathering the initial status of a port, sending a
