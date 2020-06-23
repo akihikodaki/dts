@@ -38,10 +38,12 @@ Benchmark PVP multi-paths performance with 10 tx/rx paths. Includes mergeable, n
 inorder mergeable, inorder non-mergeable, virtio 1.1 mergeable, virtio 1.1 non-mergeable，virtio 1.1 inorder
 mergeable, virtio 1.1 inorder non-mergeable, virtio1.1 vectorized path. Give 1 core for vhost and virtio respectively.
 Packed ring vectorized path need:
+
     AVX512F and required extensions are supported by compiler and host
     VERSION_1 and IN_ORDER features are negotiated
     mergeable feature is not negotiated
     LRO offloading is disabled
+
 Split ring vectorized rx path need:
     mergeable and IN_ORDER features are not negotiated
     LRO, chksum and vlan strip offloadings are disabled
