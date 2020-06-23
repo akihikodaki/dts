@@ -126,7 +126,7 @@ send 2 packets::
 vefify two packets have different RSS hash values
 
 Test Case: test set hash input set for ipv4-tcp
-==============================================
+===============================================
 
 test all different hash input set for ipv4-tcp
 1. Set hash input set for ipv4-tcp l3-src-only::
@@ -505,7 +505,7 @@ test all different hash input set for ipv6-sctp
 the same steps as step 1-15 for ipv4-tcp, just replace ipv4-tcp with ipv6-sctp.
 
 Test Case: test set hash input set for ipv4-other
-================================================
+=================================================
 
 test all different hash input set for ipv4-other
 1. Set hash input set for ipv4-other l3-src-only::
@@ -578,7 +578,7 @@ test all different hash input set for ipv4-other
    verify the packet have same RSS hash value as above.
 
 Test Case: test set hash input set for ipv6-other
-================================================
+=================================================
 
 test all different hash input set for ipv6-other
 the same steps as step 1-3 for ipv4-other, just replace ipv4 with ipv6.
