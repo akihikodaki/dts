@@ -319,7 +319,7 @@ Notes: rule 1 conflicts with rule 0, rule 1 will overlap the rule 0.
 
 10. Set all the queues to the rule::
 
-    testpmd> flow create 0 ingress pattern end actions rss types end queues 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 end / end
+     testpmd> flow create 0 ingress pattern end actions rss types end queues 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 end / end
 
    Send the ipv4-other packets with different src/dst ip address.
    All the packets are distributed to all queues.
@@ -612,7 +612,7 @@ Test case: Flow directory rule and RSS rule combination (I40E)
    So flow directory filter is priority to RSS hash filter.
 
 Test case: Set queue-region with rte_flow api (I40E)
-===================================================
+====================================================
  
 1. Start the testpmd::
 
