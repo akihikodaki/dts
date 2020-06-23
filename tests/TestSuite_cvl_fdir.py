@@ -1722,7 +1722,7 @@ class TestCVLFdir(TestCase):
 
     def test_void_action(self):
         rule = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions end"
-        self.create_fdir_rule(rule, check_stats=False, msg="Invalid input action: Invalid argument")
+        self.create_fdir_rule(rule, check_stats=False)
         self.check_fdir_rule(stats=False)
 
     def _test_unsupported_action(self):
@@ -2068,6 +2068,11 @@ class TestCVLFdir(TestCase):
         self.check_fdir_rule(port_id=0, stats=True, rule_list=rule_li)
         out2 = self.send_pkts_getouput(pkts=pkt, port_id=0, count=1)
         rfc.check_mark(out2, pkt_num=1, check_param={"port_id": 0, "queue": 1, "mark_id": 0}, stats=True)
+        rule2 = 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / end actions queue index 2 / mark id 1 / end'
+        rule_li2 = self.create_fdir_rule(rule=rule2, check_stats=True)
+        self.check_fdir_rule(rule_list=rule_li+rule_li2)
+        out3 = self.send_pkts_getouput(pkts='Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.22",dst="192.168.0.23") / Raw("x" * 80)', port_id=0, count=1)
+        rfc.check_mark(out3, pkt_num=1, check_param={"port_id": 0, "queue": 2, "mark_id": 1}, stats=True)
 
     def test_add_delete_rules(self):
         self.pmd_output.execute_cmd("stop")
@@ -2157,10 +2162,29 @@ class TestCVLFdir(TestCase):
         rules = list()
         pkt_pattern = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.%d.%d")/Raw("x" * 80)'
         pkts2 = list()
-        for i in range(60):
-            for j in range(256):
-                rules.append(rule_pattern % (i, j))
-                pkts2.append(pkt_pattern % (i, j))
+        # each pf can create 1024 rules at least in 2 ports card
+        # each pf can create 512 rules at least in 4 ports card
+        # and there are 14k rules shared by pfs and vfs
+        # so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card
+        # 1 pf and 2 vfs can create 14848 rules at most on 4 ports card
+        if self.nic in ['columbiaville_100g']:
+            rule_li = list(map(str, range(15360)))
+            pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
+                    'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.59.255")/Raw("x" * 80)']
+            for i in range(60):
+                for j in range(256):
+                    rules.append(rule_pattern % (i, j))
+                    pkts2.append(pkt_pattern % (i, j))
+        elif self.nic in ['columbiaville_25g']:
+            rule_li = list(map(str, range(14848)))
+            pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
+                    'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.57.255")/Raw("x" * 80)']
+            for i in range(58):
+                for j in range(256):
+                    rules.append(rule_pattern % (i, j))
+                    pkts2.append(pkt_pattern % (i, j))
+        else:
+            raise Exception('%s not supported by this case' % self.nic)
         cmd_path = '/tmp/test_max_rules'
         cmd_li = map(lambda x: x + os.linesep, rules)
         with open(cmd_path, 'w') as f:
@@ -2174,15 +2198,12 @@ class TestCVLFdir(TestCase):
                                                     self.portMask, 64, 64, cmd_path),
                                                 eal_param="-w %s,flow-mark-support=1 -w %s,flow-mark-support=1" % (
                                                     self.pci0, self.pci1), socket=self.ports_socket)
-            self.verify('Failed to create file' not in out, "create some rule failed: %s" % out)
+            self.verify('Failed to create flow' not in out, "create some rule failed")
             self.config_testpmd()
             self.pmd_output.execute_cmd('start')
             rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.100.20 dst is 192.168.60.0 / end actions queue index 1 / mark / end"
             self.create_fdir_rule(rule=rule, check_stats=False, msg='Failed to create flow', validate=False)
-            rule_li = list(map(str, range(15360)))
             self.check_fdir_rule(port_id=0, stats=True, rule_list=rule_li)
-            pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
-                    'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.59.255")/Raw("x" * 80)']
             out1 = self.send_pkts_getouput(pkts=pkts, port_id=0, count=1)
             rfc.check_mark(out1, pkt_num=2, check_param={"port_id": 0, "queue": 1, "mark_id": 0}, stats=True)
             self.pmd_output.execute_cmd("flow flush 0")
