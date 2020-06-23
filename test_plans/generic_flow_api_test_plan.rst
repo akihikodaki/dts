@@ -1920,6 +1920,7 @@ Test case: Fortville fdir for l2 mac
         creat rule::
             testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 / ipv4 / end actions mark id 1 / rss / end
             testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
+
         Verify second rule can not be created.
 
         flush rules::
@@ -1928,4 +1929,5 @@ Test case: Fortville fdir for l2 mac
         creat rule::
             testpmd> flow create 0 ingress pattern eth src is 99:99:99:99:99:99 dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 1 / rss / end
             testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end
+
         Verify second rule can not be created.
