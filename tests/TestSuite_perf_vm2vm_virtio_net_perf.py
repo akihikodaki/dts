@@ -54,8 +54,11 @@ from copy import deepcopy
 
 class TestPerfVM2VMVirtioNetPerf(TestCase):
     def set_up_all(self):
-        core_config = "1S/4C/1T"
-        self.cores_list = self.dut.get_core_list(core_config)
+        self.dut_ports = self.dut.get_ports()
+        self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
+        # get core mask
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cores_list = self.dut.get_core_list('all', socket=self.ports_socket)
         self.verify(len(self.cores_list) >= 4,
                     "There has not enough cores to test this suite %s" %
                     self.suite_name)
