@@ -37,12 +37,14 @@ The following are the test plans for the DPDK DTS automated test system.
     :maxdepth: 1
     :numbered:
 
-    ABI_stable_test
+    ABI_stable_test_plan
     blacklist_test_plan
     checksum_offload_test_plan
     cloud_filter_test_plan
     coremask_test_plan
     cvl_advanced_rss_test_plan
+    cvl_advanced_iavf_rss_test_plan
+    cvl_dcf_switch_filter_test_plan
     cvl_fdir_test_plan
     cvl_switch_filter_test_plan
     dcf_lifecycle_test_plan
@@ -63,11 +65,14 @@ The following are the test plans for the DPDK DTS automated test system.
     floating_veb_test_plan
     flow_classify_softnic_test_plan
     fortville_rss_granularity_config_test_plan
+    fortville_rss_input_test_plan
     ftag_test_plan
     generic_filter_test_plan
     generic_flow_api_test_plan
     hotplug_mp_test_plan
     hotplug_test_plan
+    iavf_fdir_test_plan
+    iavf_package_driver_error_handle_test_plan
     ieee1588_test_plan
     inline_ipsec_test_plan
     interrupt_pmd_test_plan
@@ -81,6 +86,7 @@ The following are the test plans for the DPDK DTS automated test system.
     kni_test_plan
     l2fwd_cryptodev_func_test_plan
     l2fwd_test_plan
+    l2tp_esp_coverage_test_plan
     l3fwd_em_test_plan
     l3fwd_test_plan
     l3fwdacl_test_plan
@@ -91,6 +97,7 @@ The following are the test plans for the DPDK DTS automated test system.
     mac_filter_test_plan
     macsec_for_ixgbe_test_plan
     metering_and_policing_test_plan
+    mtu_update_test_plan
     multiple_pthread_test_plan
     NICStatistics_test_plan
     ntb_test_plan
@@ -127,6 +134,7 @@ The following are the test plans for the DPDK DTS automated test system.
     shutdown_api_test_plan
     sriov_kvm_test_plan
     stability_test_plan
+    stats_checks_test_plan
     eventdev_pipeline_test_plan
     tso_test_plan
     tx_preparation_test_plan
@@ -217,6 +225,7 @@ The following are the test plans for the DPDK DTS automated test system.
     unit_tests_cryptodev_func_test_plan
     unit_tests_dump_test_plan
     unit_tests_eal_test_plan
+    unit_tests_event_timer_test_plan
     unit_tests_kni_test_plan
     unit_tests_loopback_test_plan
     unit_tests_lpm_test_plan
