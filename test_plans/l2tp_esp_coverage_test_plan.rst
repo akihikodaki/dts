@@ -236,7 +236,7 @@ Test Case 2: test MAC_IPV4_ESP HW checksum offload
 Test Case 3: test MAC_IPV4_AH HW checksum offload
 =================================================
 
-1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode::
+1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode:
 
 2. DUT setup csum forwarding mode::
 
@@ -309,7 +309,7 @@ Test Case 3: test MAC_IPV4_AH HW checksum offload
 Test Case 4: test MAC_IPV4_NAT-T-ESP HW checksum offload
 ========================================================
 
-1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode::
+1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode:
 
 2. DUT setup csum forwarding mode::
 
@@ -414,34 +414,34 @@ Test Case 4: test MAC_IPV4_NAT-T-ESP HW checksum offload
 
 10. DUT check the packets are correctly received by DUT and report the checksum error::
 
-    testpmd> port 0/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x0800 - length=530 - nb_segs=1 - RSS hash=0x0 - RSS queue=0x0 - sw ptype: L2_ETHER L3_IPV4 L4_UDP  - l2_len=14 - l3_len=20 - l4_len=8 - Receive queue=0x0
-    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-    -----------------
-    port=0, mbuf=0x22848a0ac0, pkt_len=530, nb_segs=1:
-    rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-    tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
-    tx: flags=PKT_TX_IP_CKSUM PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
-    stop
-    Telling cores to stop...
-    Waiting for lcores to finish...
+     testpmd> port 0/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:55 - type=0x0800 - length=530 - nb_segs=1 - RSS hash=0x0 - RSS queue=0x0 - sw ptype: L2_ETHER L3_IPV4 L4_UDP  - l2_len=14 - l3_len=20 - l4_len=8 - Receive queue=0x0
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     -----------------
+     port=0, mbuf=0x22848a0ac0, pkt_len=530, nb_segs=1:
+     rx: l2_len=14 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     tx: m->l2_len=14 m->l3_len=20 m->l4_len=8
+     tx: flags=PKT_TX_IP_CKSUM PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+     stop
+     Telling cores to stop...
+     Waiting for lcores to finish...
 
-    ---------------------- Forward statistics for port 0  ----------------------
-    RX-packets: 1              RX-dropped: 0             RX-total: 1
-    Bad-ipcsum: 1              Bad-l4csum: 1             Bad-outer-l4csum: 0
-    TX-packets: 1              TX-dropped: 0             TX-total: 1
-    ----------------------------------------------------------------------------
+     ---------------------- Forward statistics for port 0  ----------------------
+     RX-packets: 1              RX-dropped: 0             RX-total: 1
+     Bad-ipcsum: 1              Bad-l4csum: 1             Bad-outer-l4csum: 0
+     TX-packets: 1              TX-dropped: 0             TX-total: 1
+     ----------------------------------------------------------------------------
 
-    +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
-    RX-packets: 1              RX-dropped: 0             RX-total: 1
-    TX-packets: 1              TX-dropped: 0             TX-total: 1
-    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+     +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+     RX-packets: 1              RX-dropped: 0             RX-total: 1
+     TX-packets: 1              TX-dropped: 0             TX-total: 1
+     ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
 Test Case 5: test MAC_IPV6_NAT-T-ESP HW checksum offload
 ========================================================
 
-1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode::
+1. DUT enable rx checksum with "--enable-rx-cksum" when start testpmd, setup csum forwarding mode:
 
 2. DUT setup csum forwarding mode::
 
@@ -713,7 +713,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IP(proto=50)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -781,7 +781,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IPv6(nh=50)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -848,7 +848,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IP(proto=51)/AH(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -917,7 +917,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IPv6(nh=51)/AH(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -985,7 +985,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IP()/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -1053,7 +1053,7 @@ subcase 1: vlan stripping
 
     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=2)/IPv6()/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
-6. DUT check the pkt is not recieved::
+6. DUT check the pkt is not recieved:
 
 7. DUT disable the vlan header stripping with vlan tag identifier 1::
 
@@ -1169,7 +1169,7 @@ The pre-steps are as l2tp_esp_iavf_test_plan.
 
 10. Tester send matched packets with VLAN tag "1" and incorrect checksum::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP('\x00\x00\x00\x01')/Raw('x'*480)], iface="enp134s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP('\x00\x00\x00\x01')/Raw('x'*480)], iface="enp134s0f0")
 
 11.DUT check the packets are not distributed to expected queue without mark id and and without VLAN tag "1", and report the checksum error::
 
@@ -1261,7 +1261,7 @@ Test Case 15: MAC_IPV4_L2TPv3 vlan insert on + SW checksum offload check
 
 10. Tester send matched packets with incorrect checksum::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=115,chksum=0x123)/L2TP('\x00\x00\x00\x02')/Raw('x'*480)], iface="enp134s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(proto=115,chksum=0x123)/L2TP('\x00\x00\x00\x02')/Raw('x'*480)], iface="enp134s0f0")
 
 11.DUT check the packets are not distributed to expected queue without mark id and report the checksum error::
 
@@ -1352,7 +1352,7 @@ The pre-steps are as l2tp_esp_iavf_test_plan.
 
 10. Tester send matched packets with VLAN tag "1" and incorrect checksum::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(proto=50,chksum=0x123)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(proto=50,chksum=0x123)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
     
 11.DUT check the packets are not distributed to expected queue without mark id and and fwd without VLAN tag "1", and report the checksum error::
 
@@ -1444,7 +1444,7 @@ Test Case 17: MAC_IPV6_NAT-T-ESP vlan insert on + SW checksum offload check
 
 10. Tester send matched packets with incorrect checksum::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(chksum=0x123)/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(chksum=0x123)/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)], iface="enp134s0f0")
 
 11.DUT check the packets are not distributed to expected queue without mark id and report the checksum error::
 
