@@ -170,7 +170,7 @@ Test Case 6: virtio single core performance test with non-mergeable path
 3. Send packet with packet generator with different packet size, check the throughput.
 
 Test Case 7: virtio single core performance test with vectorized_rx path
-====================================================================
+========================================================================
 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
