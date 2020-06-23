@@ -524,7 +524,7 @@ Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp traffic
     Port 1 should have rx packets above 1522
 
 Test Case 10: Check packed ring virtio-net device capability
-===========================================================
+============================================================
 
 1. Launch the Vhost sample by below commands::
 
