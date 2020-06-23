@@ -87,6 +87,7 @@ Expected output in ctreat result::
     The rule create should fail and with cause with below
     iavf_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
+
 Note. the rule should create fail, because the rule should does not support in old driver version.
 
 Test Case 2: Check latst driver and invalid commes pkg compatibility
@@ -101,5 +102,6 @@ Test Case 2: Check latst driver and invalid commes pkg compatibility
 
 Expected output in VF start result::
    echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
-   -bash: echo: write error: Operation not supported 
+   -bash: echo: write error: Operation not supported
+
 Note. the error log is expected, because the vf does not support invalid commes pkg.
