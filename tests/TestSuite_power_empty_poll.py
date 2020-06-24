@@ -141,7 +141,7 @@ class TestPowerEmptyPoll(TestCase):
                 'type': 'UDP',
                 'pkt_layers': {
                     'ipv4': {'dst': '1.1.1.1'},
-                    'raw': {'payload': ['58'] * self.get_pkt_len('udp', frame_size=1024)}}},
+                    'raw': {'payload': ['58'] * self.get_pkt_len('udp', frame_size=self.frame_size)}}},
         }
         # create packet instance for send
         streams = []
@@ -390,6 +390,8 @@ class TestPowerEmptyPoll(TestCase):
     def preset_test_environment(self):
         self.is_l3fwd_on = None
         self.cpu_info, self.base_freqs_info = self.get_all_cpu_attrs()
+        test_content = self.get_suite_cfg()
+        self.frame_size = test_content.get('frame_size') or 1024
         self.check_core = self.get_normal_cores_index(2)
         self.verify_hyper_threading()
         # modprobe msr module to let the application can get the CPU HW info
