@@ -1,5 +1,5 @@
 .. Copyright (c) <2020>, Intel Corporation
-All rights reserved.
+   All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
    modification, are permitted provided that the following conditions
@@ -54,29 +54,29 @@ Pattern and input set
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     | Packet Type                   | Pattern                   | Input Set                                                                        |
     +===============================+===========================+==================================================================================+
-    | IPv4/IPv6 + TCP/UDP/SCTP/ICMP | MAC_IPV4_SRC_ONLY         | [Dest MAC]，[Source IP]                                                           |
+    | IPv4/IPv6 + TCP/UDP/SCTP/ICMP | MAC_IPV4_SRC_ONLY         | [Dest MAC]，[Source IP]                                                          |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                             |
+    |                               | MAC_IPV4_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                            |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PAY              | [Dest MAC]，[Source IP], [Dest IP]                                                |
+    |                               | MAC_IPV4_PAY              | [Dest MAC]，[Source IP], [Dest IP]                                               |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_SRC_ICMP         | [Dest MAC]，[Source IP]                                                           |
+    |                               | MAC_IPV4_SRC_ICMP         | [Dest MAC]，[Source IP]                                                          |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_DST_ICMP         | [Dest MAC]，[Source IP]                                                           |
+    |                               | MAC_IPV4_DST_ICMP         | [Dest MAC]，[Source IP]                                                          |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_UDP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                               |
+    |                               | MAC_IPV4_UDP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                              |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV4_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_TCP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                               |
+    |                               | MAC_IPV4_TCP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                              |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_TCP_L3DST_L4SRC  | [Dest MAC]，[Dest IP],[Source Port]                                               |
+    |                               | MAC_IPV4_TCP_L3DST_L4SRC  | [Dest MAC]，[Dest IP],[Source Port]                                              |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV4_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_SCTP_L3SRC_L4DST | [Dest MAC]，[Source IP],[Dest Port]                                               |
+    |                               | MAC_IPV4_SCTP_L3SRC_L4DST | [Dest MAC]，[Source IP],[Dest Port]                                              |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV4_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_NVGRE_ICMP       | [Inner Source IP], [Inner Dest IP]                                               |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
@@ -100,27 +100,27 @@ Pattern and input set
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_VXLAN_UDP        | [Inner Source IP], [Inner Dest IP],[Inner Source Port], [Inner Dest Port]        |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_SRC_ONLY         | [Dest MAC]，[Source IP]                                                           |
+    |                               | MAC_IPV6_SRC_ONLY         | [Dest MAC]，[Source IP]                                                          |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                             |
+    |                               | MAC_IPV6_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                            |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_PAY              | [Dest MAC]，[Source IP], [Dest IP],                                               |
+    |                               | MAC_IPV6_PAY              | [Dest MAC]，[Source IP], [Dest IP],                                              |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV6_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV6_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]     |
+    |                               | MAC_IPV6_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]    |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PPPOE_PPPOD      | [Dest MAC]，[Session ID],[Proto] ,[Source IP] ,[Dest IP]                          |
+    |                               | MAC_IPV4_PPPOE_PPPOD      | [Dest MAC]，[Session ID],[Proto] ,[Source IP] ,[Dest IP]                         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PPPOE_TCP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port]  |
+    |                               | MAC_IPV4_PPPOE_TCP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port] |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PPPOE_UDP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port]  |
+    |                               | MAC_IPV4_PPPOE_UDP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port] |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PPPOE_TCP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port]  |
+    |                               | MAC_IPV4_PPPOE_TCP        | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP],[Source Port],[Dest Port] |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PPPOE_ICMP       | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP]                            |
+    |                               | MAC_IPV4_PPPOE_ICMP       | [Dest MAC]，[Session ID],[Proto],[Source IP],[Dest IP]                           |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_GTPU_GTPUP       |  [Source IP], [Dest IP] [Source Port], [Dest Port]                               |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
@@ -136,29 +136,29 @@ Pattern and input set
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
     | Packet Type                   | Pattern                   | Input Set                                                                      |
     +===============================+===========================+================================================================================+
-    |  IPV4/IPV6                    | MAC_IPV4_SRC_ONLY         | [Dest MAC]，[Source IP]                                                         |
+    |  IPV4/IPV6                    | MAC_IPV4_SRC_ONLY         | [Dest MAC]，[Source IP]                                                        |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                           |
+    |                               | MAC_IPV4_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                          |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_PAY              | [Dest MAC]，[Source IP], [Dest IP]                                              |
+    |                               | MAC_IPV4_PAY              | [Dest MAC]，[Source IP], [Dest IP]                                             |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+ 
-    |                               | MAC_IPV4_SRC_ICMP         | [Dest MAC]，[Source IP]                                                         |
+    |                               | MAC_IPV4_SRC_ICMP         | [Dest MAC]，[Source IP]                                                        |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_DST_ICMP         | [Dest MAC]，[Source IP]                                                         |
+    |                               | MAC_IPV4_DST_ICMP         | [Dest MAC]，[Source IP]                                                        |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_UDP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                             |
+    |                               | MAC_IPV4_UDP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                            |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV4_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_TCP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                             |
+    |                               | MAC_IPV4_TCP_L3SRC_L4DST  | [Dest MAC]，[Source IP],[Dest Port]                                            |
+    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+
+    |                               | MAC_IPV4_TCP_L3DST_L4SRC  | [Dest MAC]，[Dest IP],[Source Port]                                            |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_TCP_L3DST_L4SRC  | [Dest MAC]，[Dest IP],[Source Port]                                             |
+    |                               | MAC_IPV4_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV4_SCTP_L3SRC_L4DST | [Dest MAC]，[Source IP],[Dest Port]                                            |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_SCTP_L3SRC_L4DST | [Dest MAC]，[Source IP],[Dest Port]                                             |
-    +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV4_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
     |                               | MAC_IPV4_NVGRE_ICMP       | [Inner Source IP], [Inner Dest IP]                                             |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
@@ -182,21 +182,21 @@ Pattern and input set
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
     |                               | MAC_IPV4_VXLAN_UDP        | [Inner Source IP], [Inner Dest IP],[Inner Source Port], [Inner Dest Port]      |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_SRC_ONLY         | [Dest MAC]，[Source IP]                                                         |
+    |                               | MAC_IPV6_SRC_ONLY         | [Dest MAC]，[Source IP]                                                        |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                           |
+    |                               | MAC_IPV6_DST_ONLY_FRAG    | [Dest MAC]，[Dest IP]                                                          |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_PAY              | [Dest MAC]，[Source IP], [Dest IP],                                             |
+    |                               | MAC_IPV6_PAY              | [Dest MAC]，[Source IP], [Dest IP],                                            |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV6_UDP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV6_TCP              | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]   |
+    |                               | MAC_IPV6_SCTP             | [Dest MAC]，[Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port]  |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV4_SIMPLE_XOR       | [Dest MAC]，[Source IP], [Dest IP]                                              |
+    |                               | MAC_IPV4_SIMPLE_XOR       | [Dest MAC]，[Source IP], [Dest IP]                                             |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
-    |                               | MAC_IPV6_SIMPLE_XOR       | [Dest MAC]，[Source IP], [Dest IP]                                              |
+    |                               | MAC_IPV6_SIMPLE_XOR       | [Dest MAC]，[Source IP], [Dest IP]                                             |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
     |                               | MAC_IPV4_L2TPv3           | [Session ID]                                                                   |
     +-------------------------------+---------------------------+--------------------------------------------------------------------------------+    
@@ -374,7 +374,7 @@ Test case: MAC_IPV4_L3SRC FRAG
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value,and check the pkts typ is L2_ETHER L3_IPV4 "FRAG"
 
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5",frag=5)/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -409,7 +409,7 @@ Test case: MAC_IPV4_L3DST:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value,and check the pkts typ is L2_ETHER L3_IPV4 "FRAG"
 
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
  
@@ -478,7 +478,7 @@ Test case: MAC_IPV4_L3DST_ICMP:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-dst-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -624,7 +624,7 @@ Test case: MAC_IPV4_VXLAN:
          testpmd> flow flush 0
 
 DCF-Test case: MAC_IPV6_L3SRC
-==========================
+=============================
 #. create rule for the rss type is IPV6 L3 src::
 
         testpmd>flow create 0 ingress pattern eth / ipv6 / end actions rss types l3-src-only end key_len 0 queues end / end
@@ -658,7 +658,7 @@ Test case: MAC_IPV6_L3SRC_FRAG
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/IPv6ExtHdrFragment()/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -693,7 +693,7 @@ Test case: MAC_IPV6_L3DST
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020",dst="ABAB:910B:6666:3457:8295:3333:1800:2929")/IPv6ExtHdrFragment()/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -747,7 +747,7 @@ Test case: MAC_IPV4_UDP:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -768,7 +768,7 @@ Test case: MAC_IPV4_UDP:
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_L3_UDP_L4:
-=============================
+==============================
 #. create rule for the rss type is ipv4 +UDP::
 
         testpmd> flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
@@ -846,7 +846,7 @@ Test case: MAC_IPV6_UDP:
          testpmd> flow flush 0
 
 Test case: MAC_IPV6_L3SRC_UDP:   
-=============================
+==============================
 #. To send IPV6 pkts with IPV6 src +frag +UDP port::
 
         sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src=RandIP6())/UDP(sport=RandShort(),dport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
@@ -859,7 +859,7 @@ Test case: MAC_IPV6_L3SRC_UDP:
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_TCP_L3SRC_L4DST:
-===================================
+====================================
 #. create rule for the rss type is IPV4 + TCP L3 src and  L4 dst type hash::
 
         testpmd>flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -873,7 +873,7 @@ Test case: MAC_IPV4_TCP_L3SRC_L4DST:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/TCP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -977,7 +977,7 @@ Test case: MAC_IPV6_TCP
          testpmd> flow flush 0
 
 Test case: MAC_IPV6_TCP_L3_l4:
-=============================
+==============================
 #. Create rule for the rss IPV6 tcp:: 
 
         testpmd>flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end key_len 0 queues end / end
@@ -1007,7 +1007,7 @@ Test case: MAC_IPV4_SCTP:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value
    
-#. No match case::
+#. No match case:
 #. send the 100 IP change to l3-src-only packages and match to the rule::
         sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP(sport=22,dport=33)/("X" * 80)], iface="enp177s0f1", count=100)
 
@@ -1192,7 +1192,7 @@ Test case: MAC_IPV4_PPPOD_PPPOE_ICMP:
          testpmd> flow flush 0   
 
 Test case: MAC_IPV4_GTPU_GTPUP_L3SRC_ONLY_MATCH and NO MATCHED:
-==============================================================
+===============================================================
 Matched package case :
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
 
@@ -1214,14 +1214,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_UP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send GTPU_UP pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -1229,7 +1232,7 @@ Dis-Matched package case :
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_GTPUP_L3SDST_ONLY_MATCH and NO MATCHED:
-==============================================================
+================================================================
 Matched package case :
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
 
@@ -1251,14 +1254,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_UP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. To send GTPU_UP pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
@@ -1266,7 +1272,7 @@ Dis-Matched package case :
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_GTPDOWN_L3DST_ONLY_MATCH and NO MATCHED:
-================================================================
+=================================================================
 Matched package case :
 #. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
 
@@ -1288,14 +1294,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_DOWN pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. To send GTPU_DOWN pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
@@ -1303,7 +1312,7 @@ Dis-Matched package case :
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_GTPDOWN_L3SRC_ONLY_MATCH and NO MATCHED:
-================================================================
+=================================================================
 Matched package case :
 #. Create rule for the rss type  GTPU DOWN and hash l3 src keywords::
 
@@ -1325,14 +1334,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched  GTPU DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched  GTPU DOWN pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send  GTPU DOWN pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -1340,7 +1352,7 @@ Dis-Matched package case :
          testpmd> flow flush 0
 
 Test case: MAC_IPV4_GTPU_GTPDOWN_L3DST_ONLY_MATCH and NO MATCHED:
-================================================================
+=================================================================
 Matched package case :
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
 
@@ -1362,14 +1374,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched  GTPU DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU DOWNP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send  GTPU DOWN pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -1381,26 +1396,35 @@ Test case: MAC_IPV4_GTPU_UP_IPV4_FRAG_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
 
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP(),frag=6)/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
         testpmd>start
+
 #. To send normal matched GTPU pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
          testpmd> stop
+
 #. To send dismatch GTPU pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value should not change 
 
 #. To send dismatch GTPU pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.3",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
          testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value should to change 
@@ -1409,28 +1433,36 @@ NO Matched package case:
          testpmd> flow flush 0
    
 Test case: MAC_IPV4_GTPU_DOWN_IPV4_FRAG_MATCH and NO MATCHED:
-============================================================
+=============================================================
 Matched package case:
 #. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
         testpmd>start
-#. To send matched GTPU_DOWN pkts::	
+
+#. To send matched GTPU_DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP(),frag=6)/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end 
         testpmd>start
+
 #. To send normal matched GTPU pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
          testpmd> stop
 #. To send dismatch GTPU pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value should not change 
 
 #. To send dismatch GTPU pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.3",frag=6)/("X"*480)],iface="enp177s0f01", count=100) 
          testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value should to change 
@@ -1443,31 +1475,40 @@ Test case: MAC_IPV4_GTPU_UP_UDP_FRAG_MATCH and NO MATCHED:
 ==========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/UDP(dport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-onlyend key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. To send dist matched GTPU_UP pkts to change the l3 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should to change
 
 #. To send dist matched GTPU_UP pkts to change the l4 dst only::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should to change
@@ -1479,31 +1520,40 @@ Test case: MAC_IPV4_GTPU_DOWN_UDP_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-onlyend key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, the  rss hash value should to change
 
 #. To send dist matched GTPU_UP pkts to change the l3 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/UDP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. To send dist matched GTPU_UP pkts to change the l4 dst only::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
@@ -1515,30 +1565,39 @@ Test case: MAC_IPV4_GTPU_UP_TCP_FRAG_MATCH and NO MATCHED:
 ===========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)()/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)],iface="enp177s0f1",count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 dst keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-tcp l3-src-only l4-dst-only end key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_UP pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. To send dist matched GTPU_UP pkts to change the l3 dst and l4 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. To send dist matched GTPU_UP pkts to change the l3 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should to change
 
 #. To send dist matched GTPU_UP pkts to change the l4 dst only::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should to change
@@ -1550,30 +1609,39 @@ Test case: MAC_IPV4_GTPU_DOWN_TCP_MATCH and NO MATCHED:
 =======================================================
 Matched package case:
 #. Create rule for the rss type GTPU DOWN and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
+
 #. To send matched GTPU_DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/TCP(sport=RandShort())/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
 
 NO Matched package case:
 #. Create rule for the rss type GTPU DOWN and hash l3 dst keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end
         testpmd>start
+
 #. To send matched GTPU_DOWN pkts::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. To send dist matched GTPU_DOWN pkts to change the l3 dst and l4 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.4")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, the  rss hash value should to change
 
 #. To send dist matched GTPU_DOWN pkts to change the l3 src::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/TCP(sport=33,dport=22)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
 
 #. To send dist matched GTPU_DOWN pkts to change the l4 dst only::
+
          sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/TCP(sport=66,dport=55)/("X"*480)],iface="enp177s0f1", count=100)
          testpmd> stop
 #. Verify 100 pkts has sent, but rss hash value should not to change
@@ -1586,8 +1654,11 @@ Test case: MAC_IPV4_GTPU_UP_ICMP_MATCH and NO MATCHED:
 ======================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/ICMP()/("X"*480)],iface="enp177s0f01", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
@@ -1599,14 +1670,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_UP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send GTPU_UP pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -1617,8 +1691,11 @@ Test case: MAC_IPV4_GTPU_DOWN_ICMP_MATCH and NO MATCHED:
 ========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/ICMP()/("X"*480)],iface="enp177s0f1", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
@@ -1630,14 +1707,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_UP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
 #. To send GTPU_UP pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/ICMP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
@@ -1648,8 +1728,11 @@ Test case: MAC_IPV4_GTPU_UP_SCTP_MATCH and NO MATCHED:
 ======================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/SCTP()/("X"*480)],iface="enp177s0f1", count=100)  
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
@@ -1661,14 +1744,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU_UP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send GTPU_UP pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -1679,8 +1765,11 @@ Test case: MAC_IPV4_GTPU_DOWN_SCTP_MATCH and NO MATCHED:
 ========================================================
 Matched package case:
 #. Create rule for the rss type GTPU UP and hash l3 src keywords::
+
         testpmd>flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end
+
 #. To send matched GTPU_UP pkts::
+
         sendp([Ether(src="00:00:00:00:01:01",dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
         testpmd> stop
 #. Verify 100 pkts has sent, but the RSS hash with fix value and not enter to differently queue
@@ -1692,14 +1781,17 @@ Dis-Matched package case :
         testpmd>start
 
 #. To send normal matched  GTPU DOWN pkts::
+
         sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash with fix value. 
 
 #. To send dismatch matched GTPU DOWNP pkts to change the dst::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.3",dst="192.168.0.5")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should not to change. 
 
 #. To send  GTPU DOWN pkts to change the src::
+
          sendp([Ether(src="00:00:00:00:01:01", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.6",dst="192.168.0.9")/SCTP()/("X"*480)],iface="enp177s0f1", count=100) 
 #. Verify 100 pkts has sent, but the RSS hash should to change. 
 
@@ -2587,6 +2679,7 @@ statistics log::
 
 #. Destory rule on port 0 
          testpmd> flow flush 0
+
 SIMPLE_XOR_IPV6:
 ================
 #. to send IPV6 pkt with fixed IP and switch IP src and dst address and switch the upd, tcp, sctp, icpm ports::
@@ -2622,10 +2715,11 @@ statistics log::
          testpmd> flow flush 0
 
 Test case: Check different inputset between the VF and PF for the MAC_IPV4_TCP with valid MAC address:
-=====================================================================================================
+======================================================================================================
 To check MAC_IPV4_TCP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
 
@@ -2655,7 +2749,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with tcp4 sdfn , 
+1. To set RSS rule with tcp4 sdfn ,
+
         ethtool -N enp177s0f0 rx-flow-hash tcp4 sdfn
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -2694,7 +2789,8 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value in VF
    but to check the Kernel PF with "command ethtool -S enp177s0f0", then should does not receive these 100 packages in rx queue
 
-#. send the 100 IP+TCP pkts to the PF with valid PF MAC::   
+#. send the 100 IP+TCP pkts to the PF with valid PF MAC::
+
     Send the 100 IP+UDP pkts in VF
         sendp([Ether(dst="68:05:ca:a3:1a:78")/IP(src=RandIP(),dst=RandIP())/TCP(sport=RandShort(),dport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -2702,6 +2798,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -2732,6 +2829,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV4_TCP w
 To check MAC_IPV4_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -2760,7 +2858,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with tcp4 fn , 
+1. To set RSS rule with tcp4 fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash tcp4 fn
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -2799,6 +2898,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -2824,10 +2924,11 @@ PF KERNEL domain settings:
          testpmd> flow flush 0
 
 Test case: Check different inputset between the VF and PF for the MAC_IPV4_UDP with valid MAC address:
-=====================================================================================================
+======================================================================================================
 To check MAC_IPV4_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
 
@@ -2857,7 +2958,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with udp4 sdfn , 
+1. To set RSS rule with udp4 sdfn ,
+
         ethtool -N enp177s0f0 rx-flow-hash udp4 sdfn
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -2895,7 +2997,8 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value in VF
    but to check the Kernel PF with "command ethtool -S enp177s0f0", then should does not receive these 100 packages in rx queue
 
-#. send the 100 IP+udp pkts to the PF with valid PF MAC::   
+#. send the 100 IP+udp pkts to the PF with valid PF MAC::
+
     Send the 100 IP+UDP pkts in VF
         sendp([Ether(dst="68:05:ca:a3:1a:78")/IP(src=RandIP(),dst=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -2903,6 +3006,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -2933,6 +3037,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV4_udp w
 To check MAC_IPV4_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -2961,7 +3066,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with udp4 fn , 
+1. To set RSS rule with udp4 fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash udp4 fn
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -3000,6 +3106,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3025,10 +3132,11 @@ PF KERNEL domain settings:
          testpmd> flow flush 0
 
 Test case: Check different inputset between the VF and PF for the MAC_IPV6_TCP with valid MAC address:
-=====================================================================================================
+======================================================================================================
 To check MAC_IPV6_TCP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -3057,7 +3165,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with tcp6 sdfn , 
+1. To set RSS rule with tcp6 sdfn ,
+
         ethtool -N enp177s0f0 rx-flow-hash tcp6 sdfn
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -3103,6 +3212,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3132,6 +3242,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV6_TCP w
 To check MAC_IPV6_TCP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -3160,7 +3271,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with tcp4 fn , 
+1. To set RSS rule with tcp4 fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash tcp6 fn
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -3199,6 +3311,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3224,10 +3337,11 @@ PF KERNEL domain settings:
          testpmd> flow flush 0
 
 Test case: Check different inputset between the VF and PF for the MAC_IPV6_UDP with valid MAC address:
-=====================================================================================================
+======================================================================================================
 To check MAC_IPV6_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
 
@@ -3257,7 +3371,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with udp6 sdfn , 
+1. To set RSS rule with udp6 sdfn ,
+
         ethtool -N enp177s0f0 rx-flow-hash udp6 sdfn
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -3295,7 +3410,8 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value in VF
    but to check the Kernel PF with "command ethtool -S enp177s0f0", then should does not receive these 100 packages in rx queue
 
-#. send the 100 IP+udp pkts to the PF with valid PF MAC::   
+#. send the 100 IP+udp pkts to the PF with valid PF MAC::
+
     Send the 100 IP+UDP pkts in VF
         sendp([Ether(dst="68:05:ca:a3:1a:78")/IPv6(src=RandIP6(),dst=RandIP6())/udp(sport=RandShort(),dport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -3303,6 +3419,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3332,6 +3449,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV6_udp w
 To check MAC_IPV6_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -3360,7 +3478,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with udp6 fn , 
+1. To set RSS rule with udp6 fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash udp6 fn
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -3399,6 +3518,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3428,6 +3548,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV4_SCTP 
 To check MAC_IPV4_SCTP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
 
@@ -3456,7 +3577,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with sctp4sdfn , 
+1. To set RSS rule with sctp4sdfn ,
+
         ethtool -N enp177s0f0 rx-flow-hash sctp4 sd
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -3491,7 +3613,8 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value in VF
    but to check the Kernel PF with "command ethtool -S enp177s0f0", then should does not receive these 100 packages in rx queue
 
-#. send the 100 IP+SCTP pkts to the PF with valid PF MAC::   
+#. send the 100 IP+SCTP pkts to the PF with valid PF MAC::
+
     Send the 100 IP+UDP pkts in VF
         sendp([Ether(dst="68:05:ca:a3:1a:78")/IP(src=RandIP(),dst=RandIP())/SCTP()/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -3499,6 +3622,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3524,10 +3648,11 @@ PF KERNEL domain settings:
          testpmd> flow flush 0
    
 Test case: Check different inputset between the VF and PF for the MAC_IPV4_SCTP with broadcast MAC address:
-==========================================================================================================
+===========================================================================================================
 To check MAC_IPV4_UDP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -3555,7 +3680,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with sctp4fn , 
+1. To set RSS rule with sctp4fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash sctp4 sd
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -3594,6 +3720,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3623,6 +3750,7 @@ Test case: Check different inputset between the VF and PF for the MAC_IPV6_SCTP 
 To check MAC_IPV6_SCTP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
 
@@ -3651,7 +3779,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with sctp6 sd, 
+1. To set RSS rule with sctp6 sd,
+
         ethtool -N enp177s0f0 rx-flow-hash sctp6 sd
 
 2. Check the settings, the kernel PF has setting with IP L3 SA+DA and L4 sport+dport 
@@ -3686,7 +3815,8 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with differently RSS random value in VF
    but to check the Kernel PF with "command ethtool -S enp177s0f0", then should does not receive these 100 packages in rx queue
 
-#. send the 100 IP+sctp pkts to the PF with valid PF MAC::   
+#. send the 100 IP+sctp pkts to the PF with valid PF MAC::
+
     Send the 100 IP+SCTP pkts in VF
         sendp([Ether(dst="68:05:ca:a3:1a:78")/IPv6(src=RandIP6(),dst=RandIP6())/sctp()/("X"*480)], iface="enp177s0f1", count=100)
         testpmd> stop
@@ -3694,6 +3824,7 @@ PF KERNEL domain settings:
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    but the VF should does not receive these 100 packages.
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3719,10 +3850,11 @@ PF KERNEL domain settings:
          testpmd> flow flush 0
    
 Test case: Check different inputset between the VF and PF for the MAC_IPV6_sctp with broadcast MAC address:
-==========================================================================================================
+===========================================================================================================
 To check MAC_IPV6_SCTP in PF with a fix IP address and port
 IAVF domain settings:   
 1. Create A VF from a PF::
+
         modprobe vfio-pci
         echo 1 > /sys/bus/pci/devices/0000\:b1\:00.0/sriov_numvfs
         VF 0000\:b1\:01.0 have been created::
@@ -3750,7 +3882,8 @@ IAVF domain settings:
         testpmd>start
 
 PF KERNEL domain settings:
-1. To set RSS rule with sctp6 fn , 
+1. To set RSS rule with sctp6 fn ,
+
         ethtool -N enp177s0f0 rx-flow-hash sctp6 sd
 
 2. Check the settings, the kernel PF has setting with L4 sport+dport 
@@ -3788,6 +3921,7 @@ PF KERNEL domain settings:
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 10 queues evenly with differently RSS random value in PF with command command ethtool -S enp177s0f0"
    PF Kerne show below info:
+
             rx_queue_0_packets: 12
             rx_queue_0_bytes: 6408
             rx_queue_1_packets: 9
@@ -3861,8 +3995,9 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
    differently RSS random value in VF0
    
     Send 100 IP+UDP pkts with IP dst and UDP sport in VF1::
-        sendp([Ether(dst="00:11:55:66:77:88")/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
-    testpmd> stop
+
+      sendp([Ether(dst="00:11:55:66:77:88")/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
+      testpmd> stop
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value in VF1
    
@@ -3876,8 +4011,8 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
    
     Send 100 IP+UDP pkts with IP dst and UDP sport in VF1::
 
-        sendp([Ether()/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
-    testpmd> stop
+      sendp([Ether()/IP(dst=RandIP())/UDP(sport=RandShort())/("X"*480)], iface="enp177s0f1", count=100)
+      testpmd> stop
 
 #. verify 100 pkts has sent, and to check the 100 pkts has send to differently totaly 16 queues evenly with 
    differently RSS random value in VF	
@@ -3976,12 +4111,14 @@ Test case 2: VF reset on set RSS case MAC_IPV4_L3DST:
              Done
     testpmd> port start
     testpmd> start
+
 #. to check the port can be stop/reset/start normally without error message.
 check the rule status is valid
 #. send the 100 IP pkts::
 
      sendp([Ether(dst="000:11:33:44:66:77")/IP(dst=RandIP())/SCTP(sport=RandShort())/("X" * 80)], iface="enp177s0f1", count=100)
     testpmd> stop
+
 #. check the verify 100 pkts has received in VF0, and the RSS hash value should work, due to the after reset mac  to the rss has set to default enable status.
 
 #. Destory rule on port 0 
@@ -4006,6 +4143,7 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
 2. Bind the pci device id of DUT in VFs::
 
     ./usertools/dpdk-devbind.py -b vfio-pci 0000:b1:01.0 0000:b1:01.1
+
 .. note::
 
    The kernel must be >= 3.6+ and VT-d must be enabled in bios.
@@ -4021,7 +4159,7 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
 
 #. create rule for the rss type is ipv4 UDP +l3 src and dst::
 
-   Create rule for the rss type is ipv4 UDP +l3 src and l4 dst in VF0::
+    Create rule for the rss type is ipv4 UDP +l3 src and l4 dst in VF0::
       testpmd>flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
       testpmd>start
       Create rule for the rss type is ipv4 UDP +l3 dst and l4 src in VF1:
@@ -4044,6 +4182,7 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
      ip link set enp177s0f0 vf 0 mac 00:11:77:88:99:66
 
 #. send the 100 IP+UDP pkts vf0::
+
       Send 100 IP+UDP pkts with IP src and UDP dport in VF0::
       sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20")/UDP(dport=20)/("X"*480)], iface="enp177s0f1", count=100)
  
@@ -4051,7 +4190,8 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
 
 #. Expect: VF0 can't receive the rss packet on vf 0, because the port 0 does not reset, the default rule can not enable.
 
-#. send the 100 IP+UDP pkts vf1:: 
+#. send the 100 IP+UDP pkts vf1::
+
       Send 100 IP+UDP pkts with IP dst and UDP sport in VF1::
       sendp([Ether(dst="00:11:55:66:77:88")/IP(dst="192.168.0.21")/UDP(sport=22)/("X"*480)], iface="enp177s0f1", count=100)
       testpmd> stop   
@@ -4059,7 +4199,8 @@ To check MAC_IPV4_UDP in VF1 with a fix IP address and port
    Expect: VF1 should  receive the rss packet, because the vf1 does not triger mac reset.
 
 #. Destory rule on port 0 
-         testpmd> flow flush 0   
+         testpmd> flow flush 0
+
 Test case: Use OS default package for the MAC_IPV4_GTPU and IPV4 L3 src only :
 ===================================================================================
 #. Load OS package
@@ -4256,7 +4397,7 @@ Test Case 01: RSS support MAC_IPV4_PFCP_SESSION
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(),dst=RandIP())/UDP(sport=RandShort(),dport=RandShort())/PFCP(Sfield=1, SEID=12)/Raw('x' * 80)],iface="enp177s0f1,count=100")
     
 4. Verify 100 pkts has been sent, 
-and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value.
 
 5. send MAC_IPV4_PFCP_NODE and MAC_IPV6_PFCP_SESSION pkts::
 
@@ -4274,7 +4415,7 @@ and check the 100 pkts has been recieved by DUT in differently 16 queues evenly 
     testpmd> flow destroy 0 rule 0
 
 8. Verify 100 pkts has been sent, 
-and check the 100 pkts has been recieved by DUT in queue 0::
+and check the 100 pkts has been recieved by DUT in queue 0.
 
 
 Test Case 02: RSS support MAC_IPV6_PFCP_SESSION
@@ -4289,7 +4430,7 @@ Test Case 02: RSS support MAC_IPV6_PFCP_SESSION
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())/PFCP(Sfield=1, SEID=12)/Raw('x' * 80)],iface="enp177s0f1",count=100)
 
 3. Verify 100 pkts has been sent, 
-and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+and check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value.
 
 4. send MAC_IPV6_PFCP_NODE and MAC_IPV4_PFCP_SESSION pkts::
 
@@ -4307,7 +4448,7 @@ and check the 100 pkts has been recieved by DUT in differently 16 queues evenly 
     testpmd> flow destroy 0 rule 0
 
 8. Verify 100 pkts has been sent, 
-and check the 100 pkts has been recieved by DUT in queue 0::
+and check the 100 pkts has been recieved by DUT in queue 0.
 
 Test Case 03: RSS Negative test with OS default
 ====================================================
@@ -4323,6 +4464,7 @@ Test Case 03: RSS Negative test with OS default
 
 both of the rules can't be created successfully.
 #. failed to create, the error message should be correct, maybe not support this pattern.
+
    iavf_execute_vf_cmd(): No response or return failure (-5) for cmd 45
    iavf_add_del_rss_cfg(): Failed to execute command of OP_ADD_RSS_CFG
    iavf_hash_create(): fail to add RSS configure
