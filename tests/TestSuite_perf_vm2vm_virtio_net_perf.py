@@ -62,8 +62,8 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         self.vm_num = 2
         self.virtio_ip1 = "1.1.1.2"
         self.virtio_ip2 = "1.1.1.3"
-        self.vritio_mac1 = "52:54:00:00:00:01"
-        self.vritio_mac2 = "52:54:00:00:00:02"
+        self.virtio_mac1 = "52:54:00:00:00:01"
+        self.virtio_mac2 = "52:54:00:00:00:02"
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.random_string = string.ascii_letters + string.digits
         socket_num = len(set([int(core['socket']) for core in self.dut.cores]))
@@ -212,8 +212,8 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         vm2_intf = self.vm_dut[1].ports_info[0]['intf']
         self.vm_dut[0].send_expect("ifconfig %s %s" % (vm1_intf, self.virtio_ip1), "#", 10)
         self.vm_dut[1].send_expect("ifconfig %s %s" % (vm2_intf, self.virtio_ip2), "#", 10)
-        self.vm_dut[0].send_expect("arp -s %s %s" % (self.virtio_ip2, self.vritio_mac2), "#", 10)
-        self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.vritio_mac1), "#", 10)
+        self.vm_dut[0].send_expect("arp -s %s %s" % (self.virtio_ip2, self.virtio_mac2), "#", 10)
+        self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.virtio_mac1), "#", 10)
 
     def prepare_test_env(self, zerocopy, path_mode, packed_mode=False):
         """
