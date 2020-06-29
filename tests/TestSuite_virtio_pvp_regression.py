@@ -259,7 +259,7 @@ class TestVirtioPVPRegression(TestCase):
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
-    def start_testpmd_in_vm(self, vritio_path):
+    def start_testpmd_in_vm(self, virtio_path):
         """
         Start testpmd in vm
         """
@@ -268,7 +268,7 @@ class TestVirtioPVPRegression(TestCase):
                 'please config it in %s.cfg' % self.suite_name)
         if self.vm_dut is not None:
             opt_args = ''
-            if vritio_path in ['mergeable', 'normal']:
+            if virtio_path in ['mergeable', 'normal']:
                 opt_args = '--enable-hw-vlan-strip'
             vm_testpmd = self.dut.target + "/app/testpmd -c 0x7 -n 4 " \
                 "-- -i %s --nb-cores=%s " \
