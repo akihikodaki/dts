@@ -157,8 +157,8 @@ class TestPortControl(TestCase):
         terminal.send_expect("ifconfig %s hw ether %s" % (vf_if[1], self.vf_mac), "#")
         terminal.send_expect("ifconfig %s up" % vf_if[1], "#")
         terminal.send_expect("ip addr flush %s " % vf_if[1], "#")
-        terminal.send_expect("./usertools/dpdk-devbind.py -b igb_uio --force %s" % vf_pci[1], "#")
-        cmd = "./%s/app/testpmd -n 1 -w %s -- -i" % (self.target, vf_pci[1])
+        terminal.send_expect("./usertools/dpdk-devbind.py -b vfio-pci --force %s" % vf_pci[1], "#")
+        cmd = "./%s/app/testpmd -n 1 -w %s --vfio-intr=legacy -- -i" % (self.target, vf_pci[1])
         terminal.send_expect(cmd, "testpmd>", 10)
 
     def start_testpmd(self, terminal):
@@ -171,6 +171,7 @@ class TestPortControl(TestCase):
     def start_pmd_port(self, terminal):
         terminal.execute_cmd("port start all")
         terminal.execute_cmd("start")
+        time.sleep(5)
         terminal.wait_link_status_up('all', timeout=5)
         ret = terminal.get_port_link_status(self.port_id_0)
         self.verify(ret == "up", "port not up!")
