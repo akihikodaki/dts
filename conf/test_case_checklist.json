@@ -494,6 +494,45 @@
             "Comments": "if set pasue, the packet type error when use kernel driver send packet"
         }
     ],
+    "pause_fwd_port_stop_start": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville",
+                "kawela_4",
+                "springville",
+                "cavium_a034",
+                "cavium_0011",
+                "fortpark_TLV",
+                "fortpark_BASE-T",
+		"foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
+        },
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortville_eagle",
+                "fortville_spirit",
+                "fortville_spirit_single",
+                "fortville_25g",
+                "carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "if set pasue, the packet type error when use kernel driver send packet"
+        }
+    ],
     "flowctrl_off_pause_fwd_off": [
         {
             "OS": [
