@@ -1829,11 +1829,6 @@ class QEMUKvm(VirtBase):
             if self.control_type == "qga":
                 # wait few seconds for network ready
                 time.sleep(5)
-                # before get the ip, check the ssh service is ok
-                # if the ssh service if ready, the file /run/sshd.pid will store the pid
-                out = self.control_session.send_expect(self.qga_cmd_head + "cat /run/sshd.pid" , "#", timeout=self.OPERATION_TIMEOUT)
-                if out == '':
-                    return "Failed"
                 out = self.control_session.send_expect(self.qga_cmd_head + "ifconfig" , "#", timeout=self.OPERATION_TIMEOUT)
             else:
                 pci = "00:1f.0"
@@ -1843,10 +1838,6 @@ class QEMUKvm(VirtBase):
                     if self.nic_model == "virtio":
                         pci += "/virtio*/"
 
-                # before get the ip, check the ssh service is ok
-                out = self.control_session.send_expect("ls /run/sshd.pid", "# ", timeout=self.OPERATION_TIMEOUT, verify=True)
-                if isinstance(out, int):
-                    return "Failed"
                 intf = self.control_session.send_expect("ls -1 /sys/bus/pci/devices/0000:%s/net" %pci, "#", timeout=self.OPERATION_TIMEOUT)
                 out = self.control_session.send_expect("ifconfig %s" % intf, "#", timeout=self.OPERATION_TIMEOUT)
                 if "10.0.2" not in out:
