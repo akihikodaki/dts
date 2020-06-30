@@ -101,25 +101,15 @@ class DPDKdut(Dut):
 
     def setup_modules_linux(self, target, drivername, drivermode):
         if drivername == "vfio-pci":
-            if 'VirtDut' in str(self.__class__):
-                self.send_expect("modprobe -r vfio_iommu_type1", "#")
-                self.send_expect("modprobe -r vfio", "#")
-                self.send_expect("modprobe vfio enable_unsafe_noiommu_mode=1", "#")
-                self.send_expect("modprobe vfio-pci", "#")
-            else:
-                self.send_expect("rmmod vfio_pci", "#", 70)
-                self.send_expect("rmmod vfio_iommu_type1", "#", 70)
-                self.send_expect("rmmod vfio", "#", 70)
-                self.send_expect("modprobe vfio", "#", 70)
-                self.send_expect("modprobe vfio-pci", "#", 70)
-            out = self.send_expect("lsmod | grep vfio_iommu_type1", "#")
-            if not out:
-                out = self.send_expect("ls /sys/module |grep vfio_pci", "#")
-            assert ("vfio_pci" in out), "Failed to insmod vfio_pci"
-
-
+            self.send_expect("rmmod vfio_pci", "#")
+            self.send_expect("rmmod vfio_iommu_type1", "#")
+            self.send_expect("rmmod vfio", "#")
+            self.send_expect("modprobe vfio", "#")
+            self.send_expect("modprobe vfio-pci", "#")
             if drivermode == "noiommu":
-                self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#", 70)
+                self.send_expect("echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode", "#")
+            out = self.send_expect("ls /sys/module|grep vfio_pci", "#")
+            assert ("vfio_pci" in out), "load vfio_pci failed"
 
         elif drivername == "uio_pci_generic":
             self.send_expect("modprobe uio", "#", 70)
