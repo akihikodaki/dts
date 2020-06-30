@@ -34,15 +34,28 @@ class SSHPexpect:
         threads number is limited to 8 which less than 10. Lock number can
         be modified along with MaxStartups value.
         """
+        retry_times = 10
         try:
-            self.session = pxssh.pxssh(encoding='utf-8')
             if ':' in self.host:
-                self.ip = self.host.split(':')[0]
-                self.port = int(self.host.split(':')[1])
-                self.session.login(self.ip, self.username,
-                                   self.password, original_prompt='[$#>]',
-                                   port=self.port, login_timeout=20)
+                while retry_times:
+                    self.ip = self.host.split(':')[0]
+                    self.port = int(self.host.split(':')[1])
+                    self.session = pxssh.pxssh(encoding='utf-8')
+                    try:
+                        self.session.login(self.ip, self.username,
+                                           self.password, original_prompt='[$#>]',
+                                           port=self.port, login_timeout=20)
+                    except Exception as e:
+                        print(e)
+                        time.sleep(2)
+                        retry_times -= 1
+                        print("retry %d times connecting..." % (10-retry_times))
+                    else:
+                        break
+                else:
+                    raise Exception('connect to %s:%s failed' % (self.ip, self.port))
             else:
+                self.session = pxssh.pxssh(encoding='utf-8')
                 self.session.login(self.host, self.username,
                                    self.password, original_prompt='[$#>]')
             self.send_expect('stty -echo', '#')
