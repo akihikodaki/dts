@@ -33,6 +33,7 @@
 Layer-3 forwarding test script base class.
 """
 import os
+import re
 import time
 import traceback
 import texttable
@@ -171,6 +172,19 @@ class L3fwdBase(object):
         total = len(set(sockets))
         self.verify(total > 0, 'cpu socket should not be zero')
         return total
+
+    @property
+    def __core_thread_num(self):
+        cpu_topos = self.dut.get_all_cores()
+        core_index = cpu_topos[-1]['core']
+        thread_index = int(cpu_topos[-1]['thread'])
+        if not core_index:
+            msg = 'wrong core index'
+            raise VerifyFailure(msg)
+        if not thread_index:
+            msg = 'wrong thread index'
+            raise VerifyFailure(msg)
+        return thread_index//core_index
 
     def __pmd_con(self, cmd):
         if not self.__pmd_session:
@@ -675,7 +689,8 @@ class L3fwdBase(object):
         # It is aimed to make sure packet generator detect link up status.
         wait_time = self.__l3fwd_wait_up if self.__l3fwd_wait_up else \
                     2 * len(self.__valports)
-        self.logger.debug(f"wait {wait_time} seconds for port link up")
+        self.logger.debug(
+            f"wait {wait_time} seconds for port link up")
         time.sleep(wait_time)
 
     def __l3fwd_restart_check(self, command_line):
@@ -950,17 +965,56 @@ class L3fwdBase(object):
         if except_content:
             raise VerifyFailure(except_content)
 
-    def __parse_port_config(self, config):
-        cores, total_threads, queue = config.split('/')
+    def __parse_port_config(self, config, cores_for_all):
+        '''
+        [n]C/[mT]-[i]Q
+        
+            n: how many physical core use for polling.
+            m: how many cpu thread use for polling, if Hyper-threading disabled
+                in BIOS, m equals n, if enabled, m is 2 times as n.
+            i: how many queues use per port, so total queues = i x nb_port
+        '''
+        # old format
+        pat = '(.*)\/(.*)\/(.*)'
+        result1 = re.findall(pat, config)
+        # new format
+        pat = '(.*)\/(.*)-(.*)'
+        result2 = re.findall(pat, config)
+        result = result1 if result1 else result2
+        if not result:
+            msg = f"{config} is wrong format, please check"
+            raise VerifyFailure(msg)
+        cores, total_threads, queue = result[0]
         _thread_num = int(int(total_threads[:-1]) // int(cores[:-1]))
+        _thread_num = self.__core_thread_num \
+            if _thread_num > self.__core_thread_num else _thread_num
         _thread = str(_thread_num) + 'T'
-        _cores = str(self.__core_offset + int(cores[:-1]) * len(self.__valports)) + 'C'
+        multiple = 1 if cores_for_all else len(self.__valports)
+        _cores = str(self.__core_offset + int(cores[:-1]) * multiple) + 'C'
+        if len(self.__valports) == 1 and int(total_threads[:-1]) > int(queue[:-1]) * len(self.__valports):
+            msg = f"Invalid configuration: {config}, please check"
+            self.logger.warning(msg)
+        if int(total_threads[:-1]) not in [self.__core_thread_num * int(cores[:-1]), int(cores[:-1])]:
+            support_num = f"1 or {self.__core_thread_num}" \
+                if self.__core_thread_num > 1 else "1"
+            msg = (
+                f"Invalid configuration: {config}, "
+                f"threads should be {support_num} times of cores")
+            self.logger.warning(msg)
         # only use one socket
         cores_config = '/'.join(['1S', _cores, _thread])
         queues_per_port = int(queue[:-1])
         return cores_config, _thread_num, queues_per_port
 
-    def __get_test_configs(self, options, ports, socket):
+    def __get_core_list(self, thread_num, cores, socket):
+        corelist = self.dut.get_core_list(
+            cores, socket if cores.startswith('1S') else -1)
+        corelist = corelist[self.__core_offset*thread_num:]
+        if '2T' in cores:
+            corelist = corelist[0::2] + corelist[1::2]
+        return corelist
+
+    def __get_test_configs(self, options, ports, socket, cores_for_all):
         if not options:
             msg = "'test_parameters' not set in suite configuration file"
             raise VerifyFailure(msg)
@@ -969,12 +1023,10 @@ class L3fwdBase(object):
         for test_item, frame_sizes in sorted(options.items()):
             _frame_sizes = [int(frame_size) for frame_size in frame_sizes]
             frame_sizes_grp.extend([int(item) for item in _frame_sizes])
-            cores, thread_num, queues_per_port = self.__parse_port_config(test_item)
+            cores, thread_num, queues_per_port = self.__parse_port_config(test_item, cores_for_all)
             grp = [list(item)
-                   for item in product(range(queues_per_port), range(ports))]
-            corelist = self.dut.get_core_list(
-                cores, socket if cores.startswith('1S') else -1)
-            corelist = corelist[self.__core_offset*thread_num:]
+                   for item in product(range(ports), range(queues_per_port))]
+            corelist = self.__get_core_list(thread_num, cores, socket)
             cores_mask = utils.create_mask(corelist)
             total = len(grp)
             _corelist = (corelist * (total // len(corelist) + 1))[:total]
@@ -986,7 +1038,7 @@ class L3fwdBase(object):
                 test_item,
                 cores_mask,
                 ','.join(["({0},{1},{2})".format(port, queue, core)
-                          for queue, port, core in grp]),
+                          for port, queue, core in grp]),
                 frame_size, ]) for frame_size in _frame_sizes]
         return configs, sorted(set(frame_sizes_grp))
 
@@ -1072,9 +1124,12 @@ class L3fwdBase(object):
         self.__traffic_stop_wait_time = \
             test_content.get('traffic_stop_wait_time', 0)
         # parse port config of l3fwd suite
+        cores_for_all = test_content.get('cores_for_all', False)
         port_configs, frame_sizes = self.__get_test_configs(
             test_content.get('test_parameters'),
-            len(self.__valports), self.__socket)
+            len(self.__valports),
+            self.__socket,
+            cores_for_all)
         test_content['port_configs'] = port_configs
         test_content['frame_sizes'] = frame_sizes
         self.logger.debug(pformat(test_content))
