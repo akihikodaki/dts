@@ -447,13 +447,30 @@ class Dut(Crb):
                 self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
                                  % (pci_bus, driver), '# ')
                 pull_retries = 5
+                itf = 'N/A'
                 while pull_retries > 0:
                     itf = port.get_interface_name()
-                    if itf == 'N/A':
+                    if not itf or itf == 'N/A':
                         time.sleep(1)
                         pull_retries -= 1
                     else:
                         break
+                else:
+                    # try to bind nic with iavf
+                    if driver == 'i40evf':
+                        driver = 'iavf'
+                        self.send_expect('modprobe %s' % driver, '# ')
+                        self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
+                                         % (pci_bus, driver), '# ')
+                        pull_retries = 5
+                        itf = 'N/A'
+                        while pull_retries > 0:
+                            itf = port.get_interface_name()
+                            if not itf or itf == 'N/A':
+                                time.sleep(1)
+                                pull_retries -= 1
+                            else:
+                                break
                 if itf == 'N/A':
                     self.logger.warning("Fail to bind the device with the linux driver")
                 else:
