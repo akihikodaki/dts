@@ -2869,6 +2869,19 @@
             ],
             "Bug ID": "",
             "Comments": "only ixgbe driver support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "all"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "freebsd not support create vf"
         }
     ],
     "hash_readwrite_perf": [
@@ -3492,6 +3505,21 @@
             ],
             "Bug ID": "",
             "Comments": "CVL not support DPDK PF + DPDK VF"
+        }
+    ],
+    "txoffload_queue": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "the nic not support this case"
         }
     ]
 }
