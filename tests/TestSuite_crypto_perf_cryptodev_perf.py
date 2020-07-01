@@ -230,13 +230,13 @@ class PerfTestsCryptodev(TestCase):
 
     def _run_crypto_perf(self):
         if cc.is_test_skip(self):
-            return
+            return "skip"
 
         self.c_num, self.t_num = self._get_core_and_thread_num()
         devices = self._get_crypto_device(self.t_num)
         if not devices:
             self.logger.info("can not get device or unsupported, skip.")
-            return
+            return "skip"
 
         eal_opt_str = cc.get_eal_opt_str(self, devices)
         crypto_perf_opt_str = self._get_crypto_perf_opt_str()
@@ -391,7 +391,9 @@ class PerfTestsCryptodev(TestCase):
 
     def _run_crypto_perf_throughput(self):
         results = self._run_crypto_perf()
-
+        if results == "skip":
+            return
+        self.verify(results, "test results is none, Test Failed")
         stats_results = self._stat_results_by_buf_size(results)
         json_result = []
 

@@ -138,7 +138,7 @@ def get_qat_devices(test_case, cpm_num=None, num=1):
         cpm_num = len(test_case.dev.keys())
     n, dev_list = 0, []
     if cpm_num > len(test_case.dev.keys()):
-        self.logger.warning("QAT card only {} cpm, but {} required".format(
+        test_case.logger.warning("QAT card only {} cpm, but {} required".format(
             len(test_case.dev), cpm_num))
         return []
     for i in range(num):
@@ -148,7 +148,7 @@ def get_qat_devices(test_case, cpm_num=None, num=1):
             if i < len(test_case.dev[cpm]):
                 dev_list.append(test_case.dev[cpm][i])
             else:
-                self.logger.warning("not enough vf in cpm: {}".format(cpm))
+                test_case.logger.warning("not enough vf in cpm: {}".format(cpm))
             n += 1
     return dev_list
 
