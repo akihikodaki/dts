@@ -152,7 +152,7 @@ class TestPowerBranchRatio(TestCase):
                 'type': pkt_name.upper(),
                 'pkt_layers': {
                     'ether': {'dst': dmac},
-                    'raw': {'payload': ['58'] * self.get_pkt_len(pkt_name)}}},
+                    'raw': {'payload': ['58'] * self.get_pkt_len(pkt_name, frame_size=self.frame_size)}}},
         }
         # create packet for send
         if stm_name not in list(pkt_configs.keys()):
@@ -229,7 +229,7 @@ class TestPowerBranchRatio(TestCase):
         self.d_a_con(cmd)
 
     def init_vms_params(self):
-        self.vcpu_map = self.vm = self.vm_dut = self.guest_session = None
+        self.vcpu_map = self.vcpu_lst = self.vm = self.vm_dut = self.guest_session = None
         self.vm_log_dir = '/tmp/powermonitor'
         self.create_powermonitor_folder()
 
@@ -267,7 +267,8 @@ class TestPowerBranchRatio(TestCase):
         self.verify(self.vm_dut, "create vm_dut fail !")
         self.add_console(self.vm_dut.session)
         # get virtual machine cpu cores
-        self.vcpu_map = self.vm.get_vm_cpu()
+        self.vcpu_map = [int(core) for core in self.vm.get_vm_cpu()]
+        self.vcpu_lst = [int(item['core']) for item  in self.vm_dut.cores]
 
     def close_vm(self):
         '''
@@ -383,7 +384,7 @@ class TestPowerBranchRatio(TestCase):
                 'file_prefix': 'vmpower1',
                 'vm_name': self.vm_name,
                 'vpus': ','.join(
-                    [str(int(index) - 1) for index in self.vcpu_map]),
+                    [str(index) for index in self.vcpu_lst]),
             })
         guest_cmd = ' '.join([self.guest_cli, option])
         self.vm_g_con([guest_cmd, prompt, 120])
@@ -573,7 +574,7 @@ class TestPowerBranchRatio(TestCase):
             # run traffic
             option = {'stm_type': 'UDP_1', }
             self.run_traffic(option)
-            time.sleep(2)
+            time.sleep(10)
             # check test result
             self.check_core_freq_in_traffic(self.check_core)
             self.check_vm_power_mgr_output()
@@ -625,7 +626,10 @@ class TestPowerBranchRatio(TestCase):
         self.init_vm_power_mgr()
         self.init_vm_testpmd()
         self.init_guest_mgr()
-        self.check_core = 2
+        test_content = self.get_suite_cfg()
+        self.frame_size = test_content.get('frame_size') or 1024
+        self.check_ratio = test_content.get('check_ratio') or 0.1
+        self.check_core = self.vcpu_map[1]
         msg = "select dut core {} as check core".format(self.check_core)
         self.logger.info(msg)
     #
@@ -675,5 +679,5 @@ class TestPowerBranchRatio(TestCase):
         """
         Set Branch-Ratio Rate by User
         """
-        self.branch_ratio = 0.1
+        self.branch_ratio = self.check_ratio
         self.verify_branch_ratio()
