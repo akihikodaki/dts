@@ -96,18 +96,6 @@ class TestVmHotplug(TestCase):
         self.vm0_dut = self.connect_vm()
         self.verify(self.vm0_dut is not None, 'vm start fail')
         self.setup_pf_1vm_env_flag = 1
-        # load vfio
-        self.vm0_dut.send_expect('modprobe -r vfio_iommu_type1', '#')
-        self.vm0_dut.send_expect('modprobe -r vfio', '#')
-        self.vm0_dut.send_expect('modprobe vfio enable_unsafe_noiommu_mode=1', '#')
-        self.vm0_dut.send_expect('modprobe vfio-pci', '#')
-        # bind device to vfio
-        netdev = self.vm0_dut.ports_info[0]['port']
-        netdev.bind_driver(driver='vfio-pci')
-        if device == 2:
-            netdev = self.vm0_dut.ports_info[1]['port']
-            netdev.bind_driver(driver='vfio-pci')
-
         self.vm_session = self.vm0_dut.new_session(suite="vm_session")
         self.vf_pci0 = self.vm0_dut.ports_info[0]['pci']
         if device == 2:
@@ -119,7 +107,8 @@ class TestVmHotplug(TestCase):
         self.vm0 = QEMUKvm(self.dut, 'vm0', 'vm_hotplug')
         self.vm0.net_type = 'hostfwd'
         self.vm0.hostfwd_addr = '%s:6000' % self.dut.get_ip_address()
-        self.vm0.def_driver = 'igb_uio'
+        self.vm0.def_driver = 'vfio-pci'
+        self.vm0.driver_mode = 'noiommu'
         self.wait_vm_net_ready()
         vm_dut = self.vm0.instantiate_vm_dut(autodetect_topo=False)
         if vm_dut:
