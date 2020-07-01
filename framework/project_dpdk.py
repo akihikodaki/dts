@@ -231,12 +231,12 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
 
         # compile
-        out = self.send_expect("make -j %d install T=%s %s" % 
+        out = self.send_expect("make -j %d install T=%s %s MAKE_PAUSE=n" %
             (self.number_of_cores, target, extra_options), "# ", build_time)
         if("Error" in out or "No rule to make" in out):
             self.logger.error("ERROR - try without '-j'")
             # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s %s" % (target, extra_options), "# ", build_time*4)
+            out = self.send_expect("make install T=%s %s MAKE_PAUSE=n" % (target, extra_options), "# ", build_time*4)
 
         assert ("Error" not in out), "Compilation error..."
         assert ("No rule to make" not in out), "No rule to make error..."
@@ -252,13 +252,13 @@ class DPDKdut(Dut):
         self.send_expect("rm -rf %s" % r'./app/test/test_pci_sysfs.res.o' , "#")
         build_time = 180
         # compile
-        out = self.send_expect("make -j %d install T=%s" % (self.number_of_cores,
+        out = self.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (self.number_of_cores,
                                                                      target),
                                "#", build_time)
         if("Error" in out or "No rule to make" in out):
             self.logger.error("ERROR - try without '-j'")
             # if Error try to execute make without -j option
-            out = self.send_expect("make install T=%s" % target,
+            out = self.send_expect("make install T=%s MAKE_PAUSE=n" % target,
                                    "#", build_time)
 
         assert ("Error" not in out), "Compilation error..."
