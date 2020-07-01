@@ -891,9 +891,6 @@ class TestKernelpfIavf(TestCase):
         self.verify('L3FWD_POWER: lcore 6 is waked up from rx interrupt' in out, 'lcore 6 is not waked up')
         self.verify('L3FWD_POWER: lcore 7 is waked up from rx interrupt' in out, 'lcore 7 is not waked up')
         self.dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
-        self.interrupt_flag = True
-        time.sleep(1)
-        self.destroy_2vf_in_2pf()
 
     def test_vf_unicast(self):
         self.vm_testpmd.start_testpmd("all")
@@ -984,8 +981,9 @@ class TestKernelpfIavf(TestCase):
         """
         Run after each test case.
         """
-        if self.interrupt_flag is True:
-            self.interrupt_flag = False
+        if self.running_case == "test_vf_rx_interrupt"::
+            self.dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
+            self.destroy_2vf_in_2pf()
         else:
             self.vm_testpmd.execute_cmd("quit", "#")
             time.sleep(1)
