@@ -1112,10 +1112,15 @@ class AdvancedIavfRSSTest(TestCase):
         self.create_testpmd_command(self.vf0_prop)
         error_rule = ["flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end ",
                       "flow create 0 ingress pattern eth / ipv6 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end ", ]
-        for rule in error_rule:
-            out = self.pmd_output.execute_cmd(rule)
-            self.verify("Failed to create flow" in out, "Rule can be created")
-        self.replace_pkg(self.comms_pkg_name)
+        try:
+            for rule in error_rule:
+                out = self.pmd_output.execute_cmd(rule)
+                self.verify("Failed to create flow" in out, "Rule can be created")
+        except Exception as e:
+            raise Exception(e)
+        finally:
+            self.pmd_output.quit()
+            self.replace_pkg(self.comms_pkg_name)
 
     def replace_pkg(self, pkg):
         self.dut_session.send_expect("cd %s" % self.ddp_fdir, "# ")
