@@ -365,7 +365,7 @@ class TestRuntimeVfQn(TestCase):
         host_eal_param = '-w %s,queue-num-per-vf=2 --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm0_testpmd.execute_cmd("./usertools/dpdk-devbind.py -b i40evf %s" % self.vm_dut_0.ports_info[0]['pci'], expected='# ')
+        self.vm_dut_0.restore_interfaces()
         # wait few seconds for link ready
         countdown = 60
         while countdown:
@@ -380,7 +380,7 @@ class TestRuntimeVfQn(TestCase):
                 countdown -= 1
                 continue
         output = self.vm0_testpmd.execute_cmd("ethtool -S %s" % inf, expected='# ')
-        self.verify("tx-0.packets: 0" in output and "tx-1.packets: 0" in output, "VF0 rxq and txq number is not 2.")
+        self.verify("tx-0.packets" in output and "tx-1.packets" in output, "VF0 rxq and txq number is not 2.")
 
     def tear_down(self):
         self.stop_vm0()
