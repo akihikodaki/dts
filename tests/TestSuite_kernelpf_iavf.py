@@ -981,7 +981,7 @@ class TestKernelpfIavf(TestCase):
         """
         Run after each test case.
         """
-        if self.running_case == "test_vf_rx_interrupt"::
+        if self.running_case == "test_vf_rx_interrupt":
             self.dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
             self.destroy_2vf_in_2pf()
         else:
