@@ -342,14 +342,10 @@ class TestDualVlan(TestCase):
         """
         Enable/Disable VLAN packets strip on queue
         """
-        self.verify(self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T", "cavium_a063", "cavium_a064", "carlsville"], "%s NIC not support queue vlan strip " % self.nic)
-
         self.mode_config(filter="off")
         self.mode_config(extend="off")
         self.mode_config(strip="off")
         self.mode_config(stripq="off")
-        if self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV", "fortpark_BASE-T","carlsville"]:
-            self.dut.send_expect('rx_vlan add %s %s' % (outvlan, dutRxPortId), "testpmd> ") 
         self.vlan_send_packet(outvlan)
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % outvlan in out, "vlan strip queue disable error : " + out)
@@ -361,13 +357,9 @@ class TestDualVlan(TestCase):
         self.verify("vlan %s" % outvlan not in out, "vlan strip enable error: " + out)
 
         self.mode_config(stripq="off")
-        if self.nic == 'foxville':
-            self.mode_config(strip="off")
         self.vlan_send_packet(outvlan)
         out = self.get_tcpdump_package()
         self.verify("vlan %s" % outvlan in out, "vlan strip queue disable error: " + out)
-        if self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T" "carlsville"]:
-            self.dut.send_expect('rx_vlan rm %s %s' % (outvlan, dutRxPortId), "testpmd> ")
 
     def test_vlan_insert_config(self):
         """
