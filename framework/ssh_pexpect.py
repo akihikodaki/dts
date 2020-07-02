@@ -44,7 +44,7 @@ class SSHPexpect:
                     try:
                         self.session.login(self.ip, self.username,
                                            self.password, original_prompt='[$#>]',
-                                           port=self.port, login_timeout=20)
+                                           port=self.port, login_timeout=20, password_regex=r'(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)')
                     except Exception as e:
                         print(e)
                         time.sleep(2)
@@ -57,7 +57,7 @@ class SSHPexpect:
             else:
                 self.session = pxssh.pxssh(encoding='utf-8')
                 self.session.login(self.host, self.username,
-                                   self.password, original_prompt='[$#>]')
+                                   self.password, original_prompt='[$#>]', password_regex=r'(?i)(?:password:)|(?:passphrase for key)|(?i)(password for .+:)')
             self.send_expect('stty -echo', '#')
             self.send_expect('stty columns 1000', "#")
         except Exception as e:
