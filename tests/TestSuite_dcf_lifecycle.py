@@ -249,7 +249,7 @@ class TestDcfLifeCycle(TestCase):
         pf1_vf1 = self.vf_ports_info[0].get('vfs_pci')[1]
         pf1_vf2 = self.vf_ports_info[0].get('vfs_pci')[2]
         pf2_vf0 = self.vf_ports_info[1].get('vfs_pci')[0] \
-            if len(self.vf_ports_info) == 2 else ''
+            if len(self.vf_ports_info) >= 2 else ''
         whitelist = {
             'pf1_vf0_dcf': f"-w {pf1_vf0},cap=dcf",
             'pf1_vf1_dcf': f"-w {pf1_vf1},cap=dcf",
