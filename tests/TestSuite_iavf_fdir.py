@@ -37,6 +37,7 @@ from packet import Packet
 from pmd_output import PmdOutput
 from test_case import TestCase
 import rte_flow_common as rfc
+from rte_flow_common import CVL_TXQ_RXQ_NUMBER
 from multiprocessing import Process
 from multiprocessing import Manager
 
@@ -126,9 +127,9 @@ MAC_IPV6_PAY = {
 MAC_IPV6_PAY_protocol = {
     "match": [
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", nh=44, tc=1, hlim=2)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment(100)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=44)/TCP(sport=22,dport=23)/("X"*480)',
-        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment(100)/TCP(sport=22,dport=23)/("X"*480)',
+        'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/TCP(sport=22,dport=23)/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", nh=6)/("X"*480)',
         'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)'],
     "mismatch": [
@@ -1302,11 +1303,16 @@ class TestIAVFFdir(TestCase):
 
         self.src_file_dir = 'dep/'
         self.dut_file_dir = '/tmp/'
+        self.cvlq_num = CVL_TXQ_RXQ_NUMBER
 
     def set_up(self):
         """
         Run before each test case.
         """
+        self.re_load_ice_driver()
+        time.sleep(1)
+        self.setup_2pf_4vf_env()
+        time.sleep(1)
         self.launch_testpmd()
 
     def setup_2pf_4vf_env(self, driver='default'):
@@ -1384,8 +1390,8 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("rmmod ice", "# ", 40)
         ice_driver_file_location = self.suite_config["ice_driver_file_location"]
         self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ")
-        self.dut.send_expect("ifconfig %s up" % self.tester_iface0, "# ", 15)
-        self.dut.send_expect("ifconfig %s up" % self.tester_iface1, "# ", 15)
+        self.dut.send_expect("ifconfig %s up" % self.dut_ports[0], "# ", 15)
+        self.dut.send_expect("ifconfig %s up" % self.dut_ports[1], "# ", 15)
 
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set fwd rxonly")
@@ -1401,7 +1407,7 @@ class TestIAVFFdir(TestCase):
 
     def launch_testpmd(self):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
-                                      param="--rxq=16 --txq=16",
+                                      param="--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num),
                                       eal_param="-w %s -w %s" % (
                                            self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci),
                                       socket=self.ports_socket)
@@ -1508,7 +1514,7 @@ class TestIAVFFdir(TestCase):
             self.verify(not p.search(out), "flow rule on port %s is existed" % port_id)
 
     def check_rule_number(self, port_id=0, num=0):
-        out = self.pmd_output.execute_cmd("flow list %s" % port_id)
+        out = self.dut.send_command("flow list %s" % port_id, timeout=30)
         result_scanner = r'\d*.*?\d*.*?\d*.*?=>*'
         scanner = re.compile(result_scanner, re.DOTALL)
         li = scanner.findall(out)
@@ -1848,12 +1854,12 @@ class TestIAVFFdir(TestCase):
         m1 = p.search(out_pf1)
 
         eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
         eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
@@ -2001,12 +2007,12 @@ class TestIAVFFdir(TestCase):
         m1 = p.search(out_pf1)
 
         eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
         eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
@@ -2154,12 +2160,12 @@ class TestIAVFFdir(TestCase):
         m1 = p.search(out_pf1)
 
         eal_param = "-c 0xf -n 6 -w %s -w %s --file-prefix=pf0" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
         eal_param = "-c 0xf0 -n 6 -w %s -w %s --file-prefix=pf1" % (self.sriov_vfs_pf1[0].pci,self.sriov_vfs_pf1[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.session_secondary.send_expect(command, "testpmd> ", 300)
         #self.session_secondary.config_testpmd()
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
@@ -2291,7 +2297,7 @@ class TestIAVFFdir(TestCase):
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.dut_file_dir + src_file)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={} --cmdline-file=%s".format(self.cvlq_num, self.cvlq_num) % self.dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 300)
         self.config_testpmd()
 
@@ -2361,7 +2367,7 @@ class TestIAVFFdir(TestCase):
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf1[0].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.dut_file_dir + src_file)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={} --cmdline-file=%s".format(self.cvlq_num, self.cvlq_num) % self.dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 300)
 
         self.config_testpmd()
@@ -2453,7 +2459,7 @@ class TestIAVFFdir(TestCase):
             self.verify(count == 513, "failed to create 1025 fdir rules on pf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
         # create 1025 rules on pf1
-        fkr = open(self.dut_file_dir + src_file, "r+")
+        fkr = open(self.src_file_dir + src_file, "r+")
         kernel_rules = fkr.read()
         fkr.close()
         self.dut.send_expect(kernel_rules, "# ")
@@ -2477,7 +2483,7 @@ class TestIAVFFdir(TestCase):
 
         # start testpmd with creating rules in commandline
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.dut_file_dir + src_file_vf)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={} --cmdline-file=%s".format(self.cvlq_num, self.cvlq_num) % self.dut_file_dir + src_file_vf)
         fdw = open("15360_rules_vf_result.txt", "w")
         fdw.write(self.dut.send_expect(command, "testpmd> ", 360))
         fdw.close()
@@ -2545,7 +2551,7 @@ class TestIAVFFdir(TestCase):
             self.verify(count == 14848, "failed to create 14848 fdir rules on pf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
         # create 15360 rules on pf1
-        fkr = open(self.dut_file_dir + src_file, "r+")
+        fkr = open(self.src_file_dir + src_file, "r+")
         kernel_rules = fkr.read()
         fkr.close()
         self.dut.send_expect(kernel_rules, "# ")
@@ -2554,7 +2560,7 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8" % self.pf1_intf, "Cannot insert RX class rule: No space left on device")
         # start testpmd with creating rules in commandline
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf1[0].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num))
         self.dut.send_expect(command, "testpmd> ", 20)
 
         self.config_testpmd()
@@ -2606,7 +2612,7 @@ class TestIAVFFdir(TestCase):
         self.destroy_env()
         self.setup_npf_nvf_env(pf_num=1,vf_num=16)
         self.dut.send_expect('ip link set %s vf 10 mac 00:11:22:33:44:55' % self.pf0_intf, '#')
-        command = "./%s/app/testpmd -c f -n 6 -- -i %s" % (self.dut.target, "--rxq=16 --txq=16")
+        command = "./%s/app/testpmd -c f -n 6 -- -i %s" % (self.dut.target, "--rxq=4 --txq=4")
         self.dut.send_expect(command, "testpmd> ", 360)
         self.config_testpmd()
         for port_id in range(11):
@@ -2636,9 +2642,6 @@ class TestIAVFFdir(TestCase):
         rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": 10, "mark_id": 0, "queue": 1}, stats=False)
 
         self.create_fdir_rule(rule, check_stats=False)
-
-        self.destroy_env()
-        self.setup_2pf_4vf_env()
 
     def test_stress_port_stop_start(self):
         """
@@ -2681,7 +2684,7 @@ class TestIAVFFdir(TestCase):
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.dut_file_dir + src_file)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={} --cmdline-file=%s".format(self.cvlq_num, self.cvlq_num) % self.dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 900)
         self.config_testpmd()
         self.check_fdir_rule(port_id=0, stats=False)
@@ -2716,7 +2719,7 @@ class TestIAVFFdir(TestCase):
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
         eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci,self.sriov_vfs_pf0[1].pci)
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.dut_file_dir + src_file)
+        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, eal_param, "--rxq={} --txq={} --cmdline-file=%s".format(self.cvlq_num, self.cvlq_num) % self.dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 900)
         self.config_testpmd()
         self.check_fdir_rule(port_id=0, stats=False)
@@ -3101,7 +3104,7 @@ class TestIAVFFdir(TestCase):
 
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
-                                      param="--rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop",
+                                      param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
                                       eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
@@ -3197,7 +3200,7 @@ class TestIAVFFdir(TestCase):
 
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
-                                      param="--rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop",
+                                      param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
                                       eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
@@ -3286,7 +3289,7 @@ class TestIAVFFdir(TestCase):
 
         self.dut.send_expect("quit", "# ")
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
-                                      param="--rxq=16 --txq=16 --enable-rx-cksum --port-topology=loop",
+                                      param="--rxq={} --txq={} --enable-rx-cksum --port-topology=loop".format(self.cvlq_num, self.cvlq_num),
                                       eal_param="-w %s" % self.sriov_vfs_pf0[0].pci,
                                       socket=self.ports_socket)
         vlan = 51
@@ -3353,6 +3356,7 @@ class TestIAVFFdir(TestCase):
 
     def tear_down(self):
         # destroy all flow rule on port 0
+        self.destroy_env()
         self.dut.kill_all()
         if getattr(self, 'session_secondary', None):
             self.dut.close_session(self.session_secondary)
