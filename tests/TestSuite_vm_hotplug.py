@@ -279,14 +279,7 @@ class TestVmHotplug(TestCase):
 
     def check_vf_device(self, has_device=True, device=1):
         time.sleep(1)
-        sign = 'Connection'
-        lis1 = ['fortville_spirit', 'fortville_eagle', 'sagepond', 'twinpond', 'sageville']
-        lis2 = ['fortpark_TLV', 'fortville_25g',"fortpark_BASE-T", "carlsville"]
-        if self.nic in lis1:
-            sign = 'Ethernet'
-        elif self.nic in lis2:
-            sign = 'Device'
-        out = self.vm_session.send_expect('./usertools/dpdk-devbind.py -s | grep %s' % sign, '#')
+        out = self.vm_session.send_expect('./usertools/dpdk-devbind.py -s', '#')
         time.sleep(2)
         if has_device:
             self.verify(self.vf_pci0 in out, 'no vf device')
