@@ -296,6 +296,16 @@ class TestShutdownApi(TestCase):
 
 
     def destroy_vm_env(self):
+        if getattr(self, 'self.vm0_testpmd', None):
+            self.vm0_testpmd.quit()
+
+        if getattr(self, 'vm0', None):
+            if getattr(self, 'vm0_dut', None):
+                self.vm0_dut.kill_all()
+            self.vm0_testpmd = None
+            self.vm0_dut_ports = None
+            # destroy vm0
+            self.vm0.stop()
         if getattr(self, 'used_dut_port', None) is not None:
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.used_dut_port = None
@@ -308,17 +318,10 @@ class TestShutdownApi(TestCase):
         if not self.vm_env_done:
             return
 
-        if getattr(self, 'self.vm0_testpmd', None):
-            self.vm0_testpmd.quit()
-
-        if getattr(self, 'vm0', None):
-            if getattr(self, 'vm0_dut', None):
-                self.vm0_dut.kill_all()
-            self.vm0_testpmd = None
-            self.vm0_dut_ports = None
-            # destroy vm0
-            self.vm0.stop()
         self.vm_env_done = False
+
+
+
 
     def test_stop_restart(self):
         """
