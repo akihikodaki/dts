@@ -903,7 +903,8 @@ class SwitchFilterTest(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.__tx_iface = self.tester.get_interface(localPort)
-        self.dut.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
+        self.tester.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
+        self.dut.send_expect("ifconfig %s up" % self.dut_ports[0], "# ")
         self.pkt = Packet()
         self.testpmd_status = "close"
         self.suite_config = rfc.get_suite_config(self)
@@ -1586,6 +1587,7 @@ class SwitchFilterTest(TestCase):
         #sort the vf interfaces and pcis by pcis
         vfs = {}
         for vf_port in self.sriov_vfs_port:
+            vf_port.bind_driver()
             vfs[vf_port.pci] = vf_port.intf_name
         vfs_sort = sorted(vfs.items(), key=lambda item:item[0])
         vf_pci = [key for key,value in vfs_sort]
@@ -1808,7 +1810,7 @@ class SwitchFilterTest(TestCase):
         """
         if self.testpmd_status != "close":
             # destroy all flow rules on DCF
-            self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+            self.dut.send_expect("flow flush 0", "testpmd> ", 120)
             self.dut.send_expect("clear port stats all", "testpmd> ", 15)
             self.dut.send_expect("quit", "#", 15)
         self.testpmd_status = "close"
