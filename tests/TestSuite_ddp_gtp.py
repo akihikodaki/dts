@@ -43,10 +43,39 @@ class TestDdpGtp(TestCase):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
+    def insmod_modprobe(self,modename=''):
+        """
+        Insmod modProbe before run test case
+        """
+        if modename == "igb_uio":
+            self.dut.send_expect("modprobe uio", "#", 10)
+            out = self.dut.send_expect("lsmod | grep igb_uio", "#")
+            if "igb_uio" in out:
+                self.dut.send_expect("rmmod -f igb_uio", "#", 10)
+            self.dut.send_expect("insmod ./" + self.target + "/kmod/igb_uio.ko", "#", 10)
+
+            out = self.dut.send_expect("lsmod | grep igb_uio", "#")
+            assert ("igb_uio" in out), "Failed to insmod igb_uio"
 
     def set_up(self):
-        self.setup_vm_env()
-        self.load_profile()
+        self.dut_testpmd = PmdOutput(self.dut)
+        self.used_dut_port = self.dut_ports[0]
+        tester_port = self.tester.get_local_port(self.used_dut_port)
+        self.tester_intf = self.tester.get_interface(tester_port)
+        if "vf" in self._suite_result.test_case:
+            self.insmod_modprobe("igb_uio")
+            self.bind_nic_driver(self.dut_ports,"igb_uio")
+            self.setup_vm_env()
+            self.load_profile()
+            self.vm0_testpmd.start_testpmd(
+                VM_CORES_MASK, "--port-topology=chained --txq=%s --rxq=%s"
+                               % (self.VF_QUEUE, self.VF_QUEUE))
+            self.vm0_testpmd.execute_cmd('set fwd rxonly')
+            self.vm0_testpmd.execute_cmd('set verbose 1')
+            self.vm0_testpmd.execute_cmd('start')
+        else:
+            self.load_profile()
+
 
     def search_queue_number(self, Q_strip):
         """
@@ -91,18 +120,12 @@ class TestDdpGtp(TestCase):
         Create testing environment with VF generated from 1PF
         """
         if self.env_done is False:
-            self.bind_nic_driver(self.dut_ports[:1], driver="igb_uio")
-            self.used_dut_port = self.dut_ports[0]
-            tester_port = self.tester.get_local_port(self.used_dut_port)
-            self.tester_intf = self.tester.get_interface(tester_port)
             self.dut.generate_sriov_vfs_by_port(
                 self.used_dut_port, 1, driver=driver)
             self.sriov_vfs_port = self.dut.ports_info[
                 self.used_dut_port]['vfs_port']
             for port in self.sriov_vfs_port:
                     port.bind_driver(self.vf_driver)
-            time.sleep(1)
-            self.dut_testpmd = PmdOutput(self.dut)
             time.sleep(1)
             vf0_prop = {'opt_host': self.sriov_vfs_port[0].pci}
             # set up VM0 ENV
@@ -118,6 +141,7 @@ class TestDdpGtp(TestCase):
             self.vm0_dut_ports = self.vm0_dut.get_ports('any')
             self.vm0_testpmd = PmdOutput(self.vm0_dut)
             self.env_done = True
+
 
     def destroy_vm_env(self):
 
@@ -146,9 +170,7 @@ class TestDdpGtp(TestCase):
             "Default", "--pkt-filter-mode=perfect --port-topology=chained \
             --txq=%s --rxq=%s"
             % (self.PF_QUEUE, self.PF_QUEUE))
-        self.vm0_testpmd.start_testpmd(
-            VM_CORES_MASK, "--port-topology=chained --txq=%s --rxq=%s"
-            % (self.VF_QUEUE, self.VF_QUEUE))
+
         self.dut_testpmd.execute_cmd('port stop all')
         time.sleep(1)
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
@@ -161,9 +183,9 @@ class TestDdpGtp(TestCase):
         self.dut_testpmd.execute_cmd('set fwd rxonly')
         self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
-        self.vm0_testpmd.execute_cmd('set fwd rxonly')
-        self.vm0_testpmd.execute_cmd('set verbose 1')
-        self.vm0_testpmd.execute_cmd('start')
+        time.sleep(2)
+
+
 
     def gtp_packets(
             self, type='fdir', tunnel_pkt='gtpu', inner_L3='ipv4',
@@ -409,7 +431,10 @@ class TestDdpGtp(TestCase):
             type='clfter', port='vf id 0', tunnel_pkt='gtpu', inner_L3='ipv6')
 
     def tear_down(self):
-        self.vm0_testpmd.execute_cmd('stop')
+        if "vf" in self._suite_result.test_case:
+            self.destroy_vm_env()
+            self.vm0_testpmd.execute_cmd('stop')
+            self.vm0_testpmd.quit()
         self.dut_testpmd.execute_cmd('stop')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         if "Profile number is: 0" not in out:
@@ -420,8 +445,10 @@ class TestDdpGtp(TestCase):
             self.verify("Profile number is: 0" in out,
                         "Failed to delete ddp profile!!!")
             self.dut_testpmd.execute_cmd('port start all')
-        self.vm0_testpmd.quit()
         self.dut_testpmd.quit()
 
+
     def tear_down_all(self):
-        self.destroy_vm_env()
+        if self.env_done:
+            self.destroy_vm_env()
+
