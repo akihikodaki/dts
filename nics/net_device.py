@@ -609,7 +609,7 @@ class NetDevice(object):
         else:
             try:
                 virtfns = self.__send_expect(
-                    "ls -d /sys/bus/pci/devices/%s\:%s\:%s/virtfn*" %
+                    "ls --color=never -d /sys/bus/pci/devices/%s\:%s\:%s/virtfn*" %
                     (domain_id, bus_id, devfun_id), "# ")
                 for virtfn in virtfns.split():
                     vf_uevent = self.__send_expect(
