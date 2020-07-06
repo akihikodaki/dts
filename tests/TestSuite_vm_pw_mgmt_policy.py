@@ -473,7 +473,8 @@ class TestVmPwMgmtPolicy(TestCase):
         date_tool = "date"
         cmd = ';'.join([
             "{0}",
-            "{0} -s \'{1}\'",
+            "{0} -s 0",
+            "{0} -s '{1}'",
             "hwclock -w"]).format(date_tool, timestamp)
         self.d_a_con([cmd, '# ', 20])
         cmd = "{0} '+%H:00'".format(date_tool)
@@ -498,7 +499,7 @@ class TestVmPwMgmtPolicy(TestCase):
         real_time = timestamp.strftime(FMT)
         cmd = ';'.join([
             "{0}",
-            "{0} -s \'{1}\'",
+            "{0} -s '{1}'",
             "hwclock -w",
             "{0}", ]).format(date_tool, real_time)
         self.d_a_con([cmd, '# ', 20])
@@ -537,7 +538,7 @@ class TestVmPwMgmtPolicy(TestCase):
                 if key_value == 'scaling_available_frequencies':
                     cpu_info[cpu_id][key_value] = freqs[index]
                 cpu_info[cpu_id][key_value] = \
-                    [int(item) for item in sorted(freqs[index].split())] \
+                    sorted([int(item) for item in sorted(freqs[index].split())]) \
                     if key_value == 'scaling_available_frequencies' else \
                     freqs[index]
 
