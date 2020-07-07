@@ -88,6 +88,13 @@ def dts_parse_param(config, section):
 
     parameters = config.get(section, 'parameters').split(':')
     drivername = config.get(section, 'drivername').split('=')[-1]
+    # get the build method, default is makefile
+    try:
+        buildtype = config.get(section, 'build_type').split('=')[-1]
+    except:
+        buildtype = 'makefile'
+    buildtype = buildtype.lower()
+    settings.save_global_setting(settings.HOST_BUILD_TYPE_SETTING, buildtype)
 
     driver = drivername.split(':')
     if len(driver) == 2:
