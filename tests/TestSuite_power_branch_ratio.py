@@ -303,10 +303,12 @@ class TestPowerBranchRatio(TestCase):
         self.dut.build_install_dpdk(self.target)
 
     @contextmanager
-    def restore_compilation(self):
+    def restore_environment(self):
         try:
             yield
         finally:
+            time.sleep(10)
+            self.restore_port_drv()
             sw_table = [
                 "CONFIG_RTE_LIBRTE_POWER",
                 "CONFIG_RTE_LIBRTE_POWER_DEBUG",
@@ -318,6 +320,17 @@ class TestPowerBranchRatio(TestCase):
                 self.d_a_con(cmd)
             # re-compile dpdk source code
             self.dut.build_install_dpdk(self.target)
+
+    def restore_port_drv(self):
+        driver = self.drivername
+        for port in self.dut.ports_info:
+            netdev = port.get('port')
+            if not netdev:
+                continue
+            cur_drv = netdev.get_nic_driver()
+            if cur_drv == driver:
+                continue
+            netdev.bind_driver(driver)
 
     def init_vm_power_mgr(self):
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
@@ -652,7 +665,7 @@ class TestPowerBranchRatio(TestCase):
         """
         Run after each test suite.
         """
-        with self.restore_compilation():
+        with self.restore_environment():
             self.close_vm()
 
     def set_up(self):
