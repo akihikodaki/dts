@@ -48,6 +48,7 @@ IXIACONF = "%s/ixia.cfg" % CONFIG_ROOT_PATH
 PKTGENCONF = "%s/pktgen.cfg" % CONFIG_ROOT_PATH
 SUITECONF_SAMPLE = "%s/suite_sample.cfg" % CONFIG_ROOT_PATH
 GLOBALCONF = "%s/global_suite.cfg" % CONFIG_ROOT_PATH
+APPNAMECONF = "%s/app_name.cfg" % CONFIG_ROOT_PATH
 
 
 class UserConf():
@@ -471,6 +472,34 @@ class PktgenConf(UserConf):
 
         return self.pktgen_cfg
 
+class AppNameConf(UserConf):
+    def __init__(self, app_name_conf=APPNAMECONF):
+        self.config_file = app_name_conf
+        self.app_name_cfg = {}
+        try:
+            self.app_name_conf = UserConf(self.config_file)
+        except ConfigParseException:
+            self.app_name_conf = None
+            raise ConfigParseException
+
+    def load_app_name_conf(self):
+        sections = self.app_name_conf.get_sections()
+        if not sections:
+            return self.app_name_cfg
+
+        for build_type in sections:
+            cur_name_cfg = self.app_name_conf.load_section(build_type)
+            if not cur_name_cfg:
+                continue
+
+            name_cfg = {}
+            for cfg in cur_name_cfg:
+                key, value = cfg
+                name_cfg[key] = value
+
+            self.app_name_cfg[build_type.lower()]=name_cfg
+
+        return self.app_name_cfg
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
