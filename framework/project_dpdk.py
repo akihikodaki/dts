@@ -33,7 +33,7 @@ import os
 import re
 
 from settings import NICS, load_global_setting, accepted_nic
-from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING
+from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING, HOST_BUILD_TYPE_SETTING
 from settings import HOST_SHARED_LIB_SETTING, HOST_SHARED_LIB_PATH
 from ssh_connection import SSHConnection
 from crb import Crb
@@ -72,6 +72,16 @@ class DPDKdut(Dut):
         drivername = load_global_setting(HOST_DRIVER_SETTING)
 
         self.set_driver_specific_configurations(drivername)
+
+        # get apps name of current build type
+        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        if build_type not in self.apps_name_conf:
+            raise Exception('please config the apps name in app_name.cfg of build type:%s' % build_type)
+        self.apps_name = self.apps_name_conf[build_type]
+        # use the dut target directory instead of 'target' string in app name
+        for app in self.apps_name:
+            cur_app_path = self.apps_name[app].replace('target', self.target)
+            self.apps_name[app] = cur_app_path + ' '
 
         if not self.skip_setup:
             self.build_install_dpdk(target)
@@ -214,10 +224,58 @@ class DPDKdut(Dut):
                              "config/common_base", '#')
         self.send_expect("sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' "
                         "config/common_base", '#')
-        build_install_dpdk = getattr(self, 'build_install_dpdk_%s' % self.get_os_type())
+        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        build_install_dpdk = getattr(self, 'build_install_dpdk_%s_%s' % (self.get_os_type(), build_type))
         build_install_dpdk(target, extra_options)
 
-    def build_install_dpdk_linux(self, target, extra_options):
+    def build_install_dpdk_linux_meson(self, target, extra_options):
+        """
+        Build DPDK source code on linux use meson
+        """
+        build_time = 900
+        target_info = target.split('-')
+        arch = target_info[0]
+        machine = target_info[1]
+        execenv = target_info[2]
+        toolchain = target_info[3]
+
+        default_library = 'static'
+        use_shared_lib = load_global_setting(HOST_SHARED_LIB_SETTING)
+        if use_shared_lib == 'true' and 'Virt' not in str(self):
+            default_library = 'shared'
+        if arch == 'i686':
+            # find the pkg-config path and set the PKG_CONFIG_LIBDIR environmental variable to point it
+            out = self.send_expect("find /usr -type d -name pkgconfig", "# ")
+            pkg_path = ''
+            default_cflags = self.send_expect("echo $CFLAGS", "# ")
+            default_pkg_config = self.send_expect("echo $PKG_CONFIG_LIBDIR", "# ")
+            res_path = out.split('\r\n')
+            for cur_path in res_path:
+                if 'i386' in cur_path:
+                    pkg_path = cur_path
+                    break
+            assert(pkg_path is not ''), "please make sure you env have the i386 pkg-config path"
+
+            self.send_expect("export CFLAGS=-m32", "# ")
+            self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ")
+
+        self.send_expect("rm -rf " + target, "#")
+        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True -Dlibdir=lib --default-library=%s %s" % (
+                        toolchain, default_library, target), "# ", build_time)
+        assert ("Error" not in out), "meson setup failed ..."
+
+        out = self.send_expect("ninja -C %s -j %d" % (target, self.number_of_cores), "# ", build_time)
+        assert ("Error" not in out), "ninja complie failed ..."
+
+        # copy kmod file to the folder same as make
+        out = self.send_expect("find ./%s/kernel/ -name *.ko" % target, "# ", verify=True)
+        self.send_expect("mkdir -p %s/kmod" % target, "# ")
+        if not isinstance(out, int) and len(out) > 0:
+            kmod = out.split('\r\n')
+            for mod in kmod:
+                self.send_expect("cp %s %s/kmod/" % (mod, target), "# ")
+
+    def build_install_dpdk_linux_makefile(self, target, extra_options):
         """
         Build DPDK source code on linux with specified target.
         """
@@ -241,7 +299,11 @@ class DPDKdut(Dut):
         assert ("Error" not in out), "Compilation error..."
         assert ("No rule to make" not in out), "No rule to make error..."
 
-    def build_install_dpdk_freebsd(self, target, extra_options):
+    def build_install_dpdk_freebsd_meson(self, target, extra_options):
+        # meson build same as linux
+        self.build_install_dpdk_linux_meson(target, extra_options)
+
+    def build_install_dpdk_freebsd_makefile(self, target, extra_options):
         """
         Build DPDK source code on Freebsd with specified target.
         """
@@ -312,7 +374,6 @@ class DPDKdut(Dut):
                     self.send_expect("mkdir -p ~/QMP", "# ")
                 self.session.copy_file_to('dep/QMP/qemu-ga-client', '~/QMP/')
                 self.session.copy_file_to('dep/QMP/qmp.py', '~/QMP/')
-
             self.kill_all()
 
             # enable core dump
@@ -395,10 +456,57 @@ class DPDKdut(Dut):
         """
         Build dpdk sample applications.
         """
-        build_dpdk_apps = getattr(self, 'build_dpdk_apps_%s' % self.get_os_type())
+        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        build_dpdk_apps = getattr(self, 'build_dpdk_apps_%s_%s' % (self.get_os_type(), build_type))
         return build_dpdk_apps(folder, extra_options)
 
-    def build_dpdk_apps_linux(self, folder, extra_options):
+    def build_dpdk_apps_linux_meson(self, folder, extra_options):
+        """
+        Build dpdk sample applications on linux use meson
+        """
+        # icc compile need more time
+        if 'icc' in self.target:
+            timeout = 300
+        else:
+            timeout = 90
+
+        target_info = self.target.split('-')
+        arch = target_info[0]
+        if arch == 'i686':
+            # find the pkg-config path and set the PKG_CONFIG_LIBDIR environmental variable to point it
+            out = self.send_expect("find /usr -type d -name pkgconfig", "# ")
+            pkg_path = ''
+            default_cflags = self.send_expect("echo $CFLAGS", "# ")
+            default_pkg_config = self.send_expect("echo $PKG_CONFIG_LIBDIR", "# ")
+            res_path = out.split('\r\n')
+            for cur_path in res_path:
+                if 'i386' in cur_path:
+                    pkg_path = cur_path
+                    break
+            assert(pkg_path is not ''), "please make sure you env have the i386 pkg-config path"
+
+            self.send_expect("export CFLAGS=-m32", "# ", alt_session=True)
+            self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ", alt_session=True)
+
+        folder_info = folder.split('/')
+        name = folder_info[-1]
+        if name not in self.apps_name:
+            raise Exception('Please config %s file path on conf/app_name.cfg' % name)
+
+        example = '/'.join(folder_info[folder_info.index('examples')+1:])
+        self.send_expect("cd %s/%s" % (self.base_dir, self.target), "# ", alt_session=True)
+        out = self.send_expect("meson configure -Dexamples=%s" % example, "# ", alt_session=True)
+        assert ("Error" not in out), "Compilation error..."
+        out = self.send_expect("ninja", "# ", timeout, alt_session=True)
+        assert ("Error" not in out), "Compilation error..."
+
+        # verify the app build in the config path
+        out = self.send_expect('ls %s' % self.apps_name[name], "# ", verify=True)
+        assert(isinstance(out, str)), 'please confirm %s app path and name in app_name.cfg' % name
+
+        return out
+
+    def build_dpdk_apps_linux_makefile(self, folder, extra_options):
         """
         Build dpdk sample applications on linux.
         """
@@ -414,7 +522,11 @@ class DPDKdut(Dut):
                                                          folder, extra_options),
                                 "# ", timeout)
 
-    def build_dpdk_apps_freebsd(self, folder, extra_options):
+    def build_dpdk_apps_freebsd_meson(self, folder, extra_options):
+        # meson build same as linux
+        self.build_dpdk_apps_linux_meson(folder, extra_options)
+
+    def build_dpdk_apps_freebsd_makefile(self, folder, extra_options):
         """
         Build dpdk sample applications on Freebsd.
         """

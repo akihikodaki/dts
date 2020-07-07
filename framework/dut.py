@@ -33,7 +33,7 @@ import os
 import re
 import time
 import settings
-from config import PortConf
+from config import PortConf,AppNameConf
 from settings import NICS, LOG_NAME_SEP
 from ssh_connection import SSHConnection
 from crb import Crb
@@ -78,6 +78,8 @@ class Dut(Crb):
         self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
         self.prefix_list = []
         self.hugepage_path = None
+        self.apps_name_conf = {}
+        self.apps_name = {}
 
     def filter_cores_from_crb_cfg(self):
         # get core list from crbs.cfg
@@ -387,6 +389,10 @@ class Dut(Crb):
 
         # initialize virtualization resource pool
         self.virt_pool = VirtResource(self)
+
+        # load app name conf
+        name_cfg = AppNameConf()
+        self.apps_name_conf = name_cfg.load_app_name_conf()
 
     def restore_interfaces(self):
         """
