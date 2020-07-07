@@ -897,7 +897,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         else:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
@@ -907,7 +907,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Create a rss queue rule
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss queues 1 2 end / end", "created")
         else:
@@ -915,7 +915,7 @@ class TestRSS_to_Rteflow(TestCase):
                 "flow create 0 ingress pattern end actions rss queues 1 4 7 end / end", "created")
         # send the packets and verify the results
         ptype_list1 = ["ipv4-other", "ipv4-frag", "ipv4-udp", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp"]
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.send_check_100_packet_queue(ptype_list1, ["1", "2"], port_id=0)
         else:
             self.send_check_100_packet_queue(ptype_list1, ["1","4","7"], port_id=0)
@@ -940,7 +940,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss queues 8 end / end", "error")
         # Set all the queues to the rule
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss queues 0 1 2 3 end / end", "created")
         else:
@@ -954,7 +954,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         else:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
@@ -964,7 +964,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Create a rss queue rule
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types udp ipv4-tcp ipv6-sctp ipv4-other end queues 1 2 3 end / end","created")
         else:
@@ -978,7 +978,7 @@ class TestRSS_to_Rteflow(TestCase):
         # send the packets and verify the results
         if(self.nic in ["cavium_a063", "cavium_a064"]):
             self.send_check_100_packet_queue(ptype_list1, ["1","4","7"], port_id=0)
-        elif self.nic == 'springville':
+        elif self.nic in ["foxville", "springville"]:
             self.send_check_100_packet_queue(ptype_list1, ["1", "2", "3"], port_id=0)
             self.send_check_100_packet_queue(ptype_list2, "0", port_id=0)
         else:
@@ -988,7 +988,7 @@ class TestRSS_to_Rteflow(TestCase):
         # Create different ptype rss rule.
         self.dut.send_expect("flow flush 0", "testpmd> ")
 
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types ipv4 ipv6 end queues 1 3 end / end", "created")
         else:
@@ -997,7 +997,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect(
             "show port 0 rss-hash", "all ipv4 ipv6 ip")
         ptype_list3 = ["ipv4-other", "ipv4-frag", "ipv4-udp", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp"]
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.send_check_100_packet_queue(ptype_list3, ["1", "3"], port_id=0)
         else:
             self.send_check_100_packet_queue(ptype_list3, ["3","7"], port_id=0)
@@ -1008,7 +1008,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --disable-rss --port-topology=chained")
         else:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --disable-rss --port-topology=chained")
@@ -1030,7 +1030,7 @@ class TestRSS_to_Rteflow(TestCase):
         self.send_check_100_packet_queue(ptype_list1, "0", port_id=0)
 
         # Create a rss queue rule
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types ipv6-tcp ipv4-udp end queues 1 2 3 end / end", "created")
         else:
@@ -1042,7 +1042,7 @@ class TestRSS_to_Rteflow(TestCase):
         # send the packets and verify the results
         ptype_list2 = ["ipv4-udp", "ipv6-tcp"]
         ptype_list3 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-sctp"]
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.send_check_100_packet_queue(ptype_list2, ["1", "2", "3"], port_id=0)
         else:
             self.send_check_100_packet_queue(ptype_list2, ["5","6","7"], port_id=0)
@@ -1054,7 +1054,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --disable-rss --port-topology=chained")
         else:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --pkt-filter-mode=perfect")
@@ -1064,7 +1064,7 @@ class TestRSS_to_Rteflow(TestCase):
         time.sleep(2)
 
         # Create a rss queue rule
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.dut.send_expect(
                 "flow create 0 ingress pattern end actions rss types ipv4-udp end queues 2 3 end / end", "created")
             self.send_and_check(self.pkt2, ["2", "3"], port_id=0)
@@ -1074,7 +1074,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt2, ["3", "4", "5"], port_id=0)
 
         # Create a flow director rule
-        if (self.nic in ["bartonhills", "powerville" , "springville"]):
+        if (self.nic in ["bartonhills", "powerville" , "springville","foxville"]):
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth / ipv4 proto is 17 / udp dst is 50 / end actions queue index 1 / end", "created")
             self.send_and_check(self.pkt2, ["1"], port_id=0)
@@ -1084,7 +1084,7 @@ class TestRSS_to_Rteflow(TestCase):
             self.send_and_check(self.pkt2, ["1"], port_id=0)
         # Delete the fdir rule
         self.dut.send_expect("flow destroy 0 rule 1", "testpmd> ")
-        if self.nic == 'springville':
+        if self.nic in ["foxville", "springville"]:
             self.send_and_check(self.pkt2, ["2", "3"], port_id=0)
         else:
             self.send_and_check(self.pkt2, ["3", "4", "5"], port_id=0)
