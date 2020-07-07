@@ -178,7 +178,8 @@ class PmdOutput():
             part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
             all_eal_param = part_eal_param + ' ' + other_eal_str
 
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, all_eal_param, param)
+        app_name = self.dut.apps_name['test-pmd']
+        command = app_name + " %s -- -i %s" % (all_eal_param, param)
         out = self.session.send_expect(command, "testpmd> ", 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
