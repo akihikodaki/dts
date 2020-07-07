@@ -79,6 +79,8 @@ class TestVhostMultiQueueQemu(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.app_path = self.dut.apps_name['test-pmd']
+        self.app_name = self.app_path[self.app_path.rfind('/')+1:]
 
     def set_up(self):
         """
@@ -86,8 +88,8 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.vm_testpmd_vector = self.target + "/app/testpmd -c %s -n 3" + \
+        self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
+        self.vm_testpmd_vector = self.app_path + "-c %s -n 3" + \
                                  " -- -i --tx-offloads=0x0 " + \
                                  " --rxq=%d --txq=%d --rss-ip --nb-cores=2" % (self.queue_number, self.queue_number)
 
@@ -95,11 +97,10 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         Launch the vhost sample with different parameters
         """
-        testcmd = self.target + "/app/testpmd "
         vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=%d'" % (self.base_dir, self.queue_number)]
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --rxq=%d --txq=%d --nb-cores=2" % (self.queue_number, self.queue_number)
-        testcmd_start = testcmd + eal_params + para
+        testcmd_start = self.app_path + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -257,7 +258,7 @@ class TestVhostMultiQueueQemu(TestCase):
         """
         self.launch_testpmd()
         self.start_onevm()
-        self.vm_testpmd_queue_1 = self.target + "/app/testpmd -c %s -n 3" + \
+        self.vm_testpmd_queue_1 = self.app_path + "-c %s -n 3" + \
                                   " -- -i --tx-offloads=0x0 " + \
                                   " --rxq=1 --txq=1 --rss-ip --nb-cores=1"
         self.get_vm_coremask()
@@ -294,11 +295,10 @@ class TestVhostMultiQueueQemu(TestCase):
         Test the performance for change vhost queue size
         """
         self.queue_number = 2
-        testcmd = self.target + "/app/testpmd "
         vdev = [r"'net_vhost0,iface=%s/vhost-net,queues=2'" % self.base_dir]
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --rxq=1 --txq=1 --nb-cores=1"
-        testcmd_start = testcmd + eal_params + para
+        testcmd_start = self.app_path + eal_params + para
         self.dut.send_expect(testcmd_start, "testpmd> ", 120)
         self.dut.send_expect("set fwd mac", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
