@@ -221,7 +221,10 @@ class TestCase(object):
         """
         Pass down input cases list for check
         """
-        self._requested_tests = case_list
+        if self._requested_tests is None:
+            self._requested_tests = case_list
+        elif case_list is not None:
+            self._requested_tests += case_list
 
     def set_subtitle(self, subtitle):
         """

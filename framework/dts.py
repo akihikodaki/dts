@@ -439,6 +439,12 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
     """
     for suite_name in test_suites:
         try:
+            # check whether config the test cases
+            append_requested_case_list = None
+            if ':' in suite_name:
+                case_list = suite_name[suite_name.find(':')+1:]
+                append_requested_case_list = case_list.split('\\')
+                suite_name = suite_name[:suite_name.find(':')]
             result.test_suite = suite_name
             suite_module = __import__('TestSuite_' + suite_name)
             for test_classname, test_class in get_subclasses(suite_module, TestCase):
@@ -446,6 +452,7 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
                 suite_obj = test_class(duts, tester, target, suite_name)
                 suite_obj.init_log()
                 suite_obj.set_requested_cases(requested_tests)
+                suite_obj.set_requested_cases(append_requested_case_list)
                 suite_obj.set_check_inst(check=check_case_inst)
                 suite_obj.set_subtitle(subtitle)
                 result.nic = suite_obj.nic
