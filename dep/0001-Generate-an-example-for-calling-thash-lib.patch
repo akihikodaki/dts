@@ -1,0 +1,301 @@
+From c2efff2cb7d52d8d284629c128e2e1004cf5de00 Mon Sep 17 00:00:00 2001
+From: "Chen, Zhaoyan" <zhaoyan.chen@intel.com>
+Date: Tue, 19 May 2020 13:36:16 +0800
+Subject: [PATCH] Generate an example for calling thash lib to get
+ 3-tuple/5-tuple hash value.
+
+Add ipv6/ipv6-tcp/ipv6-udp support
+
+Fix ipv6/ipv6-udp/ipv6/tcp hash value is incorrect
+---
+ examples/thash/Makefile    |  60 ++++++++++++
+ examples/thash/main.c      | 188 +++++++++++++++++++++++++++++++++++++
+ examples/thash/meson.build |  13 +++
+ 3 files changed, 261 insertions(+)
+ create mode 100644 examples/thash/Makefile
+ create mode 100644 examples/thash/main.c
+ create mode 100644 examples/thash/meson.build
+
+diff --git a/examples/thash/Makefile b/examples/thash/Makefile
+new file mode 100644
+index 0000000000..387d920a08
+--- /dev/null
++++ b/examples/thash/Makefile
+@@ -0,0 +1,60 @@
++# SPDX-License-Identifier: BSD-3-Clause
++# Copyright(c) 2010-2014 Intel Corporation
++
++# binary name
++APP = thash_test
++
++# all source are stored in SRCS-y
++SRCS-y := main.c
++
++# Build using pkg-config variables if possible
++ifeq ($(shell pkg-config --exists libdpdk && echo 0),0)
++
++all: shared
++.PHONY: shared static
++shared: build/$(APP)-shared
++	ln -sf $(APP)-shared build/$(APP)
++static: build/$(APP)-static
++	ln -sf $(APP)-static build/$(APP)
++
++PKGCONF ?= pkg-config
++
++PC_FILE := $(shell $(PKGCONF) --path libdpdk 2>/dev/null)
++CFLAGS += -O3 $(shell $(PKGCONF) --cflags libdpdk)
++# Add flag to allow experimental API as l2fwd uses rte_ethdev_set_ptype API
++CFLAGS += -DALLOW_EXPERIMENTAL_API
++LDFLAGS_SHARED = $(shell $(PKGCONF) --libs libdpdk)
++LDFLAGS_STATIC = -Wl,-Bstatic $(shell $(PKGCONF) --static --libs libdpdk)
++
++build/$(APP)-shared: $(SRCS-y) Makefile $(PC_FILE) | build
++	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_SHARED)
++
++build/$(APP)-static: $(SRCS-y) Makefile $(PC_FILE) | build
++	$(CC) $(CFLAGS) $(SRCS-y) -o $@ $(LDFLAGS) $(LDFLAGS_STATIC)
++
++build:
++	@mkdir -p $@
++
++.PHONY: clean
++clean:
++	rm -f build/$(APP) build/$(APP)-static build/$(APP)-shared
++	test -d build && rmdir -p build || true
++
++else # Build using legacy build system
++
++ifeq ($(RTE_SDK),)
++$(error "Please define RTE_SDK environment variable")
++endif
++
++# Default target, detect a build directory, by looking for a path with a .config
++RTE_TARGET ?= $(notdir $(abspath $(dir $(firstword $(wildcard $(RTE_SDK)/*/.config)))))
++
++include $(RTE_SDK)/mk/rte.vars.mk
++
++CFLAGS += -O3
++CFLAGS += $(WERROR_FLAGS)
++# Add flag to allow experimental API as l2fwd uses rte_ethdev_set_ptype API
++CFLAGS += -DALLOW_EXPERIMENTAL_API
++
++include $(RTE_SDK)/mk/rte.extapp.mk
++endif
+diff --git a/examples/thash/main.c b/examples/thash/main.c
+new file mode 100644
+index 0000000000..fe7b2bc683
+--- /dev/null
++++ b/examples/thash/main.c
+@@ -0,0 +1,188 @@
++/* SPDX-License-Identifier: BSD-3-Clause
++ * Copyright(c) 2010-2016 Intel Corporation
++ */
++
++#include <stdio.h>
++#include <stdlib.h>
++#include <string.h>
++#include <arpa/inet.h>
++
++#include <rte_common.h>
++#include <rte_thash.h>
++
++
++uint8_t default_rss_key[] = {
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd, 0x12, 0x34, 0xab, 0xcd,
++0x12, 0x34, 0xab, 0xcd,
++};
++
++struct test_thash_v4 {
++	uint32_t	dst_ip;
++	uint32_t	src_ip;
++	uint16_t	dst_port;
++	uint16_t	src_port;
++};
++
++struct test_thash_v6 {
++	uint8_t		dst_ip[16];
++	uint8_t		src_ip[16];
++	uint16_t	dst_port;
++	uint16_t	src_port;
++};
++
++struct test_thash_v4 v4_tb = {
++  RTE_IPV4(192, 168, 1, 101), 
++  RTE_IPV4(192, 168, 1, 100),
++	1766, 2794,
++};
++
++struct test_thash_v6 v6_tb = {
++{0xfe, 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
++0x02, 0x00, 0xf8, 0xff, 0xfe, 0x21, 0x67, 0xcf,},
++{0x3f, 0xfe, 0x19, 0x00, 0x45, 0x45, 0x00, 0x03,
++0x02, 0x00, 0xf8, 0xff, 0xfe, 0x21, 0x67, 0xcf,},
++38024, 44251};
++
++int ipstr2int32(char *ipstr, uint32_t *ipaddr);
++int ipv6str2int8(char *ipstr, uint8_t *ipaddr);
++uint32_t calc_ipv4_l3l4_hash(char *ipstr_dst, char *ipstr_src, char* dst_port, char* src_port, int hash_len);
++uint32_t calc_ipv6_l3l4_hash(char *ipstr_dst, char *ipstr_src, char* dst_port, char* src_port, int hash_len);
++
++int
++ipstr2int32(char *ipstr, uint32_t *ipaddr)
++{
++  unsigned int addr[4];
++  if (sscanf(ipstr, "%u.%u.%u.%u", &addr[3], &addr[2], &addr[1], &addr[0]) == 4){
++    if ((addr[3] < 256)
++           && (addr[2] < 256)
++           && (addr[1] < 256)
++           && (addr[0] < 256)
++         )
++      {
++           *ipaddr = RTE_IPV4(addr[3], addr[2], addr[1], addr[0]);
++           return -1;
++      }
++  }
++  return 0;
++};
++
++int
++ipv6str2int8(char *ipstr, uint8_t *ipaddr)
++{
++  
++  struct in6_addr result;
++  int i = 0;
++  if(inet_pton(AF_INET6, ipstr, &result) == 1){
++    for (i=0; i<16; i++){
++      ipaddr[i] = result.__in6_u.__u6_addr8[i];
++      //printf("%0x\n",ipaddr[i]);
++    }
++    return 1;
++  }
++  
++  return 0;
++};
++
++uint32_t
++calc_ipv4_l3l4_hash(char *ipstr_dst, char *ipstr_src, char* dst_port, char* src_port, int hash_len){
++  uint32_t rss_val = 0;
++  
++  if (hash_len <= 0){
++    hash_len = 2;
++  }
++
++  ipstr2int32(ipstr_dst, &v4_tb.dst_ip);
++  ipstr2int32(ipstr_src, &v4_tb.src_ip);
++  v4_tb.dst_port = atoi(dst_port);
++  v4_tb.src_port = atoi(src_port);
++  rss_val = rte_softrss((uint32_t *)&v4_tb,
++			hash_len, default_rss_key);
++  return rss_val;
++
++}
++
++uint32_t
++calc_ipv6_l3l4_hash(char *ipstr_dst, char *ipstr_src, char* dst_port, char* src_port, int hash_len){
++  uint32_t rss_val = 0;
++  uint32_t j = 0;
++  union rte_thash_tuple tuple;
++  struct rte_ipv6_hdr ipv6_hdr;
++
++  if (hash_len <= 0){
++    hash_len = 8;
++  }
++
++  ipv6str2int8(ipstr_dst, &v6_tb.dst_ip[0]);
++  ipv6str2int8(ipstr_src, &v6_tb.src_ip[0]);
++
++  for (j = 0; j < RTE_DIM(ipv6_hdr.src_addr); j++)
++			ipv6_hdr.src_addr[j] = v6_tb.src_ip[j];
++
++	for (j = 0; j < RTE_DIM(ipv6_hdr.dst_addr); j++)
++			ipv6_hdr.dst_addr[j] = v6_tb.dst_ip[j];
++  
++		/*Load and convert ipv6 address into tuple*/
++		rte_thash_load_v6_addrs(&ipv6_hdr, &tuple);
++
++  tuple.v6.dport = atoi(dst_port);
++  tuple.v6.sport = atoi(src_port);
++
++  rss_val = rte_softrss((uint32_t *)&tuple,
++			hash_len, default_rss_key);
++  return rss_val;
++
++}
++
++
++int
++main(int argc, char **argv)
++{
++ 
++  uint8_t rss_key_be[RTE_DIM(default_rss_key)];
++  uint32_t rss_val = 0;
++  int i;
++  int hash_len = 3; // 3 * 32bits(4Bytes)
++
++  if (argc != 6){
++    printf("Format: thash_test TYPE(ipv4|ipv4-udp|ipv4-tcp) IP_DST IP_SRC PORT_DST PORT_SRC\n");
++    printf("  example: ./thash_test ipv4 192.168.1.1 192.168.1.2 1234 4321\n");
++    return -1;
++  }
++
++  for (i=1;i<argc; i++){
++    printf("%s\n", argv[i]);
++  }
++
++  //Prepare rss key for big-endian
++  rte_convert_rss_key((uint32_t *)&default_rss_key, 
++    (uint32_t *)rss_key_be, RTE_DIM(default_rss_key));
++
++  if (!strcmp(argv[1], "ipv4")){
++      hash_len = 2;
++      rss_val = calc_ipv4_l3l4_hash(argv[2], argv[3], argv[4], argv[5], hash_len);
++  }else if(!strcmp(argv[1], "ipv4-udp") || !strcmp(argv[1], "ipv4-tcp")){
++      hash_len = 3;
++      rss_val = calc_ipv4_l3l4_hash(argv[2], argv[3], argv[4], argv[5], hash_len);
++  }else if(!strcmp(argv[1], "ipv6")){
++    //8bits*16*2 = 8
++    hash_len = 8;
++    rss_val = calc_ipv6_l3l4_hash(argv[2], argv[3], argv[4], argv[5], hash_len);
++
++  }else if(!strcmp(argv[1], "ipv6-udp") || !strcmp(argv[1], "ipv6-tcp")){
++    //8bits*16*2 + 32bits = 9
++    hash_len = 9;
++    rss_val = calc_ipv6_l3l4_hash(argv[2], argv[3], argv[4], argv[5], hash_len);
++  }else
++  {
++    printf("Not supported TYPE.\n");
++  }
++  
++  printf("\nHash value = %0x\n", rss_val);
++
++  return 0;
++}	
+\ No newline at end of file
+diff --git a/examples/thash/meson.build b/examples/thash/meson.build
+new file mode 100644
+index 0000000000..50d88caa0a
+--- /dev/null
++++ b/examples/thash/meson.build
+@@ -0,0 +1,13 @@
++# SPDX-License-Identifier: BSD-3-Clause
++# Copyright(c) 2017 Intel Corporation
++
++# meson file, for building this example as part of a main DPDK build.
++#
++# To build this example as a standalone application with an already-installed
++# DPDK instance, use 'make'
++
++# Enable experimental API flag as l2fwd uses rte_ethdev_set_ptype API
++allow_experimental_apis = true
++sources = files(
++	'main.c'
++)
+-- 
+2.22.0
+
