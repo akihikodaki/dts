@@ -119,7 +119,7 @@ class VirtioCryptodevPerfTest(TestCase):
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
-        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 900)
+        out = user_dut.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (user_dut.number_of_cores, self.target), "# ", 900)
 
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")

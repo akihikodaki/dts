@@ -98,7 +98,7 @@ class VirtioCryptodevIpsecTest(TestCase):
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
-        out = user_dut.send_expect("make install T=%s" % self.target, "# ", 1200)
+        out = user_dut.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (user_dut.number_of_cores, self.target), "# ", 1200)
         #user_dut.build_install_dpdk(self.target)
         out = user_dut.build_dpdk_apps("./examples/ipsec-secgw")
         self.logger.info(out)
