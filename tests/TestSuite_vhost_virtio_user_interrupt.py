@@ -94,7 +94,7 @@ class TestVirtioUserInterrupt(TestCase):
         example_para = "./examples/l3fwd-power/build/l3fwd-power "
         vdev = "virtio_user0,path=%s,cq=1" % path if not packed else "virtio_user0,path=%s,cq=1,packed_vq=1" % path
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
-        para = " --config='(0,0,%s)' --parse-ptype" % self.core_interrupt
+        para = " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
         cmd_l3fwd = example_para + eal_params + " --log-level='user1,7' -- -p 1 " + para
         self.l3fwd.get_session_before(timeout=2)
         self.l3fwd.send_expect(cmd_l3fwd, "POWER", 40)
