@@ -110,7 +110,7 @@ class TestVhostEnqueueInterrupt(TestCase):
 
         example_cmd = "./examples/l3fwd-power/build/l3fwd-power "
         vdev = 'net_vhost0,iface=vhost-net,queues=%d,client=1' % self.queues
-        para = " -- -p 0x1 --parse-ptype 1 --config '%s' " % config_info
+        para = " -- -p 0x1 --parse-ptype 1 --config '%s' --interrupt-only" % config_info
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info], vdevs=[vdev])
         command_line_client = example_cmd + eal_params + para
         self.vhost.get_session_before(timeout=2)
