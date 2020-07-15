@@ -146,7 +146,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
         command_client = "./examples/l3fwd-power/build/l3fwd-power " + \
                          "-c %s -n 4 --log-level='user1,7' -- -p 1 -P " + \
-                         "--config '%s' --no-numa  --parse-ptype "
+                         "--config '%s' --no-numa  --parse-ptype --interrupt-only"
         command_line_client = command_client % (core_mask_l3fwd, config_info)
         self.vm_dut.get_session_output(timeout=2)
         self.vm_dut.send_expect(command_line_client, "POWER", 40)
