@@ -60,10 +60,7 @@
             "NIC": [
                 "bartonhills",
                 "powerville",
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "ironpond",
                 "springfountain",
@@ -90,10 +87,7 @@
             "NIC": [
                 "niantic",
                 "kawela_4",
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "ironpond",
                 "springfountain",
@@ -118,10 +112,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
@@ -143,10 +134,7 @@
                 "kawela_4",
                 "bartonhills",
                 "powerville",
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "ironpond",
                 "springfountain",
@@ -172,10 +160,7 @@
             ],
             "NIC": [
                 "niantic",
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "ironpond",
                 "springfountain",
@@ -199,10 +184,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "springville",
                 "ironpond",
                 "springfountain",
@@ -257,11 +239,8 @@
             "NIC": [
                 "niantic",
                 "kawela_4",
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
                 "springville",
-                "fortville_25g",
                 "ironpond",
                 "springfountain",
                 "twinpond",
@@ -360,10 +339,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "powerville",
                 "kawela_4",
                 "springville",
@@ -387,13 +363,10 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
                 "ironpond",
                 "cavium_a034",
-                "cavium_0011",
-                "fortville_25g"
+                "cavium_0011"
             ],
             "Target": [
                 "ALL"
@@ -1378,10 +1351,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "cavium_a064"
             ],
             "Target": [
@@ -1424,10 +1394,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "cavium_a064"
             ],
             "Target": [

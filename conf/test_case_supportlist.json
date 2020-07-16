@@ -734,6 +734,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "fortville_25g",
                 "foxville",
                 "fortville_spirit",
                 "fortville_spirit_single",
@@ -832,6 +833,7 @@
                 "sagepond",
                 "sageville",
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -852,6 +854,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -877,6 +880,7 @@
                 "sagepond",
                 "sageville",
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -916,6 +920,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -945,6 +950,7 @@
                 "sageville",
                 "powerville",
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -1004,6 +1010,7 @@
                 "sagepond",
                 "sageville",
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -1025,6 +1032,7 @@
             ],
             "NIC": [
                 "fortville_eagle",
+                "fortville_25g",
                 "fortville_spirit",
                 "fortville_spirit_single",
                 "fortpark_TLV",
@@ -1695,7 +1703,10 @@
             ],
             "NIC": [
                 "cavium_a064",
-                "cavium_a063"
+                "cavium_a063",
+                "fortville_eagle",
+                "fortville_25g",
+                "fortville_spirit"
             ],
             "Target": [
                 "ALL"
