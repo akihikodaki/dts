@@ -2270,6 +2270,7 @@ Subcase 6: conflicted rules
 1. Create a FDIR rule::
 
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark / end
 
    the rule is created successfully.
 
@@ -2277,10 +2278,38 @@ Subcase 6: conflicted rules
 
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions rss queues 2 3 end / mark / end
 
    Failed to create the two flows, report message::
 
-    Add filter rule failed.: Operation not permitted
+    iavf_fdir_add(): Failed to add rule request due to the rule is already existed
+    iavf_flow_create(): Failed to create flow
+    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
+
+3. Create a rule with same pattern but different input set::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 3 / mark / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2021 / end actions mark / end
+
+   Failed to create the flow, report message::
+
+    iavf_fdir_add(): Failed to add rule request due to the rule is conflict with existing rule
+    iavf_flow_create(): Failed to create flow
+    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
+
+3. Create a rule with conflicted patterns::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.22 / udp src is 10 dst is 20 / end actions queue index 4 / mark id 4 / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.23 ttl is 2 tos is 4 / udp src is 10 dst is 20 / end actions queue index 5 / mark id 5 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::3 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
+
+   Failed to create the two flows, report message::
+
+    iavf_fdir_add(): Failed to add rule request due to the rule is conflict with existing rule
+    iavf_flow_create(): Failed to create flow
+    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Failed to create parser engine.: Invalid argument
 
 3. check there is only one rule listed.
 
@@ -2922,66 +2951,64 @@ Subcase 5: 128 profiles
 
 2. create 10 rules with different patterns on each port::
 
-    flow create 0 ingress pattern eth / ipv4 proto is 255 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv6 proto is 0 / end actions mark / rss / end
     flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
     flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 2 / end
 
-   created successfully on port 0-10,
-   failed from rule on port 11::
+   created successfully on port 0-12,
+   failed from rule 6 on port 13::
 
-    testpmd> flow create 11 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
+    testpmd> flow create 13 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
     eth
     iavf_execute_vf_cmd(): No response or return failure (-5) for cmd 47
     iavf_fdir_add(): fail to execute command OP_ADD_FDIR_FILTER
     iavf_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Add filter rule failed.: Operation not permitted
 
-3. list the rules on port 0-10::
+3. list the rules on port 0-12::
 
     testpmd> flow list 10
     ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 => QUEUE MARK
-    1       0       0       i--     ETH IPV4 UDP => QUEUE MARK
-    2       0       0       i--     ETH IPV4 TCP => QUEUE MARK
-    3       0       0       i--     ETH IPV4 SCTP => QUEUE MARK
-    4       0       0       i--     ETH IPV6 => MARK RSS MARK
-    5       0       0       i--     ETH IPV6 UDP => QUEUE MARK
-    6       0       0       i--     ETH IPV6 TCP => QUEUE MARK
-    7       0       0       i--     ETH IPV6 SCTP => QUEUE MARK
-    8       0       0       i--     ETH => QUEUE MARK
-    9       0       0       i--     ETH IPV4 UDP PFCP => QUEUE
+    0       0       0       i--     ETH IPV4 UDP => QUEUE MARK
+    1       0       0       i--     ETH IPV4 TCP => QUEUE MARK
+    2       0       0       i--     ETH IPV4 SCTP => QUEUE MARK
+    3       0       0       i--     ETH IPV6 UDP => QUEUE MARK
+    4       0       0       i--     ETH IPV6 TCP => QUEUE MARK
+    5       0       0       i--     ETH IPV6 SCTP => QUEUE MARK
+    6       0       0       i--     ETH => QUEUE MARK
+    7       0       0       i--     ETH IPV4 UDP PFCP => QUEUE
 
-   list the rules on port 11-15, there is no rule listed.
+   list the rules on port 13, there are only 6 rules listed.
+   list the rules on port 14/15, there is no rule listed.
    110 rules can be created successfully, which applied 110 profiles.
 
    Note: there are 128 profiles in total.
    each pf apply for 8 profiles when kernel driver init,
    4 for non-tunnel packet, 4 for tunnel packet.
    profile 0 and profile 1 are default profile for specific packet.
-   we use 2*100G card, so only 110 profiles can be used for vf.
+   we design case with 2*100G card, so 110 profiles can be used for vf.
+   if we use 4*25G card, only 94 profiles can be used for vf.
 
-4. send matched packets to port 10,
+4. send matched packets to vf 12,
    the packets are redirected to the expected queue.
 
-5. flush rules on port 10::
+5. flush rules on port 12::
 
-    flow flush 10
+    flow flush 12
 
-   there is no rule listed on port 10.
+   there is no rule listed on port 12.
    all the rule can be listed correctly in other ports.
-   send matched packets to port 10,
+   send matched packets to port 12,
    the packets are received without FDIR matched ID.
 
-6. create rule on port 11 again::
+6. create rule on port 13 again::
 
-    testpmd> flow create 11 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
+    testpmd> flow create 13 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
     eth
     iavf_execute_vf_cmd(): No response or return failure (-5) for cmd 47
     iavf_fdir_add(): fail to execute command OP_ADD_FDIR_FILTER
@@ -3020,7 +3047,7 @@ Subcase 2: add/delete rules
 
 1. create two rules::
 
-    flow create 0 ingress pattern eth / ipv4 proto is 255 / end actions queue index 1 / mark / end
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
 
    return the message::
@@ -3032,7 +3059,7 @@ Subcase 2: add/delete rules
 
     testpmd> flow list 0
     ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 => QUEUE MARK
+    0       0       0       i--     ETH IPV4 UDP => QUEUE MARK
     1       0       0       i--     ETH IPV4 TCP => RSS MARK
 
 2. delete the rules::
@@ -3045,7 +3072,7 @@ Subcase 2: add/delete rules
 
 5. send matched packet::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
 
    check packet 1 is redirected to queue 1 with FDIR matched ID=0x0
@@ -3327,6 +3354,52 @@ Subcase 8: PF reset VF and delete the rule
 7. quit and relaunch testpmd, then create same rules successfully.
 
 8. send matched packets, check them redirected to expected queue with FDIR matched ID.
+
+Subcase 9: check profile delete
+-------------------------------
+
+1. create ipv4-tcp and ipv6-udp rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 2 / end
+
+   return the message::
+
+    Flow rule #0 created
+    Flow rule #1 created
+
+   list the rules::
+
+    testpmd> flow list 0
+    ID      Group   Prio    Attr    Rule
+    0       0       0       i--     ETH IPV4 TCP => QUEUE MARK
+    1       0       0       i--     ETH IPV6 UDP => QUEUE MARK
+
+2. send ipv4-pay and ipv6-pay packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1, hlim=2)/("X"*480)], iface="enp134s0f1")
+
+   check the two packets are distributed by RSS without FDIR matched ID.
+
+3. delete the rules, and create a ipv4-other and a ipv6-other rule::
+
+    flow flush 0
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 3 / mark id 3 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / end actions queue index 4 / mark id 4 / end
+
+4. send the two packets again,
+   check ipv4-pay packet is redirected to queue 3 with FDIR matched ID=0x3
+   check ipv6-pay packet is redirected to queue 4 with FDIR matched ID=0x4
+
+5. delete the rules, and create ipv4-tcp and ipv6-udp rules again::
+
+    flow flush 0
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 2 / end
+
+6. send the two packets again,
+   check the two packets are distributed by RSS without FDIR matched ID.
 
 Test case: PFCP coverage test
 =============================
