@@ -796,10 +796,15 @@ class TestShutdownApi(TestCase):
         When rx_descriptor_status is used, status can be “AVAILABLE”, “DONE” or “UNAVAILABLE”.
         When tx_descriptor_status is used, status can be “FULL”, “DONE” or “UNAVAILABLE.”
         """
-        self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop --txq=16 --rxq=16 --txd=4096 --rxd=4096" % utils.create_mask(self.ports), socket=self.ports_socket)
+        queue_num=16
+        if self.nic in ["springville"]:
+            queue_num=4
+        self.pmdout.start_testpmd("Default",
+                                 "--portmask=%s --port-topology=loop --txq=%s --rxq=%s --txd=4096 --rxd=4096"
+                                 % (utils.create_mask(self.ports),queue_num,queue_num), socket=self.ports_socket)
 
         for i in range(3):
-            rxqid = randint(0, 16)
+            rxqid = randint(0, queue_num-1)
             self.desc = randint(0, 4095)
             out = self.dut.send_expect("show port %s rxq %s desc %s status" % (self.ports[0], rxqid, self.desc), "testpmd> ")
             self.verify(
@@ -808,7 +813,7 @@ class TestShutdownApi(TestCase):
             self.verify(
                 "Bad arguments" not in out and "Invalid queueid" not in out,
                 "RX descriptor status is not supported")
-            txqid = randint(0, 16)
+            txqid = randint(0, queue_num-1)
             self.desc = randint(0, 511)
             out = self.dut.send_expect("show port %s txq %s desc %s status" % (self.ports[0], txqid, self.desc), "testpmd> ")
             self.verify(
