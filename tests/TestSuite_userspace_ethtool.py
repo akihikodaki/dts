@@ -63,7 +63,13 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         self.verify("No such file" not in out, "compilation error 2")
 
         path = "./examples/ethtool/ethtool-app/%s/ethtool" % self.target
-        self.cmd = "%s -c f -n %d" % (path, self.dut.get_memory_channels())
+        used_dut_port_pci = self.dut.ports_info[self.ports[0]]['port'].pci
+        out = self.dut.send_expect("cat /sys/bus/pci/devices/%s/numa_node " % used_dut_port_pci, "# ")
+        cpu_cores = self.dut.send_expect('lscpu |grep "NUMA node%s CPU(s):"' % out, "# ")
+        core = re.findall(r"\d+-(\d+)", cpu_cores)[0]
+        core = int(core)
+        cores = "%d,%d,%d,%d" % (core - 1, core - 2, core - 3, core - 4)
+        self.cmd = "%s -l %s -n %d" % (path, cores, self.dut.get_memory_channels())
 
         # pause frame basic configuration
         self.pause_time = 65535
