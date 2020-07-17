@@ -622,73 +622,59 @@ class TestRSS_to_Rteflow(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt2, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10, self.pkt11]
-        self.send_and_check(pkts, rss_queue, port_id=0)
+        ptype_list1 = ["ipv4-other", "ipv4-frag", "ipv4-udp","ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list1, "0", port_id=0)
+        self.send_check_100_packet_queue(ptype_list1, "0", port_id=1)
 
         # enable ipv4-udp and ipv6-tcp RSS function type
         self.dut.send_expect(
             "flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end / end", "created")
         self.dut.send_expect(
             "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss types ipv6-tcp end queues end / end", "created")
-        rss_queue = ["0", "1", "2", "3", "4", "5", "6", "7"]
-        pkts = [self.pkt2, self.pkt3]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt2, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=1)
+
+        ptype_list1 = ["ipv4-udp", "ipv6-tcp"]
+        self.send_check_100_packet_queue(ptype_list1, "all", port_id=0)
+        ptype_list2 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list2, "0", port_id=0)
+        ptype_list3 = ["ipv4-other", "ipv4-frag", "ipv4-udp","ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list3, "0", port_id=1)
 
         #  set queue 1, 4, 7 into RSS queue rule
         self.dut.send_expect(
             "flow create 0 ingress pattern end actions rss types end queues 1 4 7 end / end", "created")
-        rss_queue = ["1", "4", "7"]
-        pkts = [self.pkt2, self.pkt3]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt2, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=1)
+        ptype_list1 = ["ipv4-udp", "ipv6-tcp"]
+        self.send_check_100_packet_queue(ptype_list1, ["1","4","7"], port_id=0)
+        ptype_list2 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list2, "0", port_id=0)
+        ptype_list3 = ["ipv4-other", "ipv4-frag", "ipv4-udp","ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list3, "0", port_id=1)
 
         # enable ipv4-udp and ipv6-other RSS function type on port 1
         self.dut.send_expect(
             "flow create 1 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end / end", "created")
         self.dut.send_expect(
             "flow create 1 ingress pattern eth / ipv6 / end actions rss types ipv6-other end queues end / end", "created")
-        rss_queue = ["1", "4", "7"]
-        pkts = [self.pkt2, self.pkt3]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-
-        rss_queue = ["0", "1", "2", "3", "4", "5", "6", "7"]
-        pkts = [self.pkt2, self.pkt8]
-        self.send_and_check(pkts, rss_queue, port_id=1)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=1)
+        ptype_list1 = ["ipv4-udp", "ipv6-tcp"]
+        self.send_check_100_packet_queue(ptype_list1, ["1","4","7"], port_id=0)
+        ptype_list2 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list2, "0", port_id=0)
+        ptype_list3 = ["ipv4-udp", "ipv6-other"]
+        self.send_check_100_packet_queue(ptype_list3, "all", port_id=1)
+        ptype_list4 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list4, "0", port_id=1)
 
         self.dut.send_expect("flow flush 0", "testpmd> ")
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt2, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        rss_queue = ["0", "1", "2", "3", "4", "5", "6", "7"]
-        pkts = [self.pkt2, self.pkt8]
-        self.send_and_check(pkts, rss_queue, port_id=1)
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=1)
+        ptype_list1 = ["ipv4-other", "ipv4-frag", "ipv4-udp", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list1, "0", port_id=0)
+        ptype_list2 = ["ipv4-udp", "ipv6-other"]
+        self.send_check_100_packet_queue(ptype_list2, "all", port_id=1)
+        ptype_list3 = ["ipv4-other", "ipv4-frag", "ipv4-tcp", "ipv4-sctp", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list3, "0", port_id=1)
 
         self.dut.send_expect("flow flush 1", "testpmd> ")
-        rss_queue = ["0"]
-        pkts = [self.pkt1, self.pkt2, self.pkt3, self.pkt4, self.pkt5, self.pkt6, self.pkt7, self.pkt8, self.pkt9, self.pkt10]
-        self.send_and_check(pkts, rss_queue, port_id=0)
-        self.send_and_check(pkts, rss_queue, port_id=1)
+        ptype_list1 = ["ipv4-other", "ipv4-frag", "ipv4-udp", "ipv4-tcp", "ipv4-sctp", "ipv6-other", "ipv6-frag", "ipv6-udp", "ipv6-tcp", "ipv6-sctp", "l2-payload"]
+        self.send_check_100_packet_queue(ptype_list1, "0", port_id=0)
+        self.send_check_100_packet_queue(ptype_list1, "0", port_id=1)
 
     def test_flow_director_rss_rule_combination(self):
         """
