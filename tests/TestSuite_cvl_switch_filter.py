@@ -2559,17 +2559,13 @@ class SwitchFilterTest(TestCase):
         """
         #Specify the port to use
         dic["check_func"]["param"]["expect_port"] = port
-
         self.dut.send_expect("start", "testpmd> ", 15)
         time.sleep(2)
-
         #send packets
-        for per_packet in dic["scapy_str"]:
-            pkt = Packet(pkt_str=per_packet)
-            pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=1)
-
-        out = self.dut.send_expect("stop", "testpmd> ")
-
+        self.pkt.update_pkt(dic["scapy_str"])
+        self.pkt.send_pkt(self.tester, tx_port=self.__tx_iface, count=1, timeout=370)
+        time.sleep(3)
+        out = self.dut.send_expect("stop", "testpmd> ", 15)
         result_flag, log_msg = dic["check_func"]["func"](out, dic["check_func"]["param"], dic["expect_results"])
         return result_flag, log_msg
 
