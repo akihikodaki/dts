@@ -138,14 +138,15 @@ class TestDistributor(TestCase):
 
             self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
-            self.app_output = self.dut.session.get_session_before(timeout=2)
-
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
             # run packet generator
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100,
                                     None, self.tester.pktgen)
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
+
+            # get aap output after sending packet
+            self.app_output = self.dut.session.get_session_before(timeout=2)
 
             self.dut.send_expect("^C", "#")
 
@@ -239,6 +240,8 @@ class TestDistributor(TestCase):
              - Dropped:
         """
         # skip the last one, we use the next one
+        output = output[:output.rfind("RX Thread")]
+        # skip the last two, we use the next one
         output = output[:output.rfind("RX Thread")]
         output = output[output.rfind("RX Thread"):]
         rec_rate = 0.0
