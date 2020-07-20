@@ -82,14 +82,18 @@ class TestMacFilter(TestCase):
         """
         pass
 
-    def whitelist_send_packet(self, portid, destMac="00:11:22:33:44:55"):
+    def whitelist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
         """
         Send 1 packet to portid.
         """
+        # You can't have an optional parameter use a class attribute as it's default value
+        if count == -1:
+            count = self.frames_to_send
+
         itf = self.tester.get_interface(self.tester.get_local_port(portid))
         pkt = Packet(pkt_type='UDP')
         pkt.config_layer('ether', {'src': '52:00:00:00:00:00', 'dst': destMac})
-        pkt.send_pkt(self.tester, tx_port=itf, count=4)
+        pkt.send_pkt(self.tester, tx_port=itf, count=count)
 
     def test_add_remove_mac_address(self):
         """
@@ -119,7 +123,7 @@ class TestMacFilter(TestCase):
         out = self.dut.get_session_output()
         # check the packet DO NOT increase
         self.verify("received" not in out,
-                    "Packet has been received on a new MAC address that has not been added yet")
+                    "Packet has been received on a new MAC address that has been removed from the port")
 
         # add the different MAC address
         self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
@@ -128,7 +132,7 @@ class TestMacFilter(TestCase):
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
-        self.verify(int(cur_rxpkt)*self.frames_to_send == self.frames_to_send,
+        self.verify(int(cur_rxpkt) * self.frames_to_send == self.frames_to_send,
                     "Packet has not been received on a new MAC address that has been added to the port")
 
         # remove the fake MAC address
@@ -175,6 +179,33 @@ class TestMacFilter(TestCase):
             i = i + 1
 
         self.verify("No space left on device" in out, "added 1 address more than max MAC addresses")
+
+    def test_multicast_filter(self):
+        """
+        Add mac address and check packet can received
+        Remove mac address and check packet can't received
+        """
+        # initialise first port without promiscuous mode
+        mcast_addr = "01:00:5E:00:00:00"
+        portid = self.dutPorts[0]
+        self.dut.send_expect(f"set promisc {portid:d} off", "testpmd> ")
+        self.dut.send_expect("clear port stats all", "testpmd> ")
+
+        self.dut.send_expect(f"mcast_addr add {portid:d} {mcast_addr}", "testpmd>")
+        self.whitelist_send_packet(portid, mcast_addr, count=1)
+        time.sleep(1)
+        out = self.dut.get_session_output()
+        self.verify("received" in out,
+                    "Packet has not been received when it should have on a broadcast address")
+
+        self.dut.send_expect(f"mcast_addr remove {portid:d} {mcast_addr}", "testpmd>")
+        self.whitelist_send_packet(portid, mcast_addr, count=1)
+        time.sleep(1)
+        out = self.dut.get_session_output()
+        self.verify("received" not in out,
+                    "Packet has been received when it should have ignored the broadcast")
+
+        self.dut.send_expect("stop", "testpmd> ")
 
     def tear_down(self):
         """

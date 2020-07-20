@@ -172,3 +172,30 @@ Add one more different address::
    testpmd> mac_addr add 0 <A+n+1>
 
 Verify that the response is "No space left on device" (-ENOSPC)
+
+Test Case: Multicast Filter
+===========================
+
+Initialize first port without ``promiscuous mode``::
+
+  testpmd> set promisc 0 off
+
+
+Add the multicast MAC address to the multicast filter::
+
+   testpmd> mcast_addr add 0 01:00:5E:00:00:00
+
+Send a packet with multicast destination MAC address to port 0::
+
+   port 0/queue 0: received 1 packets
+     src=52:00:00:00:00:00 - dst=01:00:5E:00:00:00 - type=0x0800 - length=60 - nb_segs=1 - hw    ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_UDP  - sw ptype: L2_ETHER L3_IPV4 L4_UDP  - l2_len=14 - l3_len=20 - l4_len=8 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+
+
+Remove the multicast MAC address from the multicast filter::
+
+   testpmd> mcast_addr remove 0 01:00:5E:00:00:00
+
+Send a packet with multicast destination MAC address to port 0
+
+Verify that the packet was not received (Check for "received" in the output). There will be no output if the nic responds properly.
