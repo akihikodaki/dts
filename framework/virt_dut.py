@@ -34,8 +34,8 @@ import re
 import time
 import settings
 from utils import RED, parallel_lock
-from config import PortConf
-from settings import NICS, LOG_NAME_SEP, get_netdev
+from config import PortConf, AppNameConf
+from settings import NICS, LOG_NAME_SEP, get_netdev, load_global_setting, HOST_BUILD_TYPE_SETTING
 from project_dpdk import DPDKdut
 from dut import Dut
 from net_device import GetNicObj
@@ -76,6 +76,8 @@ class VirtDut(DPDKdut):
         self.virttype = virttype
         self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
         self.prefix_list = []
+        self.apps_name_conf = {}
+        self.apps_name = {}
 
     def init_log(self):
         if hasattr(self.host_dut, "test_classname"):
@@ -215,6 +217,20 @@ class VirtDut(DPDKdut):
         # print latest ports_info
         for port_info in self.ports_info:
             self.logger.info(port_info)
+
+        # load app name conf
+        name_cfg = AppNameConf()
+        self.apps_name_conf = name_cfg.load_app_name_conf()
+
+        # get apps name of current build type
+        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        if build_type not in self.apps_name_conf:
+            raise Exception('please config the apps name in app_name.cfg of build type:%s' % build_type)
+        self.apps_name = self.apps_name_conf[build_type]
+        # use the dut target directory instead of 'target' string in app name
+        for app in self.apps_name:
+            cur_app_path = self.apps_name[app].replace('target', self.target)
+            self.apps_name[app] = cur_app_path + ' '
 
     def init_core_list(self):
         self.cores = []

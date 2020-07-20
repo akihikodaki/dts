@@ -460,6 +460,7 @@ class VirtBase(object):
 
         try:
             # setting up dpdk in vm, must call at last
+            vm_dut.target = self.host_dut.target
             vm_dut.prerequisites(self.host_dut.package, self.host_dut.patches, autodetect_topo)
             if set_target:
                 target = self.host_dut.target
