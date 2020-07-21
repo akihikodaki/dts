@@ -4,6 +4,7 @@ import time
 from packet import Packet
 from pmd_output import PmdOutput
 from test_case import TestCase
+from config import UserConf
 import rte_flow_common as rfc
 
 vf0_mac = "00:01:23:45:67:89"
@@ -735,8 +736,11 @@ class AdvancedIavfRSSTest(TestCase):
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g"], "%s nic not support ethertype filter" % self.nic)
         self.ddp_fdir = "/lib/firmware/updates/intel/ice/ddp/"
-        self.os_pkg_name = "ice-1.3.11.0.pkg"
-        self.comms_pkg_name = "ice_comms-1.3.16.0.pkg"
+        conf_file = 'conf/cvl_advanced_iavf_rss_package.cfg'
+        conf_info = UserConf(conf_file)
+        conf_section = conf_info.conf._sections['suite']
+        self.os_pkg_name = conf_section['os_default_package_file_location']
+        self.comms_pkg_name = conf_section['comms_package_file_location']
         self.vf_flag = False
         self.create_iavf()
 
