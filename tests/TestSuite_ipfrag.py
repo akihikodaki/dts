@@ -129,10 +129,13 @@ l3fwd_ipv4_route_array[] = {\\\n"
         numPortThread = len([P0, P1]) / len(cores)
         result = True
         errString = ''
+        eal_param = ""
+        for i in [P0, P1]:
+            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         # run ipv4_frag
-        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d -- -p %s -q %s" % (
-            coremask, self.dut.get_memory_channels(), portmask, int(numPortThread)), "Link Up", 120)
+        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d %s -- -p %s -q %s" % (
+            coremask, self.dut.get_memory_channels(), eal_param, portmask, int(numPortThread)), "Link Up", 120)
 
         time.sleep(2)
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
