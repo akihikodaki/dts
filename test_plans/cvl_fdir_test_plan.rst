@@ -37,6 +37,7 @@ CVL:Classification:Flow Director
 Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
 Enable fdir filter for UDP tunnel: Vxlan / NVGRE (OS default package)
 Enable fdir filter for GTP (comm #1 package)
+Enable fdir filter for L2 Ethertype (comm #1 package)
 
 Pattern and input set
 ---------------------
@@ -80,6 +81,8 @@ Pattern and input set
     | IPv4 transport, IPv4 payload | MAC_IPV4_GTPU              | [TEID]                                                                        |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
     |                              | MAC_IPV4_GTPU_EH           | [TEID], [QFI]                                                                 |
+    +------------------------------+----------------------------+-------------------------------------------------------------------------------+
+    | L2 Ethertype                 |      L2 Ethertype          | [Ethertype]                                                                   |
     +------------------------------+----------------------------+-------------------------------------------------------------------------------+
 
 .. note::
@@ -131,7 +134,7 @@ Prerequisites
 
 5. Launch the app ``testpmd`` with the following arguments::
 
-    ./testpmd -c 0xff -n 6 -w 86:00.0,,flow-mark-support=1 -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
+    ./testpmd -c 0xff -n 6 -w 86:00.0,,flow-mark-support=1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
     testpmd> set fwd rxonly
     testpmd> set verbose 1
 
@@ -142,7 +145,7 @@ Prerequisites
 
    Notes: if need two ports environment, launch ``testpmd`` with the following arguments::
 
-    ./testpmd -c 0xff -n 6 -w 86:00.0,flow-mark-support=1 -w 86:00.1,flow-mark-support=1 -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
+    ./testpmd -c 0xff -n 6 -w 86:00.0,flow-mark-support=1 -w 86:00.1,flow-mark-support=1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
 
 
 Default parameters
@@ -185,6 +188,9 @@ Default parameters
     [TEID]: 0x12345678
     [QFI]: 0x34
 
+   L2 Ethertype::
+
+    [Ethertype]: 0x8863 0x8864 0x0806 0x8100 0x88f7
 
 Send packets
 ------------
@@ -439,6 +445,32 @@ Send packets
     p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/SCTP()/Raw('x'*20)
     p_gtpu14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/SCTP()/Raw('x'*20)
     p_gtpu15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw('x'*20)
+
+* L2 Ethertype
+
+   PPPoED packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw('x' *80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw('x' * 80)],iface="enp134s0f1")
+
+   PPPoE packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP(proto=0x0021)/IP()/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55", type=0x8864)/IP()/Raw('x' * 80)],iface="enp134s0f1")
+
+   ARP packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/ARP(pdst="192.168.1.1")],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55", type=0x0806)/Raw('x' *80)],iface="enp134s0f1")
+
+   EAPS packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)],iface="enp134s0f1")
+
+   ieee1588 packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x88f7)/"\\x00\\x02"], iface="enp134s0f1")
 
 
 Test case: flow validation
@@ -1705,6 +1737,175 @@ Subcase 6: MAC_IPV4_GTPU mark
 2. repeat the steps of passthru in subcase 3,
    get the same result.
 
+Test case: L2 Ethertype pattern
+===============================
+
+Subcase 1: L2 Ethertype queue index
+-----------------------------------
+
+1. create rule for PPPoED::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
+
+   send PPPoED packet,
+   check the packets are distributed to expected queue with specific FDIR matched ID.
+
+2. create rule for PPPoE::
+
+    flow create 0 ingress pattern eth type is 0x8864 / end actions queue index 2 / mark id 2 / end
+
+   send PPPoE packet,
+   check the packets are distributed to expected queue with specific FDIR matched ID.
+
+3. create rule for ARP::
+
+    flow create 0 ingress pattern eth type is 0x0806 / end actions queue index 3 / mark id 3 / end
+
+   send ARP packet,
+   Check the packets are distributed to expected queue with specific FDIR matched ID.
+
+4. create rule for EAPS::
+
+    flow create 0 ingress pattern eth type is 0x8100 / end actions queue index 4 / mark id 4 / end
+
+   send EAPS packet,
+   check the packets are distributed to expected queue with specific FDIR matched ID.
+
+5. create rule for ieee1588::
+
+    flow create 0 ingress pattern eth type is 0x88f7 / end actions queue index 5 / mark id 5 / end
+
+   send ieee1588 packet,
+   check the packets are distributed to expected queue with specific FDIR matched ID.
+
+6. send a mismatched packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8847)],iface="enp134s0f1")
+
+   check the packet received has not FDIR matched ID.
+
+7. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the 5 rules listed.
+   flush all the rules::
+
+    testpmd> flow flush 0
+
+8. verify matched packets are received without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 2: L2 Ethertype rss queues
+----------------------------------
+
+1. create rules for PPPoED with rss queues action::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions rss queues 2 3 end / mark id 2 / end
+
+2. send matched packet,
+   check the packets received have FDIR matched ID=0x2,
+   the packets are directed to queue 0,
+   because L2 Ethertype are not supported by RSS.
+
+3. Repeat step 1-2 with PPPoE/ARP/EAPS/ieee1588,
+   get the same result.
+
+4. repeat step 6-7 of subcase 1.
+
+5. verify matched packets received have not FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 3: L2 Ethertype passthru
+--------------------------------
+
+1. create rules for PPPoED with passthru action::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions passthru / mark id 2 / end
+
+2. send matched packet,
+   check the packets received have FDIR matched ID=0x2,
+   the packets are directed to queue 0,
+   because L2 Ethertype are not supported by RSS.
+
+3. Repeat step 1-2 with PPPoE/ARP/EAPS/ieee1588,
+   get the same result.
+
+4. repeat step 6-7 of subcase 1.
+
+5. verify matched packets received have not FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 4: L2 Ethertype drop
+----------------------------
+
+1. create rules for PPPoED with drop action::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end
+
+2. send matched packet,
+   check the packets are dropped,
+
+3. Repeat step 1-2 with PPPoE/ARP/EAPS/ieee1588,
+   get the same result.
+
+4. repeat step 6-7 of subcase 1.
+
+5. verify matched packets are received.
+   Then check there is no rule listed.
+
+Subcase 5: L2 Ethertype mark+rss
+--------------------------------
+
+1. create rules for PPPoED with rss queues action::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions mark id 1 / rss / end
+
+2. send matched packet,
+   check the packets received have FDIR matched ID=0x1,
+   the packets are directed to queue 0,
+   because L2 Ethertype are not supported by RSS.
+
+3. Repeat step 1-2 with PPPoE/ARP/EAPS/ieee1588,
+   get the same result.
+
+4. repeat step 6-7 of subcase 1.
+
+5. verify matched packets received have not FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 6: L2 Ethertype mark
+----------------------------
+
+1. create rules for PPPoED with mark action::
+
+    flow create 0 ingress pattern eth type is 0x8863 / end actions mark / end
+
+2. send matched packet,
+   check the packets received have FDIR matched ID=0x0,
+
+3. Repeat step 1-2 with PPPoE/ARP/EAPS/ieee1588,
+   get the same result.
+
+4. repeat step 6-7 of subcase 1.
+
+5. verify matched packets received have not FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 7: unsupported Ethertype
+--------------------------------
+
+1. create rules for IP/IPV6::
+
+    flow create 0 ingress pattern eth type is 0x0800 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth type is 0x86dd / end actions queue index 1 / end
+
+   the two rules can be created successfully, but report below message::
+
+    ice_flow_create(): Succeeded to create (2) flow
+    Flow rule #0 created
+
+   the number "2" stands for switch rule, fdir doesn't support IPV4/IPV6 ethertype.
 
 Test case: negative cases
 =========================
@@ -1812,6 +2013,7 @@ Subcase 6: conflicted rules
 1. Create a FDIR rule::
 
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark / end
 
    the rule is created successfully.
 
@@ -1821,12 +2023,17 @@ Subcase 6: conflicted rules
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 3 / mark / end
     flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions queue index 3 / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 2 / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions rss queues 2 3 end / mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2021 / end actions mark / end
+    flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
 
    Failed to create the two flows, report message::
 
-    first two rules:
     Rule already exists!: File exists
-    last two rules:
+
+   or::
+
     Invalid input action number: Invalid argument
 
 3. check there is only one rule listed.
