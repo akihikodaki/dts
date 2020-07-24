@@ -346,7 +346,7 @@ class TestTelemetry(TestCase):
         self.dut_s_session = self.dut.new_session()
         dpdk_tool = os.path.join(
             self.target_dir, 'usertools/dpdk-telemetry-client.py')
-        output = self.dut_s_session.send_expect(dpdk_tool, ':', 5)
+        output = self.dut_s_session.send_expect('python3 ' + dpdk_tool, ':', 5)
         return output
 
     def close_telemetry_client(self):
