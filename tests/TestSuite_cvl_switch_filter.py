@@ -931,20 +931,7 @@ tv_mac_pppod_pay_in_queue_01 = {
                   "expect_results":{"expect_pkts":1}}
 }
 
-tv_mac_pppod_pay_queue_region_02 = {
-    "name":"tv_mac_pppod_pay_queue_region_02",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth type is 0x8863 / end actions rss queues 4 5 end / end",
-    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)'],
-               "check_func":{"func":rfc.check_output_log_queue_region,
-                             "param":{"expect_port":0, "expect_queues":[4, 5]}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP()/IP()/Raw("x" *80)'],
-                  "check_func":{"func":rfc.check_output_log_queue_region_mismatched,
-                                "param":{"expect_port":0, "expect_queues":[4, 5]}},
-                  "expect_results":{"expect_pkts":1}}
-}
-
-tv_mac_pppod_pay_drop_03 = {
+tv_mac_pppod_pay_drop_02 = {
     "name":"tv_mac_pppod_pay_drop_03",
     "rte_flow_pattern":"flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end",
     "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)'],
@@ -959,8 +946,7 @@ tv_mac_pppod_pay_drop_03 = {
 
 tvs_mac_pppod_pay = [
     tv_mac_pppod_pay_in_queue_01,
-    tv_mac_pppod_pay_queue_region_02,
-    tv_mac_pppod_pay_drop_03
+    tv_mac_pppod_pay_drop_02
     ]
 
 #pppoe non-pipeline mode
