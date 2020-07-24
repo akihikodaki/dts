@@ -1,4 +1,5 @@
 .. Copyright (c) <2010-2017>, Intel Corporation
+   Copyright © 2018[, 2019] The University of New Hampshire. All rights reserved.
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -219,3 +220,159 @@ Configure the traffic generator to send the multiple packets with the following
 combination: good/bad ip checksum + good/bad udp/tcp checksum.
 
 Check the Rx checksum flags consistent with expected flags.
+
+Test Case: Hardware Checksum Check L4 RX
+===========================================
+This test involves testing many different scenarios with a L4 checksum.
+A variety of tunneling protocols, L3 protocols and L4 protocols are combined
+to test as many scenarios as possible. Currently, UDP, TCP and SCTP are used
+as L4 protocols, with IP and IPv6 being used at level 3. The tested tunneling
+protocols are VXLAN and GRE.
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Start the packet forwarding::
+
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Send a packet with a good checksum::
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Send a packet with a bad checksum::
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Verify flags are as expected.
+
+Test Case: Hardware Checksum Check L3 RX
+===========================================
+This test involves testing L3 checksum hardware offload.
+Due to the relative dominance of IPv4 and IPv6 as L3 protocols, and IPv6's
+lack of a checksum, only IPv4's checksum is tested.
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Start the packet forwarding::
+
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+Send a packet with a good checksum::
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Send a packet with a bad checksum::
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Verify flags are as expected.
+
+Test Case: Hardware Checksum Check L4 TX
+===========================================
+This test involves testing many different scenarios with a L4 checksum.
+A variety of tunneling protocols, L3 protocols and L4 protocols are combined
+to test as many scenarios as possible. Currently, UDP, TCP and SCTP are used
+as L4 protocols, with IP and IPv6 being used at level 3. The tested tunneling
+protocols are VXLAN and GRE. This test is used to determine whether the
+hardware offloading of checksums works properly.
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Start the packet forwarding::
+
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+
+Start a packet capture on the tester in the background::
+
+   # tcpdump -i <iface> -s 65535 -w /tmp/tester/test_hardware_checksum_check_l4_tx_capture.pcap &
+
+Send a packet with a good checksum::
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Send a packet with a bad checksum::
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_BAD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Inspect the pcap file from the packet capture and verify the checksums.
+
+Test Case: Hardware Checksum Check L3 TX
+===========================================
+This test involves testing L3 checksum hardware offload.
+Due to the relative dominance of IPv4 and IPv6 as L3 protocols, and IPv6's
+lack of a checksum, only IPv4's checksum is tested.
+
+Setup the ``csum`` forwarding mode::
+
+  testpmd> set fwd csum
+  Set csum packet forwarding mode
+
+Start the packet forwarding::
+
+  testpmd> start
+    csum packet forwarding - CRC stripping disabled - packets/burst=32
+    nb forwarding cores=1 - nb forwarding ports=10
+    RX queues=1 - RX desc=128 - RX free threshold=64
+    RX threshold registers: pthresh=8 hthresh=8 wthresh=4
+    TX queues=1 - TX desc=512 - TX free threshold=0
+    TX threshold registers: pthresh=32 hthresh=8 wthresh=8
+
+
+Start a packet capture on the tester in the background::
+
+   # tcpdump -i <iface> -s 65535 -w /tmp/tester/test_hardware_checksum_check_l3_tx_capture.pcap &
+
+Send a packet with a good checksum with a 1 in it's payload::
+
+   port=0, mbuf=0x2269df8780, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD  PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Send a packet with a bad checksum with a 0 in it's payload::
+
+   port=0, mbuf=0x2269df7e40, pkt_len=96, nb_segs=1:
+   rx: l2_len=18 ethertype=800 l3_len=20 l4_proto=17 l4_len=8 flags=PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_BAD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+   tx: flags=PKT_TX_L4_NO_CKSUM PKT_TX_IPV4
+
+Inspect the pcap file from the packet capture and verify the checksums.
+

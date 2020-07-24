@@ -1,6 +1,7 @@
 # BSD LICENSE
 #
 # Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright © 2018[, 2019] The University of New Hampshire. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -38,14 +39,60 @@ Test support of RX/TX Checksum Offload Features by Poll Mode Drivers.
 
 import os
 import re
+import subprocess
+import time
+from typing import List, Union, Tuple, Pattern
+
+import time
+
 from rst import RstReport
 import utils
-
+from exception import VerifyFailure
+from pktgen import PacketGeneratorHelper
+from scapy.layers.inet import UDP, TCP, IP
+from scapy.layers.inet6 import IPv6
+from scapy.layers.l2 import Ether, GRE
+from scapy.layers.sctp import SCTP
+from scapy.layers.vxlan import VXLAN
+from scapy.packet import Raw
+from scapy.utils import wrpcap, rdpcap
+from test_capabilities import DRIVER_TEST_LACK_CAPA
 from test_case import TestCase
-from pmd_output import PmdOutput
+
+from framework.pmd_output import PmdOutput
 from test_capabilities import DRIVER_TEST_LACK_CAPA
 from pktgen import PacketGeneratorHelper
+from exception import VerifyFailure
 import packet
+
+from settings import FOLDERS
+
+l3_proto_classes = [
+    IP,
+    IPv6
+]
+
+l4_proto_classes = [
+    UDP,
+    TCP,
+    SCTP
+]
+
+tunnelling_proto_classes = [
+    VXLAN,
+    GRE,
+]
+
+l3_protos = [
+    "IP",
+    "IPv6"
+]
+
+l4_protos = [
+    "UDP",
+    "TCP",
+    "SCTP",
+]
 
 
 class TestChecksumOffload(TestCase):
@@ -59,7 +106,7 @@ class TestChecksumOffload(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        self.pmdout = PmdOutput(self.dut)
+        self.pmdout: PmdOutput = PmdOutput(self.dut)
         self.portMask = utils.create_mask([self.dut_ports[0]])
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         # get dts output path
@@ -67,10 +114,8 @@ class TestChecksumOffload(TestCase):
             self.output_path = self.logger.log_path
         else:
             cur_path = os.path.dirname(
-                                os.path.dirname(os.path.realpath(__file__)))
+                os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
-        # create an instance to set stream field setting
-        self.pktgen_helper = PacketGeneratorHelper()
 
     def set_up(self):
         """
@@ -83,20 +128,23 @@ class TestChecksumOffload(TestCase):
         self.dut.send_expect("set fwd csum", "testpmd>")
 
     def checksum_enablehw(self, port):
-            self.dut.send_expect("port stop all", "testpmd>")
-            self.dut.send_expect("csum set ip hw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set udp hw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
-            self.dut.send_expect("port start all", "testpmd>")
+        self.dut.send_expect("port stop all", "testpmd>")
+        self.dut.send_expect("csum set ip hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set udp hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set sctp hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set outer-ip hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set outer-udp hw %d" % port, "testpmd>")
+        self.dut.send_expect("csum parse-tunnel on %d" % port, "testpmd>")
+        self.dut.send_expect("port start all", "testpmd>")
 
     def checksum_enablesw(self, port):
-            self.dut.send_expect("port stop all", "testpmd>")
-            self.dut.send_expect("csum set ip sw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set udp sw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set tcp sw %d" % port, "testpmd>")
-            self.dut.send_expect("csum set sctp sw %d" % port, "testpmd>")
-            self.dut.send_expect("port start all", "testpmd>")
+        self.dut.send_expect("port stop all", "testpmd>")
+        self.dut.send_expect("csum set ip sw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set udp sw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set tcp sw %d" % port, "testpmd>")
+        self.dut.send_expect("csum set sctp sw %d" % port, "testpmd>")
+        self.dut.send_expect("port start all", "testpmd>")
 
     def get_chksum_values(self, packets_expected):
         """
@@ -214,6 +262,194 @@ class TestChecksumOffload(TestCase):
 
         return result
 
+    def send_scapy_packet(self, packet: str):
+        itf = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+
+        self.tester.scapy_foreground()
+        self.tester.scapy_append(f'sendp({packet}, iface="{itf}")')
+        return self.tester.scapy_execute()
+
+    def get_pkt_rx_l4_cksum(self, testpmd_output: str) -> bool:
+        return self.checksum_flags_are_good("PKT_RX_L4_CKSUM_", testpmd_output)
+
+    def get_pkt_rx_ip_cksum(self, testpmd_output: str) -> bool:
+        return self.checksum_flags_are_good("PKT_RX_IP_CKSUM_", testpmd_output)
+
+    def send_pkt_expect_good_bad_from_flag(self, pkt_str: str, flag: str, test_name: str, should_pass: bool = True):
+        self.pmdout.get_output(timeout=5)  # Remove any old output
+        self.scapy_exec(f"sendp({pkt_str}, iface=iface)")
+        testpmd_output: str = self.pmdout.get_output(timeout=5)
+        self.verify(flag in testpmd_output,
+                    f"Flag {flag[:-1]} not found for test {test_name}, please run test_rx_checksum_valid_flags.")
+        self.verify((flag + "UNKNOWN") not in testpmd_output,
+                    f"Flag {flag[:-1]} was found to be unknown for test {test_name}, indicating a possible lack of support")
+        if should_pass:
+            if flag + "GOOD" in testpmd_output:
+                return
+            else:  # flag + "BAD" in testpmd_output
+                self.verify(False, f"{flag}BAD was found in output, expecting {flag}GOOD.")
+        else:
+            if flag + "BAD" in testpmd_output:
+                return
+            else:  # flag + "GOOD" in testpmd_output
+                self.verify(False, f"{flag}GOOD was found in output, expecting {flag}BAD.")
+
+    def send_pkt_expect_good_bad_from_flag_catch_failure(self, pkt_str: str, flag: str, test_name: str,
+                                                         should_pass: bool = True) -> Union[VerifyFailure, None]:
+        try:
+            self.send_pkt_expect_good_bad_from_flag(pkt_str, flag, test_name, should_pass=should_pass)
+        except VerifyFailure as vf:
+            return vf
+
+        return None
+
+    def validate_checksum(self, pkt, layer) -> bool:
+        """
+        @param pkt: The packet to validate the checksum of.
+        @return: Whether the checksum was valid.
+        """
+        if pkt is None:
+            return False
+
+        csum = pkt[layer].chksum
+        del pkt[layer].chksum
+        # Converting it to raw will calculate the checksum
+        return layer(Raw(pkt[layer])).chksum == csum
+
+    def scapy_exec(self, cmd: str, timeout=1) -> str:
+        return self.tester.send_expect(cmd, ">>>", timeout=timeout)
+
+    def get_packets(self, dut_mac, tester_mac):
+        eth = Ether(dst=dut_mac, src=tester_mac)
+        packets = []
+        checksum_options = ({}, {'chksum': 0xf},)
+        # Untunneled
+        for l3 in l3_proto_classes:
+            for l4 in l4_proto_classes:
+                for chksum in checksum_options:
+                    # The packet's data can be used to identify how the packet was constructed so avoid any issues with
+                    # ordering
+                    pkt = eth / l3() / l4(**chksum) / (
+                        f'UNTUNNELED,{l3.__name__},{l4.__name__},{" " if len(chksum.values()) == 0 else chksum["chksum"]}'
+                    )
+
+                    # Prevents the default behavior which adds DNS headers
+                    if l4 == UDP:
+                        pkt[UDP].dport, pkt[UDP].sport = 1001, 1001
+
+                    packets.append(pkt)
+
+        # Tunneled
+        # VXLAN
+        for l3 in l3_proto_classes:
+            for l4 in l4_proto_classes:
+                for outer_arg in checksum_options:
+                    for inner_arg in checksum_options:
+                        pkt = eth / l3() / UDP(**outer_arg) / VXLAN() / Ether() / l3() / l4(**inner_arg) / (
+                            f'VXLAN,{l3.__name__},{l4.__name__},'
+                            f'{" " if len(outer_arg.values()) == 0 else outer_arg["chksum"]},'
+                            f'{" " if len(inner_arg.values()) == 0 else inner_arg["chksum"]}'
+                        )
+                        # Prevents the default behavior which adds DNS headers
+                        if l4 == UDP:
+                            pkt[VXLAN][UDP].dport, pkt[VXLAN][UDP].sport = 1001, 1001
+
+                        packets.append(pkt)
+        # GRE
+        for l3 in l3_proto_classes:
+            for l4 in l4_proto_classes:
+                for chksum in checksum_options:
+                    pkt = eth / l3() / GRE() / l3() / l4(**chksum) / (
+                        f'GRE,{l3.__name__},{l4.__name__},{" " if len(chksum.values()) == 0 else chksum["chksum"]}'
+                    )
+
+                    # Prevents the default behavior which adds DNS headers
+                    if l4 == UDP:
+                        pkt[GRE][UDP].dport, pkt[GRE][UDP].sport = 1001, 1001
+
+                    packets.append(pkt)
+
+        return packets
+
+    def replay_pcap_file_on_tester(self, iface, packet_file_path):
+        self.tester.send_expect("scapy", ">>>")
+        self.scapy_exec(f"packets = rdpcap('{packet_file_path}')")
+        self.scapy_exec(f"sendp(packets, iface={iface})")
+        self.tester.send_expect("quit()", "# ")
+
+    def validate_packet_list_checksums(self, packets):
+        name_to_class_dict = {
+            'UDP': UDP,
+            'TCP': TCP,
+            'SCTP': SCTP,
+            'IP': IP,
+            'IPv6': IPv6,
+            'VXLAN': VXLAN,
+            'GRE': GRE,
+        }
+
+        error_messages = []
+
+        untunnelled_error_message = f"Invalid untunneled checksum state for %s/%s with a %s checksum."
+
+        vxlan_error_message = f"Invalid VXLAN tunnelled %s checksum state for %s/%s" \
+                              f" with a %s inner checksum and a %s outer checksum."
+
+        gre_error_message = f"Invalid GRE tunnelled checksum state for %s/%s with a %s checksum."
+
+        for packet in packets:
+            payload: str
+            # try:
+            payload = packet[Raw].load.decode('utf-8').split(",")
+            # # This error usually happens with tunneling protocols, and means that an additional cast is needed
+            # except UnicodeDecodeError:
+            #     for proto in tunnelling_proto_classes:
+
+            l3 = name_to_class_dict[payload[1]]
+            l4 = name_to_class_dict[payload[2]]
+            if payload[0] == "UNTUNNELED":
+                chksum_should_be_valid = payload[3] == " "
+                if self.validate_checksum(packet, l4) != chksum_should_be_valid:
+                    error_messages.append(
+                        untunnelled_error_message % (
+                            l3.__name__, l4.__name__, 'valid' if chksum_should_be_valid == '' else 'invalid'
+                        )
+                    )
+            elif payload[0] == "VXLAN":
+                outer_chksum_should_be_valid = payload[3] == " "
+                inner_chksum_should_be_valid = payload[4] == " "
+                if self.validate_checksum(packet[VXLAN], l4) != inner_chksum_should_be_valid:
+                    error_messages.append(
+                        vxlan_error_message % (
+                            "inner", l4.__name__, l3.__name__,
+                            'valid' if inner_chksum_should_be_valid == '' else 'invalid',
+                            'valid' if outer_chksum_should_be_valid == '' else 'invalid'
+                        )
+                    )
+                if self.validate_checksum(packet, l4) != outer_chksum_should_be_valid:
+                    error_messages.append(
+                        vxlan_error_message % (
+                            "outer", l3.__name__, l4.__name__,
+                            'valid' if inner_chksum_should_be_valid == '' else 'invalid',
+                            'valid' if outer_chksum_should_be_valid == '' else 'invalid'
+                        )
+                    )
+            elif payload[0] == "GRE":
+                chksum_should_be_valid = payload[3] == " "
+                if self.validate_checksum(packet, l4) != chksum_should_be_valid:
+                    error_messages.append(
+                        gre_error_message % (
+                            l3.__name__, l4.__name__, 'valid' if chksum_should_be_valid == '' else 'invalid'
+                        )
+                    )
+
+        return error_messages
+
+    #
+    #
+    #
+    # Test Cases
+    #
     def test_checksum_offload_with_vlan(self):
         """
         Do not insert IPv4/IPv6 UDP/TCP checksum on the transmit packet.
@@ -382,6 +618,9 @@ class TestChecksumOffload(TestCase):
 
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
+            # create an instance to set stream field setting
+            # Moved here because it messes with the ability of the functional tests to use scapy.
+            self.pktgen_helper = PacketGeneratorHelper()
             # run packet generator
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100,
                     None, self.tester.pktgen)
@@ -445,6 +684,215 @@ class TestChecksumOffload(TestCase):
             self.dut.send_expect("quit", "#", 10)
             self.result_table_print()
 
+    def test_hardware_checksum_check_ip_rx(self):
+        self.dut.send_expect("start", "testpmd>")
+        self.tester.send_expect("scapy", ">>>")
+        self.checksum_enablehw(self.dut_ports[0])
+        self.dut.send_expect("start", "testpmd>")
+
+        verification_errors: List[VerifyFailure] = []
+
+        iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
+        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
+
+        self.scapy_exec(f"eth = Ether(dst='{dut_mac}', src='{tester_mac}')")
+        self.scapy_exec(f"iface = '{iface}'")
+
+        # Untunnelled
+        for l4 in l4_protos:
+            for chksum in "", "chksum=0xf":
+                vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
+                    f"eth/IP({chksum})/{l4}()/(X'*50)",
+                    "PKT_RX_IP_CKSUM_", f"{l4}",
+                    should_pass=(chksum == ""))
+                if vf is not None:
+                    verification_errors.append(vf)
+
+        for err in verification_errors:
+            self.logger.error(str(err))
+        self.verify(len(verification_errors) == 0, "See previous output")
+
+        self.tester.send_expect("quit()", "# ")
+        self.dut.send_expect("stop", "testpmd>")
+
+    def test_hardware_checksum_check_ip_tx(self):
+        self.checksum_enablehw(self.dut_ports[0])
+        self.dut.send_expect("start", "testpmd>")
+
+        verification_errors: List[VerifyFailure] = []
+
+        iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
+        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
+        eth = Ether(dst=dut_mac, src=tester_mac)
+
+        checksum_options = ({}, {'chksum': 0xf},)
+
+        packets = [
+            eth / IP(**chksum) / TCP() / Raw(load=str(int(len(chksum) != 1))) for chksum in checksum_options
+        ]
+
+        capture_file_name = "test_hardware_checksum_check_l3_tx_capture.pcap"
+
+        packet_file_path = "/tmp/test_hardware_checksum_check_l3_tx_packets.pcap"
+        capture_file_path = "/tmp/tester/" + capture_file_name
+
+        self.tester.send_expect(f"tcpdump -i {iface} -s 65535 -w {capture_file_path} &", "# ")
+
+        wrpcap(packet_file_path, packets)
+        self.tester.session.copy_file_to(packet_file_path, packet_file_path)
+
+        self.replay_pcap_file_on_tester(iface, packet_file_path)
+
+        self.tester.session.copy_file_from(packet_file_path, "output/tmp/pcap/" + capture_file_name)
+
+        captured_packets = rdpcap("output/tmp/pcap/" + capture_file_name)
+
+        self.verify(len(packets) == len(captured_packets), "Not all packets were received")
+
+        error_messages = []
+        for pkt in captured_packets:
+            should_pass = pkt[TCP].payload.build() == b'1'
+            if not (self.validate_checksum(pkt, IP) == should_pass):
+                error_messages.append(f"A packet was marked as having a"
+                                      f"{' valid' if should_pass == '' else 'n invalid'}"
+                                      f" checksum when it should have had the opposite.")
+
+        self.dut.send_expect("stop", "testpmd>")
+        if len(error_messages) != 0:
+            for error_msg in error_messages:
+                self.logger.error(error_msg)
+            self.verify(False, "See prior output")
+
+    def test_hardware_checksum_check_l4_rx(self):
+        self.checksum_enablehw(self.dut_ports[0])
+        self.dut.send_expect("start", "testpmd>")
+
+        verification_errors: List[VerifyFailure] = []
+
+        iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
+        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
+
+        self.tester.send_expect("scapy", ">>> ")
+        self.scapy_exec(f"eth = Ether(dst='{dut_mac}', src='{tester_mac}')")
+        self.scapy_exec(f"iface = '{iface}'")
+        # Untunneled
+        for l3 in l3_protos:
+            for l4 in l4_protos:
+                for chksum in "", "chksum=0xf":
+                    vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
+                        f"eth/{l3}()/{l4}({chksum})/('X'*50)",
+                        "PKT_RX_L4_CKSUM_", f"{l3}/{l4}",
+                        should_pass=(chksum == ""))
+                    if vf is not None:
+                        verification_errors.append(vf)
+
+        # Tunneled
+        # VXLAN
+        for l3 in l3_protos:
+            for l4 in l4_protos:
+                for outer_arg in "", "chksum=0xf":
+                    for inner_arg in "", "chksum=0xf":
+                        for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
+                            if flag == "PKT_RX_L4_CKSUM_":
+                                should_pass = inner_arg == ""
+                            else:  # flag == PKT_RX_OUTER_L4_CKSUM_
+                                should_pass = outer_arg == ""
+                            vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
+                                f"eth/{l3}()/{l4}({outer_arg})/VXLAN()/{l3}()/"
+                                f"{l4}(chksum={inner_arg})/('X'*50)",
+                                flag, f"{l3}/{l4}/VXLAN/{l3}/{l4}",
+                                should_pass=should_pass)
+
+                            if vf is not None:
+                                verification_errors.append(vf)
+
+        # GRE
+        for l3 in l3_protos:
+            for l4 in l4_protos:
+                for inner_arg in "", "chksum=0xf":
+                    should_pass: bool = inner_arg == ""
+                    vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
+                        f"eth/{l3}()/GRE()/{l3}()/{l4}({inner_arg})/('X'*50)",
+                        "PKT_RX_L4_CKSUM_", f"{l3}/GRE/{l3}/{l4}",
+                        should_pass=should_pass)
+
+                    if vf is not None:
+                        verification_errors.append(vf)
+
+        # This section is commented out because GENEVE is not supported in the current version (2.3.3) that is used
+        # in dts. This will be available in scapy 2.4.3, so this was added and commented out so that when scapy is
+        # updated this test case can easily take advantage of the new functionality.
+
+        # # GENEVE
+        # # This import is over here so that it is not forgotten when the update happens
+        # from scapy.contrib.geneve import GENEVE
+        # for l3_outer in l3_protos:
+        #     for l4_outer in l4_protos:
+        #         for l3_inner in l3_protos:
+        #             for l4 in l4_protos:
+        #                 for outer_arg in "", "chksum=0xf":
+        #                     for inner_arg in "", "chksum=0xf":
+        #                         for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
+        #                             should_pass: bool = inner_arg == "" if flag == "PKT_RX_L4_CKSUM_" else outer_arg == ""
+        #                             vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
+        #                                 f"eth/{l3_outer}()/{l4_outer}({outer_arg})/GENEVE()/eth/{l3_inner}()/"
+        #                                 f"{l4}({inner_arg})/('X'*50)",
+        #                                 flag, f"{l3_outer}/{l4_outer}/VXLAN/{l3_inner}/{l4}",
+        #                                 should_pass=should_pass)
+        #
+        #                             if vf is not None:
+        #                                 verification_errors.append(vf)
+
+        # tunneled inner
+
+        for err in verification_errors:
+            self.logger.error(str(err))
+        self.verify(len(verification_errors) == 0, "See previous output")
+
+        self.tester.send_expect("quit", "#")
+        self.dut.send_expect("stop", "testpmd>")
+
+    def test_hardware_checksum_check_l4_tx(self):
+        self.checksum_enablehw(self.dut_ports[0])
+        self.dut.send_expect("start", "testpmd>")
+
+        verification_errors: List[VerifyFailure] = []
+
+        iface = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
+        dut_mac = self.dut.get_mac_address(self.dut_ports[0])
+        tester_mac = self.tester.get_mac(self.tester.get_local_port(self.dut_ports[0]))
+
+        packets = self.get_packets(dut_mac, tester_mac)
+
+        capture_file_name = "test_hardware_checksum_check_l4_tx_capture.pcap"
+
+        packet_file_path = "/tmp/test_hardware_checksum_check_l4_tx_packets.pcap"
+        capture_file_path = "/tmp/tester/" + capture_file_name
+
+        self.tester.send_expect(f"tcpdump -i {iface} -s 65535 -w {capture_file_path} &", "# ")
+
+        wrpcap(packet_file_path, packets)
+        self.tester.session.copy_file_to(packet_file_path, packet_file_path)
+
+        self.replay_pcap_file_on_tester(iface, packet_file_path)
+
+        self.tester.session.copy_file_from(packet_file_path, "output/tmp/pcap/" + capture_file_name)
+
+        captured_packets = rdpcap("output/tmp/pcap/" + capture_file_name)
+
+        self.verify(len(packets) == len(captured_packets), "Not all packets were received")
+
+        error_messages = self.validate_packet_list_checksums(captured_packets)
+
+        self.dut.send_expect("stop", "testpmd>")
+        if len(error_messages) != 0:
+            for error_msg in error_messages:
+                self.logger.error(error_msg)
+            self.verify(False, "See prior output")
+
     def tear_down(self):
         """
         Run after each test case.
@@ -456,3 +904,4 @@ class TestChecksumOffload(TestCase):
         Run after each test suite.
         """
         pass
+
