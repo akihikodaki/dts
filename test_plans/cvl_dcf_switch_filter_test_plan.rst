@@ -2030,23 +2030,7 @@ Test case: MAC_IPV6_NAT-T-ESP
 Test case: negative cases
 =========================
 
-Subcase 1: actions vf id 0
---------------------------
-
-1. action to vf 0, the rule can be created, but not take effect::
-
-     testpmd> flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 0 / end
-     testpmd> flow list 0
-
-   check the rule exists in the list.
-
-2. send matched packet::
-
-     sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)], iface="enp27s0f0", count=1)
-
-   check the packet not to port 0, the rule doesn't take effect.
-
-Subcase 2: can not create rule on vf 1
+Subcase 1: can not create rule on vf 1
 --------------------------------------
 
 1. create rule on vf 1::
@@ -2063,7 +2047,7 @@ Subcase 2: can not create rule on vf 1
 
    there is no rule listed.
 
-Subcase 3: unsupported pattern in comms
+Subcase 2: unsupported pattern in comms
 ---------------------------------------
 
 1. create an SCTP rule which is not supported in comms::
@@ -2082,7 +2066,7 @@ Subcase 3: unsupported pattern in comms
 
    check the rule not exists in the list.
 
-Subcase 4: unsupported pattern in os default, but supported in comms
+Subcase 3: unsupported pattern in os default, but supported in comms
 --------------------------------------------------------------------
 
 1. load os default package and launch testpmd as step 3-8 in Prerequisites.
@@ -2105,7 +2089,7 @@ Subcase 4: unsupported pattern in os default, but supported in comms
 
 5. repeat step 2-5 with also not supported pattern MAC_IPV4_PFCP_NODE/MAC_IPV4_L2TPv3/MAC_IPV4_ESP, get the same result.
 
-Subcase 5: unsupported input set
+Subcase 4: unsupported input set
 --------------------------------
 
 1. create an nvgre rule with unsupported input set field [inner tos]::
@@ -2124,7 +2108,7 @@ Subcase 5: unsupported input set
 
    check the rule not exists in the list.
 
-Subcase 6: invalid vf id
+Subcase 5: invalid vf id
 ------------------------
 
 1. create a rule with invalid vf id 5::
@@ -2143,7 +2127,7 @@ Subcase 6: invalid vf id
 
    check the rule not exists in the list.
 
-Subcase 7: delete a non-existing rule
+Subcase 6: delete a non-existing rule
 -------------------------------------
 
 1. check the rule list::
@@ -2164,7 +2148,7 @@ Subcase 7: delete a non-existing rule
 
    check no error reports.
 
-Subcase 8: add long switch rule
+Subcase 7: add long switch rule
 -------------------------------
 
 Description: A recipe has 5 words, one of which is reserved for switch ID,
