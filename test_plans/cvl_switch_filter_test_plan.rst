@@ -3567,25 +3567,6 @@ send mismatched packets::
 
 verify this packet not to queue 2
 
-to queue group action
-^^^^^^^^^^^^^^^^^^^^^
-
-create a rule::
-
-  testpmd> flow create 0 ingress pattern eth type is 0x8863 / end actions rss queues 4 5 end / end
-
-send matched packets::
-
-  sendp([Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw('x' *80)],iface="enp27s0f2",count=1)
-
-verify this packet to queue 4 or 5
-
-send mismatched packets::
-
-  sendp([Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP()/IP()/Raw('x' *80)],iface="enp27s0f2",count=1)
-
-verify this packet not to queue 4 and 5
-
 drop action
 ^^^^^^^^^^^
 
