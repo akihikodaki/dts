@@ -676,17 +676,6 @@ tv_mac_ipv6_nat_t_esp = {
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_actions_vf_id_0 = {
-    "name":"tv_actions_vf_id_0",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 0 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":0, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":0}},
-    "mismatched":{}
-}
-
-
 tv_add_existing_rules_but_with_different_vfs = {
     "name":"tv_add_existing_rules_but_with_different_vfs",
     "rte_flow_pattern":["flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end",
@@ -1309,22 +1298,6 @@ class SwitchFilterTest(TestCase):
     def test_mac_ipv6_nat_t_esp(self):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv6_nat_t_esp)
-
-    def test_actions_vf_id_0(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        command = self.create_testpmd_command()
-        out = self.dut.send_expect(command, "testpmd> ", 15)
-        self.testpmd_status = "running"
-        self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
-        self.dut.send_expect("set verbose 1", "testpmd> ", 15)
-        #create a rule
-        rule_list = self.create_switch_filter_rule(tv_actions_vf_id_0["rte_flow_pattern"])   #create a rule
-        self.check_switch_filter_rule_list(0, rule_list)
-        #send matched packets and check
-        matched_dic = tv_actions_vf_id_0["matched"]
-        self.send_and_check_packets(matched_dic)
 
     def test_cannot_create_rule_on_vf_1(self):
         #set up 4 vfs on 1 pf environment
