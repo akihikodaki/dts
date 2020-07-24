@@ -261,9 +261,9 @@ tv_iavf_mac_ipv6_tcp_frag = {
 
 tv_iavf_mac_cvlan_rss = {
     "name": "iavf_mac_cvlan_rss",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / end actions rss types c-vlan end key_len 0 queues end / end",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / vlan / ipv4 / end actions rss types c-vlan end key_len 0 queues end / end",
     "scapy_str": ['Ether()/Dot1Q(vlan=RandShort())/IP(src=RandIP())/UDP()/("X"*480)',
-                  'Ether(type=0x8100)/Dot1Q(vlan=RandShort())/Dot1Q(vlan=56)/IP(src=RandIP())/UDP()/("X"*480)',
+                  'Ether(type=0x9100)/Dot1Q(vlan=RandShort())/Dot1Q(vlan=56)/IP(src=RandIP())/UDP()/("X"*480)',
                   ],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
