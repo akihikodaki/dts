@@ -2795,6 +2795,36 @@
             "Comments": "the nic not support this case"
         }
     ],
+    "nic_interrupt_VF_vfio_pci": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "igbvf driver not support interrupt"
+        }
+    ],
+    "nic_interrupt_VM_vfio_pci": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "powerville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "igbvf driver not support interrupt"
+        }
+    ],
     "change_linkspeed": [
         {
             "OS": [
