@@ -805,6 +805,7 @@ class AdvancedIavfRSSTest(TestCase):
         self.pmd_output.start_testpmd(cores="1S/8C/1T", param=param_str, eal_param="-w %s" % port_pci)
         self.pmd_output.execute_cmd("set fwd rxonly", "testpmd> ", 15)
         self.pmd_output.execute_cmd("set verbose 1", "testpmd> ", 15)
+        self.pmd_output.execute_cmd("port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd", "testpmd> ", 15)
 
     def create_testpmd2_command(self, port_info, pmd_param=None):
         """
