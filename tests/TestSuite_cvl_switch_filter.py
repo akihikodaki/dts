@@ -2473,7 +2473,7 @@ tvs_mac_ipv6_tcp_non_pipeline_mode = [
 
 test_results = OrderedDict()
 
-class SwitchFilterTest(TestCase):
+class CVLSwitchFilterTest(TestCase):
 
     def set_up_all(self):
         """
@@ -2492,6 +2492,7 @@ class SwitchFilterTest(TestCase):
         src_file = 'dep/testpmd_cmds_rte_flow_fdir_rules'
         self.dut_file_dir = '/tmp'
         self.dut.session.copy_file_to(src_file, self.dut_file_dir)
+        self.pkt = Packet()
 
     def set_up(self):
         """
