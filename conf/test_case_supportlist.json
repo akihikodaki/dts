@@ -2224,5 +2224,29 @@
             "Bug ID": "",
             "Comments": "This case only support ixgbe and igb nic "
         }
+    ],
+     "multicast_filter": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "niantic",
+                "ironpond",
+                "twinpond",
+                "twinville",
+                "sageville",
+                "sagepond",
+                "springville",
+                "powerville",
+                "foxville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ixgbe and igb nic,The feature corresponding task ticket is DPDK-7884."
+        }
     ]
+
 }
