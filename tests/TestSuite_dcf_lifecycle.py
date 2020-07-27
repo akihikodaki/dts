@@ -933,6 +933,8 @@ class TestDcfLifeCycle(TestCase):
             self.run_test_post()
             self.check_dcf_with_l2fwd_adp_failed_result(output)
             # Exit DCF mode, PF can set L2 forwarding.
+            self.dut.destroy_sriov_vfs_by_port(0)
+            time.sleep(1)
             output = self.set_adq_mac_vlan()
             self.check_dcf_with_l2fwd_adp_result(output)
         except Exception as e:
@@ -956,6 +958,8 @@ class TestDcfLifeCycle(TestCase):
             pmd_opts = [['pf1_vf0_dcf', 'dcf']]
             self.run_test_pre(pmd_opts)
             # run PF1 DCF mode, PF2 can set L2 forwarding.
+            self.dut.destroy_sriov_vfs_by_port(1)
+            time.sleep(1)
             output = self.set_adq_mac_vlan(1)
             self.remove_adq_mac_vlan(1)
             self.run_test_post()
@@ -1048,6 +1052,10 @@ class TestDcfLifeCycle(TestCase):
         """
         Run after each test case.
         """
+        if self._suite_result.test_case == "test_dcf_with_l2fwd_03" or self._suite_result.test_case == "test_dcf_with_l2fwd_02":
+            self.destroy_resource()
+            self.init_suite()
+            self.preset_test_environment()
         self.dut.kill_all()
         self.clear_flags()
 
