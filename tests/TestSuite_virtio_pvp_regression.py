@@ -257,7 +257,14 @@ class TestVirtioPVPRegression(TestCase):
         command_line_client = testcmd + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
-        self.vhost.send_expect("start", "testpmd> ", 30)
+        try:
+            self.vhost.send_expect("start", "testpmd> ", 30)
+        except Exception as e:
+            self.logger.warning(e)
+            self.logger.info('dpdk prompt testpmd> may not be printed correctly, add retry')
+            time.sleep(2)
+            self.vhost.send_expect('', 'testpmd> ', timeout=1)
+
 
     def start_testpmd_in_vm(self, virtio_path):
         """
