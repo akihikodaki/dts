@@ -797,8 +797,10 @@ class TestShutdownApi(TestCase):
         When tx_descriptor_status is used, status can be “FULL”, “DONE” or “UNAVAILABLE.”
         """
         queue_num=16
-        if self.nic in ["springville"]:
+        if self.nic in ["springville","foxville"]:
             queue_num=4
+        if self.nic in ["powerville"]:
+            queue_num=8
         self.pmdout.start_testpmd("Default",
                                  "--portmask=%s --port-topology=loop --txq=%s --rxq=%s --txd=4096 --rxd=4096"
                                  % (utils.create_mask(self.ports),queue_num,queue_num), socket=self.ports_socket)
