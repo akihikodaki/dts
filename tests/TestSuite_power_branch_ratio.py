@@ -347,7 +347,7 @@ class TestPowerBranchRatio(TestCase):
                 'memory_size': 1024, })
         prompt = 'vmpower>'
         option = sub_option + \
-            (' -- --branch-ratio={}'.format(self.branch_ratio) \
+            (' -- --core-branch-ratio={}'.format(self.branch_ratio) \
             if self.branch_ratio else '')
         cmd = [' '.join([self.vm_power_mgr, option]), prompt, 50]
         self.d_con(cmd)
