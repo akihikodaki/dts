@@ -855,7 +855,7 @@ tv_add_two_rules_with_different_input_set_different_vf_id = {
                   "expect_results":{"expect_pkts":[0, 0]}}
 }
 
-class SwitchFilterTest(TestCase):
+class CVLDCFSwitchFilterTest(TestCase):
 
     def bind_nics_driver(self, ports, driver=""):
         # modprobe vfio driver
@@ -1677,10 +1677,29 @@ class SwitchFilterTest(TestCase):
         rule_list_num = list(range(0, 32563))
         rule_list = [str(x) for x in rule_list_num]
         self.check_switch_filter_rule_list(0, rule_list)
-        #create the 32564th rule
-        rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.127.178 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
+        #create other rules to make switch filter table full
+        m = i
+        t = j
+        p = re.compile(r"Flow rule #(\d+) created")
+        switch_table_full_flag = False
+        count = 0
+        for i in range(m,255):
+            for j in range(t,255):
+                rule = 'flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions vf id 1 / end \n' % (i, j)
+                matched_packet = 'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.%d.%d")/TCP(sport=25,dport=23)/Raw("X"*480)' % (i, j)
+                out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
+                m1 = p.search(out)
+                if m1:
+                    rule_list.append(m1.group(1))
+                    tv_max_rule_number["matched"]["scapy_str"].append(matched_packet)
+                    count += 1
+                else:
+                    self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
+                    switch_table_full_flag = True
+                    break
+            if switch_table_full_flag:
+                break
+        tv_max_rule_number["matched"]["expect_results"]["expect_pkts"] += count
         #check the rule list
         self.check_switch_filter_rule_list(0, rule_list)
         #send matched packets and check
