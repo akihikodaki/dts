@@ -55,8 +55,14 @@ class TestMacFilter(TestCase):
         self.dutPorts = self.dut.get_ports()
         # Verify that enough ports are available
         self.verify(len(self.dutPorts) >= 1, "Insufficient ports")
-        portMask = utils.create_mask(self.dutPorts[:1])
 
+
+    def set_up(self):
+        """
+        Run before each test case.
+        Nothing to do.
+        """
+        portMask = utils.create_mask(self.dutPorts[:1])
         self.pmdout = PmdOutput(self.dut)
         self.pmdout.start_testpmd("Default", "--portmask=%s" % portMask)
         self.dut.send_expect("set verbose 1", "testpmd> ")
@@ -75,12 +81,6 @@ class TestMacFilter(TestCase):
 
         self.max_mac_addr = utils.regexp(out, "Maximum number of MAC addresses: ([0-9]+)")
 
-    def set_up(self):
-        """
-        Run before each test case.
-        Nothing to do.
-        """
-        pass
 
     def whitelist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
         """
@@ -144,6 +144,7 @@ class TestMacFilter(TestCase):
         self.verify("received" not in out,
                     "Packet has been received on a new MAC address that has been removed from the port")
         self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ", 30)
 
     def test_invalid_addresses(self):
         """
@@ -179,6 +180,8 @@ class TestMacFilter(TestCase):
             i = i + 1
 
         self.verify("No space left on device" in out, "added 1 address more than max MAC addresses")
+        self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ", 30)
 
     def test_multicast_filter(self):
         """
@@ -206,6 +209,7 @@ class TestMacFilter(TestCase):
                     "Packet has been received when it should have ignored the broadcast")
 
         self.dut.send_expect("stop", "testpmd> ")
+        self.dut.send_expect("quit", "# ", 30)
 
     def tear_down(self):
         """
