@@ -268,14 +268,15 @@ class PerfTestsCryptodev(TestCase):
                 if lines[line_index].startswith("    lcore id"):
                     self.logger.debug("data output line from: " + str(line_index))
                     break
+            data_line = line_index - 2
 
             results = []
             pattern = re.compile(r'\s+')
-            for line in lines[line_index:]:
+            for line in lines[data_line:-1]:
                 print(line)
                 result = {}
                 result_list = pattern.split(line.strip(" "))
-                if result_list[0] == "lcore id" or result_list[0] == "lcore" or not result_list[0]:
+                if len(result_list) != 10 or result_list[0] == "lcore" or not result_list[0]:
                     continue
                 result["lcore_id"] = int(result_list[0])
                 result["buf_size"] = int(result_list[1])
