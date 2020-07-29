@@ -1550,25 +1550,32 @@ class CVLDCFSwitchFilterTest(TestCase):
         matched_dic["check_func"]["func"](out, matched_dic["check_func"]["param"], matched_dic["expect_results"], tx_dic["check_func"]["param"], tx_dic["expect_results"])
 
     def test_max_vfs(self):
-        #set up 64 vfs on 1 pf environment
+        # get max vfs number
+        max_vf_number = int(256/(len(self.dut_ports)))
+        #set up max_vf_number vfs on 1 pf environment
         self.used_dut_port_0 = self.dut_ports[0]
         self.pf0_intf = self.dut.ports_info[self.used_dut_port_0]['intf']
         out = self.dut.send_expect('ethtool -i %s' % self.pf0_intf, '#')
-        #generate 64 VFs on PF0
-        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, 64, driver='default')
+        #generate max_vf_number VFs on PF0
+        self.dut.generate_sriov_vfs_by_port(self.used_dut_port_0, max_vf_number, driver='default')
         self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
+        #bind max_vf_number vfs to iavf
+        iavf_driver_file_location = self.suite_config["iavf_driver_file_location"]
+        self.dut.send_expect("rmmod iavf", "# ", 15)
+        self.dut.send_expect("insmod %s" % iavf_driver_file_location, "# ", 60)
+        time.sleep(2)
+        for port in self.sriov_vfs_port:
+            port.bind_driver('iavf')
         #sort the vf interfaces and pcis by pcis
         vfs = {}
         for vf_port in self.sriov_vfs_port:
-            vf_port.bind_driver()
             vfs[vf_port.pci] = vf_port.intf_name
         vfs_sort = sorted(vfs.items(), key=lambda item:item[0])
         vf_pci = [key for key,value in vfs_sort]
         vf_intf = [value for key,value in vfs_sort]
-        #start the 64 VFs in the kernel
+        #start the max_vf_number VFs in the kernel
         for intf in vf_intf:
             self.dut.send_expect('ifconfig %s up' % intf, '#')
-
         self.dut.send_expect('ip link set %s vf 0 trust on' % self.pf0_intf, '#')
         self.dut.send_expect('./usertools/dpdk-devbind.py -b %s %s' % (self.vf_driver, vf_pci[0]), '# ')
         time.sleep(5)
@@ -1579,25 +1586,29 @@ class CVLDCFSwitchFilterTest(TestCase):
         command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
-        #generate 63 rules to each vf and matched packets
-        for i in range(1,64):
+        #generate max_vf_number-1 rules to each vf and matched packets
+        for i in range(1,max_vf_number):
             rte_flow_pattern = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.%d / tcp / end actions vf id %d / end" % (i, i)
             tv_max_vfs["rte_flow_pattern"].append(rte_flow_pattern)
             matched_scapy_str = 'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.%d")/TCP()/Raw("X"*480)' % i
             tv_max_vfs["matched"]["scapy_str"].append(matched_scapy_str)
         out = self.dut.send_expect("show port info all", "testpmd> ", 15)
-        #create 63 rules
+        #create max_vf_number-1 rules
         rule_list = self.create_switch_filter_rule(tv_max_vfs["rte_flow_pattern"])
         self.check_switch_filter_rule_list(0, rule_list)
         #send matched packets and check
+        tv_max_vfs["matched"]["check_func"]["param"]["expect_port"] = list(range(1, max_vf_number))
+        tv_max_vfs["matched"]["expect_results"]["expect_pkts"] = [1]*(max_vf_number-1)
         matched_dic = tv_max_vfs["matched"]
         out = self.send_packets(matched_dic)
-        #check the 63 packets received by each vf
+        #check the max_vf_number-1 packets received by each vf
         self.session_secondary = self.dut.new_session(suite="session_secondary")
         #get the log of each kernel vf
         out_vfs = self.get_kernel_vf_log(vf_intf, self.session_secondary)
         matched_dic["check_func"]["func"](out_vfs, matched_dic["expect_results"]["expect_pkts"])
         #send mismatched packets and check
+        tv_max_vfs["mismatched"]["check_func"]["param"]["expect_port"] = list(range(1, max_vf_number))
+        tv_max_vfs["mismatched"]["expect_results"]["expect_pkts"] = [1]*(max_vf_number-1)
         mismatched_dic = tv_max_vfs["mismatched"]
         out = self.send_packets(mismatched_dic)
         #get the log of each kernel vf
