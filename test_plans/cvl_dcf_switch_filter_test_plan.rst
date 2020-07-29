@@ -2480,11 +2480,10 @@ are dropped.
 Test case: Max vfs
 ==================
 
-Description: 256 VFs can be created on a CVL nic, if 2*100G card, each PF
-can create 128 VFs, else if 4*25G card, each PF can create 64 VFs. This
+Description: 256 VFs can be created on a CVL NIC, if 2*100G NIC, each PF
+can create 128 VFs, else if 4*25G NIC, each PF can create 64 VFs. This
 case is used to test when all VFs on a PF are used, switch filter rules can work.
-
-design case with 4*25G card.
+This case is designed based on 4*25G NIC.
 
 1. generate 64 VFs on PF::
 
