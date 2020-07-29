@@ -45,6 +45,9 @@ def get_suite_config(test_case):
     if "ice_driver_file_location" in test_case.get_suite_cfg():
         ice_driver_file_location = test_case.get_suite_cfg()["ice_driver_file_location"]
         suite_config["ice_driver_file_location"] = ice_driver_file_location
+    if "iavf_driver_file_location" in test_case.get_suite_cfg():
+        iavf_driver_file_location = test_case.get_suite_cfg()["iavf_driver_file_location"]
+        suite_config["iavf_driver_file_location"] = iavf_driver_file_location
     if "os_default_package_file_location" in test_case.get_suite_cfg():
         os_default_package_file_location = test_case.get_suite_cfg()["os_default_package_file_location"]
         suite_config["os_default_package_file_location"] = os_default_package_file_location
