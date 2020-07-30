@@ -59,13 +59,13 @@ def git_build_package(gitLabel, pkgName, depot="dep"):
     else:
         print("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
         ret = os.system("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
-    if ret is not 0:
+    if ret != 0:
         raise EnvironmentError
 
     print("git archive --format=tar.gz --prefix=%s %s -o %s" % (gitPrefix, gitLabel, pkgName))
     ret = os.system("cd %s/%s && git archive --format=tar.gz --prefix=%s/ %s -o ../%s"
                     % (depot, gitPrefix, gitPrefix, gitLabel, pkgName))
-    if ret is not 0:
+    if ret != 0:
         raise EnvironmentError
 
 
