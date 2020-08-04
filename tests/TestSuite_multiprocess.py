@@ -259,10 +259,17 @@ class TestMultiprocess(TestCase):
 
         for n in range(len(validExecutions)):
             execution = validExecutions[n]
-            coreMask = utils.create_mask(self.dut.get_core_list(execution['cores'], socket=self.socket))
-            self.session_secondary.send_expect(
-                self.app_symmetric_mp + " -c %s --proc-type=auto -- -p %s --num-procs=%d --proc-id=%d" % (
-                    coreMask, portMask, execution['nprocs'], n), "Finished Process Init")
+            # get coreList form execution['cores']
+            coreList = self.dut.get_core_list(execution['cores'], socket=self.socket)
+            # to run a set of symmetric_mp instances, like test plan
+            dutSessionList = []
+            for index in range(len(coreList)):
+                dut_new_session = self.dut.new_session()
+                dutSessionList.append(dut_new_session)
+                # add -w option when tester and dut in same server
+                dut_new_session.send_expect(
+                    self.app_symmetric_mp + " -c %s --proc-type=auto %s -- -p %s --num-procs=%d --proc-id=%d" % (
+                        utils.create_mask([coreList[index]]), self.eal_param, portMask, execution['nprocs'], index), "Finished Process Init")
 
             # clear streams before add new streams
             self.tester.pktgen.clear_streams()
@@ -274,6 +281,9 @@ class TestMultiprocess(TestCase):
 
             # close all symmetric_mp process
             self.dut.send_expect("killall symmetric_mp", "# ")
+            # close all dut sessions
+            for dut_session in dutSessionList:
+                self.dut.close_session(dut_session)
 
         # get rate and mpps data
         for n in range(len(executions)):
@@ -311,19 +321,21 @@ class TestMultiprocess(TestCase):
 
         for execution in validExecutions:
             coreList = self.dut.get_core_list(execution['cores'], socket=self.socket)
-
-            coreMask = utils.create_mask(self.dut.get_core_list('1S/1C/1T'))
+            # get core with socket parameter to specified which core dut used when tester and dut in same server
+            coreMask = utils.create_mask(self.dut.get_core_list('1S/1C/1T', socket=self.socket))
             portMask = utils.create_mask(self.dut_ports)
-            self.dut.send_expect(self.app_mp_server + " -n %d -c %s -- -p %s -n %d" % (
-                self.dut.get_memory_channels(), "0xA0", portMask, execution['nprocs']), "Finished Process Init", 20)
+            # specified mp_server core and add -w option when tester and dut in same server
+            self.dut.send_expect(self.app_mp_server + " -n %d -c %s %s -- -p %s -n %d" % (
+                self.dut.get_memory_channels(), coreMask, self.eal_param, portMask, execution['nprocs']), "Finished Process Init", 20)
             self.dut.send_expect("^Z", "\r\n")
             self.dut.send_expect("bg", "# ")
 
             for n in range(execution['nprocs']):
                 time.sleep(5)
-                coreMask = utils.create_mask([coreList[n]])
-                self.dut.send_expect(self.app_mp_client + " -n %d -c %s --proc-type=secondary -- -n %d" % (
-                    self.dut.get_memory_channels(), coreMask, n), "Finished Process Init")
+                # use next core as mp_client core, different from mp_server
+                coreMask = utils.create_mask([str(int(coreList[n]) + 1)])
+                self.dut.send_expect(self.app_mp_client + " -n %d -c %s --proc-type=secondary %s -- -n %d" % (
+                    self.dut.get_memory_channels(), coreMask, self.eal_param, n), "Finished Process Init")
                 self.dut.send_expect("^Z", "\r\n")
                 self.dut.send_expect("bg", "# ")
 
@@ -376,6 +388,4 @@ class TestMultiprocess(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        self.dut.close_session(self.session_secondary)
-
         pass
