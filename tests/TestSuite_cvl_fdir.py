@@ -284,6 +284,18 @@ MAC_IPV4_GTPU = {
         'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw("x"*20)']
 }
 
+L2_Ethertype = [
+    'Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)',
+    'Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw("x" * 80)',
+    'Ether(dst="00:11:22:33:44:55")/PPPoE(sessionid=3)/Raw("x" * 80)',
+    'Ether(dst="00:11:22:33:44:55", type=0x8864)/IP()/Raw("x" * 80)',
+    'Ether(dst="00:11:22:33:44:55")/ARP(pdst="192.168.1.1")',
+    'Ether(dst="00:11:22:33:44:55", type=0x0806)/Raw("x" *80)',
+    'Ether(dst="00:11:22:33:44:55",type=0x8100)',
+    'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)',
+    'Ether(dst="00:11:22:33:44:55",type=0x88f7)/"\\x00\\x02"',
+    'Ether(dst="00:11:22:33:44:55",type=0x8847)']
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -1241,6 +1253,144 @@ vectors_mac_ipv4_gtpu = [tv_mac_ipv4_gtpu_queue_index, tv_mac_ipv4_gtpu_queue_gr
                          tv_mac_ipv4_gtpu_passthru, tv_mac_ipv4_gtpu_drop,
                          tv_mac_ipv4_gtpu_mark_rss, tv_mac_ipv4_gtpu_mark]
 
+tv_l2_ethertype_queue_index = {
+    "name": "test_l2_ethertype_queue_index",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions queue index 2 / mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions queue index 3 / mark id 3 / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions queue index 4 / mark id 4 / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions queue index 5 / mark id 5 / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "queue": 1, "mark_id": 1},
+        {"port_id": 0, "queue": 1, "mark_id": 1},
+        {"port_id": 0, "queue": 2, "mark_id": 2},
+        {"port_id": 0, "queue": 2, "mark_id": 2},
+        {"port_id": 0, "queue": 3, "mark_id": 3},
+        {"port_id": 0, "queue": 3, "mark_id": 3},
+        {"port_id": 0, "queue": 4, "mark_id": 4},
+        {"port_id": 0, "queue": 4, "mark_id": 4},
+        {"port_id": 0, "queue": 5, "mark_id": 5},
+        {"port_id": 0, "queue": 0}]
+}
+
+tv_l2_ethertype_queue_group = {
+    "name": "test_l2_ethertype_queue_group",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions rss queues 0 1 end / mark id 0 / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions rss queues 2 3 end / mark id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions rss queues 4 5 end / mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions rss queues 6 7 end / mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions rss queues 9 10 end / mark id 3 / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 3},
+        {"port_id": 0, "queue": 0}]
+}
+
+tv_l2_ethertype_passthru = {
+    "name": "test_l2_ethertype_passthru",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions passthru / mark / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions passthru / mark id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions passthru / mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions passthru / mark id 3 / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions passthru / mark id 4 / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 3},
+        {"port_id": 0, "queue": 0, "mark_id": 3},
+        {"port_id": 0, "queue": 0, "mark_id": 4},
+        {"port_id": 0, "queue": 0}]
+}
+
+tv_l2_ethertype_mark_rss = {
+    "name": "test_l2_ethertype_mark_rss",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions rss / mark id 0 / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions mark id 1 / rss / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions mark / rss / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions rss / mark / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions mark id 3 / rss / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 3},
+        {"port_id": 0, "queue": 0}]
+}
+
+tv_l2_ethertype_mark = {
+    "name": "test_l2_ethertype_mark",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions mark id 0 / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions mark id 1 / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions mark id 2 / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions mark / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 1},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 2},
+        {"port_id": 0, "queue": 0, "mark_id": 0},
+        {"port_id": 0, "queue": 0}]
+}
+
+tv_l2_ethertype_drop = {
+    "name": "test_l2_ethertype_drop",
+    "rule": [
+        "flow create 0 ingress pattern eth type is 0x8863 / end actions drop / end",
+        "flow create 0 ingress pattern eth type is 0x8864 / end actions drop / end",
+        "flow create 0 ingress pattern eth type is 0x0806 / end actions drop / end",
+        "flow create 0 ingress pattern eth type is 0x8100 / end actions drop / end",
+        "flow create 0 ingress pattern eth type is 0x88f7 / end actions drop / end"],
+    "scapy_str": L2_Ethertype,
+    "check_param": [
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "drop": 1},
+        {"port_id": 0, "queue": 0}]
+}
+
+vectors_l2_ethertype = [tv_l2_ethertype_queue_index,
+                        tv_l2_ethertype_queue_group,
+                        tv_l2_ethertype_passthru,
+                        tv_l2_ethertype_drop,
+                        tv_l2_ethertype_mark_rss,
+                        tv_l2_ethertype_mark]
 
 class TestCVLFdir(TestCase):
 
@@ -1299,6 +1449,36 @@ class TestCVLFdir(TestCase):
                 self.dut.send_command("flow flush 1", timeout=1)
                 test_results[tv["name"]] = False
                 self.logger.info((GREEN("case failed: %s" % tv["name"])))
+                continue
+        failed_cases = []
+        for k, v in list(test_results.items()):
+            if not v:
+                failed_cases.append(k)
+        self.verify(all(test_results.values()), "{} failed.".format(failed_cases))
+
+    def _multirules_process(self, vectors, port_id=0):
+        # create rules on only one port
+        test_results = {}
+        rule_li = []
+        for tv in vectors:
+            try:
+                port_id = port_id
+                pkts=tv["scapy_str"]
+                check_param=tv["check_param"]
+                self.destroy_fdir_rule(rule_id=rule_li, port_id=port_id)
+
+                # validate rules and create rules
+                rule_li = self.create_fdir_rule(tv["rule"], check_stats=True)
+
+                for i in range(len(pkts)):
+                    port_id = check_param[i]["port_id"]
+                    out = self.send_pkts_getouput(pkts=pkts[i], drop=check_param[i].get("drop"))
+                    rfc.check_mark(out, pkt_num=1, check_param=check_param[i])
+                test_results[tv["name"]] = True
+                print((GREEN("case passed: %s" % tv["name"])))
+            except Exception as e:
+                print((RED(e)))
+                test_results[tv["name"]] = False
                 continue
         failed_cases = []
         for k, v in list(test_results.items()):
@@ -1705,15 +1885,22 @@ class TestCVLFdir(TestCase):
         self.check_fdir_rule(stats=True, rule_list=rule_li)
 
     def test_conflicted_rules(self):
-        rule1 = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end"
+        rule1 = [
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / end',
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 1 / mark / end']
         rule_li = self.create_fdir_rule(rule1, check_stats=True)
         rule2 = [
             "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 2 / end",
             "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end",
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions queue index 2 / mark / end',
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / end actions rss queues 2 3 end / mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 3 / mark / end',
-            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions queue index 3 / mark / end']
-        self.create_fdir_rule(rule2[0:2], check_stats=False, msg="Rule already exists!: File exists", validate=False)
-        self.create_fdir_rule(rule2[2:], check_stats=False, msg="Invalid input action number: Invalid argument", validate=False)
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / udp src is 22 dst is 23 / end actions queue index 3 / mark / end',
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2021 / end actions mark / end',
+            'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end']
+        self.create_fdir_rule(rule2[0:4], check_stats=False, msg="Rule already exists!: File exists", validate=False)
+        self.create_fdir_rule(rule2[4:7], check_stats=False, msg="Invalid input action number: Invalid argument", validate=False)
+        self.create_fdir_rule(rule2[7:], check_stats=False, msg="Invalid input set: Invalid argument", validate=False)
         self.check_fdir_rule(stats=True, rule_list=rule_li)
 
     def test_conflicted_actions(self):
@@ -2091,7 +2278,7 @@ class TestCVLFdir(TestCase):
             eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci0 + ",flow-mark-support=1",
                                                                                 self.pci1 + ",flow-mark-support=1"],
                                                        socket=self.ports_socket)
-            param = " -- -i --portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
+            param = " --log-level='ice,7' -- -i --portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                 self.portMask, 64, 64, cmd_path)
             command_line = self.dut.target + "/app/testpmd " + eal_param + param
             out = self.dut.send_expect(command_line, 'testpmd>', timeout=600)
@@ -2197,7 +2384,7 @@ class TestCVLFdir(TestCase):
             out = self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                                 param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                                                     self.portMask, 64, 64, cmd_path),
-                                                eal_param="-w %s,flow-mark-support=1 -w %s,flow-mark-support=1" % (
+                                                eal_param="-w %s,flow-mark-support=1 -w %s,flow-mark-support=1 --log-level='ice,7'" % (
                                                     self.pci0, self.pci1), socket=self.ports_socket)
             self.verify('Failed to create flow' not in out, "create some rule failed")
             self.config_testpmd()
@@ -2270,6 +2457,15 @@ class TestCVLFdir(TestCase):
 
     def test_mac_ipv4_gtpu(self):
         self._rte_flow_validate(vectors_mac_ipv4_gtpu)
+
+    def test_l2_ethertype(self):
+        self._multirules_process(vectors_l2_ethertype)
+
+    def test_unsupported_ethertype(self):
+        rule = ['flow create 0 ingress pattern eth type is 0x0800 / end actions queue index 1 / end',
+                'flow create 0 ingress pattern eth type is 0x86dd / end actions queue index 1 / end']
+        self.create_fdir_rule(rule, check_stats=True, msg="Succeeded to create (2) flow")
+        self.check_fdir_rule(stats=True)
 
     def tear_down(self):
         # destroy all flow rule on port 0
