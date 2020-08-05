@@ -499,27 +499,31 @@ class Crb(object):
         pids = []
         pid_reg = r'p(\d+)'
         for config_file in file_directorys:
-            cmd = 'lsof -Fp %s' % config_file
-            out = self.send_expect(cmd, "# ", 20, alt_session)
-            if len(out):
-                lines = out.split('\r\n')
-                for line in lines:
-                    m = re.match(pid_reg, line)
-                    if m:
-                        pids.append(m.group(1))
-            for pid in pids:
-                self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
-                self.get_session_output(timeout=2)
+            # Covers case where the process is run as a unprivileged user and does not generate the file
+            if os.path.isfile(config_file):
+                cmd = 'lsof -Fp %s' % config_file
+                out = self.send_expect(cmd, "# ", 20, alt_session)
+                if len(out):
+                    lines = out.split('\r\n')
+                    for line in lines:
+                        m = re.match(pid_reg, line)
+                        if m:
+                            pids.append(m.group(1))
+                for pid in pids:
+                    self.send_expect('kill -9 %s' % pid, '# ', 20, alt_session)
+                    self.get_session_output(timeout=2)
 
         hugepage_info = ['/var/run/dpdk/%s/hugepage_info' % file_prefix for file_prefix in prefix_list]
         for hugepage in hugepage_info:
-            cmd = 'lsof -Fp %s' % hugepage
-            out = self.send_expect(cmd, "# ", 20, alt_session)
-            if len(out) and "No such file or directory" not in out:
-                self.logger.warning("There are some dpdk process not free hugepage")
-                self.logger.warning("**************************************")
-                self.logger.warning(out)
-                self.logger.warning("**************************************")
+            # Covers case where the process is run as a unprivileged user and does not generate the file
+            if os.path.isfile(hugepage):
+                cmd = 'lsof -Fp %s' % hugepage
+                out = self.send_expect(cmd, "# ", 20, alt_session)
+                if len(out) and "No such file or directory" not in out:
+                    self.logger.warning("There are some dpdk process not free hugepage")
+                    self.logger.warning("**************************************")
+                    self.logger.warning(out)
+                    self.logger.warning("**************************************")
 
         # remove directory
         directorys = ['/var/run/dpdk/%s' % file_prefix for file_prefix in prefix_list]

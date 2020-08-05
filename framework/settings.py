@@ -197,6 +197,8 @@ SCAPY2IXIA = [
 
 USERNAME = 'root'
 
+# A user used to test functionality for a non-root user
+UNPRIVILEGED_USERNAME = 'dtsunprivilegedtester'
 
 """
 Helpful header sizes.

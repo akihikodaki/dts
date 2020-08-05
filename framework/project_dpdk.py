@@ -434,7 +434,7 @@ class DPDKdut(Dut):
             current_nic += 1
 
         bind_script_path = self.get_dpdk_bind_script()
-        self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
+        return self.send_expect('%s --force %s' % (bind_script_path, binding_list), '# ')
 
     def unbind_interfaces_linux(self, nics_to_bind=None):
         """
