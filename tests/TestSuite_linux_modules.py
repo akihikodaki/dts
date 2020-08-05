@@ -136,7 +136,7 @@ class LinuxModulesHelperMethods:
 
     def test_tx_rx(self):
         """
-        Preforms the testing that needs to be done as root.
+        Performs the testing that needs to be done as root.
         @param driver: The driver to test
         """
         self.tx_rx_test_helper(self.pmdout)
