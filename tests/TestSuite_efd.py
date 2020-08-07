@@ -164,7 +164,7 @@ class TestEFD(TestCase):
             self.result_table_add([val_bitnum, 2, "2M",  pps])
 
         self.result_table_print()
-        self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)' lib/librte_efd/rte_efd.h", "#")
+        self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)/' lib/librte_efd/rte_efd.h", "#")
         self.dut.build_install_dpdk(self.target)
         out = self.dut.build_dpdk_apps("./examples/server_node_efd")
         self.verify("Error" not in out, "Compilation error")
