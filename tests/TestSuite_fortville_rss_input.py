@@ -3962,6 +3962,37 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         self.dut.send_expect("quit", "# ", 30)
 
+    def test_flow_query(self):
+        """
+        Test the flow rule query.
+        """
+        self.start_testpmd()
+
+        self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end / end", "testpmd> ")
+        self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end queues end func symmetric_toeplitz / end", "testpmd> ")
+        self.dut.send_expect("flow create 0 ingress pattern end actions rss types end queues end func simple_xor / end", "testpmd> ")
+        self.dut.send_expect("flow create 0 ingress pattern end actions rss types end queues 1 2 end / end", "testpmd> ")
+
+        rexp = r"flow query 0 (\d) rss\r\r\nRSS:\r\n queues: ([\S\s]+?)\r\n function: (\S+?)\r\n types:\r\n  ([\s\S]+)"
+        out0 = self.dut.send_expect("flow query 0 0 rss", "testpmd> ")
+        m0 = re.match(rexp, out0.strip())
+        self.verify("none" == m0.group(2) and "default" == m0.group(3) and "ipv4-tcp" == m0.group(4) , "Query error")
+        out1 = self.dut.send_expect("flow query 0 1 rss", "testpmd> ")
+        m1 = re.match(rexp, out1.strip())
+        self.verify("none" == m1.group(2) and "symmetric_toeplitz" == m1.group(3) and "ipv4-udp" in m1.group(4) and "l3-src-only" in m1.group(4) , "Query error")
+        out2 = self.dut.send_expect("flow query 0 2 rss", "testpmd> ")
+        m2 = re.match(rexp, out2.strip())
+        self.verify("none" == m2.group(2) and "simple_xor" == m2.group(3) and "none" == m2.group(4) , "Query error")
+        out3 = self.dut.send_expect("flow query 0 3 rss", "testpmd> ")
+        m3 = re.match(rexp, out3.strip())
+        self.verify("1 2" == m3.group(2) and "default" == m3.group(3) and "none" == m3.group(4) , "Query error")
+
+        self.dut.send_expect("flow flush 0", "testpmd> ")
+        out4 = self.dut.send_expect("flow query 0 0 rss", "testpmd> ")
+        self.verify("Flow rule #0 not found" in out4, "Failed to rss query!")
+
+        self.dut.send_expect("quit", "# ", 30)
+
     def tear_down(self):
         """
         Run after each test case.
