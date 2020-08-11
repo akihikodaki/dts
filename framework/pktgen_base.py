@@ -508,6 +508,7 @@ class PacketGenerator(object):
         # traffic parameters for dichotomy algorithm
         loss_rate_table = []
         hit_result = None
+        hit_rate = 0
         rate = traffic_rate_max = max_rate
         traffic_rate_min = min_rate
         while True:
@@ -523,6 +524,7 @@ class PacketGenerator(object):
             # if upper bound rate percent hit, quit the left flow
             if rate == max_rate and status:
                 hit_result = result
+                hit_rate = rate
                 break
             # if lower bound rate percent not hit, quit the left flow
             if rate == min_rate and not status:
@@ -530,6 +532,7 @@ class PacketGenerator(object):
             if status:
                 traffic_rate_min = rate
                 hit_result = result
+                hit_rate = rate
             else:
                 traffic_rate_max = rate
             if traffic_rate_max - traffic_rate_min < accuracy:
@@ -549,7 +552,7 @@ class PacketGenerator(object):
                 ret_value = 0, result[0][0][1], result[0][0][2], 0
             else:
                 self.logger.debug(pformat(loss_rate_table))
-                ret_value = rate, hit_result[0][0][1], hit_result[0][0][2], hit_result[1][1]
+                ret_value = hit_rate, hit_result[0][0][1], hit_result[0][0][2], hit_result[1][1]
         else:
             if not hit_result:
                 msg = ('expected permit loss rate <{0}> '
@@ -560,8 +563,8 @@ class PacketGenerator(object):
                 ret_value = 0, result[0][1], result[0][2]
             else:
                 self.logger.debug(pformat(loss_rate_table))
-                ret_value = rate, hit_result[0][1], hit_result[0][2]
-        self.logger.info("zero loss rate is %f" % rate)
+                ret_value = hit_rate, hit_result[0][1], hit_result[0][2]
+        self.logger.info("zero loss rate is %f" % hit_rate)
 
         return ret_value
 
