@@ -55,6 +55,9 @@ Prerequisites
     ./usertools/dpdk-devbind.py -b igb_uio 05:00.0
 
 2. Change ./drivers/net/softnic/firmware.cli to meet the specific test environment.
+   Change the DUT port info to the actual port info in your test environment::
+
+    link LINK dev 0000:05:00.0
 
 3. Start softnic with following command line::
 
