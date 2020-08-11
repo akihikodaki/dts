@@ -640,8 +640,8 @@ class L3fwdBase(object):
         """
         Prepare long prefix match table, __replace P(x) port pattern
         """
-        l3fwd_method = '_'.join(['l3fwd', mode.value])
-        self.d_con("make clean -C examples/l3fwd")
+        self.app_name = self.dut.apps_name['l3fwd'].replace(' ', '')
+        l3fwd_method = ''.join(['_', mode.value])
         flg = 1 if mode is MATCH_MODE.LPM else 0
         _opt = "USER_FLAGS=-DAPP_LOOKUP_METHOD={}".format(flg) \
             if self.__mode is SUITE_TYPE.PF else ''
@@ -649,12 +649,11 @@ class L3fwdBase(object):
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
         if not rename:
-            return "./examples/l3fwd/build/l3fwd"
+            return "./" + self.app_name
         # rename binary file
         self.d_con(
-            ("mv -f examples/l3fwd/build/l3fwd "
-             "examples/l3fwd/build/{}").format(l3fwd_method))
-        l3fwd_bin = os.path.join("./examples/l3fwd/build/", l3fwd_method)
+            ("mv -f  " + self.app_name + " " + self.app_name + "{}").format(l3fwd_method))
+        l3fwd_bin = os.path.join("./" + self.app_name + l3fwd_method)
         return l3fwd_bin
 
     def __start_l3fwd(self, mode, core_mask, config, frame_size):
