@@ -163,6 +163,7 @@ Prerequisites
     >>> sys.path.append('/root')
     >>> from pfcp import PFCP
     >>> from scapy.contrib.gtp import *
+    >>> from scapy.contrib.mpls import *
 
 
 Default parameters
@@ -1446,7 +1447,7 @@ Subcase 1: L2 Ethertype queue index
 
 6. send a mismatched packet::
 
-    sendp([Ether(dst="00:11:22:33:44:55",type=0x8847)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(label=0xee456)/IP()],iface="enp134s0f1")
 
    check the packet received has not FDIR matched ID.
 
