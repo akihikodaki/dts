@@ -719,14 +719,18 @@ class L3fwdBase(object):
 
     def __json_rfc2544(self, value):
         return {"unit": "Mpps", "name": "Rfc2544",
-                "value": value[0], "delta": value[1]}
+                "value": round(value[0], 3),
+                "delta": round(value[1], 3),
+                }
 
     def __json_throughput(self, value):
         return {"unit": "Mpps", "name": "Throughput",
-                "value": value[0], "delta": value[1]}
+                "value": round(value[0], 3),
+                "delta": round(value[1], 3),
+                }
 
     def __json_rate_percent(self, value):
-        return {"unit": "", "name": "% of Line Rate", "value": value}
+        return {"unit": "", "name": "% of Line Rate", "value": round(value, 3)}
 
     def __json_port_config(self, value):
         return {"unit": "", "name": "Number of Cores/Threads/Queues",
@@ -827,11 +831,12 @@ class L3fwdBase(object):
                         expected, pps, round(gap, 2))
                     self.logger.error(msg)
             else:
+                expected = pps
                 msg = ('{0} {1} expected throughput value is not set, '
                        'ignore check').format(config, frame_size)
                 self.logger.warning(msg)
                 status = 'pass'
-            js_results.append([status, [pps, linerate - pps], percentage, config, frame_size])
+            js_results.append([status, [pps, pps - expected], percentage, config, frame_size])
         # save data with json format
         self.__save_throughput_result(self.__cur_case, js_results)
         # display result table
@@ -861,6 +866,7 @@ class L3fwdBase(object):
                 self.__cur_case, {}).get(self.__nic_name, {}).get(
                 config, {}).get(str(frame_size), {})
             zero_loss_rate, tx_pkts, rx_pkts, pps = result if result else [None] * 3
+            zero_loss_rate = zero_loss_rate or 0
             mpps = pps / 1000000.0
             # expected line rate
             _frame_size = self.__get_frame_size(stm_name, frame_size)
@@ -869,33 +875,43 @@ class L3fwdBase(object):
             actual_rate_percent = mpps * 100 / linerate
             # append data for display
             pdr = expected_cfg.get('traffic_opt', {}).get('pdr')
+            expected_rate = float(expected_cfg.get('rate') or 100.0)
             values.append([
                 config, frame_size, mode.upper(),
-                str(linerate),
+                str(linerate * expected_rate /100),
                 str(mpps),
-                str(zero_loss_rate),
+                str(expected_rate),
                 str(actual_rate_percent),
                 str(tx_pkts),
                 str(rx_pkts),
             ])
             # check data with expected values
-            expected_rate = float(expected_cfg.get('rate') or 100.0)
+            gap = 100 * (zero_loss_rate - expected_rate) / expected_rate
             status = 'pass' \
-                if zero_loss_rate and zero_loss_rate > expected_rate \
+                if abs(gap) < bias \
                 else 'failed'
             js_results.append(
                 [status,
-                 [mpps, linerate - mpps], actual_rate_percent,
+                 [mpps, actual_rate_percent - expected_rate], actual_rate_percent,
                  config, frame_size])
         # save data in json file
         self.__save_rfc2544_result(self.__cur_case, js_results)
         # display result table
+        # Total Cores/Threads/Queues per port
+        # Frame Size
+        # Mode: LPM/EM
+        # Expected Throughput (Mpps)  :  Max linerate throughput value *  'Expected LineRate %'
+        # Actual Throughput (Mpps)  :  actual run throughput value on the zero loss rate
+        # Expected LineRate %  :  which config in l3fwd_lpm_ipv4_rfc2544.cfg
+        # Actual LineRate %  :  actual run zero loss rate
+        # tx_pkts :  send pkts num
+        # rx_pkts :  received pkts num
         title = [
             'Total Cores/Threads/Queues per port',
             "Frame Size",
             "Mode",
             'Expected Throughput (Mpps)',
-            'Actual line rate (Mpps) ',
+            'Actual Throughput (Mpps) ',
             '{} Mode config line rate % '.format(mode.upper()),
             '{} Mode actual line rate % '.format(mode.upper()),
             'tx_pkts',
