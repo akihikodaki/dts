@@ -56,11 +56,18 @@ dut_port_1 : "0000:05:00.1"
 
     ./usertools/dpdk-devbind.py -b igb_uio 05:00.0 05:00.1
 
-3. The default metering mode is::
+3. The default metering mode is defined in dpdk/examples/qos_meter/main.c::
 
-    APP_MODE_SRTCM_COLOR_BLIND
+    #define APP_MODE        APP_MODE_SRTCM_COLOR_BLIND
 
-4. The policy table is::
+   The input color of packets depends on the value "APP_PKT_COLOR_POS",
+   which is defined in dpdk/examples/qos_meter/main.c too::
+
+    #define APP_PKT_COLOR_POS               5
+
+   The change will descripted in each case.
+
+4. The policy table is defined in dpdk/examples/qos_meter/main.h::
 
     policer_table[RTE_COLORS][RTE_COLORS] =
     {
