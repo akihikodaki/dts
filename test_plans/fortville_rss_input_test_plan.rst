@@ -598,3 +598,35 @@ Test Case: test flow validate
          flow validate 0 ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp l3-dst-only end queues 0 1 end / end
 
    verify the rule validate failed.
+
+Test Case: test query RSS rule
+==============================
+
+create different RSS rules::
+
+    testpmd> flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss types ipv4-tcp end queues end / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end queues end func symmetric_toeplitz / end
+    testpmd> flow create 0 ingress pattern end actions rss types end queues end func simple_xor / end
+    testpmd> flow create 0 ingress pattern end actions rss types end queues 1 2 end / end
+    testpmd> flow list 0
+
+verify the Rules create successfully.
+
+query::
+
+    testpmd> flow query 0 0 rss
+    testpmd> flow query 0 1 rss
+    testpmd> flow query 0 2 rss
+    testpmd> flow query 0 3 rss
+
+verify the function, type and queues information correct.
+
+delete all the rss rules::
+
+    testpmd> flow flush 0
+
+query::
+
+    testpmd> flow query 0 0 rss
+
+verify the testpmd report none rss rule exist.
