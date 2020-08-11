@@ -40,7 +40,9 @@ The SoftNIC allows building custom NIC pipelines in SW. The Soft NIC pipeline is
 
 Prerequisites
 =============
-The DUT must have four 10G Ethernet ports connected to four ports on tester that are controlled by the Scapy packet generator::
+The DUT can have 4*10G Ethernet ports or 2*10G Ethernet ports.
+We design case with 4*10G Ethernet ports.
+The DUT have four 10G Ethernet ports connected to four ports on tester that are controlled by the Scapy packet generator::
 
     dut_port_0 <---> tester_port_0
     dut_port_1 <---> tester_port_1
@@ -59,6 +61,14 @@ Bind them to dpdk igb_uio driver::
     ./usertools/dpdk-devbind.py -b igb_uio 05:00.0 05:00.1 05:00.2 05:00.3
 
 Change ./drivers/net/softnic/firmware.cli to meet the specific test environment.
+Change ports info to your actual ports info::
+
+    link LINK0 dev 0000:05:00.0
+    link LINK1 dev 0000:05:00.1
+    link LINK2 dev 0000:05:00.2
+    link LINK3 dev 0000:05:00.3
+
+Other changes are shown in each case.
 
 Start softnic with following command line::
 
