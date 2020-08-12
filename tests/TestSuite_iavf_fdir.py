@@ -750,9 +750,9 @@ tv_mac_ipv6_pay_mark = {
 
 tv_mac_ipv6_udp_queue_index = {
     "name": "test_mac_ipv6_udp_queue_index",
-    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 1 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / end",
     "scapy_str": MAC_IPV6_UDP,
-    "check_param": {"port_id": 0, "queue": 1}
+    "check_param": {"port_id": 0, "queue": 2}
 }
 
 tv_mac_ipv6_udp_queue_group = {
@@ -792,9 +792,9 @@ tv_mac_ipv6_udp_mark = {
 
 tv_mac_ipv6_tcp_queue_index = {
     "name": "test_mac_ipv6_tcp_queue_index",
-    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 2 / mark / end",
     "scapy_str": MAC_IPV6_TCP,
-    "check_param": {"port_id": 0, "queue": 1, "mark_id": 0}
+    "check_param": {"port_id": 0, "queue": 2, "mark_id": 0}
 }
 
 tv_mac_ipv6_tcp_queue_group = {
@@ -1298,9 +1298,6 @@ class TestIAVFFdir(TestCase):
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
 
-        self.re_load_ice_driver()
-        self.setup_2pf_4vf_env()
-
         self.src_file_dir = 'dep/'
         self.dut_file_dir = '/tmp/'
         self.cvlq_num = CVL_TXQ_RXQ_NUMBER
@@ -1390,8 +1387,8 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("rmmod ice", "# ", 40)
         ice_driver_file_location = self.suite_config["ice_driver_file_location"]
         self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ")
-        self.dut.send_expect("ifconfig %s up" % self.dut_ports[0], "# ", 15)
-        self.dut.send_expect("ifconfig %s up" % self.dut_ports[1], "# ", 15)
+        self.dut.send_expect("ifconfig %s up" % self.pf0_intf, "# ", 15)
+        self.dut.send_expect("ifconfig %s up" % self.pf1_intf, "# ", 15)
 
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set fwd rxonly")
@@ -2135,8 +2132,8 @@ class TestIAVFFdir(TestCase):
 
         rules = [
             "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / end",
-            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / udp src is 22 dst is 23 / end actions queue index 5 / mark / end",
-            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / udp src is 22 dst is 23 / end actions queue index 5 / mark id 1 / end",
+            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / udp src is 22 dst is 23 / end actions queue index 6 / mark / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.22 dst is 192.168.0.23 / udp src is 22 dst is 23 / end actions queue index 6 / mark id 1 / end",
             "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.22 dst is 192.168.0.23 tos is 4 / tcp src is 22 dst is 23 / end actions drop / end"]
         pkts = {
             "matched": [
@@ -2200,14 +2197,14 @@ class TestIAVFFdir(TestCase):
         out_vf00 = self.send_pkts_getouput(pkts["matched"][0])
         rfc.check_iavf_fdir_mark(out_vf00, pkt_num=1, check_param={"port_id": 0, "queue": [2, 3]}, stats=True)
         out_vf01 = self.send_pkts_getouput(pkts["matched"][1])
-        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 5, "mark_id": 0}, stats=True)
+        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 6, "mark_id": 0}, stats=True)
 
         self.send_packets(pkts["matched"][2], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
         out_pkt = self.session_secondary.send_expect("stop", "testpmd> ")
         out_vf10 = out_info + out_pkt
         self.session_secondary.send_expect("start", "testpmd> ")
-        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 5, "mark_id": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 6, "mark_id": 1}, stats=True)
 
         self.send_packets(pkts["matched"][3], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
@@ -2220,14 +2217,14 @@ class TestIAVFFdir(TestCase):
         out_vf00 = self.send_pkts_getouput(pkts["mismatched"][0])
         rfc.check_iavf_fdir_mark(out_vf00, pkt_num=1, check_param={"port_id": 0, "queue": [2, 3]}, stats=False)
         out_vf01 = self.send_pkts_getouput(pkts["mismatched"][1])
-        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 5, "mark_id": 0}, stats=False)
+        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 6, "mark_id": 0}, stats=False)
 
         self.send_packets(pkts["mismatched"][2], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
         out_pkt = self.session_secondary.send_expect("stop", "testpmd> ")
         out_vf10 = out_info + out_pkt
         self.session_secondary.send_expect("start", "testpmd> ")
-        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 5, "mark_id": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 6, "mark_id": 1}, stats=False)
 
         self.send_packets(pkts["mismatched"][3], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
@@ -2261,14 +2258,14 @@ class TestIAVFFdir(TestCase):
         out_vf00 = self.send_pkts_getouput(pkts["matched"][0])
         rfc.check_iavf_fdir_mark(out_vf00, pkt_num=1, check_param={"port_id": 0, "queue": [2, 3]}, stats=False)
         out_vf01 = self.send_pkts_getouput(pkts["matched"][1])
-        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 5, "mark_id": 0}, stats=False)
+        rfc.check_iavf_fdir_mark(out_vf01, pkt_num=1, check_param={"port_id": 1, "queue": 6, "mark_id": 0}, stats=False)
 
         self.send_packets(pkts["matched"][2], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
         out_pkt = self.session_secondary.send_expect("stop", "testpmd> ")
         out_vf10 = out_info + out_pkt
         self.session_secondary.send_expect("start", "testpmd> ")
-        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 5, "mark_id": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out_vf10, pkt_num=1, check_param={"port_id": 0, "queue": 6, "mark_id": 1}, stats=False)
 
         self.send_packets(pkts["matched"][3], pf_id=1)
         out_info = self.session_secondary.get_session_before(timeout=2)
@@ -2609,19 +2606,27 @@ class TestIAVFFdir(TestCase):
         profile 0 and profile 1 are default profile for specific packet.
         design case with 2*100G card, so only 110 profiles can be used for vf.
         """
+        nex_cnt = 0
         self.destroy_env()
         self.setup_npf_nvf_env(pf_num=1,vf_num=16)
-        self.dut.send_expect('ip link set %s vf 10 mac 00:11:22:33:44:55' % self.pf0_intf, '#')
+
+        if len(self.dut_ports) == 4:
+            nex_cnt = 94 // 8
+        elif len(self.dut_ports) == 2:
+            nex_cnt = 110 // 8
+        else:
+            self.verify(False, 'The number of ports is not supported')
+
+        self.dut.send_expect("ip link set {} vf {} mac 00:11:22:33:44:55".format(self.pf0_intf, nex_cnt), '#')
         command = "./%s/app/testpmd -c f -n 6 -- -i %s" % (self.dut.target, "--rxq=4 --txq=4")
         self.dut.send_expect(command, "testpmd> ", 360)
         self.config_testpmd()
-        for port_id in range(11):
+
+        for port_id in range(nex_cnt):
             rules = [
-                "flow create %d ingress pattern eth / ipv4 proto is 255 / end actions queue index 1 / mark / end" % port_id,
                 "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
                 "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
                 "flow create %d ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
-                "flow create %d ingress pattern eth / ipv6 proto is 0 / end actions mark / rss / end" % port_id,
                 "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
                 "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
                 "flow create %d ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end" % port_id,
@@ -2629,17 +2634,25 @@ class TestIAVFFdir(TestCase):
                 "flow create %d ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 2 / end" % port_id]
             self.create_fdir_rule(rules, check_stats=True)
 
-        rule = "flow create 11 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end"
+        rules = [
+            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
+            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
+            "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
+            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
+            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt),
+            "flow create {} ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / sctp src is 22 dst is 23 / end actions queue index 1 / mark / end".format(nex_cnt)]
+        self.create_fdir_rule(rules, check_stats=True)
+
+        rule = "flow create {} ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end".format(nex_cnt)
         self.create_fdir_rule(rule, check_stats=False)
-        self.check_fdir_rule(port_id=11, stats=False)
         pkt = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22, dport=23)/ Raw("x" * 80)'
         out = self.send_pkts_getouput(pkts=pkt)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": 10, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=True)
 
-        self.dut.send_expect("flow flush 10", "testpmd> ")
-        self.check_fdir_rule(port_id=10, stats=False)
+        self.dut.send_expect("flow flush {}".format(nex_cnt), "testpmd> ")
+        self.check_fdir_rule(port_id=(nex_cnt), stats=False)
         out = self.send_pkts_getouput(pkts=pkt)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": 10, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=False)
 
         self.create_fdir_rule(rule, check_stats=False)
 
@@ -2665,10 +2678,10 @@ class TestIAVFFdir(TestCase):
         add/delete rules 14336 times on 1 vf
         """
         rules = [
-            "flow create 0 ingress pattern eth / ipv4 proto is 255 / end actions queue index 1 / mark / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 6 / mark / end",
             "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end"]
         pkts = [
-            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21", proto=255)/Raw("x" * 80)',
+            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw("x" * 80)',
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw("x" * 80)']
         self.dut.kill_all()
         src_file = 'add_delete_rules_1vf'
@@ -2690,7 +2703,7 @@ class TestIAVFFdir(TestCase):
         self.check_fdir_rule(port_id=0, stats=False)
         self.create_fdir_rule(rules, check_stats=True)
         out_0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out_0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out_0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out_1 = self.send_pkts_getouput(pkts=pkts[1])
         rfc.check_iavf_fdir_mark(out_1, pkt_num=1, check_param={"port_id": 0, "mark_id": 1, "queue": [2, 3]}, stats=True)
 
@@ -2841,16 +2854,16 @@ class TestIAVFFdir(TestCase):
         relaunch testpmd, create same rules, can take effect.
         """
         rules = [
-            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end",
-            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end"]
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 6 / mark / end",
+            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 6 / mark / end"]
         pkts = [
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
             'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)']
         rule_li = self.create_fdir_rule(rules, check_stats=True)
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         # reset vf
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop 0", "testpmd> ")
@@ -2863,22 +2876,22 @@ class TestIAVFFdir(TestCase):
         out0 = self.send_pkts_getouput(pkts=pkts[0])
         rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         # delete the rules
         self.dut.send_expect("flow destroy 0 rule 0", "Invalid flow destroy")
         self.destroy_fdir_rule(rule_id='0', port_id=1)
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=False)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=False)
         # relaunch testpmd, and create the rules, check matched packets.
         self.dut.send_expect("quit", "# ")
         self.launch_testpmd()
         self.create_fdir_rule(rules, check_stats=True)
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
 
     def test_stress_pf_reset_vf_add_new_rule(self):
         """
@@ -2939,17 +2952,17 @@ class TestIAVFFdir(TestCase):
         """
         self.session_secondary = self.dut.new_session()
         rules = [
-            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end",
-            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end"]
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 6 / mark / end",
+            "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 6 / mark / end"]
         pkts = [
             'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
             'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
             'Ether(dst="00:11:22:33:44:56")/IP(src="192.168.0.0",dst="192.1.0.0", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)']
         self.create_fdir_rule(rules, check_stats=True)
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
 
         self.session_secondary.send_expect("ip link set %s vf 0 mac 00:11:22:33:44:56" % self.pf0_intf, "# ")
         out = self.dut.session.get_session_before(timeout=2)
@@ -2962,23 +2975,23 @@ class TestIAVFFdir(TestCase):
         out0 = self.send_pkts_getouput(pkts=pkts[2])
         rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         # delete the rules
         self.dut.send_expect("flow destroy 0 rule 0", "Invalid flow destroy")
         self.destroy_fdir_rule(rule_id='0', port_id=1)
         out0 = self.send_pkts_getouput(pkts=pkts[2])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=False)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=False)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=False)
 
         # relaunch testpmd, and create the rules, check matched packets.
         self.dut.send_expect("quit", "# ")
         self.launch_testpmd()
         self.create_fdir_rule(rules, check_stats=True)
         out0 = self.send_pkts_getouput(pkts=pkts[2])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         self.dut.send_expect("quit", "# ")
         self.session_secondary.send_expect("ip link set %s vf 0 mac 00:11:22:33:44:55" % self.pf0_intf, "# ")
         self.dut.close_session(self.session_secondary)
@@ -3356,8 +3369,8 @@ class TestIAVFFdir(TestCase):
 
     def tear_down(self):
         # destroy all flow rule on port 0
-        self.destroy_env()
         self.dut.kill_all()
+        self.destroy_env()
         if getattr(self, 'session_secondary', None):
             self.dut.close_session(self.session_secondary)
         if getattr(self, 'session_third', None):
