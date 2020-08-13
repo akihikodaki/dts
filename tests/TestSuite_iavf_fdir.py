@@ -295,7 +295,7 @@ L2_Ethertype = [
     'Ether(dst="00:11:22:33:44:55",type=0x8100)',
     'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)',
     'Ether(dst="00:11:22:33:44:55",type=0x88f7)/"\\x00\\x02"',
-    'Ether(dst="00:11:22:33:44:55",type=0x8847)']
+    'Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(label=0xee456)/IP()']
 
 PFCP = [
     'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=22, dport=8805)/PFCP(Sfield=0)',
@@ -329,7 +329,7 @@ tv_l2_ethertype_queue_index = {
         {"port_id": 0, "queue": 4, "mark_id": 4},
         {"port_id": 0, "queue": 4, "mark_id": 4},
         {"port_id": 0, "queue": 5, "mark_id": 5},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_l2_ethertype_queue_group = {
@@ -351,7 +351,7 @@ tv_l2_ethertype_queue_group = {
         {"port_id": 0, "queue": 0, "mark_id": 2},
         {"port_id": 0, "queue": 0, "mark_id": 2},
         {"port_id": 0, "queue": 0, "mark_id": 3},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_l2_ethertype_passthru = {
@@ -373,7 +373,7 @@ tv_l2_ethertype_passthru = {
         {"port_id": 0, "queue": 0, "mark_id": 3},
         {"port_id": 0, "queue": 0, "mark_id": 3},
         {"port_id": 0, "queue": 0, "mark_id": 4},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_l2_ethertype_mark_rss = {
@@ -395,7 +395,7 @@ tv_l2_ethertype_mark_rss = {
         {"port_id": 0, "queue": 0, "mark_id": 0},
         {"port_id": 0, "queue": 0, "mark_id": 0},
         {"port_id": 0, "queue": 0, "mark_id": 3},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_l2_ethertype_mark = {
@@ -417,7 +417,7 @@ tv_l2_ethertype_mark = {
         {"port_id": 0, "queue": 0, "mark_id": 2},
         {"port_id": 0, "queue": 0, "mark_id": 2},
         {"port_id": 0, "queue": 0, "mark_id": 0},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_l2_ethertype_drop = {
@@ -439,7 +439,7 @@ tv_l2_ethertype_drop = {
         {"port_id": 0, "drop": 1},
         {"port_id": 0, "drop": 1},
         {"port_id": 0, "drop": 1},
-        {"port_id": 0, "queue": 0}]
+        {"port_id": 0, "passthru": 1}]
 }
 
 tv_pfcp_queue_index = {
