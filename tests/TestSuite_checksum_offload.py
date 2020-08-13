@@ -59,7 +59,7 @@ from scapy.utils import wrpcap, rdpcap
 from test_capabilities import DRIVER_TEST_LACK_CAPA
 from test_case import TestCase
 
-from framework.pmd_output import PmdOutput
+from pmd_output import PmdOutput
 from test_capabilities import DRIVER_TEST_LACK_CAPA
 from pktgen import PacketGeneratorHelper
 from exception import VerifyFailure
