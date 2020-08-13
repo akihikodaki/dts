@@ -500,7 +500,8 @@ class Crb(object):
         pid_reg = r'p(\d+)'
         for config_file in file_directorys:
             # Covers case where the process is run as a unprivileged user and does not generate the file
-            if os.path.isfile(config_file):
+            isfile = self.send_expect('ls -l {}'.format(config_file), "# ", 20, alt_session)
+            if isfile:
                 cmd = 'lsof -Fp %s' % config_file
                 out = self.send_expect(cmd, "# ", 20, alt_session)
                 if len(out):
@@ -516,7 +517,8 @@ class Crb(object):
         hugepage_info = ['/var/run/dpdk/%s/hugepage_info' % file_prefix for file_prefix in prefix_list]
         for hugepage in hugepage_info:
             # Covers case where the process is run as a unprivileged user and does not generate the file
-            if os.path.isfile(hugepage):
+            isfile = self.send_expect('ls -l {}'.format(hugepage), "# ", 20, alt_session)
+            if isfile:
                 cmd = 'lsof -Fp %s' % hugepage
                 out = self.send_expect(cmd, "# ", 20, alt_session)
                 if len(out) and "No such file or directory" not in out:
