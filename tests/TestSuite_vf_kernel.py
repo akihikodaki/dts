@@ -706,7 +706,7 @@ class TestVfKernel(TestCase):
         """
         self.vm0_dut.send_expect("ifconfig %s up " % self.vm0_intf0, "#")
         self.vm0_dut.send_expect("ifconfig %s up " % self.vm0_intf1, "#")
-        self.vm0_dut.ports_info[1]['port'].bind_driver('igb_uio')
+        self.vm0_dut.ports_info[1]['port'].bind_driver('vfio-pci')
 
         # because of alt_session is false, host cmd need to execute before testpmd start
         vm0_vf0_mac = self.vm0_dut.ports_info[0]['port'].get_mac_addr()
@@ -790,11 +790,11 @@ class TestVfKernel(TestCase):
             self.verify(self.check_pf_vf_link_status(
                 self.vm1_dut, vm1_intf), "VM1_vf: %s link down" % vm1_intf)
 
-        # Bind kernel VF0, VF1 to igb_uio in VM0, bind kernel VF4 to igb_uio in
+        # Bind kernel VF0, VF1 to vfio-pci in VM0, bind kernel VF4 to vfio-pci in
         # VM1
-        self.vm0_dut.ports_info[0]['port'].bind_driver('igb_uio')
-        self.vm0_dut.ports_info[1]['port'].bind_driver('igb_uio')
-        self.vm1_dut.ports_info[0]['port'].bind_driver('igb_uio')
+        self.vm0_dut.ports_info[0]['port'].bind_driver('vfio-pci')
+        self.vm0_dut.ports_info[1]['port'].bind_driver('vfio-pci')
+        self.vm1_dut.ports_info[0]['port'].bind_driver('vfio-pci')
 
         # because of alt_session is false, host cmd need to execute before testpmd start
         vm0_vf2_mac = self.vm0_dut.ports_info[2]['port'].get_mac_addr()
