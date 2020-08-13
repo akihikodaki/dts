@@ -296,7 +296,7 @@ tv_iavf_mac_ipv6_pfcp_session = {
 tv_iavf_gtpu_ipv4_up_match_dismatch = {
     "name": "iavf_gtpu_ipv4_up_match_dismatch",
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / "
-                        "end actions rss types l3-src-only end key_len 0 queues end / end",
+                        "end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255,teid=0x123456)/'
                   'GTP_PDUSession_ExtensionHeader( pdu_type=1, qos_flow=0x34) / IP(src=RandIP()) /("X"*480)' % vf0_mac],
@@ -314,7 +314,7 @@ tv_iavf_gtpu_ipv4_up_match_dismatch = {
 tv_iavf_gtpu_ipv4_down_match_dismatch = {
     "name": "iavf_gtpu_ipv4_down_match_dismatch",
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / "
-                        "end actions rss types l3-dst-only end key_len 0 queues end / end",
+                        "end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
                   'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)' % vf0_mac],
@@ -328,7 +328,7 @@ tv_iavf_gtpu_ipv4_down_match_dismatch = {
 
 tv_iavf_gtpu_ipv4_frag_up_match_dismatch = {
     "name": "iavf_gtpu_ipv4_frag_up_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end "
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
@@ -344,7 +344,7 @@ tv_iavf_gtpu_ipv4_frag_up_match_dismatch = {
 tv_iavf_gtpu_ipv4_frag_down_match_dismatch = {
 
     "name": "iavf_gtpu_ipv4_frag_down_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end "
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
@@ -359,7 +359,7 @@ tv_iavf_gtpu_ipv4_frag_down_match_dismatch = {
 
 tv_iavf_gtpu_ipv4_udp_up_match_dismatch = {
     "name": "iavf_gtpu_ipv4_udp_up_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp "
                         "l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
@@ -375,7 +375,7 @@ tv_iavf_gtpu_ipv4_udp_up_match_dismatch = {
 tv_iavf_gtpu_ipv4_udp_down_match_dismatch = {
 
     "name": "iavf_gtpu_ipv4_udp_down_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end "
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
@@ -390,7 +390,7 @@ tv_iavf_gtpu_ipv4_udp_down_match_dismatch = {
 tv_iavf_gtpu_ipv4_tcp_up_match_dismatch = {
     "name": "iavf_gtpu_ipv4_tcp_up_match_dismatch",
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp /"
-                        " end actions rss types l3-src-only end key_len 0 queues end / end",
+                        " end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
                   'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
@@ -406,7 +406,7 @@ tv_iavf_gtpu_ipv4_tcp_down_match_dismatch = {
 
     "name": "iavf_gtpu_ipv4_tcp_down_match_dismatch",
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp /"
-                        " end actions rss types l3-dst-only end key_len 0 queues end / end",
+                        " end actions rss types ipv4-tcp l3-dst-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
                   'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) /IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
@@ -419,7 +419,7 @@ tv_iavf_gtpu_ipv4_tcp_down_match_dismatch = {
 
 tv_iavf_gtpu_ipv4_icmp_up_match_dismatch = {
     "name": "iavf_gtpu_ipv4_icmp_up_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end "
                         "key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
@@ -435,7 +435,7 @@ tv_iavf_gtpu_ipv4_icmp_up_match_dismatch = {
 tv_iavf_gtpu_ipv4_icmp_down_match_dismatch = {
 
     "name": "iavf_gtpu_ipv4_icmp_down_match_dismatch",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end "
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end "
                         "key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
