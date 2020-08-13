@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2014 Intel Corporation. All rights reserved.
+# Copyright(c) 2020 Intel Corporation. All rights reserved
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -237,6 +237,12 @@ class PmdOutput():
         Get the specified port MAC.
         """
         return self.get_detail_from_port_info("MAC address: ", "([0-9A-F]{2}:){5}[0-9A-F]{2}", port_id)
+
+    def get_firmware_version(self, port_id):
+        """
+        Get the firmware version.
+        """
+        return self.get_detail_from_port_info("Firmware-version: ", "\S.*", port_id)
 
     def get_port_connect_socket(self, port_id):
         """
