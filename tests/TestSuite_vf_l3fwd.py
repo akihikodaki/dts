@@ -69,14 +69,6 @@ class TestVfL3fwd(TestCase):
 
         self.l3fwd_methods = ['lpm']
         self.l3fwd_test_results = {'header': [], 'data': []}
-        self.logger.info("Configure RX/TX descriptor to 2048, and re-build ./examples/l3fwd")
-        self.dut.send_expect("sed -i -e 's/define RTE_TEST_RX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
-        self.dut.send_expect("sed -i -e 's/define RTE_TEST_TX_DESC_DEFAULT.*$/"
-                             + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
-        out = self.dut.build_dpdk_apps("./examples/l3fwd")
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
 
         # set vf assign method and vf driver
         self.vf_driver = self.get_suite_cfg()['vf_driver']
@@ -278,7 +270,8 @@ class TestVfL3fwd(TestCase):
             for j in range(self.queue):
                 queue_config += "({0}, {1}, {2})," .format(i, j, core_list[m])
                 m += 1
-        cmdline = "./examples/l3fwd/build/l3fwd -c {0} -n 4 {1} -- -p {2} --config '{3}' --parse-ptype". \
+        app_name = self.dut.apps_name['l3fwd']
+        cmdline = app_name + "-c {0} -n 4 {1} -- -p {2} --config '{3}' --parse-ptype". \
             format(core_mask, eal_param, port_mask, queue_config)
         self.perf_test(cmdline)
 
@@ -292,12 +285,14 @@ class TestVfL3fwd(TestCase):
         return vf_driver
 
     def test_perf_kernel_pf_dpdk_vf_perf_host_only(self):
+        self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()
         self.measure_vf_performance(host_driver='default', vf_driver=self.get_kernel_pf_vf_driver())
 
     def test_perf_dpdk_pf_dpdk_vf_perf_host_only(self):
         for idx in self.dut_ports:
             self.verify(self.dut.ports_info[idx]['port'].default_driver != 'ice', 'Columbiaville do not support generate vfs from igb_uio')
 
+        self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()
         if self.drivername != "igb_uio":
             self.logger.warning("Use igb_uio as host driver for testing instead of %s" % self.drivername)
 
@@ -313,7 +308,7 @@ class TestVfL3fwd(TestCase):
             self.verify(self.dut.ports_info[idx]['port'].default_driver == 'i40e', 'The case is only designed for Fortville')
 
         self.build_iavf()
-        self.dut.build_dpdk_apps("./examples/l3fwd")
+        self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()
         self.measure_vf_performance(host_driver='default', vf_driver=self.get_kernel_pf_vf_driver())
 
     def build_iavf(self):
@@ -326,6 +321,19 @@ class TestVfL3fwd(TestCase):
             self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) }/d' drivers/net/iavf/iavf_ethdev.c", "# ")
             self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
             self.dut.build_install_dpdk(self.target)
+
+    def set_rxtx_descriptor_2048_and_rebuild_l3fwd(self):
+        """
+        Set RX/TX descriptor to 2048 and rebuild l3fwd
+        """
+        self.logger.info("Configure RX/TX descriptor to 2048, and re-build ./examples/l3fwd")
+        self.dut.send_expect("sed -i -e 's/define RTE_TEST_RX_DESC_DEFAULT.*$/"
+                             + "define RTE_TEST_RX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
+        self.dut.send_expect("sed -i -e 's/define RTE_TEST_TX_DESC_DEFAULT.*$/"
+                             + "define RTE_TEST_TX_DESC_DEFAULT 2048/' ./examples/l3fwd/l3fwd.h", "#", 20)
+        out = self.dut.build_dpdk_apps("./examples/l3fwd")
+        self.verify("Error" not in out, "compilation error 1")
+        self.verify("No such file" not in out, "compilation error 2")
 
     def set_fields(self):
         """
