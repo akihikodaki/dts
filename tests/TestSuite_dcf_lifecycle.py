@@ -426,14 +426,28 @@ class TestDcfLifeCycle(TestCase):
         cmd = 'clear port stats all'
         self.vf_pmd2_con([cmd, "testpmd> ", 15])
 
-    def check_vf_pmd2_stats(self, traffic, portid=0, is_traffic_valid=True):
+    def parse_pmd2_verbose_pkt_count(self, portid, vf_id=0):
+        if not self.vf_pmd2_session:
+            return 0
+        output = self.vf_pmd2_session.session.get_session_before(15)
+        pat = 'dst={dst}'.format(**self.get_mac_layer(portid, vf_id=vf_id).get('ether'))
+        result = re.findall(pat, output)
+        return len(result) if result else 0
+
+    def check_vf_pmd2_stats(self, traffic, verbose_parser, 
+                            portid=0, is_traffic_valid=True):
         pmd = PmdOutput(self.dut, session=self.vf_pmd2_session)
         info = pmd.get_pmd_stats(portid) or {}
         ori_pkt = info.get('RX-packets') or 0
         traffic()
+        verbose_pkt = verbose_parser()
         info = pmd.get_pmd_stats(portid) or {}
         rx_pkt = info.get('RX-packets') or 0
         check_pkt = rx_pkt - ori_pkt
+        if verbose_pkt != check_pkt:
+            msg = 'received packets contain un-expected packet'
+            self.logger.warning(msg)
+            check_pkt = verbose_pkt
         if is_traffic_valid:
             msg = f"port {portid} should receive packets, but no traffic happen"
             self.verify(check_pkt and check_pkt > 0, msg)
@@ -451,12 +465,13 @@ class TestDcfLifeCycle(TestCase):
     def check_vf_pmd2_traffic(self, func_name, topo=None, flag=False):
         dut_port_id, vf_id = topo if topo else [0, 1]
         pkt = self.config_stream(dut_port_id, vf_id)
-        traffic = partial(self.send_packet_by_scapy, pkt, dut_port_id, 1)
+        traffic = partial(self.send_packet_by_scapy, pkt, dut_port_id, vf_id)
+        verbose_parser = partial(self.parse_pmd2_verbose_pkt_count, dut_port_id, vf_id)
         self.vf_pmd2_clear_port_stats()
-        self.check_vf_pmd2_stats(traffic)
+        self.check_vf_pmd2_stats(traffic, verbose_parser)
         status_change_func = getattr(self, func_name)
         status_change_func()
-        self.check_vf_pmd2_stats(traffic, is_traffic_valid=flag)
+        self.check_vf_pmd2_stats(traffic, verbose_parser, is_traffic_valid=flag)
 
     def run_test_pre(self, pmd_opitons):
         pri_pmd_option = pmd_opitons[0]
