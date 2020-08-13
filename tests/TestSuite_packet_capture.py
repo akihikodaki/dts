@@ -451,7 +451,7 @@ class TestPacketCapture(TestCase):
                 "rm -fr {0}/*".format(self.pdump_log), "# ", 10)
         param_opt = "--port-topology=chained"
         eal_param = '--file-prefix=test'
-        self.testpmd.start_testpmd("Default", param=param_opt,
+        self.testpmd.start_testpmd("Default", param=param_opt, fixed_prefix=True,
                                    eal_param=eal_param)
         self.testpmd.execute_cmd("set fwd io")
         self.testpmd.execute_cmd("start")
