@@ -180,6 +180,8 @@ class PmdOutput():
 
         app_name = self.dut.apps_name['test-pmd']
         command = app_name + " %s -- -i %s" % (all_eal_param, param)
+        if self.session != self.dut:
+            self.session.send_expect("cd %s" % self.dut.base_dir, "# ")
         out = self.session.send_expect(command, "testpmd> ", 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
