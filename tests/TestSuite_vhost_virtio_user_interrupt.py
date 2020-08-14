@@ -89,11 +89,18 @@ class TestVirtioUserInterrupt(TestCase):
         out = self.dut.build_dpdk_apps("./examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def launch_l3fwd(self, path, packed=False):
         self.core_interrupt = self.core_list_l3fwd[0]
         example_para = "./examples/l3fwd-power/build/l3fwd-power "
         vdev = "virtio_user0,path=%s,cq=1" % path if not packed else "virtio_user0,path=%s,cq=1,packed_vq=1" % path
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
+        if self.check_2M_env:
+            eal_params += " --single-file-segments"
         para = " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
         cmd_l3fwd = example_para + eal_params + " --log-level='user1,7' -- -p 1 " + para
         self.l3fwd.get_session_before(timeout=2)

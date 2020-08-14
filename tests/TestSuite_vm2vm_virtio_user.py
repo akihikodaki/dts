@@ -125,12 +125,19 @@ class TestVM2VMVirtioUser(TestCase):
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('set fwd %s' % fwd_mode)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_virtio_testpmd_with_vhost_net1(self, path_mode, extern_params, ringsize):
         """
         launch the testpmd as virtio with vhost_net1
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio1,
                 no_pci=True, prefix=self.virtio_prefix, fixed_prefix=True)
+        if self.check_2M_env:
+            eal_params += " --single-file-segments "
         vdev_params = '--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
         command_line = self.dut.target + "/app/testpmd %s " + \
             "--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s"
@@ -147,6 +154,8 @@ class TestVM2VMVirtioUser(TestCase):
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio0,
                 no_pci=True, prefix='virtio0')
+        if self.check_2M_env:
+            eal_params += " --single-file-segments "
         vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
         command_line = self.dut.target + '/app/testpmd %s ' + \
             '--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s'

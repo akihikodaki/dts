@@ -99,6 +99,11 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_virtio_user_testpmd(self, vdevs, vector_flag=False):
         """
         start testpmd in vm depend on different path
@@ -106,6 +111,8 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         testcmd = self.dut.target + "/app/testpmd "
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[5:8], prefix='virtio', no_pci=True,
                                                     vdevs=[vdevs])
+        if self.check_2M_env:
+            eal_params += " --single-file-segments"
         if vector_flag:
             para = " -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=%s --txq=%s --rss-ip" % (
             self.queue_number, self.queue_number)

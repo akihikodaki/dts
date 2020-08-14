@@ -112,6 +112,11 @@ class TestVM2VMVirtioPMD(TestCase):
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost_user.send_expect("start", "testpmd> ", 30)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_virtio_testpmd_with_vhost_net1(self, path_mode, extern_param):
         """
         launch the testpmd as virtio with vhost_net1
@@ -121,6 +126,8 @@ class TestVM2VMVirtioPMD(TestCase):
         testcmd = self.dut.target + "/app/testpmd "
         vdev = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s " % path_mode
         eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio', ports=[self.pci_info])
+        if self.check_2M_env:
+            eal_params += " --single-file-segments"
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024 %s" % extern_param
         command_line = testcmd + eal_params + vdev + para
         self.virtio_user1.send_expect(command_line, 'testpmd> ', 30)
@@ -136,6 +143,8 @@ class TestVM2VMVirtioPMD(TestCase):
         testcmd = self.dut.target + "/app/testpmd "
         vdev = "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s " % path_mode
         eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio0', ports=[self.pci_info])
+        if self.check_2M_env:
+            eal_params += " --single-file-segments "
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024 %s" % extern_param
         command_line = testcmd + eal_params + vdev + para
         self.virtio_user0.send_expect(command_line, 'testpmd> ', 30)

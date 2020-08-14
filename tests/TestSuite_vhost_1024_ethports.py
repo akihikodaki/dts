@@ -71,10 +71,19 @@ class TestVhost1024Ethports(TestCase):
             "sed -i 's/CONFIG_RTE_MAX_ETHPORTS=1024$/CONFIG_RTE_MAX_ETHPORTS=32/' config/common_base", '#', 30)
         self.dut.build_install_dpdk(self.target)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def test_launch_vhost_with_1024_ethports(self):
         """
         Test function of launch vhost with 1024 ethports
         """
+        if self.check_2M_env:
+            hugepages = int(self.dut.get_total_huge_pages())
+            if hugepages< 20480:
+                self.dut.send_expect('echo 20480 > /sys/kernel/mm/hugepages/hugepages-2048kB/nr_hugepages', expected='# ', timeout=30)
         command_line_vdev = ''
         for ethport in range(self.max_ethport):
             command_line_vdev += '--vdev "eth_vhost%d,iface=vhost-net%d,queues=%d" ' %(ethport, ethport, self.queue)

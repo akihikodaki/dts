@@ -82,6 +82,11 @@ class TestVhostEventIdxInterrupt(TestCase):
         out = self.dut.send_expect("make -C examples/l3fwd-power", "#")
         self.verify("Error" not in out, "compilation l3fwd-power error")
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def lanuch_l3fwd_power(self):
         """
         launch l3fwd-power with a virtual vhost device
@@ -109,6 +114,8 @@ class TestVhostEventIdxInterrupt(TestCase):
         example_para = "./examples/l3fwd-power/build/l3fwd-power "
         para = " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s' --interrupt-only" % (vdev_info, port_info, config_info)
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True)
+        if self.check_2M_env:
+            eal_params += " --single-file-segments "
         command_line_client = example_para + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)

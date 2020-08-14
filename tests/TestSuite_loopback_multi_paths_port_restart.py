@@ -84,11 +84,18 @@ class TestLoopbackPortRestart(TestCase):
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
 
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
+
     def start_virtio_user_testpmd(self, pmd_arg):
         """
         start testpmd of vhost user
         """
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' % pmd_arg["version"]])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
         command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % pmd_arg["path"]
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)

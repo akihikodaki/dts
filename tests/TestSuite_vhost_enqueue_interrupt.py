@@ -89,10 +89,17 @@ class TestVhostEnqueueInterrupt(TestCase):
         """
         vdev = "net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d" % (self.vmac, self.queues) if not packed else "net_virtio_user0,mac=%s,path=./vhost-net,server=1,queues=%d,packed_vq=1" % (self.vmac, self.queues)
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio, prefix='virtio', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
+        if self.check_2M_env:
+            eal_params += " --single-file-segments"
         para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
         command_line_client =  self.dut.target + "/app/testpmd " + eal_params + para
         self.virtio_user.send_expect(command_line_client, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
+
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
 
     def lanuch_l3fwd_power(self):
         """
