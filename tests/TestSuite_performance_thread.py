@@ -61,7 +61,6 @@ class TestPerformanceThread(TestCase):
         self.frame_sizes = self.get_suite_cfg()["frame_size"]
         self.nb_cores = self.get_suite_cfg()["cores"]
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip'] + HEADER_SIZE['tcp']
-        self.path = "examples/performance-thread/l3fwd-thread/build/l3fwd-thread"
 
         # compile performance_thread app
         out = self.dut.build_dpdk_apps("./examples/performance-thread/l3fwd-thread")
@@ -196,10 +195,11 @@ class TestPerformanceThread(TestCase):
         for cores in self.nb_cores:
             core_list, core_mask = self.create_cores(cores)
             lcore_config, rx, tx = self.config_rx_tx(cores, core_list)
+            app_name = self.dut.apps_name['l3fwd-thread']
             if self.running_case is "test_perf_n_lcore_per_pcore":
-                cmdline = "{} -n 4 {} --lcores='{}' {} --rx='{}' --tx='{}'".format(self.path, eal_param, lcore_config, params, rx, tx)
+                cmdline = "{} -n 4 {} --lcores='{}' {} --rx='{}' --tx='{}'".format(app_name, eal_param, lcore_config, params, rx, tx)
             else:
-                cmdline = "{} -c {} {} {} --rx='{}' --tx='{}'".format(self.path, core_mask, eal_param, params, rx, tx)
+                cmdline = "{} -c {} {} {} --rx='{}' --tx='{}'".format(app_name, core_mask, eal_param, params, rx, tx)
             self.dut.send_expect(cmdline, "L3FWD:", 120)
 
             for frame_size in self.frame_sizes:
