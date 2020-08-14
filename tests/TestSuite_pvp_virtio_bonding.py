@@ -90,7 +90,8 @@ class TestPVPVirtIOBonding(TestCase):
         params = "--port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024"
         eal_param = "--file-prefix=vhost %s " % vdev_info
         self.vhost_testpmd = PmdOutput(self.dut)
-        self.vhost_testpmd.start_testpmd(self.core_config, params, eal_param=eal_param)
+        self.pci_info = self.dut.ports_info[0]['pci']
+        self.vhost_testpmd.start_testpmd(self.core_config, params, eal_param=eal_param,ports=[self.pci_info])
         self.vhost_testpmd.execute_cmd('set fwd mac')
         self.vhost_testpmd.execute_cmd('start')
 

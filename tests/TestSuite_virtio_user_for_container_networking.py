@@ -154,7 +154,8 @@ class TestVirtioUserForContainer(TestCase):
         """
         start testpmd as vhost
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', vdevs=["net_vhost0,iface=vhost-net,queues=%d,client=0" % self.queue_number])
+        self.pci_info = self.dut.ports_info[0]['pci']
+        eal_param = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', vdevs=["net_vhost0,iface=vhost-net,queues=%d,client=0" % self.queue_number],ports=[self.pci_info])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
         command_line_client = self.dut.target + '/app/testpmd ' + eal_param + ' -- -i --nb-cores=%d' % self.nb_cores
