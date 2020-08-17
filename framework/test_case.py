@@ -350,7 +350,7 @@ class TestCase(object):
                 'update_expected' in self.get_suite_cfg() and \
                 self.get_suite_cfg()['update_expected'] == True:
                 self._suite_conf.update_case_config(SUITE_SECTION_NAME)
-            self.tear_down()
+            self.execute_tear_down()
             return case_result
 
     def execute_test_cases(self):
@@ -439,6 +439,16 @@ class TestCase(object):
             dutobj.virt_exit()
             # destroy all vfs
             dutobj.destroy_all_sriov_vfs()
+
+    def execute_tear_down(self):
+        """
+        execute suite tear_down function
+        """
+        try:
+            self.tear_down()
+        except Exception:
+            self.logger.error('tear_down failed:\n' + traceback.format_exc())
+            self.logger.warning("tear down %s failed, might iterfere next case's result!" % self.running_case)
 
     def enable_history(self, history):
         """
