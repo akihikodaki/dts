@@ -56,8 +56,6 @@ class TestCompressdevQatPmd(TestCase):
     def prepare_dpdk(self):
         self.dut.send_expect(
             "sed -i 's/CONFIG_RTE_COMPRESSDEV_TEST=n$/CONFIG_RTE_COMPRESSDEV_TEST=y/' config/common_base", "# ")
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y/' config/common_base", "# ")
         self.dut.build_install_dpdk(self.dut.target)
 
     def get_perf_default_device(self, dev_num=3):
