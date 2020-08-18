@@ -100,18 +100,17 @@ Test case setup:
 
 In Host:
 
-# Build DPDK and vhost_crypto app::
+# Enable config item in dpdk:
 
       enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
-      make install -j T=x86_64-native-linuxapp-gcc
-      make -C examples/vhost_crypto
 
-# Compile the latest qemu
+# Build DPDK and app vhost_crypto
+
 # Run the dpdk vhost sample::
 
     ./examples/vhost_crypto/build/vhost-crypto --socket-mem 2048,0 --legacy-mem --vdev crypto_aesni_mb_pmd_1 -l 8,9,10 -n 4  -- --config "(9,0,0),(10,0,0)" --socket-file 9,/tmp/vm0_crypto0.sock --socket-file=10,/tmp/vm0_crypto1.sock
 
-# bind vfio-pci::
+# bind vf or pf with driver vfio-pci::
 
     usertools/dpdk-devbind.py --bind=vfio-pci 0000:60:00.0 0000:60:00.1
 
@@ -135,6 +134,11 @@ In Host:
 
 In VM:
 
+# enable config items in dpdk and compile dpdk:
+
+    enable CONFIG_RTE_EAL_IGB_UIO in config/common_base
+    enable CONFIG_RTE_LIBRTE_PMD_AESNI_MB in config/common_base
+
 # set virtio device::
 
     modprobe uio_pci_generic
@@ -142,9 +146,10 @@ In VM:
     echo -n 0000:00:05.0 > /sys/bus/pci/drivers/virtio-pci/unbind
     echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id
 
-# Run the virtio performance test cases
+Test Case: Cryptodev AESNI_MB test
+==================================
 
-  1. The AESNI_MB case Command line Eg::
+command::
 
       ./build/app/dpdk-test-crypto-perf -c 0xf --vdev crypto_aesni_mb_pmd  \
       -- --ptest throughput --devtype crypto_aesni_mb --optype cipher-then-auth  \
@@ -152,9 +157,12 @@ In VM:
       --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 --auth-aad-sz 0 \
       --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
 
-  2. The VIRTIO case Command line Eg::
+Test Case: Cryptodev VIRTIO test
+================================
+
+command::
 
       ./build/app/dpdk-test-crypto-perf -c 0xf  -w 00:05.0 -- --ptest throughput \
-      --devtype crypto_qat --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt \
+      --devtype crypto_virtio --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt \
       --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 \
       --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024
