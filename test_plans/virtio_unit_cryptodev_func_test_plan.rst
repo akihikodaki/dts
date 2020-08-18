@@ -51,10 +51,9 @@ Unit Test List
 Prerequisites
 =============
 
-qemu version >= 2.12
-in qemu enable vhost-user-crypto:
+qemu version >= 2.12 and enable vhost-user-crypto::
 
-./configure --target-list=x86_64-softmmu --enable-vhost-crypto --prefix=/root/qemu-2.12 && make && make install
+      ./configure --target-list=x86_64-softmmu --enable-vhost-crypto --prefix=/root/qemu-2.12 && make && make install
 
 the bin is in /root/qemu-2.12 folder, which is your specified
 
@@ -71,13 +70,13 @@ Test Case Setup
 
 In Host:
 
-# Build DPDK and vhost_crypto app
+# Enable config item in dpdk:
 
       enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
-      make install -j T=x86_64-native-linuxapp-gcc
-      make -C examples/vhost_crypto
 
-# Run the dpdk vhost sample
+# Build DPDK and app vhost_crypto
+
+# Run the dpdk vhost sample::
 
       ./examples/vhost_crypto/build/vhost-crypto --file-prefix="vhost_crypto_1"
           [EAL options]
@@ -85,11 +84,11 @@ In Host:
           -- --cdev-queue-id 0
           --socket-file THE PATH OF SOCKET FILE
 
-# bind vfio-pci
+# bind vf or pf with driver vfio-pci::
 
       usertools/dpdk-devbind.py --bind=vfio-pci 0000:60:00.0 0000:60:00.1
 
-# Start VM by the qemu
+# Start VM by the qemu::
 
       taskset -c 11,12,13,14 /root/qemu-2.12/bin/qemu-system-x86_64  -name vm0
           -enable-kvm -pidfile /tmp/.vm0.pid
@@ -108,16 +107,14 @@ In Host:
 
 In VM:
 
-# set virtio device
+# set virtio device::
 
       modprobe uio_pci_generic
       echo -n 0000:00:04.0 > /sys/bus/pci/drivers/virtio-pci/unbind
       echo -n 0000:00:05.0 > /sys/bus/pci/drivers/virtio-pci/unbind
       echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id
 
-# Build the guest DPDK and app/test
-
-# Manually verify the app/test by this command, as example, in your build folder:
+# Manually verify the app/test by this command, as example, in your build folder::
 
       ./app/test -c 1 -n 1
       RTE>> cryptodev_virtio_autotest
