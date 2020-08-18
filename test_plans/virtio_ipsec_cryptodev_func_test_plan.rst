@@ -115,13 +115,11 @@ and compare the payload with correct answer pre-stored in scripts:
 
 In Host:
 
-# Build DPDK and vhost_crypto app::
+# Enable config item in dpdk:
 
-    enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
-    make install -j T=x86_64-native-linuxapp-gcc
-    make -C examples/vhost_crypto
+      enable CONFIG_RTE_LIBRTE_VHOST in config/common_base
 
-# Compile the latest qemu
+# Build DPDK and app vhost_crypto
 
 # Run the dpdk vhost sample::
 
@@ -136,7 +134,7 @@ In Host:
     --socket-file=11,/tmp/vm1_crypto0.sock \
     --socket-file=12,/tmp/vm1_crypto1.sock
 
-# bind vfio-pci::
+# bind pf with driver vfio-pci::
 
     usertools/dpdk-devbind.py --bind=vfio-pci 0000:60:00.0 0000:60:00.1 0000:3b:00.0 0000:3b:00.1
 
@@ -168,7 +166,13 @@ In Host:
         -device vfio-pci,host=0000:60:00.0,id=pt_0
         -device vfio-pci,host=0000:60:00.1,id=pt_1
 
-In VM
+In VM:
+
+# enable config items, compile dpdk and app:
+
+    enable CONFIG_RTE_EAL_IGB_UIO in config/common_base
+    enable CONFIG_RTE_LIBRTE_PMD_AESNI_MB in config/common_base
+    compile dpdk and compile test app "ipsec-secgw"
 
 # set virtio device::
 
@@ -177,22 +181,28 @@ In VM
     echo -n 0000:00:05.0 > /sys/bus/pci/drivers/virtio-pci/unbind
     echo "1af4 1054" > /sys/bus/pci/drivers/uio_pci_generic/new_id
 
-# Run the ipsec test cases cmd
+Test Case: Cryptodev AESNI_MB test
+==================================
 
-    1. AESNI_MB case Command line Eg:
-    In vm0::
+In vm0::
 
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
-    In vm1::
+In vm1::
 
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
-    2. VIRTIO case Command line Eg:
-    In vm0::
+send packets and verify
+
+Test Case: Cryptodev VIRTIO test
+================================
+
+In vm0::
 
     ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
-    In vm1::
+In vm1::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+    ./examples/ipsec-secgw/ibuild/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+
+send packets and verify
