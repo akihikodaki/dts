@@ -55,6 +55,10 @@ Prerequisites
 ----------------------
 Intel QAT devices should be available in the platform.
 
+enable compressdev unit test:
+
+    Set CONFIG_RTE_COMPRESSDEV_TEST=y in config/common_base.
+
 A compress performance test app is added into DPDK to test CompressDev.
 
 Calgary corpus is a collection of text and binary data files,commonly used
