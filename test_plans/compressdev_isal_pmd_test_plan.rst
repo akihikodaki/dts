@@ -52,6 +52,10 @@ In order to enable this virtual compression PMD, user must:
 
     Set CONFIG_RTE_LIBRTE_PMD_ISAL=y in config/common_base.
 
+and enable compressdev unit test:
+
+    Set CONFIG_RTE_COMPRESSDEV_TEST=y in config/common_base.
+
 A compress performance test app is added into DPDK to test CompressDev.
 
 Calgary corpus is a collection of text and binary data files, commonly used
