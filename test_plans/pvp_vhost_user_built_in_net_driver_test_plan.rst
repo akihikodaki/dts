@@ -41,6 +41,27 @@ This feature test a very simple vhost-user net driver which demonstrates how to 
 vhost APIs by adding option "--builtin-net-driver" when launch vswitch.
 This feature only can test with vswitch, and it is disabled by default.
 
+Prerequisites
+=============
+Device start fails if NIC’s max queues > the default number of 128.
+mbuf pool size is dependent on the MAX_QUEUES configuration, if NIC’s max queue number is larger than 128, device start will fail due to insufficient mbuf.
+Change the default number to make it work as below, just set the number according to the NIC’s property:
+For niantic 82599ES，#define MAX_QUEUES 128
+For fortville X710, #define MAX_QUEUES 192
+For fortville XXV710, #define MAX_QUEUES 352
+For fortville XL710, #define MAX_QUEUES 512
+
+Modify the testpmd code as following::
+
+        --- a/examples/vhost/main.c
+        +++ b/examples/vhost/main.c
+        @@ -28,7 +28,7 @@
+         #include "main.h"
+         #ifndef MAX_QUEUES
+        -#define MAX_QUEUES 128
+        +#define MAX_QUEUES 512
+         #endif
+
 Test Case1: PVP test with vhost built-in net driver
 ===================================================
 
