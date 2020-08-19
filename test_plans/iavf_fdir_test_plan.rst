@@ -72,10 +72,13 @@ Pattern and input set
     +------------------------------+----------------------------+-------------------------------------------------------------------+
     |                              |   MAC_IPV6_PFCP_SESSION    | [Dest Port], [S-field]                                            |
     +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | GTP-U data packet types      |                            |                                                                   |
-    | IPv4 transport, IPv4 payload |      MAC_IPV4_GTPU         | [TEID]                                                            |
+    | IPv4/IPv6 + GTP-U            |   MAC_IPV4_GTPU            | [Source IP], [Dest IP], [TEID]                                    |
     +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV4_GTPU_EH      | [TEID], [QFI]                                                     |
+    |                              |   MAC_IPV4_GTPU_EH         | [Source IP], [Dest IP], [TEID], [QFI]                             |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |   MAC_IPV6_GTPU            | [Source IPV6], [Dest IPV6], [TEID]                                |
+    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    |                              |   MAC_IPV6_GTPU_EH         | [Source IPV6], [Dest IPV6], [TEID], [QFI]                         |
     +------------------------------+----------------------------+-------------------------------------------------------------------+
     | L2TPv3                       |      MAC_IPV4_L2TPv3       | [Session ID]                                                      |
     +------------------------------+----------------------------+-------------------------------------------------------------------+
@@ -398,6 +401,50 @@ Send packets
     p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/SCTP()/Raw('x'*20)
     p_gtpu14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/SCTP()/Raw('x'*20)
     p_gtpu15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw('x'*20)
+
+* MAC_IPV6_GTPU_EH
+
+   matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(frag=1)/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu10 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6()/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    p_gtpu11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/Raw('x'*20)
+    p_gtpu12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/Raw('x'*20)
+    p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x35)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+    p_gtpu15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+* MAC_IPV6_GTPU
+
+   matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP(frag=1)/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu9 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP( dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    p_gtpu10 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IPv6()/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    p_gtpu11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/IP()/Raw('x'*20)
+    p_gtpu12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP()/Raw('x'*20)
+    p_gtpu13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP()/Raw('x'*20)
 
 * L2 Ethertype
 
@@ -1308,6 +1355,250 @@ Subcase 8: MAC_IPV4_GTPU_EH without QFI rss queues / mark
    Then check there is no rule listed.
 
 
+Subcase 9: MAC_IPV4_GTPU_EH 4 tuple queue index
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 10 / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 10: MAC_IPV4_GTPU_EH 4 tuple queue group
+------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 11: MAC_IPV4_GTPU_EH 4 tuple passthru
+---------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 12: MAC_IPV4_GTPU_EH 4 tuple drop
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 13: MAC_IPV4_GTPU_EH 4 tuple mark/rss
+---------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 14: MAC_IPV4_GTPU_EH outer dst ip queue index
+-----------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc  / end actions queue index 10 / mark id 1 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.22")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 15: MAC_IPV4_GTPU_EH outer dst ip queue group
+-----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 16: MAC_IPV4_GTPU_EH outer dst ip passthru
+--------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu  / gtp_psc  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 17: MAC_IPV4_GTPU_EH outer dst ip drop
+----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 18: MAC_IPV4_GTPU_EH outer dst ip mark/rss
+--------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / gtp_psc  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 19: MAC_IPV4_GTPU_EH outer src ip queue index
+-----------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc  / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.22")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 20: MAC_IPV4_GTPU_EH outer src ip queue group
+-----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 21: MAC_IPV4_GTPU_EH outer src ip passthru
+--------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu  / gtp_psc  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 22: MAC_IPV4_GTPU_EH outer src ip drop
+----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 23: MAC_IPV4_GTPU_EH outer src ip mark/rss
+--------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / gtp_psc  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+
 Test case: MAC_IPV4_GTPU pattern
 ================================
 
@@ -1402,6 +1693,737 @@ Subcase 6: MAC_IPV4_GTPU mark
 
 2. repeat the steps of passthru with mark part in subcase 3,
    get the same result.
+
+Subcase 7: MAC_IPV4_GTPU 3 tuple queue index
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions queue index 10 / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 8: MAC_IPV4_GTPU 3 tuple queue group
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678 / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 9: MAC_IPV4_GTPU 3 tuple passthru
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 10: MAC_IPV4_GTPU 3 tuple drop
+--------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 11: MAC_IPV4_GTPU 3 tuple mark/rss
+------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp / gtpu teid is 0x12345678  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 12: MAC_IPV4_GTPU outer dst ip queue index
+--------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu  / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3.
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 13: MAC_IPV4_GTPU outer dst ip queue group
+-------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu  / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 14: MAC_IPV4_GTPU outer dst ip passthru
+----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 15: MAC_IPV4_GTPU outer dst ip drop
+-------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 16: MAC_IPV4_GTPU outer dst ip mark/rss
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp / gtpu / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 17: MAC_IPV4_GTPU outer src ip queue index
+--------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.22")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 18: MAC_IPV4_GTPU outer src ip queue group
+--------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 19: MAC_IPV4_GTPU outer src ip passthru
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu   / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 20: MAC_IPV4_GTPU outer src ip drop
+-------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu  / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 21: MAC_IPV4_GTPU outer src ip mark/rss
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / udp / gtpu  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_GTPU_EH pattern
+===================================
+
+Subcase 1: MAC_IPV6_GTPU_EH 4 tuple queue index
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 10 / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 2: MAC_IPV6_GTPU_EH 4 tuple queue group
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 3: MAC_IPV6_GTPU_EH 4 tuple passthru
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV6_GTPU_EH 4 tuple drop
+----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 5: MAC_IPV6_GTPU_EH 4 tuple mark/rss
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV6_GTPU_EH outer dst ipv6 queue index
+------------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc  / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 7: MAC_IPV6_GTPU_EH outer dst ipv6 queue group
+------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 8: MAC_IPV6_GTPU_EH outer dst ipv6 passthru
+---------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu  / gtp_psc  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 9: MAC_IPV6_GTPU_EH outer dst ipv6 drop
+-----------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 10: MAC_IPV6_GTPU_EH outer dst ipv6 mark/rss
+----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / gtp_psc  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 11: MAC_IPV6_GTPU_EH outer src ipv6 queue index
+-------------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc  / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 12: MAC_IPV6_GTPU_EH outer src ipv6 queue group
+-------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 13: MAC_IPV6_GTPU_EH outer src ipv6 passthru
+----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu  / gtp_psc  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 14: MAC_IPV6_GTPU_EH outer src ipv6 drop
+------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 15: MAC_IPV6_GTPU_EH outer src ipv6 mark/rss
+----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / gtp_psc  / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+
+Test case: MAC_IPV6_GTPU pattern
+================================
+
+Subcase 1: MAC_IPV6_GTPU 4 tuple queue index
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions queue index 10 / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the existing rule.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 2: MAC_IPV6_GTPU 4 tuple queue group
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 3: MAC_IPV6_GTPU 4 tuple passthru
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV6_GTPU 4 tuple drop
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 5: MAC_IPV6_GTPU 4 tuple mark/rss
+-----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu teid is 0x12345678 / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV6_GTPU outer dst ipv6 queue index
+---------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 7: MAC_IPV6_GTPU outer dst ipv6 queue group
+---------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 8: MAC_IPV6_GTPU outer dst ipv6 passthru
+------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu  / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 9: MAC_IPV6_GTPU outer dst ipv6 drop
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 10: MAC_IPV6_GTPU outer dst ipv6 mark/rss
+-------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth /  ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / gtpu / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 11: MAC_IPV6_GTPU outer src ipv6 queue index
+----------------------------------------------------
+
+1. create filter rules on port 0::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions queue index 1 / mark id 3 / end
+
+2. send matched packets, check the packet is redirected to queue 1 with FDIR matched ID=0x3::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/TCP()/Raw('x'*20)
+
+   send mismatched packets, check the packet is distributed by RSS without FDIR matched ID::
+
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::3", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/IP()/UDP()/Raw('x'*20)
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 12: MAC_IPV6_GTPU outer src ipv6 queue group
+----------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 13: MAC_IPV6_GTPU outer src ipv6 passthru
+-------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 14: MAC_IPV6_GTPU outer src ipv6 drop
+---------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 15: MAC_IPV6_GTPU outer src ipv6 mark/rss
+-------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 src is 2001::2 / udp / gtpu / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
 
 
 Test case: L2 Ethertype pattern
