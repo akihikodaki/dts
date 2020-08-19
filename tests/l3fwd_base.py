@@ -885,7 +885,7 @@ class L3fwdBase(object):
                 str(rx_pkts),
             ])
             # check data with expected values
-            gap = 100 * (zero_loss_rate - expected_rate) / expected_rate
+            gap = 100 * (actual_rate_percent - expected_rate) / expected_rate
             status = 'pass' \
                 if abs(gap) < bias \
                 else 'failed'
