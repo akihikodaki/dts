@@ -41,6 +41,21 @@ Vhost enqueue interrupt need test with l3fwd-power sample, small packets send fr
 check vhost-user cores can be wakeup，and vhost-user cores should be back to sleep after stop sending packets
 from virtio side.
 
+Prerequisites
+=============
+
+Modify l3fwd-power example code and recompile::
+
+        --- a/examples/l3fwd-power/main.c
+        +++ b/examples/l3fwd-power/main.c
+        @@ -248,7 +248,6 @@ static struct rte_eth_conf port_conf = {
+                .mq_mode        = ETH_MQ_RX_RSS,
+                .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
+                .split_hdr_size = 0,
+        -       .offloads = DEV_RX_OFFLOAD_CHECKSUM,
+        },
+        .rx_adv_conf = {
+                .rss_conf = {
 
 Test flow
 =========
