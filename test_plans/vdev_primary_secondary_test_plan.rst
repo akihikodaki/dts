@@ -53,6 +53,22 @@ Prerequisites
 Assuming that DPDK build has been set up and the multi-process sample
 applications have been built. It is also assumed that a traffic generator has
 been configured and plugged in to the NIC ports 0 and 1.
+Also need modify l3fwd-power example code and recompile::
+
+        --- a/examples/l3fwd-power/main.c
+        +++ b/examples/l3fwd-power/main.c
+        @@ -245,10 +245,9 @@ uint16_t nb_lcore_params = RTE_DIM(lcore_params_array_default);
+
+         static struct rte_eth_conf port_conf = {
+                .rxmode = {
+        -               .mq_mode        = ETH_MQ_RX_RSS,
+        +               .mq_mode        = ETH_MQ_RX_NONE,
+                        .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
+                        .split_hdr_size = 0,
+        -               .offloads = DEV_RX_OFFLOAD_CHECKSUM,
+                },
+                .rx_adv_conf = {
+                        .rss_conf = {
 
 Test Methodology
 ----------------
