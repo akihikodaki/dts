@@ -44,6 +44,22 @@ Prerequisites
 =============
 
 Test ENV preparation: Kernel version > 4.8.0, mostly linux distribution don't support vfio-noiommu mode by default, so testing this case need rebuild kernel to enable vfio-noiommu.
+Also need modify l3fwd-power example code and recompile::
+
+        --- a/examples/l3fwd-power/main.c
+        +++ b/examples/l3fwd-power/main.c
+        @@ -245,10 +245,9 @@ uint16_t nb_lcore_params = RTE_DIM(lcore_params_array_default);
+
+         static struct rte_eth_conf port_conf = {
+                .rxmode = {
+        -               .mq_mode        = ETH_MQ_RX_RSS,
+        +               .mq_mode        = ETH_MQ_RX_NONE,
+                        .max_rx_pkt_len = RTE_ETHER_MAX_LEN,
+                        .split_hdr_size = 0,
+        -               .offloads = DEV_RX_OFFLOAD_CHECKSUM,
+                },
+                .rx_adv_conf = {
+                        .rss_conf = {
 
 Test flow
 =========
