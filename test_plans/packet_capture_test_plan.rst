@@ -59,8 +59,8 @@ DPDK technical doc refer to::
 
    dpdk/doc/guides/tools/pdump.rst
 
-Prerequisites
-=============
+Test configuration
+==================
 
 2x NICs (2 full duplex ports per NIC) plugged into the available slots on a
 platform, another two nic ports are linked with cables.
@@ -82,6 +82,20 @@ Connections ports between TESTER and DUT::
 note: portB0/portB1 are the binded ports.
       portB2/portB3 keep link up status and don't bind to dpdk driver.
       Except portB0/portB1, DUT should have other two ports on link up status
+
+Prerequisites
+=============
+
+Enable pcap lib in dpdk code and recompile::
+
+    --- a/config/common_base
+    +++ b/config/common_base
+    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
+     #
+     # Compile software PMD backed by PCAP files
+     #
+    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
+    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
 
 Test cases
 ==========
