@@ -37,7 +37,7 @@ vm2vm vhost-user/virtio-user test plan
 Description
 ===========
 
-This test plan includes split virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path test, and packed virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable path test. This plan also check the payload of packets is accurate. For packed virtqueue test, need using qemu version > 4.2.0.
+This test plan includes split virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path test, and packed virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vectorized path test. This plan also check the payload of packets is accurate. 
 
 Prerequisites
 =============
@@ -74,8 +74,8 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -87,20 +87,20 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then send 8k length packets by virtio-user0 again::
 
-     stop
-     set txpkts 2000
-     start tx_first 1
+    testpmd>stop
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
 6. Quit pdump and three testpmd, get 284 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -109,8 +109,8 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 8. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -121,19 +121,19 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
-     stop
-     set burst 32
-     set txpkts 2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
 10. Quit pdump,vhost received packets in pdump-vhost-rx.pcap, check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -152,8 +152,8 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -165,15 +165,15 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 252 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -182,8 +182,8 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -195,15 +195,15 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap, check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -233,14 +233,14 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -249,8 +249,8 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -262,11 +262,11 @@ Test Case 3: packed virtqueue vm2vm non-mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap, check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -283,10 +283,10 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
     ./testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1 \
-    -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -296,16 +296,16 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1 \
-    -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -314,8 +314,8 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -325,13 +325,13 @@ Test Case 4: packed virtqueue vm2vm inorder non-mergeable path test
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
     --no-pci \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1 \
-    -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,packed_vec=1 \
+    -- -i --rx-offloads=0x10 --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -350,8 +350,8 @@ Test Case 5: split virtqueue vm2vm mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -363,20 +363,20 @@ Test Case 5: split virtqueue vm2vm mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
-5. Start vhost, then send 2k length packets by virtio-user0 again::
+5. Start vhost, then send 8k length packets by virtio-user0 again::
 
-     stop
-     set txpkts 2000
-     start tx_first 1
+    testpmd>stop
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
 6. Quit pdump and three testpmd, get 288 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -385,8 +385,8 @@ Test Case 5: split virtqueue vm2vm mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 8. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -398,19 +398,19 @@ Test Case 5: split virtqueue vm2vm mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set burst 5
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
-     stop
-     set burst 32
-     set txpkts 2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set burst 5
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap, check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -429,8 +429,8 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -442,24 +442,24 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
-5. Start vhost, then quit pdump and three testpmd, get 252 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+5. Start vhost, then quit pdump and three testpmd, get 256 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
 6. Launch testpmd by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -471,15 +471,15 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set burst 5
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set burst 5
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -509,14 +509,14 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -525,8 +525,8 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -538,11 +538,11 @@ Test Case 7: split virtqueue vm2vm non-mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=256 --rxd=256 --enable-hw-vlan-strip
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -561,8 +561,8 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -574,14 +574,14 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -590,8 +590,8 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -603,11 +603,11 @@ Test Case 8: split virtqueue vm2vm inorder non-mergeable path test
     --no-pci \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
@@ -624,7 +624,7 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
     ./testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
 
 3. Attach pdump secondary process to primary process by same file-prefix::
@@ -635,16 +635,16 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
     ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000,2000,2000,2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
 
 5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
@@ -653,8 +653,8 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
     --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
     -i --nb-cores=1 --no-flush-rx
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 7. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -664,35 +664,149 @@ Test Case 9: split virtqueue vm2vm vector_rx path test
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
     --no-pci \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=0,mrg_rxbuf=0,in_order=0,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
-     set burst 1
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
-Test Case 10: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
+Test Case 10: packed virtqueue vm2vm vectorized path test
+=========================================================
+
+1. Launch testpmd by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
+    -i --nb-cores=1 --no-flush-rx
+
+2. Launch virtio-user1 by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
+    --no-pci --file-prefix=virtio1 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
+    -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set fwd rxonly
+    testpmd>start
+
+3. Attach pdump secondary process to primary process by same file-prefix::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio1 -- --pdump 'device_id=net_virtio_user1,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
+
+4. Launch virtio-user0 and send 8k length packets::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
+    -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
+
+5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+
+6. Launch testpmd by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
+    --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
+    -i --nb-cores=1 --no-flush-rx
+    testpmd>set fwd rxonly
+    testpmd>start
+
+7. Attach pdump secondary process to primary process by same file-prefix::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=vhost -- --pdump 'port=0,queue=*,rx-dev=/root/pdump-vhost-rx.pcap,mbuf-size=8000'
+
+8. Launch virtio-user1 by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
+    --no-pci \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
+    -- -i --nb-cores=1 --txd=256 --rxd=256
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+
+9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
+
+Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not power of 2
+==========================================================================================
+
+1. Launch testpmd by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=1' --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
+    -i --nb-cores=1 --no-flush-rx
+
+2. Launch virtio-user1 by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
+    --no-pci --file-prefix=virtio1 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
+    -- -i --nb-cores=1 --txd=255 --rxd=255
+    testpmd>set fwd rxonly
+    testpmd>start
+
+3. Attach pdump secondary process to primary process by same file-prefix::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio1 -- --pdump 'device_id=net_virtio_user1,queue=*,rx-dev=/root/pdump-rx.pcap,mbuf-size=8000'
+
+4. Launch virtio-user0 and send 8k length packets::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
+    --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
+    -- -i --nb-cores=1 --txd=255 --rxd=255
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 1
+
+5. Start vhost, then quit pdump and three testpmd, get 251 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+
+6. Launch testpmd by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --file-prefix=vhost  \
+    --vdev 'eth_vhost1,iface=vhost-net1,queues=1' -- \
+    -i --nb-cores=1 --no-flush-rx
+    testpmd>set fwd rxonly
+    testpmd>start
+
+7. Attach pdump secondary process to primary process by same file-prefix::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=vhost -- --pdump 'port=0,queue=*,rx-dev=/root/pdump-vhost-rx.pcap,mbuf-size=8000'
+
+8. Launch virtio-user1 by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 --socket-mem 1024,1024 \
+    --no-pci \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
+    -- -i --nb-cores=1 --txd=255 --rxd=255
+    testpmd>set burst 1
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+
+9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
+
+Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
 ========================================================================================================
 
-Prerequisites
-=============
-
-Enable pcap lib in dpdk code and recompile::
-
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-Then build DPDK.
-====================================
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
@@ -705,8 +819,8 @@ Then build DPDK.
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -718,62 +832,40 @@ Then build DPDK.
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 27
-     stop
-     set burst 32
-     start tx_first 7
-     stop
-     set txpkts 2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
-5. Start vhost testpmd:
-     start
+5. Start vhost testpmd, then quit pdump and all testpmd, check 64 packets received by virtio-user1 and all packets are 8k length in pdump-virtio-rx.pcap.
 
-6. Quit pdump and all testpmd, check 64 packets received by virtio-user1 and all packets are 8k length in pdump-virtio-rx.pcap.
-
-7. Restart step 1-3, Launch virtio-user0 and send packets::
+6. Restart step 1-3, Launch virtio-user0 and send packets::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 27
-     stop
-     set burst 32
-     set txpkts 2000
-     start tx_first 7
-     stop
-     set txpkts 2000
-     start tx_first 1
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 7
+    testpmd>stop
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 1
 
-8. Start vhost testpmd:
-     start
+7. Start vhost testpm, then quit pdump and all testpmd, check 256 packets received by virtio-user1, check 54 packets with 8k length and 202 packets with 2k length in pdump-virtio-rx.pcap.
 
-9. Quit pdump and all testpmd, check 256 packets received by virtio-user1, check 54 packets with 8k length and 202 packets with 2k length in pdump-virtio-rx.pcap.
-
-Test Case 11: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
+Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
 ================================================================================================
 
-Prerequisites
-=============
-
-Enable pcap lib in dpdk code and recompile::
-
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-Then build DPDK.
-====================================
 1. Launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
@@ -786,8 +878,8 @@ Then build DPDK.
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set fwd rxonly
-     start
+    testpmd>set fwd rxonly
+    testpmd>start
 
 3. Attach pdump secondary process to primary process by same file-prefix::
 
@@ -799,34 +891,28 @@ Then build DPDK.
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 27
-     stop
-     set burst 32
-     set txpkts 2000
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>set txpkts 2000
+    testpmd>start tx_first 7
 
-5. Start vhost testpmd:
-     start
+5. Start vhost testpmd, then quit pdump, check 448 packets received by virtio-user1 and 54 packets with 8k length and 394 in pdump-virtio-rx.pcap.
 
-6. Quit pdump, check 448 packets received by virtio-user1 and 54 packets with 8k length and 394 in pdump-virtio-rx.pcap.
-
-7 Restart step 1-3, Launch virtio-user0 and send packets::
+6. Restart step 1-3, Launch virtio-user0 and send packets::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-     set burst 1
-     set txpkts 2000,2000,2000,2000
-     start tx_first 27
-     stop
-     set burst 32
-     set txpkts 2000,2000,2000,2000
-     start tx_first 7
+    testpmd>set burst 1
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 27
+    testpmd>stop
+    testpmd>set burst 32
+    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>start tx_first 7
 
-8. Start vhost testpmd:
-     start
-
-9. Quit pdump, check 448 packets received by virtio-user1, check 448 packets with 8k length in pdump-virtio-rx.pcap.
+7. Start vhost testpmd, then quit pdump, check 448 packets received by virtio-user1, check 448 packets with 8k length in pdump-virtio-rx.pcap.
