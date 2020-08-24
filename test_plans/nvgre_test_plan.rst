@@ -55,6 +55,9 @@ plugged into the available PCIe Gen3 8-lane slot.
 
 DUT board must be two sockets system and each cpu have more than 8 lcores.
 
+For fortville NICs need change the value of CONFIG_RTE_LIBRTE_I40E_INC_VECTOR
+in dpdk/config/common_base file to n.
+
 Test Case: NVGRE ipv4 packet detect
 ===================================
 
