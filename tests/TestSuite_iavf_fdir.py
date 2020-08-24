@@ -1891,7 +1891,7 @@ class TestIAVFFdir(TestCase):
                 rule_li = self.create_fdir_rule(tv["rule"], check_stats=True)
                 if "gtpu_eh" in tv["name"]:
                     gtpu_rss = [
-                        "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end key_len 0 queues end / end"]
+                        "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end"]
                     gtpu_rss_rule_li = self.create_fdir_rule(gtpu_rss, check_stats=True)
 
                 # send and check match packets
@@ -2343,7 +2343,8 @@ class TestIAVFFdir(TestCase):
         rfc.check_iavf_fdir_mark(out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False)
 
     def test_mac_ipv4_gtpu_eh_without_teid(self):
-        rules = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / end actions queue index 1 / mark id 3 / end"
+        rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end", \
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / end actions queue index 1 / mark id 3 / end"]
         MAC_IPV4_GTPU_EH_WITHOUT_TEID = {
             "match": 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP()/TCP()/Raw("x"*20)',
             "mismatch": 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x35)/IP()/TCP()/Raw("x"*20)'
@@ -2368,12 +2369,17 @@ class TestIAVFFdir(TestCase):
         self.destroy_fdir_rule(rule_id=rule_li, port_id=0)
         self.check_fdir_rule(port_id=0, stats=False)
 
+        open_rss_rule = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end"
+        rule_li = self.create_fdir_rule(open_rss_rule, check_stats=True)
+        self.check_fdir_rule(port_id=0, rule_list=rule_li)
+
         # send matched packet
         out3 = self.send_pkts_getouput(MAC_IPV4_GTPU_EH_WITHOUT_TEID["match"])
         rfc.check_iavf_fdir_mark(out3, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=False)
 
     def test_mac_ipv4_gtpu_eh_without_qfi(self):
-        rules = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / end actions rss queues 2 3 end / mark id 1 / end"
+        rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end", \
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / end actions rss queues 2 3 end / mark id 1 / end"]
         MAC_IPV4_GTPU_EH_WITHOUT_QFI = {
             "match": 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345678)/GTP_PDUSession_ExtensionHeader(pdu_type=1)/IP()/UDP()/Raw("x"*20)',
             "mismatch": 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x1234567)/GTP_PDUSession_ExtensionHeader(pdu_type=1)/IP()/UDP()/Raw("x"*20)'
@@ -2397,6 +2403,10 @@ class TestIAVFFdir(TestCase):
         # destroy the rules and check there is no rule listed.
         self.destroy_fdir_rule(rule_id=rule_li, port_id=0)
         self.check_fdir_rule(port_id=0, stats=False)
+
+        open_rss_rule = "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end"
+        rule_li = self.create_fdir_rule(open_rss_rule, check_stats=True)
+        self.check_fdir_rule(port_id=0, rule_list=rule_li)
 
         # send matched packet
         out3 = self.send_pkts_getouput(MAC_IPV4_GTPU_EH_WITHOUT_QFI["match"])
@@ -4068,6 +4078,37 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("tx_vlan reset 0", "testpmd> ")
         self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ", 30)
+
+    def test_check_profile_delete(self):
+        pkt_ipv4_pay_ipv6_pay = [
+            'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/Raw("x" * 80)',
+            'Ether(dst="00:11:22:33:44:55")/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1, hlim=2)/("X"*480)']
+
+        rule_ipv4_tcp_ipv6_udp = [
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end",
+            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 2 / e    nd"
+        ]
+        # create rules
+        self.create_fdir_rule(rule_ipv4_tcp_ipv6_udp, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=True)
+        out = self.send_pkts_getouput(pkt_ipv4_pay_ipv6_pay)
+        rfc.verify_iavf_fdir_directed_by_rss(out, stats=True)
+
+        self.pmd_output.execute_cmd("flow flush 0")
+        rule_ipv4_other_ipv6_other = [
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 3 / mark id 3 / end",
+            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / end actions queue index 4 / mark id 4 / end"
+        ]
+        self.create_fdir_rule(rule_ipv4_other_ipv6_other, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=True)
+        out = self.send_pkts_getouput(pkt_ipv4_pay_ipv6_pay)
+        rfc.check_iavf_fdir_mark(out, pkt_num=2, check_param={"port_id": 0, "mark_id": [3, 4], "queue": [3, 4]}, stats=True)
+
+        self.pmd_output.execute_cmd("flow flush 0")
+        self.create_fdir_rule(rule_ipv4_tcp_ipv6_udp, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=True)
+        out = self.send_pkts_getouput(pkt_ipv4_pay_ipv6_pay)
+        rfc.verify_iavf_fdir_directed_by_rss(out, stats=True)
 
     def tear_down(self):
         # destroy all flow rule on port 0
