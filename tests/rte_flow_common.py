@@ -504,8 +504,16 @@ def check_iavf_fdir_mark(out, pkt_num, check_param, stats=True):
             mark_list = [i for i in res]
             print("mark list is: ", mark_list)
             verify(len(res) == pkt_num, "get wrong number of packet with mark_id")
-            verify(all([int(i, CVL_TXQ_RXQ_NUMBER) == check_param["mark_id"] for i in res]),
-                        "failed: some packet mark id of %s not match" % mark_list)
+            if isinstance(check_param.get("mark_id"), list):
+                result = [int(m, CVL_TXQ_RXQ_NUMBER) in check_param.get("mark_id") for m in mark_list]
+                verify(all(result),"fail: some packet mark id of %s not match" % mark_list)
+                print((GREEN("pass: mark id %s matched" % mark_list)))
+            elif isinstance(check_param.get("mark_id"), int):
+                verify(all([int(i, CVL_TXQ_RXQ_NUMBER) == check_param["mark_id"] for i in res]),
+                            "failed: some packet mark id of %s not match" % mark_list)
+            else:
+                raise Exception("wrong mark value, expect int or list")
+
             if check_param.get("queue") is not None:
                 check_iavf_fdir_queue(out, pkt_num, check_param, stats)
             elif check_param.get("passthru") is not None:
