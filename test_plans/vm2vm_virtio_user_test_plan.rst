@@ -899,7 +899,7 @@ Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check wi
     testpmd>set txpkts 2000
     testpmd>start tx_first 7
 
-5. Start vhost testpmd, then quit pdump, check 448 packets received by virtio-user1 and 54 packets with 8k length and 394 in pdump-virtio-rx.pcap.
+5. Start vhost testpmd, then quit pdump, check 448 packets received by virtio-user1 and 54 packets with 8k length and 394 packets with 2k length in pdump-virtio-rx.pcap.
 
 6. Restart step 1-3, Launch virtio-user0 and send packets::
 
