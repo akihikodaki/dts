@@ -99,7 +99,12 @@ tv_mac_ipv4_udp_pay = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=30,dport=23)/("X"*480)',
+    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.5",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.7",tos=4,ttl=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=5,ttl=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=9)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=30,dport=23)/("X"*480)',
                                'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=19)/("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
@@ -113,7 +118,12 @@ tv_mac_ipv4_tcp_pay = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=30,dport=23)/("X"*480)',
+    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.5",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.7",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=5,ttl=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=9)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=30,dport=23)/("X"*480)',
                                'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=19)/("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
@@ -134,59 +144,37 @@ tv_mac_ipv4_igmp = {
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_ipv6_frag_srcip_dstip = {
-    "name":"tv_mac_ipv6_frag_srcip_dstip",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/("X"*480)'],
+tv_mac_ipv6_srcip_dstip = {
+    "name":"tv_mac_ipv6_srcip_dstip",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+                            'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/IPv6ExtHdrFragment()/("X"*480)',
+               "expect_results":{"expect_pkts":2}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*480)',
+                               'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)',
                                'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_ipv6_frag_dstip_tc = {
-    "name":"tv_mac_ipv6_frag_dstip_tc",
+tv_mac_ipv6_dstip_tc = {
+    "name":"tv_mac_ipv6_dstip_tc",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/IPv6ExtHdrFragment()/("X"*480)'],
+    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/("X"*480)',
+                            'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/IPv6ExtHdrFragment()/("X"*480)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/IPv6ExtHdrFragment()/("X"*480)',
-                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/IPv6ExtHdrFragment()/("X"*480)',
-                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=4)/IPv6ExtHdrFragment()/("X"*480)'],
-                  "check_func":{"func":rfc.check_vf_rx_packets_number,
-                                "param":{"expect_port":1, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":0}}
-}
-
-tv_mac_ipv6_pay_srcip_dstip = {
-    "name":"tv_mac_ipv6_pay_srcip_dstip",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
-                               'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/("X"*480)'],
-                  "check_func":{"func":rfc.check_vf_rx_packets_number,
-                                "param":{"expect_port":1, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":0}}
-}
-
-tv_mac_ipv6_pay_dstip_tc = {
-    "name":"tv_mac_ipv6_pay_dstip_tc",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 tc is 3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/("X"*480)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
+               "expect_results":{"expect_pkts":2}},
     "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/("X"*480)',
                                'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/("X"*480)',
-                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=4)/("X"*480)'],
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=4)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a3")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/IPv6ExtHdrFragment()/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/IPv6ExtHdrFragment()/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=4)/IPv6ExtHdrFragment()/("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -199,7 +187,10 @@ tv_mac_ipv6_udp_pay = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=30,dport=23)/("X"*480)',
+    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=7)/UDP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=30,dport=23)/("X"*480)',
                                'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=25,dport=19)/("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
@@ -213,25 +204,11 @@ tv_mac_ipv6_tcp = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=30,dport=23)/("X"*480)',
+    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a3")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=7)/TCP(sport=25,dport=23)/("X"*480)',
+                               'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=30,dport=23)/("X"*480)',
                                'Ether(dst="68:05:ca:8d:ed:a8")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=25,dport=19)/("X"*480)'],
-                  "check_func":{"func":rfc.check_vf_rx_packets_number,
-                                "param":{"expect_port":1, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":0}}
-}
-
-tv_mac_ipv4_nvgre_ipv4_frag = {
-    "name":"tv_mac_ipv4_nvgre_ipv4_frag",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.4", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/TCP()/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -240,15 +217,19 @@ tv_mac_ipv4_nvgre_ipv4_frag = {
 tv_mac_ipv4_nvgre_ipv4_pay = {
     "name":"tv_mac_ipv4_nvgre_ipv4_pay",
     "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP()/Raw("x"*80)',
-                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)'],
+    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
+                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":2}},
     "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.4", dst="192.168.1.3")/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.5")/Raw("x"*80)'],
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.5")/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.4", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -261,7 +242,11 @@ tv_mac_ipv4_nvgre_ipv4_udp_pay = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=20,dport=23)/Raw("x"*80)',
+    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x3)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.5", dst="192.168.0.3")/UDP(sport=50,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.7")/UDP(sport=50,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=20,dport=23)/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=19)/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
@@ -275,26 +260,12 @@ tv_mac_ipv4_nvgre_ipv4_tcp = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=20,dport=23)/Raw("x"*80)',
+    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.5", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.7")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=20,dport=23)/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=39)/Raw("x"*80)'],
-                  "check_func":{"func":rfc.check_vf_rx_packets_number,
-                                "param":{"expect_port":1, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":0}}
-}
-
-tv_mac_ipv4_nvgre_mac_ipv4_frag = {
-    "name":"tv_mac_ipv4_nvgre_mac_ipv4_frag",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":2}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.4", dst="192.168.1.3" ,frag=5)/TCP()/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/TCP()/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -302,9 +273,9 @@ tv_mac_ipv4_nvgre_mac_ipv4_frag = {
 
 tv_mac_ipv4_nvgre_mac_ipv4_pay = {
     "name":"tv_mac_ipv4_nvgre_mac_ipv4_pay",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP()/Raw("x"*80)',
-                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)'],
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
+                            'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":2}},
@@ -312,7 +283,12 @@ tv_mac_ipv4_nvgre_mac_ipv4_pay = {
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.4", dst="192.168.1.3")/Raw("x"*80)',
-                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.5")/Raw("x"*80)'],
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.5")/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a9")/IP(src="192.168.1.2", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.4", dst="192.168.1.3" ,frag=5)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -325,7 +301,12 @@ tv_mac_ipv4_nvgre_mac_ipv4_udp_pay = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=2,dport=23)/Raw("x"*80)',
+    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a2")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.7")/UDP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=2,dport=23)/Raw("x"*80)]',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=20)/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
@@ -339,15 +320,20 @@ tv_mac_ipv4_nvgre_mac_ipv4_tcp = {
                "check_func":{"func":rfc.check_vf_rx_packets_number,
                              "param":{"expect_port":1, "expect_queues":"null"}},
                "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=1,dport=23)/Raw("x"*80)',
+    "mismatched":{"scapy_str":['Ether()/IP(dst="192.168.0.2")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=3)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a2")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.5", dst="192.168.1.3")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.7")/TCP(sport=25,dport=23)/Raw("x"*80)',
+                               'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=1,dport=23)/Raw("x"*80)',
                                'Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=20)/Raw("x"*80)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_vlan_pppoe_ipv4_pay = {
-    "name":"tv_mac_vlan_pppoe_ipv4_pay",
+tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id = {
+    "name":"tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end",
     "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
@@ -362,8 +348,8 @@ tv_mac_vlan_pppoe_ipv4_pay = {
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_vlan_pppoe_ipv6_pay = {
-    "name":"tv_mac_vlan_pppoe_ipv6_pay",
+tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id = {
+    "name":"tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end",
     "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
@@ -378,8 +364,8 @@ tv_mac_vlan_pppoe_ipv6_pay = {
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_pppoe_ipv4_pay = {
-    "name":"tv_mac_pppoe_ipv4_pay",
+tv_mac_pppoe_ipv4_pay_session_id_proto_id = {
+    "name":"tv_mac_pppoe_ipv4_pay_session_id_proto_id",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end",
     "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
@@ -393,8 +379,8 @@ tv_mac_pppoe_ipv4_pay = {
                   "expect_results":{"expect_pkts":0}}
 }
 
-tv_mac_pppoe_ipv6_pay = {
-    "name":"tv_mac_pppoe_ipv6_pay",
+tv_mac_pppoe_ipv6_pay_session_id_proto_id = {
+    "name":"tv_mac_pppoe_ipv6_pay_session_id_proto_id",
     "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end",
     "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)'],
                "check_func":{"func":rfc.check_vf_rx_packets_number,
@@ -403,20 +389,6 @@ tv_mac_pppoe_ipv6_pay = {
     "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:54",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)',
                                'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)',
                                'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
-                  "check_func":{"func":rfc.check_vf_rx_packets_number,
-                                "param":{"expect_port":1, "expect_queues":"null"}},
-                  "expect_results":{"expect_pkts":0}}
-}
-
-tv_qinq = {
-    "name":"tv_qinq",
-    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / vlan tci is 2 / end actions vf id 1 / end",
-    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x0800,vlan=2)/IP(src="192.168.0.1",dst="192.168.0.2")/Raw("X"*480)'],
-               "check_func":{"func":rfc.check_vf_rx_packets_number,
-                             "param":{"expect_port":1, "expect_queues":"null"}},
-               "expect_results":{"expect_pkts":1}},
-    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8100,vlan=3)/Dot1Q(type=0x0800, vlan=2)/IP(src="192.168.0.1",dst="192.168.0.2")/Raw("X"*480)',
-                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8100,vlan=1)/Dot1Q(type=0x0800, vlan=5)/IP(src="192.168.0.1",dst="192.168.0.2")/Raw("X"*480)'],
                   "check_func":{"func":rfc.check_vf_rx_packets_number,
                                 "param":{"expect_port":1, "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":0}}
@@ -676,6 +648,17 @@ tv_mac_ipv6_nat_t_esp = {
                   "expect_results":{"expect_pkts":0}}
 }
 
+tv_actions_vf_id_0 = {
+    "name":"tv_actions_vf_id_0",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 0 / end",
+    "matched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/TCP(sport=25,dport=23)/("X"*480)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":0, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":0}},
+    "mismatched":{}
+}
+
+
 tv_add_existing_rules_but_with_different_vfs = {
     "name":"tv_add_existing_rules_but_with_different_vfs",
     "rte_flow_pattern":["flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end",
@@ -726,7 +709,7 @@ tv_max_vfs = {
                "check_func":{"func":rfc.check_kernel_vf_rx_packets_number,
                              "param":{"expect_port":list(range(1, 64)), "expect_queues":"null"}},
                "expect_results":{"expect_pkts":[1]*63}},
-    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.64")/TCP()/Raw("X"*480)'],
+    "mismatched":{"scapy_str":['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.167.0.0")/TCP()/Raw("X"*480)'],
                   "check_func":{"func":rfc.check_kernel_vf_rx_packets_number,
                                 "param":{"expect_port":list(range(1, 64)), "expect_queues":"null"}},
                   "expect_results":{"expect_pkts":[1]*63}}
@@ -855,6 +838,384 @@ tv_add_two_rules_with_different_input_set_different_vf_id = {
                   "expect_results":{"expect_pkts":[0, 0]}}
 }
 
+tv_mac_pppoe_ipv4_pay_ip_address = {
+    "name":"tv_mac_pppoe_ipv4_pay_ip_address",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x"*80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv4_udp_pay = {
+    "name":"tv_mac_pppoe_ipv4_udp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv4_udp_pay_non_src_dst_port = {
+    "name":"tv_mac_pppoe_ipv4_udp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv4_tcp_pay = {
+    "name":"tv_mac_pppoe_ipv4_tcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv4_tcp_pay_non_src_dst_port = {
+    "name":"tv_mac_pppoe_ipv4_tcp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv6_pay_ip_address = {
+    "name":"tv_mac_pppoe_ipv6_pay_ip_address",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv6_udp_pay = {
+    "name":"tv_mac_pppoe_ipv6_udp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv6_udp_pay_non_src_dst_port = {
+    "name":"tv_mac_pppoe_ipv6_udp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv6_tcp_pay = {
+    "name":"tv_mac_pppoe_ipv6_tcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipv6_tcp_pay_non_src_dst_port = {
+    "name":"tv_mac_pppoe_ipv6_tcp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv4_pay_ip_address = {
+    "name":"tv_mac_vlan_pppoe_ipv4_pay_ip_address",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/Raw("x"*80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv4_udp_pay = {
+    "name":"tv_mac_vlan_pppoe_ipv4_udp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv4_udp_pay_non_src_dst_port = {
+    "name":"tv_mac_vlan_pppoe_ipv4_udp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / udp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv4_tcp_pay = {
+    "name":"tv_mac_vlan_pppoe_ipv4_tcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv4_tcp_pay_non_src_dst_port = {
+    "name":"tv_mac_vlan_pppoe_ipv4_tcp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv4 src is 192.168.1.1 dst is 192.168.1.2 / tcp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv6_pay_ip_address = {
+    "name":"tv_mac_vlan_pppoe_ipv6_pay_ip_address",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)',
+                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv6_udp_pay = {
+    "name":"tv_mac_vlan_pppoe_ipv6_udp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / udp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv6_udp_pay_non_src_dst_port = {
+    "name":"tv_mac_vlan_pppoe_ipv6_udp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / udp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv6_tcp_pay = {
+    "name":"tv_mac_vlan_pppoe_ipv6_tcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 / tcp src is 25 dst is 23 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=27,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipv6_tcp_pay_non_src_dst_port = {
+    "name":"tv_mac_vlan_pppoe_ipv6_tcp_pay_non_src_dst_port",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth / vlan tci is 1 / pppoes / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 / tcp / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_lcp_pay = {
+    "name":"tv_mac_pppoe_lcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_pppoe_ipcp_pay = {
+    "name":"tv_mac_pppoe_ipcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_lcp_pay = {
+    "name":"tv_mac_vlan_pppoe_lcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0xc021 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0xc021)/PPP_LCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
+tv_mac_vlan_pppoe_ipcp_pay = {
+    "name":"tv_mac_vlan_pppoe_ipcp_pay",
+    "rte_flow_pattern":"flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x8021 / end actions vf id 1 / end",
+    "matched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)'],
+               "check_func":{"func":rfc.check_vf_rx_packets_number,
+                             "param":{"expect_port":1, "expect_queues":"null"}},
+               "expect_results":{"expect_pkts":1}},
+    "mismatched":{"scapy_str":['Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:53",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=4)/PPP(proto=0x8021)/PPP_IPCP()/Raw("x" * 80)',
+                               'Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)'],
+                  "check_func":{"func":rfc.check_vf_rx_packets_number,
+                                "param":{"expect_port":1, "expect_queues":"null"}},
+                  "expect_results":{"expect_pkts":0}}
+}
+
 class CVLDCFSwitchFilterTest(TestCase):
 
     def bind_nics_driver(self, ports, driver=""):
@@ -892,14 +1253,18 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.__tx_iface = self.tester.get_interface(localPort)
-        self.tester.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
-        self.dut.send_expect("ifconfig %s up" % self.dut_ports[0], "# ")
+        self.dut.send_expect("ifconfig %s up" % self.__tx_iface, "# ")
         self.pkt = Packet()
         self.testpmd_status = "close"
-        self.suite_config = rfc.get_suite_config(self)
-        self.pkg_file = "/lib/firmware/updates/intel/ice/ddp/ice.pkg"
         #bind pf to kernel
         self.bind_nics_driver(self.dut_ports, driver="ice")
+        #move comms package to package folder
+        self.suite_config = rfc.get_suite_config(self)
+        comms_package_location = self.suite_config["comms_package_file_location"]
+        package_location = self.suite_config["package_file_location"]
+        self.dut.send_expect("cp %s %s" % (comms_package_location, package_location), "# ")
+        self.re_load_ice_driver()
+
         #set vf driver
         self.vf_driver = 'vfio-pci'
         self.dut.send_expect('modprobe vfio-pci', '#')
@@ -924,13 +1289,6 @@ class CVLDCFSwitchFilterTest(TestCase):
         """
         remove and reload the ice driver
         """
-        if self.running_case == "test_unsupported_pattern_in_os_default_but_supported_in_comms":
-            #save comms pkg to /tmp
-            self.tmp_dir = "/tmp/ice.pkg"
-            self.dut.send_expect("cp %s %s" % (self.pkg_file, self.tmp_dir), "# ")
-            #use os default package to test the case
-            os_default_package_file_location = self.suite_config["os_default_package_file_location"]
-            self.dut.send_expect("cp %s %s" % (os_default_package_file_location, self.pkg_file), "# ")
         ice_driver_file_location = self.suite_config["ice_driver_file_location"]
         self.dut.send_expect("rmmod ice", "# ", 15)
         self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ", 60)
@@ -1017,7 +1375,39 @@ class CVLDCFSwitchFilterTest(TestCase):
         results = dic["check_func"]["func"](out, dic["check_func"]["param"], dic["expect_results"], False)
         return results
 
-    def create_switch_filter_rule(self, rte_flow_pattern, session_name="", need_verify=True):
+    def validate_switch_filter_rule(self, rte_flow_pattern, session_name="", check_stats=True):
+        """
+        validate switch filter rules
+        """
+        if session_name == "":
+            session_name = self.dut
+        p = "Flow rule validated"
+        rule_list = []
+        if isinstance(rte_flow_pattern, list):
+            for rule in rte_flow_pattern:
+                length = len(rule)
+                rule_rep = rule[0:5] + "validate" + rule[11:length]
+                out = session_name.send_expect(rule_rep, "testpmd> ")  #validate a rule
+                if (p in out) and ("Failed" not in out):
+                    rule_list.append(True)
+                else:
+                    rule_list.append(False)
+        elif isinstance(rte_flow_pattern, str):
+            length = len(rte_flow_pattern)
+            rule_rep = rte_flow_pattern[0:5] + "validate" + rte_flow_pattern[11:length]
+            out = session_name.send_expect(rule_rep, "testpmd> ")  #validate a rule
+            if (p in out) and ("Failed" not in out):
+                rule_list.append(True)
+            else:
+                rule_list.append(False)
+        else:
+            raise Exception("unsupported rule type, only accept list or str")
+        if check_stats:
+            self.verify(all(rule_list), "some rules not validated successfully, result %s, rule %s" % (rule_list, rte_flow_pattern))
+        else:
+            self.verify(not any(rule_list), "all rules should not validate successfully, result %s, rule %s" % (rule_list, rte_flow_pattern))
+
+    def create_switch_filter_rule(self, rte_flow_pattern, session_name="", check_stats=True):
         """
         create switch filter rules
         """
@@ -1040,8 +1430,10 @@ class CVLDCFSwitchFilterTest(TestCase):
                 rule_list.append(m.group(1))
             else:
                 rule_list.append(False)
-        if need_verify:
+        if check_stats:
             self.verify(all(rule_list), "some rules not created successfully, result %s, rule %s" % (rule_list, rte_flow_pattern))
+        else:
+            self.verify(not any(rule_list), "all rules should create failed, result %s" % rule_list)
         return rule_list
 
     def check_switch_filter_rule_list(self, port_id, rule_list, session_name="", need_verify=True):
@@ -1061,10 +1453,10 @@ class CVLDCFSwitchFilterTest(TestCase):
             res = filter(bool, map(p_spec.match, out_lines))
             result = [i.group(1) for i in res]
         if need_verify:
-            self.verify(sorted(result) == sorted(rule_list),
+            self.verify(result == rule_list,
                     "the rule list is not the same. expect %s, result %s" % (rule_list, result))
         else:
-            return sorted(result)
+            return result
 
     def destroy_switch_filter_rule(self, port_id, rule_list, session_name="", need_verify=True):
         if session_name == "":
@@ -1107,6 +1499,8 @@ class CVLDCFSwitchFilterTest(TestCase):
         if launch_testpmd:
             #launch testpmd
             self.launch_testpmd()
+        #validate a rule
+        self.validate_switch_filter_rule(test_vector["rte_flow_pattern"])
         #create a rule
         rule_list = self.create_switch_filter_rule(test_vector["rte_flow_pattern"])   #create a rule
         self.check_switch_filter_rule_list(0, rule_list)
@@ -1151,21 +1545,13 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv4_igmp)
 
-    def test_mac_ipv6_frag_srcip_dstip(self):
+    def test_mac_ipv6_srcip_dstip(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv6_frag_srcip_dstip)
+        self._rte_flow_validate_pattern(tv_mac_ipv6_srcip_dstip)
 
-    def test_mac_ipv6_frag_dstip_tc(self):
+    def test_mac_ipv6_dstip_tc(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv6_frag_dstip_tc)
-
-    def test_mac_ipv6_pay_srcip_dstip(self):
-        self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv6_pay_srcip_dstip)
-
-    def test_mac_ipv6_pay_dstip_tc(self):
-        self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv6_pay_dstip_tc)
+        self._rte_flow_validate_pattern(tv_mac_ipv6_dstip_tc)
 
     def test_mac_ipv6_udp_pay(self):
         self.setup_1pf_vfs_env()
@@ -1174,10 +1560,6 @@ class CVLDCFSwitchFilterTest(TestCase):
     def test_mac_ipv6_tcp(self):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv6_tcp)
-
-    def test_mac_ipv4_nvgre_ipv4_frag(self):
-        self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv4_nvgre_ipv4_frag)
 
     def test_mac_ipv4_nvgre_ipv4_pay(self):
         self.setup_1pf_vfs_env()
@@ -1191,10 +1573,6 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv4_nvgre_ipv4_tcp)
 
-    def test_mac_ipv4_nvgre_mac_ipv4_frag(self):
-        self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_ipv4_nvgre_mac_ipv4_frag)
-
     def test_mac_ipv4_nvgre_mac_ipv4_pay(self):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv4_nvgre_mac_ipv4_pay)
@@ -1207,25 +1585,21 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv4_nvgre_mac_ipv4_tcp)
 
-    def test_mac_vlan_pppoe_ipv4_pay(self):
+    def test_mac_vlan_pppoe_ipv4_pay_session_id_proto_id(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_pay)
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_pay_session_id_proto_id)
 
-    def test_mac_vlan_pppoe_ipv6_pay(self):
+    def test_mac_vlan_pppoe_ipv6_pay_session_id_proto_id(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_pay)
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_pay_session_id_proto_id)
 
-    def test_mac_pppoe_ipv4_pay(self):
+    def test_mac_pppoe_ipv4_pay_session_id_proto_id(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_pay)
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_pay_session_id_proto_id)
 
-    def test_mac_pppoe_ipv6_pay(self):
+    def test_mac_pppoe_ipv6_pay_session_id_proto_id(self):
         self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_pay)
-
-    def _test_qinq(self):
-        self.setup_1pf_vfs_env()
-        self._rte_flow_validate_pattern(tv_qinq)
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_pay_session_id_proto_id)
 
     def test_ip_multicast(self):
         self.setup_1pf_vfs_env()
@@ -1299,92 +1673,60 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_ipv6_nat_t_esp)
 
-    def test_cannot_create_rule_on_vf_1(self):
+    def test_negative_case(self):
+        """
+        negative cases
+        """
         #set up 4 vfs on 1 pf environment
         self.setup_1pf_vfs_env()
         #launch testpmd
         self.launch_testpmd()
-        #create a rule on vf 1
-        rule = "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
-        #check the rule list
+        rules = {
+            "cannot create rule on vf 1": "flow create 1 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end",
+            "unsupported input set": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 tos is 4 / end actions vf id 1 / end",
+            "invalid vf id": "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 5 / end",
+            "void action": "flow create 0 ingress pattern eth / ipv4 / udp src is 25 dst is 23 / end actions end",
+            "void input set value": "flow create 0 ingress pattern eth / ipv4 / end actions vf id 1 end"
+        }
+        # cannot create rule on vf 1
+        self.validate_switch_filter_rule(rules["cannot create rule on vf 1"], check_stats=False)
+        self.check_switch_filter_rule_list(1, [])
+        self.create_switch_filter_rule(rules["cannot create rule on vf 1"], check_stats=False)
         self.check_switch_filter_rule_list(1, [])
 
-    def test_unsupported_pattern_in_comms(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        #create an SCTP rule which is not supported in comms
-        rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3  / sctp src is 25 dst is 23 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the SCTP rule failed to create.")
-        #check the rule list
+        # unsupported input set
+        self.validate_switch_filter_rule(rules["unsupported input set"], check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rules["unsupported input set"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
-    def test_unsupported_pattern_in_os_default_but_supported_in_comms(self):
-        """
-        test with os default package
-        """
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        #create a PPPOE rule which is not supported in os default
-        rule = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the PPPOE rule failed to create.")
-        #check the rule list
+        # duplicated rues
+        rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions vf id 1 / end"
+        rule_list = self.create_switch_filter_rule(rule)   #create a rule
+        self.check_switch_filter_rule_list(0, rule_list)
+        self.create_switch_filter_rule(rule, check_stats=False)
+        self.check_switch_filter_rule_list(0, rule_list)
+        self.destroy_switch_filter_rule(0, rule_list)
+
+        # void action
+        self.validate_switch_filter_rule(rules["void action"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
-        #create a MAC_IPV4_PFCP_NODE rule
-        rule = "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the mac_ipv4_pfcp_node rule failed to create.")
-        #check the rule list
-        self.check_switch_filter_rule_list(0, [])
-        #create a l2tpv3 rule which is not supported in os default
-        rule = "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the l2tpv3 rule failed to create.")
-        #check the rule list
-        self.check_switch_filter_rule_list(0, [])
-        #create a esp rule which is not supported in os default
-        rule = "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input pattern" in out, "Log not provide a friendly output to indicate that the esp rule failed to create.")
-        #check the rule list
+        self.create_switch_filter_rule(rules["void action"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
-    def test_unsupported_input_set(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        #create a rule with input set [inner tos]
-        rule = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.1.2 dst is 192.168.1.3 tos is 4 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out and "Invalid input set" in out, "Log not provide a friendly output to indicate that the input set is not supported.")
-        #check the rule list
+        # void input set value
+        self.validate_switch_filter_rule(rules["void input set value"], check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rules["void input set value"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
-    def test_invalid_vf_id(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        #create a rule with invalid vf id 5
-        rule = "flow create 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / tcp src is 25 dst is 23 / end actions vf id 5 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
-        #check the rule list
+        # invalid vf id
+        # self.validate_switch_filter_rule(rules["invalid vf id"], check_stats=False)
+        # self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rules["invalid vf id"], check_stats=False)
         self.check_switch_filter_rule_list(0, [])
 
-    def test_delete_non_existing_rule(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
+        # delete non-existing rule
         #check no rule in the list
         self.check_switch_filter_rule_list(0, [])
         #destroy rule 0
@@ -1394,7 +1736,51 @@ class CVLDCFSwitchFilterTest(TestCase):
         out = self.dut.send_expect("flow flush 0", "testpmd> ", timeout=15)
         self.verify("Fail" not in out, "Destroy failed.")
 
-    def _test_add_existing_rules_but_with_different_vfs(self):
+        # add long switch rule
+        rule = "flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 tc is 3 / end actions vf id 1 / end"
+        self.validate_switch_filter_rule(rule, check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rule, check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        #create MAC_IPV6_UDP_PAY rule, and check the rule will not be affected by the long rule failure
+        self._rte_flow_validate_pattern(tv_mac_ipv6_udp_pay, launch_testpmd=False)
+
+    def test_unsupported_pattern_in_os_default(self):
+        """
+        test with os default package
+        """
+        #set up 4 vfs on 1 pf environment
+        os_package_location = self.suite_config["os_default_package_file_location"]
+        comms_package_location = self.suite_config["comms_package_file_location"]
+        package_location = self.suite_config["package_file_location"]
+        self.dut.send_expect("cp %s %s" % (os_package_location, package_location), "# ")
+        self.re_load_ice_driver()
+        self.setup_1pf_vfs_env()
+        #launch testpmd
+        self.launch_testpmd()
+        rules = [
+            "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions vf id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions vf id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions vf id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / ah spi is 1 / end actions vf id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.2 / udp / esp spi is 1 / end actions vf id 1 / end"
+        ]
+        self.validate_switch_filter_rule(rules, check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+        self.create_switch_filter_rule(rules, check_stats=False)
+        self.check_switch_filter_rule_list(0, [])
+
+        self.dut.send_expect("flow flush 0", "testpmd> ", 300)
+        self.dut.send_expect("quit", "#")
+        self.testpmd_status = "close"
+        # destroy vfs
+        for port_id in self.dut_ports:
+            self.dut.destroy_sriov_vfs_by_port(port_id)
+        self.dut.send_expect("cp %s %s" % (comms_package_location, package_location), "# ")
+        self.re_load_ice_driver()
+
+    def test_add_existing_rules_but_with_different_vfs(self):
         #set up 4 vfs on 1 pf environment
         self.setup_1pf_vfs_env()
         #launch testpmd
@@ -1442,8 +1828,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         rule_list = self.create_switch_filter_rule(rule)   #create a rule
         self.check_switch_filter_rule_list(0, rule_list)
         #create the same rule
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule is failed to create.")
+        self.create_switch_filter_rule(rule, check_stats=False)   #create a rule
         self.check_switch_filter_rule_list(0, rule_list)
 
     def test_add_two_rules_with_one_rule_input_set_included_in_the_other(self):
@@ -1489,19 +1874,6 @@ class CVLDCFSwitchFilterTest(TestCase):
         #send matched packets and check
         destroy_dict["expect_results"]["expect_pkts"][1] = 0
         self.send_and_check_packets(destroy_dict)
-
-    def test_add_long_switch_rule(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        rule = "flow create 0 ingress pattern eth / ipv6 src is CDCD:910A:2222:5498:8475:1111:3900:1536 dst is CDCD:910A:2222:5498:8475:1111:3900:2022 tc is 3 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=15)
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
-        #check the rule list
-        self.check_switch_filter_rule_list(0, [])
-        #create MAC_IPV6_UDP_PAY rule, and check the rule will not be affected by the long rule failure
-        self._rte_flow_validate_pattern(tv_mac_ipv6_udp_pay, launch_testpmd=False)
 
     def test_fwd_with_single_vf(self):
         #set up 4 vfs on 1 pf environment
@@ -1636,9 +2008,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.check_switch_filter_rule_list(0, rule_list)
         #create a rule, check the rule can not be created successfully
         rule = "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.10 / nvgre tni is 0x8 /  eth dst is 68:05:ca:8d:ed:a1  / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / udp src is 25 dst is 23 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  #create a rule
-        self.verify("Failed to create flow" in out, "Log not provide a friendly output to indicate that the rule failed to create.")
-        #check the rule list
+        self.create_switch_filter_rule(rule, check_stats=False)
         self.check_switch_filter_rule_list(0, rule_list)
         #send matched packets and check
         matched_dic = tv_max_field_vectors["matched"]
@@ -1727,32 +2097,6 @@ class CVLDCFSwitchFilterTest(TestCase):
         destroy_dict["expect_results"]["expect_pkts"] = 0
         self.send_and_check_packets(destroy_dict)
 
-    def test_flow_validation(self):
-        #set up 4 vfs on 1 pf environment
-        self.setup_1pf_vfs_env()
-        #launch testpmd
-        self.launch_testpmd()
-        #validate MAC_IPV4_UDP_PAY
-        rule = "flow validate 0 ingress pattern eth dst is 68:05:ca:8d:ed:a8 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 3 / udp src is 25 dst is 23 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("Flow rule validated" in out, "validate failed. rule: %s " % rule)
-        #validate MAC_IPV4_PFCP_NODE
-        rule = "flow validate 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("Flow rule validated" in out, "validate failed. rule: %s " % rule)
-        #validate MAC_IPV4_SCTP_PAY
-        rule = "flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.2 dst is 192.168.0.3 / sctp src is 25 dst is 23 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("error" in out and "Invalid input pattern: Invalid argument" in out, "validate failed. rule: %s " % rule)
-        #check the rule list
-        self.check_switch_filter_rule_list(0, [])
-        #validate a rule on invalid vf
-        rule = "flow validate 1 ingress pattern eth / ipv6 / udp / pfcp s_field is 1 / end actions vf id 1 / end"
-        out = self.dut.send_expect(rule, "testpmd> ", timeout=2)
-        self.verify("error" in out and "Failed" in out, "validate failed. rule: %s " % rule)
-        #check the rule list
-        self.check_switch_filter_rule_list(1, [])
-
     def test_dcf_stop_start(self):
         #set up 4 vfs on 1 pf environment
         self.setup_1pf_vfs_env()
@@ -1807,24 +2151,117 @@ class CVLDCFSwitchFilterTest(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
         self._rte_flow_validate_pattern(tv_add_two_rules_with_different_input_set_different_vf_id, False)
 
+    def test_mac_pppoe_ipv4_pay_ip_address(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_pay_ip_address)
+
+    def test_mac_pppoe_ipv4_udp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_udp_pay)
+
+    def test_mac_pppoe_ipv4_udp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_udp_pay_non_src_dst_port)
+
+    def test_mac_pppoe_ipv4_tcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_tcp_pay)
+
+    def test_mac_pppoe_ipv4_tcp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv4_tcp_pay_non_src_dst_port)
+
+    def test_mac_pppoe_ipv6_pay_ip_address(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_pay_ip_address)
+
+    def test_mac_pppoe_ipv6_udp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_udp_pay)
+
+    def test_mac_pppoe_ipv6_udp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_udp_pay_non_src_dst_port)
+
+    def test_mac_pppoe_ipv6_tcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_tcp_pay)
+
+    def test_mac_pppoe_ipv6_tcp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipv6_tcp_pay_non_src_dst_port)
+
+    def test_mac_vlan_pppoe_ipv4_pay_ip_address(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_pay_ip_address)
+
+    def test_mac_vlan_pppoe_ipv4_udp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_udp_pay)
+
+    def test_mac_vlan_pppoe_ipv4_udp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_udp_pay_non_src_dst_port)
+
+    def test_mac_vlan_pppoe_ipv4_tcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_tcp_pay)
+
+    def test_mac_vlan_pppoe_ipv4_tcp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv4_tcp_pay_non_src_dst_port)
+
+    def test_mac_vlan_pppoe_ipv6_pay_ip_address(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_pay_ip_address)
+
+    def test_mac_vlan_pppoe_ipv6_udp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_udp_pay)
+
+    def test_mac_vlan_pppoe_ipv6_udp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_udp_pay_non_src_dst_port)
+
+    def test_mac_vlan_pppoe_ipv6_tcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_tcp_pay)
+
+    def test_mac_vlan_pppoe_ipv6_tcp_pay_non_src_dst_port(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipv6_tcp_pay_non_src_dst_port)
+
+    def test_mac_pppoe_lcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_lcp_pay)
+
+    def test_mac_pppoe_ipcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_pppoe_ipcp_pay)
+
+    def test_mac_vlan_pppoe_lcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_lcp_pay)
+
+    def test_mac_vlan_pppoe_ipcp_pay(self):
+        self.setup_1pf_vfs_env()
+        self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipcp_pay)
+
     def tear_down(self):
         """
         Run after each test case.
         """
         if self.testpmd_status != "close":
             # destroy all flow rules on DCF
-            self.dut.send_expect("flow flush 0", "testpmd> ", 120)
+            self.dut.send_expect("flow flush 0", "testpmd> ", 15)
             self.dut.send_expect("clear port stats all", "testpmd> ", 15)
             self.dut.send_expect("quit", "#", 15)
+            #kill all DPDK application
+            self.dut.kill_all()
+            # destroy vfs
+            for port_id in self.dut_ports:
+                self.dut.destroy_sriov_vfs_by_port(port_id)
         self.testpmd_status = "close"
-        #kill all DPDK application
-        self.dut.kill_all()
-        # destroy vfs
-        for port_id in self.dut_ports:
-            self.dut.destroy_sriov_vfs_by_port(port_id)
-        if self.running_case == "test_unsupported_pattern_in_os_default_but_supported_in_comms":
-            #Restore the pkg file
-            self.dut.send_expect("cp %s %s" % (self.tmp_dir, self.pkg_file), "# ")
         if getattr(self, 'session_secondary', None):
             self.dut.close_session(self.session_secondary)
 
