@@ -78,7 +78,8 @@ class TestQosMeter(TestCase):
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
         eal_params = self.dut.create_eal_parameters(cores='1S/1C/1T', fixed_prefix=True, prefix='qos_meter')
-        cmd = './examples/qos_meter/build/qos_meter ' + eal_params + '-- -p 0x3'
+        app_name = self.dut.apps_name['qos_meter']
+        cmd = app_name + eal_params + '-- -p 0x3'
         self.dut.send_expect(cmd, "TX = 1")
         payload_size = 64 - HEADER_SIZE['eth'] - HEADER_SIZE['ip']
         dts_mac = self.dut.get_mac_address(self.dut_ports[self.rx_port])
