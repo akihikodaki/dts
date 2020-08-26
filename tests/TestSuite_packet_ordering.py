@@ -66,7 +66,8 @@ class TestPacketOrdering(TestCase):
         self.port_mask = utils.create_mask(valports)
 
         # Builds the packet ordering example app and checks for errors.
-        out = self.dut.send_expect("make -C examples/packet_ordering", "#")
+        # out = self.dut.send_expect("make -C examples/packet_ordering", "#")
+        out = self.dut.build_dpdk_apps("./examples/packet_ordering")
         self.verify("Error" not in out and "No such file" not in out,
                     "Compilation error")
 
@@ -78,7 +79,8 @@ class TestPacketOrdering(TestCase):
 
     def start_application(self):
 
-        cmdline = './examples/packet_ordering/build/packet_ordering -c {0} -n {1} -- -p {2}' . \
+        app_name = self.dut.apps_name['packet_ordering']
+        cmdline = app_name + '-c {0} -n {1} -- -p {2}'.\
             format(self.core_mask, self.dut.get_memory_channels(), self.port_mask)
         # Executes the packet ordering example app.
         self.dut.send_expect(cmdline, 'REORDERAPP', 120)
