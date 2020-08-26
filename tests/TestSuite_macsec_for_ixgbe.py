@@ -70,17 +70,20 @@ class TestMacsecForIxgbe(TestCase):
 
     def start_testpmd_rx(self):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[0:2], ports=[self.pci_rx], prefix='rx')
-        cmd_rx = self.target + '/app/testpmd ' + eal_params + '-- -i --port-topology=chained'
+        app_name = self.dut.apps_name['test-pmd']
+        cmd_rx =  app_name + eal_params + '-- -i --port-topology=chained'
         return self.dut.send_expect(cmd_rx, "testpmd", 120)
 
     def start_testpmd_tx(self):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[2:4], ports=[self.pci_tx], prefix='tx')
-        cmd_tx = self.target + '/app/testpmd ' + eal_params + '-- -i --port-topology=chained'
+        app_name = self.dut.apps_name['test-pmd']
+        cmd_tx = app_name +  eal_params + '-- -i --port-topology=chained'
         return self.session_sec.send_expect(cmd_tx, "testpmd", 120)
     
     def start_testpmd_perf(self):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[0:2])
-        cmd = self.target + '/app/testpmd ' + eal_params + '-- -i --port-topology=chained'
+        app_name = self.dut.apps_name['test-pmd']
+        cmd = app_name + eal_params + '-- -i --port-topology=chained'
         self.dut.send_expect(cmd, "testpmd", 120)
         self.rx_set_macsec_offload('on', 'on')
         self.dut.send_expect("set fwd mac", "testpmd>", 2)
