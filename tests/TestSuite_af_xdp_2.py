@@ -188,9 +188,9 @@ class TestAfXdp(TestCase):
 
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[:-max(self.port_num, self.vdev_num) * self.queue_number],
                 vdevs=vdev, no_pci=True)
-        command_line = "./%s/app/testpmd %s --log-level=pmd.net.af_xdp:8 -- -i %s %s --auto-start --nb-cores=%d --rxq=%d --txq=%d %s"
-        command = command_line % (self.dut.target, eal_params, fwd_mode, rss_ip,
-                self.nb_cores, self.queue_number, self.queue_number, topology)
+        app_name = self.dut.apps_name['test-pmd']
+        command = app_name + " %s --log-level=pmd.net.af_xdp:8 -- -i %s %s --auto-start --nb-cores=%d --rxq=%d " \
+                             "--txq=%d %s" % (eal_params, fwd_mode, rss_ip, self.nb_cores, self.queue_number, self.queue_number, topology)
 
         self.logger.info('start testpmd')
         self.dut.send_expect(command, "testpmd> ", 120)
