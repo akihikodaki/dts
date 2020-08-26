@@ -86,7 +86,7 @@ class TestVmdqDcb(TestCase):
         """
         Build example "Vmdq_dcb".
         """
-        out = self.dut.send_expect("make -C examples/vmdq_dcb", "#", 10)
+        out = self.dut.build_dpdk_apps("examples/vmdq_dcb")
         self.verify("Error" not in out, "Compilation error")
 
     def rebuild_dpdk(self, nb_queue_per_vm=4):
@@ -114,8 +114,10 @@ class TestVmdqDcb(TestCase):
         for i in self.dut_ports:
             eal_param += " -w %s" % self.dut.ports_info[i]['pci']
         # Run the application
-        self.dut.send_expect("./examples/vmdq_dcb/build/vmdq_dcb_app -c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s "
-                             "--enable-rss" % (core_mask, eal_param, port_mask, str(npools), str(ntcs)), "reading queues", 120)
+        app_name = self.dut.apps_name['vmdq_dcb']
+        command = app_name + "-c %s -n 4 %s -- -p %s --nb-pools %s --nb-tcs %s " \
+                             "--enable-rss" % (core_mask, eal_param, port_mask, str(npools), str(ntcs))
+        self.dut.send_expect(command, "reading queues", 120)
 
     def create_pcaps(self, prios):
         """
