@@ -75,14 +75,6 @@ class TestMetrics(TestCase):
         output2 = self.dut.alt_session.session.get_session_before(2)
         return output + os.linesep + output2
 
-    @property
-    def target_dir(self):
-        # get absolute directory of target source code
-        target_dir = '/root' + self.dut.base_dir[1:] \
-                     if self.dut.base_dir.startswith('~') else \
-                     self.dut.base_dir
-        return target_dir
-
     def get_pkt_len(self, pkt_type, frame_size=64):
         headers_size = sum(
             [HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
@@ -188,8 +180,8 @@ class TestMetrics(TestCase):
 
     def init_proc_info_tool(self):
         option = f' -v --file-prefix={self.prefix} -- --metrics'
-        self.dpdk_proc = os.path.join(
-            self.target_dir, self.target, "app", "dpdk-procinfo" + option)
+        app_name = self.dut.apps_name['proc-info']
+        self.dpdk_proc = os.path.join(app_name + option)
         self.metrics_stat = []
 
     def proc_info_query(self, flag=None):
