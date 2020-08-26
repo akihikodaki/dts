@@ -62,7 +62,8 @@ class SSHConnection(object):
     def send_expect(self, cmds, expected, timeout=15, verify=False):
         self.logger.info(cmds)
         out = self.session.send_expect(cmds, expected, timeout, verify)
-        self.logger.debug(out.replace(cmds, ''))
+        if isinstance(out, str):
+            self.logger.debug(out.replace(cmds, ''))
         if type(self.history) is list:
             self.history.append({"command": cmds, "name": self.name, "output": out})
         return out
