@@ -39,7 +39,7 @@ import time
 from test_case import TestCase
 
 
-class TestVhostEnqueueInterrupt(TestCase):
+class TestVhostUserInterrupt(TestCase):
 
     def set_up_all(self):
         """
