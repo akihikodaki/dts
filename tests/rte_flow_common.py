@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2019-2020 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -59,35 +59,28 @@ def get_suite_config(test_case):
         suite_config["package_file_location"] = package_file_location
     return suite_config
 
-def get_rx_packet_number(out,match_string):
-    """
-    get the rx packets number.
-    """
-    out_lines=out.splitlines()
-    pkt_num =0
-    for i in range(len(out_lines)):
-        if  match_string in out_lines[i]:
-            result_scanner = r'RX-packets:\s?(\d+)'
-            scanner = re.compile(result_scanner, re.DOTALL)
-            m = scanner.search(out_lines[i+1])
-            pkt_num = int(m.group(1))
-            break
-    return pkt_num
-
 def get_port_rx_packets_number(out,port_num):
     """
     get the port rx packets number.
     """
-    match_string="---------------------- Forward statistics for port %d" % port_num
-    pkt_num = get_rx_packet_number(out,match_string)
+    p = re.compile(
+        'Forward\sstatistics\s+for\s+port\s+%s\s+.*\n.*RX-packets:\s(\d+)\s+' % port_num)
+    m = p.search(out)
+    pkt_num = 0
+    if m:
+        pkt_num = int(m.group(1))
     return pkt_num
 
 def get_queue_rx_packets_number(out, port_num, queue_id):
     """
     get the queue rx packets number.
     """
-    match_string="------- Forward Stats for RX Port= %d/Queue= %d" % (port_num, queue_id)
-    pkt_num = get_rx_packet_number(out,match_string)
+    p = re.compile(
+        'Forward\sStats\s+for\s+RX\s+Port=\s*%d/Queue=\s*%d\s+.*\n.*RX-packets:\s(\d+)\s+' % (port_num, queue_id))
+    m = p.search(out)
+    pkt_num = 0
+    if m:
+        pkt_num = int(m.group(1))
     return pkt_num
 
 def check_output_log_in_queue(out, func_param, expect_results):
