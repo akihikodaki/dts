@@ -55,6 +55,10 @@ user applications.
 
 Prerequisites
 =============
+Add print info to testpmd for case::
+
+    sed -i -e '/printf(\" - VLAN tci=0x%x\", mb->vlan_tci);/a\\\\t\\tprintf(\" - pktype: 0x%x\", mb->packet_type);' app/test-pmd/util.c
+
 Start testpmd, enable rxonly and verbose mode::
 
         ./testpmd -c f -n 4 -- -i --port-topology=chained
