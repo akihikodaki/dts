@@ -53,6 +53,8 @@ Test Case 1: test qinq packet type
 
 Testpmd configuration - 4 RX/TX queues per port
 ------------------------------------------------
+#. For fortville NICs need change the value of 
+   CONFIG_RTE_LIBRTE_I40E_INC_VECTOR in dpdk/config/common_base file to n::
 
 #. set up testpmd with fortville NICs::
 
