@@ -100,6 +100,7 @@ class TestVmdqDcb(TestCase):
         else:
             self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM=%s/CONFIG_RTE_LIBRTE_I40E_"
                              "QUEUE_NUM_PER_VM=%s/' ./config/common_base" % (vm_num, nb_queue_per_vm), "#", 20)
+            self.dut.set_build_options({'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM': nb_queue_per_vm})
             self.dut.build_install_dpdk(self.target)
 
     def start_application(self, npools, ntcs):
@@ -159,7 +160,8 @@ class TestVmdqDcb(TestCase):
 
     def get_vmdq_stats(self):
         vmdq_dcb_session = self.dut.new_session()
-        vmdq_dcb_session.send_expect("kill -s SIGHUP  `pgrep -fl vmdq_dcb_app | awk '{print $1}'`", "#", 20)
+        app_name = self.dut.apps_name['vmdq_dcb'].split('/')[-1]
+        vmdq_dcb_session.send_expect("kill -s SIGHUP  `pgrep -fl %s | awk '{print $1}'`" % app_name, "#", 20)
         out = self.dut.get_session_output()
         self.logger.info(out)
         return out
