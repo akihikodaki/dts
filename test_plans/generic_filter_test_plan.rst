@@ -492,7 +492,13 @@ Test Case 10: 128 queues
 
 This case is designed for NIC(niantic). Since NIC(niantic) has 128 transmit
 queues, it should be supports 128 kinds of filter if Hardware have enough
-cores.  Launch the app ``testpmd`` with the following arguments::
+cores.  
+DPDK enable 64 queues in ixgbe driver by default. Enlarge queue number to 128
+for 128 queues test::
+
+    sed -i -e 's/#define IXGBE_NONE_MODE_TX_NB_QUEUES 64$/#define IXGBE_NONE_MODE_TX_NB_QUEUES 128/' drivers/net/ixgbe/ixgbe_ethdev.h
+
+Launch the app ``testpmd`` with the following arguments::
 
     ./testpmd -c fffff -n 4 -- -i --disable-rss --rxq=128 --txq=128 --nb-cores=16 --nb-ports=2 --total-num-mbufs=60000
 
