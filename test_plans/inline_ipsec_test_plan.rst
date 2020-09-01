@@ -100,7 +100,15 @@ modprobe vfio-pci
 This suite depend PyCryptodome,it provide authenticated encryption modes(GCM)
 module dependences:cryptography (1.7.2), pycryptodome (3.4.7), pycryptodomex (3.4.7),
 pycryptopp (0.6.0), scapy (2.3.3 or later)
-	
+
+Add print code in IPSEC app::
+
+    sed -i -e 's/if (nb_rx > 0)/if (nb_rx > 0) {/g' -e '/\/\* dequeue and process completed crypto-ops \*\//i\\t\t\t}' -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %llu packet in rxqueueid=%llu\\n",(unsigned long long)nb_rx, (unsigned long long)queueid);' examples/ipsec-secgw/ipsec-secgw.c
+
+Re-compile examples/ipsec-secgw::
+
+    make -C examples/ipsec-secgw
+
 Test Case: Inline cfg parsing
 =============================
 Create inline ipsec configuration file like below::
