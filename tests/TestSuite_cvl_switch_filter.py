@@ -4546,18 +4546,18 @@ class CVLSwitchFilterTest(TestCase):
         """
         generate file with fdir rules to make fdir table full, then test switch filter
         """
-        fdir_rule_number = 14336 + int(2048/(len(self.dut_ports)))
+        self.fdir_rule_number = 14336 + int(2048/(len(self.dut_ports)))
         src_file = 'dep/testpmd_cmds_rte_flow_fdir_rules'
         flows = open(src_file, mode='w')
         rule_count = 1
         for i in range(0,255):
             for j in range(0,255):
-                if not rule_count > fdir_rule_number:
+                if not rule_count > self.fdir_rule_number:
                     flows.write('flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d dst is 192.1.0.0 tos is 4 / tcp src is 25 dst is 23 / end actions queue index 5 / end \n' % (i, j))
                     rule_count += 1
                 else:
                     break
-            if rule_count > fdir_rule_number:
+            if rule_count > self.fdir_rule_number:
                 break
         flows.close()
         self.dut_file_dir = '/tmp'
@@ -4749,7 +4749,7 @@ class CVLSwitchFilterTest(TestCase):
             result = [i.group(1) for i in res]
             if is_non_pipeline:
                 #remove 15360 fdir rules id
-                del result[:15360]
+                del result[:self.fdir_rule_number]
             if is_need_rss_rule:
                 #remove rss rule id
                 del result[0]
