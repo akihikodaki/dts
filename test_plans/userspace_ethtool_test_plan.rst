@@ -164,7 +164,7 @@ Test Case: Vlan test
 
 enable vlan filter flag in main.c of dpdk's ethtool::
 
-    sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.hw_vlan_filter=1;' examples/ethtool/ethtool-app/main.c
+    sed -i -e '/cfg_port.txmode.mq_mode = ETH_MQ_TX_NONE;$/a\\cfg_port.rxmode.offloads|=DEV_RX_OFFLOAD_VLAN_FILTER;' examples/ethtool/ethtool-app/main.c
 
 re-compile examples/ethtool::
 
