@@ -51,14 +51,15 @@ class TestFlowFiltering(TestCase):
         self.txitf = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
         # Verify that enough ports are available
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
-        out = self.dut.build_dpdk_apps("./examples/flow_filtering/")
+        out = self.dut.build_dpdk_apps("./examples/flow_filtering")
         self.verify('Error' not in out, "Compilation failed")
 
     def set_up(self):
         """
         Run before each test case.
         """
-        out = self.dut.send_command("./examples/flow_filtering/build/flow -l 1 -n 1", timeout=15)
+        cmd = self.dut.apps_name['flow_filtering'] + "-l 1 -n 1"
+        out = self.dut.send_command(cmd, timeout=15)
         self.verify("Error" not in out, "flow launch failed")
 
     def send_packet(self, pkg):
