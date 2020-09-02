@@ -75,7 +75,8 @@ class TestSoftnic(TestCase):
         self.dut.session.copy_file_to(self.firmware, self.root_path)
         self.dut.session.copy_file_to(self.tm_firmware, self.root_path)
         self.dut.session.copy_file_to(self.nat_firmware, self.root_path)
-        self.cmd = "./%s/app/testpmd -c 0x7 -s 0x4 -n 4 --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086' -- -i --forward-mode=softnic --portmask=0x2"
+        self.eal_param = " -w %s" % self.dut.ports_info[0]['pci']
+        self.cmd = "./%s/app/testpmd -c 0x7 -s 0x4 -n 4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086' -- -i --forward-mode=softnic --portmask=0x2"
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
@@ -90,7 +91,7 @@ class TestSoftnic(TestCase):
         self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
         out = self.dut.send_expect('ethtool %s' % self.host_intf, '#')
         self.speed = re.findall('Supported link modes:   (\d*)', out)[0]
-        self.dut.bind_interfaces_linux('igb_uio', [ports[0]])
+        self.dut.bind_interfaces_linux(self.drivername, [ports[0]])
 
     def set_up(self):
         """
@@ -106,7 +107,7 @@ class TestSoftnic(TestCase):
         # 10G nic pps(M)
         expect_pps = [14, 8, 4, 2, 1, 0.9, 0.8]
 
-        self.dut.send_expect(self.cmd % (self.target, 'firmware.cli'), "testpmd>", timeout=300)
+        self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'firmware.cli'), "testpmd>", timeout=300)
         self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
@@ -116,7 +117,7 @@ class TestSoftnic(TestCase):
             payload_size = frame - self.headers_size
             tgen_input = []
             pcap = os.sep.join([self.output_path, "test.pcap"])
-            pkt = "Ether(dst='%s')/IP()/UDP()/Raw('x'*%d)" % (self.dmac, payload_size)
+            pkt = "Ether(dst='%s')/IP()/UDP()/Raw(load='x'*%d)" % (self.dmac, payload_size)
             self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, pkt))
             tgen_input.append((tx_port, rx_port, pcap))
             self.tester.scapy_execute()
@@ -132,11 +133,11 @@ class TestSoftnic(TestCase):
 
     def test_perf_shaping_for_pipe(self):
         self.change_config_file('tm_firmware.cli')
-        self.dut.send_expect(self.cmd % (self.target, 'tm_firmware.cli'), "testpmd> ", timeout=800)
+        self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'tm_firmware.cli'), "testpmd> ", timeout=800)
         self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
-        pkts = ["Ether(dst='%s')/IP(dst='100.0.0.0')/UDP()/Raw('x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.15.255')/UDP()/Raw('x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.4.0')/UDP()/Raw('x'*(64 - %s))"]
+        pkts = ["Ether(dst='%s')/IP(dst='100.0.0.0')/UDP()/Raw(load='x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.15.255')/UDP()/Raw(load='x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.4.0')/UDP()/Raw(load='x'*(64 - %s))"]
         except_bps_range = [1700000, 2000000]
 
         for i in range(3):
@@ -169,7 +170,7 @@ class TestSoftnic(TestCase):
         for t in pkt_type:
             for i in range(2):
                 self.dut.send_expect("sed -i -e '12c table action profile AP0 ipv4 offset 270 fwd nat %s proto %s' %s" % (pkt_location[i], t, self.root_path + 'nat_firmware.cli'), "#")
-                self.dut.send_expect(self.cmd % (self.target, 'nat_firmware.cli'), "testpmd>", timeout=60)
+                self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'nat_firmware.cli'), "testpmd>", timeout=60)
                 self.dut.send_expect("start", "testpmd>")
                 # src ip tcp
                 for j in range(2):
@@ -182,9 +183,9 @@ class TestSoftnic(TestCase):
         self.tester.scapy_foreground()
         pkt = "Ether(dst='%s')/IP(dst='%s')/" % (self.dmac, ip)
         if pkt_type == 'tcp':
-            pkt = pkt + "TCP()/Raw('x'*20)"
+            pkt = pkt + "TCP()/Raw(load='x'*20)"
         else:
-            pkt = pkt + "UDP()/Raw('x'*20)"
+            pkt = pkt + "UDP()/Raw(load='x'*20)"
 
         self.tester.scapy_append('sendp([%s], iface="%s")' % (pkt, self.txItf))
         self.start_tcpdump(self.txItf)
