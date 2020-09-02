@@ -4091,7 +4091,7 @@ class TestIAVFFdir(TestCase):
 
         rule_ipv4_tcp_ipv6_udp = [
             "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end",
-            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 2 / e    nd"
+            "flow create 0 ingress pattern eth / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 hop is 2 tc is 1 / udp src is 22 dst is 23 / end actions queue index 2 / mark id 2 / end"
         ]
         # create rules
         self.create_fdir_rule(rule_ipv4_tcp_ipv6_udp, check_stats=True)
