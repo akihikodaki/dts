@@ -65,8 +65,6 @@ class TestVfInterruptPmd(TestCase):
         self.port_mask = utils.create_mask(ports)
         self.core_mask_user = utils.create_mask(self.core_list[0:1])
 
-        self.path = "./examples/l3fwd-power/build/l3fwd-power"
-
         testport_0 = self.tester.get_local_port(self.dut_ports[0])
         self.rx_intf_0 = self.tester.get_interface(testport_0)
         self.tester_mac = self.tester.get_mac(testport_0)
@@ -94,6 +92,8 @@ class TestVfInterruptPmd(TestCase):
                 "sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' \
                 ./examples/l3fwd-power/main.c", "#", 10)
         out = use_dut.send_expect("make -C examples/l3fwd-power", "#")
+        out = use_dut.build_dpdk_apps("./examples/l3fwd-power")
+        self.path = use_dut.apps_name['l3fwd-power']
         self.verify("Error" not in out, "compilation error")
 
     def send_packet(self, mac, testinterface, use_dut):
@@ -127,9 +127,7 @@ class TestVfInterruptPmd(TestCase):
         """
         begin l3fwd-power
         """
-        cmd_vhost_net = "./examples/l3fwd-power/build/l3fwd-power -n %d -c %s" % (
-                use_dut.get_memory_channels(), self.core_mask_user) + \
-                        " -- -P -p 1 --config='(0,0,%s)'" % self.core_user
+        cmd_vhost_net = self.path + "-n %d -c %s" % (use_dut.get_memory_channels(), self.core_mask_user) + " -- -P -p 1 --config='(0,0,%s)'" % self.core_user
         try:
             self.logger.info("Launch l3fwd_sample sample:")
             self.out = use_dut.send_expect(cmd_vhost_net, "L3FWD_POWER", 60)
@@ -149,8 +147,7 @@ class TestVfInterruptPmd(TestCase):
             if config_info != "":
                 config_info += ','
             config_info += '(0,%d,%d)' % (queue, queue)
-        cmd_vhost_net = "./examples/l3fwd-power/build/l3fwd-power -l 0-%d -n 4 -- -P -p 0x1" % \
-                        queue + " --config='%s'" % config_info
+        cmd_vhost_net = self.path + "-l 0-%d -n 4 -- -P -p 0x1" % queue + " --config='%s'" % config_info
         try:
             self.logger.info("Launch l3fwd_sample sample:")
             self.out = use_dut.send_expect(cmd_vhost_net, "L3FWD_POWER", 60)
@@ -239,10 +236,7 @@ class TestVfInterruptPmd(TestCase):
         core_user = core_list[0]
         core_mask_user = utils.create_mask(core_list)
 
-        cmd = self.path + \
-              " -c %s -n %d -- -P  -p 0x01 --config='(0,0,%s)'" % (
-                  core_mask_user, self.vm0_dut.get_memory_channels(), core_user)
-
+        cmd = self.path + "-c %s -n %d -- -P  -p 0x01 --config='(0,0,%s)'" % (core_mask_user, self.vm0_dut.get_memory_channels(), core_user)
         self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
         self.send_packet(self.vf0_mac, self.rx_intf_0, self.vm0_dut)
         self.destroy_vm_env()
@@ -365,9 +359,7 @@ class TestVfInterruptPmd(TestCase):
             if config_info != "":
                 config_info += ','
             config_info += '(0,%d,%d)' % (queue, queue)
-        cmd = "./examples/l3fwd-power/build/l3fwd-power -c %s -n 4 -- -P -p 0x1" \
-              % core_mask_user + \
-        " --config='%s'" % config_info
+        cmd = self.path + "-c %s -n 4 -- -P -p 0x1" % core_mask_user + " --config='%s'" % config_info
         self.vm0_dut.send_expect(cmd, "L3FWD_POWER", 60)
         time.sleep(1)
         try:
@@ -397,7 +389,7 @@ class TestVfInterruptPmd(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall l3fwd-power", "# ", 10, alt_session=True)
+        self.dut.send_expect("killall %s" % self.path.strip().split('/')[-1], "# ", 10, alt_session=True)
 
     def tear_down_all(self):
         """
