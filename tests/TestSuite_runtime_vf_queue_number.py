@@ -297,13 +297,12 @@ class TestRuntimeVfQn(TestCase):
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
 
-        command_0 = "./%s/app/testpmd -c %s -n %d %s -- -i %s" \
-                  % (self.dut.target, '0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=0 --txq=0')
+        app_name = self.dut.apps_name['test-pmd']
+        command_0 = app_name + "-c %s -n %d %s -- -i %s" % ('0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=0 --txq=0')
         outstring = self.vm0_testpmd.execute_cmd(command_0, expected='# ')
         self.verify("Either rx or tx queues should be non-zero" in outstring, "The output of testpmd start is different from expect when set invalid VF queue number 0.")
         time.sleep(2)
-        command_17 = "./%s/app/testpmd -c %s -n %d %s -- -i %s" \
-                  % (self.dut.target, '0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=17 --txq=17')
+        command_17 = app_name + "-c %s -n %d %s -- -i %s" % ('0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=17 --txq=17')
         outstring1 = self.vm0_testpmd.execute_cmd(command_17, expected='# ')
         self.verify("rxq 17 invalid - must be >= 0 && <= 16" in outstring1,
                     "The output of testpmd start is different from expect when set invalid VF queue number 17.")
