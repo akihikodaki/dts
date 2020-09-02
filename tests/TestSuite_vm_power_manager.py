@@ -90,8 +90,11 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
             "examples/vm_power_manager/guest_cli")
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
-        self.vm_power_dir = "./examples/vm_power_manager/"
-        mgr_cmd = self.vm_power_dir + "build/vm_power_mgr -c 0x7 -n 4"
+
+        self.path = self.vm_dut.apps_name['guest_cli']
+        self.guest_cmd = self.path + "-c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
+        self.vm_power_dir = self.vm_dut.apps_name['vm_power_manager']
+        mgr_cmd = self.vm_power_dir + "-c 0x7 -n 4"
         out = self.dut.send_expect(mgr_cmd, "vmpower>", 120)
         self.dut.send_expect("add_vm %s" % self.vm_name, "vmpower>")
         self.dut.send_expect("add_channels %s all" % self.vm_name, "vmpower>")
@@ -113,9 +116,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         Check power monitor channel connection
         """
         # check Channels and vcpus
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
         self.vm_dut.send_expect("quit", "# ")
 
     def get_cpu_frequency(self, core_id):
@@ -132,9 +133,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         """
         Check host cpu frequency can scale down in VM
         """
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         for vcpu in range(self.core_num):
             self.vm_dut.send_expect(
@@ -162,9 +161,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         """
         Check host cpu frequency can scale up in VM
         """
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         for vcpu in range(self.core_num):
             self.vm_dut.send_expect(
@@ -189,9 +186,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         """
         Check host cpu frequency can scale to max in VM
         """
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         max_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
                         "cpuinfo_max_freq"
@@ -212,9 +207,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         """
         Check host cpu frequency can scale to min in VM
         """
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = self.vm_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = self.vm_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
 
         min_freq_path = "cat /sys/devices/system/cpu/cpu%s/cpufreq/" + \
                         "cpuinfo_min_freq"
@@ -276,9 +269,7 @@ class TestVmPowerManager(TestCase, IxiaPacketGenerator):
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
-        guest_cmd = self.vm_power_dir + \
-            "guest_cli/build/guest_vm_power_mgr -c 0xf -n 4 -- --vm-name=%s --vcpu-list=0,1,2,3" % self.vm_name
-        out = vm2_dut.send_expect(guest_cmd, "vmpower\(guest\)>", 120)
+        out = vm2_dut.send_expect(self.guest_cmd, "vmpower\(guest\)>", 120)
         vm2_dut.send_expect("quit", "# ")
         vm2.stop()
 
