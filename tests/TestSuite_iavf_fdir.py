@@ -3357,16 +3357,21 @@ class TestIAVFFdir(TestCase):
 
         rule = "flow create {} ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end".format(nex_cnt)
         self.create_fdir_rule(rule, check_stats=False)
-        pkt = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22, dport=23)/ Raw("x" * 80)'
-        out = self.send_pkts_getouput(pkts=pkt)
+        pkt1 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22, dport=23)/ Raw("x" * 80)'
+        out = self.send_pkts_getouput(pkts=pkt1)
         rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=True)
+        pkt2 = 'Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw("x" * 80)'
+        out = self.send_pkts_getouput(pkts=pkt2)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 1}, stats=False)
 
         self.dut.send_expect("flow flush {}".format(nex_cnt), "testpmd> ")
         self.check_fdir_rule(port_id=(nex_cnt), stats=False)
-        out = self.send_pkts_getouput(pkts=pkt)
+        out = self.send_pkts_getouput(pkts=pkt1)
         rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 0, "queue": 1}, stats=False)
 
-        self.create_fdir_rule(rule, check_stats=False)
+        self.create_fdir_rule(rule, check_stats=True)
+        out = self.send_pkts_getouput(pkts=pkt2)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": nex_cnt, "mark_id": 1, "queue": 1}, stats=True)
 
     def test_stress_port_stop_start(self):
         """

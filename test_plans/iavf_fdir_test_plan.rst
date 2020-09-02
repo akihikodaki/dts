@@ -3972,7 +3972,7 @@ Subcase 5: 128 profiles
 
     ./testpmd -c 0xf -n 6 --file-prefix=vf -- -i --rxq=4 --txq=4
 
-2. create 10 rules with different patterns on each port::
+2. create 8 rules with different patterns on each port::
 
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
     flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end
@@ -3995,7 +3995,7 @@ Subcase 5: 128 profiles
 
 3. list the rules on port 0-12::
 
-    testpmd> flow list 10
+    testpmd> flow list 12
     ID      Group   Prio    Attr    Rule
     0       0       0       i--     ETH IPV4 UDP => QUEUE MARK
     1       0       0       i--     ETH IPV4 TCP => QUEUE MARK
@@ -4020,7 +4020,7 @@ Subcase 5: 128 profiles
 4. send matched packets to vf 12,
    the packets are redirected to the expected queue.
 
-5. flush rules on port 12::
+5. flush rules on vf port 12::
 
     flow flush 12
 
@@ -4032,13 +4032,10 @@ Subcase 5: 128 profiles
 6. create rule on port 13 again::
 
     testpmd> flow create 13 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end
-    eth
-    iavf_execute_vf_cmd(): No response or return failure (-5) for cmd 47
-    iavf_fdir_add(): fail to execute command OP_ADD_FDIR_FILTER
-    iavf_flow_create(): Failed to create flow
-    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Add filter rule failed.: Operation not permitted
 
-   still failed.
+   the rule can be created successfully.
+   send the matched packet port 13,
+   the packets are redirected to the expected queue.
 
 Test case: Stress test
 ======================
