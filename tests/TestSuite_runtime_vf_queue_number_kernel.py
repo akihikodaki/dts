@@ -208,9 +208,9 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
         for i in invalid_queue_num:
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
             self.vm_dut_0.session_secondary = self.vm_dut_0.new_session()
-            out = self.vm_dut_0.session_secondary.send_expect(
-                './x86_64-native-linuxapp-gcc/app/testpmd -c 0xf -n 1 -w %s -- -i --txq=%s --rxq=%s' % (
-                    self.vm_dut_0.vm_pci0, i, i), '# ', 40)
+            app_name = self.vm_dut_0.apps_name['test-pmd']
+            cmd = app_name + "-c 0xf -n 1 -w %s -- -i --txq=%s --rxq=%s" % (self.vm_dut_0.vm_pci0, i, i)
+            out = self.vm_dut_0.session_secondary.send_expect(cmd, "# ", 40)
             if i == 0:
                 self.verify('Either rx or tx queues should be non-zero' in out, "queue number can't be zero")
             else:
