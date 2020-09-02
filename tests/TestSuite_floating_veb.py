@@ -141,6 +141,9 @@ class TestFloatingVEBSwitching(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.session_secondary = self.dut.new_session()
         self.session_third = self.dut.new_session()
+        self.pmdout = PmdOutput(self.dut)
+        self.pmdout_2 = PmdOutput(self.dut, self.session_secondary)
+        self.pmdout_3 = PmdOutput(self.dut, self.session_third)
         
         self.setup_1pf_ddriver_1vf_env_flag = 0
         self.setup_1pf_ddriver_2vf_env_flag = 0
@@ -156,6 +159,7 @@ class TestFloatingVEBSwitching(TestCase):
         self.pf_interface = self.dut.ports_info[self.used_dut_port]['intf']
         self.pf_mac_address = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.used_dut_port]['pci']
+        self.path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -212,12 +216,12 @@ class TestFloatingVEBSwitching(TestCase):
         """
         # VF->PF
         self.setup_env(driver=self.drivername, vf_num=1)
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s,enable_floating_veb=1 --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci], port_options={self.pf_pci:"enable_floating_veb=1"})
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.pf_mac_address), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.pf_mac_address)
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -236,11 +240,11 @@ class TestFloatingVEBSwitching(TestCase):
         time.sleep(2)
 
         #PF->VF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.pf_pci, self.vf0_mac), "testpmd>", 120)
+        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci], port_options={self.pf_pci:"enable_floating_veb=1"}, param="--eth-peer=0,%s" % self.vf0_mac)
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
 
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
@@ -265,13 +269,13 @@ class TestFloatingVEBSwitching(TestCase):
         """
         #outside world ->VF
         self.setup_env(driver=self.drivername, vf_num=1)
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s,enable_floating_veb=1 --file-prefix=test1 -- -i --eth-peer=0,%s" % (self.target, self.pf_pci, self.vf0_mac), "testpmd>", 120)
+        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci], port_options={self.pf_pci:"enable_floating_veb=1"}, param="--eth-peer=0,%s" % self.vf0_mac)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all on", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
 
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd mac", "testpmd>")
         self.session_secondary.send_expect("set promisc all on", "testpmd>")
@@ -296,18 +300,18 @@ class TestFloatingVEBSwitching(TestCase):
         # PF link up, VF0->VF1
         self.setup_env(driver=self.drivername, vf_num=2)
         # start PF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w %s,enable_floating_veb=1 --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci], port_options={self.pf_pci:"enable_floating_veb=1"})
         self.dut.send_expect("port start all", "testpmd>")
         time.sleep(2)
         # start VF0
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
         # start VF1
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[1].pci, self.vf0_mac), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[1].pci], param="--eth-peer=0,%s" % self.vf0_mac)
         self.session_third.send_expect("set fwd txonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -357,17 +361,18 @@ class TestFloatingVEBSwitching(TestCase):
         """
         self.setup_env(driver=self.drivername, vf_num=4)
         # start PF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;2-3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        cmd = self.path + "-c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;2-3\" --file-prefix=test1 -- -i" % self.pf_pci
+        self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("port start all", "testpmd>")
         time.sleep(2)
         # VF1->VF0
         # start VF0
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.vf1_mac), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         # start VF1
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[1].pci, self.vf0_mac), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[1].pci], param="--eth-peer=0,%s" % self.vf0_mac)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_third.send_expect("set fwd txonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
@@ -410,12 +415,12 @@ class TestFloatingVEBSwitching(TestCase):
         # VF0->VF2
         # start VF0
         self.dut.send_expect("port start all", "testpmd>")
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.vf2_mac), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf2_mac)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         # start VF2
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i" % (self.target, self.sriov_vfs_port[2].pci), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[2].pci])
         self.session_third.send_expect("mac_addr add 0 %s" % self.vf2_mac, "testpmd>")
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
@@ -444,12 +449,12 @@ class TestFloatingVEBSwitching(TestCase):
         # VF3->VF2
         # start VF3
         self.dut.send_expect("port start all", "testpmd>")
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[3].pci, self.vf2_mac), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[3].pci], param="--eth-peer=0,%s" % self.vf2_mac)
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         # start VF2
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i" % (self.target, self.sriov_vfs_port[2].pci), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[2].pci])
         self.session_third.send_expect("mac_addr add 0 %s" % self.vf2_mac, "testpmd>")
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
@@ -486,12 +491,13 @@ class TestFloatingVEBSwitching(TestCase):
         """
         self.setup_env(driver=self.drivername, vf_num=4)
         # VF0->PF
-        self.dut.send_expect("./%s/app/testpmd -c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;3\" --file-prefix=test1 -- -i" % (self.target, self.pf_pci), "testpmd>", 120)
+        cmd = self.path + "-c 0xf -n 4 --socket-mem 1024,1024 -w \"%s,enable_floating_veb=1,floating_veb_list=0;3\" --file-prefix=test1 -- -i" % self.pf_pci
+        self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[0].pci, self.pf_mac_address), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.pf_mac_address)
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
@@ -508,7 +514,7 @@ class TestFloatingVEBSwitching(TestCase):
         time.sleep(2)
 
         # VF1->PF
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[1].pci, self.pf_mac_address), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci], param="--eth-peer=0,%s" % self.pf_mac_address)
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
@@ -533,7 +539,7 @@ class TestFloatingVEBSwitching(TestCase):
         self.dut.send_expect("start", "testpmd>")
         time.sleep(2)
 
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf0_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
@@ -551,7 +557,7 @@ class TestFloatingVEBSwitching(TestCase):
         time.sleep(2)
 
         # tester->VF1
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
@@ -569,14 +575,14 @@ class TestFloatingVEBSwitching(TestCase):
         time.sleep(2)
 
         # VF2->VF1
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
 
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[2].pci, self.vf1_mac), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[2].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.session_third.send_expect("set fwd txonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -596,12 +602,12 @@ class TestFloatingVEBSwitching(TestCase):
         time.sleep(2)
 
         # PF link down, VF2->VF1
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0xf0 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test2 -- -i" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
         self.session_secondary.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
 
-        self.session_third.send_expect("./%s/app/testpmd -c 0xf00 -n 4 --socket-mem 1024,1024 -w %s --file-prefix=test3 -- -i --eth-peer=0,%s" % (self.target, self.sriov_vfs_port[2].pci, self.vf1_mac), "testpmd>", 120)
+        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[2].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.session_third.send_expect("set fwd txonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
         
