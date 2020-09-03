@@ -137,6 +137,9 @@ This case will measure the performance based on flow numbers.
 
 Test Case: Load balancer performance based on value bits
 -----------------------------------------------------------------------
+Modify different value size which must be between 1 and 32, and it need
+set the '#define RTE_EFD_VALUE_NUM_BITS (value size)' in lib/librte_efd/rte_efd.h and rebuild dpdk.
+
 This case will measure the performance based on value bits.
 
 +--------------+-------+-----------+------------+
