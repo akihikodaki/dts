@@ -119,6 +119,9 @@ system to another)::
     insmod ./x86_64-default-linuxapp-gcc/kmod/rte_kni.ko
     ./examples/kni/build/app/kni -c 0xa0001e -n 4 -- -P -p 0x3 --config="(0,1,2,21),(1,3,4,23)" &
 
+Case config::
+
+   For enable KNI features, need to set the "CONFIG_RTE_KNI_KMOD=y" in ./config/common_base and re-build DPDK.
 
 Test Case: ifconfig testing
 ===========================
