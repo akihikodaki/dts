@@ -52,6 +52,9 @@ in PCAP devices created by Test PMD.
 It is Test PMD application itself which send and receives traffic from and to
 PCAP files, no traffic generator is involved.
 
+Case config::
+
+   For enable PCAP features, need to set the "CONFIG_RTE_LIBRTE_PMD_PCAP=y" in ./config/common_base and re-build DPDK.
 
 Test Case: test_send_packets_with_one_device
 ============================================
