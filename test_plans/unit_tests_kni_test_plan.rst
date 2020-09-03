@@ -45,6 +45,10 @@ script (launched using ``make test``) that sends commands to
 the application and checks the results. A test report is displayed on
 stdout.
 
+Case config::
+
+   For enable KNI features, need to set the "CONFIG_RTE_KNI_KMOD=y" in ./config/common_base and re-build DPDK.
+
 The steps to run the unit test manually are as follow::
 
   # make -C ./app/test/
