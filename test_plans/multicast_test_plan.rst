@@ -195,6 +195,29 @@ P0 and P2 are used on testing machine):
 
 These flows do not change across the test cases.
 
+6.Modify multicast route table::
+
+    sed -i '/mcast_group_table\[\].*{/,/^\}\;/c\\static struct mcast_group_params mcast_group_table[] = {\
+    {RTE_IPV4(224,0,0,101),1},\
+    {RTE_IPV4(224,0,0,102),2},\
+    {RTE_IPV4(224,0,0,103),3},\
+    {RTE_IPV4(224,0,0,104),4},\
+    {RTE_IPV4(224,0,0,105),5},\
+    {RTE_IPV4(224,0,0,106),6},\
+    {RTE_IPV4(224,0,0,107),7},\
+    {RTE_IPV4(224,0,0,108),8},\
+    {RTE_IPV4(224,0,0,109),9},\
+    {RTE_IPV4(224,0,0,110),10},\
+    {RTE_IPV4(224,0,0,111),11},\
+    {RTE_IPV4(224,0,0,112),12},\
+    {RTE_IPV4(224,0,0,113),13},\
+    {RTE_IPV4(224,0,0,114),14},\
+    {RTE_IPV4(224,0,0,115),15},\
+    };' examples/ipv4_multicast/main.c
+
+And re-compile examples/ipv4_multicast::
+
+    make -C examples/ipv4_multicast
 
 Test Case: IP4 Multicast Forwarding
 ===================================
