@@ -72,7 +72,8 @@ class TestUnitTestsPower(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("power_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -84,7 +85,8 @@ class TestUnitTestsPower(TestCase):
         # This acpi driver test case need correct BIOS and Grub settings.
         # otherwise, the power lib initialization will be failed
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60) 
         out = self.dut.send_expect("power_cpufreq_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -96,7 +98,8 @@ class TestUnitTestsPower(TestCase):
         # This acpi driver test case need correct BIOS and Grub settings.
         # otherwise, the power lib initialization will be failed
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)        
         out = self.dut.send_expect("power_caps_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
