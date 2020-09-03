@@ -71,7 +71,8 @@ class TestUnitTestsCmdline(TestCase):
         Run cmdline autotests in RTE command line.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("cmdline_autotest", "RTE>>", 60)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
