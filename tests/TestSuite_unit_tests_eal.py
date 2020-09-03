@@ -36,7 +36,8 @@ class TestUnitTestsEal(TestCase):
         self.run_cmd_time = 180
         default_cores = '1S/4C/1T'
         eal_params = self.dut.create_eal_parameters(cores=default_cores)
-        self.test_app_cmdline = "./%s/app/test %s" % (self.target,eal_params)
+        app_name = self.dut.apps_name['test']
+        self.test_app_cmdline = app_name + eal_params
 
     def set_up(self):
         """
@@ -179,7 +180,7 @@ class TestUnitTestsEal(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters()
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
+        self.dut.send_expect(self.test_app_cmdline,       
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_readwrite_lf_perf_autotest",
                                    "RTE>>", self.run_cmd_time*3)
@@ -192,7 +193,7 @@ class TestUnitTestsEal(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params),
+        self.dut.send_expect(self.test_app_cmdline,
                              "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("hash_readwrite_perf_autotest",
                                    "RTE>>", self.run_cmd_time*3)
@@ -208,7 +209,8 @@ class TestUnitTestsEal(TestCase):
             cmdline = self.test_app_cmdline
         else:
             # mask cores only on socket 0
-            cmdline = "%s ./%s/app/test -n 1 -c 5" % (self.dut.taskset(1), self.target)
+            app_name = self.dut.apps_name['test']
+            cmdline = self.dut.taskset(1)+ ' ' +app_name+' -n 1 -c 5'            
         self.dut.send_expect(cmdline, "R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("func_reentrancy_autotest", "RTE>>", self.run_cmd_time)
         self.dut.send_expect("quit", "# ")
