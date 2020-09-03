@@ -42,7 +42,10 @@ systems and software based memory allocators to be used with DPDK.
 Test Case 1: Multiple producers and multiple consumers
 ======================================================
 
-1. Change default mempool handler operations to "ring_mp_mc"
+1. Change default mempool handler operations to "ring_mp_mc"::
+
+      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_mp_mc\"/' ./config/common_base
+
 2. Start test app and verify mempool autotest passed::
 
       test -n 4 -c f
@@ -60,7 +63,10 @@ Test Case 1: Multiple producers and multiple consumers
 Test Case 2: Single producer and Single consumer
 ================================================
 
-1. Change default mempool operation to "ring_sp_sc"
+1. Change default mempool operation to "ring_sp_sc"::
+
+      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_sp_sc\"/' ./config/common_base
+
 2. Start test app and verify mempool autotest passed::
 
       test -n 4 -c f
@@ -78,7 +84,10 @@ Test Case 2: Single producer and Single consumer
 Test Case 3: Single producer and Multiple consumers
 ===================================================
 
-1. Change default mempool operation to "ring_sp_mc"
+1. Change default mempool operation to "ring_sp_mc"::
+
+      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_sp_mc\"/' ./config/common_base
+
 2. Start test app and verify mempool autotest passed::
 
       test -n 4 -c f
@@ -96,7 +105,10 @@ Test Case 3: Single producer and Multiple consumers
 Test Case 4: Multiple producers and single consumer
 ===================================================
 
-1. Change default mempool operation to "ring_mp_sc"
+1. Change default mempool operation to "ring_mp_sc"::
+
+      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"ring_mp_sc\"/' ./config/common_base
+
 2. Start test app and verify mempool autotest passed::
 
       test -n 4 -c f
@@ -114,7 +126,10 @@ Test Case 4: Multiple producers and single consumer
 Test Case 4: Stack mempool handler
 ==================================
 
-1. Change default mempool operation to "stack"
+1. Change default mempool operation to "stack"::
+
+      sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"stack\"/' ./config/common_base
+
 2. Start test app and verify mempool autotest passed::
 
       test -n 4 -c f

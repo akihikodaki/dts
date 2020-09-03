@@ -107,6 +107,10 @@ Testing the support of Jumbo Frames in Poll Mode Drivers consists in
 configuring the maximum packet length with a value greater than 1518, and in
 sending to the test machine packets with the following lengths (CRC included):
 
+when driver is ixgbe, turn on the jumbo_frame switch::
+
+    sed -i -e 's/.jumbo_frame    = .*$/.jumbo_frame = 1,/g' app/test-pmd/testpmd.c
+
 #. packet length = 1518 - 1
 
 #. packet length = 1518
