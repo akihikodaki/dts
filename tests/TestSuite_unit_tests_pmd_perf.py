@@ -80,7 +80,8 @@ class TestUnitTestsPmdPerf(TestCase):
         """
 
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)
         for mode in self.burst_ctlmodes:
             self.dut.send_expect("set_rxtx_sc %s" % mode, "RTE>>", 10)
             out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
@@ -102,7 +103,8 @@ class TestUnitTestsPmdPerf(TestCase):
         self.result_table_create(self.table_header)
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[0,1])
         print((self.table_header))
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", 60)        
         for mode in self.rxtx_modes:
             table_row = [mode]
             self.dut.send_expect("set_rxtx_sc continuous", "RTE>>", 10)
