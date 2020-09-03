@@ -92,14 +92,13 @@ class TestUnitTestsLoopback(TestCase):
         Run pmd stream control mode burst test case.
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 0/lpbk_mode = 1/' app/test/test_pmd_perf.c", "# ", 30)
-        out = self.dut.send_expect("make -j %s app/test_sub O=%s" % (self.dut.number_of_cores, self.target), "#")
-        self.verify("Error" not in out, "compilation l3fwd-power error")
-        self.verify("No such" not in out, "Compilation error")
+        self.dut.build_install_dpdk(self.target)
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s ether[12:2] != '0x88cc' -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("pmd_perf_autotest", "RTE>>", 120)
         print(out)
         self.dut.send_expect("quit", "# ")
@@ -115,14 +114,13 @@ class TestUnitTestsLoopback(TestCase):
         """
         self.dut.send_expect("sed -i -e 's/lpbk_mode = 1/lpbk_mode = 0/' app/test/test_pmd_perf.c", "# ", 30)
         self.dut.send_expect("sed -i -e '/check_all_ports_link_status(nb_ports, RTE_PORT_ALL);/a\        sleep(6);' app/test/test_pmd_perf.c", "# ", 30)
-        out = self.dut.send_expect("make -j %s app/test_sub O=%s" % (self.dut.number_of_cores, self.target), "#")
-        self.verify("Error" not in out, "compilation l3fwd-power error")
-        self.verify("No such" not in out, "Compilation error")
+        self.dut.build_install_dpdk(self.target)
 
         self.tester.send_expect("rm -rf ./getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -i %s -w ./getPackageByTcpdump.cap 2> /dev/null& " % self.tester_itf, "#")
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", 60)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params, "R.*T.*E.*>.*>", 60)       
         self.dut.send_command("pmd_perf_autotest", 30)
         # There is no packet loopback, so the test is hung.
         # It needs to kill the process manually.
@@ -144,7 +142,5 @@ class TestUnitTestsLoopback(TestCase):
         """
         self.dut.send_expect("cp %s app/test/test_pmd_perf.c" % self.tmp_path, "# ")
         self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
-        out = self.dut.send_expect("make -j %s app/test_sub O=%s" % (self.dut.number_of_cores, self.target), "#")
-        self.verify("Error" not in out, "compilation l3fwd-power error")
-        self.verify("No such" not in out, "Compilation error")
+        self.dut.build_install_dpdk(self.target)        
         self.dut.kill_all()
