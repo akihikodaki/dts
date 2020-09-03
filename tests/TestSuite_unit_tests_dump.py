@@ -80,7 +80,8 @@ class TestUnitTestsDump(TestCase):
         Run history log dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target, eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_log_history", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         self.verify("EAL" in out, "Test failed")
@@ -90,7 +91,7 @@ class TestUnitTestsDump(TestCase):
         Run history log dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
-        cmd = "./%s/app/testpmd %s  -- -i" % (self.target,eal_params)
+        cmd = self.dut.apps_name['test-pmd'] + eal_params + '-- -i'        
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_ring", "testpmd>", self.run_cmd_time)
@@ -113,7 +114,7 @@ class TestUnitTestsDump(TestCase):
         Run mempool dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
-        cmd = "./%s/app/testpmd %s  -- -i" % (self.target,eal_params)
+        cmd = self.dut.apps_name['test-pmd'] + eal_params + '-- -i'
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_mempool", "testpmd>", self.run_cmd_time * 2)
@@ -135,7 +136,8 @@ class TestUnitTestsDump(TestCase):
         Run physical memory dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_physmem", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         elements = ['Segment', 'IOVA', 'len', 'virt', 'socket_id', 'hugepage_sz', 'nchannel', 'nrank']
@@ -156,7 +158,7 @@ class TestUnitTestsDump(TestCase):
         Run memzone dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T')
-        cmd = "./%s/app/testpmd %s  -- -i" % (self.target,eal_params)
+        cmd = self.dut.apps_name['test-pmd'] + eal_params + '-- -i'
 
         self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
         out = self.dut.send_expect("dump_memzone", "testpmd>", self.run_cmd_time * 2)
@@ -180,7 +182,8 @@ class TestUnitTestsDump(TestCase):
         Run struct size dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)       
         out = self.dut.send_expect("dump_struct_sizes", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
@@ -201,14 +204,16 @@ class TestUnitTestsDump(TestCase):
         test_port = self.dut_ports[0]
         pci_address = self.dut.ports_info[test_port]['pci'];
         eal_params = self.dut.create_eal_parameters(cores=self.cores,b_ports=[pci_address])
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)       
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         black_str = " %s" % pci_address
         self.verify(black_str in out, "Dump black list failed")
 
         eal_params1 = self.dut.create_eal_parameters(cores=self.cores,ports=[pci_address])
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params1), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params1,"R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
@@ -220,7 +225,8 @@ class TestUnitTestsDump(TestCase):
         Run dump malloc dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_malloc_stats", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
         match_regex = "Heap id:(\d*)"
@@ -236,7 +242,8 @@ class TestUnitTestsDump(TestCase):
         Run malloc heaps dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)
         out = self.dut.send_expect("dump_malloc_heaps", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
@@ -256,7 +263,8 @@ class TestUnitTestsDump(TestCase):
         Run log types dump test case.
         """
         eal_params = self.dut.create_eal_parameters(cores=self.cores)
-        self.dut.send_expect("./%s/app/test %s" % (self.target,eal_params), "R.*T.*E.*>.*>", self.start_test_time)
+        app_name = self.dut.apps_name['test']
+        self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)        
         out = self.dut.send_expect("dump_log_types", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
