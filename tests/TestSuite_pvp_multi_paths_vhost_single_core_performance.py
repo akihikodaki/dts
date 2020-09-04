@@ -71,6 +71,8 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.vhost = self.dut.new_session(suite="vhost")
         self.save_result_flag = True
         self.json_obj = {}
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -156,12 +158,12 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost',
                                                    no_pci=True,
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1'])
-        command_line_client = "./%s/app/testpmd " % self.target + eal_param + \
+        command_line_client =self.path + eal_param + \
                     " -- -i --nb-cores=1 --txd=%d --rxd=%d" % (self.nb_desc, self.nb_desc)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
@@ -177,7 +179,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
                                                           args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = "./%s/app/testpmd " % self.target + eal_param + \
+        command_line_user = self.path + eal_param + \
                             " -- -i %s --nb-cores=2 --txd=%d --rxd=%d" % \
                             (args["path"], self.nb_desc, self.nb_desc)
         self.vhost_user.send_expect(command_line_user, "testpmd> ", 120)
