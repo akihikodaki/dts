@@ -101,6 +101,7 @@ class TestGeneric_flow_api(TestCase):
         self.wrong_mac = "00:11:22:33:44:77"
         self.vf_flag = 0
         self.pkt_obj = packet.Packet()
+        self.app_path=self.dut.apps_name["test-pmd"]
 
     def set_up(self):
         """
@@ -835,13 +836,13 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # start testpmd on vf0
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0 -n 4 -m 1024 -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0 -n 4 -m 1024 -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd> ")
         self.session_secondary.send_expect("set verbose 1", "testpmd> ")
         self.session_secondary.send_expect("start", "testpmd> ")
         time.sleep(2)
         # start testpmd on vf1
-        self.session_third.send_expect("./%s/app/testpmd -c 0x1e00 -n 4 -m 1024 -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e00 -n 4 -m 1024 -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd> ")
         self.session_third.send_expect("set verbose 1", "testpmd> ")
         self.session_third.send_expect("start", "testpmd> ")
@@ -1332,13 +1333,13 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
         # start testpmd on vf0
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
         # start testpmd on vf1
-        self.session_third.send_expect("./%s/app/testpmd -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -1428,13 +1429,13 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
             # start testpmd on vf0
-            self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
             # start testpmd on vf1
-            self.session_third.send_expect("./%s/app/testpmd -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
@@ -1535,12 +1536,12 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
-            self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
-            self.session_third.send_expect("./%s/app/testpmd -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
@@ -1982,12 +1983,12 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_third.send_expect("./%s/app/testpmd -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -2045,12 +2046,12 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
-        self.session_secondary.send_expect("./%s/app/testpmd -c 0x1e0000 -n 4 --socket-mem 1024,1024  --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.target, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+        self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024  --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set verbose 1", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>")
         time.sleep(2)
-        self.session_third.send_expect("./%s/app/testpmd -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.target, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+        self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set verbose 1", "testpmd>")
         self.session_third.send_expect("start", "testpmd>")
@@ -2105,3 +2106,4 @@ class TestGeneric_flow_api(TestCase):
         self.dut.kill_all()
         self.dut.close_session(self.session_secondary)
         self.dut.close_session(self.session_third)
+
