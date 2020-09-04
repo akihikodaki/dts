@@ -136,7 +136,7 @@ class TestNtb(TestCase):
         cmd_opt = " ".join(["{}={}".format(key, param[key]) for key in param.keys()])
 
         self.get_core_list()
-        app = "./examples/ntb/build/ntb_fwd"
+        app = self.dut.apps_name['ntb_fwd']
         eal_host = self.ntb_host.create_eal_parameters(cores=self.host_core_list)
         eal_client = self.ntb_client.create_eal_parameters(cores=self.client_core_list)
         host_cmd_line = ' '.join([app, eal_host, cmd_opt])
