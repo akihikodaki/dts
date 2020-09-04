@@ -82,6 +82,8 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pci_info = self.dut.ports_info[0]['pci']
         self.number_of_ports = 1
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -89,7 +91,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         self.vhost = self.dut.new_session(suite="vhost-user")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -I qemu-system-x86_64", '#', 20)
 
     def packet_params_set(self):
@@ -201,11 +203,10 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         Launch the vhost testpmd
         """
-        testcmd = self.dut.target + "/app/testpmd "
         vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=1'" % self.base_dir]
         eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_client = testcmd + eal_params + para
+        command_line_client = self.path + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 30)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
@@ -215,7 +216,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         Start testpmd in vm
         """
         if self.vm_dut is not None:
-            vm_testpmd = self.dut.target + "/app/testpmd -c 0x3 -n 3" \
+            vm_testpmd = self.path + " -c 0x3 -n 3" \
                 + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
             self.vm_dut.send_expect(vm_testpmd, "testpmd> ", 20)
             self.vm_dut.send_expect("set fwd mac", "testpmd> ", 20)
@@ -314,7 +315,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         """
         self.dut.close_session(self.vhost)
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         time.sleep(2)
 
     def tear_down_all(self):
