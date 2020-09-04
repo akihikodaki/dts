@@ -85,9 +85,9 @@ class TestEventdevPipeline(TestCase):
         pass
 
     def build_eventdev_app(self):
-        self.app_command = "examples/eventdev_pipeline"
-        out = self.dut.build_dpdk_apps(self.app_command)
-        self.verify('make: Leaving directory' in out, "Compilation failed")
+        self.app_command = self.dut.apps_name["eventdev_pipeline"]
+        out = self.dut.build_dpdk_apps("examples/eventdev_pipeline")
+       # self.verify('make: Leaving directory' in out, "Compilation failed")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
