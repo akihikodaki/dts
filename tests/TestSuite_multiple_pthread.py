@@ -56,6 +56,7 @@ class TestMultiplePthread(TestCase):
         self.cores = self.dut.get_core_list("1S/8C/1T", socket=self.socket)
         self.verify(self.cores is not None, "Requested 8 cores failed")
         self.out_view = {'header': [], 'data': []}
+        self.path=self.dut.apps_name["test-pmd"].rstrip()
 
     def set_up(self):
         """
@@ -80,7 +81,8 @@ class TestMultiplePthread(TestCase):
         Get cpu and thread statistics.
         """
         mutiple_pthread_session = self.dut.new_session()
-        out = mutiple_pthread_session.send_expect("ps -C testpmd -L -opid,tid,%cpu,psr,args", "#", 20)
+        testpmd_name = self.path.split("/")[-1]
+        out = mutiple_pthread_session.send_expect(f"ps -C {testpmd_name} -L -opid,tid,%cpu,psr,args", "#", 20)
         m = cmdline.replace('"', '', 2)
         out_list = out.split(m)
         mutiple_pthread_session.send_expect("^C", "#")
@@ -127,9 +129,9 @@ class TestMultiplePthread(TestCase):
         # Allocate enough streams based on the number of CPUs
         if len(cpu_list) > 2:
             queue_num = len(cpu_list)
-            cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (self.target, lcores, queue_num, queue_num)
+            cmdline = './%s --lcores="%s" -n 4 -- -i --txq=%d --rxq=%d' % (self.path, lcores, queue_num, queue_num)
         else:
-            cmdline = './%s/app/testpmd --lcores="%s" -n 4 -- -i' % (self.target, lcores)
+            cmdline = './%s --lcores="%s" -n 4 -- -i' % (self.path, lcores)
         # start application
         self.dut.send_expect(cmdline, "testpmd", 60)
 
@@ -203,25 +205,25 @@ class TestMultiplePthread(TestCase):
         """
         Test an random parameter from an defined table which has a couple of invalid lcore parameters.
         """
-        cmdline_list = ["./%s/app/testpmd --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='2,,3''2--3' -n 4 -- -i",
-                        "./%s/app/testpmd --lcores='2,,,3''2--3' -n 4 -- -i"]
+        cmdline_list = ["./%s --lcores='(0-,4-7)@(4,5)' -n 4 -- -i",
+                        "./%s --lcores='(-1,4-7)@(4,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7-9)@(4,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,abcd)@(4,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)@(1-,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)@(-1,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)@(4,5-8-9)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)@(abc,5)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)@(4,xyz)' -n 4 -- -i",
+                        "./%s --lcores='(0,4-7)=(8,9)' -n 4 -- -i",
+                        "./%s --lcores='2,3 at 4,(0-1,,4))' -n 4 -- -i",
+                        "./%s --lcores='[0-,4-7]@(4,5)' -n 4 -- -i",
+                        "./%s --lcores='(0-,4-7)@[4,5]' -n 4 -- -i",
+                        "./%s --lcores='3-4 at 3,2 at 5-6' -n 4 -- -i",
+                        "./%s --lcores='2,,3''2--3' -n 4 -- -i",
+                        "./%s --lcores='2,,,3''2--3' -n 4 -- -i",]
 
         cmdline = random.sample(cmdline_list, 1)
-        out = self.dut.send_expect(cmdline[0] % self.target, "#", 60)
+        out = self.dut.send_expect(cmdline[0]%self.path, "#", 60)
         self.verify("invalid parameter" in out, "it's a valid parameter")
 
     def tear_down(self):
