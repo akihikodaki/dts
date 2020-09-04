@@ -744,7 +744,7 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by igb
         """
-        self.verify(self.nic in ["bartonhills", "powerville", "foxville"], "%s nic not support 2-tuple filter" % self.nic)
+        self.verify(self.nic in ["bartonhills", "powerville", "foxville", "fortville_eagle", "fortville_25g", "fortville_spirit"], "%s nic not support 2-tuple filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -754,10 +754,16 @@ class TestGeneric_flow_api(TestCase):
 
         # i350 and 82580 only support 2-tuple, and don't support SCTP
         # create the flow rules
-        basic_flow_actions = [
-            {'create': 'create', 'flows': ['ipv4', 'proto', 'udp', 'dport'], 'actions': ['queue']},
-            {'create': 'create', 'flows': ['ipv4', 'proto', 'tcp', 'dport'], 'actions': ['queue']},
-        ]
+        if self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit"]:
+            basic_flow_actions = [
+                {'create': 'create', 'flows': ['ipv4', 'udp', 'dport'], 'actions': ['queue']},
+                {'create': 'create', 'flows': ['ipv4', 'tcp', 'dport'], 'actions': ['queue']},
+            ]
+        else:
+            basic_flow_actions = [
+                {'create': 'create', 'flows': ['ipv4', 'proto', 'udp', 'dport'], 'actions': ['queue']},
+                {'create': 'create', 'flows': ['ipv4', 'proto', 'tcp', 'dport'], 'actions': ['queue']},
+            ]
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
         # send the packets inconsistent to the rules.
@@ -1907,7 +1913,7 @@ class TestGeneric_flow_api(TestCase):
         """
         only supported by ixgbe
         """
-        self.verify(self.nic in ["twinville", "sagepond", "sageville", "foxville"], "%s nic not support fdir mac vlan filter" % self.nic)
+        self.verify(self.nic in ["twinville", "sagepond", "sageville", "foxville", "fortville_eagle", "fortville_25g", "fortville_spirit"], "%s nic not support fdir mac vlan filter" % self.nic)
 
         self.pmdout.start_testpmd("%s" % self.cores, "--pkt-filter-mode=perfect-mac-vlan --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1))
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -1918,10 +1924,16 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
 
         # create the flow rules
-        basic_flow_actions = [
-            {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
-            {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
-        ]
+        if self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit"]:
+            basic_flow_actions = [
+                {'create': 'create', 'flows': ['vlan'], 'actions': ['queue']},
+                {'create': 'create', 'flows': ['vlan'], 'actions': ['queue']}
+            ]
+        else:
+            basic_flow_actions = [
+                {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
+                {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
+            ]
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         rule_num = extrapkt_rulenum['rulenum']
         self.verify_rulenum(rule_num)

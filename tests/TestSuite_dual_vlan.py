@@ -398,7 +398,7 @@ class TestDualVlan(TestCase):
         """
         Configure receive port out vlan TPID
         """
-        self.verify(self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g", "fortpark_TLV","fortpark_BASE-T" ,"hartwell", "carlsville"], "%s NIC not support tcpid " % self.nic)
+        self.verify(self.nic not in ["columbiaville_25g", "columbiaville_100g", "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T" ,"hartwell", "carlsville"], "%s NIC not support tcpid " % self.nic)
 
         self.mode_config(filter="on", strip="on", extend="on")
         # nic only support inner model, except fortville nic

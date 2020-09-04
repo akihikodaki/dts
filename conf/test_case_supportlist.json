@@ -757,6 +757,9 @@
             "NIC": [
                 "bartonhills",
                 "powerville",
+                "fortville_eagle",
+                "fortville_25g",
+                "fortville_spirit",
                 "foxville"
             ],
             "Target": [
@@ -791,6 +794,9 @@
             ],
             "NIC": [
                 "twinville",
+                "fortville_eagle",
+                "fortville_25g",
+                "fortville_spirit",
                 "sagepond",
                 "sageville",
                 "foxville"

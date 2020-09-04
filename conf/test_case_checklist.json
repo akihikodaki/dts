@@ -293,10 +293,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
                 "cavium_a063",
@@ -553,10 +550,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
                 "sagepond",
@@ -578,10 +572,7 @@
                 "ALL"
             ],
             "NIC": [
-                "fortville_eagle",
-                "fortville_spirit",
                 "fortville_spirit_single",
-                "fortville_25g",
                 "fortpark_TLV",
                 "fortpark_BASE-T",
                 "sagepond",
