@@ -57,6 +57,7 @@ class TestLoopbackPortRestart(TestCase):
             self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:2]
         self.core_list_host = self.core_list[2:5]
+        self.path=self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -80,7 +81,7 @@ class TestLoopbackPortRestart(TestCase):
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
-        command_line_client = self.dut.target + "/app/testpmd " + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
+        command_line_client = self.path + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -96,7 +97,7 @@ class TestLoopbackPortRestart(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' % pmd_arg["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % pmd_arg["path"]
+        command_line_user = self.path + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % pmd_arg["path"]
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
