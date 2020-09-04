@@ -82,13 +82,15 @@ class TestPVPVhostUserReconnect(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
         run before each test case.
         clear the execution ENV
         """
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
@@ -100,7 +102,7 @@ class TestPVPVhostUserReconnect(TestCase):
         vdev_info = ""
         for i in range(self.vm_num):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
-        testcmd = self.dut.base_dir + "/%s/app/testpmd " % self.target
+        testcmd = self.dut.base_dir + self.path
         eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info])
         para = " -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
@@ -115,7 +117,7 @@ class TestPVPVhostUserReconnect(TestCase):
         vdev_info = ""
         for i in range(self.vm_num):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
-        testcmd = self.dut.base_dir + "/%s/app/testpmd " % self.target
+        testcmd = self.dut.base_dir + self.path
         eal_params = self.dut.create_eal_parameters(cores=self.cores, no_pci=True, prefix='vhost',
                                                     ports=[self.pci_info])
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
@@ -198,7 +200,7 @@ class TestPVPVhostUserReconnect(TestCase):
         """
         start testpmd in vm
         """
-        vm_testpmd = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
+        vm_testpmd = self.path+ " -c 0x3 -n 4 " + \
                      "-- -i --port-topology=chained --txd=1024 --rxd=1024 "
         for i in range(len(self.vm_dut)):
             self.vm_dut[i].send_expect(vm_testpmd, "testpmd> ", 20)
@@ -329,7 +331,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
@@ -362,7 +364,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
@@ -395,7 +397,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user_with_no_pci()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
@@ -433,7 +435,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
@@ -466,7 +468,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user()
             self.reconnect_data = self.send_and_verify(vm_cycle, "reconnet from vhost")
             self.check_reconnect_perf()
@@ -498,7 +500,7 @@ class TestPVPVhostUserReconnect(TestCase):
         # reconnet from vhost
         self.logger.info('now reconnect from vhost')
         for i in range(self.reconnect_times):
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
             self.launch_testpmd_as_vhost_user_with_no_pci()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
