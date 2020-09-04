@@ -75,7 +75,7 @@ class TestL2fwdJobstats(TestCase):
         """
         Verify l2fwd jobstats is correct
         """
-        path = "./examples/l2fwd-jobstats/build/l2fwd-jobstats"
+        path = self.dut.apps_name["l2fwd-jobstats"]
         cmd = path + " -c %s -n 4 -- -q 2 -p 0x03 -l" % (self.coremask)
         self.dut.send_expect(cmd, "Port statistics", 60)
 
