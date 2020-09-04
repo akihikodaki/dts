@@ -1024,7 +1024,7 @@ class AdvancedIavfRSSTest(TestCase):
     def test_vf_reset(self):
         self.dut_session.send_expect("ip link set %s vf 0 trust on" % self.pf_interface, "# ")
         self.create_testpmd_command(self.vf0_prop, pmd_param="--nb-cores=2")
-        flow_rule = "flow create 0 ingress pattern eth / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end"
+        flow_rule = "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end"
         self.pmd_output.execute_cmd(flow_rule)
         self.pmd_output.execute_cmd("show port 0 rss-hash")
 
