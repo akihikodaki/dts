@@ -319,7 +319,8 @@ class TestFlowClassify(TestCase):
             self.output_path, 'flow_classify', timestamp)
         with open(self.test_data, 'w') as fp:
             fp.write(output)
-        cmds = ['killall flow_classify', '# ', 10]
+        app_name=self.flow_classify.split("/")[-1]
+        cmds = ['killall %s'%app_name, '# ', 10]
         self.d_a_console(cmds)
 
     def get_stream_rule_priority(self, stream_type):
@@ -470,7 +471,8 @@ class TestFlowClassify(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         # set binary process setting
-        self.flow_classify = self.prepare_binary('flow_classify')
+        self.prepare_binary('flow_classify')
+        self.flow_classify =self.dut.apps_name["flow_classify"]
         self.verify_supported_nic()
 
     def set_up(self):
