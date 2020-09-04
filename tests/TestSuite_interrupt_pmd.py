@@ -52,7 +52,7 @@ class TestInterruptPmd(TestCase):
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
 
-        self.path = "./examples/l3fwd-power/build/l3fwd-power"
+        self.path = self.dut.apps_name["l3fwd-power"]
 
         self.trafficFlow = {
             "Flow1": [[0, 0, 1], [1, 0, 2]],
