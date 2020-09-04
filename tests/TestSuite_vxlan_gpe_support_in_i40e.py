@@ -256,10 +256,11 @@ class TestVxlanGpeSupportInI40e(TestCase):
         """
         verify tunnel filter feature
         """
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        path = self.dut.apps_name['test-pmd']
+        pmd_cmd = pmd_temp % {'TARGET': path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
