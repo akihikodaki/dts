@@ -98,6 +98,8 @@ class TestPVPMultiPathPerformance(TestCase):
         self.gap = self.get_suite_cfg()['accepted_tolerance']
         self.test_result = {}
         self.nb_desc = self.test_parameters[64][0]
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     @property
     def check_value(self):
@@ -157,12 +159,12 @@ class TestPVPMultiPathPerformance(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost',
                                                    ports=[self.dut.ports_info[self.dut_ports[0]]['pci']],
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
-        command_line_client = "./%s/app/testpmd " % self.target + eal_param + \
+        command_line_client = self.path + eal_param + \
                               " -- -i --nb-cores=1 --txd=%d --rxd=%d" % (self.nb_desc, self.nb_desc)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
@@ -178,7 +180,7 @@ class TestPVPMultiPathPerformance(TestCase):
                                                           args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = "./%s/app/testpmd " % self.target + eal_param + \
+        command_line_user = self.path + eal_param + \
                             " -- -i %s --rss-ip --nb-cores=1 --txd=%d --rxd=%d" % \
                             (args["path"], self.nb_desc, self.nb_desc)
         self.vhost_user = self.dut.new_session(suite="user")
