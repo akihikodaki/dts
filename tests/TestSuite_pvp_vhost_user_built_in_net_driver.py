@@ -81,6 +81,8 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         # set memory size
         self.verify(self.sockets > 0, 'cpu socket should not be zero')
         self.mem_size = ','.join(['2048']*self.sockets)
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -89,7 +91,7 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
         self.dut.send_expect("rm -rf ./vhost.out", "# ")
         self.dut.send_expect("killall -s INT vhost", "# ")
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.vhost_switch = self.dut.new_session(suite="vhost-switch")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         self.pmd_out = PmdOutput(self.dut, self.virtio_user)
@@ -210,7 +212,7 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
                 'net_virtio_user0,mac=%s,path=./vhost-net,queues=1' % self.virtio_mac])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i --rxq=1 --txq=1"
+        command_line_user = self.path + eal_param + " -- -i --rxq=1 --txq=1"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start tx_first", "testpmd> ", 120)
@@ -240,7 +242,7 @@ class TestPVPVhostUserBuiltInNetDriver(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT vhost", "# ")
 
     def tear_down_all(self):
