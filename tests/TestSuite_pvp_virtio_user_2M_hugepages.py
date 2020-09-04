@@ -76,13 +76,15 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.pci_info = self.dut.ports_info[0]['pci']
         self.number_of_ports = 1
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         # Prepare the result table
@@ -139,10 +141,9 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         start testpmd on vhost
         """
-        testcmd = self.dut.target + "/app/testpmd "
         vdev = ["net_vhost0,iface=vhost-net,queues=1"]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
-        command_line_client = testcmd + eal_params + " -- -i"
+        command_line_client = self.path + eal_params + " -- -i"
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
 
@@ -150,10 +151,9 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         start testpmd on virtio
         """
-        testcmd = self.dut.target + "/app/testpmd "
         vdev = 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1' if not packed else 'net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1'
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, no_pci=True, prefix='virtio-user', vdevs=[vdev])
-        command_line_user = testcmd + eal_params + ' --single-file-segments -- -i'
+        command_line_user = self.path + eal_params + ' --single-file-segments -- -i'
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
@@ -191,7 +191,7 @@ class TestPVPVirtioWith2Mhuge(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
 
     def tear_down_all(self):
         """
