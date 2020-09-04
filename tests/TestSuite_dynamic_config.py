@@ -75,10 +75,10 @@ class TestDynamicConfig(TestCase):
         cores = self.dut.get_core_list('1S/2C/2T')
         self.coreMask = utils.create_mask(cores)
         self.portMask = utils.create_mask(self.dut_ports[:2])
-
+        self.path=self.dut.apps_name['test-pmd']
         # launch app
-        cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
-        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
+        cmd = "%s -c %s -n 3 -- -i --rxpt=0 \
+        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.coreMask, self.portMask)
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
 
@@ -118,8 +118,8 @@ class TestDynamicConfig(TestCase):
         """
         Run before each test case.
         """
-        cmd = "./%s/app/testpmd -c %s -n 3 -- -i --rxpt=0 \
-        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.target, self.coreMask, self.portMask)
+        cmd = "%s -n 3 -- -i --rxpt=0 \
+        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.coreMask, self.portMask)
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
         time.sleep(5)
