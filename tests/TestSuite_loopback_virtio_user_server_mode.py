@@ -57,6 +57,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.core_list = self.dut.get_core_list(self.core_config)
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:6]
+        self.path=self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -78,7 +79,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         start testpmd on vhost
         """
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,client=1,queues=%d' % queue_number])
-        command_line_client = self.dut.target + "/app/testpmd " + eal_param + " -- -i --rxq=%d --txq=%d --nb-cores=%d %s" % (queue_number, queue_number, nb_cores, extern_params)
+        command_line_client = self.path + eal_param + " -- -i --rxq=%d --txq=%d --nb-cores=%d %s" % (queue_number, queue_number, nb_cores, extern_params)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -94,7 +95,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=1,%s' % args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i --rxq=1 --txq=1 --no-numa"
+        command_line_user = self.path + eal_param + " -- -i --rxq=1 --txq=1 --no-numa"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -111,7 +112,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=%d,%s' % (self.queue_number, mode)])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d" % (extern_params, self.nb_cores, self.queue_number, self.queue_number)
+        command_line_user = self.path + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d" % (extern_params, self.nb_cores, self.queue_number, self.queue_number)
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
 
