@@ -68,13 +68,15 @@ class TestPVPShareLib(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
@@ -139,7 +141,7 @@ class TestPVPShareLib(TestCase):
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost',
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=1'])
         eal_param += " -d librte_pmd_vhost.so -d librte_pmd_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
-        command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i'
+        command_line_client = self.path + eal_param + ' -- -i'
 
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd mac", "testpmd> ", 120)
@@ -155,7 +157,7 @@ class TestPVPShareLib(TestCase):
         if self.check_2M_env:
             eal_param += " --single-file-segments"
         eal_param += " -d librte_pmd_virtio.so -d librte_mempool_ring.so"
-        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i"
+        command_line_user = self.path + eal_param + " -- -i"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
 
@@ -196,7 +198,7 @@ class TestPVPShareLib(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
 
     def tear_down_all(self):
         """
