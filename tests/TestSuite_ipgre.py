@@ -54,6 +54,7 @@ from scapy.layers.l2 import GRE
 
 from test_case import TestCase
 from exception import VerifyFailure
+from pmd_output import PmdOutput
 
 class TestIpgre(TestCase):
 
@@ -71,6 +72,10 @@ class TestIpgre(TestCase):
         valports = [_ for _ in ports if self.tester.get_local_port(_) != -1]
         # start testpmd
         self.dut_port = valports[0]
+        self.dut_ports = self.dut.get_ports(self.nic)
+        self.portMask = utils.create_mask([self.dut_ports[0]])
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.pmdout = PmdOutput(self.dut)
         tester_port = self.tester.get_local_port(self.dut_port)
         self.tester_iface = self.tester.get_interface(tester_port)
         self.tester_iface_mac =  self.tester.get_mac(tester_port)
@@ -210,10 +215,10 @@ class TestIpgre(TestCase):
         config_layers =  {'ether': {'src': self.outer_mac_src},
                           'ipv4': {'proto': 'gre'}}
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
-        self.dut.send_expect( testpmd_cmd,
-                              "testpmd>",
-                              20)
+        self.pmdout.start_testpmd("Default", "--portmask=%s " %
+                                  (self.portMask) + " --enable-rx-cksum "
+                                  , socket=self.ports_socket)
+
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
@@ -266,10 +271,14 @@ class TestIpgre(TestCase):
 
         # Start testpmd and enable rxonly forwarding mode
         if (self.nic in ["cavium_a063", "cavium_a064"]):
-            testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum" % self.target
+            self.pmdout.start_testpmd("Default", "--portmask=%s " %
+                                      (self.portMask) + " --enable-rx-cksum "
+                                      , socket=self.ports_socket)
         else:
-            testpmd_cmd = "./%s/app/testpmd -c ffff -n 4 -- -i --enable-rx-cksum --enable-hw-vlan" % self.target
-        self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
+            self.pmdout.start_testpmd("Default", "--portmask=%s " %
+                                      (self.portMask) + " --enable-rx-cksum --enable-hw-vlan"
+                                      , socket=self.ports_socket)
+
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
@@ -298,8 +307,8 @@ class TestIpgre(TestCase):
 
     def test_GRE_packet_filter(self):
         """
-        Start testpmd with multi queues, add GRE filter that forward 
-        inner/outer ip address 0.0.0.0 to queue 3, Send packet inner 
+        Start testpmd with multi queues, add GRE filter that forward
+        inner/outer ip address 0.0.0.0 to queue 3, Send packet inner
         ip address matched and check packet received by queue 3
         """
         outer_mac = self.tester_iface_mac
@@ -307,8 +316,9 @@ class TestIpgre(TestCase):
 
         # Start testpmd with multi queues
         #testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i  --rxq=4 --txq=4" % self.target
-        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum  --rxq=4 --txq=4" % self.target
-        self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
+        self.pmdout.start_testpmd("Default", "--portmask=%s " %
+                                  (self.portMask) + " --enable-rx-cksum --rxq=4 --txq=4 "
+                                  , socket=self.ports_socket)
         self.dut.send_expect("set fwd rxonly", "testpmd>")
         self.dut.send_expect("set nbcore 4", "testpmd>")
         self.dut.send_expect("set verbose 1", "testpmd>")
@@ -353,11 +363,12 @@ class TestIpgre(TestCase):
     def test_GRE_packet_chksum_offload(self):
         """
         Start testpmd with hardware checksum offload enabled,
-        Send packet with wrong IP/TCP/UDP/SCTP checksum and check forwarded packet checksum 
+        Send packet with wrong IP/TCP/UDP/SCTP checksum and check forwarded packet checksum
         """
         # Start testpmd and enable rxonly forwarding mode
-        testpmd_cmd = "./%s/app/testpmd -c ff -n 3 -- -i --enable-rx-cksum --port-topology=loop" % self.target
-        self.dut.send_expect(testpmd_cmd, "testpmd>", 20)
+        self.pmdout.start_testpmd("Default", "--portmask=%s " %
+                                  (self.portMask) + " --enable-rx-cksum --port-topology=loop"
+                                  , socket=self.ports_socket)
         self.dut.send_expect("set verbose 1", "testpmd>")
         self.dut.send_expect("set fwd csum", "testpmd>")
         self.dut.send_expect("stop", "testpmd>")
