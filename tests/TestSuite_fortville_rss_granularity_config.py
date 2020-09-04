@@ -198,10 +198,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
-
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
 
@@ -272,9 +270,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -347,9 +344,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -422,9 +418,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -497,9 +492,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -556,9 +550,8 @@ class TestFortvilleRssGranularityConfig(TestCase):
 
         # test with different rss queues
         for queue in testQueues:
-            self.dut.send_expect(
-                "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=%d --txq=%d" %
-                (self.target, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            self.pmdout.start_testpmd(
+                "Default", "  --portmask=0x1 --rxq=%d --txq=%d" % (queue, queue))
 
             self.dut.send_expect("set verbose 8", "testpmd> ")
             self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -623,3 +616,4 @@ class TestFortvilleRssGranularityConfig(TestCase):
         Run after each test suite.
         """
         pass
+
