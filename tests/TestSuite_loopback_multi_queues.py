@@ -59,6 +59,7 @@ class TestLoopbackMultiQueues(TestCase):
         # get the frame_sizes from cfg file
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
+        self.path=self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -89,7 +90,7 @@ class TestLoopbackMultiQueues(TestCase):
         start testpmd on vhost
         """
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=%d' % self.queue_number])
-        command_line_client = self.dut.target + "/app/testpmd " + eal_param + " -- -i --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.nb_cores, self.queue_number, self.queue_number)
+        command_line_client = self.path + eal_param + " -- -i --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.nb_cores, self.queue_number, self.queue_number)
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
 
@@ -105,7 +106,7 @@ class TestLoopbackMultiQueues(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s' % (self.queue_number, args["version"])])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.dut.target + "/app/testpmd " + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (args["path"], self.nb_cores, self.queue_number, self.queue_number)
+        command_line_user = self.path + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (args["path"], self.nb_cores, self.queue_number, self.queue_number)
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
