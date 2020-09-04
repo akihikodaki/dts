@@ -384,7 +384,7 @@ class TestNvgre(TestCase):
 
         # start testpmd
         self.pmdout = PmdOutput(self.dut)
-
+        self.path=self.dut.apps_name['test-pmd']
         # init port
         self.dut_rx_port = ports[0]
         self.dut_tx_port = ports[1]
@@ -452,8 +452,8 @@ class TestNvgre(TestCase):
         """
         send nvgre packet and check whether testpmd detect the correct packet type
         """
-        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                                   % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+        out = self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
+                                   % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         out = self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
 
@@ -481,8 +481,8 @@ class TestNvgre(TestCase):
         """
         send nvgre packet and check whether receive packet in assigned queue
         """
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                             % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
+                             % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
 
@@ -557,8 +557,8 @@ class TestNvgre(TestCase):
         self.logger.info("chksums_ref:" + str(chksums_default))
 
         # start testpmd with 2queue/1port
-        out = self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum"
-                                   % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+        out = self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum"
+                                   % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         # disable vlan filter
         self.dut.send_expect('vlan set filter off %d' % self.dut_rx_port, "testpmd")
 
@@ -762,8 +762,8 @@ class TestNvgre(TestCase):
         self.nvgre_filter(filter_type="imac", remove=True)
         config = NvgreTestConfig(self)
         # config.outer_mac_dst = self.dut_port_mac
-        self.dut.send_expect("./%s/app/testpmd -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                             % (self.target, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
+                             % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
         out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
                                    % (self.dut_rx_port, config.outer_mac_dst, self.invalid_mac, config.inner_ip_dst, vlan_id,
                                       filter_type, config.tni, queue_id), "testpmd>", 10)
@@ -825,7 +825,7 @@ class TestNvgre(TestCase):
         core_list = self.dut.get_core_list('1S/%dC/1T' % (self.tunnel_multiqueue * 2), socket=self.ports_socket)
         core_mask = utils.create_mask(core_list)
 
-        command_line = "./%s/app/testpmd -c %s -n %d -- -i --disable-rss --coremask=%s --rxq=4 --txq=4 --portmask=%s" % (self.target,
+        command_line = "%s -c %s -n %d -- -i --disable-rss --coremask=%s --rxq=4 --txq=4 --portmask=%s" % (self.path,
                                                                                                                          self.all_cores_mask,
                                                                                                                          self.dut.get_memory_channels(),
                                                                                                                          core_mask, self.portmask)
@@ -942,8 +942,8 @@ class TestNvgre(TestCase):
 
             core_mask = utils.create_mask(core_list)
 
-            command_line = "./%s/app/testpmd -c %s -n %d -- -i \
- --disable-rss --coremask=%s --portmask=%s" % (self.target,
+            command_line = "%s -c %s -n %d -- -i \
+ --disable-rss --coremask=%s --portmask=%s" % (self.path,
                                                all_cores_mask,
                                                self.dut.get_memory_channels(),
                                                core_mask, self.portmask)
@@ -1000,3 +1000,4 @@ class TestNvgre(TestCase):
         Run after each test suite.
         """
         pass
+
