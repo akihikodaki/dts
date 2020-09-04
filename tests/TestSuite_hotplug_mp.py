@@ -23,7 +23,8 @@ class TestHotplugMp(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
         self.intf0 = self.dut.ports_info[0]['intf']
         self.pci0 = self.dut.ports_info[0]['pci']
-        out = self.dut.build_dpdk_apps("./examples/multi_process/")
+        out = self.dut.build_dpdk_apps("./examples/multi_process/hotplug_mp")
+        self.app_path=self.dut.apps_name['hotplug_mp']
         self.verify('Error' not in out, "Compilation failed")
         # Start one new session to run primary process
         self.session_pri = self.dut.new_session()
@@ -48,16 +49,16 @@ class TestHotplugMp(TestCase):
         if self.drivername in ["igb_uio"]:
             self.iova_param = "--iova-mode=pa"
         out = self.session_pri.send_expect(
-            "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
-            % (self.target, self.iova_param), "example>")
+            "%s %s --proc-type=auto"
+            % (self.app_path, self.iova_param), "example>")
         self.verify("Auto-detected process type: PRIMARY" in out,
                     "Failed to setup primary process!")
         for out in [self.session_sec_1.send_expect(
-                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
-                        % (self.target, self.iova_param), "example>"),
+                        "%s %s --proc-type=auto"
+                        % (self.app_path, self.iova_param), "example>"),
                     self.session_sec_2.send_expect(
-                        "./examples/multi_process/hotplug_mp/%s/hotplug_mp %s --proc-type=auto"
-                        % (self.target, self.iova_param), "example>")]:
+                        "%s %s --proc-type=auto"
+                        % (self.app_path, self.iova_param), "example>")]:
             self.verify("Auto-detected process type: SECONDARY" in out,
                         "Failed to setup secondary process!")
 
@@ -328,10 +329,11 @@ class TestHotplugMp(TestCase):
         """
         vdev = "net_virtio_user0"
         self.path = "/home/vhost-net"
+        pmd_path=self.dut.apps_name['test-pmd']
         self.session_vhost.send_expect("rm -rf %s" % self.path, "#")
         eal_param = self.dut.create_eal_parameters(no_pci=True, prefix='vhost',vdevs=["eth_vhost0,iface=%s" % self.path])
         param = ' -- -i'
-        testpmd_cmd = "./%s/app/testpmd " % self.target + eal_param + param
+        testpmd_cmd = "%s " % pmd_path + eal_param + param
         self.session_vhost.send_expect(testpmd_cmd, 'testpmd> ', timeout=60)
         try:
             self.attach_detach_vdev("pri", "hotplug", 1, vdev, iface="mac=00:01:02:03:04:05,path=%s,packed_vq=1,mrg_rxbuf=1,in_order=0" % self.path)
