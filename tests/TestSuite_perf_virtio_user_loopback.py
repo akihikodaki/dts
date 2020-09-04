@@ -72,6 +72,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         self.save_result_flag = True
         self.json_obj = dict()
+        self.path=self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -107,7 +108,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_host,
                         no_pci=True, prefix='vhost')
-        command_line_client = self.dut.target + "/app/testpmd %s " + \
+        command_line_client = self.path + " %s " + \
                               "--socket-mem %s --vdev " + \
                               "'net_vhost0,iface=vhost-net,queues=%d' -- -i --nb-cores=%d " + \
                               "--rxq=%d --txq=%d --txd=%d --rxd=%d"
@@ -124,7 +125,7 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_user,
                         no_pci=True, prefix='virtio')
-        command_line_user = self.dut.target + "/app/testpmd %s " + \
+        command_line_user = self.path+ " %s " + \
                             " --socket-mem %s " + \
                             "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s " + \
                             "-- -i %s --rss-ip --nb-cores=%d --rxq=%d --txq=%d --txd=%d --rxd=%d"
