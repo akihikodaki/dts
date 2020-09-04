@@ -66,6 +66,7 @@ class TestPmdPcap(TestCase):
         os_type = self.dut.get_os_type()
         if os_type == "freebsd":
             self.dut.send_expect("kldload contigmem", "#",20)
+        self.path=self.dut.apps_name['test-pmd']
 
     def get_pcap_compile_config(self):
         config_head = "common_"
@@ -128,11 +129,11 @@ class TestPmdPcap(TestCase):
         self.create_pcap_file(in_pcap, TestPmdPcap.pcap_file_sizes[0])
         self.dut.session.copy_file_to(in_pcap)
 
-        command = ("./{}/app/testpmd -c {} -n {} " +
+        command = ("{} -c {} -n {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "-- -i --port-topology=chained --no-flush-rx")
 
-        self.dut.send_expect(command.format(self.target, core_mask,
+        self.dut.send_expect(command.format(self.path, core_mask,
                              self.memory_channel,
                              TestPmdPcap.dut_pcap_files_path + in_pcap,
                              out_pcap), 'testpmd> ', 15)
@@ -161,12 +162,12 @@ class TestPmdPcap(TestCase):
         self.create_pcap_file(in_pcap2, TestPmdPcap.pcap_file_sizes[1])
         self.dut.session.copy_file_to(in_pcap2)
 
-        command = ("./{}/app/testpmd -c {} -n {} " +
+        command = ("{} -c {} -n {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} " +
                    "-- -i --no-flush-rx")
 
-        self.dut.send_expect(command.format(self.target, core_mask,
+        self.dut.send_expect(command.format(self.path, core_mask,
                                             self.memory_channel,
                                             TestPmdPcap.dut_pcap_files_path +
                                             in_pcap1,
