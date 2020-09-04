@@ -302,6 +302,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.invalid_ip = "192.168.1.256"
         self.invalid_vlan = 4097
         self.invalid_queue = 64
+        self.path = self.dut.apps_name['test-pmd']
 
         # vxlan payload length for performance test
         # inner packet not contain crc, should need add four
@@ -535,10 +536,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                 self.dut.skip_setup = False
                 self.dut.build_install_dpdk(self.target)
 
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -593,10 +594,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                 self.dut.skip_setup = False
                 self.dut.build_install_dpdk(self.target)
 
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -644,10 +645,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify vxlan packet checksum offload
         """
         # start testpmd with 2queue/1port
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
             "--enable-rx-cksum"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -718,10 +719,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         not support ipv6 + sctp
         """
         # start testpmd with 2queue/1port
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
             "--enable-rx-cksum"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -792,10 +793,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         verify tunnel filter feature
         """
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -833,10 +834,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         config = VxlanTestConfig(self)
         config.outer_mac_dst = self.dut_port_mac
 
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
             " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.target,
+        pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
                               'CHANNEL': self.dut.get_memory_channels(),
                               'PORT': self.portMask}
@@ -962,7 +963,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             socket=self.ports_socket)
         core_mask = utils.create_mask(core_list)
 
-        pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
             "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
             " --nb-cores=4 --portmask=%(PORT)s"
 
@@ -973,11 +974,11 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                             % (perf_config['Packet'], tun_filter, recv_queue))))
 
             if tun_filter == "None" and recv_queue == "Multi":
-                pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --rss-udp --rxq=2 --txq=2" + \
                     " --nb-cores=4 --portmask=%(PORT)s"
 
-            pmd_cmd = pmd_temp % {'TARGET': self.target,
+            pmd_cmd = pmd_temp % {'TARGET': self.path,
                                   'COREMASK': core_mask,
                                   'CHANNEL': self.dut.get_memory_channels(),
                                   'PORT': self.portMask}
@@ -1074,15 +1075,15 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
             # multi queue and signle queue commands
             if recv_queue == 'Multi':
-                pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
                     " --nb-cores=4 --portmask=%(PORT)s"
             else:
-                pmd_temp = "./%(TARGET)s/app/testpmd -c %(COREMASK)s -n " + \
+                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
                     "%(CHANNEL)d -- -i --nb-cores=2 --portmask=%(PORT)s" + \
                     ""
 
-            pmd_cmd = pmd_temp % {'TARGET': self.target,
+            pmd_cmd = pmd_temp % {'TARGET': self.path,
                                   'COREMASK': core_mask,
                                   'CHANNEL': self.dut.get_memory_channels(),
                                   'PORT': self.portMask}
