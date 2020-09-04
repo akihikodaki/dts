@@ -75,6 +75,7 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         self.pmd_vhost = PmdOutput(self.dut, self.vhost)
         self.json_obj = dict()
         self.save_result_flag = True
+        self.path=self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -162,12 +163,11 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
             zerocopy_arg = ",dequeue-zero-copy=1"
         else:
             zerocopy_arg = ""
-        testcmd = self.dut.target + "/app/testpmd "
         vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " % (self.base_dir, zerocopy_arg)
         vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " % (self.base_dir, zerocopy_arg)
         eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=True)
         para = " -- -i --nb-cores=2 --txd=1024 --rxd=1024"
-        self.command_line = testcmd + eal_params + vdev1 + vdev2 + para
+        self.command_line = self.path + eal_params + vdev1 + vdev2 + para
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('start', timeout=30)
 
