@@ -69,6 +69,8 @@ class TestDPDKGROLib(TestCase):
                     'Pls config the direct connection info in vhost_peer_conf.cfg')
         bind_script_path = self.dut.get_dpdk_bind_script()
         self.dut.send_expect('%s --bind=%s %s' % (bind_script_path, self.def_driver, self.pci), '# ')
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name=self.path.split("/")[-1]
 
         # get the numa info about the pci info which config in peer cfg
         bus = int(self.pci[5:7], base=16)
@@ -101,7 +103,7 @@ class TestDPDKGROLib(TestCase):
         #
         # Clean the execution ENV
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
     def launch_testpmd_gro_on(self, mode=1):
@@ -112,7 +114,7 @@ class TestDPDKGROLib(TestCase):
         # mode 3 : vxlan traffic light mode
         # mode 4 : tcp traffic flush 4
         eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=1' % self.base_dir])
-        self.testcmd_start = self.target + "/app/testpmd " + eal_param + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
+        self.testcmd_start = self.path + eal_param + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
@@ -378,7 +380,7 @@ class TestDPDKGROLib(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net" % self.base_dir, "#")
         time.sleep(2)
