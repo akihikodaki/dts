@@ -73,6 +73,8 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.pci_info = self.dut.ports_info[0]['pci']
         self.number_of_ports = 1
+        self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -80,7 +82,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         # Prepare the result table
         self.table_header = ["FrameSize(B)", "Mode",
@@ -93,13 +95,12 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         start testpmd on vhost
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        testcmd = self.dut.target + "/app/testpmd "
         vdev = [r"'net_vhost0,iface=vhost-net,queues=1'"]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        command_line_client = testcmd + eal_params + para
+        command_line_client = self.path + eal_params + para
         self.vhost.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
         self.vhost.send_expect("start", "testpmd> ", 120)
@@ -109,16 +110,16 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         start testpmd in vm depend on different path
         """
         if path == "mergeable":
-            command = self.dut.target + "/app/testpmd " + \
+            command = self.path + \
                       "-c 0x3 -n 3 -- -i " + \
                       "--nb-cores=1 --txd=1024 --rxd=1024"
         elif path == "normal":
-            command = self.dut.target + "/app/testpmd " + \
+            command = self.path + \
                       "-c 0x3 -n 3 -- -i " + \
                       "--tx-offloads=0x0 --enable-hw-vlan-strip " + \
                       "--nb-cores=1 --txd=1024 --rxd=1024"
         elif path == "vector_rx":
-            command = self.dut.target + "/app/testpmd " + \
+            command = self.path + \
                       "-c 0x3 -n 3 -- -i " + \
                       "--nb-cores=1 --txd=1024 --rxd=1024"
         self.vm_dut.send_expect(command, "testpmd> ", 30)
@@ -356,7 +357,7 @@ class TestPVPQemuMultiPathPortRestart(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.close_session()
         time.sleep(2)
