@@ -69,8 +69,7 @@ class PerfTestsCryptodev(TestCase):
             "digest-sz": None,
             "csv-friendly": None
         }
-        self._app_path = "./x86_64-native-linuxapp-gcc/build/app/test-crypto-perf/dpdk-test-crypto-perf"
-
+        self._app_path = self.dut.apps_name['test-crypto-perf']
         page_size = self.dut.send_expect("awk '/Hugepagesize/ {print $2}' /proc/meminfo", "# ")
         if int(page_size) == 1024 * 1024:
             self.dut.send_expect('echo 0 > /sys/kernel/mm/hugepages/hugepages-%skB/nr_hugepages' % (page_size), '# ', 5)
