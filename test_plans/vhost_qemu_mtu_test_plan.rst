@@ -46,7 +46,7 @@ Test Case: Test the MTU in virtio-net
 =====================================
 1. Launch the testpmd by below commands on host, and config mtu::
 
-    ./testpmd -c 0xc -n 4 --socket-mem 2048,2048 \
+    ./testpmd -c 0xc -n 4 \
     --vdev 'net_vhost0,iface=vhost-net,queues=1' \
     -- -i --txd=512 --rxd=128 --nb-cores=1 --port-topology=chained
     testpmd> set fwd mac

@@ -58,13 +58,13 @@ Test Case1: Vhost/virtio-user pvp share lib test with niantic
 
 4. Bind niantic port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 --socket-mem 1024,1024 --legacy-mem -d librte_pmd_vhost.so.2.1 -d librte_pmd_ixgbe.so.2.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd  -c 0x03 -n 4 -d librte_pmd_vhost.so.2.1 -d librte_pmd_ixgbe.so.2.1 -d librte_mempool_ring.so.1.1 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
 
 5. Launch virtio-user::
 
-    ./testpmd -c 0x0c -n 4 --socket-mem 1024,1024 --legacy-mem -d librte_pmd_virtio.so.1.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd -c 0x0c -n 4 -d librte_pmd_virtio.so.1.1 -d librte_mempool_ring.so.1.1 \
     --no-pci --file-prefix=virtio  --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i
     testpmd>start
 
@@ -79,6 +79,6 @@ Similar as Test Case1, all steps are similar except step 4:
 
 4. Bind fortville port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 --socket-mem 1024,1024 --legacy-mem -d librte_pmd_vhost.so.2.1 -d librte_pmd_i40e.so.1.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd  -c 0x03 -n 4 -d librte_pmd_vhost.so.2.1 -d librte_pmd_i40e.so.1.1 -d librte_mempool_ring.so.1.1 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start

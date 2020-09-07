@@ -45,7 +45,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 1. Bind one port to igb_uio, then launch testpmd by below command: 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
     -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
@@ -88,7 +88,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
    ensure the vhost using 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
     -i --nb-cores=2 --rxq=2 --txq=2
     testpmd>set fwd mac
@@ -164,7 +164,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
    ensure the vhost using 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2' -- \
     -i --nb-cores=1 --rxq=1 --txq=1
     testpmd>set fwd mac

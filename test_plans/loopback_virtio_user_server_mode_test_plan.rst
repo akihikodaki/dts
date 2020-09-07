@@ -44,14 +44,14 @@ Test Case 1: Basic test for packed ring server mode
 
 1. Launch virtio-user as server mode::
 
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=1,packed_vq=1 -- -i --rxq=1 --txq=1 --no-numa
     >set fwd mac
     >start
 
 2. Launch vhost as client mode::
 
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,client=1,queues=1' -- -i --rxq=1 --txq=1 --nb-cores=1
     >set fwd mac
     >start tx_first 32
@@ -65,14 +65,14 @@ Test Case 2:  Basic test for split ring server mode
 
 1. Launch virtio-user as server mode::
 
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -l 1-2 -n 4 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=1 -- -i --rxq=1 --txq=1 --no-numa
     >set fwd mac
     >start
 
 2. Launch vhost as client mode::
 
-    ./testpmd -l 3-4 -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -l 3-4 -n 4 --no-pci --file-prefix=vhost \
     --vdev 'net_vhost0,iface=/tmp/sock0,client=1,queues=1' -- -i --rxq=1 --txq=1 --nb-cores=1
     >set fwd mac
     >start tx_first 32
@@ -87,14 +87,14 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -107,7 +107,7 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -129,7 +129,7 @@ Test Case 3: loopback reconnect test with split ring mergeable path and server m
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -159,14 +159,14 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -179,7 +179,7 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -201,7 +201,7 @@ Test Case 4: loopback reconnect test with split ring inorder mergeable path and 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=1,in_order=1\
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -231,14 +231,14 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -251,7 +251,7 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -273,7 +273,7 @@ Test Case 5: loopback reconnect test with split ring inorder non-mergeable path 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -303,14 +303,14 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -323,7 +323,7 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -345,7 +345,7 @@ Test Case 6: loopback reconnect test with split ring non-mergeable path and serv
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -375,14 +375,14 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -395,7 +395,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -417,7 +417,7 @@ Test Case 7: loopback reconnect test with split ring vector_rx path and server m
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -447,14 +447,14 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -467,7 +467,7 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -489,7 +489,7 @@ Test Case 8: loopback reconnect test with packed ring mergeable path and server 
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -519,14 +519,14 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -539,7 +539,7 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -561,7 +561,7 @@ Test Case 9: loopback reconnect test with packed ring non-mergeable path and ser
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -591,14 +591,14 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -611,7 +611,7 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -633,7 +633,7 @@ Test Case 10: loopback reconnect test with packed ring inorder mergeable path an
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -663,14 +663,14 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 1. launch vhost as client mode with 2 queues::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -683,7 +683,7 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -705,7 +705,7 @@ Test Case 11: loopback reconnect test with packed ring inorder non-mergeable pat
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -755,7 +755,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 4. Relaunch vhost and send packets::
 
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=vhost \
+    ./testpmd -c 0xe -n 4 --no-pci --file-prefix=vhost \
     --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=2' -- -i --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
     >start tx_first 32
@@ -777,7 +777,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --socket-mem 1024,1024 --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac

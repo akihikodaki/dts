@@ -50,7 +50,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
 1. Bind one port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -65,7 +65,7 @@ Test Case 1: PVP multi qemu version test with virtio 0.95 mergeable path
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
     -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \
@@ -88,7 +88,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
 1. Bind one port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -103,7 +103,7 @@ Test Case 2: PVP test with virtio 1.0 mergeable path
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
     -netdev user,id=netdev0,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net \
     -netdev type=vhost-user,id=netdev1,chardev=char0,vhostforce \

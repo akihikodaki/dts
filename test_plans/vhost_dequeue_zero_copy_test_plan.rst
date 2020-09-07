@@ -55,7 +55,7 @@ Test Case 1: pvp split ring dequeue zero-copy test
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1,dequeue-zero-copy=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -65,8 +65,8 @@ Test Case 1: pvp split ring dequeue zero-copy test
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -95,7 +95,7 @@ Test Case 2: pvp split ring dequeue zero-copy test with 2 queues
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 2-4 -n 4 --socket-mem 1024,1024 \
+    ./testpmd -l 2-4 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2,dequeue-zero-copy=1' -- \
     -i --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -105,8 +105,8 @@ Test Case 2: pvp split ring dequeue zero-copy test with 2 queues
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=2 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=8,rx_queue_size=1024,tx_queue_size=1024 \
@@ -138,7 +138,7 @@ Test Case 3: pvp split ring dequeue zero-copy test with driver reload test
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-5 -n 4 --socket-mem 1024,1024 \
+    ./testpmd -l 1-5 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=16,dequeue-zero-copy=1,client=1' -- \
     -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -148,8 +148,8 @@ Test Case 3: pvp split ring dequeue zero-copy test with driver reload test
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,rx_queue_size=1024,tx_queue_size=1024 \
@@ -158,7 +158,7 @@ Test Case 3: pvp split ring dequeue zero-copy test with driver reload test
 3. On VM, bind virtio net to igb_uio and run testpmd::
 
     ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
-    ./testpmd -l 0-4 -n 4 --socket-mem 1024,0 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
+    ./testpmd -l 0-4 -n 4 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -173,7 +173,7 @@ Test Case 3: pvp split ring dequeue zero-copy test with driver reload test
 6. Relaunch testpmd at virtio side in VM for driver reloading::
 
     testpmd>quit
-    ./testpmd -l 0-4 -n 4 --socket-mem 1024,0 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
+    ./testpmd -l 0-4 -n 4 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -190,7 +190,7 @@ Test Case 4: pvp split ring dequeue zero-copy test with maximum txfreet
 
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
-     ./testpmd -l 1-5 -n 4 --socket-mem 1024,1024 \
+     ./testpmd -l 1-5 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=16,dequeue-zero-copy=1,client=1' -- \
     -i --nb-cores=4 --rxq=16 --txq=16  --txfreet=988 --txrs=4 --txd=992 --rxd=992
     testpmd>set fwd mac
@@ -200,8 +200,8 @@ Test Case 4: pvp split ring dequeue zero-copy test with maximum txfreet
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,rx_queue_size=1024,tx_queue_size=1024 \
@@ -210,7 +210,7 @@ Test Case 4: pvp split ring dequeue zero-copy test with maximum txfreet
 3. On VM, bind virtio net to igb_uio and run testpmd::
 
     ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
-    ./testpmd -l 0-4 -n 4 --socket-mem 1024,0 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
+    ./testpmd -l 0-4 -n 4 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -232,7 +232,7 @@ Test Case 5: pvp split ring dequeue zero-copy test with vector_rx path
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=1,dequeue-zero-copy=1' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -240,8 +240,8 @@ Test Case 5: pvp split ring dequeue zero-copy test with vector_rx path
 
 2. Launch virtio-user by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1,queue_size=1024,server=1 \
     -- -i --tx-offloads=0x0 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -259,7 +259,7 @@ Test Case 6: pvp packed ring dequeue zero-copy test
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xe -n 4 --socket-mem 1024,1024 \
+    ./testpmd -c 0xe -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1,dequeue-zero-copy=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -269,8 +269,8 @@ Test Case 6: pvp packed ring dequeue zero-copy test
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024,packed=on \
@@ -299,7 +299,7 @@ Test Case 7: pvp packed ring dequeue zero-copy test with 2 queues
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 2-4 -n 4 --socket-mem 1024,1024 \
+    ./testpmd -l 2-4 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2,dequeue-zero-copy=1' -- \
     -i --nb-cores=2 --rxq=2 --txq=2 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -309,8 +309,8 @@ Test Case 7: pvp packed ring dequeue zero-copy test with 2 queues
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=2 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=8,rx_queue_size=1024,tx_queue_size=1024,packed=on \
@@ -342,7 +342,7 @@ Test Case 8: pvp packed ring dequeue zero-copy test with driver reload test
 1. Bind one 40G port to igb_uio, then launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-5 -n 4 --socket-mem 1024,1024 \
+    ./testpmd -l 1-5 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=16,dequeue-zero-copy=1,client=1' -- \
     -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -352,8 +352,8 @@ Test Case 8: pvp packed ring dequeue zero-copy test with driver reload test
     qemu-system-x86_64 -name vm1 \
      -cpu host -enable-kvm -m 4096 -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=5,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-     -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+     -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
      -chardev socket,id=char0,path=./vhost-net,server \
      -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,rx_queue_size=1024,tx_queue_size=1024,packed=on \
@@ -362,7 +362,7 @@ Test Case 8: pvp packed ring dequeue zero-copy test with driver reload test
 3. On VM, bind virtio net to igb_uio and run testpmd::
 
     ./usertools/dpdk-devbind.py --bind=igb_uio xx:xx.x
-    ./testpmd -l 0-4 -n 4 --socket-mem 1024,0 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
+    ./testpmd -l 0-4 -n 4 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -377,7 +377,7 @@ Test Case 8: pvp packed ring dequeue zero-copy test with driver reload test
 6. Relaunch testpmd at virtio side in VM for driver reloading::
 
     testpmd>quit
-    ./testpmd -l 0-4 -n 4 --socket-mem 1024,0 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
+    ./testpmd -l 0-4 -n 4 -- -i --nb-cores=4 --rxq=16 --txq=16 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -395,7 +395,7 @@ Test Case 9: pvp packed ring dequeue zero-copy test with ring size is not power 
 1. Bind one port to igb_uio, then launch vhost by below command::
 
     rm -rf vhost-net*
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 2-4  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=1,dequeue-zero-copy=1' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txfreet=992
     testpmd>set fwd mac
@@ -403,8 +403,8 @@ Test Case 9: pvp packed ring dequeue zero-copy test with ring size is not power 
 
 2. Launch virtio-user by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=1,packed_vq=1,queue_size=1025,server=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1025 --rxd=1025
     >set fwd mac

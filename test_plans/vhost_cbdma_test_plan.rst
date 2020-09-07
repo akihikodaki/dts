@@ -118,8 +118,8 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
 
 7. Relaunch virtio-user with vector_rx path, then repeat step 3::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=0,queues=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -130,7 +130,7 @@ Test Case2: Dynamic queue number test for DMA-accelerated vhost Tx operations
 
 1. Bind two cbdma port and one nic port to igb_uio, then launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 28-29  --socket-mem 1024,1024 --legacy-mem \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 28-29  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@80:04.5;txq1@80:04.6],dmathr=1024' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
      set fwd mac
@@ -174,7 +174,7 @@ Test Case2: Dynamic queue number test for DMA-accelerated vhost Tx operations
 
 6. Relaunch vhost with another two cbdma channels, check perforamnce can get target and RX/TX can work normally in two queueus::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 28-29  --socket-mem 1024,1024 --legacy-mem \
+    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 28-29  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@80:04.0],dmathr=512' \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
     >set fwd mac

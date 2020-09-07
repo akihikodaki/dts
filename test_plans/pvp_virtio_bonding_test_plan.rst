@@ -52,7 +52,7 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio,launch vhost by below command::
 
-    ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
+    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -61,8 +61,8 @@ Flow: TG--> NIC --> Vhost --> Virtio3 --> Virtio4 --> Vhost--> NIC--> TG
     qemu-system-x86_64 -name vm0 -enable-kvm -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
     -device virtio-serial -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
     -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
-    -net nic,vlan=0,macaddr=00:00:00:c7:56:64,addr=1f \
-    -net user,vlan=0,hostfwd=tcp:127.0.0.1:6008-:22 \
+    -net nic,macaddr=00:00:00:c7:56:64,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6008-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \
@@ -114,7 +114,7 @@ Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 t
 
 1. Bind one port to igb_uio,launch vhost by below command::
 
-    ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
+    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1' --vdev 'net_vhost2,iface=vhost-net2,client=1,queues=1' --vdev 'net_vhost3,iface=vhost-net3,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=4 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -123,8 +123,8 @@ Test case 2: vhost-user/virtio-pmd pvp bonding test with different mode from 1 t
     qemu-system-x86_64 -name vm0 -enable-kvm -chardev socket,path=/tmp/vm0_qga0.sock,server,nowait,id=vm0_qga0 \
     -device virtio-serial -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 \
     -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
-    -net nic,vlan=0,macaddr=00:00:00:c7:56:64,addr=1f \
-    -net user,vlan=0,hostfwd=tcp:127.0.0.1:6008-:22 \
+    -net nic,macaddr=00:00:00:c7:56:64,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6008-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01 \

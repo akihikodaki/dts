@@ -143,7 +143,7 @@ SW preparation: Change one line of the symmetric_mp sample and rebuild::
 
 1. Bind one port to igb_uio, launch testpmd by below command::
 
-    ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
+    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>start
 
@@ -181,7 +181,7 @@ Test Case 2: Virtio-pmd primary and secondary process hotplug test
 
 1. Launch testpmd by below command::
 
-    ./testpmd -l 1-6 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
+    ./testpmd -l 1-6 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=2,client=1' --vdev 'net_vhost1,iface=vhost-net1,queues=2,client=1'  -- -i --nb-cores=4 --rxq=2 --txq=2 --txd=1024 --rxd=1024
     testpmd>set fwd txonly
     testpmd>start
 

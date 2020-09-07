@@ -61,7 +61,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -72,8 +72,8 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -92,7 +92,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 5. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -106,7 +106,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -117,8 +117,8 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -151,7 +151,7 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 1. Bind one port to igb_uio, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -162,8 +162,8 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -174,8 +174,8 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -200,7 +200,7 @@ Test Case 4: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 6. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -213,7 +213,7 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
 
 1. Bind one port to igb_uio, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -224,8 +224,8 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -236,8 +236,8 @@ Test Case 5: vhost-user/virtio-pmd pvp split ring with multi VMs reconnect from 
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -280,7 +280,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -290,8 +290,8 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -302,8 +302,8 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -324,7 +324,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 6. Kill the vhost-user, then re-launch the vhost-user::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 7. Rerun step5, ensure the vhost-user can reconnect to VM again, and the iperf traffic can be continue.
@@ -335,7 +335,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -345,8 +345,8 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6002-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6002-:22 \
     -chardev socket,id=char0,path=./vhost-net,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -357,8 +357,8 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu16-1.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
     -device virtserialport,chardev=vm2_qga0,name=org.qemu.guest_agent.2 -daemonize \
-    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f \
-    -net user,vlan=2,hostfwd=tcp:127.0.0.1:6003-:22 \
+    -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f \
+    -net user,hostfwd=tcp:127.0.0.1:6003-:22 \
     -chardev socket,id=char0,path=./vhost-net1,server \
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:02,mrg_rxbuf=on,rx_queue_size=1024,tx_queue_size=1024 \
@@ -394,7 +394,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -425,7 +425,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 5. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -439,7 +439,7 @@ Flow: TG--> NIC --> Vhost --> Virtio --> Vhost--> NIC--> TG
 
 1. Bind one port to igb_uio, then launch vhost with client mode by below commands::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 1024,1024 --legacy-mem --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
+    ./testpmd -c 0x30 -n 4 --vdev 'eth_vhost0,iface=vhost-net,client=1,queues=1' -- -i --nb-cores=1
     testpmd>set fwd mac
     testpmd>start
 
@@ -484,7 +484,7 @@ Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 1. Bind one port to igb_uio, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -533,7 +533,7 @@ Test Case 13: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 6. On host, quit vhost-user, then re-launch the vhost-user with below command::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -546,7 +546,7 @@ Test Case 14: vhost-user/virtio-pmd pvp packed ring with multi VMs reconnect fro
 
 1. Bind one port to igb_uio, launch the vhost by below command::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --port-topology=chained --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -613,7 +613,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::
@@ -657,7 +657,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 6. Kill the vhost-user, then re-launch the vhost-user::
 
     testpmd>quit
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 7. Rerun step5, ensure the vhost-user can reconnect to VM again, and the iperf traffic can be continue.
@@ -668,7 +668,7 @@ Flow: Virtio-net1 --> Vhost-user --> Virtio-net2
 
 1. Launch the vhost by below commands, enable the client mode and tso::
 
-    ./testpmd -c 0x30 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0x30 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,client=1,queues=1' --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 3. Launch VM1 and VM2::

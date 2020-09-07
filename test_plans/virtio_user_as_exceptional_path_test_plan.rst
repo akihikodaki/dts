@@ -74,7 +74,7 @@ Flow:tap0-->vhost-net-->virtio_user-->nic0-->nic1
 3. Bind nic0 to igb_uio and launch the virtio_user with testpmd::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x        # xx:xx.x is the pci addr of nic0
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 1024,1024 --file-prefix=test2 \
+    ./testpmd -c 0xc0000 -n 4 --file-prefix=test2 \
     --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024 -- -i --rxd=1024 --txd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -126,7 +126,7 @@ Flow: tap0<-->vhost-net<-->virtio_user<-->nic0<-->TG
 2. Bind the physical port to igb_uio, launch testpmd with one queue for virtio_user::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x        # xx:xx.x is the pci addr of nic0
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024  --file-prefix=test2 --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024,queues=1 -- -i --rxd=1024 --txd=1024
+    ./testpmd -l 1-2 -n 4  --file-prefix=test2 --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024,queues=1 -- -i --rxd=1024 --txd=1024
 
 3. Check if there is a tap device generated::
 
@@ -156,7 +156,7 @@ Flow: tap0<-->vhost-net<-->virtio_user<-->nic0<-->TG
 2. Bind the physical port to igb_uio, launch testpmd with two queues for virtio_user::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x        # xx:xx.x is the pci addr of nic0
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024  --file-prefix=test2 --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024,queues=2 -- -i --rxd=1024 --txd=1024 --txq=2 --rxq=2 --nb-cores=1
+    ./testpmd -l 1-2 -n 4  --file-prefix=test2 --vdev=virtio_user0,mac=00:01:02:03:04:05,path=/dev/vhost-net,queue_size=1024,queues=2 -- -i --rxd=1024 --txd=1024 --txq=2 --rxq=2 --nb-cores=1
 
 3. Check if there is a tap device generated::
 

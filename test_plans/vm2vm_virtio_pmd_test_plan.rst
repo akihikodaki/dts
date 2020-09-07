@@ -62,7 +62,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
      rm -rf vhost-net*
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -117,7 +117,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
      rm -rf vhost-net*
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -172,7 +172,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
      rm -rf vhost-net*
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -227,7 +227,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
      rm -rf vhost-net*
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -281,7 +281,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
 
 1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
 
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -369,7 +369,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
 
 1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
 
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -457,7 +457,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
 
 1. Bind virtio with igb_uio driver, launch the testpmd by below commands::
 
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 
@@ -546,7 +546,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
      rm -rf vhost-net*
-    ./testpmd -c 0xc0000 -n 4 --socket-mem 2048,2048 --legacy-mem --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
 

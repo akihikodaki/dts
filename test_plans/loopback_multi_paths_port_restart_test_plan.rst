@@ -45,14 +45,14 @@ Test Case 1: loopback test with packed ring mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -86,14 +86,14 @@ Test Case 2: loopback test with packed ring non-mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -127,14 +127,14 @@ Test Case 3: loopback test with packed ring inorder mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -168,14 +168,14 @@ Test Case 4: loopback test with packed ring inorder non-mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -209,14 +209,14 @@ Test Case 5: loopback test with split ring inorder mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -250,14 +250,14 @@ Test Case 6: loopback test with split ring inorder non-mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=1,mrg_rxbuf=0 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -291,14 +291,14 @@ Test Case 7: loopback test with split ring mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -332,14 +332,14 @@ Test Case 8: loopback test with split ring non-mergeable path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --rx-offloads=0x10 --enable-hw-vlan-strip --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
@@ -373,14 +373,14 @@ Test Case 9: loopback test with split ring vector_rx path
 1. Launch vhost by below command::
 
     rm -rf vhost-net*
-    ./testpmd -n 4 -l 2-4  --socket-mem 1024,1024 --legacy-mem --no-pci \
+    ./testpmd -n 4 -l 2-4  --no-pci \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac

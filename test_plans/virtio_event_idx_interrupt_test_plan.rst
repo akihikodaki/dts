@@ -52,7 +52,7 @@ Test Case 1: Compare interrupt times with and without split ring virtio event id
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xF0000000 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
+    ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -62,7 +62,7 @@ Test Case 1: Compare interrupt times with and without split ring virtio event id
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
      -vnc :12 -daemonize
@@ -85,7 +85,7 @@ Test Case 2: Split ring virtio-pci driver reload test
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xF0000000 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -94,7 +94,7 @@ Test Case 2: Split ring virtio-pci driver reload test
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
      -vnc :12 -daemonize
@@ -123,7 +123,7 @@ Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 1
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-17 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
     testpmd>start
 
 2. Launch VM::
@@ -132,7 +132,7 @@ Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 1
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on \
      -vnc :12 -daemonize
@@ -158,7 +158,7 @@ Test Case 4: Compare interrupt times with and without packed ring virtio event i
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xF0000000 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
+    ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i
     --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
@@ -168,7 +168,7 @@ Test Case 4: Compare interrupt times with and without packed ring virtio event i
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on \
      -vnc :12 -daemonize
@@ -191,7 +191,7 @@ Test Case 5: Packed ring virtio-pci driver reload test
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -c 0xF0000000 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    ./testpmd -c 0xF0000000 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=1' -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>start
 
 2. Launch VM::
@@ -200,7 +200,7 @@ Test Case 5: Packed ring virtio-pci driver reload test
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=2,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on \
      -vnc :12 -daemonize
@@ -229,7 +229,7 @@ Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 
 1. Bind one nic port to igb_uio, then launch the vhost sample by below commands::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-17 -n 4 --socket-mem 2048,2048 --legacy-mem --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
+    ./testpmd -l 1-17 -n 4 --file-prefix=vhost --vdev 'net_vhost,iface=vhost-net,queues=16' -- -i --nb-cores=16 --txd=1024 --rxd=1024 --rxq=16 --txq=16
     testpmd>start
 
 2. Launch VM::
@@ -238,7 +238,7 @@ Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 
     qemu-system-x86_64 -name us-vhost-vm1 \
      -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
      -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
-     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6004-:22 \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6004-:22 \
      -chardev socket,id=char0,path=./vhost-net -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce,queues=16 \
      -device virtio-net-pci,mac=52:54:00:00:00:01,netdev=mynet1,mrg_rxbuf=on,mq=on,vectors=40,csum=on,gso=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on \
      -vnc :12 -daemonize
@@ -303,7 +303,7 @@ Test Case 8: wake up vhost-user cores with event idx interrupt mode and cbdma en
 1. Launch l3fwd-power example app with client mode::
 
     ./examples/l3fwd-power/build/l3fwd-power -l 1-16 \
-    -n 4 --socket-mem 1024,1024 --legacy-mem \
+    -n 4 \
     --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
     -- -p 0x1 \
@@ -317,7 +317,7 @@ Test Case 8: wake up vhost-user cores with event idx interrupt mode and cbdma en
 3. Relauch l3fwd-power sample for port up::
 
     ./examples/l3fwd-power/build/l3fwd-power -l 1-16 \
-    -n 4 --socket-mem 1024,1024 --legacy-mem \
+    -n 4 \
     --log-level=9 \
     --vdev 'eth_vhost0,iface=/vhost-net0,queues=16,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' \
     -- -p 0x1 \

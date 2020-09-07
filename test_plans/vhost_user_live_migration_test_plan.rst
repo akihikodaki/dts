@@ -77,7 +77,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -100,7 +100,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -177,7 +177,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port,note not start vhost port before launching qemu::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' -- -i
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
@@ -199,7 +199,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' -- -i
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
@@ -277,7 +277,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -300,7 +300,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -365,7 +365,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -388,7 +388,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -457,7 +457,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -480,7 +480,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -557,7 +557,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port,note not start vhost port before launching qemu::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' -- -i
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
 
@@ -579,7 +579,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1,dequeue-zero-copy=1' -- -i
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
 
@@ -657,7 +657,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -680,7 +680,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' --socket-mem 1024,1024 -- -i
+    backup server # ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc0000 -n 4 --vdev 'eth_vhost0,iface=./vhost-net,queues=1' -- -i
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::
@@ -745,7 +745,7 @@ On host server side:
 2. Bind host port to igb_uio and start testpmd with vhost port::
 
     host server# ./tools/dpdk-devbind.py -b igb_uio 82:00.1
-    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    host server# ./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     host server# testpmd>start
 
 3. Start VM on host, here we set 5432 as the serial port, 3333 as the qemu monitor port, 5555 as the SSH port::
@@ -768,7 +768,7 @@ On the backup server, run the vhost testpmd on the host and launch VM:
     backup server # mkdir /mnt/huge
     backup server # mount -t hugetlbfs hugetlbfs /mnt/huge
     backup server # ./tools/dpdk-devbind.py -b igb_uio 82:00.0
-    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' --socket-mem 1024,1024 -- -i --nb-cores=4 --rxq=4 --txq=4
+    backup server#./x86_64-native-linuxapp-gcc/app/testpmd -l 2-6 -n 4 --vdev 'net_vhost0,iface=./vhost-net,queues=4' -- -i --nb-cores=4 --rxq=4 --txq=4
     backup server # testpmd>start
 
 5. Launch VM on the backup server, the script is similar to host, need add " -incoming tcp:0:4444 " for live migration and make sure the VM image is the NFS mounted folder, VM image is the exact one on host server::

@@ -45,15 +45,15 @@ Test Case 1: loopback with virtio 1.1 mergeable path using 1 queue and 8 queues
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -76,15 +76,15 @@ Test Case 1: loopback with virtio 1.1 mergeable path using 1 queue and 8 queues
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -105,15 +105,15 @@ Test Case 2: loopback with virtio 1.1 non-mergeable path using 1 queue and 8 que
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -136,15 +136,15 @@ Test Case 2: loopback with virtio 1.1 non-mergeable path using 1 queue and 8 que
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=0 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -165,15 +165,15 @@ Test Case 3: loopback with virtio 1.0 inorder mergeable path using 1 queue and 8
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -196,15 +196,15 @@ Test Case 3: loopback with virtio 1.0 inorder mergeable path using 1 queue and 8
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -225,15 +225,15 @@ Test Case 4: loopback with virtio 1.0 inorder non-mergeable path using 1 queue a
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -256,15 +256,15 @@ Test Case 4: loopback with virtio 1.0 inorder non-mergeable path using 1 queue a
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,mrg_rxbuf=0,in_order=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -285,15 +285,15 @@ Test Case 5: loopback with virtio 1.0 mergeable path using 1 queue and 8 queues
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,mrg_rxbuf=1,in_order=0 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -316,15 +316,15 @@ Test Case 5: loopback with virtio 1.0 mergeable path using 1 queue and 8 queues
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,mrg_rxbuf=1,in_order=0 \
     -- -i --enable-hw-vlan-strip --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -345,15 +345,15 @@ Test Case 6: loopback with virtio 1.0 non-mergeable path using 1 queue and 8 que
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -376,15 +376,15 @@ Test Case 6: loopback with virtio 1.0 non-mergeable path using 1 queue and 8 que
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --enable-hw-vlan-strip --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -405,15 +405,15 @@ Test Case 7: loopback with virtio 1.0 vector_rx path using 1 queue and 8 queues
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -436,15 +436,15 @@ Test Case 7: loopback with virtio 1.0 vector_rx path using 1 queue and 8 queues
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,mrg_rxbuf=0,in_order=0,vectorized=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -465,15 +465,15 @@ Test Case 8: loopback with virtio 1.1 inorder mergeable path using 1 queue and 8
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-2 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -496,15 +496,15 @@ Test Case 8: loopback with virtio 1.1 inorder mergeable path using 1 queue and 8
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=1,in_order=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -525,14 +525,14 @@ Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue a
 1. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
+    ./testpmd -l 1-2 -n 4 --no-pci --vdev 'eth_vhost0,iface=vhost-net,queues=1' -- \
     -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -561,8 +561,8 @@ Test Case 9: loopback with virtio 1.1 inorder non-mergeable path using 1 queue a
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rx-offloads=0x10 --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -590,8 +590,8 @@ Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queue
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -614,15 +614,15 @@ Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queue
 6. Launch testpmd by below command::
 
     rm -rf vhost-net*
-    ./testpmd -l 1-9 -n 4 --socket-mem 1024,1024 --no-pci \
+    ./testpmd -l 1-9 -n 4 --no-pci \
     --vdev 'eth_vhost0,iface=vhost-net,queues=8' -- \
     -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac
 
 7. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 10-18 --socket-mem 1024,1024 \
-    --legacy-mem --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 10-18 \
+    --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac

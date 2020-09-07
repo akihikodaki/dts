@@ -72,7 +72,7 @@ Test Case 1: packet forward test for container networking
 
 2. Bind one port to igb_uio, launch vhost::
 
-    ./testpmd -l 1-2 -n 4 --socket-mem 1024,1024  --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
+    ./testpmd -l 1-2 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i
 
 2. Start a container instance with a virtio-user port::
 
@@ -94,7 +94,7 @@ Test Case 2: packet forward with multi-queues for container networking
 
 2. Bind one port to igb_uio, launch vhost::
 
-    ./testpmd -l 1-3 -n 4 --socket-mem 1024,1024  --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2
+    ./testpmd -l 1-3 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=2,client=0' -- -i --nb-cores=2
 
 2. Start a container instance with a virtio-user port::
 

@@ -99,7 +99,7 @@ Test Case1: DPDK GSO test with tcp traffic
 2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x       # xx:xx.x is the pci addr of nic1
-    ./testpmd -l 2-4 -n 4 --socket-mem 1024,1024  --legacy-mem \
+    ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -119,7 +119,7 @@ Test Case1: DPDK GSO test with tcp traffic
     qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
+       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
        -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
        -chardev socket,id=char0,path=./vhost-net \
        -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
@@ -159,7 +159,7 @@ Test Case3: DPDK GSO test with vxlan traffic
 2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x
-    ./testpmd -l 2-4 -n 4 --socket-mem 1024,1024  --legacy-mem \
+    ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -181,7 +181,7 @@ Test Case3: DPDK GSO test with vxlan traffic
     qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
+       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
        -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
        -chardev socket,id=char0,path=./vhost-net \
        -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
@@ -213,7 +213,7 @@ Test Case4: DPDK GSO test with gre traffic
 2. Bind nic1 to igb_uio, launch vhost-user with testpmd::
 
     ./dpdk-devbind.py -b igb_uio xx:xx.x
-    ./testpmd -l 2-4 -n 4 --socket-mem 1024,1024  --legacy-mem \
+    ./testpmd -l 2-4 -n 4 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --txd=1024 --rxd=1024
     testpmd>set fwd csum
     testpmd>stop
@@ -235,7 +235,7 @@ Test Case4: DPDK GSO test with gre traffic
     qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
-       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,vlan=2,macaddr=00:00:00:08:e8:aa,addr=1f -net user,vlan=2,hostfwd=tcp:127.0.0.1:6001-:22 \
+       -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
        -smp cores=1,sockets=1 -drive file=/home/osimg/ubuntu16.img  \
        -chardev socket,id=char0,path=./vhost-net \
        -netdev type=vhost-user,id=mynet1,chardev=char0,vhostforce \
