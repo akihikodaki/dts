@@ -39,7 +39,7 @@ import cryptodev_common as cc
 class UnitTestsCryptodev(TestCase):
 
     def set_up_all(self):
-        self._app_path = "./{target}/app/test".format(target=self.dut.target)
+        self._app_path = self.dut.apps_name['test']
         if not cc.is_build_skip(self):
             cc.build_dpdk_with_cryptodev(self)
         cc.bind_qat_device(self, "vfio-pci")
