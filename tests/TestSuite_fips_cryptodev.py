@@ -45,7 +45,7 @@ class FipCryptodev(TestCase):
         self.verify("No such"not in out,"Compilation error")
         self.vf_driver = self.get_suite_cfg()['vf_driver']
         cc.bind_qat_device(self, "vfio-pci")
-        self._app_path = "./examples/fips_validation/build/fips_validation"
+        self._app_path = self.dut.apps_name['fips_validation']
         self._default_fips_opts = {
             "req-file": None,
             "rsp-file": None,
