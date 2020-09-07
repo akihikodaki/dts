@@ -44,6 +44,9 @@ Prerequisites
 Assume one port is connected to the tester and "linuxptp.x86_64"
 has been installed on the tester.
 
+Case Config::
+    For support IEEE1588, need to set "CONFIG_RTE_LIBRTE_IEEE1588=y" in ./config/common_base and re-build DPDK.
+
 The sample should be validated on Forville, Niantic and i350 Nics. 
 
 Test case: ptp client
