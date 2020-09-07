@@ -66,7 +66,10 @@ Prerequisites
   to the pools numbers(e.g: for FVL spirit, it's 63, inclusive) as well as the MAC address from
   52:54:00:12:[port_index]:00 to 52:54:00:12:[port_index]:3e and the VLAN user priority field increments from 0 to 7
   (inclusive) for each VLAN ID. In our case port_index = 0 or 1.
-
+-Case config::
+   If test max queues per port 1024, need to set the "CONFIG_RTE_MAX_QUEUES_PER_PORT=1024" in ./config/common_base,
+   and need to set the "define MAX_QUEUES 1024" in ./examples/vmdq/main.c and re-build DPDK.
+   Note: different NIC, the MAX_QUEUES is different, eg: Fortville is 1024.
 
 Test Case: Measure VMDQ pools queues
 ------------------------------------
