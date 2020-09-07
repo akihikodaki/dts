@@ -41,8 +41,8 @@ import cryptodev_common as cc
 
 class VirtioCryptodevPerfTest(TestCase):
     def set_up_all(self):
-        self.sample_app = "./examples/vhost_crypto/build/vhost-crypto"
-        self.user_app = "./{target}/build/app/test-crypto-perf/dpdk-test-crypto-perf".format(target=self.dut.target)
+        self.sample_app = self.dut.apps_name['vhost_crypto']
+        self.user_app = self.dut.apps_name['test-crypto-perf']
         self._default_crypto_perf_opts = {
             "ptest": "throughput",
             "silent": "",
@@ -85,7 +85,7 @@ class VirtioCryptodevPerfTest(TestCase):
         if not cc.is_build_skip(self):
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
-        self.build_vhost_app()
+        self.dut.build_dpdk_apps("./examples/vhost_crypto")
         cc.bind_qat_device(self)
 
         self.vf_assign_method = "vfio-pci"
@@ -119,16 +119,7 @@ class VirtioCryptodevPerfTest(TestCase):
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
-        out = user_dut.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (user_dut.number_of_cores, self.target), "# ", 900)
-
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
-
-    def build_vhost_app(self):
-        out = self.dut_execut_cmd("make -C ./examples/vhost_crypto")
-
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
+        user_dut.build_install_dpdk(self.target)
 
     def get_vhost_eal(self):
         default_eal_opts = {
@@ -260,7 +251,8 @@ class VirtioCryptodevPerfTest(TestCase):
             self.used_dut_port = None
 
         self.dut_execut_cmd("^C", "# ")
-        self.dut_execut_cmd("killall -s INT vhost-crypto")
+        self.app_name = self.sample_app[self.sample_app.rfind('/')+1:]
+        self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")
         cc.clear_dpdk_config(self)
