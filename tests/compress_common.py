@@ -127,8 +127,7 @@ def run_unit(test_case, eal={}):
     default['n'] = mem_channels
 
     eal_str = get_opt_str(test_case, default, eal)
-    cmdline = "./{target}/app/test {eal}".format(target = test_case.dut.target,
-                eal = eal_str)
+    cmdline = "./{app_path} {eal}".format(app_path = test_case.dut.apps_name['test'], eal= eal_str)
     test_case.dut.send_expect(cmdline, ">", 30)
     out = test_case.dut.send_expect("compressdev_autotest", ">", 30)
     test_case.dut.send_expect("quit", "# ", 30)
@@ -144,10 +143,10 @@ def run_compress_func(test_case, eal={}, opt={}):
     for each_file in input_file:
         test_case.logger.info("Testing file: {}".format(each_file))
 
-        cmdline = "./{target}/app/dpdk-test-compress-perf {eal}\
+        cmdline = "./{app_path} {eal}\
                 -- --input-file {file} {opt}"
 
-        cmdline = cmdline.format(target = test_case.dut.target,
+        cmdline = cmdline.format(app_path = test_case.dut.apps_name['test-compress-perf'],
                 eal = eal_str,
                 file = each_file,
                 opt = opt_str)
@@ -177,10 +176,10 @@ def run_compress_perf(test_case, eal={}, opt={}):
 
     for each_seg in [1, 2, 4, 8, 16, 32]:
         test_case.logger.info("Testing file: {}, seg-sz: {}".format(perf_file, each_seg * 1024))
-        cmdline = "./{target}/app/dpdk-test-compress-perf {eal}\
+        cmdline = "./{app_path} {eal}\
                 -- --input-file {file} --seg-sz {seg} {opt}"
 
-        cmdline = cmdline.format(target = test_case.dut.target,
+        cmdline = cmdline.format(app_path = test_case.dut.apps_name['test-compress-perf'],
                 eal = eal_str,
                 file = perf_file,
                 seg = each_seg * 1024,
