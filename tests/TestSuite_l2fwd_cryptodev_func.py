@@ -79,7 +79,7 @@ class TestL2fwdCrypto(TestCase):
         self.logger.info("tx interface = " + self.tx_interface)
         self.logger.info("rx interface = " + self.rx_interface)
 
-        self._app_path = "./examples/l2fwd-crypto/build/l2fwd-crypto"
+        self._app_path = self.dut.apps_name['l2fwd-crypto']
         if not cc.is_build_skip(self):
             cc.build_dpdk_with_cryptodev(self)
 
