@@ -69,7 +69,7 @@ class TestIPsecGW(TestCase):
         self.logger.info("tx interface = " + self.tx_interface)
         self.logger.info("rx interface = " + self.rx_interface)
 
-        self._app_path = "./examples/ipsec-secgw/build/ipsec-secgw"
+        self._app_path = self.dut.apps_name['ipsec-secgw']
         if not cc.is_build_skip(self):
             cc.build_dpdk_with_cryptodev(self)
         out =self.dut.build_dpdk_apps("./examples/ipsec-secgw")
