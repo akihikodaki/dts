@@ -44,8 +44,8 @@ from packet import Packet
 
 class VirtioCryptodevIpsecTest(TestCase):
     def set_up_all(self):
-        self.sample_app = "./examples/vhost_crypto/build/vhost-crypto"
-        self.user_app = "./examples/ipsec-secgw/build/ipsec-secgw "
+        self.sample_app = self.dut.apps_name['vhost_crypto']
+        self.user_app = self.dut.apps_name['ipsec-secgw']
         self._default_ipsec_gw_opts = {
             "p": "0x3",
             "config": None,
@@ -79,7 +79,7 @@ class VirtioCryptodevIpsecTest(TestCase):
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
         cc.bind_qat_device(self)
-        self.build_vhost_app()
+        self.dut.build_dpdk_apps("./examples/vhost_crypto")
         self.bind_vfio_pci()
 
         self.launch_vhost_switch()
@@ -98,17 +98,8 @@ class VirtioCryptodevIpsecTest(TestCase):
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
-        out = user_dut.send_expect("make -j %d install T=%s MAKE_PAUSE=n" % (user_dut.number_of_cores, self.target), "# ", 1200)
-        #user_dut.build_install_dpdk(self.target)
-        out = user_dut.build_dpdk_apps("./examples/ipsec-secgw")
-        self.logger.info(out)
-        self.verify("Error" not in out, "Compilation error 1")
-        self.verify("No such" not in out, "Compilation error 2")
-
-    def build_vhost_app(self):
-        out = self.dut.build_dpdk_apps("./examples/vhost_crypto")
-        self.verify("Error" not in out, "Compilation error 1")
-        self.verify("No such" not in out, "Compilation error 2")
+        user_dut.build_install_dpdk(self.target)
+        user_dut.build_dpdk_apps("./examples/ipsec-secgw")
 
     def get_vhost_eal(self):
         default_eal_opts = {
@@ -374,7 +365,8 @@ class VirtioCryptodevIpsecTest(TestCase):
             self.vm1 = None
 
         self.dut_execut_cmd("^C", "# ")
-        self.dut_execut_cmd("killall -s INT vhost-crypto")
+        self.app_name = self.sample_app[self.sample_app.rfind('/')+1:]
+        self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")
 
