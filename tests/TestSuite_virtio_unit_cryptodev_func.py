@@ -43,8 +43,8 @@ import cryptodev_common as cc
 
 class VirtioCryptodevUnitTest(TestCase):
     def set_up_all(self):
-        self.sample_app= "./examples/vhost_crypto/build/vhost-crypto"
-        self.user_app = "./{target}/app/test".format(target=self.dut.target)
+        self.sample_app = self.dut.apps_name['vhost_crypto']
+        self.user_app = self.dut.apps_name['test']
 
         self.vm0, self.vm0_dut = None, None
         self.dut.skip_setup = True
@@ -58,7 +58,7 @@ class VirtioCryptodevUnitTest(TestCase):
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
         cc.bind_qat_device(self)
-        self.build_vhost_app()
+        self.dut.build_dpdk_apps("./examples/vhost_crypto")
 
         self.vf_assign_method = "vfio-pci"
         self.dut.setup_modules(None, self.vf_assign_method, None)
@@ -85,12 +85,6 @@ class VirtioCryptodevUnitTest(TestCase):
 
     def dut_execut_cmd(self, cmdline, ex='#', timout=30):
         return self.dut.send_expect(cmdline, ex, timout)
-
-    def build_vhost_app(self):
-        out = self.dut_execut_cmd("make -C ./examples/vhost_crypto")
-
-        self.verify("Error" not in out, "compilation error 1")
-        self.verify("No such file" not in out, "compilation error 2")
 
     def get_vhost_eal(self):
         default_eal_opts = {
@@ -202,7 +196,8 @@ class VirtioCryptodevUnitTest(TestCase):
             self.used_dut_port = None
 
         self.dut_execut_cmd("^C", "# ")
-        self.dut_execut_cmd("killall -s INT vhost-crypto")
+        self.app_name = self.sample_app[self.sample_app.rfind('/')+1:]
+        self.dut.send_expect("killall -s INT %s" % self.app_name, "#")
         self.dut_execut_cmd("killall -s INT qemu-system-x86_64")
         self.dut_execut_cmd("rm -r /tmp/*")
 
