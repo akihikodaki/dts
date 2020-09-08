@@ -120,7 +120,7 @@ class TestIpReassembly(TestCase):
         Execute the example app and checks for errors.
         """
 
-        command = ('./examples/ip_reassembly/build/ip_reassembly -c {core_mask} ' +
+        command = ('./%s -c {core_mask} ' % self.app_ip_reassembly_path +
                    '-n {memory_channels} --  -p {dut_port_mask} ' +
                    '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
         self.dut.send_expect(
@@ -373,6 +373,7 @@ class TestIpReassembly(TestCase):
 
         self.tester.send_expect('export PS1="# "', '#')
         self.compile_example_app()
+        self.app_ip_reassembly_path = self.dut.apps_name['ip_reassembly']
         dut_ports = self.dut.get_ports(self.nic)
         dut_port = dut_ports[0]
         self.destination_mac = self.dut.get_mac_address(dut_port)
