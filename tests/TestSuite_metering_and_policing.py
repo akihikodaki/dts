@@ -44,6 +44,7 @@ from settings import HEADER_SIZE
 from dut import Dut
 from pmd_output import PmdOutput
 
+
 class TestMeteringAndPolicing(TestCase):
     scapyCmds = []
 
@@ -154,7 +155,7 @@ class TestMeteringAndPolicing(TestCase):
             portmask = "0x10"
             Corelist = "0x1f"
             Servicecorelist = "0x10"
-        self.path = "./%s/app/testpmd" % self.target
+        self.path = self.dut.apps_name['test-pmd']
         cmd = self.path + " -c %s -s %s -n %d --vdev 'net_softnic0,firmware=%s' \
          -- -i  --rxq=%d --txq=%d --portmask=%s --disable-rss" \
               % (Corelist, Servicecorelist, self.dut.get_memory_channels(), filename, self.port_id, self.port_id, portmask)
