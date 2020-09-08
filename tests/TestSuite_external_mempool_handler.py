@@ -51,6 +51,8 @@ class TestExternalMempool(TestCase):
 
         self.pmdout = PmdOutput(self.dut)
 
+        self.app_test_path = self.dut.apps_name['test']
+
     def set_up(self):
         """
         Run before each test case.
@@ -62,13 +64,13 @@ class TestExternalMempool(TestCase):
         self.dut.build_install_dpdk(self.target)
 
     def verify_unit_func(self):
-        self.dut.send_expect("./%s/app/test -n 4 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s -n 4 -c f" % self.app_test_path, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mempool_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Mempool autotest failed")
 
     def verify_unit_perf(self):
-        self.dut.send_expect("./%s/app/test -n 4 -c f" % self.target, "R.*T.*E.*>.*>", 60)
+        self.dut.send_expect("./%s -n 4 -c f" % self.app_test_path, "R.*T.*E.*>.*>", 60)
         out = self.dut.send_expect("mempool_perf_autotest", "RTE>>", 1200)
         self.dut.send_expect("quit", "# ")
         # may need to compare performance
