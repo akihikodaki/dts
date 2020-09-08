@@ -72,6 +72,7 @@ class TestVhostPmdXstats(TestCase):
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:6]
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """ 
@@ -118,7 +119,7 @@ class TestVhostPmdXstats(TestCase):
         """
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_host, prefix='vhost',
                                                    vdevs=['net_vhost0,iface=vhost-net,queues=2,client=0'])
-        command_line_client = "./%s/app/testpmd " % self.target + eal_param + ' -- -i --nb-cores=2 --rxq=2 --txq=2 --rss-ip'
+        command_line_client = "./%s " % self.app_testpmd_path + eal_param + ' -- -i --nb-cores=2 --rxq=2 --txq=2 --rss-ip'
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
         self.vhost_user.send_expect("set fwd io", "testpmd> ", 120)
         self.vhost_user.send_expect("start", "testpmd> ", 120)
@@ -132,7 +133,7 @@ class TestVhostPmdXstats(TestCase):
                 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,%s' % args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = "./%s/app/testpmd " % self.target + eal_param + " -- -i %s --rss-ip --nb-cores=2 --rxq=2 --txq=2" % \
+        command_line_user = "./%s " % self.app_testpmd_path + eal_param + " -- -i %s --rss-ip --nb-cores=2 --rxq=2 --txq=2" % \
                             args["path"]
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd io", "testpmd> ", 120)
