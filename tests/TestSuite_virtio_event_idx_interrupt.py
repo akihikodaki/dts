@@ -67,6 +67,7 @@ class TestVirtioIdxInterrupt(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -92,7 +93,7 @@ class TestVirtioIdxInterrupt(TestCase):
         """
         # get the core mask depend on the nb_cores number
         self.get_core_mask()
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = ['net_vhost,iface=%s/vhost-net,queues=%d ' % (self.base_dir, self.queues)]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, prefix='vhost', ports=[self.pf_pci], vdevs=vdev)
         para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=%d --txq=%d" % (self.nb_cores, self.queues, self.queues)
