@@ -46,9 +46,9 @@ import random
 from utils import GREEN, convert_int2ip, convert_ip2int
 from exception import ParameterInvalidException
 from multiprocessing import Process
-
 from pktgen import getPacketGenerator
 from config import PktgenConf
+from packet import SCAPY_IMP_CMD
 
 class Tester(Crb):
 
@@ -64,6 +64,7 @@ class Tester(Crb):
 
     def __init__(self, crb, serializer):
         self.NAME = 'tester'
+        self.scapy_session = None
         super(Tester, self).__init__(crb, serializer, self.NAME)
 
         self.bgProcIsRunning = False
@@ -75,11 +76,34 @@ class Tester(Crb):
         self.re_run_time = 0
         self.pktgen = None
         self.ixia_packet_gen = None
+        self.tmp_scapy_module_dir = '/tmp/dep'
+        # prepare for scapy env
+        self.scapy_sessions_li = list()
+        self.scapy_session = self.prepare_scapy_env()
         self.tmp_file = '/tmp/tester/'
         out = self.send_expect('ls -d %s' % self.tmp_file, '# ', verify=True)
         if out == 2:
             self.send_expect('mkdir -p %s' % self.tmp_file, '# ')
 
+    def prepare_scapy_env(self):
+        session_name = 'tester_scapy' if not self.scapy_sessions_li else f'tester_scapy_{random.random()}'
+        session = self.create_session(session_name)
+        self.scapy_sessions_li.append(session)
+        session.send_expect('scapy', '>>> ')
+        file_dir = os.path.dirname(__file__).split(os.path.sep)
+        lib_path = os.path.sep.join(file_dir[:-1]) + '/dep/scapy_modules/'
+        exists_flag = self.alt_session.session.send_expect(f'ls {self.tmp_scapy_module_dir}', '# ', verify=True)
+        if exists_flag == 2:
+            self.alt_session.session.send_expect(f'mkdir -p {self.tmp_scapy_module_dir}', '# ', verify=True)
+        scapy_modules_path = [lib_path+i for i in os.listdir(lib_path) if i.endswith('.py')]
+        path = ' '.join(scapy_modules_path)
+        session.copy_file_to(src=path, dst=self.tmp_scapy_module_dir)
+        session.session.send_expect(f"sys.path.append('{self.tmp_scapy_module_dir}')", ">>> ")
+
+        out = session.session.send_expect(SCAPY_IMP_CMD, '>>> ')
+        if 'ImportError' in out:
+            session.logger.warning(f'entering import error: {out}')
+        return session
 
     def init_ext_gen(self):
         """
@@ -688,7 +712,7 @@ class Tester(Crb):
         Callable function for parallel processes
         """
         print(GREEN("Transmitting and sniffing packets, please wait few minutes..."))
-        return pkt.send_pkt_bg(crb=self, tx_port=intf, count=send_times, loop=0, interval=interval)
+        return pkt.send_pkt_bg_with_pcapfile(crb=self, tx_port=intf, count=send_times, loop=0, inter=interval)
 
     def check_random_pkts(self, portList, pktnum=2000, interval=0.01, allow_miss=True, seq_check=False, params=None):
         """
@@ -716,22 +740,28 @@ class Tester(Crb):
             inst = module.start_tcpdump(self, rxIntf, count=pktnum,
                                         filters=[{'layer': 'network', 'config': {'srcport': '65535'}},
                                                  {'layer': 'network', 'config': {'dstport': '65535'}}])
-
             rx_inst[rxport] = inst
-        filenames = []
+        bg_sessions = list()
         for txport, _ in portList:
             txIntf = self.get_interface(txport)
-            filenames.append(self.parallel_transmit_ptks(pkt=tx_pkts[txport], intf=txIntf, send_times=1, interval=interval))
+            bg_sessions.append(self.parallel_transmit_ptks(pkt=tx_pkts[txport], intf=txIntf, send_times=1, interval=interval))
         # Verify all packets
         sleep(interval * pktnum + 1)
-        flag = True
-        while flag:
-            for i in filenames:
-                flag = self.send_expect('ps -ef |grep %s|grep -v grep' % i, expected='# ')
-                if flag:
+        timeout = 60
+        for i in bg_sessions:
+            while timeout:
+                try:
+                    i.send_expect('', '>>> ', timeout=1)
+                except Exception as e:
+                    print(e)
                     self.logger.info('wait for the completion of sending pkts...')
-                    sleep(1.5)
+                    timeout -= 1
                     continue
+                else:
+                    break
+            else:
+                self.logger.info('exceeded timeout, force to stop background packet sending to avoid dead loop')
+                pkt_c.stop_send_pkt_bg(i)
         prev_id = -1
         for txport, rxport in portList:
             p = module.stop_and_load_tcpdump_packets(rx_inst[rxport])
@@ -814,7 +844,9 @@ class Tester(Crb):
         Kill all scapy process or DPDK application on tester.
         """
         if not self.has_external_traffic_generator():
-            self.alt_session.send_expect('killall scapy 2>/dev/null; echo tester', '# ', 5)
+            out = self.session.send_command('')
+            if '>>>' in out:
+                self.session.send_expect('quit()', '# ', timeout=3)
         if killall:
             super(Tester, self).kill_all()
 
@@ -833,12 +865,20 @@ class Tester(Crb):
                 self.ixia_packet_gen.close()
                 self.ixia_packet_gen = None
 
-        if self.session:
-            self.session.close()
-            self.session = None
+        if self.scapy_sessions_li:
+            for i in self.scapy_sessions_li:
+                if i.session.isalive():
+                    i.session.send_expect("^c", ">>> ", timeout=2)
+                    i.session.send_expect("^d", "#", timeout=2)
+                    i.session.close()
+            self.scapy_sessions_li.clear()
+
         if self.alt_session:
             self.alt_session.close()
             self.alt_session = None
+        if self.session:
+            self.session.close()
+            self.session = None
 
     def crb_exit(self):
         """
