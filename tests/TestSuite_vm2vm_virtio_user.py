@@ -59,6 +59,8 @@ class TestVM2VMVirtioUser(TestCase):
         self.rebuild_flag = False
         self.config_value = 'CONFIG_RTE_LIBRTE_PMD_PCAP'
         self.enable_pcap_lib_in_dpdk(self.dut)
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.app_pdump = self.dut.apps_name['pdump']
 
     def set_up(self):
         """
@@ -98,6 +100,7 @@ class TestVM2VMVirtioUser(TestCase):
         if str.lower(default_value) != 'y':
             client_dut.send_expect("sed -i 's/%s=n$/%s=y/' config/common_base" % (
                     self.config_value, self.config_value), '# ')
+            client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'y'})
             client_dut.build_install_dpdk(self.target)
             self.rebuild_flag = True
 
@@ -108,6 +111,7 @@ class TestVM2VMVirtioUser(TestCase):
         if self.rebuild_flag is True:
             client_dut.send_expect("sed -i 's/%s=y$/%s=n/' config/common_base" %
                         (self.config_value, self.config_value), "#")
+            client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'n'})
             client_dut.build_install_dpdk(self.target)
 
     def launch_vhost_testpmd(self, vdev_num, fixed_prefix=False, fwd_mode='io'):
@@ -117,7 +121,7 @@ class TestVM2VMVirtioUser(TestCase):
         for i in range(vdev_num):
             vdev_params += "--vdev 'net_vhost%d,iface=./vhost-net%d,queues=1' " % (i, i)
 
-        self.command_line = self.dut.target + '/app/testpmd %s ' + \
+        self.command_line = self.app_testpmd_path + ' %s ' + \
             '--socket-mem %s %s -- -i --nb-cores=1 --no-flush-rx'
 
         self.command_line = self.command_line % (
@@ -139,7 +143,7 @@ class TestVM2VMVirtioUser(TestCase):
         if self.check_2M_env:
             eal_params += " --single-file-segments "
         vdev_params = '--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
-        command_line = self.dut.target + "/app/testpmd %s " + \
+        command_line = self.app_testpmd_path + " %s " + \
             "--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s"
         command_line = command_line % (eal_params, self.socket_mem,
                                     vdev_params, ringsize, ringsize, extern_params)
@@ -157,7 +161,7 @@ class TestVM2VMVirtioUser(TestCase):
         if self.check_2M_env:
             eal_params += " --single-file-segments "
         vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
-        command_line = self.dut.target + '/app/testpmd %s ' + \
+        command_line = self.app_testpmd_path + ' %s ' + \
             '--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s'
         command_line = command_line % (eal_params, self.socket_mem,
                                 vdev_params, ringsize, ringsize, extern_params)
@@ -184,7 +188,7 @@ class TestVM2VMVirtioUser(TestCase):
         """
         eal_params = self.dut.create_eal_parameters(cores='Default',
                         prefix=file_prefix, fixed_prefix=True)
-        command_line = self.target + "/app/dpdk-pdump %s -v -- " + \
+        command_line = self.app_pdump + " %s -v -- " + \
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
         self.pdump_session.send_expect(command_line % (eal_params, dump_port, filename), 'Port')
 
