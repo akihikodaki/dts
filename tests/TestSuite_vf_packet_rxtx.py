@@ -287,7 +287,7 @@ class TestVfPacketRxtx(TestCase):
         dst_mac = pmd0_vf0_mac
         self.vm0_testpmd.execute_cmd('clear port stats all')
         pkt = Packet("Ether(dst='%s', src='%s')/IP(len=46)" % (dst_mac, self.tester.get_mac(tx_port)))
-        filename = pkt.send_pkt_bg(crb=self.tester, tx_port=self.tester.get_interface(tx_port), loop=1)
+        session_bg = pkt.send_pkt_bg(crb=self.tester, tx_port=self.tester.get_interface(tx_port), loop=1)
 
         #vf port stop/start can trigger reset action
         for num in range(1000):
@@ -296,7 +296,7 @@ class TestVfPacketRxtx(TestCase):
             self.vm1_testpmd.execute_cmd('port start all')
             time.sleep(0.1)
 
-        pkt.stop_send_pkt_bg(self.tester, filename)
+        pkt.stop_send_pkt_bg(session_bg)
 
         pmd0_vf0_stats = self.vm0_testpmd.get_pmd_stats(port_id_0)
         pmd0_vf1_stats = self.vm0_testpmd.get_pmd_stats(port_id_1)
