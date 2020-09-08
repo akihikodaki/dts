@@ -46,14 +46,12 @@ class TestEFD(TestCase):
         """
         self.tester.extend_external_packet_generator(TestEFD, self)
 
-        out = self.dut.build_dpdk_apps("./examples/server_node_efd")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
+        self.build_server_node_efd()
 
         self.dut_ports = self.dut.get_ports()
-        self.node_app = "./examples/server_node_efd/node/%s/node" % self.target
-        self.server_app = "./examples/server_node_efd/server/%s/server" % self.target
-
+        self.node_app = self.dut.apps_name['node']
+        self.server_app = self.dut.apps_name['server']
+        self.app_test_path = self.dut.apps_name['test']
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
@@ -63,6 +61,13 @@ class TestEFD(TestCase):
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+
+    def build_server_node_efd(self):
+        apps = ['node', 'server']
+        for app in apps:
+            out = self.dut.build_dpdk_apps("./examples/server_node_efd/%s" % app)
+            self.verify("Error" not in out, "Compilation %s error" % app)
+            self.verify("No such" not in out, "Compilation %s error" % app)
 
     def set_up(self):
         """
@@ -74,7 +79,7 @@ class TestEFD(TestCase):
         """
         Run EFD unit test
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
+        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
         out = self.dut.send_expect("efd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -83,7 +88,7 @@ class TestEFD(TestCase):
         """
         Run EFD unit perf test
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
+        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
         out = self.dut.send_expect("efd_perf_autotest", "RTE>>", 120)
         self.logger.info(out)
         self.dut.send_expect("quit", "# ")
@@ -156,9 +161,7 @@ class TestEFD(TestCase):
             # change value length and rebuild dpdk
             self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (%d)/' lib/librte_efd/rte_efd.h" % val_bitnum, "#")
             self.dut.build_install_dpdk(self.target)
-            out = self.dut.build_dpdk_apps("./examples/server_node_efd")
-            self.verify("Error" not in out, "Compilation error")
-            self.verify("No such" not in out, "Compilation error")
+            self.build_server_node_efd()
 
             pps = self._efd_perf_evaluate(2, flow_num)
             self.result_table_add([val_bitnum, 2, "2M",  pps])
@@ -166,9 +169,7 @@ class TestEFD(TestCase):
         self.result_table_print()
         self.dut.send_expect("sed -i -e 's/#define RTE_EFD_VALUE_NUM_BITS .*$/#define RTE_EFD_VALUE_NUM_BITS (8)/' lib/librte_efd/rte_efd.h", "#")
         self.dut.build_install_dpdk(self.target)
-        out = self.dut.build_dpdk_apps("./examples/server_node_efd")
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
+        self.build_server_node_efd()
 
     def _efd_perf_evaluate(self, node_num, flow_num):
         # extended flow number into etgen module
