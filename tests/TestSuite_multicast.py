@@ -83,7 +83,8 @@ class TestMulticast(TestCase):
         self.dut.send_expect(r"sed -i '/mcast_group_table\[\].*{/,/^\}\;/c\\%s' examples/ipv4_multicast/main.c" % repStr, "# ")
 
         # make application
-        out = self.dut.send_expect("make -C examples/ipv4_multicast", "#")
+        out = self.dut.build_dpdk_apps('examples/ipv4_multicast')
+        self.app_ipv4_multicast_path = self.dut.apps_name['ipv4_multicast']
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -100,8 +101,8 @@ class TestMulticast(TestCase):
         cores = self.dut.get_core_list("1S/2C/1T")
         coremask = utils.create_mask(cores)
         payload = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.dut.send_expect("examples/ipv4_multicast/build/ipv4_multicast -c %s -n 4 -- -p %s -q 2" % (
-            coremask, '0x5'), "IPv4_MULTICAST:", 60)
+        self.dut.send_expect("%s -c %s -n 4 -- -p %s -q 2" % (self.app_ipv4_multicast_path,
+                                                              coremask, '0x5'), "IPv4_MULTICAST:", 60)
 
         for flow in list(trafficFlow.keys()):
             for tx_port in trafficFlow[flow][0].split(","):
