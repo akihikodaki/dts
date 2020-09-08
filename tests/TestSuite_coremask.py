@@ -17,7 +17,7 @@ from test_case import TestCase
 # Test class.
 #
 
-command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" """
+command_line = """./%s -c %s -n %d --log-level="lib.eal,8" """
 
 
 class TestCoremask(TestCase):
@@ -37,7 +37,7 @@ class TestCoremask(TestCase):
 
         self.port_mask = utils.create_mask(self.dut.get_ports(self.nic))
         self.mem_channel = self.dut.get_memory_channels()
-
+        self.app_test_path = self.dut.apps_name['test']
         self.all_cores = self.dut.get_core_list("all")
 
     def set_up(self):
@@ -71,7 +71,7 @@ class TestCoremask(TestCase):
 
             core_mask = utils.create_mask([core])
 
-            command = command_line % (self.target, core_mask,
+            command = command_line % (self.app_test_path, core_mask,
                                       self.mem_channel)
 
             out = self.dut.send_expect(command, "RTE>>", 10)
@@ -94,7 +94,7 @@ class TestCoremask(TestCase):
 
         first_core=self.all_cores[0]
 
-        command = command_line % (self.target, core_mask, self.mem_channel)
+        command = command_line % (self.app_test_path, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
         self.verify("EAL: Master lcore %s is ready" % first_core in out,
@@ -116,16 +116,14 @@ class TestCoremask(TestCase):
         """
         Check coremask parsing for more cores than available.
         """
-
-        command_line = """./%s/app/test -c %s -n %d --log-level="lib.eal,8" 2>&1 |tee out"""
+        command_line = """./%s -c %s -n %d --log-level="lib.eal,8" 2>&1 |tee out"""
 
         # Create a extremely big coremask
         big_coremask_size = self.get_available_max_lcore()
         big_coremask = "0x"
         for _ in range(0, big_coremask_size, 4):
             big_coremask += "f"
-
-        command = command_line % (self.target, big_coremask, self.mem_channel)
+        command = command_line % (self.app_test_path, big_coremask, self.mem_channel)
         try:
             out = self.dut.send_expect(command, "RTE>>", 10)
         except:
@@ -156,7 +154,7 @@ class TestCoremask(TestCase):
 
         for coremask in wrong_coremasks:
 
-            command = command_line % (self.target, coremask, self.mem_channel)
+            command = command_line % (self.app_test_path, coremask, self.mem_channel)
             try:
                 out = self.dut.send_expect(command, "# ", 5)
                 self.verify("EAL: invalid coremask" in out,
