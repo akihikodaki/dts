@@ -222,7 +222,8 @@ class TestIPPipeline(TestCase):
 
         out = self.dut.build_dpdk_apps("./examples/ip_pipeline")
         self.verify("Error" not in out, "Compilation error")
-
+        self.app_ip_pipline_path = self.dut.apps_name['ip_pipeline']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.param_flow_dir = self.get_flow_direction_param_of_tcpdump()
 
     def set_up(self):
@@ -244,12 +245,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/route.cli" % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/route.cli"
 
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "30:31:32:33:34:35", 60)
 
         #rule 0 test
@@ -313,12 +313,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/firewall.cli" % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/firewall.cli"
 
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "fwd port 3", 60)
 
         #rule 0 test
@@ -382,12 +381,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/flow.cli" % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/flow.cli"
 
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "fwd port 3", 60)
 
         #rule 0 test
@@ -451,12 +449,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/l2fwd.cli" % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
 
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "fwd port 2", 60)
 
         #rule 0 test
@@ -522,8 +519,6 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i '/mempool MEMPOOL0/a\link LINK0 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        TESTPMD = "./%s/app/testpmd" % self.target
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PF_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         PF_SCRIPT_FILE = "--file-prefix=pf --socket-mem 1024,1024"
@@ -532,14 +527,14 @@ class TestIPPipeline(TestCase):
                     .format(self.sriov_vfs_port[0][0].pci, self.sriov_vfs_port[1][0].pci, self.sriov_vfs_port[2][0].pci, self.sriov_vfs_port[3][0].pci)
         VF_SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
 
-        pf_cmd = "{0} -c 0xf0 -n 4 {1} {2} -- -i".format(TESTPMD, DUT_PF_PORTS, PF_SCRIPT_FILE)
+        pf_cmd = "{0} -c 0xf0 -n 4 {1} {2} -- -i".format(self.app_testpmd_path, DUT_PF_PORTS, PF_SCRIPT_FILE)
         self.dut.send_expect(pf_cmd, "testpmd> ", 60)
         self.dut.send_expect("set vf mac addr 0 0 %s" % self.vf0_mac, "testpmd> ", 30)
         self.dut.send_expect("set vf mac addr 1 0 %s" % self.vf1_mac, "testpmd> ", 30)
         self.dut.send_expect("set vf mac addr 2 0 %s" % self.vf2_mac, "testpmd> ", 30)
         self.dut.send_expect("set vf mac addr 3 0 %s" % self.vf3_mac, "testpmd> ", 30)
 
-        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_VF_PORTS, VF_SCRIPT_FILE)
+        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_VF_PORTS, VF_SCRIPT_FILE)
         self.session_secondary.send_expect(vf_cmd, "fwd port 2", 60)
 
         #rule 0 test
@@ -604,12 +599,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i '/mempool MEMPOOL0/a\link LINK0 dev %s rxq 1 128 MEMPOOL0 txq 1 512 promiscuous on' ./examples/ip_pipeline/examples/l2fwd.cli" % self.sriov_vfs_port[0][0].pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_VF_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.sriov_vfs_port[0][0].pci, self.sriov_vfs_port[1][0].pci, self.sriov_vfs_port[2][0].pci, self.sriov_vfs_port[3][0].pci)
         VF_SCRIPT_FILE = "./examples/ip_pipeline/examples/l2fwd.cli"
 
-        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_VF_PORTS, VF_SCRIPT_FILE)
+        vf_cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_VF_PORTS, VF_SCRIPT_FILE)
         self.session_secondary.send_expect(vf_cmd, "fwd port 2", 60)
 
         #rule 0 test
@@ -671,12 +665,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:02:00.1/%s/' ./examples/ip_pipeline/examples/tap.cli" % self.dut_p1_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/tap.cli"
 
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "fwd port 3", 60)
 
         tap_session = self.dut.new_session()
@@ -729,12 +722,11 @@ class TestIPPipeline(TestCase):
         cmd = "sed -i -e 's/0000:06:00.1/%s/' ./examples/ip_pipeline/examples/rss.cli" % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        IP_PIPELINE = "./examples/ip_pipeline/build/ip_pipeline"
         DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
                     .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
         SCRIPT_FILE = "./examples/ip_pipeline/examples/rss.cli"
 
-        cmd = "{0} -c 0x1f -n 4 {1} -- -s {2}".format(IP_PIPELINE, DUT_PORTS, SCRIPT_FILE)
+        cmd = "{0} -c 0x1f -n 4 {1} -- -s {2}".format(self.app_ip_pipline_path, DUT_PORTS, SCRIPT_FILE)
         self.dut.send_expect(cmd, "PIPELINE3 enable", 60)
 
         #rule 0 test
