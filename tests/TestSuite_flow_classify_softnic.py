@@ -82,7 +82,7 @@ class TestFlowClassifySoftnic(TestCase):
         """
         self.cores = self.dut.get_core_list("all")
         self.set_ports(filename, port_num)
-        TESTPMD = "./%s/app/testpmd" % self.target
+        TESTPMD = self.dut.apps_name['test-pmd']
         cmd="cat /sys/bus/pci/devices/%s/numa_node"%self.dut_p0_pci
         numa_node = int(self.dut.send_expect(cmd, "# ", 60))
         cpu_id = numa_node if numa_node > 0 else 0
@@ -114,7 +114,6 @@ class TestFlowClassifySoftnic(TestCase):
             cmd = "sed -i '4i\link LINK3 dev %s' ./drivers/net/softnic/flow_classify_softnic/%s" % (self.dut_p3_pci, filename)
             self.dut.send_expect(cmd, "# ", 20)
         self.dut.send_expect("sed -i 's/^thread 4 pipeline/thread %d pipeline/g' ./drivers/net/softnic/flow_classify_softnic/%s" % (self.port_num, filename), "# ", 20)
-
 
     def set_table(self, cmd, filename):
         """
@@ -222,10 +221,10 @@ class TestFlowClassifySoftnic(TestCase):
         Check if the rule works.
         """
         self.write_pcap_file(pcap_file, pkt)
+        checklist = []
         if ltype in ["udp", "tcp", "sctp"]:
             filters = "%s %s port %d" % (ltype, src_dst, addr_port)
             sniff_pkts = self.send_and_sniff_pkts(from_port, to_port, pcap_file, filters)
-            checklist = []
             for packet in sniff_pkts:
                 if src_dst == "src":
                     checklist.append(packet.getlayer(2).sport)
@@ -234,7 +233,7 @@ class TestFlowClassifySoftnic(TestCase):
         elif ltype in ["ipv4", "ipv6"]:
             filters = "%s host %s" % (src_dst, addr_port)
             sniff_pkts = self.send_and_sniff_pkts(from_port, to_port, pcap_file, filters)
-            checklist = []
+
             for packet in sniff_pkts:
                 if src_dst == "src":
                     checklist.append(packet.getlayer(1).src)
