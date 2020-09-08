@@ -51,6 +51,8 @@ class TestVhostUserInterrupt(TestCase):
         self.vmac = "00:11:22:33:44:10"
         self.pci_info = self.dut.ports_info[0]['pci']
         self.prepare_l3fwd_power()
+        self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -92,7 +94,7 @@ class TestVhostUserInterrupt(TestCase):
         if self.check_2M_env:
             eal_params += " --single-file-segments"
         para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
-        command_line_client =  self.dut.target + "/app/testpmd " + eal_params + para
+        command_line_client =  self.app_testpmd_path + " " + eal_params + para
         self.virtio_user.send_expect(command_line_client, "testpmd> ", 120)
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
 
@@ -115,7 +117,7 @@ class TestVhostUserInterrupt(TestCase):
             info = {'core': self.core_list_l3fwd[i], 'port': 0, 'queue': i}
             self.verify_info.append(info)
 
-        example_cmd = "./examples/l3fwd-power/build/l3fwd-power "
+        example_cmd = self.app_l3fwd_power_path + " "
         vdev = 'net_vhost0,iface=vhost-net,queues=%d,client=1' % self.queues
         para = " -- -p 0x1 --parse-ptype 1 --config '%s' --interrupt-only" % config_info
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True, ports=[self.pci_info], vdevs=[vdev])
