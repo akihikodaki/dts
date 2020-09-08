@@ -61,7 +61,13 @@ class DPDKdut(Dut):
         Set hugepage on DUT and install modules required by DPDK.
         Configure default ixgbe PMD function.
         """
+        # get apps name of current build type
+        self.build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        if self.build_type not in self.apps_name_conf:
+            raise Exception('please config the apps name in app_name.cfg of build type:%s' % self.build_type)
+        self.config_build_options = {}
         self.target = target
+
         self.set_toolchain(target)
 
         # set env variable
@@ -73,11 +79,7 @@ class DPDKdut(Dut):
 
         self.set_driver_specific_configurations(drivername)
 
-        # get apps name of current build type
-        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
-        if build_type not in self.apps_name_conf:
-            raise Exception('please config the apps name in app_name.cfg of build type:%s' % build_type)
-        self.apps_name = self.apps_name_conf[build_type]
+        self.apps_name = self.apps_name_conf[self.build_type]
         # use the dut target directory instead of 'target' string in app name
         for app in self.apps_name:
             cur_app_path = self.apps_name[app].replace('target', self.target)
@@ -196,11 +198,15 @@ class DPDKdut(Dut):
                              + "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=n/' config/common_base", "# ", 30)
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC=.*$/"
                              + "CONFIG_RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC=y/' config/common_base", "# ", 30)
+            self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                    'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'y'})
         if mode == 'full':
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=.*$/"
                              + "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=n/' config/common_base", "# ", 30)
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC=.*$/"
                              + "CONFIG_RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC=n/' config/common_base", "# ", 30)
+            self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                    'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'n'})
         if mode == 'novector':
             self.send_expect("sed -i -e 's/CONFIG_RTE_IXGBE_INC_VECTOR=.*$/"
                              + "CONFIG_RTE_IXGBE_INC_VECTOR=n/' config/common_base", "# ", 30)
@@ -208,10 +214,48 @@ class DPDKdut(Dut):
                              + "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=n/' config/common_base", "# ", 30)
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_FM10K_INC_VECTOR=.*$/"
                              + "CONFIG_RTE_LIBRTE_FM10K_INC_VECTOR=n/' config/common_base", "# ", 30)
+            self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
+                                    'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                    'RTE_LIBRTE_FM10K_INC_VECTOR': 'n'})
 
     def set_package(self, pkg_name="", patch_list=[]):
         self.package = pkg_name
         self.patches = patch_list
+
+    def set_build_options(self, config_parms, config_file=''):
+        """
+        Set dpdk build options of meson
+        """
+        if len(config_parms) == 0:
+            return options
+        for key in config_parms.keys():
+            value = config_parms[key]
+            if value == '' or value == 'y':
+                value = 1
+            else:
+                # does not need to set the configuration if the value is, mean do not define it
+                if type(value) == str and value != 'n':
+                    value = '\\"%s\\"' % config_parms[key]
+
+            self.config_build_options[key] = value
+
+    def generator_build_option_string(self):
+        """
+        Generator the build option string according to self.config_build_options dictionary
+        """
+        params = []
+        for key in self.config_build_options.keys():
+            value = self.config_build_options[key]
+            if value == 'n':
+                continue
+            else:
+                params.append('-D%s=%s' % (key, value))
+
+        if len(params) == 0:
+            return ''
+        else:
+            args = '-Dc_args=' + '\'%s\'' % ' '.join(params)
+            return args
 
     def build_install_dpdk(self, target, extra_options=''):
         """
@@ -222,6 +266,7 @@ class DPDKdut(Dut):
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=n/CONFIG_RTE_BUILD_SHARED_LIB=y/g' "
                              "config/common_base", '#')
+            self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
         self.send_expect("sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' "
                         "config/common_base", '#')
         build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
@@ -259,13 +304,15 @@ class DPDKdut(Dut):
             self.send_expect("export CFLAGS=-m32", "# ")
             self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ")
 
+        options_config = self.generator_build_option_string()
+
         self.send_expect("rm -rf " + target, "#")
-        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True -Dlibdir=lib --default-library=%s %s" % (
-                        toolchain, default_library, target), "# ", build_time)
-        assert ("Error" not in out), "meson setup failed ..."
+        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s" % (
+                        toolchain, options_config, default_library, target), "# ", build_time)
+        assert ("FAILED" not in out), "meson setup failed ..."
 
         out = self.send_expect("ninja -C %s -j %d" % (target, self.number_of_cores), "# ", build_time)
-        assert ("Error" not in out), "ninja complie failed ..."
+        assert ("FAILED" not in out), "ninja complie failed ...\r\n %s" % out
 
         # copy kmod file to the folder same as make
         out = self.send_expect("find ./%s/kernel/ -name *.ko" % target, "# ", verify=True)
@@ -302,6 +349,12 @@ class DPDKdut(Dut):
     def build_install_dpdk_freebsd_meson(self, target, extra_options):
         # meson build same as linux
         self.build_install_dpdk_linux_meson(target, extra_options)
+
+        # the uio name different with linux, find the nic_uio
+        out = self.send_expect("find ./%s/kernel/ -name nic_uio" % target, "# ", verify=True)
+        self.send_expect("mkdir -p %s/kmod" % target, "# ")
+        if not isinstance(out, int) and len(out) > 0:
+            self.send_expect("cp %s %s/kmod/" % (out, target), "# ")
 
     def build_install_dpdk_freebsd_makefile(self, target, extra_options):
         """
@@ -494,11 +547,10 @@ class DPDKdut(Dut):
             raise Exception('Please config %s file path on conf/app_name.cfg' % name)
 
         example = '/'.join(folder_info[folder_info.index('examples')+1:])
-        self.send_expect("cd %s/%s" % (self.base_dir, self.target), "# ", alt_session=True)
-        out = self.send_expect("meson configure -Dexamples=%s" % example, "# ", alt_session=True)
-        assert ("Error" not in out), "Compilation error..."
-        out = self.send_expect("ninja", "# ", timeout, alt_session=True)
-        assert ("Error" not in out), "Compilation error..."
+        out = self.send_expect("meson configure -Dexamples=%s %s" % (example, self.target), "# ")
+        assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
+        out = self.send_expect("ninja -C %s" % self.target, "# ", timeout)
+        assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
 
         # verify the app build in the config path
         out = self.send_expect('ls %s' % self.apps_name[name], "# ", verify=True)
@@ -589,6 +641,8 @@ class DPDKdut(Dut):
                              + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX4_PMD=n/"
                              + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
+            sel.set_build_options({'RTE_LIBRTE_MLX5_PMD': 'y',
+                                   'RTE_LIBRTE_MLX5_PMD': 'y'})
 
 class DPDKtester(Tester):
 

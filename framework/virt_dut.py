@@ -231,6 +231,7 @@ class VirtDut(DPDKdut):
         for app in self.apps_name:
             cur_app_path = self.apps_name[app].replace('target', self.target)
             self.apps_name[app] = cur_app_path + ' '
+        self.config_build_options = {}
 
     def init_core_list(self):
         self.cores = []
