@@ -84,7 +84,7 @@ class TestInlineIpsec(TestCase):
         self.txnetobj = self.tester.ports_info[self.txport]['port']
         self.txnetobj.enable_jumbo(framesize=ETHER_JUMBO_FRAME_MTU + 100)
 
-        self.path = "./examples/ipsec-secgw/build/ipsec-secgw"
+        self.path = self.dut.apps_name['ipsec-secgw']
         # add print code in IPSEC app
         sedcmd = r"""sed -i -e 's/if (nb_rx > 0)/if (nb_rx > 0) {/g' -e '/\/\* dequeue and process completed crypto-ops \*\//i\\t\t\t}' -e '/process_pkts(qconf, pkts, nb_rx, portid);/i\\t\t\t\tprintf("[debug]receive %llu packet in rxqueueid=%llu\\n",(unsigned long long)nb_rx, (unsigned long long)queueid);' examples/ipsec-secgw/ipsec-secgw.c"""
         self.dut.send_expect(sedcmd, "#", 60)
