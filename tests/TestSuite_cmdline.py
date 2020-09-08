@@ -50,14 +50,14 @@ class TestCmdline(TestCase):
             At least one core in DUT
         """
         out = self.dut.build_dpdk_apps('examples/cmdline')
-        self.verify('make: Leaving directory' in out, "Compilation failed")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
         # Run cmdline app
         cores = self.dut.get_core_list('1S/1C/1T')
         coreMask = utils.create_mask(cores)
-        self.dut.send_expect("./examples/cmdline/build/cmdline -n 1 -c " + coreMask, "> ", 10)
+        self.app_cmdline_path = self.dut.apps_name['cmdline']
+        self.dut.send_expect("./%s -n 1 -c " % self.app_cmdline_path + coreMask, "> ", 10)
 
     def set_up(self):
         """
