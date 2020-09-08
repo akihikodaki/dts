@@ -80,6 +80,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.number_of_ports = 1
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -141,7 +142,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         """
         Start testpmd on vhost
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = 'net_vhost0,iface=vhost-net,queues=1'
         para = " -- -i --no-numa --socket-num=%d" % self.ports_socket
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', ports=[self.pci_info], vdevs=[vdev])
@@ -153,7 +154,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         """
         Start testpmd on virtio
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1" if not packed else "net_virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,packed_vq=1,queues=1"
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio_user, prefix='virtio-user', ports=[self.pci_info], vdevs=[vdev])
         command_line_user = testcmd + eal_params + ' --no-huge -m 1024 -- -i'
