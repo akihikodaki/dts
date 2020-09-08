@@ -92,6 +92,7 @@ class TestVirtioPVPRegression(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -250,7 +251,7 @@ class TestVirtioPVPRegression(TestCase):
         """
         Launch the vhost testpmd
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = [r"'eth_vhost0,iface=%s/vhost-net,queues=%d,client=1'" % (self.base_dir, self.queues_number)]
         eal_params = self.dut.create_eal_parameters(cores=self.cores, prefix='vhost', ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d  --txd=1024 --rxd=1024" % (self.queues_number, self.queues_number, self.queues_number)
@@ -277,7 +278,7 @@ class TestVirtioPVPRegression(TestCase):
             opt_args = ''
             if virtio_path in ['mergeable', 'normal']:
                 opt_args = '--enable-hw-vlan-strip'
-            vm_testpmd = self.dut.target + "/app/testpmd -c 0x7 -n 4 " \
+            vm_testpmd = self.app_testpmd_path + " -c 0x7 -n 4 " \
                 "-- -i %s --nb-cores=%s " \
                 "--rxq=%s --txq=%s --txd=1024 --rxd=1024"
             vm_testpmd = vm_testpmd % (opt_args, self.queues_number,
