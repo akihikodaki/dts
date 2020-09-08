@@ -51,8 +51,7 @@ class TestKeepAlive(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
-
-        self.path = "./examples/l2fwd-keepalive/build/l2fwd-keepalive" 
+        self.app_l2fwd_keepalive_path = self.dut.apps_name['l2fwd-keepalive']
 
         # build sample app  
         out = self.dut.build_dpdk_apps("./examples/l2fwd-keepalive")
@@ -69,7 +68,7 @@ class TestKeepAlive(TestCase):
         """
         Verify netmap compatibility with one port 
         """ 
-        cmd = self.path + " -c f -n 4 -- -q 8 -p ffff -K 10"
+        cmd = self.app_l2fwd_keepalive_path + " -c f -n 4 -- -q 8 -p ffff -K 10"
       
         self.dut.send_expect(cmd,"Port statistics",60)
 
