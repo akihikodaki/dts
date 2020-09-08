@@ -62,6 +62,8 @@ class TestVirtioUserInterrupt(TestCase):
         self.prepare_l3fwd_power()
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.tx_interface = self.tester.get_interface(self.tx_port)
+        self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -96,7 +98,7 @@ class TestVirtioUserInterrupt(TestCase):
 
     def launch_l3fwd(self, path, packed=False):
         self.core_interrupt = self.core_list_l3fwd[0]
-        example_para = "./examples/l3fwd-power/build/l3fwd-power "
+        example_para = "./%s " % self.app_l3fwd_power_path
         vdev = "virtio_user0,path=%s,cq=1" % path if not packed else "virtio_user0,path=%s,cq=1,packed_vq=1" % path
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
         if self.check_2M_env:
@@ -116,7 +118,7 @@ class TestVirtioUserInterrupt(TestCase):
         """
         start testpmd on vhost side
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0"]
         para = " -- -i --rxq=1 --txq=1"
         if len(pci) == 0:
@@ -133,7 +135,7 @@ class TestVirtioUserInterrupt(TestCase):
         """
         start testpmd on virtio side
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net" if not packed else "net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1"
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='virtio', no_pci=True, vdevs=[vdev])
         para = " -- -i --txd=512 --rxd=128 --tx-offloads=0x00"
