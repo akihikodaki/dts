@@ -17,7 +17,7 @@ from scapy.data import ETHER_TYPES
 class Dot1BR(Packet):
     name = "802.1BR"
     aliastypes = [ Ether ]
-    fields_desc =  [ 
+    fields_desc =  [
                      BitField("EPCP", 0, 3),
                      BitField("EEDI", 0, 1),
                      BitField("IngressECIDbase", 0, 12),

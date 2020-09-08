@@ -1,5 +1,5 @@
 ## This file is part of Scapy
-## 
+##
 ## Copyright (C) Min Cao <min.cao@intel.com>
 
 """
@@ -27,8 +27,8 @@ class NVGRE(Packet):
                    X3BytesField("TNI", 1),
                    ByteField("reserved1", 0)]
 
-    def mysummary(self):          
-        return self.sprintf("NVGRE (tni=%NVGRE.tni%)") 
+    def mysummary(self):
+        return self.sprintf("NVGRE (tni=%NVGRE.tni%)")
 
 
 bind_layers(NVGRE, Ether, protocoltype=0x6558)

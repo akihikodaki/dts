@@ -1,3 +1,5 @@
+#! /usr/bin/env python
+
 # Copyright (C) 2018 Leonardo Monteiro <decastromonteiro@gmail.com>
 #               2017 Alexis Sultan    <alexis.sultan@sfr.com>
 #               2017 Alessio Deiana <adeiana@gmail.com>
@@ -9,7 +11,7 @@
 # scapy.contrib.description = GPRS Tunneling Protocol (GTP)
 # scapy.contrib.status = loads
 
-
+from __future__ import absolute_import
 import struct
 
 
@@ -20,9 +22,11 @@ from scapy.fields import BitEnumField, BitField, ByteEnumField, ByteField, \
     IPField, PacketListField, ShortField, StrFixedLenField, StrLenField, \
     XBitField, XByteField, XIntField
 from scapy.layers.inet import IP, UDP
-from scapy.layers.inet6 import IP6Field
+from scapy.layers.inet6 import IPv6, IP6Field
+from scapy.layers.ppp import PPP
 from scapy.modules.six.moves import range
-from scapy.packet import bind_layers, Packet, Raw
+from scapy.packet import bind_layers, bind_bottom_up, bind_top_down, \
+    Packet, Raw
 from scapy.volatile import RandInt, RandIP, RandNum, RandString
 
 
@@ -144,6 +148,7 @@ ExtensionHeadersTypes = {
     1: "Reserved",
     2: "Reserved",
     64: "UDP Port",
+    133: "PDU Session Container",
     192: "PDCP PDU Number",
     193: "Reserved",
     194: "Reserved"
@@ -193,6 +198,19 @@ class GTP_ExtensionHeader(Packet):
 class GTP_UDPPort_ExtensionHeader(GTP_ExtensionHeader):
     fields_desc = [ByteField("length", 0x40),
                    ShortField("udp_port", None),
+                   ByteEnumField("next_ex", 0, ExtensionHeadersTypes), ]
+
+
+class GTP_PDUSession_ExtensionHeader(GTP_ExtensionHeader):
+    fields_desc = [ByteField("length", 0x02),
+                   BitField("pdu_type", 0, 4),
+                   BitField("spare0", 0, 4),
+                   BitField("ppp", 0, 1),
+                   BitField("rqi", 0, 1),
+                   BitField("qos_flow", 0, 6),
+                   BitField("ppi", 0, 3),
+                   BitField("spare1", 0, 5),
+                   BitField("reserved", 0, 24),
                    ByteEnumField("next_ex", 0, ExtensionHeadersTypes), ]
 
 
@@ -251,6 +269,19 @@ class GTP_U_Header(GTPHeader):
     # GTP-U protocol is used to transmit T-PDUs between GSN pairs (or between an SGSN and an RNC in UMTS),  # noqa: E501
     # encapsulated in G-PDUs. A G-PDU is a packet including a GTP-U header and a T-PDU. The Path Protocol  # noqa: E501
     # defines the path and the GTP-U header defines the tunnel. Several tunnels may be multiplexed on a single path.  # noqa: E501
+
+    def guess_payload_class(self, payload):
+        # Snooped from Wireshark
+        # https://github.com/boundary/wireshark/blob/07eade8124fd1d5386161591b52e177ee6ea849f/epan/dissectors/packet-gtp.c#L8195  # noqa: E501
+        if self.gtp_type == 255:
+            sub_proto = orb(payload[0])
+            if sub_proto >= 0x45 and sub_proto <= 0x4e:
+                return IP
+            elif (sub_proto & 0xf0) == 0x60:
+                return IPv6
+            else:
+                return PPP
+        return GTPHeader.guess_payload_class(self, payload)
 
 
 # Some gtp_types have to be associated with a certain type of header
@@ -706,7 +737,8 @@ class IE_ExtensionHeaderList(IE_Base):
     name = "Extension Header List"
     fields_desc = [ByteEnumField("ietype", 141, IEType),
                    FieldLenField("length", None, length_of="extension_headers"),  # noqa: E501
-                   FieldListField("extension_headers", [64, 192], ByteField("", 0))]  # noqa: E501
+                   #FieldListField("extension_headers", [64, 192], ByteField("", 0))]  # noqa: E501
+                   FieldListField("extension_headers", [64, 133, 192], ByteField("", 0))]  # noqa: E501
 
 
 class IE_NotImplementedTLV(Packet):
@@ -885,8 +917,9 @@ class GTPmorethan1500(Packet):
 
 
 # Bind GTP-C
-bind_layers(UDP, GTPHeader, dport=2123)
-bind_layers(UDP, GTPHeader, sport=2123)
+bind_bottom_up(UDP, GTPHeader, dport=2123)
+bind_bottom_up(UDP, GTPHeader, sport=2123)
+bind_layers(UDP, GTPHeader, dport=2123, sport=2123)
 bind_layers(GTPHeader, GTPEchoRequest, gtp_type=1, S=1)
 bind_layers(GTPHeader, GTPEchoResponse, gtp_type=2, S=1)
 bind_layers(GTPHeader, GTPCreatePDPContextRequest, gtp_type=16)
@@ -898,10 +931,14 @@ bind_layers(GTPHeader, GTPDeletePDPContextResponse, gtp_type=21)
 bind_layers(GTPHeader, GTPPDUNotificationRequest, gtp_type=27)
 bind_layers(GTPHeader, GTPSupportedExtensionHeadersNotification, gtp_type=31, S=1)  # noqa: E501
 bind_layers(GTPHeader, GTP_UDPPort_ExtensionHeader, next_ex=64, E=1)
+bind_layers(GTPHeader, GTP_PDUSession_ExtensionHeader, next_ex=133, E=1)
 bind_layers(GTPHeader, GTP_PDCP_PDU_ExtensionHeader, next_ex=192, E=1)
 
 # Bind GTP-U
-bind_layers(UDP, GTP_U_Header, dport=2152)
-bind_layers(UDP, GTP_U_Header, sport=2152)
+bind_bottom_up(UDP, GTP_U_Header, dport=2152)
+bind_bottom_up(UDP, GTP_U_Header, sport=2152)
+bind_layers(UDP, GTP_U_Header, dport=2152, sport=2152)
 bind_layers(GTP_U_Header, GTPErrorIndication, gtp_type=26, S=1)
-bind_layers(GTP_U_Header, IP, gtp_type=255)
+bind_top_down(GTP_U_Header, IP, gtp_type=255)
+bind_top_down(GTP_U_Header, IPv6, gtp_type=255)
+bind_top_down(GTP_U_Header, PPP, gtp_type=255)

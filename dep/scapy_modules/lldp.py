@@ -89,7 +89,7 @@ class LLDPOrgSpecGeneric(LLDPGeneric):
     fields_desc = [BitField("type", 127, 7),
                    BitFieldLenField("length", None, 9, length_of="value"),
                    X3BytesField("oui", 0),
-                   ByteField("subtype", 0), 
+                   ByteField("subtype", 0),
                    StrLenField("value", "", length_from=lambda x: x.length - 4)]
 
 
