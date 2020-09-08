@@ -42,7 +42,6 @@ import packet
 
 class TestL3fwdacl(TestCase):
 
-    exe_path = "./examples/l3fwd-acl/build"
     all_ipv4_addresses = "0.0.0.0/0"
     all_ipv6_addresses = "0:0:0:0:0:0:0:0/0"
     all_ports = "0 : 65535"
@@ -173,8 +172,8 @@ class TestL3fwdacl(TestCase):
         if scalar:
             extra_args = '--scalar'
 
-        cmdline = '%s/l3fwd-acl -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" %s' % \
-                  (TestL3fwdacl.exe_path, self.core_mask, self.dut.get_memory_channels(),
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" %s' % \
+                  (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db,
                    TestL3fwdacl.acl_ipv6_db,
@@ -592,8 +591,8 @@ class TestL3fwdacl(TestCase):
         rule_list.append(TestL3fwdacl.default_rule)
         self.create_acl_ipv4_db(rule_list)
 
-        cmdline = '%s/l3fwd-acl -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"' % \
-                  (TestL3fwdacl.exe_path, self.core_mask, self.dut.get_memory_channels(),
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"' % \
+                  (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
 
@@ -611,8 +610,8 @@ class TestL3fwdacl(TestCase):
         rule_list.append(TestL3fwdacl.default_rule)
         self.create_acl_ipv6_db(rule_list)
 
-        cmdline = '%s/l3fwd-acl -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"' % \
-                  (TestL3fwdacl.exe_path, self.core_mask, self.dut.get_memory_channels(),
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s"' % \
+                  (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
 
@@ -654,6 +653,7 @@ class TestL3fwdacl(TestCase):
 
         # compile l3fwd-acl
         out = self.dut.build_dpdk_apps("examples/l3fwd-acl")
+        self.app_l3fwd_acl_path = self.dut.apps_name['l3fwd-acl']
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -840,8 +840,8 @@ class TestL3fwdacl(TestCase):
         rule_list_ipv4.append(TestL3fwdacl.invalid_port_rule_ipv4)
         self.create_acl_ipv4_db(rule_list_ipv4)
 
-        cmdline = '%s/l3fwd-acl -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
-                  (TestL3fwdacl.exe_path, self.core_mask, self.dut.get_memory_channels(),
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
+                  (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
 
@@ -852,8 +852,8 @@ class TestL3fwdacl(TestCase):
         rule_list_ipv6.append(TestL3fwdacl.invalid_port_rule_ipv6)
         self.create_acl_ipv6_db(rule_list_ipv6)
 
-        cmdline = '%s/l3fwd-acl -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
-                  (TestL3fwdacl.exe_path, self.core_mask, self.dut.get_memory_channels(),
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
+                  (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
 
