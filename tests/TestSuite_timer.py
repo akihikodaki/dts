@@ -52,7 +52,7 @@ class TestTimer(TestCase):
         timer prerequisites
         """
         out = self.dut.build_dpdk_apps('examples/timer')
-
+        self.app_timer_path = self.dut.apps_name['timer']
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
@@ -72,7 +72,7 @@ class TestTimer(TestCase):
         coreMask = utils.create_mask(cores)
 
         # run timer on the background
-        cmdline = "./examples/timer/build/timer -n 1 -c " + coreMask + " &"
+        cmdline = "./%s -n 1 -c " % self.app_timer_path + coreMask + " &"
 
         self.dut.send_expect(cmdline, "# ", 1)
         time.sleep(15)
