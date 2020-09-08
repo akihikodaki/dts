@@ -54,8 +54,7 @@ class TestLinkStatusInterrupt(TestCase):
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
         self.portmask = utils.create_mask(self.dut_ports)
-
-        self.path = "./examples/link_status_interrupt/build/link_status_interrupt"
+        self.app_link_status_interrupt_path = self.dut.apps_name['link_status_interrupt']
 
         # build sample app
         out = self.dut.build_dpdk_apps("./examples/link_status_interrupt")
@@ -95,7 +94,7 @@ class TestLinkStatusInterrupt(TestCase):
         """
 
         if self.drivername == "igb_uio":
-            cmdline = self.path + " -c %s -n %s -- -p %s " % (
+            cmdline = self.app_link_status_interrupt_path + " -c %s -n %s -- -p %s " % (
                 self.coremask, self.dut.get_memory_channels(), self.portmask)
             for mode in self.basic_intr_mode:
                 self.dut.send_expect("rmmod -f igb_uio", "#", 20)
@@ -111,7 +110,7 @@ class TestLinkStatusInterrupt(TestCase):
                 self.dut.send_expect("^C", "#", 60)
         elif self.drivername == "vfio-pci":
             for mode in self.basic_intr_mode:
-                cmdline = self.path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
+                cmdline = self.app_link_status_interrupt_path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
                     self.coremask, self.dut.get_memory_channels(), mode, self.portmask)
                 self.dut.send_expect(cmdline, "statistics", 120)
                 self.set_link_status_and_verify(self.dut_ports[0], 'Down')
@@ -124,7 +123,7 @@ class TestLinkStatusInterrupt(TestCase):
         sent packet, check packets received.
         """
         if self.drivername == "igb_uio":
-            cmdline = self.path + " -c %s -n %s -- -p %s " % (
+            cmdline = self.app_link_status_interrupt_path + " -c %s -n %s -- -p %s " % (
                 self.coremask, self.dut.get_memory_channels(), self.portmask)
             for mode in self.basic_intr_mode:
                 self.dut.send_expect("rmmod -f igb_uio", "#", 20)
@@ -148,7 +147,7 @@ class TestLinkStatusInterrupt(TestCase):
                 self.dut.send_expect("^C", "#", 60)
         elif self.drivername == "vfio-pci":
             for mode in self.basic_intr_mode:
-                cmdline = self.path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
+                cmdline = self.app_link_status_interrupt_path + " -c %s -n %s --vfio-intr=%s -- -p %s" % (
                     self.coremask, self.dut.get_memory_channels(), mode, self.portmask)
                 self.dut.send_expect(cmdline, "Aggregate statistics", 60)
                 for port in self.dut_ports:
