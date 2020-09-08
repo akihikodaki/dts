@@ -55,8 +55,8 @@ class TestSkeleton(TestCase):
         self.coremask = utils.create_mask(cores)
         
         self.mac = self.dut.get_mac_address(self.dut_ports[0])
-        self.path = "./examples/skeleton/build/basicfwd"
-
+        self.app_skeleton_path = self.dut.apps_name['skeleton']
+        self.path = "./%s/build/basicfwd" % self.app_skeleton_path
         out = self.dut.build_dpdk_apps("./examples/skeleton")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
