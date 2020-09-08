@@ -182,7 +182,7 @@ class TestVfPortStartStop(TestCase):
     def tear_down(self):
 
         if self.send_pks_session:
-            self.pkts.stop_send_pkt_bg(self.tester, self.send_pks_session)
+            self.pkts.stop_send_pkt_bg(self.send_pks_session)
         if self.setup_1pf_2vf_1vm_env_flag == 1:
             self.destroy_1pf_2vf_1vm_env()
 
