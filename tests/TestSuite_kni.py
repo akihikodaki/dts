@@ -263,7 +263,8 @@ class TestKni(TestCase):
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_KNI_KMOD=n$/CONFIG_RTE_KNI_KMOD=y/' config/common_base", "# ", 30)
         self.dut.build_install_dpdk(self.target)
 
-        out = self.dut.build_dpdk_apps("./examples/kni/")
+        out = self.dut.build_dpdk_apps("./examples/kni")
+        self.app_kni_path = self.dut.apps_name['kni']
         self.verify('Error' not in out, "Compilation failed")
         p0_pci = self.dut.ports_info[0]['pci']
         numa_node = int(self.dut.send_expect("cat /sys/bus/pci/devices/%s/numa_node"%p0_pci, "# ", 30))
@@ -341,8 +342,8 @@ class TestKni(TestCase):
         config_param = self.build_config_param()
 
         out_kni = self.dut.send_expect(
-            './examples/kni/build/kni -c %s -n %d -- -P -p %s %s -m &' %
-            (core_mask, self.dut.get_memory_channels(), port_mask, config_param),
+            './%s -c %s -n %d -- -P -p %s %s -m &' %
+            (self.app_kni_path, core_mask, self.dut.get_memory_channels(), port_mask, config_param),
             "Link Up", 20)
 
         time.sleep(5)
