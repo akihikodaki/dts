@@ -265,6 +265,10 @@ def dts_log_testsuite(duts, tester, suite_obj, log_handler, test_classname):
     """
     log_handler.config_suite(test_classname, 'dts')
     tester.logger.config_suite(test_classname, 'tester')
+    if hasattr(tester, 'logger_alt'):
+        tester.logger_alt.config_suite(test_classname, 'tester')
+    if hasattr(tester, 'logger_scapy'):
+        tester.logger_scapy.config_suite(test_classname, 'tester')
 
     for dutobj in duts:
         dutobj.logger.config_suite(test_classname, 'dut')
