@@ -103,8 +103,8 @@ class TestIpfrag(TestCase):
         pat = re.compile("P([0123])")
 
         # Prepare long prefix match table, replace P(x) port pattern
-        lpmStr_ipv4 = "static struct l3fwd_ipv4_route \
-l3fwd_ipv4_route_array[] = {\\\n"
+        lpmStr_ipv4 = "static struct l3fwd_ipv4_route " \
+                      "l3fwd_ipv4_route_array[] = {\\\n"
         rtLpmTbl = list(lpm_table_ipv4)
         for idx in range(len(rtLpmTbl)):
             rtLpmTbl[idx] = pat.sub(self.portRepl, rtLpmTbl[idx])
@@ -134,8 +134,10 @@ l3fwd_ipv4_route_array[] = {\\\n"
             eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         # run ipv4_frag
-        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d %s -- -p %s -q %s" % (
-            coremask, self.dut.get_memory_channels(), eal_param, portmask, int(numPortThread)), "Link Up", 120)
+        self.app_ip_fragmentation_path = self.dut.apps_name['ip_fragmentation']
+        self.dut.send_expect("%s -c %s -n %d %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, coremask,
+                                                                   self.dut.get_memory_channels(), eal_param, portmask,
+                                                                   int(numPortThread)), "Link Up", 120)
 
         time.sleep(2)
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
@@ -310,8 +312,9 @@ l3fwd_ipv4_route_array[] = {\\\n"
             eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         self.dut.send_expect("^c", "# ", 120)
-        self.dut.send_expect("examples/ip_fragmentation/build/ip_fragmentation -c %s -n %d %s -- -p %s -q %s" % (
-            core_mask, self.dut.get_memory_channels(), eal_param, portmask, num_pthreads), "IP_FRAG:", 120)
+        self.dut.send_expect("%s -c %s -n %d %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, core_mask,
+                                                                   self.dut.get_memory_channels(), eal_param, portmask,
+                                                                   num_pthreads), "IP_FRAG:", 120)
 
         result = [2, lcore, num_pthreads]
         for size in size_list:
