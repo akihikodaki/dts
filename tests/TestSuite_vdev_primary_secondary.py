@@ -64,6 +64,8 @@ class TestVdevPrimarySecondary(TestCase):
         self.verify(len(self.coremask) >= 6, "The machine has too few cores.")
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pci_info = self.dut.ports_info[0]['pci']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.app_symmetric_mp_path = self.dut.apps_name['symmetric_mp']
 
     def set_up(self):
         """
@@ -104,7 +106,7 @@ class TestVdevPrimarySecondary(TestCase):
         """
         launch testpmd
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev1 = " --vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d,client=1'" % (self.base_dir, self.queues)
         vdev2 = " --vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d,client=1'" % (self.base_dir, self.queues)
         eal_params = self.dut.create_eal_parameters(cores="1S/12C/1T", prefix='vhost', ports=[self.pci_info])
@@ -116,8 +118,8 @@ class TestVdevPrimarySecondary(TestCase):
 
 
     def launch_examples(self):
-        example_cmd_auto = "./examples/multi_process/symmetric_mp/build/symmetric_mp -l 0 -n %d --proc-type=auto -- -p 3 --num-procs=%d --proc-id=0"
-        example_cmd_secondary = "./examples/multi_process/symmetric_mp/build/symmetric_mp -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
+        example_cmd_auto = self.app_symmetric_mp_path + " -l 0 -n %d --proc-type=auto -- -p 3 --num-procs=%d --proc-id=0"
+        example_cmd_secondary = self.app_symmetric_mp_path + " -l 1 -n %d --proc-type=secondary -- -p 3 --num-procs=%d --proc-id=1"
         final_cmd_first = example_cmd_auto % (self.mem_channels, self.queues)
         final_cmd_secondary = example_cmd_secondary % (self.mem_channels, self.queues)
         self.vhost_first.send_expect(final_cmd_first, "Lcore", 120)
