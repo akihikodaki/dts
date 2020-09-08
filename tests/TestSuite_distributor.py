@@ -54,7 +54,8 @@ class TestDistributor(TestCase):
         self.verify("No such" not in out, "Compilation error")
 
         self.dut_ports = self.dut.get_ports()
-        self.app = "./examples/distributor/build/distributor_app"
+        self.app_distributor_path = self.dut.apps_name['distributor']
+        self.app_test_path = self.dut.apps_name['test']
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
@@ -75,7 +76,7 @@ class TestDistributor(TestCase):
         """
         Run distributor unit test
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
+        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
         out = self.dut.send_expect("distributor_autotest", "RTE>>", 30)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -84,7 +85,7 @@ class TestDistributor(TestCase):
         """
         Run distributor unit perf test
         """
-        self.dut.send_expect("./%s/app/test -n 1 -c f" % self.target, "RTE>>", 60)
+        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
         out = self.dut.send_expect("distributor_perf_autotest", "RTE>>", 120)
         cycles_single = self.strip_cycles(out, "single")
         cycles_burst = self.strip_cycles(out, "burst")
@@ -132,7 +133,7 @@ class TestDistributor(TestCase):
             if len(cores) < (worker_num + 4):
                 cores = self._get_thread_lcore(worker_num + 4)
 
-            cmd = cmd_fmt % (self.app, utils.create_mask(cores),
+            cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
                              self.dut.get_memory_channels(),
                              self.dut.get_port_pci(self.dut_ports[0]))
 
@@ -172,7 +173,7 @@ class TestDistributor(TestCase):
         max_workers = int(m.group(1))
         cores = self._get_thread_lcore(max_workers - 1 + 4)
 
-        cmd = cmd_fmt % (self.app, utils.create_mask(cores),
+        cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
                          self.dut.get_memory_channels(),
                          self.dut.get_port_pci(self.dut_ports[0]))
 
@@ -193,7 +194,7 @@ class TestDistributor(TestCase):
         socket = self.dut.get_numa_id(self.dut_ports[0])
         cores = self.dut.get_core_list("1S/%dC/1T" % (2 + 4), socket)
 
-        cmd = cmd_fmt % (self.app, utils.create_mask(cores),
+        cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
                          self.dut.get_memory_channels(),
                          self.dut.get_port_pci(self.dut_ports[0]),
                          self.dut.get_port_pci(self.dut_ports[1]))
