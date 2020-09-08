@@ -231,7 +231,7 @@ class TestMultiplePthread(TestCase):
         Run after each test case.
         """
         if len(self.send_sessions) != 0:
-            self.pkt.stop_send_pkt_bg(self.tester, self.send_sessions)
+            self.pkt.stop_send_pkt_bg(self.send_sessions)
         self.dut.kill_all()
 
     def tear_down_all(self):
