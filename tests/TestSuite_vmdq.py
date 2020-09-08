@@ -31,9 +31,11 @@ class TestVmdq(TestCase):
         self.dut.build_install_dpdk(self.target)
         # Update the max queue per port for Fortville.
         self.dut.send_expect("sed -i 's/define MAX_QUEUES 128/define MAX_QUEUES 1024/' ./examples/vmdq/main.c", "#", 5)
-        out = self.dut.send_expect("make -C examples/vmdq", "#", 10)
+        # out = self.dut.send_expect("make -C examples/vmdq", "#", 10)
+        out = self.dut.build_dpdk_apps('examples/vmdq')
         self.verify("Error" not in out, "Compilation error")
 
+        self.app_vmdq_path = self.dut.apps_name['vmdq']
         self.frame_size = 64
         self.header_size = HEADER_SIZE['ip'] + HEADER_SIZE['eth']
         self.destmac_port = ["52:54:00:12:0%d:00" % i for i in self.dut_ports]
@@ -86,8 +88,8 @@ class TestVmdq(TestCase):
         for i in self.dut_ports:
             eal_param += " -w %s" % self.dut.ports_info[i]['pci']
         # Run the application
-        self.dut.send_expect("./examples/vmdq/build/vmdq_app -c %s -n 4 %s -- -p %s --nb-pools %s --enable-rss" %
-                             (core_mask, eal_param, port_mask, str(npools)), "reading queues", 120)
+        self.dut.send_expect("./%s -c %s -n 4 %s -- -p %s --nb-pools %s --enable-rss" %
+                             (self.app_vmdq_path, core_mask, eal_param, port_mask, str(npools)), "reading queues", 120)
 
     def get_tgen_input(self, prios):
         """
