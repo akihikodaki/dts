@@ -46,6 +46,7 @@ class TestHelloWorld(TestCase):
             helloworld build pass
         """
         out = self.dut.build_dpdk_apps('examples/helloworld')
+        self.app_helloworld_path = self.dut.apps_name['helloworld']
 
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
@@ -66,7 +67,7 @@ class TestHelloWorld(TestCase):
         # get the mask for the first core
         cores = self.dut.get_core_list('1S/1C/1T')
         coreMask = utils.create_mask(cores)
-        cmdline = "./examples/helloworld/build/helloworld -n 1 -c " + coreMask
+        cmdline = "./%s -n 1 -c " % self.app_helloworld_path + coreMask
         out = self.dut.send_expect(cmdline, "# ", 30)
         self.verify("hello from core %s" % cores[0] in out, "EAL not started on core%s" % cores[0])
 
@@ -87,7 +88,7 @@ class TestHelloWorld(TestCase):
 
         coreMask = utils.create_mask(cores[:available_max_lcore - 1])
 
-        cmdline = "./examples/helloworld/build/helloworld -n 1 -c " + coreMask
+        cmdline = "./%s -n 1 -c " % self.app_helloworld_path + coreMask
         out = self.dut.send_expect(cmdline, "# ", 50)
         for i in range(available_max_lcore - 1):
             self.verify("hello from core %s" % cores[i] in out, "EAL not started on core%s" % cores[i])
