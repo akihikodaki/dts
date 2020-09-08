@@ -69,6 +69,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.peer_pci_setup = False
         self.prepare_dpdk()
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         #
@@ -112,7 +113,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         cores_list = self.dut.get_core_list(cores_config, socket=self.socket)
         self.verify(len(cores_list) >= cores_number, "Failed to get cores list")
         core_mask = cores_list[0:2]
-        testcmd = self.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net," % self.virtio_mac
         eal_params = self.dut.create_eal_parameters(cores=core_mask, ports=[self.pci0])
         para = " queue_size=1024,queues=%s -- -i --rxd=1024 --txd=1024 %s" % (self.queue, comment)
@@ -127,7 +128,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
             self.dut.send_expect("taskset -pc %s %s" % (cores_list[-2], vhost_pid_list[2]), "# ")
 
     def launch_testpmd_exception_path(self):
-        testcmd = self.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "--vdev=virtio_user0,mac=%s,path=/dev/vhost-net,queue_size=1024" % self.virtio_mac
         eal_params = self.dut.create_eal_parameters(cores=self.cores, ports=[self.pci])
         para = " -- -i --rxd=1024 --txd=1024"
