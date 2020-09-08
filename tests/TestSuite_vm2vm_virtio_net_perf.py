@@ -65,6 +65,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.socket_mem = ','.join(['2048']*socket_num)
         self.vhost = self.dut.new_session(suite="vhost")
         self.pmd_vhost = PmdOutput(self.dut, self.vhost)
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -84,7 +85,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
             zerocopy_arg = ",dequeue-zero-copy=1"
         else:
             zerocopy_arg = ""
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " % (self.base_dir, zerocopy_arg)
         vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " % (self.base_dir, zerocopy_arg)
         eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=True)
