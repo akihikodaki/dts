@@ -93,15 +93,18 @@ class TestVxlanSample(TestCase):
         self.pf_mac = self.dut.get_mac_address(self.pf)
 
         # build sample app
-        out = self.dut.send_expect("make -C examples/tep_termination", "# ")
+        out = self.dut.build_dpdk_apps('examples/tep_termination')
+        # out = self.dut.send_expect("make -C examples/tep_termination", "# ")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
         self.def_mac = "00:00:20:00:00:20"
         self.vm_dut = None
-        self.tep_app = "./examples/tep_termination/build/tep_termination"
+        # self.tep_app = "./examples/tep_termination/build/tep_termination"
+        self.app_tep_termination_path = self.dut.apps_name['tep_termination']
         self.vxlan_port = 4789
-        self.vm_testpmd = "./x86_64-native-linuxapp-gcc/app/testpmd -c f -n 3" \
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.vm_testpmd = "./%s -c f -n 3" % self.app_testpmd_path \
                           + " -- -i --tx-offloads=0x8000"
 
         # params for tep_termination
@@ -157,7 +160,7 @@ class TestVxlanSample(TestCase):
         elif self.running_case == "test_vxlan_sample_tso":
             chksum = self.FEAT_ENABLE
 
-        tep_cmd_temp = self.tep_app + " -c %(COREMASK)s -n %(CHANNELS)d " \
+        tep_cmd_temp = self.app_tep_termination_path + " -c %(COREMASK)s -n %(CHANNELS)d " \
             + "--socket-mem 2048,2048 -- -p 0x1 " \
             + "--udp-port %(VXLAN_PORT)d --nb-devices %(NB_DEVS)d " \
             + "--filter-type %(FILTERS)d " \
@@ -521,7 +524,7 @@ class TestVxlanSample(TestCase):
                 decap = self.FEAT_ENABLE
                 chksum = self.FEAT_ENABLE
 
-            tep_cmd_temp = self.tep_app + " -c %(COREMASK)s -n %(CHANNELS)d " \
+            tep_cmd_temp = self.app_tep_termination_path + " -c %(COREMASK)s -n %(CHANNELS)d " \
                 + "--socket-mem 2048,2048 -- -p 0x1 --udp-port " \
                 + "%(VXLAN_PORT)d  --nb-devices %(NB_DEVS)d --filter-type " \
                 + "%(FILTERS)d --tx-checksum %(TX_CHKS)d --encap %(ENCAP)d " \
