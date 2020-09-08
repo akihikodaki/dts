@@ -71,6 +71,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.queue_number = 2
         self.dut.kill_all()
         self.number_of_ports = 1
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -89,7 +90,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         self.dut.send_expect("killall -s INT testpmd", "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = 'net_vhost0,iface=vhost-net,queues=2,client=0'
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[2:5], prefix='vhost', ports=[self.pci_info],
                                                     vdevs=[vdev])
@@ -108,7 +109,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         start testpmd in vm depend on different path
         """
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         eal_params = self.dut.create_eal_parameters(cores=self.core_list[5:8], prefix='virtio', no_pci=True,
                                                     vdevs=[vdevs])
         if self.check_2M_env:
