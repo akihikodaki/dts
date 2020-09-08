@@ -59,6 +59,8 @@ class TestVM2VMVirtioPMD(TestCase):
         self.virtio_user0 = None
         self.virtio_user1 = None
         self.pci_info = self.dut.ports_info[0]['pci']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.app_pdump = self.dut.apps_name['pdump']
 
     def set_up(self):
         """
@@ -88,6 +90,7 @@ class TestVM2VMVirtioPMD(TestCase):
         enable pcap lib in dpdk code and recompile
         """
         client_dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/common_base", "#")
+        client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'y'})
         client_dut.build_install_dpdk(self.target)
 
     def disable_pcap_lib_in_dpdk(self, client_dut):
@@ -95,6 +98,7 @@ class TestVM2VMVirtioPMD(TestCase):
         reset pcap lib in dpdk and recompile
         """
         client_dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=y$/CONFIG_RTE_LIBRTE_PMD_PCAP=n/' config/common_base", "#")
+        client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'n'})
         client_dut.build_install_dpdk(self.target)
 
     def start_vhost_testpmd(self):
@@ -102,7 +106,7 @@ class TestVM2VMVirtioPMD(TestCase):
         launch the testpmd on vhost side
         """
         vhost_mask = self.cores_list[0:2]
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " % self.base_dir
         vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " % self.base_dir
         eal_params = self.dut.create_eal_parameters(cores=vhost_mask, no_pci=True, prefix='vhost', ports=[self.pci_info])
@@ -123,7 +127,7 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.virtio_user1 = self.dut.new_session(suite="virtio_user1")
         virtio_mask = self.cores_list[2:4]
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,%s " % path_mode
         eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio', ports=[self.pci_info])
         if self.check_2M_env:
@@ -140,7 +144,7 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.virtio_user0 = self.dut.new_session(suite="virtio_user0")
         virtio_mask = self.cores_list[4:6]
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s " % path_mode
         eal_params = self.dut.create_eal_parameters(cores=virtio_mask, no_pci=True, prefix='virtio0', ports=[self.pci_info])
         if self.check_2M_env:
@@ -161,17 +165,17 @@ class TestVM2VMVirtioPMD(TestCase):
         w_pci_list.append('-w %s,%s' % (virtio_net_pci, 'vectorized=1'))
         w_pci_str = ' '.join(w_pci_list)
         if path_mode == "mergeable":
-            command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
+            command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
                         "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
                         "--enable-hw-vlan-strip --txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "normal":
-            command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
+            command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
                         "--file-prefix=virtio -- -i --tx-offloads=0x00 " + \
                         "--enable-hw-vlan-strip --txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % extern_param, "testpmd> ", 20)
         elif path_mode == "vector_rx":
-            command = self.dut.target + "/app/testpmd -c 0x3 -n 4 " + \
+            command = self.app_testpmd_path + " -c 0x3 -n 4 " + \
                         "--file-prefix=virtio %s -- -i --txd=1024 --rxd=1024 %s"
             vm_client.send_expect(command % (w_pci_str, extern_param), "testpmd> ", 20)
 
@@ -181,12 +185,12 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.pdump_session = client_dut.new_session(suite="pdump")
         if hasattr(client_dut, "vm_name"):
-            command_line = self.target + "/app/dpdk-pdump " + \
+            command_line = self.app_pdump + " " + \
                     "-v --file-prefix=virtio -- " + \
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
             self.pdump_session.send_expect(command_line % (dump_port, self.dump_pcap), 'Port')
         else:
-            command_line = self.target + "/app/dpdk-pdump " + \
+            command_line = self.app_pdump + " " + \
                     "-v --file-prefix=virtio_%s -- " + \
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
             self.pdump_session.send_expect(command_line % (self.dut.prefix_subfix, dump_port, self.dump_pcap), 'Port')
