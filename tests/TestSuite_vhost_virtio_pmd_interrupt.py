@@ -70,6 +70,8 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -116,7 +118,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         # get the core list depend on current nb_cores number
         self.get_core_list()
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.app_testpmd_path + " "
         vdev = ['net_vhost0,iface=%s/vhost-net,queues=%d' % (self.base_dir, self.queues)]
         eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=[self.pci_info], vdevs=vdev)
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d --rss-ip" % (self.nb_cores, self.queues, self.queues)
@@ -144,7 +146,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             info = {'core': core_list_l3fwd[queue], 'port': 0, 'queue': queue}
             self.verify_info.append(info)
 
-        command_client = "./examples/l3fwd-power/build/l3fwd-power " + \
+        command_client = "./%s " % self.app_l3fwd_power_path + \
                          "-c %s -n 4 --log-level='user1,7' -- -p 1 -P " + \
                          "--config '%s' --no-numa  --parse-ptype --interrupt-only"
         command_line_client = command_client % (core_mask_l3fwd, config_info)
