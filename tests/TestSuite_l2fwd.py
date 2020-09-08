@@ -70,6 +70,7 @@ class TestL2fwd(TestCase):
 
         # compile
         out = self.dut.build_dpdk_apps("./examples/l2fwd")
+        self.app_l2fwd_path = self.dut.apps_name['l2fwd']
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
@@ -108,7 +109,7 @@ class TestL2fwd(TestCase):
         port_mask = utils.create_mask([self.dut_ports[0], self.dut_ports[1]])
         eal_params = self.dut.create_eal_parameters()
 
-        self.dut.send_expect("./examples/l2fwd/build/l2fwd %s -- -q 8 -p %s  &" % (eal_params, port_mask),
+        self.dut.send_expect("./%s %s -- -q 8 -p %s  &" % (self.app_l2fwd_path, eal_params, port_mask),
                              "L2FWD: entering main loop", 60)
 
         for i in [0, 1]:
@@ -144,8 +145,8 @@ class TestL2fwd(TestCase):
         eal_params = self.dut.create_eal_parameters(cores=cores)
         for queues in self.test_queues:
 
-            command_line = "./examples/l2fwd/build/l2fwd  %s -- -q %s -p %s &" % \
-                           (eal_params, str(queues['queues']), port_mask)
+            command_line = "./%s  %s -- -q %s -p %s &" % \
+                           (self.app_l2fwd_path, eal_params, str(queues['queues']), port_mask)
 
             self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
 
@@ -196,8 +197,8 @@ class TestL2fwd(TestCase):
 
             for queues in self.test_queues:
 
-                command_line = "./examples/l2fwd/build/l2fwd %s %s -- -q %s -p %s &" % \
-                    (eal_params, eal_param, str(queues['queues']), port_mask)
+                command_line = "./%s %s %s -- -q %s -p %s &" % \
+                    (self.app_l2fwd_path, eal_params, eal_param, str(queues['queues']), port_mask)
 
 #                self.dut.send_expect(command_line, "memory mapped", 60)
                 self.dut.send_expect(command_line, "L2FWD: entering main loop", 60)
