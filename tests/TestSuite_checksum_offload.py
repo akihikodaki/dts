@@ -374,7 +374,7 @@ class TestChecksumOffload(TestCase):
     def replay_pcap_file_on_tester(self, iface, packet_file_path):
         self.tester.send_expect("scapy", ">>>")
         self.scapy_exec(f"packets = rdpcap('{packet_file_path}')")
-        self.scapy_exec(f"sendp(packets, iface={iface})")
+        self.scapy_exec(f"sendp(packets, iface='{iface}')")
         self.tester.send_expect("quit()", "# ")
 
     def validate_packet_list_checksums(self, packets):
@@ -703,7 +703,7 @@ class TestChecksumOffload(TestCase):
         for l4 in l4_protos:
             for chksum in "", "chksum=0xf":
                 vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
-                    f"eth/IP({chksum})/{l4}()/(X'*50)",
+                    f"eth/IP({chksum})/{l4}()/('X'*50)",
                     "PKT_RX_IP_CKSUM_", f"{l4}",
                     should_pass=(chksum == ""))
                 if vf is not None:
@@ -846,14 +846,13 @@ class TestChecksumOffload(TestCase):
         #                             if vf is not None:
         #                                 verification_errors.append(vf)
 
-        # tunneled inner
+        self.tester.send_expect("quit", "#")
+        self.dut.send_expect("stop", "testpmd>")
 
         for err in verification_errors:
             self.logger.error(str(err))
         self.verify(len(verification_errors) == 0, "See previous output")
 
-        self.tester.send_expect("quit", "#")
-        self.dut.send_expect("stop", "testpmd>")
 
     def test_hardware_checksum_check_l4_tx(self):
         self.checksum_enablehw(self.dut_ports[0])
@@ -887,7 +886,9 @@ class TestChecksumOffload(TestCase):
 
         error_messages = self.validate_packet_list_checksums(captured_packets)
 
+        self.tester.send_expect("quit", "#")
         self.dut.send_expect("stop", "testpmd>")
+
         if len(error_messages) != 0:
             for error_msg in error_messages:
                 self.logger.error(error_msg)
