@@ -204,9 +204,9 @@ Test Case7: LSC event between vhost-user and virtio-user with split ring and cbd
 
 flow: Vhost <--> Virtio
 
-1. Start vhost-user side::
+1. Bind one cbdma port to igb_uio driver, then start vhost-user side::
 
-    ./testpmd -c 0x3000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
+    ./testpmd -c 0x3000 -n 4 -w 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
     testpmd>set fwd mac
     testpmd>start
 
