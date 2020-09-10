@@ -37,6 +37,7 @@ A test framework for testing DPDK.
 import os
 import sys
 import argparse
+import subprocess
 
 # change operation directory
 os.chdir("../")
@@ -48,14 +49,17 @@ sys.path.append(cwd + '/dep')
 
 import dts
 
-def git_build_package(gitLabel, pkgName, depot="dep"):
+def git_build_package(gitLabel, pkgName):
     """
     generate package from git, if dpdk existed will pull latest code
     """
     gitURL = r"http://dpdk.org/git/dpdk"
     gitPrefix = r"dpdk/"
+    depot = r"dep"
     if os.path.exists("%s/%s" % (depot, gitPrefix)) is True:
-        ret = os.system("cd %s/%s && git pull --force" % (depot, gitPrefix))
+        os.chdir("%s/%s" % (depot, gitPrefix))
+        ret = os.system("git pull --force")
+        os.chdir(cwd)
     else:
         print("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
         ret = os.system("git clone %s %s/%s" % (gitURL, depot, gitPrefix))
@@ -63,9 +67,17 @@ def git_build_package(gitLabel, pkgName, depot="dep"):
         raise EnvironmentError
 
     print("git archive --format=tar.gz --prefix=%s %s -o %s" % (gitPrefix, gitLabel, pkgName))
-    ret = os.system("cd %s/%s && git archive --format=tar.gz --prefix=%s/ %s -o ../%s"
-                    % (depot, gitPrefix, gitPrefix, gitLabel, pkgName))
-    if ret != 0:
+    os.chdir("%s/%s/%s" % (cwd, depot, gitPrefix))
+    try:
+        ret = subprocess.run(["git", "archive", "--format=tar.gz", "--prefix=%s/" % gitPrefix,
+                              "%s" % gitLabel, "-o", "../%s" % pkgName], shell=False)
+    except Exception as e:
+        print("git archive failed of : %s" % str(e))
+        sys.exit()
+
+    os.chdir(cwd)
+    if ret.returncode != 0:
+        print(ret)
         raise EnvironmentError
 
 
