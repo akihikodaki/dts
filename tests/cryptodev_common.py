@@ -76,20 +76,35 @@ def build_dpdk_with_cryptodev(test_case):
 
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_AESNI_MB': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_SYM=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_QAT_SYM': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=n$/CONFIG_RTE_LIBRTE_PMD_QAT_ASYM=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_QAT_ASYM': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_GCM=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_AESNI_GCM': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_OPENSSL=n$/CONFIG_RTE_LIBRTE_PMD_OPENSSL=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_OPENSSL': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_SNOW3G=n$/CONFIG_RTE_LIBRTE_PMD_SNOW3G=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_SNOW3G': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_KASUMI=n$/CONFIG_RTE_LIBRTE_PMD_KASUMI=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_KASUMI': 'y'})
+
     test_case.dut.send_expect(
         "sed -i 's/CONFIG_RTE_LIBRTE_PMD_ZUC=n$/CONFIG_RTE_LIBRTE_PMD_ZUC=y/' config/common_base", "# ")
+    test_case.dut.set_build_options({'RTE_LIBRTE_PMD_ZUC': 'y'})
 
     test_case.dut.skip_setup = False
     test_case.dut.build_install_dpdk(test_case.dut.target)
