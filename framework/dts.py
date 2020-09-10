@@ -518,11 +518,6 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     if not os.path.exists(output_dir):
         os.mkdir(output_dir)
 
-    # add external library
-    exec_file = os.path.realpath(__file__)
-    extra_libs_path = exec_file.replace('framework/dts.py', '') + 'extra_libs'
-    sys.path.insert(1, extra_libs_path)
-
     # add python module search path
     sys.path.append(suite_dir)
 
