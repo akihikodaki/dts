@@ -37,3 +37,4 @@ docutils
 pcapy
 xlrd
 scapy==2.4.3
+threadpool
