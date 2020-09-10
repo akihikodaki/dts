@@ -543,18 +543,22 @@ class DPDKdut(Dut):
 
         folder_info = folder.split('/')
         name = folder_info[-1]
-        if name not in self.apps_name:
+        if name != 'examples' and name not in self.apps_name:
             raise Exception('Please config %s file path on conf/app_name.cfg' % name)
 
-        example = '/'.join(folder_info[folder_info.index('examples')+1:])
+        if name == 'examples':
+            example = 'all'
+        else:
+            example = '/'.join(folder_info[folder_info.index('examples')+1:])
         out = self.send_expect("meson configure -Dexamples=%s %s" % (example, self.target), "# ")
         assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
         out = self.send_expect("ninja -C %s" % self.target, "# ", timeout)
         assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
 
         # verify the app build in the config path
-        out = self.send_expect('ls %s' % self.apps_name[name], "# ", verify=True)
-        assert(isinstance(out, str)), 'please confirm %s app path and name in app_name.cfg' % name
+        if example != 'all':
+            out = self.send_expect('ls %s' % self.apps_name[name], "# ", verify=True)
+            assert(isinstance(out, str)), 'please confirm %s app path and name in app_name.cfg' % name
 
         return out
 
