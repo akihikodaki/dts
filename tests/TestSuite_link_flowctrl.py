@@ -455,9 +455,12 @@ class TestLinkFlowctrl(TestCase):
                                             pause_frame_fwd='off')
 
         self.logger.info("Packet loss: %.3f" % result)
-
-        self.verify(result <= 0.01,
-                    "Link flow control fail, the loss percent is more than 1%")
+        if self.nic == "niantic":
+            self.verify(result >= 0.3,
+                        "Link flow control fail, the loss percent is less than 30%")
+        else:
+            self.verify(result >= 0.5,
+                        "Link flow control fail, the loss percent is less than 50%")
 
     def test_perf_flowctrl_off_pause_fwd_on(self):
         """
@@ -469,9 +472,12 @@ class TestLinkFlowctrl(TestCase):
                                             pause_frame_fwd='on')
 
         self.logger.info("Packet loss: %.3f" % result)
-
-        self.verify(result >= 0.5,
-                    "Link flow control fail, the loss percent is less than 50%")
+        if self.nic == "niantic":
+            self.verify(result >= 0.3,
+                        "Link flow control fail, the loss percent is less than 30%")
+        else:
+            self.verify(result >= 0.5,
+                        "Link flow control fail, the loss percent is less than 50%")
 
     def test_perf_flowctrl_off_pause_fwd_off(self):
         """
@@ -483,9 +489,12 @@ class TestLinkFlowctrl(TestCase):
                                             pause_frame_fwd='off')
 
         self.logger.info("Packet loss: %.3f" % result)
-
-        self.verify(result >= 0.5,
-                    "Link flow control fail, the loss percent is less than 50%")
+        if self.nic == "niantic":
+            self.verify(result >= 0.3,
+                        "Link flow control fail, the loss percent is less than 30%")
+        else:
+            self.verify(result >= 0.5,
+                        "Link flow control fail, the loss percent is less than 50%")
 
     def test_perf_flowctrl_tx_on(self):
         """
@@ -533,9 +542,12 @@ class TestLinkFlowctrl(TestCase):
                            pause_frame_fwd='off')
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
-        self.verify(result >= 0.5,
-                    "Link flow control fail after port stop/start, the loss percent is more than 50%")
-
+        if self.nic == "niantic":
+            self.verify(result >= 0.3,
+                        "Link flow control fail, the loss percent is less than 30%")
+        else:
+            self.verify(result >= 0.5,
+                        "Link flow control fail, the loss percent is less than 50%")
         # test again after port Stop/start
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop 0", "testpmd> ")
@@ -543,8 +555,12 @@ class TestLinkFlowctrl(TestCase):
         self.dut.send_expect("start", "testpmd> ", 60)
         result = self.start_traffic(tgenInput)
         self.logger.info("Packet loss: %.3f" % result)
-        self.verify(result >= 0.5,
-                    "Link flow control fail after port stop/start, the loss percent is more than 50%")
+        if self.nic == "niantic":
+            self.verify(result >= 0.3,
+                        "Link flow control fail, the loss percent is less than 30%")
+        else:
+            self.verify(result >= 0.5,
+                        "Link flow control fail, the loss percent is less than 50%")
         self.dut.send_expect("stop", "testpmd> ")
 
     def tear_down_all(self):
