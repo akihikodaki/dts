@@ -1268,6 +1268,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         #set vf driver
         self.vf_driver = 'vfio-pci'
         self.dut.send_expect('modprobe vfio-pci', '#')
+        self.path = self.dut.apps_name['test-pmd']
 
     def setup_1pf_vfs_env(self, pf_port=0, driver='default'):
 
@@ -1308,7 +1309,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf0_pci = self.sriov_vfs_port_0[0].pci
         vf1_pci = self.sriov_vfs_port_0[1].pci
         all_eal_param = self.dut.create_eal_parameters(cores='1S/4C/1T',ports=[vf0_pci, vf1_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         return command
 
     def launch_testpmd(self):
@@ -1788,7 +1789,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf1_pci = self.sriov_vfs_port_0[1].pci
         vf2_pci = self.sriov_vfs_port_0[2].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci, vf2_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1,2", "testpmd> ", 15)
@@ -1839,7 +1840,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf1_pci = self.sriov_vfs_port_0[1].pci
         vf2_pci = self.sriov_vfs_port_0[2].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci, vf2_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1,2", "testpmd> ", 15)
@@ -1903,7 +1904,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf1_pci = self.sriov_vfs_port_0[1].pci
         vf2_pci = self.sriov_vfs_port_0[2].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci, vf2_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1,2", "testpmd> ", 15)
@@ -1955,7 +1956,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         #launch testpmd
         vf0_pci = vf_pci[0]
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
         #generate max_vf_number-1 rules to each vf and matched packets
@@ -2049,7 +2050,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf0_pci = self.sriov_vfs_port_0[0].pci
         vf1_pci = self.sriov_vfs_port_0[1].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i %s" % (self.dut.target, all_eal_param, "--cmdline-file=/tmp/testpmd_cmds_32k_switch_rules")
+        command = self.path + all_eal_param +  " -- -i --cmdline-file=/tmp/testpmd_cmds_32k_switch_rules"
         out = self.dut.send_expect(command, "testpmd> ", 360)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1", "testpmd> ", 15)
@@ -2143,7 +2144,7 @@ class CVLDCFSwitchFilterTest(TestCase):
         vf1_pci = self.sriov_vfs_port_0[1].pci
         vf2_pci = self.sriov_vfs_port_0[2].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci, vf2_pci], port_options={vf0_pci:"cap=dcf"})
-        command = "./%s/app/testpmd %s -- -i" % (self.dut.target, all_eal_param)
+        command = self.path + all_eal_param + " -- -i"
         out = self.dut.send_expect(command, "testpmd> ", 15)
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1,2", "testpmd> ", 15)
