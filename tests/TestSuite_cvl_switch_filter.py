@@ -4527,6 +4527,7 @@ class CVLSwitchFilterTest(TestCase):
         self.bind_nics_driver(self.dut_ports, driver="vfio-pci")
 
         self.generate_file_with_fdir_rules()
+        self.path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -4570,7 +4571,7 @@ class CVLSwitchFilterTest(TestCase):
         """
         #Prepare testpmd EAL and parameters
         all_eal_param = self.dut.create_eal_parameters(cores='1S/4C/1T', ports=[0])
-        command = "./%s/app/testpmd %s --log-level=\"ice,8\" -- -i %s" % (self.dut.target, all_eal_param, "--rxq=16 --txq=16 --cmdline-file=%s" % self.fdir_file)
+        command = self.path + all_eal_param + " --log-level=\"ice,8\" -- -i --rxq=16 --txq=16 --cmdline-file=%s" % self.fdir_file
         # command = "./%s/app/testpmd %s --log-level=\"ice,8\" -- -i %s" % (self.dut.target, all_eal_param, "--rxq=16 --txq=16")
         return command
 
@@ -4580,7 +4581,7 @@ class CVLSwitchFilterTest(TestCase):
         """
         #Prepare testpmd EAL and parameters
         all_eal_param = self.dut.create_eal_parameters(cores='1S/4C/1T', ports=[0], port_options={0:"pipeline-mode-support=1"})
-        command = "./%s/app/testpmd %s --log-level=\"ice,8\" -- -i %s" % (self.dut.target, all_eal_param, "--rxq=16 --txq=16")
+        command = self.path + all_eal_param + " --log-level=\"ice,8\" -- -i --rxq=16 --txq=16"
         return command
 
     def launch_testpmd(self, is_non_pipeline):
