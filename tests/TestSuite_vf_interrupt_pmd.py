@@ -91,7 +91,6 @@ class TestVfInterruptPmd(TestCase):
         use_dut.send_expect(
                 "sed -i -e '/DEV_RX_OFFLOAD_CHECKSUM,/d' \
                 ./examples/l3fwd-power/main.c", "#", 10)
-        out = use_dut.send_expect("make -C examples/l3fwd-power", "#")
         out = use_dut.build_dpdk_apps("./examples/l3fwd-power")
         self.path = use_dut.apps_name['l3fwd-power']
         self.verify("Error" not in out, "compilation error")
