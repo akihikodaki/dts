@@ -851,7 +851,7 @@ class AdvancedRSSTest(TestCase):
         #Prepare testpmd EAL and parameters 
         all_eal_param = self.dut.create_eal_parameters(ports=[self.pf_pci])
         print(all_eal_param)   #print eal parameters
-        command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=64 --txq=64")
+        command = self.dut.apps_name['test-pmd'] + all_eal_param + " -- -i --rxq=64 --txq=64"
         return command
 
     def _rte_flow_validate_pattern(self, test_vectors, command, is_vxlan):
