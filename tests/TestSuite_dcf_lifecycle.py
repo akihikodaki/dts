@@ -302,8 +302,7 @@ class TestDcfLifeCycle(TestCase):
         return output
 
     def init_vf_dcf_testpmd(self):
-        self.vf_dcf_testpmd = "{}/{}/app/testpmd".format(
-            self.target_dir, self.dut.target)
+        self.vf_dcf_testpmd = self.dut.apps_name['test-pmd']
 
     def start_vf_dcf_testpmd(self, pmd_opiton):
         whitelist_name, prefix = pmd_opiton
@@ -359,16 +358,15 @@ class TestDcfLifeCycle(TestCase):
         return output
 
     def create_vf_testpmd2(self):
-        self.vf_testpmd2 = "{}/{}/app/testpmd_vf".format(
-            self.target_dir, self.dut.target)
-        cmd = 'rm -f {vf_pmd2};cp {vf_dcf_pmd} {vf_pmd2}'.format(
+        self.vf_testpmd2 = self.dut.apps_name['testpmd_vf']
+        cmd = 'rm -f /root/dpdk/{vf_pmd2};cp /root/dpdk/{vf_dcf_pmd} /root/dpdk/{vf_pmd2}'.format(
             **{'vf_dcf_pmd': self.vf_dcf_testpmd, 'vf_pmd2': self.vf_testpmd2})
         self.d_a_con(cmd)
 
     def init_vf_testpmd2(self):
         self.create_vf_testpmd2()
         self.vf_pmd2_session_name = 'vf_testpmd2'
-        self.vf_pmd2_session = self.dut.create_session(
+        self.vf_pmd2_session = self.dut.new_session(
             self.vf_pmd2_session_name)
 
     def start_vf_testpmd2(self, pmd_opiton):
