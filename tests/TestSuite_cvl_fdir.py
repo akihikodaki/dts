@@ -3036,7 +3036,7 @@ class TestCVLFdir(TestCase):
                                                        socket=self.ports_socket)
             param = " --log-level='ice,7' -- -i --portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                 self.portMask, 64, 64, cmd_path)
-            command_line = self.dut.target + "/app/testpmd " + eal_param + param
+            command_line = self.dut.apps_name['test-pmd'] + eal_param + param
             out = self.dut.send_expect(command_line, 'testpmd>', timeout=600)
             self.verify('Failed to create file' not in out, "create some rule failed: %s" % out)
             self.config_testpmd()
