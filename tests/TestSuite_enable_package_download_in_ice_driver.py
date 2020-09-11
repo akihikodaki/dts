@@ -53,6 +53,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.dut_p0_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.tester_p0_mac = self.tester.get_mac(localPort0)
         self.dut_testpmd = PmdOutput(self.dut)
+        self.path = self.dut.apps_name['test-pmd']
 
         self.pkg_file1 = '/lib/firmware/intel/ice/ddp/ice.pkg'
         self.pkg_file2 = '/lib/firmware/updates/intel/ice/ddp/ice.pkg'
@@ -288,7 +289,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         use wrong ice.pkg and start testpmd without "safe-mode-suppor", no port is loaded in testpmd
         """
         self.use_correct_ice_pkg(flag="false")
-        cmd = "./%s/app/testpmd -c 0x7 -n 4 -- -i --nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.target, self.PF_QUEUE, self.PF_QUEUE)
+        cmd = self.path + "-c 0x7 -n 4 -- -i --nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE)
         out = self.dut.send_expect(cmd, "#", 60)
         error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
                 "ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode"]
@@ -340,7 +341,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
             self.generate_delete_specify_pkg(pkg_ver=self.new_pkgs[i], sn=self.nic_sn[i], key="true")
 
         eal_param = "-w %s " % self.nic_pci[0] + "-w %s " % self.nic_pci[1] + "--log-level=8"
-        out = self.dut_testpmd.execute_cmd("./%s/app/testpmd %s -- -i " % (self.target, eal_param))
+        out = self.dut_testpmd.execute_cmd(self.path + eal_param + " -- -i ")
         self.dut_testpmd.quit()
 
         # Delete ice-<interface serial number>.pkg to recover the ENV
