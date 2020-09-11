@@ -202,7 +202,7 @@ class RSSConfigureTest(TestCase):
         #Prepare testpmd EAL and parameters 
         all_eal_param = self.dut.create_eal_parameters(ports=[self.pf_pci])
         print(all_eal_param)   #print eal parameters
-        command = "./%s/app/testpmd %s  -- -i %s" % (self.dut.target, all_eal_param, "--rxq=10 --txq=10" + line_option)
+        command = self.dut.apps_name['test-pmd'] + all_eal_param + " -- -i --rxq=10 --txq=10" + line_option
         return command
 
     def _rss_validate_pattern(self, test_vectors, command, rss_type, is_rss):
