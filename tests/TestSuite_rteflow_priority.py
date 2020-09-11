@@ -65,6 +65,7 @@ class TestRteflowPriority(TestCase):
         cores = self.dut.get_core_list("1S/5C/1T")
         self.coreMask = utils.create_mask(cores)
         self.portMask = utils.create_mask([self.dut_ports[0]])
+        self.path = self.dut.apps_name['test-pmd']
     
     def set_up(self):
         """
@@ -133,7 +134,7 @@ class TestRteflowPriority(TestCase):
         """
         #start testpmd in pipeline mode
         # genarate eal
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
@@ -200,7 +201,7 @@ class TestRteflowPriority(TestCase):
         """
         
         #start testpmd without pipeline-mode-support parameter, check the testpmd is launch in non-pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
@@ -212,7 +213,7 @@ class TestRteflowPriority(TestCase):
         self.dut.send_expect("quit", "#", 50)
         
         #restart testpmd with pipeline-mode-support=0, check the testpmd is launch in non-pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=0 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=0 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
@@ -229,7 +230,7 @@ class TestRteflowPriority(TestCase):
         """
         
         #start testpmd in pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
         
@@ -246,7 +247,7 @@ class TestRteflowPriority(TestCase):
         """
         
         #start testpmd in pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
 
@@ -263,7 +264,7 @@ class TestRteflowPriority(TestCase):
         """
         
         #start testpmd in pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
 
@@ -280,7 +281,7 @@ class TestRteflowPriority(TestCase):
         """
 
         #start testpmd in pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
 
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
@@ -317,7 +318,7 @@ class TestRteflowPriority(TestCase):
         self.dut.send_expect("quit", "#", 50)
 
         #restart testpmd in pipeline mode
-        command = './%s/app/testpmd -c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.target, self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
+        command = self.path + '-c %s -n 4 -w %s,pipeline-mode-support=1 --log-level="ice,7" -- -i --portmask=%s --rxq=10 --txq=10' % (self.coreMask, self.dut.ports_info[0]['pci'], utils.create_mask([self.dut_ports[0]]))
         out = self.dut.send_expect(command, "testpmd> ", 120)
         self.logger.debug(out)
 
