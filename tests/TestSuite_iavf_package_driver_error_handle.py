@@ -247,7 +247,7 @@ class Testiavf_package_and_driver_check(TestCase):
            for port in self.sriov_vfs_port:
                port.bind_driver('vfio-pci')
 
-           testpmdcmd ='./x86_64-native-linuxapp-gcc/app/testpmd -l 6-9 -n 4  --file-prefix=vf -- -i --rxq=4 --txq=4  --nb-cores=2'
+           testpmdcmd = self.dut.apps_name['test-pmd'] + "-l 6-9 -n 4  --file-prefix=vf -- -i --rxq=4 --txq=4  --nb-cores=2"
            self.dut_testpmd.execute_cmd(testpmdcmd)
            out=self.dut_testpmd.execute_cmd('flow create 0 ingress pattern eth / ipv4 / end actions rss types l3-dst-only end key_len 0 queues end / end')
            self.verify("iavf_flow_create(): Failed to create flow" in out, "There should be '%s' in out: %s" % ("iavf_flow_create(): Failed to create flow", out))
