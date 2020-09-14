@@ -93,15 +93,10 @@ class TestVmdqDcb(TestCase):
         """
         Rebuild dpdk
         """
-        out = self.dut.send_expect("grep 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM' ./config/common_base", "#", 20)
-        vm_num = re.findall(r'\d+', out)[-1]
-        if str(nb_queue_per_vm) == vm_num:
-            return
-        else:
-            self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM=%s/CONFIG_RTE_LIBRTE_I40E_"
-                             "QUEUE_NUM_PER_VM=%s/' ./config/common_base" % (vm_num, nb_queue_per_vm), "#", 20)
-            self.dut.set_build_options({'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM': nb_queue_per_vm})
-            self.dut.build_install_dpdk(self.target)
+        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM=.*$/CONFIG_RTE_LIBRTE_I40E_"
+                             "QUEUE_NUM_PER_VM=%s/' ./config/common_base" % nb_queue_per_vm, "#", 20)
+        self.dut.set_build_options({'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VM': nb_queue_per_vm})
+        self.dut.build_install_dpdk(self.target)
 
     def start_application(self, npools, ntcs):
         """
