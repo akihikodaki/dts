@@ -28,6 +28,7 @@ class TestVmdq(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
         self.dut.send_expect("sed -i 's/CONFIG_RTE_MAX_QUEUES_PER_PORT=256/CONFIG_RTE_MAX_QUEUES_PER_PORT=1024/' ./config/common_base", "# ", 5)
+        self.dut.set_build_options({'RTE_MAX_QUEUES_PER_PORT': 1024})
         self.dut.build_install_dpdk(self.target)
         # Update the max queue per port for Fortville.
         self.dut.send_expect("sed -i 's/define MAX_QUEUES 128/define MAX_QUEUES 1024/' ./examples/vmdq/main.c", "#", 5)
@@ -133,7 +134,8 @@ class TestVmdq(TestCase):
 
     def get_vmdq_stats(self):
         vmdq_session = self.dut.new_session()
-        vmdq_session.send_expect("kill -s SIGHUP  `pgrep -fl vmdq_app | awk '{print $1}'`", "#", 20)
+        app_name = self.dut.apps_name['vmdq'].split('/')[-1]
+        vmdq_session.send_expect("kill -s SIGHUP  `pgrep -fl %s | awk '{print $1}'`" % app_name, "#", 20)
         out = self.dut.get_session_output()
         self.logger.info(out)
         vmdq_session.close()
@@ -242,4 +244,5 @@ class TestVmdq(TestCase):
         self.dut.send_expect(
             "sed -i 's/CONFIG_RTE_MAX_QUEUES_PER_PORT=1024/CONFIG_RTE_MAX_QUEUES_PER_PORT=256/' ./config/common_base",
             "# ", 5)
+        self.dut.set_build_options({'RTE_MAX_QUEUES_PER_PORT': 256})
         self.dut.build_install_dpdk(self.target)
