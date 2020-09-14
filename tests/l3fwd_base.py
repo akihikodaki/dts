@@ -548,6 +548,7 @@ class L3fwdBase(object):
                      "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/"
                      "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' "
                      "./config/common_base"))
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
                 self.dut.build_install_dpdk(self.target)
 
     def __restore_compilation(self):
@@ -558,6 +559,7 @@ class L3fwdBase(object):
                      "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/"
                      "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' "
                      "./config/common_base"))
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
                 self.dut.build_install_dpdk(self.target)
 
     def __preset_compilation(self):
