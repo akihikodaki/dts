@@ -61,10 +61,12 @@ class TestNicSingleCorePerf(TestCase):
         if self.nic in ["fortville_25g", "fortville_spirit"]:
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
+            self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
             self.dut.build_install_dpdk(self.target)
         elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
+            self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
             self.dut.build_install_dpdk(self.target)
 
         # Based on h/w type, choose how many ports to use
@@ -394,9 +396,11 @@ class TestNicSingleCorePerf(TestCase):
         if self.nic in ["fortville_25g", "fortville_spirit"]:
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
+            self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
             self.dut.build_install_dpdk(self.target)
         elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
             self.dut.send_expect(
                 "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
+            self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
             self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()
