@@ -77,6 +77,7 @@ class TestAfXdp(TestCase):
     def prepare_dpdk(self):
         self.dut.send_expect(
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AF_XDP=n$/CONFIG_RTE_LIBRTE_PMD_AF_XDP=y/' config/common_base", "# ")
+        self.dut.set_build_options({'RTE_LIBRTE_PMD_AF_XDP': 'y'})
         self.dut.build_install_dpdk(self.dut.target)
 
     def set_port_queue(self, intf):
@@ -431,7 +432,7 @@ class TestAfXdp(TestCase):
 
     def tear_down_all(self):
         self.dut.kill_all()
-
         self.dut.send_expect(
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AF_XDP=y$/CONFIG_RTE_LIBRTE_PMD_AF_XDP=n/' config/common_base", "# ")
+        self.dut.set_build_options({'RTE_LIBRTE_PMD_AF_XDP': 'n'})
         self.dut.build_install_dpdk(self.dut.target)
