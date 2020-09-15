@@ -95,7 +95,7 @@ Send some packets to the dut and check that they are properly sent back into
 the packet capture on the tester.
 
 Test Case: TX RX Userspace
-====================
+==========================
 This test case runs as the unprivileged user and is designed to check the
 basic functioning of the module. It checks whether packets can be sent
 and received when running dpdk applications as a normal user. # means
@@ -137,7 +137,7 @@ Send some packets to the dut and check that they are properly sent back into
 the packet capture on the tester.
 
 Test Case: Hello World
-====================
+======================
 This is a more basic test of functionality as a normal user than the
 TX RX Userspace case. It simply involves running a short, hello-world-like
 program on each core before shutting down. # means that a command is run
