@@ -292,8 +292,8 @@ Test Case 7: wake up vhost-user core with event idx interrupt mode and cbdma ena
 
 3.  On VM, set ip for virtio device and send packets to vhost::
 
-    ifconfig [ens3] 1.1.1.2     # [ens3] is the name of virtio-net
-    ping 1.1.1.3
+      ifconfig [ens3] 1.1.1.2     # [ens3] is the name of virtio-net
+      ping 1.1.1.3
 
 4. Check vhost related core is waked up by reading l3fwd-power log.
 
@@ -326,31 +326,31 @@ Test Case 8: wake up vhost-user cores with event idx interrupt mode and cbdma en
 
 3.  Set vitio-net with 16 quques and give vitio-net ip address::
 
-    ethtool -L ens4 combined 16    # [ens3] is the name of virtio-net
-    ifconfig ens4 1.1.1.1
+      ethtool -L ens4 combined 16    # [ens3] is the name of virtio-net
+      ifconfig ens4 1.1.1.1
 
 4.  Send packets with different IPs from virtio-net, notice to bind each vcpu to different send packets process::
 
-    taskset -c 0 ping 1.1.1.2
-    taskset -c 1 ping 1.1.1.3
-    taskset -c 2 ping 1.1.1.4
-    taskset -c 3 ping 1.1.1.5
-    taskset -c 4 ping 1.1.1.6
-    taskset -c 5 ping 1.1.1.7
-    taskset -c 6 ping 1.1.1.8
-    taskset -c 7 ping 1.1.1.9
-    taskset -c 8 ping 1.1.1.2
-    taskset -c 9 ping 1.1.1.2
-    taskset -c 10 ping 1.1.1.2
-    taskset -c 11 ping 1.1.1.2
-    taskset -c 12 ping 1.1.1.2
-    taskset -c 13 ping 1.1.1.2
-    taskset -c 14 ping 1.1.1.2
-    taskset -c 15 ping 1.1.1.2
+      taskset -c 0 ping 1.1.1.2
+      taskset -c 1 ping 1.1.1.3
+      taskset -c 2 ping 1.1.1.4
+      taskset -c 3 ping 1.1.1.5
+      taskset -c 4 ping 1.1.1.6
+      taskset -c 5 ping 1.1.1.7
+      taskset -c 6 ping 1.1.1.8
+      taskset -c 7 ping 1.1.1.9
+      taskset -c 8 ping 1.1.1.2
+      taskset -c 9 ping 1.1.1.2
+      taskset -c 10 ping 1.1.1.2
+      taskset -c 11 ping 1.1.1.2
+      taskset -c 12 ping 1.1.1.2
+      taskset -c 13 ping 1.1.1.2
+      taskset -c 14 ping 1.1.1.2
+      taskset -c 15 ping 1.1.1.2
 
 5.  Check vhost related cores are waked up with l3fwd-power log, such as following::
 
-    L3FWD_POWER: lcore 0 is waked up from rx interrupt on port 0 queue 0
-    .....
-    .....
-    L3FWD_POWER: lcore 15 is waked up from rx interrupt on port 0 queue 15
+      L3FWD_POWER: lcore 0 is waked up from rx interrupt on port 0 queue 0
+      .....
+      .....
+      L3FWD_POWER: lcore 15 is waked up from rx interrupt on port 0 queue 15
