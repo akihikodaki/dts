@@ -4331,7 +4331,7 @@ Test Case: RSS support MAC_IPV4_PFCP_SESSION
 
    The SEID can be set to random value.
 
-4. check the 100 pkts has been received by DUT in differently 16 queues evenly with differently RSS hash value::
+4. check the 100 pkts has been received by DUT in differently 16 queues evenly with differently RSS hash value.
 
 5. send MAC_IPV4_PFCP_NODE and MAC_IPV6_PFCP_SESSION pkts::
 
@@ -4350,7 +4350,7 @@ Test Case: RSS support MAC_IPV4_PFCP_SESSION
     testpmd> flow destroy 0 rule 0
 
 8. Send the 100 matched pkts,
-and check the 100 pkts has been received by DUT in queue 0::
+and check the 100 pkts has been received by DUT in queue 0.
 
 
 Test Case: RSS support MAC_IPV6_PFCP_SESSION
@@ -4366,12 +4366,12 @@ Test Case: RSS support MAC_IPV6_PFCP_SESSION
 
     The SEID can be set to random value.
 
-3. Check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value::
+3. Check the 100 pkts has been recieved by DUT in differently 16 queues evenly with differently RSS hash value.
 
 4. send MAC_IPV6_PFCP_NODE and MAC_IPV4_PFCP_SESSION pkts::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22,dport=8805)/PFCP(Sfield=0)/Raw('x' * 80)],iface="enp134s0f1")
-sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=12)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=12)/Raw('x' * 80)],iface="enp134s0f1")
 
    The SEID can be set to random value.
    check the packets are distributed to queue 0.
@@ -4385,7 +4385,7 @@ sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/
     testpmd> flow destroy 0 rule 0
 
 8. Send the 100 matched pkts,
-and check the 100 pkts has been received by DUT in queue 0::
+and check the 100 pkts has been received by DUT in queue 0.
 
 Test Case: RSS Negative test with OS default
 ====================================================
