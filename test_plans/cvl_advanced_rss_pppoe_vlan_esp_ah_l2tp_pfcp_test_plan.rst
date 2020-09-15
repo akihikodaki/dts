@@ -6035,7 +6035,7 @@ Subcase 2: duplicated rules (not supported in 20.08)
 
 2. create the same rule again, Failed to create flow, report message::
 
-  Add rule failed.: Operation not permitted
+    Add rule failed.: Operation not permitted
 
 3. check only the first rule exists in the list.
 
