@@ -43,10 +43,17 @@ The following are the test plans for the DPDK DTS automated test system.
     cloud_filter_test_plan
     coremask_test_plan
     cvl_advanced_rss_test_plan
+    cvl_advanced_rss_gtpu_test_plan
     cvl_advanced_iavf_rss_test_plan
+    cvl_advanced_rss_pppoe_vlan_esp_ah_l2tp_pfcp_test_plan
+    cvl_dcf_date_path_test_plan
+    cvl_dcf_dp_test_plan
     cvl_dcf_switch_filter_test_plan
     cvl_fdir_test_plan
+    cvl_iavf_rss_gtpu_test_plan
+    cvl_rss_configure_test_plan
     cvl_switch_filter_test_plan
+    cloud_filter_with_l4_port_test_plan
     dcf_lifecycle_test_plan
     crypto_perf_cryptodev_perf_test_plan
     ddp_gtp_qregion_test_plan
@@ -62,6 +69,7 @@ The following are the test plans for the DPDK DTS automated test system.
     external_memory_test_plan
     external_mempool_handler_test_plan
     fdir_test_plan
+    firmware_version_test_plan
     floating_veb_test_plan
     flow_classify_softnic_test_plan
     fortville_rss_granularity_config_test_plan
@@ -92,6 +100,7 @@ The following are the test plans for the DPDK DTS automated test system.
     l3fwdacl_test_plan
     link_flowctrl_test_plan
     link_status_interrupt_test_plan
+    linux_modules_test_plan
     loopback_multi_paths_port_restart_test_plan
     loopback_virtio_user_server_mode_test_plan
     mac_filter_test_plan
@@ -124,6 +133,8 @@ The following are the test plans for the DPDK DTS automated test system.
     queue_region_test_plan
     queue_start_stop_test_plan
     rss_to_rte_flow_test_plan
+    rss_key_update_test_plan
+    rxtx_offload_test_plan
     rteflow_priority_test_plan
     runtime_vf_queue_number_kernel_test_plan
     runtime_vf_queue_number_maxinum_test_plan
@@ -132,6 +143,10 @@ The following are the test plans for the DPDK DTS automated test system.
     scatter_test_plan
     short_live_test_plan
     shutdown_api_test_plan
+    speed_capabilities_test_plan
+    sw_hw_thash_consistence_test_plan
+    vhost_cbdma_test_plan
+    vhost_user_interrupt_test_plan
     sriov_kvm_test_plan
     stability_test_plan
     stats_checks_test_plan
@@ -190,7 +205,6 @@ The following are the test plans for the DPDK DTS automated test system.
     malicious_driver_event_indication_test_plan
 
     virtio_1.0_test_plan
-    vhost_enqueue_interrupt_test_plan
     vhost_event_idx_interrupt_test_plan
     vhost_virtio_pmd_interrupt_test_plan
     vhost_virtio_user_interrupt_test_plan
@@ -243,7 +257,6 @@ The following are the test plans for the DPDK DTS automated test system.
     keep_alive_test_plan
     multiprocess_test_plan
     netmap_compat_test_plan
-    quota_watermark_test_plan
     rxtx_callbacks_test_plan
     skeleton_test_plan
     timer_test_plan
