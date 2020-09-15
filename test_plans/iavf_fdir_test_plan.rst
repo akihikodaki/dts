@@ -1792,7 +1792,7 @@ Subcase 12: MAC_IPV4_GTPU outer dst ip queue index
    Then check there is no rule listed.
 
 Subcase 13: MAC_IPV4_GTPU outer dst ip queue group
--------------------------------------------------
+--------------------------------------------------
 
 1. create filter rules::
 
@@ -1807,7 +1807,7 @@ Subcase 13: MAC_IPV4_GTPU outer dst ip queue group
    Then check there is no rule listed.
 
 Subcase 14: MAC_IPV4_GTPU outer dst ip passthru
-----------------------------------------------
+-----------------------------------------------
 
 1. create filter rules::
 
