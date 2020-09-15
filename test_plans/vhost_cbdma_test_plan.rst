@@ -54,6 +54,7 @@ associated with DMA engines, small copies are performed by the CPU.
 
 We introduce a new vdev parameter to enable DMA acceleration for Tx
 operations of queues:
+
  - dmas: This parameter is used to specify the assigned DMA device of
    a queue.
  - dmathr: If packets length >= dmathr, leverage I/OAT device to perform memory copy;
