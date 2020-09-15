@@ -89,27 +89,27 @@ Modify the testpmd code as following::
 
 Modify the dpdk code as following::
 
-diff --git a/drivers/net/vhost/rte_eth_vhost.c b/drivers/net/vhost/rte_eth_vhost.c
-index b38a4b6b1..573250dbe 100644
---- a/drivers/net/vhost/rte_eth_vhost.c
-+++ b/drivers/net/vhost/rte_eth_vhost.c
-@@ -1071,8 +1071,14 @@ eth_dev_info(struct rte_eth_dev *dev,
-  dev_info->min_rx_bufsize = 0;
- 
-  dev_info->tx_offload_capa = DEV_TX_OFFLOAD_MULTI_SEGS |
--       DEV_TX_OFFLOAD_VLAN_INSERT;
-- dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP;
-+       DEV_TX_OFFLOAD_VLAN_INSERT |
-+       DEV_TX_OFFLOAD_UDP_CKSUM |
-+       DEV_TX_OFFLOAD_TCP_CKSUM |
-+       DEV_TX_OFFLOAD_IPV4_CKSUM |
-+       DEV_TX_OFFLOAD_TCP_TSO;
-+ dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP |
-+       DEV_RX_OFFLOAD_TCP_CKSUM |
-+       DEV_RX_OFFLOAD_UDP_CKSUM |
-+       DEV_RX_OFFLOAD_IPV4_CKSUM |
-+       DEV_RX_OFFLOAD_TCP_LRO;
- }
+   diff --git a/drivers/net/vhost/rte_eth_vhost.c b/drivers/net/vhost/rte_eth_vhost.c
+   index b38a4b6b1..573250dbe 100644
+   --- a/drivers/net/vhost/rte_eth_vhost.c
+   +++ b/drivers/net/vhost/rte_eth_vhost.c
+   @@ -1071,8 +1071,14 @@ eth_dev_info(struct rte_eth_dev *dev,
+     dev_info->min_rx_bufsize = 0;
+
+     dev_info->tx_offload_capa = DEV_TX_OFFLOAD_MULTI_SEGS |
+   -       DEV_TX_OFFLOAD_VLAN_INSERT;
+   - dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP;
+   +       DEV_TX_OFFLOAD_VLAN_INSERT |
+   +       DEV_TX_OFFLOAD_UDP_CKSUM |
+   +       DEV_TX_OFFLOAD_TCP_CKSUM |
+   +       DEV_TX_OFFLOAD_IPV4_CKSUM |
+   +       DEV_TX_OFFLOAD_TCP_TSO;
+   + dev_info->rx_offload_capa = DEV_RX_OFFLOAD_VLAN_STRIP |
+   +       DEV_RX_OFFLOAD_TCP_CKSUM |
+   +       DEV_RX_OFFLOAD_UDP_CKSUM |
+   +       DEV_RX_OFFLOAD_IPV4_CKSUM |
+   +       DEV_RX_OFFLOAD_TCP_LRO;
+    }
 
 Test flow
 =========
@@ -148,7 +148,7 @@ Test Case1: DPDK GRO lightmode test with tcp/ipv4 traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-    taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
+      taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
        -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
@@ -200,7 +200,7 @@ Test Case2: DPDK GRO heavymode test with tcp/ipv4 traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-    taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
+      taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
        -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
@@ -252,7 +252,7 @@ Test Case3: DPDK GRO heavymode_flush4 test with tcp/ipv4 traffic
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-    taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
+      taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
        -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
@@ -278,10 +278,11 @@ Test Case4: DPDK GRO test with vxlan traffic
 Vxlan topology
 --------------
   VM          Host
+
 50.1.1.2      50.1.1.1
-   |           |
+   \|           |
 1.1.2.3       1.1.2.4
-   |------------Testpmd------------|
+  \|------------Testpmd------------|
 
 1. Connect two nic port directly, put nic2 into another namesapce and create Host VxLAN port::
 
@@ -322,7 +323,7 @@ Vxlan topology
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-    taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
+      taskset -c 13 qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
        -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -net nic,macaddr=00:00:00:08:e8:aa,addr=1f -net user,hostfwd=tcp:127.0.0.1:6001-:22 \
@@ -383,7 +384,7 @@ NIC2(In kernel) -> NIC1(DPDK) -> testpmd(csum fwd) -> Vhost -> Virtio-net
 
 3.  Set up vm with virto device and using kernel virtio-net driver::
 
-    taskset -c 31 /home/qemu-install/qemu-3.0/bin/qemu-system-x86_64 -name us-vhost-vm1 \
+      taskset -c 31 /home/qemu-install/qemu-3.0/bin/qemu-system-x86_64 -name us-vhost-vm1 \
        -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on \
        -numa node,memdev=mem \
        -mem-prealloc -monitor unix:/tmp/vm2_monitor.sock,server,nowait -netdev user,id=yinan,hostfwd=tcp:127.0.0.1:6005-:22 -device e1000,netdev=yinan \
