@@ -302,7 +302,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.5",frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+...............
 
 1. validate a rule::
 
@@ -344,7 +344,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+.....................
 
 1. validate a rule::
 
@@ -379,7 +379,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -437,7 +437,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=19)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+...............
 
 1. validate a rule::
 
@@ -479,7 +479,7 @@ to queue action
    send matched packets, check the packets are not to queue 4.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+.....................
 
 1. validate a rule::
 
@@ -521,7 +521,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -579,7 +579,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=50,dport=100)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -621,7 +621,7 @@ to queue action
    send matched packets, check the packets are not to queue 5.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -663,7 +663,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -726,7 +726,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.5" ,frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -768,7 +768,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -810,7 +810,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -911,7 +911,7 @@ to queue action
    send matched packets, check the packets are not to queue 1.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+.....................
 
 1. validate a rule::
 
@@ -953,7 +953,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -1012,7 +1012,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/UDP()/VXLAN(vni=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.2", dst="192.168.0.3")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1054,7 +1054,7 @@ to queue action
    send matched packets, check the packets are not to queue 1.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1096,7 +1096,7 @@ to queue group action
    send matched packets, check the packets are not to queue 1 and 2.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -1154,7 +1154,7 @@ mismatched packets::
   sendp([Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",tos=5,frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1196,7 +1196,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1238,7 +1238,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -1302,7 +1302,7 @@ mismatched packets::
   sendp([Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3", tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1344,7 +1344,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1386,7 +1386,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -1447,7 +1447,7 @@ mismatched packets::
   sendp([Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3", tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1489,7 +1489,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1531,7 +1531,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -1588,7 +1588,7 @@ mismatched packets::
   sendp([Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=50,dport=99)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1630,7 +1630,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1672,7 +1672,7 @@ to queue group action
    send matched packets, check the packets are not to queue queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -1729,7 +1729,7 @@ mismatched packets::
   sendp([Ether()/IP()/UDP()/VXLAN()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=50,dport=30)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1771,7 +1771,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1813,7 +1813,7 @@ to queue group action
    send matched packets, check the packets are not to queue queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -1877,7 +1877,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/TCP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -1919,7 +1919,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -1961,7 +1961,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+...........
 
 1. validate a rule::
 
@@ -2019,7 +2019,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether()/IP(src="192.168.0.2", dst="192.168.0.3")/UDP(sport=50,dport=19)/Raw("x"*80)], iface="enp27s0f2", count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2061,7 +2061,7 @@ to queue action
    send matched packets, check the packets are not to queue 4.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2103,7 +2103,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2161,7 +2161,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=39)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2203,7 +2203,7 @@ to queue action
    send matched packets, check the packets are not to queue 1.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2245,7 +2245,7 @@ to queue group action
    send matched packets, check the packets are not to queue 1 and 2.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2308,7 +2308,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.5" ,frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2350,7 +2350,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2392,7 +2392,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2451,7 +2451,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=0x8)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/UDP(sport=25,dport=20)/Raw("x"*80)], iface="enp27s0f2", count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2493,7 +2493,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2535,7 +2535,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2594,7 +2594,7 @@ mismatched packets::
   sendp([Ether()/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.1.2", dst="192.168.1.3")/TCP(sport=25,dport=20)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2636,7 +2636,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2678,7 +2678,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2736,7 +2736,7 @@ mismatched packets::
   sendp([Ether()/IP()/NVGRE()/Ether()/IP(src="192.168.0.2", dst="192.168.0.3",tos=5,frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2778,7 +2778,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2820,7 +2820,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -2884,7 +2884,7 @@ mismatched packets::
   sendp([Ether()/IP()/NVGRE()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -2926,7 +2926,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -2968,7 +2968,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3029,7 +3029,7 @@ mismatched packets::
   sendp([Ether()/IP()/NVGRE()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3071,7 +3071,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3113,7 +3113,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3170,7 +3170,7 @@ mismatched packets::
   sendp([Ether()/IP()/NVGRE()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/UDP(sport=50,dport=100)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3212,7 +3212,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3254,7 +3254,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3311,7 +3311,7 @@ mismatched packets::
   sendp([Ether()/IP()/NVGRE()/Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=50,dport=100)/Raw("x" * 80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3353,7 +3353,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3395,7 +3395,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3453,7 +3453,7 @@ mismatched packets::
   sendp([Ether()/IP(src="192.168.0.2", dst="192.168.0.3",tos=7,frag=5)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3495,7 +3495,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3537,7 +3537,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3601,7 +3601,7 @@ mismatched packets::
   sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3643,7 +3643,7 @@ to queue action
    send matched packets, check the packets are not to queue 5.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3685,7 +3685,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3746,7 +3746,7 @@ mismatched packets::
   sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/ICMP()/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3788,7 +3788,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3830,7 +3830,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -3888,7 +3888,7 @@ mismatched packets::
 
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -3930,7 +3930,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -3972,7 +3972,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4029,7 +4029,7 @@ mismatched packets::
   sendp([Ether()/IP(src="192.168.0.2",dst="192.168.0.3",tos=4)/TCP(sport=50,dport=7)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4071,7 +4071,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -4113,7 +4113,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4173,7 +4173,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2023",tc=3)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4215,7 +4215,7 @@ to queue action
    send matched packets, check the packets are not to queue 5.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -4257,7 +4257,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4314,7 +4314,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=4)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4356,7 +4356,7 @@ to queue action
    send matched packets, check the packets are not to queue 3.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -4398,7 +4398,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4454,7 +4454,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/UDP(sport=50,dport=4)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4496,7 +4496,7 @@ to queue action
    send matched packets, check the packets are not to queue 5.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -4538,7 +4538,7 @@ to queue group action
    send matched packets, check the packets are not to queue 2 and 3.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4594,7 +4594,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515",dst="CDCD:910A:2222:5498:8475:1111:3900:2020",tc=3)/TCP(sport=25,dport=20)/Raw("x"*80)],iface="enp27s0f2",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4636,7 +4636,7 @@ to queue action
    send matched packets, check the packets are not to queue 4.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -4678,7 +4678,7 @@ to queue group action
    send matched packets, check the packets are not to queue 4 and 5.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4738,7 +4738,7 @@ mismatched packets::
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=9)/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4780,7 +4780,7 @@ to queue action
    send matched packets, check the packets are not to queue 4.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4839,7 +4839,7 @@ mismatched packets::
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=3)/UDP(sport=25,dport=99)/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4881,7 +4881,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -4939,7 +4939,7 @@ mismatched packets::
   sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1",dst="192.168.0.32",tos=4)/TCP(sport=25,dport=99)/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -4981,7 +4981,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5038,7 +5038,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/IPv6ExtHdrFragment()/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -5080,7 +5080,7 @@ to queue action
    send matched packets, check the packets are not to queue 8.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5135,7 +5135,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1518", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=25,dport=99)/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -5177,7 +5177,7 @@ to queue action
    send matched packets, check the packets are not to queue 6.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5232,7 +5232,7 @@ mismatched packets::
   sendp([Ether()/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1515", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=25,dport=99)/("X"*480)], iface="enp27s0f2", count=100)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -5274,7 +5274,7 @@ to queue action
    send matched packets, check the packets are not to queue 2.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5332,7 +5332,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55")/PPPoE()/Raw("x" *80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -5389,7 +5389,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5458,7 +5458,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55", type=0x8863)/PPPoED()/Raw("x" *80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -5512,7 +5512,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -5566,7 +5566,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -5634,7 +5634,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+---------------
 
 1. validate a rule::
 
@@ -5688,7 +5688,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 1. validate a rule::
 
@@ -5742,7 +5742,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+-----------
 
 1. validate a rule::
 
@@ -5810,7 +5810,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+---------------
 
 1. validate a rule::
 
@@ -5864,7 +5864,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+----------------------
 
 1. validate a rule::
 
@@ -5918,7 +5918,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+-----------
 
 1. validate a rule::
 
@@ -5985,7 +5985,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+---------------
 
 1. validate a rule::
 
@@ -6039,7 +6039,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 1. validate a rule::
 
@@ -6093,7 +6093,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+------------
 
 1. validate a rule::
 
@@ -6160,7 +6160,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+---------------
 
 1. validate a rule::
 
@@ -6214,7 +6214,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
 
 1. validate a rule::
 
@@ -6268,7 +6268,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+-----------
 
 1. validate a rule::
 
@@ -6337,7 +6337,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -6391,7 +6391,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -6445,7 +6445,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -6513,7 +6513,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -6567,7 +6567,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -6621,7 +6621,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -6689,7 +6689,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -6743,7 +6743,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -6797,7 +6797,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -6865,7 +6865,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -6919,7 +6919,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -6973,7 +6973,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7041,7 +7041,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7095,7 +7095,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -7149,7 +7149,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7215,7 +7215,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7269,7 +7269,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -7323,7 +7323,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7390,7 +7390,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7444,7 +7444,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -7498,7 +7498,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7566,7 +7566,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7620,7 +7620,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -7674,7 +7674,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7741,7 +7741,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7795,7 +7795,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -7849,7 +7849,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -7917,7 +7917,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -7971,7 +7971,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8025,7 +8025,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8092,7 +8092,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.4")/Raw("x"*80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -8146,7 +8146,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8200,7 +8200,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8269,7 +8269,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -8323,7 +8323,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8377,7 +8377,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8446,7 +8446,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -8500,7 +8500,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8554,7 +8554,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8623,7 +8623,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -8677,7 +8677,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8731,7 +8731,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8800,7 +8800,7 @@ mismatched packets::
   sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -8854,7 +8854,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -8908,7 +8908,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -8974,7 +8974,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x"*80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9028,7 +9028,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9082,7 +9082,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -9150,7 +9150,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9204,7 +9204,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9258,7 +9258,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -9326,7 +9326,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9380,7 +9380,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9434,7 +9434,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -9502,7 +9502,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=19)/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9556,7 +9556,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9610,7 +9610,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -9678,7 +9678,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0057)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9732,7 +9732,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9786,7 +9786,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -9860,7 +9860,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -9914,7 +9914,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -9969,7 +9969,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -10036,7 +10036,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -10090,7 +10090,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -10145,7 +10145,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -10213,7 +10213,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -10267,7 +10267,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -10322,7 +10322,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
@@ -10390,7 +10390,7 @@ mismatched packets::
   sendp([Ether(src="11:22:33:44:55:99",dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP()/Raw("x" * 80)],iface="ens786f0",count=1)
 
 to queue action
-^^^^^^^^^^^^^^^
+................
 
 1. validate a rule::
 
@@ -10444,7 +10444,7 @@ to queue action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 to queue group action
-^^^^^^^^^^^^^^^^^^^^^
+......................
 
 1. validate a rule::
 
@@ -10499,7 +10499,7 @@ to queue group action
    repeat step 1-4 to check the pattern in pipeline mode.
 
 drop action
-^^^^^^^^^^^
+............
 
 1. validate a rule::
 
