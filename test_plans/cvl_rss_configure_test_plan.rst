@@ -392,7 +392,7 @@ Test Case: test_RSS_configure_to_ip
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -510,7 +510,7 @@ Test Case: test_RSS_configure_to_udp
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -628,7 +628,7 @@ Test Case: test_RSS_configure_to_tcp
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.3")/SCTP(sport=1026,dport=1027)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -747,7 +747,7 @@ Test Case: test_RSS_configure_to_sctp
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -849,7 +849,7 @@ Test Case: test_RSS_configure_to_all
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
@@ -951,7 +951,7 @@ Test Case: test_RSS_configure_to_default
         sendp([Ether(dst="00:00:00:00:01:00")/IP(src="192.168.0.2",dst="192.168.0.5")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
 10. check ipv6-sctp packets:
-   send a basic packet, record the hash value::
+    send a basic packet, record the hash value::
 
         sendp([Ether(dst="00:00:00:00:01:00")/IPv6(src="3ffe:2501:200:3::2",dst="3ffe:2501:200:3::3")/SCTP(sport=1024,dport=1025)/("X"*40)], iface="enp27s0f2")
 
