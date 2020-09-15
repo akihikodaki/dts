@@ -40,10 +40,12 @@ Description
 Enable RSS in CVL IAVF for GTP-U Up/Down Link sperately.
 IAVF RSS hash algorithm is based on 5 Tuple (Src IP Address/Dst IP Address/Src Port/Dst Port/l4 Protocol) using the DPDK RTE_FLOW rules for GTP-U packets.
 It can support ipv4+ipv6 combination of GTP-U packet:
+
     ipv4(outer) + ipv4(inner)
     ipv4(outer) + ipv6(inner)
     ipv6(outer) + ipv4(inner)
     ipv6(outer) + ipv6(inner)
+
 IAVF also support symmetric hash function by rte_flow for GTP-U packets. But simple-xor hash function is not supported in IAVF.
 And it need DDP Comms Package to support GTP-U protocol.
 
@@ -197,7 +199,7 @@ Prerequisites
     testpmd>set verbose 1
 
 5. start scapy and configuration NVGRE and GTP profile in tester
-  scapy::
+   scapy::
 
     >>> import sys
     >>> from scapy.contrib.gtp import *
@@ -219,6 +221,7 @@ all the test cases in the pattern::
     outer ipv6 + inner ipv6
 
 run the same test steps as below:
+
 1. validate rule.
 2. create rule and list rule.
 3. send a basic hit pattern packet,record the hash value.
@@ -229,7 +232,8 @@ run the same test steps as below:
 5. send hit pattern packets with changed input set not in the rule.
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
+
 7. distroy the rule and list rule.
 8. send same packets with step 3.
    check the received packet has different hash value with which in step 3(including the case has no hash value).
@@ -1859,13 +1863,14 @@ symmetric cases
 ===============
 
 all the test cases run the same test steps as below:
+
 1. validate rule.
 2. create rule and list rule.
 3. send a basic hit pattern packet,record the hash value.
 4. send a hit pattern packet with switched value of input set in the rule.
    check the received packets have same hash value.
    check both the packets are distributed to queues by rss.
-4. destroy the rule and list rule.
+5. destroy the rule and list rule.
 6. send the packet in step 3.
    check the received packet has different hash value with which in step 3(including the case has no hash value).
 
@@ -2275,13 +2280,13 @@ Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
 
 11. recreate IPV4_GTPU_IPV4 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 12. repeat step 2, check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
 13. destroy IPV4_GTPU_EH_IPV4 rule::
 
-    flow destroy 0 rule 1
+     flow destroy 0 rule 1
 
 14. repeat step 5 and 7, check packets have no hash value, and distributed to queue 0.
 
@@ -2365,7 +2370,7 @@ Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
  
 10. destroy IPV4_GTPU_EH_IPV4 rule::
 
-    flow destroy 0 rule 0
+     flow destroy 0 rule 0
 
 11. repeat step 2, check packets have no hash value, and distributed to queue 0. repeat step 7, check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2406,11 +2411,11 @@ Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP
 
 10. recreate IPV4_GTPU_EH_IPV4 rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 11. destroy IPV4_GTPU_EH_IPV4_UDP rule::
 
-    flow destroy 0 rule 0
+     flow destroy 0 rule 0
 
 12. repeat step 5, check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2553,7 +2558,7 @@ Subcase: toeplitz/symmetric with same pattern
 
 11. destroy the rule 1::
 
-    testpmd> flow destroy 0 rule 1
+     testpmd> flow destroy 0 rule 1
 
 12. repeat step 5, check the symmetric can't work now.
 
@@ -2608,13 +2613,13 @@ Subcase: toeplitz/symmetric with same ptype different UL/DL
 
 12. DUT recreate rule for the RSS function is symmetric::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
 
 13. repeat step 5, check the symmetric can work now.
 
 14. destroy the rule 0::
 
-    testpmd> flow destroy 0 rule 0
+     testpmd> flow destroy 0 rule 0
 
 15. repeat step 5, check the symmetric also can work now.
 
@@ -2670,13 +2675,13 @@ Subcase: toeplitz/symmetric with different pattern
 
 12. DUT recreate rule for the RSS function is symmetric::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
 
 13. repeat step 5, check the symmetric can work now.
 
 14. destroy the rule 0::
 
-    testpmd> flow destroy 0 rule 0
+     testpmd> flow destroy 0 rule 0
 
 15. repeat step 5, check the symmetric also can work now.
 
@@ -2750,7 +2755,7 @@ Subcase: add/delete IPV4_GTPU_UL_IPV4_TCP rules
     ID      Group   Prio    Attr    Rule
     0       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 TCP => RSS
 
-3. send packets:
+3. send packets::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
@@ -2772,7 +2777,7 @@ Subcase: add/delete IPV4_GTPU_DL_IPV4 rules
     ID      Group   Prio    Attr    Rule
     0       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
 
-3. send packets:
+3. send packets::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/("X"*480)], iface="enp134s0f0")
