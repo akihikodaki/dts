@@ -218,6 +218,7 @@ all the test cases in the pattern::
     outer ipv6 + inner ipv6
 
 run the same test steps as below:
+
 1. validate rule.
 2. create rule and list rule.
 3. send a basic hit pattern packet,record the hash value.
@@ -228,10 +229,10 @@ run the same test steps as below:
 5. send hit pattern packets with changed input set not in the rule.
    check the received packet have same hash value with the basic packet.
    check all the packets are distributed to queues by rss.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
 6. send not hit pattern packets with input set in the rule.
    check the received packets have not hash value, and distributed to queue 0.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
 7. distroy the rule and list rule.
 8. send same packets with step 3.
    check the received packets have not hash value, and distributed to queue 0,
@@ -243,7 +244,6 @@ Pattern: outer ipv4 + inner ipv4
 Test case: MAC_IPV4_GTPU_EH_IPV4 with UL/DL
 ===========================================
 
--------
 DL case
 -------
 basic hit pattern packets are the same in this test case:
@@ -462,7 +462,6 @@ packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTP
 Test case: MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL
 ===============================================
 
--------
 DL case
 -------
 basic hit pattern packets are the same in this test case::
@@ -727,7 +726,6 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is UDP, change it to TCP;
         if the packet's inner L4 layer is TCP, change it to UDP;
 
--------
 DL case
 -------
 
@@ -1859,11 +1857,11 @@ Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
 
 10. destroy IPV4_GTPU_EH_IPV4 rule::
 
-    flow destroy 0 rule 1
+     flow destroy 0 rule 1
 
 11. send same packets with step 5,
-   packet 1-3 get same result with step 5.
-   packet 4-9 have not hash value, and distributed to queue 0.
+    packet 1-3 get same result with step 5.
+    packet 4-9 have not hash value, and distributed to queue 0.
 
 Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
 ---------------------------------------------
@@ -1964,10 +1962,10 @@ Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
 
 10. destroy IPV4_GTPU_EH_IPV4 rule again::
 
-    flow destroy 0 rule 2
+     flow destroy 0 rule 2
 
 11. send same packets with step 3,
-   packet 1-6 have not hash value, and distributed to queue 0.
+    packet 1-6 have not hash value, and distributed to queue 0.
 
 Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
 --------------------------------------------------------
@@ -2032,10 +2030,10 @@ so the following step don't need to be run in dpdk-20.08.
     testpmd> flow destroy 0 rule 1
 
 10. send same packets with step 2,
-   check packet 1-3 have not hash value.
-   check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
-   check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
-   check packet 10-12 have not hash value.
+    check packet 1-3 have not hash value.
+    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
+    check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
+    check packet 10-12 have not hash value.
 
 Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
 --------------------------------------------------------
@@ -2315,18 +2313,18 @@ Subcase: toeplitz/symmetric with different pattern (different UL/DL)
 
 10. DUT re-create the symmetric rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
 
 11. destroy the rule 0::
 
-    testpmd> flow destroy 0 rule 0
+     testpmd> flow destroy 0 rule 0
 
 12. repeat step 4, check the symmetric also can work now.
 
 13. repeat step 2, check the toeplitz can't work now, the packets have not hash value.
 
 Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)
-----------------------------------------------------------------------
+-----------------------------------------------------------------------
 1. create a toeplitz rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
@@ -2377,13 +2375,13 @@ so the following step don't need to be run in dpdk-20.08.
 
 10. DUT re-create the symmetric rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
 
 11. repeat step 4, check the symmetric can work now.
 
 12. destroy the rule 0::
 
-    testpmd> flow destroy 0 rule 0
+     testpmd> flow destroy 0 rule 0
 
 13. repeat step 4, check the symmetric also can work now.
 
@@ -2434,13 +2432,13 @@ Subcase: toeplitz/symmetric with different pattern
 
 10. DUT re-create a symmetric rule::
 
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
 
 11. repeat step 4, check the symmetric can work now.
 
 12. destroy the rule 0::
 
-    testpmd> flow destroy 0 rule 0
+     testpmd> flow destroy 0 rule 0
 
 13. repeat step 4, check the symmetric also can work now.
 
@@ -2509,6 +2507,7 @@ start testpmd without disable rss::
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
 
 all the test cases run the same test steps as below:
+
 1. validate rule.
 2. send a basic hit pattern packet,record the hash value.
    then send a hit pattern packet with switched value of input set in the rule.
