@@ -119,7 +119,7 @@ class TestDynamicConfig(TestCase):
         Run before each test case.
         """
         cmd = "%s -n 3 -- -i --rxpt=0 \
-        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.coreMask, self.portMask)
+        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.portMask)
 
         self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
         time.sleep(5)
