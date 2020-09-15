@@ -358,6 +358,7 @@ toeplitz Test steps
 ===================
 launch testpmd with "--disable-rss"
 all the test cases run the same test steps as below:
+
 1. validate rule.
 2. create rule and list rule.
 3. send a basic hit pattern packet,record the hash value,
@@ -368,10 +369,10 @@ all the test cases run the same test steps as below:
 5. send hit pattern packet with changed input set not in the rule.
    check the received packet have same hash value with the basic packet.
    check the packet is distributed to queues by rss.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
 6. send not hit pattern packets with input set in the rule.
    check the received packets have not hash value, and distributed to queue 0.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
 7. distroy the rule and list rule.
 8. send same packet with step 3.
    check the received packets have not hash value, and distributed to queue 0.
@@ -1770,6 +1771,7 @@ symmetric-toeplitz Test steps
 =============================
 Launch testpmd without "--disable-rss"
 all the test cases run the same test steps as below:
+
 1. validate rule.
 2. send hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
@@ -1781,7 +1783,7 @@ all the test cases run the same test steps as below:
 5. send not hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
    check all the packets are distributed to queues by rss.
-note: if there is not this type packet in the case, omit this step.
+   note: if there is not this type packet in the case, omit this step.
 6. distroy the rule and list rule.
 7. send same packets with step 2.
    check the received packets have different hash value, or have not hash value.
