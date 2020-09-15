@@ -863,7 +863,7 @@ class TestKernelpfIavf(TestCase):
         self.bind_nic_driver(self.dut_ports, driver="")
         self.create_2vf_in_host()
         # start l3fwd-power
-        l3fwd_app = "./examples/l3fwd-power/build/l3fwd-power"
+        l3fwd_app = self.dut.apps_name['l3fwd-power']
 
         cmd = l3fwd_app + " -l 6,7 -n 4 -- -p 0x3 --config " + \
                           "'(0,0,6),(1,0,7)'"
@@ -979,7 +979,7 @@ class TestKernelpfIavf(TestCase):
         Run after each test case.
         """
         if self.running_case == "test_vf_rx_interrupt":
-            self.dut.send_expect("killall l3fwd-power", "# ", 60, alt_session=True)
+            self.dut.send_expect("killall %s" % self.dut.apps_name['l3fwd-power'].strip().split('/')[-1], "# ", 60, alt_session=True)
             self.destroy_2vf_in_2pf()
         else:
             self.vm_testpmd.execute_cmd("quit", "#")
