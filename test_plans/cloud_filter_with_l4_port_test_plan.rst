@@ -191,7 +191,7 @@ Test Case 4: ipv4-tcp_dport only
         packets should be in queue 0.
 
 Test Case 5: ipv4-sctp_sport only
-================================
+=================================
 
     1. validate a source port rule::
         testpmd> flow validate 0 ingress pattern eth / ipv4 / sctp src is 156 / end actions pf / queue index 1 / end
@@ -225,7 +225,7 @@ Test Case 5: ipv4-sctp_sport only
         packets should be in queue 0.
 
 Test Case 6: ipv4-sctp_dport only
-================================
+=================================
 
     1. validate a destination port rule::
         testpmd> flow validate 0 ingress pattern eth / ipv4 / sctp dst is 156 / end actions pf / queue index 1 / end
@@ -360,7 +360,7 @@ Test Case 9: ipv6-tcp_sport only
         packets should be in queue 0.
 
 Test Case 10: ipv6-tcp_dport only
-================================
+=================================
 
     1. validate a destination port rule::
         testpmd> flow validate 0 ingress pattern eth / ipv6 / tcp dst is 156 / end actions pf / queue index 1 / end
@@ -394,7 +394,7 @@ Test Case 10: ipv6-tcp_dport only
         packets should be in queue 0.
 
 Test Case 11: ipv6-sctp_sport only
-================================
+==================================
 
     1. validate a source port rule::
         testpmd> flow validate 0 ingress pattern eth / ipv6 / sctp src is 156 / end actions pf / queue index 1 / end
@@ -428,7 +428,7 @@ Test Case 11: ipv6-sctp_sport only
         packets should be in queue 0.
 
 Test Case 12: ipv6-sctp_dport only
-================================
+==================================
 
     1. validate a destination port rule::
         testpmd> flow validate 0 ingress pattern eth / ipv6 / sctp dst is 156 / end actions pf / queue index 1 / end
