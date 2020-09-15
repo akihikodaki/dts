@@ -98,6 +98,7 @@ class VirtioCryptodevIpsecTest(TestCase):
             "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=n$/CONFIG_RTE_LIBRTE_PMD_AESNI_MB=y/' config/common_base", '#', 30)
         user_dut.send_expect(
             "sed -i 's/CONFIG_RTE_EAL_IGB_UIO=n/CONFIG_RTE_EAL_IGB_UIO=y/g' config/common_base", '#', 30)
+        user_dut.set_build_options({'RTE_LIBRTE_PMD_AESNI_MB': 'y'})
         user_dut.build_install_dpdk(self.target)
         user_dut.build_dpdk_apps("./examples/ipsec-secgw")
 
