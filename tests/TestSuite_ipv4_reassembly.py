@@ -92,8 +92,7 @@ class TestIpReassembly(TestCase):
         """
         Changes the maximum number of frames by modifying the example app code.
         """
-        self.dut.send_expect(
-            "sed -i -e 's/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=.*$/CONFIG_RTE_LIBRTE_IP_FRAG_MAX_FRAG=%s/' ./config/common_base" % int(num_of_fragments), "# ")
+        self.dut.set_build_options({'RTE_LIBRTE_IP_FRAG_MAX_FRAG': int(num_of_fragments)})
         self.dut.send_expect("export RTE_TARGET=" + self.target, "#")
         self.dut.send_expect("export RTE_SDK=`pwd`", "#")
         self.dut.send_expect("rm -rf %s" % self.target, "# ", 5)
@@ -511,7 +510,7 @@ class TestIpReassembly(TestCase):
         self.test_config = IpReassemblyTestConfig(self,
                                                   number_of_frames=1,
                                                   flowttl='3s')
-
+        self.compile_example_app()
         self.execute_example_app()
         self.tcpdump_start_sniffing()
 
@@ -540,13 +539,13 @@ class TestIpReassembly(TestCase):
         Sends 1K jumbo frames using the right configuration.
         Expects all the frames to be forwarded back.
         """
-
         mtu = 9000
         self.test_config = IpReassemblyTestConfig(self,
                                                   payload_size=mtu - 100,
                                                   fragment_size=2500)
         try:
             self.set_tester_iface_mtu(self.test_config.tester_iface, mtu)
+            self.compile_example_app()
             self.execute_example_app()
             self.send_n_siff_packets()
             self.verify_all()
