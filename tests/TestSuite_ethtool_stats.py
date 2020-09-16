@@ -158,8 +158,9 @@ class TestEthtoolStats(TestCase):
         ports_count = len(self.dut_ports)
         ports_mask = reduce(lambda x, y: x | y,
                             [0x1 << x for x in range(ports_count)])
+        app_name = self.dut.apps_name['proc-info'].split('/')[-1]
         self.query_tool = os.path.join(
-            self.target_dir, self.target, 'app', 'dpdk-procinfo --file-prefix=%s' % self.prefix)
+            self.target_dir, self.target, 'app', app_name + '--file-prefix=%s' % self.prefix)
         self.dpdk_proc_info = "%s -v -- -p %s" % (self.query_tool, ports_mask)
 
     def parse_proc_info_xstat_output(self, msg):
