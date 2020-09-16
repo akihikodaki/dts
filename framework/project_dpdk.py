@@ -580,7 +580,7 @@ class DPDKdut(Dut):
 
     def build_dpdk_apps_freebsd_meson(self, folder, extra_options):
         # meson build same as linux
-        self.build_dpdk_apps_linux_meson(folder, extra_options)
+        return self.build_dpdk_apps_linux_meson(folder, extra_options)
 
     def build_dpdk_apps_freebsd_makefile(self, folder, extra_options):
         """
