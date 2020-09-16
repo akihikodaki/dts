@@ -177,7 +177,7 @@ class TestPortHotPlug(TestCase):
 
         self.session2 = self.dut.create_session(name="virtio_user")
         eal_param = self.dut.create_eal_parameters(no_pci=True, fixed_prefix="virtio1", cores=cores[5:9])
-        testpmd_cmd2 = "%s " % (self.path) + eal_param + ' -- -i'
+        testpmd_cmd2 = "%s/%s " % (self.dut.base_dir, self.path) + eal_param + ' -- -i'
         self.session2.send_expect(testpmd_cmd2, "testpmd>", timeout=60)
         self.session2.send_expect(
             "port attach net_virtio_user1,mac=00:01:02:03:04:05,path=%s,queues=1,packed_vq=1,mrg_rxbuf=1,in_order=0" % path,
