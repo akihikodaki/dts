@@ -67,7 +67,7 @@ from test_case import TestCase
 #
 
 
-class TestFortvilleRssGranularityConfig(TestCase):
+class TestFortvilleRssInput(TestCase):
     #
     #
     # Utility methods and other non-test code.
@@ -84,6 +84,7 @@ class TestFortvilleRssGranularityConfig(TestCase):
         ports = self.dut.get_ports(self.nic)
         self.verify(len(ports) >= 1, "Not enough ports available")
         dutPorts = self.dut.get_ports(self.nic)
+        self.dut_ports = dutPorts
         localPort = self.tester.get_local_port(dutPorts[0])
         self.itf = self.tester.get_interface(localPort)
         self.pmdout = PmdOutput(self.dut)
@@ -292,13 +293,13 @@ class TestFortvilleRssGranularityConfig(TestCase):
         """
         Create testpmd command
         """
-        self.dut.send_expect(
-            "./%s/app/testpmd  -c fffff -n %d -- -i --coremask=0xffffe --portmask=0x1 --rxq=4 --txq=4" %
-            (self.target, self.dut.get_memory_channels()), "testpmd> ", 120)
-
+        app_name = self.dut.apps_name['test-pmd']
+        eal_params = self.dut.create_eal_parameters(cores='1S/4C/1T', ports=[self.dut_ports[0]])
+        cmd = app_name + eal_params + '-- -i --portmask=0x1 --rxq=4 --txq=4'
+        self.dut.send_expect(cmd, "testpmd> ", 30)
         self.dut.send_expect("set verbose 8", "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
-        self.dut.send_expect("start", "testpmd> ", 120)
+        self.dut.send_expect("start", "testpmd> ", 10)
         time.sleep(2)
 
         res = self.pmdout.wait_link_status_up("all")
