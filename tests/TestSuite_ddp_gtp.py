@@ -27,7 +27,7 @@ class TestDdpGtp(TestCase):
         profile_file = 'dep/gtp.pkgo'
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
-        self.PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        self.PF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
         # commit ee653bd8, queue number of per vf default value is defined
         # in drivers/net/i40e/i40e_ethdev.c, named as RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF
         self.VF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_VF'
@@ -43,6 +43,7 @@ class TestDdpGtp(TestCase):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
+
     def insmod_modprobe(self,modename=''):
         """
         Insmod modProbe before run test case
@@ -76,15 +77,14 @@ class TestDdpGtp(TestCase):
         else:
             self.load_profile()
 
-
     def search_queue_number(self, Q_strip):
         """
         Search max queue number from configuration.
         """
         if Q_strip is self.PF_Q_strip:
-            out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-            pattern = "(%s=)(\d*)" % Q_strip
-        else :
+            out = self.dut.send_expect("cat config/rte_config.h", "]# ", 10)
+            pattern = "define (%s) (\d*)" % Q_strip
+        else:
             out = self.dut.send_expect("cat drivers/net/i40e/i40e_ethdev.c", "]# ", 10)
             pattern = "#define %s\s*(\d*)" % Q_strip
         s = re.compile(pattern)
@@ -142,7 +142,6 @@ class TestDdpGtp(TestCase):
             self.vm0_testpmd = PmdOutput(self.vm0_dut)
             self.env_done = True
 
-
     def destroy_vm_env(self):
 
         if getattr(self, 'vm0', None):
@@ -184,8 +183,6 @@ class TestDdpGtp(TestCase):
         self.dut_testpmd.execute_cmd('set verbose 1')
         self.dut_testpmd.execute_cmd('start')
         time.sleep(2)
-
-
 
     def gtp_packets(
             self, type='fdir', tunnel_pkt='gtpu', inner_L3='ipv4',
