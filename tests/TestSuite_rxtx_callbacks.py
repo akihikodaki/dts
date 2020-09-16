@@ -54,7 +54,7 @@ class TestRxtxCallbacks(TestCase):
         self.coremask = utils.create_mask(cores)
         
         self.mac = self.dut.get_mac_address(self.dut_ports[0])
-        self.path = "./examples/rxtx_callbacks/build/rxtx_callbacks"
+        self.app_rxtx_callbacks_path = self.dut.apps_name['rxtx_callbacks']
 
         out = self.dut.build_dpdk_apps("./examples/rxtx_callbacks")
         self.verify("Error" not in out, "compilation error 1")
@@ -67,7 +67,7 @@ class TestRxtxCallbacks(TestCase):
         pass
 
     def test_rxtx_callbacks(self):
-        cmd = self.path + " -c %s -n %d " % (self.coremask,self.dut.get_memory_channels())
+        cmd = self.app_rxtx_callbacks_path + " -c %s -n %d " % (self.coremask,self.dut.get_memory_channels())
         self.dut.send_expect(cmd,"forwarding packets",60)
          
         self.iface_port0 = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
