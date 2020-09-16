@@ -24,7 +24,7 @@ class TestDynamicFlowtype(TestCase):
         profile_file = 'dep/gtp.pkgo'
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
-        PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        PF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
         self.PF_QUEUE = self.search_queue_number(PF_Q_strip)
 
     def set_up(self):
@@ -41,8 +41,8 @@ class TestDynamicFlowtype(TestCase):
         """
         Search max queue number from configuration.
         """
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        pattern = "(%s=)(\d*)" % Q_strip
+        out = self.dut.send_expect("cat config/rte_config.h", "]# ", 10)
+        pattern = "define (%s) (\d*)" % Q_strip
         s = re.compile(pattern)
         res = s.search(out)
         if res is None:
