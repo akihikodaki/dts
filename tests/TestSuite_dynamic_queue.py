@@ -17,10 +17,10 @@ class TestDynamicQueue(TestCase):
     def set_up_all(self):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        self.PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
-        pattern = "%s=(\d*)" % self.PF_Q_strip
-        self.PF_QUEUE = self.element_strip(out, pattern)
+        out = self.dut.send_expect("cat config/rte_config.h", "]# ", 10)
+        self.PF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        pattern = "define (%s) (\d*)" % self.PF_Q_strip
+        self.PF_QUEUE = self.element_strip(out, pattern, True)
         self.used_dut_port = self.dut_ports[0]
         tester_port = self.tester.get_local_port(self.used_dut_port)
         self.tester_intf = self.tester.get_interface(tester_port)
@@ -45,7 +45,7 @@ class TestDynamicQueue(TestCase):
                 "Default", "--port-topology=chained --txq=%s --rxq=%s"
                 % (self.PF_QUEUE, self.PF_QUEUE))
 
-    def element_strip(self, out, pattern):
+    def element_strip(self, out, pattern, if_get_from_cfg=False):
         """
         Strip and get queue number.
         """
@@ -55,7 +55,7 @@ class TestDynamicQueue(TestCase):
             print((utils.RED('Fail to search number.')))
             return None
         else:
-            result = res.group(1)
+            result = res.group(2) if if_get_from_cfg else res.group(1)
             return int(result)
 
     def send_packet(self):
