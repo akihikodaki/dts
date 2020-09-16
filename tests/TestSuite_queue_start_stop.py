@@ -65,6 +65,7 @@ class TestQueueStartStop(TestCase):
         """
         self.ports = self.dut.get_ports(self.nic)
         self.verify(len(self.ports) >= 1, "Insufficient number of ports.")
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -82,7 +83,7 @@ class TestQueueStartStop(TestCase):
         try:
             self.dut.session.copy_file_to(patch_file, patch_dst)
             self.patch_hotfix_dpdk(patch_dst + "macfwd_log.patch", True)
-            self.dut.build_dpdk_apps('./app/test-pmd')
+            self.dut.build_install_dpdk(self.target)
         except Exception as e:
             raise IOError("dpdk setup failure: %s" % e)
 
@@ -130,7 +131,7 @@ class TestQueueStartStop(TestCase):
         """
         #dpdk start
         try:
-            self.dut.send_expect("./app/test-pmd/testpmd -c 0xf -n 4 -- -i --portmask=0x1 --port-topology=loop", "testpmd>", 120)
+            self.dut.send_expect("%s -c 0xf -n 4 -- -i --portmask=0x1 --port-topology=loop" % self.app_testpmd_path, "testpmd>", 120)
             time.sleep(5)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
