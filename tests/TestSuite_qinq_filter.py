@@ -72,9 +72,7 @@ class TestQinqFilter(TestCase):
         
         cores = self.dut.get_core_list('1S/2C/1T')
         self.coreMask = utils.create_mask(cores)
-        
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=.*$/"
-                           + "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=n/' config/common_base", "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n'})
         self.dut.build_install_dpdk(self.target)
         self.path=self.dut.apps_name['test-pmd']
         
@@ -350,6 +348,5 @@ class TestQinqFilter(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=.*$/"
-                           + "CONFIG_RTE_LIBRTE_I40E_INC_VECTOR=y/' config/common_base", "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'y'})
         self.dut.build_install_dpdk(self.target)
