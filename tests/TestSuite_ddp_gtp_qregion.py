@@ -18,9 +18,9 @@ class TestDdpGtpQregion(TestCase):
         profile_file = 'dep/gtp.pkgo'
         profile_dst = "/tmp/"
         self.dut.session.copy_file_to(profile_file, profile_dst)
-        out = self.dut.send_expect("cat config/common_base", "]# ", 10)
-        self.PF_Q_strip = 'CONFIG_RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
-        pattern = "(%s=)(\d*)" % self.PF_Q_strip
+        out = self.dut.send_expect("cat config/rte_config.h", "]# ", 10)
+        self.PF_Q_strip = 'RTE_LIBRTE_I40E_QUEUE_NUM_PER_PF'
+        pattern = "define (%s) (\d*)" % self.PF_Q_strip
         self.PF_QUEUE = self.element_strip(out, pattern)
         self.used_dut_port = self.dut_ports[0]
         tester_port = self.tester.get_local_port(self.used_dut_port)
