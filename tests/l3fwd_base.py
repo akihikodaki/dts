@@ -677,7 +677,7 @@ class L3fwdBase(object):
                 'whitelist': self.__l3fwd_white_list if self.__l3fwd_white_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': config, })
-        if self.nic == "niantic":
+        if self.nic in ["niantic", "columbiaville_100g", "columbiaville_25g"]:
             command_line += " --parse-ptype"
         if frame_size > 1518:
             command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
