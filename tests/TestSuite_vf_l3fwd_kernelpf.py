@@ -70,7 +70,7 @@ class TestVfL3fwdKernelPf(TestCase, L3fwdBase):
         Run after each test suite.
         """
         self.l3fwd_destroy_resource()
-        self.l3fwd_save_results()
+        self.l3fwd_save_results(json_file="{}.json".format(self.suite_name))
 
     def set_up(self):
         """
