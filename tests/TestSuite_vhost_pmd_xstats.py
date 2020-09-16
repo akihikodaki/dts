@@ -73,6 +73,7 @@ class TestVhostPmdXstats(TestCase):
         self.core_list_host = self.core_list[3:6]
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name=self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """ 
@@ -80,7 +81,7 @@ class TestVhostPmdXstats(TestCase):
         Launch vhost sample using default params
         """
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
 
@@ -345,7 +346,7 @@ class TestVhostPmdXstats(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
 
     def tear_down_all(self):
         """
