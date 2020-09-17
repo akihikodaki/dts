@@ -674,7 +674,11 @@ class TestGeneric_flow_api(TestCase):
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
-        # create the flow rules
+        # validate and create the flow rules
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 3 / end",
+            "validated")
+
         self.dut.send_expect(
             "flow create 0 ingress pattern eth / ipv4 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index 3 / end",
             "created")
@@ -688,8 +692,12 @@ class TestGeneric_flow_api(TestCase):
         # the ipv6 rule is conflicted with ipv4 rule.
         self.dut.send_expect("flow destroy 0 rule 0", "testpmd> ", 120)
 
-        # create the flow rules
+        # validate and create the flow rules
         q_idx = '2' if self.nic == 'foxville' else '4'
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth / ipv6 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index %s / end" %(q_idx),
+            "validated")
+
         self.dut.send_expect(
             "flow create 0 ingress pattern eth / ipv6 / tcp flags spec 0x02 flags mask 0x02 / end actions queue index %s / end" %(q_idx),
             "created")
@@ -716,6 +724,13 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'udp', 'sport', 'dport'],
+             'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'tcp', 'sport', 'dport'],
+             'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'sctp', 'sport', 'dport'],
+             'actions': ['queue']},
             {'create': 'create', 'flows': ['ipv4', 'sip', 'dip'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'udp', 'sport', 'dport'],
              'actions': ['queue']},
@@ -756,11 +771,15 @@ class TestGeneric_flow_api(TestCase):
         # create the flow rules
         if self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit"]:
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['ipv4', 'udp', 'dport'], 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['ipv4', 'tcp', 'dport'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ipv4', 'udp', 'dport'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ipv4', 'tcp', 'dport'], 'actions': ['queue']},
             ]
         else:
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['ipv4', 'proto', 'udp', 'dport'], 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['ipv4', 'proto', 'tcp', 'dport'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ipv4', 'proto', 'udp', 'dport'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ipv4', 'proto', 'tcp', 'dport'], 'actions': ['queue']},
             ]
@@ -861,6 +880,9 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['etag'], 'actions': ['vf0']},
+            {'create': 'validate', 'flows': ['etag'], 'actions': ['vf1']},
+            {'create': 'validate', 'flows': ['etag'], 'actions': ['pf']},
             {'create': 'create', 'flows': ['etag'], 'actions': ['vf0']},
             {'create': 'create', 'flows': ['etag'], 'actions': ['vf1']},
             {'create': 'create', 'flows': ['etag'], 'actions': ['pf']},
@@ -879,13 +901,15 @@ class TestGeneric_flow_api(TestCase):
         self.verify(self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit", "carlsville",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville"], "%s nic not support fdir L2 payload filter" % self.nic)
 
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=test1" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
         time.sleep(2)
 
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['vlan'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ether', 'ppp'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['ether', 'ppp'], 'actions': ['queue']},
         ]
@@ -1287,15 +1311,24 @@ class TestGeneric_flow_api(TestCase):
 
         # ip in command
         self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 dst is 1.1.1.1 / end actions mark id 2 / rss / end",
+            "error")
+        self.dut.send_expect(
             "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 dst is 1.1.1.1 / end actions mark id 2 / rss / end",
             "error")
 
         # udp in command
         self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp dst is 111 / end actions mark id 2 / rss / end",
+            "error")
+        self.dut.send_expect(
             "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / udp dst is 111 / end actions mark id 2 / rss / end",
             "error")
 
         # tcp in command
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp dst is 111 / end actions mark id 2 / rss / end",
+            "error")
         self.dut.send_expect(
             "flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / tcp dst is 111 / end actions mark id 2 / rss / end",
             "error")
@@ -1333,7 +1366,7 @@ class TestGeneric_flow_api(TestCase):
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville"], "%s nic not support fdir vlan filter" % self.nic)
         self.setup_env()
         # start testpmd on pf
-        self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+        self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -1352,6 +1385,22 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['vlan', 'ipv4'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'tcp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'vf0'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp', 'vf1'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp', 'vf1'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'udp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'vf0'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['drop']},
             {'create': 'create', 'flows': ['vlan', 'ipv4'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv4', 'udp'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv4', 'tcp'], 'actions': ['queue']},
@@ -1429,26 +1478,50 @@ class TestGeneric_flow_api(TestCase):
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "foxville", "carlsville"]):
             self.setup_env()
             # start testpmd on pf
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
             # start testpmd on vf0
-            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
             # start testpmd on vf1
-            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
             time.sleep(2)
 
-            # create the flow rules
+            # validate and create the flow rules
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto'], 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'ttl', 'udp', 'sport', 'dport'],
+                 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'tos', 'tcp', 'sport', 'dport'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv4', 'sip', 'dip', 'tos', 'ttl', 'sctp', 'sport', 'dport', 'tag'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv4', 'sip', 'dip', 'tos', 'ttl', 'sctp', 'sport', 'dport', 'tag'],
+                 'actions': ['drop']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'vf0'], 'actions': ['invalid']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto', 'vf0'], 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv4', 'sip', 'dip', 'tos', 'ttl', 'sctp', 'sport', 'dport', 'tag', 'vf1'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv4', 'sip', 'dip', 'tos', 'ttl', 'sctp', 'sport', 'dport', 'tag'],
+                 'actions': ['passthru', 'flag']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'ttl', 'udp', 'sport', 'dport'],
+                 'actions': ['queue', 'flag']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'tos', 'tcp', 'sport', 'dport'],
+                 'actions': ['queue', 'mark']},
+                {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'proto'], 'actions': ['passthru', 'mark']},
                 {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'proto'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'ttl', 'udp', 'sport', 'dport'],
                  'actions': ['queue']},
@@ -1492,6 +1565,14 @@ class TestGeneric_flow_api(TestCase):
             if (self.nic in ["sagepond", "sageville"]):
                 # create the flow rules
                 basic_flow_actions = [
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'sctp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'sctp', 'sport', 'dport'],
+                     'actions': ['drop']},
                     {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
                      'actions': ['queue']},
                     {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
@@ -1511,6 +1592,12 @@ class TestGeneric_flow_api(TestCase):
                 self.verify_rulenum(rule_num)
             else:
                 basic_flow_actions = [
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'sctp'], 'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['ipv4', 'sip', 'dip', 'sctp'], 'actions': ['drop']},
                     {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
                      'actions': ['queue']},
                     {'create': 'create', 'flows': ['ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
@@ -1537,17 +1624,17 @@ class TestGeneric_flow_api(TestCase):
         if (self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit","columbiaville_25g","columbiaville_100g",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
             self.setup_env()
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024 --legacy-mem" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
             time.sleep(2)
-            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
+            self.session_secondary.send_expect("%s -c 0x1e0000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf1 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[0].pci), "testpmd>", 120)
             self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
             self.session_secondary.send_expect("set verbose 1", "testpmd>")
             self.session_secondary.send_expect("start", "testpmd>")
             time.sleep(2)
-            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss --pkt-filter-mode=perfect" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
+            self.session_third.send_expect("%s -c 0x1e000000 -n 4 --socket-mem 1024,1024 --legacy-mem -w %s --file-prefix=vf2 -- -i --rxq=4 --txq=4 --disable-rss" % (self.app_path, self.sriov_vfs_port[1].pci), "testpmd>", 120)
             self.session_third.send_expect("set fwd rxonly", "testpmd>")
             self.session_third.send_expect("set verbose 1", "testpmd>")
             self.session_third.send_expect("start", "testpmd>")
@@ -1555,6 +1642,26 @@ class TestGeneric_flow_api(TestCase):
 
             # create the flow rules
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'proto', 'tc', 'hop'],
+                 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'udp', 'sport', 'dport'],
+                 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'tcp', 'sport', 'dport'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'sctp', 'sport', 'dport', 'tag'],
+                 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'proto', 'tc', 'hop', 'vf0'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'tcp', 'sport', 'dport', 'vf1'],
+                 'actions': ['queue']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'sctp', 'sport', 'dport', 'tag'],
+                 'actions': ['drop']},
+                {'create': 'validate',
+                 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'tcp', 'sport', 'dport', 'vf1'],
+                 'actions': ['drop']},
                 {'create': 'create', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'proto', 'tc', 'hop'],
                  'actions': ['queue']},
                 {'create': 'create', 'flows': ['vlan', 'ipv6', 'sip', 'dip', 'tc', 'hop', 'udp', 'sport', 'dport'],
@@ -1593,6 +1700,16 @@ class TestGeneric_flow_api(TestCase):
             if (self.nic in ["niantic", "twinville"]):
                 # create the flow rules
                 basic_flow_actions = [
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip'], 'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip'], 'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip', 'sctp'], 'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'sctp'], 'actions': ['queue']},
                     {'create': 'create', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip'], 'actions': ['queue']},
                     {'create': 'create', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip'], 'actions': ['queue']},
                     {'create': 'create', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
@@ -1605,6 +1722,9 @@ class TestGeneric_flow_api(TestCase):
                     {'create': 'create', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'sctp'], 'actions': ['queue']},
                 ]
                 extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+                self.dut.send_expect(
+                    "flow validate 0 ingress pattern fuzzy thresh spec 2 thresh last 5 thresh mask 0xffffffff / ipv6 src is 2001::1 dst is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / end",
+                    "validated")
                 self.dut.send_expect(
                     "flow create 0 ingress pattern fuzzy thresh spec 2 thresh last 5 thresh mask 0xffffffff / ipv6 src is 2001::1 dst is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / end",
                     "created")
@@ -1620,6 +1740,16 @@ class TestGeneric_flow_api(TestCase):
             elif (self.nic in ["sagepond", "sageville"]):
                 # create the flow rules
                 basic_flow_actions = [
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'tcp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip', 'sctp', 'sport', 'dport'],
+                     'actions': ['queue']},
+                    {'create': 'validate', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'sctp', 'sport', 'dport'],
+                     'actions': ['queue']},
                     {'create': 'create', 'flows': ['fuzzy', 'ipv4', 'sip', 'dip', 'udp', 'sport', 'dport'],
                      'actions': ['queue']},
                     {'create': 'create', 'flows': ['fuzzy', 'ipv6', 'sip', 'dip', 'tcp', 'sport', 'dport'],
@@ -1632,6 +1762,9 @@ class TestGeneric_flow_api(TestCase):
                      'actions': ['queue']},
                 ]
                 extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
+                self.dut.send_expect(
+                    "flow validate 0 ingress pattern fuzzy thresh spec 2 thresh last 5 thresh mask 0xffffffff / ipv6 src is 2001::1 dst is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / end",
+                    "validated")
                 self.dut.send_expect(
                     "flow create 0 ingress pattern fuzzy thresh spec 2 thresh last 5 thresh mask 0xffffffff / ipv6 src is 2001::1 dst is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / end",
                     "created")
@@ -1656,7 +1789,7 @@ class TestGeneric_flow_api(TestCase):
         # i40e
         if (self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit", "carlsville",
                          "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T"]):
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
@@ -1665,8 +1798,55 @@ class TestGeneric_flow_api(TestCase):
             # creat the flow rules
             # l2-payload exceeds the  max length of raw match is 16bytes
             self.dut.send_expect(
+                "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
+                "error")
+            self.dut.send_expect(
                 "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnopq / end actions queue index 1 / end",
                 "Exceeds maxmial payload limit")
+            # l2-payload equal the max length of raw match is 16bytes
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnop / end actions queue index 1 / end",
+                "validated")
+
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnop / end actions queue index 1 / end",
+                "created")
+            # ipv4-other the most 3 fields can be matched, and the max sum bytes of the three fields is 16 bytes.
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / vlan tci is 4095 / ipv4 proto is 255 ttl is 40 / raw relative is 1 offset is 2 pattern is ab / raw relative is 1 offset is 10 pattern is abcdefghij / raw relative is 1 offset is 0 pattern is abcd / end actions queue index 2 / end",
+                "validated")
+
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / vlan tci is 4095 / ipv4 proto is 255 ttl is 40 / raw relative is 1 offset is 2 pattern is ab / raw relative is 1 offset is 10 pattern is abcdefghij / raw relative is 1 offset is 0 pattern is abcd / end actions queue index 2 / end",
+                "created")
+            # ipv4-udp
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / udp src is 22 dst is 23 / raw relative is 1 offset is 2 pattern is fhds / end actions queue index 3 / end",
+                "validated")
+
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / udp src is 22 dst is 23 / raw relative is 1 offset is 2 pattern is fhds / end actions queue index 3 / end",
+                "created")
+            # ipv4-tcp
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 tos is 4 ttl is 3 / tcp src is 32 dst is 33 / raw relative is 1 offset is 2 pattern is hijk / end actions queue index 4 / end",
+                "validated")
+
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 tos is 4 ttl is 3 / tcp src is 32 dst is 33 / raw relative is 1 offset is 2 pattern is hijk / end actions queue index 4 / end",
+                "created")
+            # ipv4-sctp
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / sctp src is 42 / raw relative is 1 offset is 2 pattern is abcd / end actions queue index 5 / end",
+                "validated")
+
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / sctp src is 42 / raw relative is 1 offset is 2 pattern is abcd / end actions queue index 5 / end",
+                "created")
+
+            # flush all the rules, then re-create the rules, fix DPDK-23826
+            self.dut.send_expect(
+                "flow flush 0", "testpmd> ")
             # l2-payload equal the max length of raw match is 16bytes
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is abcdefghijklmnop / end actions queue index 1 / end",
@@ -1713,7 +1893,7 @@ class TestGeneric_flow_api(TestCase):
             self.dut.send_expect("quit", "# ")
             time.sleep(2)
 
-            self.pmdout.start_testpmd("%s" % self.pf_cores, "--pkt-filter-mode=perfect --disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024" % self.pf_pci)
+            self.pmdout.start_testpmd("%s" % self.pf_cores, "--disable-rss --rxq=%d --txq=%d" % (MAX_QUEUE+1, MAX_QUEUE+1), "-w %s --file-prefix=pf --socket-mem 1024,1024" % self.pf_pci)
             self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
             self.dut.send_expect("set verbose 1", "testpmd> ", 120)
             self.dut.send_expect("start", "testpmd> ", 120)
@@ -1721,10 +1901,24 @@ class TestGeneric_flow_api(TestCase):
 
             # ipv6-tcp
             self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / vlan tci is 1 / ipv6 src is 2001::1 dst is 2001::2 tc is 3 hop is 30 / tcp src is 32 dst is 33 / raw relative is 1 offset is 0 pattern is hijk / raw relative is 1 offset is 8 pattern is abcdefgh / end actions queue index 6 / end",
+                "validated")
+
+            self.dut.send_expect(
                 "flow create 0 ingress pattern eth / vlan tci is 1 / ipv6 src is 2001::1 dst is 2001::2 tc is 3 hop is 30 / tcp src is 32 dst is 33 / raw relative is 1 offset is 0 pattern is hijk / raw relative is 1 offset is 8 pattern is abcdefgh / end actions queue index 6 / end",
                 "created")
 
             # send the packet and verify the result
+            self.sendpkt(
+                'Ether(dst="%s")/Dot1Q(vlan=1)/IPv6(src="2001::1", dst="2001::2", tc=3, hlim=30)/TCP(sport=32,dport=33)/Raw(load="hijkabcdefghabcdefghijklmn")' % self.outer_mac)
+            self.verify_result("pf", expect_rxpkts="1", expect_queue="6", verify_mac=self.outer_mac)
+
+            # destroy the rule, then re-create the rule, fix DPDK-23826
+            self.dut.send_expect(
+                "flow destroy 0 rule 0", "testpmd> ")
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / vlan tci is 1 / ipv6 src is 2001::1 dst is 2001::2 tc is 3 hop is 30 / tcp src is 32 dst is 33 / raw relative is 1 offset is 0 pattern is hijk / raw relative is 1 offset is 8 pattern is abcdefgh / end actions queue index 6 / end",
+                "created")
             self.sendpkt(
                 'Ether(dst="%s")/Dot1Q(vlan=1)/IPv6(src="2001::1", dst="2001::2", tc=3, hlim=30)/TCP(sport=32,dport=33)/Raw(load="hijkabcdefghabcdefghijklmn")' % self.outer_mac)
             self.verify_result("pf", expect_rxpkts="1", expect_queue="6", verify_mac=self.outer_mac)
@@ -1738,6 +1932,9 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
 
             # ipv4-udp-flexbytes
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / udp src is 24 dst is 25 / raw relative is 0 search is 0 offset is 44 limit is 0 pattern is 86 / end actions queue index 1 / end",
+                "validated")
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / udp src is 24 dst is 25 / raw relative is 0 search is 0 offset is 44 limit is 0 pattern is 86 / end actions queue index 1 / end",
                 "created")
@@ -1758,6 +1955,15 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
 
             # ipv4-tcp-flexbytes spec-mask
+            self.dut.send_expect(
+                "flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.4 / tcp src is 22 dst is 23 / raw relative spec 0 relative mask 1 search spec 0 search mask 1 offset spec 54 offset mask 0xffffffff limit spec 0 limit mask 0xffff pattern is ab pattern is cd / end actions queue index 2 / end",
+                "validated")
+            self.dut.send_expect(
+                "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.4 / tcp src is 22 dst is 23 / raw relative spec 0 relative mask 1 search spec 0 search mask 1 offset spec 54 offset mask 0xffffffff limit spec 0 limit mask 0xffff pattern is ab pattern is cd / end actions queue index 2 / end",
+                "created")
+            # destroy the rule, then re-create the rule, fix DPDK-23826
+            self.dut.send_expect(
+                "flow destroy 0 rule 0", "testpmd> ")
             self.dut.send_expect(
                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.3 dst is 192.168.0.4 / tcp src is 22 dst is 23 / raw relative spec 0 relative mask 1 search spec 0 search mask 1 offset spec 54 offset mask 0xffffffff limit spec 0 limit mask 0xffff pattern is ab pattern is cd / end actions queue index 2 / end",
                 "created")
@@ -1783,9 +1989,15 @@ class TestGeneric_flow_api(TestCase):
             # ipv4-sctp-flexbytes
             if (self.nic in ["sagepond", "sageville"]):
                 self.dut.send_expect(
+                    "flow validate 0 ingress pattern fuzzy thresh is 6 / eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / sctp src is 24 dst is 25 / raw relative is 0 search is 0 offset is 48 limit is 0 pattern is ab / end actions queue index 3 / end",
+                    "validated")
+                self.dut.send_expect(
                     "flow create 0 ingress pattern fuzzy thresh is 6 / eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / sctp src is 24 dst is 25 / raw relative is 0 search is 0 offset is 48 limit is 0 pattern is ab / end actions queue index 3 / end",
                     "created")
             else:
+                self.dut.send_expect(
+                    "flow validate 0 ingress pattern fuzzy thresh is 6 / eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / sctp / raw relative is 0 search is 0 offset is 48 limit is 0 pattern is ab / end actions queue index 3 / end",
+                    "validated")
                 self.dut.send_expect(
                     "flow create 0 ingress pattern fuzzy thresh is 6 / eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / sctp / raw relative is 0 search is 0 offset is 48 limit is 0 pattern is ab / end actions queue index 3 / end",
                     "created")
@@ -1809,6 +2021,9 @@ class TestGeneric_flow_api(TestCase):
                 self.dut.send_expect("start", "testpmd> ", 120)
                 time.sleep(2)
 
+                self.dut.send_expect(
+                    "flow validate 0 ingress pattern fuzzy thresh is 6 / ipv6 src is 2001::1 dst is 2001::2 / raw relative is 0 search is 0 offset is 56 limit is 0 pattern is 86 / end actions queue index 4 / end",
+                    "validated")
                 self.dut.send_expect(
                     "flow create 0 ingress pattern fuzzy thresh is 6 / ipv6 src is 2001::1 dst is 2001::2 / raw relative is 0 search is 0 offset is 56 limit is 0 pattern is 86 / end actions queue index 4 / end",
                     "created")
@@ -1834,25 +2049,43 @@ class TestGeneric_flow_api(TestCase):
         # create the flow rules
         # l2_payload
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 14 pattern is fhds / end actions queue index 1 / end",
+            "validated")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 14 pattern is fhds / end actions queue index 1 / end",
             "created")
         # ipv4 packet
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 34 pattern is ab / end actions queue index 2 / end",
+            "validated")
         self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 34 pattern is ab / end actions queue index 2 / end",
             "created")
         # ipv6 packet
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 58 pattern is efgh / end actions queue index 3 / end",
+            "validated")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 58 pattern is efgh / end actions queue index 3 / end",
             "created")
         # 3 fields relative is 0
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 38 pattern is ab / raw relative is 0 offset is 34 pattern is cd / raw relative is 0 offset is 42 pattern is efgh / end actions queue index 4 / end",
+            "validated")
         self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 38 pattern is ab / raw relative is 0 offset is 34 pattern is cd / raw relative is 0 offset is 42 pattern is efgh / end actions queue index 4 / end",
             "created")
         # 4 fields relative is 0 and 1
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 48 pattern is ab / raw relative is 1 offset is 0 pattern is cd / raw relative is 0 offset is 44 pattern is efgh / raw relative is 1 offset is 10 pattern is hijklmnopq / end actions queue index 5 / end",
+            "validated")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 48 pattern is ab / raw relative is 1 offset is 0 pattern is cd / raw relative is 0 offset is 44 pattern is efgh / raw relative is 1 offset is 10 pattern is hijklmnopq / end actions queue index 5 / end",
             "created")
         # 3 fields offset confilict
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 64 pattern is ab / raw relative is 1 offset is 4 pattern is cdefgh / raw relative is 0 offset is 68 pattern is klmn / end actions queue index 6 / end",
+            "validated")
         self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 64 pattern is ab / raw relative is 1 offset is 4 pattern is cdefgh / raw relative is 0 offset is 68 pattern is klmn / end actions queue index 6 / end",
             "created")
@@ -1881,18 +2114,33 @@ class TestGeneric_flow_api(TestCase):
 
         # 1 field 128bytes
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 128 pattern is ab / end actions queue index 1 / end",
+            "error")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 128 pattern is ab / end actions queue index 1 / end",
             "Failed to create flow")
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 126 pattern is abcd / end actions queue index 1 / end",
+            "error")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 126 pattern is abcd / end actions queue index 1 / end",
             "Failed to create flow")
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 126 pattern is ab / end actions queue index 1 / end",
+            "validated")
         self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 126 pattern is ab / end actions queue index 1 / end",
             "created")
         # 2 field 128bytes
         self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 68 pattern is ab / raw relative is 1 offset is 58 pattern is cd / end actions queue index 2 / end",
+            "error")
+        self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 68 pattern is ab / raw relative is 1 offset is 58 pattern is cd / end actions queue index 2 / end",
             "Failed to create flow")
+        self.dut.send_expect(
+            "flow validate 0 ingress pattern raw relative is 0 offset is 68 pattern is ab / raw relative is 1 offset is 56 pattern is cd / end actions queue index 2 / end",
+            "validated")
         self.dut.send_expect(
             "flow create 0 ingress pattern raw relative is 0 offset is 68 pattern is ab / raw relative is 1 offset is 56 pattern is cd / end actions queue index 2 / end",
             "created")
@@ -1926,11 +2174,15 @@ class TestGeneric_flow_api(TestCase):
         # create the flow rules
         if self.nic in ["fortville_eagle", "fortville_25g", "fortville_spirit"]:
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['vlan'], 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['vlan'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['vlan'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['vlan'], 'actions': ['queue']}
             ]
         else:
             basic_flow_actions = [
+                {'create': 'validate', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
+                {'create': 'validate', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
                 {'create': 'create', 'flows': ['dst_mac', 'vlan'], 'actions': ['queue']},
             ]
@@ -1952,6 +2204,8 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'], 'actions': ['drop']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'], 'actions': ['drop']},
         ]
@@ -1973,6 +2227,8 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['drop']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['drop']},
         ]
@@ -2008,6 +2264,17 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
+             'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
+             'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
+             'actions': ['vf0', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
+             'actions': ['vf1', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
@@ -2071,6 +2338,13 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['vf0', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['vf1', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},

@@ -48,6 +48,9 @@ Prerequisites
 
     ./usertools/dpdk-devbind.py -b igb_uio 05:00.0
  
+Note: validate the rules first before create it in each case.
+All the rules that can be validated correctly should be created successfully.
+The rules can't be validated correctly shouldn't be created successfully.
 
 Test case: Fortville ethertype
 ==============================
@@ -101,8 +104,10 @@ Test case: Fortville fdir for L2 payload
     testpmd> set verbose 1
     testpmd> start
 
-2. create filter rules::
+2. validate and create filter rules::
 
+    testpmd> flow validate 0 ingress pattern eth / vlan tci is 1 / end actions queue index 1 / end
+    testpmd> flow validate 0 ingress pattern eth type is 0x0807 / end actions queue index 2 / end
     testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / end actions queue index 1 / end
     testpmd> flow create 0 ingress pattern eth type is 0x0807 / end actions queue index 2 / end
 
@@ -133,7 +138,7 @@ Test case: Fortville fdir for flexbytes
     testpmd> set verbose 1
     testpmd> start
 
-2. create filter rules
+2. validate and create filter rules
 
    l2-payload::
 
@@ -191,6 +196,14 @@ Test case: Fortville fdir for flexbytes
     testpmd> flow flush 0
     testpmd> flow list 0
 
+5. verify rules can be recreated successfully after deleted::
+
+    testpmd> flow create 0 ingress pattern eth type is 0x0807 / raw relative is 1 pattern is ab / end actions queue index 1 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 4095 / ipv4 proto is 255 ttl is 40 / raw relative is 1 offset is 2 pattern is ab / raw relative is 1 offset is 10 pattern is abcdefghij / raw relative is 1 offset is 0 pattern is abcd / end actions queue index 2 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / udp src is 22 dst is 23 / raw relative is 1 offset is 2 pattern is fhds / end actions queue index 3 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 tos is 4 ttl is 3 / tcp src is 32 dst is 33 / raw relative is 1 offset is 2 pattern is hijk / end actions queue index 4 / end
+    testpmd> flow create 0 ingress pattern eth / ipv4 src is 2.2.2.4 dst is 2.2.2.5 / sctp src is 42 / raw relative is 1 offset is 2 pattern is abcdefghijklmnop / end actions queue index 5 / end
+    testpmd> flow create 0 ingress pattern eth / vlan tci is 1 / ipv6 src is 2001::1 dst is 2001::2 tc is 3 hop is 30 / tcp src is 32 dst is 33 / raw relative is 1 offset is 0 pattern is hijk / raw relative is 1 offset is 8 pattern is abcdefgh / end actions queue index 6 / end
 
 Test case: Fortville fdir for ipv4
 ==================================
@@ -219,7 +232,7 @@ Test case: Fortville fdir for ipv4
     testpmd> set verbose 1
     testpmd> start
 
-2. create filter rules
+2. validate and create the filter rules.
 
    ipv4-other::
 
@@ -324,7 +337,7 @@ Test case: Fortville fdir for ipv6
     testpmd> set verbose 1
     testpmd> start
 
-2. create filter rules
+2. validated and create filter rules
 
    ipv6-other::
 
