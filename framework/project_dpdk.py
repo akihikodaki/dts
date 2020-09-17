@@ -307,8 +307,8 @@ class DPDKdut(Dut):
         options_config = self.generator_build_option_string()
 
         self.send_expect("rm -rf " + target, "#")
-        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s" % (
-                        toolchain, options_config, default_library, target), "# ", build_time)
+        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True %s -Dlibdir=lib %s --default-library=%s %s" % (
+                        toolchain, extra_options, options_config, default_library, target), "# ", build_time)
         assert ("FAILED" not in out), "meson setup failed ..."
 
         out = self.send_expect("ninja -C %s -j %d" % (target, self.number_of_cores), "# ", build_time)
