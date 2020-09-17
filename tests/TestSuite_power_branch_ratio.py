@@ -42,6 +42,8 @@ from pprint import pformat
 import traceback
 
 
+from settings import load_global_setting
+from settings import HOST_BUILD_TYPE_SETTING
 from utils import create_mask as dts_create_mask
 from qemu_libvirt import LibvirtKvm
 from pktgen import TRANSMIT_CONT
@@ -73,13 +75,8 @@ class TestPowerBranchRatio(TestCase):
         _host_crb = host_crb if host_crb else self.dut
         example_dir = "examples/" + name
         out = _host_crb.build_dpdk_apps('./' + example_dir)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-        binary_dir = os.path.join(self.target_dir, example_dir, 'build')
-        cmd = ["ls -F {0} | grep --color=never '*'".format(binary_dir), '# ', 5]
-        exec_file = self.execute_cmds(cmd, name=_host_crb.session.name)
-        binary_file = os.path.join(binary_dir, exec_file[:-1])
-        return binary_file
+        return os.path.join(self.target_dir,
+                            _host_crb.apps_name[os.path.basename(name)])
 
     def add_console(self, session):
         self.ext_con[session.name] = [
@@ -287,18 +284,24 @@ class TestPowerBranchRatio(TestCase):
             [cmd_fmt('undefine', self.vm_name), '# '], ]
         self.d_a_con(cmds)
 
-    def preset_compilation(self):
-        '''
-        '''
+    @property
+    def compile_switch(self):
         sw_table = [
             "CONFIG_RTE_LIBRTE_POWER",
             "CONFIG_RTE_LIBRTE_POWER_DEBUG",
         ]
-        for sw in sw_table:
-            cmd = ("sed -i -e "
-                   "'s/{0}=n$/{0}=y/' "
-                   "{1}/config/common_base").format(sw, self.target_dir)
-            self.d_a_con(cmd)
+        return sw_table
+    
+    def preset_compilation(self):
+        if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
+            compile_SWs = self.compile_switch + ["CONFIG_RTE_LIBRTE_I40E_PMD"]
+            self.dut.set_build_options(dict([(sw[7:], 'y') for sw in compile_SWs]))
+        else:
+            for sw in self.compile_switch:
+                cmd = ("sed -i -e "
+                       "'s/{0}=n$/{0}=y/' "
+                       "{1}/config/common_base").format(sw, self.target_dir)
+                self.d_a_con(cmd)
         # re-compile dpdk source code
         self.dut.build_install_dpdk(self.target)
 
@@ -308,16 +311,20 @@ class TestPowerBranchRatio(TestCase):
             yield
         finally:
             time.sleep(10)
-            self.restore_port_drv()
-            sw_table = [
-                "CONFIG_RTE_LIBRTE_POWER",
-                "CONFIG_RTE_LIBRTE_POWER_DEBUG",
-            ]
-            for sw in sw_table:
-                cmd = ("sed -i -e "
-                       "'s/{0}=y$/{0}=n/' "
-                       "{1}/config/common_base").format(sw, self.target_dir)
-                self.d_a_con(cmd)
+            try:
+                self.restore_port_drv()
+            except Exception as e:
+                self.logger.error(traceback.format_exc())
+            # restore compilation
+            if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
+                self.dut.set_build_options(
+                    dict([(sw[7:], 'n') for sw in self.compile_switch]))
+            else:
+                for sw in self.compile_switch:
+                    cmd = ("sed -i -e "
+                           "'s/{0}=y$/{0}=n/' "
+                           "{1}/config/common_base").format(sw, self.target_dir)
+                    self.d_a_con(cmd)
             # re-compile dpdk source code
             self.dut.build_install_dpdk(self.target)
 
@@ -413,8 +420,8 @@ class TestPowerBranchRatio(TestCase):
         self.is_guest_on = False
 
     def init_vm_testpmd(self):
-        self.vm_testpmd = "{}/{}/app/testpmd".format(
-            self.target_dir, self.dut.target)
+        self.vm_testpmd = os.path.join(self.target_dir,
+                                       self.dut.apps_name['test-pmd'])
 
     def start_vm_testpmd(self):
         cores = [0, 1]
