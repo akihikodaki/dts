@@ -54,6 +54,12 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.prepare_l3fwd_power()
         self.pci_info = self.dut.ports_info[0]['pci']
         self.base_dir = self.dut.base_dir.replace('~', '/root')
+        self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
+        self.app_name=self.app_l3fwd_power_path.split('/')[-1]
+        self.dut_ports = self.dut.get_ports()
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cbdma_dev_infos=[]
+        self.device_str=None
 
     def set_up(self):
         """
@@ -61,12 +67,13 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         # Clean the execution ENV
         self.verify_info = []
-        self.dut.send_expect("killall l3fwd-power", "#")
+        self.dut.send_expect(f"killall {self.app_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost-l3fwd")
         self.vm_dut = []
         self.vm = []
+        self.nopci=True
 
     def get_core_mask(self):
         self.core_config = "1S/%dC/1T" % (self.vm_num*self.queues)
@@ -79,15 +86,18 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.dut.send_expect("cp ./examples/l3fwd-power/main.c .", "#")
         self.dut.send_expect(
                 "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
-        out = self.dut.send_expect("make -C examples/l3fwd-power", "#")
+        out = self.dut.build_dpdk_apps("examples/l3fwd-power")
         self.verify("Error" not in out, "compilation l3fwd-power error")
+
+    def list_split(self, items, n):
+        return [items[i:i + n] for i in range(0, len(items), n)]
 
     @property
     def check_2M_env(self):
         out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
         return True if out == '2048' else False
 
-    def lanuch_l3fwd_power(self):
+    def lanuch_l3fwd_power(self,cbdma=False):
         """
         launch l3fwd-power with a virtual vhost device
         """
@@ -106,16 +116,32 @@ class TestVhostEventIdxInterrupt(TestCase):
                 core_index = core_index + 1
         # config the vdev info, if have 2 vms, it shoule have 2 vdev info
         vdev_info = ""
-        for i in range(self.vm_num):
-            vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,queues=%d,client=1' " % (i, self.base_dir, i, self.queues)
+        if cbdma:
+            self.cbdma_dev_infos_list = []
+            if self.vm_num >= 2:
+                self.cbdma_dev_infos_list=self.list_split(self.cbdma_dev_infos,
+                                                          int(len(self.cbdma_dev_infos)/self.vm_num))
+            for i in range(self.vm_num):
+                dmas=''
+                if self.vm_num == 1:
+                    for queue in range(self.queues):
+                            dmas += f"txq{queue}@{self.cbdma_dev_infos[queue]};"
+
+                else:
+                    cbdma_dev_infos = self.cbdma_dev_infos_list[i]
+                    for index, q in enumerate(cbdma_dev_infos):
+                        dmas += f"txq{index}@{q};"
+                vdev_info += f"--vdev 'net_vhost%d,iface=%s/vhost-net%d,dmas=[{dmas}],queues=%d,client=1' " \
+                                         % (i, self.base_dir, i, self.queues)
+        else:
+            for i in range(self.vm_num):
+                vdev_info += "--vdev 'net_vhost%d,iface=%s/vhost-net%d,queues=%d,client=1' " % (i, self.base_dir, i, self.queues)
 
         port_info = "0x1" if self.vm_num == 1 else "0x3"
 
-        example_para = "./examples/l3fwd-power/build/l3fwd-power "
+        example_para = self.app_l3fwd_power_path + " "
         para = " --log-level=9 %s -- -p %s --parse-ptype 1 --config '%s' --interrupt-only" % (vdev_info, port_info, config_info)
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=True)
-        if self.check_2M_env:
-            eal_params += " --single-file-segments "
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, no_pci=self.nopci)
         command_line_client = example_para + eal_params + para
         self.vhost.get_session_before(timeout=2)
         self.vhost.send_expect(command_line_client, "POWER", 40)
@@ -128,7 +154,7 @@ class TestVhostEventIdxInterrupt(TestCase):
             self.logger.info("Launch l3fwd-power sample finished")
         self.verify(res is True, "Lanuch l3fwd failed")
 
-    def relanuch_l3fwd_power(self):
+    def relanuch_l3fwd_power(self,cbdma=False):
         """
         relauch l3fwd-power sample for port up
         """
@@ -137,7 +163,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         pid = self.dut.send_expect("ps -ef |grep l3|grep -v grep |awk '{print $2}'", "#")
         if pid:
             self.dut.send_expect("kill -9 %s" % pid, "#")
-        self.lanuch_l3fwd_power()
+        self.lanuch_l3fwd_power(cbdma)
 
     def set_vm_cpu_number(self, vm_config):
         # config the vcpu numbers when queue number greater than 1
@@ -341,13 +367,92 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.send_and_verify()
         self.stop_all_apps()
 
+    def test_wake_up_split_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues_with_cbdma(self):
+        """
+        wake up vhost-user cores with l3fwd-power sample and multi VMs
+        """
+        self.vm_num = 1
+        self.bind_nic_driver(self.dut_ports)
+        self.queues = 16
+        self.get_core_mask()
+        self.nopci=False
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.lanuch_l3fwd_power(cbdma=True)
+        self.start_vms(vm_num=self.vm_num,)
+        self.relanuch_l3fwd_power(cbdma=True)
+        self.config_virito_net_in_vm()
+        self.send_and_verify()
+        self.stop_all_apps()
+
+    def test_wake_up_split_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt_with_cbdma(self):
+        self.vm_num = 2
+        self.bind_nic_driver(self.dut_ports)
+        self.queues = 1
+        self.get_core_mask()
+        self.nopci=False
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.lanuch_l3fwd_power(cbdma=True)
+        self.start_vms(vm_num=self.vm_num,)
+        self.relanuch_l3fwd_power(cbdma=True)
+        self.config_virito_net_in_vm()
+        self.send_and_verify()
+        self.stop_all_apps()
+
+    def bind_nic_driver(self, ports, driver=""):
+        if driver == "igb_uio":
+            for port in ports:
+                netdev = self.dut.ports_info[port]['port']
+                driver = netdev.get_nic_driver()
+                if driver != 'igb_uio':
+                    netdev.bind_driver(driver='igb_uio')
+        else:
+            for port in ports:
+                netdev = self.dut.ports_info[port]['port']
+                driver_now = netdev.get_nic_driver()
+                if driver == "":
+                    driver = netdev.default_driver
+                if driver != driver_now:
+                    netdev.bind_driver(driver=driver)
+
+    def get_cbdma_ports_info_and_bind_to_dpdk(self):
+        """
+        get all cbdma ports
+        """
+        self.cbdma_dev_infos = []
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        device_info = out.split('\n')
+        for device in device_info:
+            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            if pci_info is not None:
+                # dev_info = pci_info.group(1)
+                # the numa id of ioat dev, only add the device which
+                # on same socket with nic dev
+                self.cbdma_dev_infos.append(pci_info.group(1))
+        self.verify(len(self.cbdma_dev_infos) >= self.queues, 'There no enough cbdma device to run this suite')
+        if self.queues == 1:
+            self.cbdma_dev_infos=[self.cbdma_dev_infos[0], self.cbdma_dev_infos[-1]]
+        self.used_cbdma = self.cbdma_dev_infos[0:self.queues*self.vm_num]
+
+        self.device_str = ' '.join(self.used_cbdma)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s ' %
+                             ("igb_uio", self.device_str), '# ', 60)
+
     def tear_down(self):
         """
         Run after each test case.
         """
         self.dut.close_session(self.vhost)
-        self.dut.send_expect("killall l3fwd-power", "#")
+        self.dut.send_expect(f"killall {self.app_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.bind_cbdma_device_to_kernel()
+        self.bind_nic_driver(self.dut_ports, self.drivername)
+
+    def bind_cbdma_device_to_kernel(self):
+        if self.device_str is not None:
+            self.dut.send_expect('modprobe ioatdma', '# ')
+            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str,
+                                 '# ', 60)
 
     def tear_down_all(self):
         """
