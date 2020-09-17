@@ -54,7 +54,8 @@ class TestCBDMA(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.get_cbdma_ports_info_and_bind_to_dpdk()
-        out = self.dut.build_dpdk_apps('./examples/ioat/')
+        out = self.dut.build_dpdk_apps('./examples/ioat')
+        self.app_path=self.dut.apps_name['ioat']
         self.verify('Error' not in out, 'compilation ioat error')
 
     def set_up(self):
@@ -139,14 +140,17 @@ class TestCBDMA(TestCase):
         num is 2
         '''
         # flush other output
-        self.dut.get_session_output(timeout=1)
-        cmd_command = './examples/ioat/build/ioatfwd ' + eal_params + \
+        self.send_session=self.dut.new_session("new_session")
+        target = self.app_path.split("/")
+        self.send_session.send_expect(f"cd  {'/'.join(target[0:-1])} ", '# ')
+        self.send_session.get_session_before(timeout=1)
+        cmd_command = "./"+target[-1] + eal_params + \
                       '-- -p %s -q %d %s -c %s' % (hex(port_info),
                       self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num, mac_info,
                       self.cbdma_copy_mode)
-        self.dut.send_expect(cmd_command, 'ioatfwd,')
+        self.send_session.send_expect(cmd_command, f'{target[-1].strip()},')
         time.sleep(1)
-        out = self.dut.get_session_output(timeout=1)
+        out = self.send_session.get_session_before(timeout=1)
         thread_num = 2 if self.cbdma_cores_num > 2 else 1
         o_thread_info = 'Worker Threads = %d' % thread_num
         o_copy_info = 'Copy Mode = %s' % self.cbdma_copy_mode
@@ -210,7 +214,7 @@ class TestCBDMA(TestCase):
         """
         Check stats of ioat app, each ioat channel can enqueue packets
         """
-        out = self.dut.get_session_output(timeout=2)
+        out = self.send_session.get_session_before(timeout=2)
         index = out.rfind('Statistics for port 0')
         out = out[index:]
         data_info = re.findall('successful_enqueues:\s*(\d*)', out)
