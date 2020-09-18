@@ -108,7 +108,7 @@ class TestSoftnic(TestCase):
         # 10G nic pps(M)
         expect_pps = [14, 8, 4, 2, 1, 0.9, 0.8]
 
-        self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'firmware.cli'), "testpmd>", timeout=300)
+        self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'firmware.cli'), "testpmd>", timeout=800)
         self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
