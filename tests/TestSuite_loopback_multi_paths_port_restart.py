@@ -58,6 +58,7 @@ class TestLoopbackPortRestart(TestCase):
         self.core_list_user = self.core_list[0:2]
         self.core_list_host = self.core_list[2:5]
         self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -65,7 +66,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         # Prepare the result table
         self.table_header = ["FrameSize(B)", "Mode", "Throughput(Mpps)", "Cycle"]
@@ -78,7 +79,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         start testpmd on vhost
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
         command_line_client = self.path + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
@@ -330,7 +331,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
         time.sleep(2)
 
