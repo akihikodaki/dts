@@ -61,6 +61,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.pci_info = self.dut.ports_info[0]['pci']
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.app_pdump = self.dut.apps_name['pdump']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
@@ -69,7 +70,7 @@ class TestVM2VMVirtioPMD(TestCase):
         self.table_header = ["FrameSize(B)", "Mode",
                             "Throughput(Mpps)", "Queue Number", "Path"]
         self.result_table_create(self.table_header)
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vm_dut = []
