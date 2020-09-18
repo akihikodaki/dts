@@ -70,6 +70,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         self.peer_pci_setup = False
         self.prepare_dpdk()
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         #
@@ -77,7 +78,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         #
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("modprobe vhost-net", "#")
         self.peer_pci_setup = False
@@ -316,7 +317,7 @@ class TestVirtioUserAsExceptionalPath(TestCase):
         #
         self.dut.kill_all()
         self.dut.close_session(self.vhost_user)
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf ./vhost-net", "#")
         time.sleep(2)
