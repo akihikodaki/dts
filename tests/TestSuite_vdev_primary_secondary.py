@@ -66,13 +66,14 @@ class TestVdevPrimarySecondary(TestCase):
         self.pci_info = self.dut.ports_info[0]['pci']
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.app_symmetric_mp_path = self.dut.apps_name['symmetric_mp']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
 
 
@@ -178,7 +179,7 @@ class TestVdevPrimarySecondary(TestCase):
         self.vm_dut.kill_all()
         self.dut.kill_all()
         self.vm.stop()
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         time.sleep(2)
 
