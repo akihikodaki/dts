@@ -58,6 +58,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:6]
         self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -65,7 +66,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         # Clean the execution ENV
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         # Prepare the result table
         self.table_header = ["Mode", "Pkt_size", "Throughput(Mpps)",
                             "Queue Number", "Cycle"]
@@ -616,7 +617,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
         time.sleep(2)
 
