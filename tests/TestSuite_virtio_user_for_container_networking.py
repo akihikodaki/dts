@@ -72,13 +72,15 @@ class TestVirtioUserForContainer(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.number_of_ports = 1
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect('rm -rf ./vhost-net*', '# ')
-        self.dut.send_expect('killall -s INT testpmd', '# ')
+        self.dut.send_expect('killall -s INT %s' % self.testpmd_name, '# ')
         self.vhost_user = self.dut.new_session(suite='vhost-user')
         self.virtio_user = self.dut.new_session(suite='virtio-user')
         # Prepare the result table
@@ -158,7 +160,7 @@ class TestVirtioUserForContainer(TestCase):
         eal_param = self.dut.create_eal_parameters(cores=self.core_list_vhost_user, prefix='vhost', vdevs=["net_vhost0,iface=vhost-net,queues=%d,client=0" % self.queue_number],ports=[self.pci_info])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_client = self.dut.target + '/app/testpmd ' + eal_param + ' -- -i --nb-cores=%d' % self.nb_cores
+        command_line_client = self.app_testpmd_path + eal_param + ' -- -i --nb-cores=%d' % self.nb_cores
         self.vhost_user.send_expect(command_line_client, 'testpmd> ', 30)
         self.vhost_user.send_expect('start', 'testpmd> ', 30)
 
@@ -169,20 +171,20 @@ class TestVirtioUserForContainer(TestCase):
         if self.check_2M_env:
             command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
                             '-v /mnt/huge:/dev/hugepages ' + \
-                            '-v %s:%s %s .%s/%s/app/testpmd -c %s -n %d ' + \
+                            '-v %s:%s %s .%s/%s -c %s -n %d ' + \
                             '-m 1024 --no-pci --file-prefix=container --single-file-segments ' + \
                             '--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d ' + \
                             '-- -i --rxq=%d --txq=%d --nb-cores=%d'
         else:
             command_line_user = 'docker run -i -t --privileged -v %s/vhost-net:/tmp/vhost-net ' + \
                             '-v /mnt/huge:/dev/hugepages ' + \
-                            '-v %s:%s %s .%s/%s/app/testpmd -c %s -n %d ' + \
+                            '-v %s:%s %s .%s/%s -c %s -n %d ' + \
                             '-m 1024 --no-pci --file-prefix=container ' + \
                             '--vdev=virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net,queues=%d ' + \
                             '-- -i --rxq=%d --txq=%d --nb-cores=%d'
         command_line_user = command_line_user % (self.container_base_dir,
             self.container_base_dir, self.container_base_dir, self.docker_image,
-            self.container_base_dir, self.dut.target, self.core_mask_virtio_user,
+            self.container_base_dir, self.app_testpmd_path, self.core_mask_virtio_user,
             self.mem_channels, self.queue_number, self.queue_number,
             self.queue_number, self.nb_cores)
         self.virtio_user.send_expect(command_line_user, 'testpmd> ', 120)
@@ -227,7 +229,7 @@ class TestVirtioUserForContainer(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect('killall -s INT testpmd', '# ')
+        self.dut.send_expect('killall -s INT %s' % self.testpmd_name, '# ')
 
     def tear_down_all(self):
         """
