@@ -106,7 +106,7 @@ class TestTSO(TestCase):
         Load vxlan or nvgre module to scapy.
         """
         cwd = os.getcwd()
-        dir_module = cwd + r'/' + 'dep'
+        dir_module = cwd + r'/' + 'dep' + '/scapy_modules'
         self.tester.scapy_append('sys.path.append("%s")' % dir_module)
         self.tester.scapy_append("from vxlan import VXLAN")
         self.tester.scapy_append('from nvgre import NVGRE')
