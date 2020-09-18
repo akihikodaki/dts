@@ -64,13 +64,15 @@ class TestVirtioUserInterrupt(TestCase):
         self.tx_interface = self.tester.get_interface(self.tx_port)
         self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
+        self.l3fwdpower_name = self.app_l3fwd_power_path.split("/")[-1]
 
     def set_up(self):
         """
         run before each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
-        self.dut.send_expect("killall l3fwd-power", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("rm -rf vhost-net*", "#")
 
         self.l3fwd = self.dut.new_session(suite="l3fwd")
@@ -259,8 +261,8 @@ class TestVirtioUserInterrupt(TestCase):
         """
         run after each test case.
         """
-        self.dut.send_expect("killall l3fwd-power", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
 
     def tear_down_all(self):
