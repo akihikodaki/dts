@@ -50,19 +50,18 @@ class TestPtpClient(TestCase):
         self.verify("command not found" not in out, "ptp4l not install")
         dutPorts = self.dut.get_ports()
         self.verify(len(dutPorts) > 0, "No ports found for " + self.nic)
-        global default
-        default = self.dut.send_expect("cat config/common_base |grep IEEE1588=", "# ") 
 
         # Change the config file to support IEEE1588 and recompile the package.
-        self.dut.send_expect("sed -i -e 's/%s$/CONFIG_RTE_LIBRTE_IEEE1588=y/' config/common_base" % default, "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'y'})
         self.dut.skip_setup = False
         self.dut.build_install_dpdk(self.target)
 
         # build sample app
         out = self.dut.build_dpdk_apps("examples/ptpclient")
+        self.app_ptpclient_path = self.dut.apps_name['ptpclient']
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
-
+        self.app_name = self.app_ptpclient_path[self.app_ptpclient_path.rfind('/')+1:]
         port = self.tester.get_local_port(dutPorts[0])
         self.itf0 = self.tester.get_interface(port)
 
@@ -87,11 +86,7 @@ class TestPtpClient(TestCase):
         self.result_table_print()
 
     def kill_ptpclient(self):
-        out_ps = self.dut.send_expect("ps -C ptpclient -L -opid,args", "# ")
-        utils.regexp(out_ps, r'(\d+) ./examples/ptpclient')
-        pid = re.compile(r'(\d+) ./examples/ptpclient')
-        pid_num = list(set(pid.findall(out_ps)))
-        out_ps = self.dut.send_expect("kill %s" % pid_num[0], "# ")
+        self.dut.send_expect("killall %s" % self.app_name, "# ")
 
     def test_ptpclient(self):
         """
@@ -104,7 +99,8 @@ class TestPtpClient(TestCase):
             self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
-        self.dut.send_expect("./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 0 -p 0x1 " + "&", "Delta between master and slave", 60)
+        self.dut.send_expect("./%s -c f -n 3 -- -T 0 -p 0x1 " % self.app_ptpclient_path + "&",
+                             "Delta between master and slave", 60)
         time.sleep(3)
         out = self.dut.get_session_output()
         self.kill_ptpclient()
@@ -134,7 +130,8 @@ class TestPtpClient(TestCase):
             self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
-        self.dut.send_expect("./examples/ptpclient/build/ptpclient -c f -n 3 -- -T 1 -p 0x1" + "&", "Delta between master and slave", 60)
+        self.dut.send_expect("./%s -c f -n 3 -- -T 1 -p 0x1" % self.app_ptpclient_path + "&",
+                             "Delta between master and slave", 60)
         time.sleep(3)
         out = self.dut.get_session_output()
 
@@ -158,7 +155,7 @@ class TestPtpClient(TestCase):
         # the output will include kill process info, at that time need get system time again.
         if len(dut_out) != len(tester_out):
             dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
-        ## In rare cases minute may change while getting time. So get time again
+        # In rare cases minute may change while getting time. So get time again
         if dut_out != tester_out:
             tester_out = self.tester.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
             dut_out = self.dut.send_expect("date -u '+%Y-%m-%d %H:%M'", "# ")
@@ -175,6 +172,10 @@ class TestPtpClient(TestCase):
         """
         Run after each test suite.
         """
+        # Restore the systime from RTC time.
+        out = self.dut.send_expect("hwclock", "# ")
+        rtc_time = re.findall(r"(\d{4}-\d{2}-\d{2}\s\d{2}:\d{2}:\d{2})", out)[0]
+        self.dut.send_command('date -s "%s"' % rtc_time, "# ")
         # Restore the config file and recompile the package.
-        self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_IEEE1588=y$/%s/' config/common_base" % default, "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'n'})
         self.dut.build_install_dpdk(self.target)
