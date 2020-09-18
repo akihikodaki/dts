@@ -60,6 +60,7 @@ class TestLoopbackMultiQueues(TestCase):
         if 'packet_sizes' in self.get_suite_cfg():
             self.frame_sizes = self.get_suite_cfg()['packet_sizes']
         self.path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.path.split("/")[-1]
 
     def set_up(self):
         """
@@ -67,7 +68,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         # Prepare the result table
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.table_header = ["Frame", "Mode", "Throughput(Mpps)", "Queue Number"]
         self.result_table_create(self.table_header)
         self.data_verify = {}
@@ -380,7 +381,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.close_all_session()
 
     def tear_down_all(self):
