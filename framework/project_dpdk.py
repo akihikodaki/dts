@@ -254,7 +254,11 @@ class DPDKdut(Dut):
         if len(params) == 0:
             return ''
         else:
-            args = '-Dc_args=' + '\'%s\'' % ' '.join(params)
+            # if will compile 32bit app, should add the parameter of -m32
+            if 'i686' in self.target:
+                args = '-Dc_args=' + '\'-m32 %s\'' % ' '.join(params)
+            else:
+                args = '-Dc_args=' + '\'%s\'' % ' '.join(params)
             return args
 
     def build_install_dpdk(self, target, extra_options=''):
