@@ -78,7 +78,7 @@ def get_scapy_module_impcmd():
         if m in local_modules:
             cmd_li.append(f'from {m} import {",".join(scapy_modules_required[m])}')
         else:
-            cmd_li.append(f'from scapy.contirb.{m} import {",".join(scapy_modules_required[m])}')
+            cmd_li.append(f'from scapy.contrib.{m} import {",".join(scapy_modules_required[m])}')
     return ';'.join(cmd_li)
 
 SCAPY_IMP_CMD = get_scapy_module_impcmd()
