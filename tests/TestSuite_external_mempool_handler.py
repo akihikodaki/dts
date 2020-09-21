@@ -61,6 +61,7 @@ class TestExternalMempool(TestCase):
 
     def change_mempool_ops(self, ops=''):
         self.dut.send_expect("sed -i 's/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=.*$/CONFIG_RTE_MBUF_DEFAULT_MEMPOOL_OPS=\"%s\"/' ./config/common_base" % ops, "# ")
+        self.dut.set_build_options({'RTE_MBUF_DEFAULT_MEMPOOL_OPS': ops})
         self.dut.build_install_dpdk(self.target)
 
     def verify_unit_func(self):
