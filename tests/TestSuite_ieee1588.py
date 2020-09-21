@@ -56,6 +56,7 @@ class TestIeee1588(TestCase):
         # Change the config file to support IEEE1588 and recompile the package.
         self.dut.send_expect(
             "sed -i -e 's/IEEE1588=n$/IEEE1588=y/' config/common_base", "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'y'})
         self.dut.skip_setup = False
         self.dut.build_install_dpdk(self.target)
 
@@ -91,18 +92,20 @@ class TestIeee1588(TestCase):
         port = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(port)
 
-        self.tester.send_expect(
-            "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20)
         self.send_session = self.tester.create_session('send_session')
+        self.send_session.send_expect(
+            "tcpdump -i %s -e ether src %s" % (itf, mac), "tcpdump", 20)
+
         setattr(self.send_session, 'tmp_file', self.tester.tmp_file)
+        setattr(self.send_session, 'tmp_file', self.tester.get_session_output)
         pkt = Packet(pkt_type='TIMESYNC')
         pkt.config_layer('ether', {'dst': mac})
-        pkt.send_pkt(self.send_session, tx_port=itf)
+        pkt.send_pkt(self.tester, tx_port=itf)
         time.sleep(1)
-        self.send_session.close()
-        out = self.tester.get_session_output(timeout=20)
 
-        self.tester.send_expect("^C", "# ", 20)
+        out = self.send_session.get_session_before(timeout=20)
+        self.send_session.send_expect("^C", "# ", 20)
+        self.send_session.close()
 
         self.verify("0x88f7" in out, "Ether type is not PTP")
 
@@ -171,4 +174,5 @@ class TestIeee1588(TestCase):
         # Restore the config file and recompile the package.
         self.dut.send_expect(
             "sed -i -e 's/IEEE1588=y$/IEEE1588=n/' config/common_base", "# ", 30)
+        self.dut.set_build_options({'RTE_LIBRTE_IEEE1588': 'n'})
         self.dut.build_install_dpdk(self.target)
