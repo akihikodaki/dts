@@ -76,7 +76,8 @@ class TestSoftnic(TestCase):
         self.dut.session.copy_file_to(self.tm_firmware, self.root_path)
         self.dut.session.copy_file_to(self.nat_firmware, self.root_path)
         self.eal_param = " -w %s" % self.dut.ports_info[0]['pci']
-        self.cmd = "./%s/app/testpmd -c 0x7 -s 0x4 -n 4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086' -- -i --forward-mode=softnic --portmask=0x2"
+        self.path = self.dut.apps_name['test-pmd']
+        self.cmd = "./%s -c 0x7 -s 0x4 -n 4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086' -- -i --forward-mode=softnic --portmask=0x2"
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
@@ -107,7 +108,7 @@ class TestSoftnic(TestCase):
         # 10G nic pps(M)
         expect_pps = [14, 8, 4, 2, 1, 0.9, 0.8]
 
-        self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'firmware.cli'), "testpmd>", timeout=300)
+        self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'firmware.cli'), "testpmd>", timeout=300)
         self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
@@ -133,7 +134,7 @@ class TestSoftnic(TestCase):
 
     def test_perf_shaping_for_pipe(self):
         self.change_config_file('tm_firmware.cli')
-        self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'tm_firmware.cli'), "testpmd> ", timeout=800)
+        self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'tm_firmware.cli'), "testpmd> ", timeout=800)
         self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
@@ -170,7 +171,7 @@ class TestSoftnic(TestCase):
         for t in pkt_type:
             for i in range(2):
                 self.dut.send_expect("sed -i -e '12c table action profile AP0 ipv4 offset 270 fwd nat %s proto %s' %s" % (pkt_location[i], t, self.root_path + 'nat_firmware.cli'), "#")
-                self.dut.send_expect(self.cmd % (self.target, self.eal_param, 'nat_firmware.cli'), "testpmd>", timeout=60)
+                self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'nat_firmware.cli'), "testpmd>", timeout=60)
                 self.dut.send_expect("start", "testpmd>")
                 # src ip tcp
                 for j in range(2):
