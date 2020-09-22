@@ -341,7 +341,7 @@ class TestDcfLifeCycle(TestCase):
         '''
         cmd = "ps aux | grep testpmd"
         self.d_a_con(cmd)
-        cmd = r"kill -9 `ps -ef | grep testpmd | grep -v grep | grep -v testpmd_vf | awk '{print $2}'`"
+        cmd = r"kill -9 `ps -ef | grep %s | grep -v grep | grep -v %s | awk '{print $2}'`" % (self.vf_dcf_testpmd.split('/')[-1], self.vf_testpmd2.split('/')[-1])
         self.d_a_con(cmd)
         self.is_vf_dcf_pmd_on = False
         time.sleep(2)
