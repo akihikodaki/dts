@@ -271,7 +271,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.vm_dut.send_expect("quit", "#", 20)
         self.vhost.send_expect("quit", "#", 20)
         self.vm.stop()
-        self.dut.send_expect("killall -I testpmd", '#', 20)
+        self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
     def test_perf_vhost_pvp_diffrent_qemu_version_mergeable_mac(self):

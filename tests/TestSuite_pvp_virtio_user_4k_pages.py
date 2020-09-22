@@ -81,13 +81,14 @@ class TestPvpVirtioUser4kPages(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.number_of_ports = 1
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
         Run before each test case.
         """
         self.dut.send_expect("rm -rf ./vhost-net*", "# ")
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "# ")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         # Prepare the result table
@@ -208,7 +209,7 @@ class TestPvpVirtioUser4kPages(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect("killall -s INT testpmd", "# ")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "# ")
         self.restore_env_of_tmpfs_for_4k()
 
     def tear_down_all(self):

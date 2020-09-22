@@ -72,6 +72,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.dut.kill_all()
         self.number_of_ports = 1
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
@@ -88,7 +89,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         start testpmd on vhost
         """
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         testcmd = self.app_testpmd_path + " "
         vdev = 'net_vhost0,iface=vhost-net,queues=2,client=0'

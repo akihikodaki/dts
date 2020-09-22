@@ -69,13 +69,15 @@ class TestPVPVirtIOBonding(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+        self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
         run before each test case.
         """
         self.dut.send_expect("rm -rf ./vhost.out", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.start_testpmd_on_vhost()
         self.start_one_vm()
@@ -239,7 +241,7 @@ class TestPVPVirtIOBonding(TestCase):
         Run after each test case.
         """
         self.stop_testpmd_and_vm()
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         time.sleep(2)
 

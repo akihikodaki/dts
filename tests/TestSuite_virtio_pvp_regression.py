@@ -93,6 +93,7 @@ class TestVirtioPVPRegression(TestCase):
         self.pktgen_helper = PacketGeneratorHelper()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
     def set_up(self):
         """
@@ -362,7 +363,7 @@ class TestVirtioPVPRegression(TestCase):
         self.vm_dut.send_expect("quit", "#", 20)
         self.vhost.send_expect("quit", "#", 20)
         self.vm.stop()
-        self.dut.send_expect("killall -I testpmd", '#', 20)
+        self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
         self.dut.send_expect('killall -s INT qemu-system-x86_64', '# ')
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
 
@@ -390,7 +391,7 @@ class TestVirtioPVPRegression(TestCase):
             self.send_verify(case_info, version, "before reconnect")
 
             self.logger.info('now reconnect from vhost')
-            self.dut.send_expect("killall -s INT testpmd", "# ")
+            self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "# ")
             self.start_testpmd_as_vhost()
             self.send_verify(case_info, version, "reconnect from vhost")
 
@@ -490,7 +491,7 @@ class TestVirtioPVPRegression(TestCase):
         """
         self.dut.close_session(self.vhost)
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect("killall -s INT testpmd", "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         time.sleep(2)
 
     def tear_down_all(self):
