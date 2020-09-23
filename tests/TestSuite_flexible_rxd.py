@@ -70,6 +70,9 @@ class TestFlexibleRxd(TestCase):
         Modify the dpdk code.
         """
         self.dut.send_expect("cp ./app/test-pmd/util.c .", "#", 15)
+        self.dut.send_expect("cp ./app/test-pmd/meson.build /root/", "#", 15)
+        pattern = r"/if dpdk_conf.has('RTE_LIBRTE_IXGBE_PMD')/i\if dpdk_conf.has('RTE_LIBRTE_ICE_PMD')\n\tdeps += 'pmd_ice'\nendif"
+        self.dut.send_expect(f'sed -i "{pattern}" app/test-pmd/meson.build', "#", 15)
         self.dut.send_expect(
             "sed -i '/#include <rte_flow.h>/a\#include <rte_pmd_ice.h>' app/test-pmd/util.c", "#", 15)
         self.dut.send_expect(
@@ -81,6 +84,8 @@ class TestFlexibleRxd(TestCase):
          Resume editing operation.
         """
         self.dut.send_expect("\cp ./util.c ./app/test-pmd/", "#", 15)
+        self.dut.send_expect("\cp /root/meson.build ./app/test-pmd/", "#", 15)
+        self.dut.send_expect("rm -rf  /root/meson.build", "#", 15)
         self.dut.send_expect("rm -rf  ./util.c", "#", 15)
         self.dut.build_install_dpdk(self.dut.target)
 
