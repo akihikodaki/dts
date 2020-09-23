@@ -2253,6 +2253,37 @@
             "Bug ID": "",
             "Comments": "This case only support ixgbe and igb nic,The feature corresponding task ticket is DPDK-7884."
         }
-    ]
-
+    ],
+     "hardware_checksum_check_l4_rx": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ice"
+        }
+    ],
+     "hardware_checksum_check_l4_tx": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "This case only support ice"
+        }
+    ] 
 }
