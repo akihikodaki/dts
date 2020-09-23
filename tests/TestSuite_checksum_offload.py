@@ -129,6 +129,7 @@ class TestChecksumOffload(TestCase):
 
     def checksum_enablehw(self, port):
         self.dut.send_expect("port stop all", "testpmd>")
+        self.dut.send_expect("rx_vxlan_port add 4789 0 ", "testpmd>")
         self.dut.send_expect("csum set ip hw %d" % port, "testpmd>")
         self.dut.send_expect("csum set udp hw %d" % port, "testpmd>")
         self.dut.send_expect("csum set tcp hw %d" % port, "testpmd>")
@@ -685,7 +686,6 @@ class TestChecksumOffload(TestCase):
             self.result_table_print()
 
     def test_hardware_checksum_check_ip_rx(self):
-        self.dut.send_expect("start", "testpmd>")
         self.tester.send_expect("scapy", ">>>")
         self.checksum_enablehw(self.dut_ports[0])
         self.dut.send_expect("start", "testpmd>")
@@ -791,8 +791,9 @@ class TestChecksumOffload(TestCase):
 
         # Tunneled
         # VXLAN
+        VXLAN_l4_protos=['UDP']
         for l3 in l3_protos:
-            for l4 in l4_protos:
+            for l4 in VXLAN_l4_protos:
                 for outer_arg in "", "chksum=0xf":
                     for inner_arg in "", "chksum=0xf":
                         for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
@@ -801,8 +802,8 @@ class TestChecksumOffload(TestCase):
                             else:  # flag == PKT_RX_OUTER_L4_CKSUM_
                                 should_pass = outer_arg == ""
                             vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
-                                f"eth/{l3}()/{l4}({outer_arg})/VXLAN()/{l3}()/"
-                                f"{l4}(chksum={inner_arg})/('X'*50)",
+                                f"eth/{l3}()/{l4}(dport=4789,{outer_arg})/VXLAN()/eth/{l3}()/"
+                                f"{l4}({inner_arg})/('X'*50)",
                                 flag, f"{l3}/{l4}/VXLAN/{l3}/{l4}",
                                 should_pass=should_pass)
 
@@ -846,7 +847,7 @@ class TestChecksumOffload(TestCase):
         #                             if vf is not None:
         #                                 verification_errors.append(vf)
 
-        self.tester.send_expect("quit", "#")
+        self.tester.send_expect("quit()", "#")
         self.dut.send_expect("stop", "testpmd>")
 
         for err in verification_errors:
@@ -871,7 +872,7 @@ class TestChecksumOffload(TestCase):
         packet_file_path = "/tmp/test_hardware_checksum_check_l4_tx_packets.pcap"
         capture_file_path = "/tmp/tester/" + capture_file_name
 
-        self.tester.send_expect(f"tcpdump -i {iface} -s 65535 -w {capture_file_path} &", "# ")
+        self.tester.send_expect(f"tcpdump -i '{iface}' -s 65535 -w {capture_file_path} &", "# ")
 
         wrpcap(packet_file_path, packets)
         self.tester.session.copy_file_to(packet_file_path, packet_file_path)
