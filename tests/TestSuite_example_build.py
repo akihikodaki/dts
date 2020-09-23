@@ -61,7 +61,7 @@ class TestExamplebuild(TestCase):
         if "No such file or directory" not in out:
             self.dut.send_expect('export PQOS_INSTALL_PATH=/root/intel-cmt-cat-master/lib', '#')
         out = self.dut.build_dpdk_apps("./examples", '#')
-        verify_info = ['error','Error','Stop','terminate','failed','No such file','no input files','not found','No rule']
+        verify_info = ['Error','Stop','terminate','failed','No such file','no input files','not found','No rule']
         for failed_info in verify_info:
             self.verify(failed_info not in out, "Test failed")
 
