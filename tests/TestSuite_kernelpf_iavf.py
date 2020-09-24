@@ -144,7 +144,7 @@ class TestKernelpfIavf(TestCase):
         self.sriov_vfs_port = self.dut.ports_info[
             self.used_dut_port]['vfs_port']
         out = self.dut.send_expect('ethtool %s' % self.host_intf, '#')
-        self.speed = re.findall('Speed: (\d*)', out)[0]
+        self.speed = int(re.findall('Speed: (\d*)', out)[0])//1000
         if self.nic.startswith('columbiaville'):
             self.dut.send_expect("ip link set %s vf 0 spoofchk off" %(self.host_intf), "# ")
         if self.running_case == "test_vf_multicast":
