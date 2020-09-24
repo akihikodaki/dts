@@ -43,6 +43,7 @@ FOLDERS = {
     'Depends': 'dep',
     'Output': 'output',
     'NicDriver': 'nics',
+    'scapy_modules': 'scapy_modules'
 }
 
 """
