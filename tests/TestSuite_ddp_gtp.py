@@ -459,8 +459,6 @@ class TestDdpGtp(TestCase):
     def tear_down(self):
         if "vf" in self._suite_result.test_case:
             self.destroy_vm_env()
-            self.vm0_testpmd.execute_cmd('stop')
-            self.vm0_testpmd.quit()
         self.dut_testpmd.execute_cmd('stop')
         out = self.dut_testpmd.execute_cmd('ddp get list 0')
         if "Profile number is: 0" not in out:
