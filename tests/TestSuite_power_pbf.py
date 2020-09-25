@@ -40,6 +40,8 @@ from collections import Counter
 from pprint import pformat
 
 # import dts libs
+from settings import load_global_setting
+from settings import HOST_BUILD_TYPE_SETTING
 from test_case import TestCase
 from exception import VerifyFailure
 from utils import create_mask
@@ -136,13 +138,8 @@ class TestPowerPbf(TestCase):
     def prepare_binary(self, name):
         example_dir = "examples/" + name
         out = self.dut.build_dpdk_apps('./' + example_dir)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-        binary_dir = os.path.join(self.target_dir, example_dir, 'build')
-        cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.d_a_con(cmd)
-        binary_file = os.path.join(binary_dir, exec_file[:-1])
-        return binary_file
+        return os.path.join(self.target_dir,
+                            self.dut.apps_name[os.path.basename(name)])
 
     def create_powermonitor_folder(self):
         cmd = 'mkdir -p {0}; chmod 777 {0}'.format('/tmp/powermonitor')
@@ -151,12 +148,13 @@ class TestPowerPbf(TestCase):
     def init_test_binary_file(self):
         self.create_powermonitor_folder()
         # open debug SW
-        cmd = ("sed -i -e 's/"
-               "CONFIG_RTE_LIBRTE_POWER_DEBUG=n$/"
-               "CONFIG_RTE_LIBRTE_POWER_DEBUG=y/"
-               "' {0}/config/common_base").format(self.target_dir)
-        self.d_a_con(cmd)
-        self.dut.skip_setup = False
+        SW = "CONFIG_RTE_LIBRTE_POWER_DEBUG"
+        if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
+            self.dut.set_build_options({SW[7:]: 'y'})
+        else:
+            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}/config/common_base".format(
+                SW, self.target_dir)
+            self.d_a_con(cmd)
         self.dut.build_install_dpdk(self.target)
         # set up vm power management binary process setting
         self.vm_power_mgr = self.prepare_binary('vm_power_manager')
