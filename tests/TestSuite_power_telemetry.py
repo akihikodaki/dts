@@ -42,6 +42,8 @@ import json
 from copy import deepcopy
 from pprint import pformat
 
+from settings import load_global_setting
+from settings import HOST_BUILD_TYPE_SETTING
 from utils import create_mask as dts_create_mask
 from settings import HEADER_SIZE
 from test_case import TestCase
@@ -92,7 +94,7 @@ class TestPowerTelemetry(TestCase):
 
     def add_stream_to_pktgen(self, option):
         stream_ids = []
-        topos = [[0, 1], [1, 0]]
+        topos = [[0, 0]]
         for txport, rxport in topos:
             _option = deepcopy(option)
             dmac = self.dut.get_mac_address(self.dut_ports[txport])
@@ -126,22 +128,20 @@ class TestPowerTelemetry(TestCase):
         if self.dut.skip_setup:
             return
         SW = "CONFIG_RTE_LIBRTE_TELEMETRY"
-        cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}/config/common_base".format(
-            SW, self.target_dir)
-        self.d_a_con(cmd)
+        if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
+            self.dut.set_build_options({SW[7:]: 'y'})
+        else:
+            cmd = "sed -i -e 's/{0}=n$/{0}=y/' {1}/config/common_base".format(
+                SW, self.target_dir)
+            self.d_a_con(cmd)
         # re-compile dpdk source code
         self.dut.build_install_dpdk(self.target)
 
     def prepare_binary(self, name):
         example_dir = "examples/" + name
         out = self.dut.build_dpdk_apps('./' + example_dir)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-        binary_dir = os.path.join(self.target_dir, example_dir, 'build')
-        cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.d_a_con(cmd)
-        binary_file = os.path.join(binary_dir, exec_file[:-1])
-        return binary_file
+        return os.path.join(self.target_dir,
+                            self.dut.apps_name[os.path.basename(name)])
 
     def get_cores_mask(self, config):
         ports_socket = self.dut.get_numa_id(self.dut.get_ports()[0])
