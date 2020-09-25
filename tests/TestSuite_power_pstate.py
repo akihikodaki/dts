@@ -144,13 +144,8 @@ class TestPowerPstate(TestCase):
     def prepare_binary(self, name):
         example_dir = "examples/" + name
         out = self.dut.build_dpdk_apps('./' + example_dir)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-        binary_dir = os.path.join(self.target_dir, example_dir, 'build')
-        cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.d_a_con(cmd)
-        binary_file = os.path.join(binary_dir, exec_file[:-1])
-        return binary_file
+        return os.path.join(self.target_dir,
+                            self.dut.apps_name[os.path.basename(name)])
 
     def init_test_binary_file(self):
         self.create_powermonitor_folder()
