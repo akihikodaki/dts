@@ -79,9 +79,15 @@ class TestPVPShareLib(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
-        self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
+        if self.dut.build_type == 'meson':
+            self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %
                         (self.dut.base_dir, self.dut.target), "# ")
-        self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
+            self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %
+                        (self.dut.base_dir, self.dut.target), "# ")
+        else:
+            self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
+                        (self.dut.base_dir, self.dut.target), "# ")
+            self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
                         (self.dut.base_dir, self.dut.target), "# ")
         # Prepare the result table
         self.table_header = ['Frame']
@@ -93,10 +99,12 @@ class TestPVPShareLib(TestCase):
 
     def prepare_share_lib_env(self):
         self.dut.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=n$/CONFIG_RTE_BUILD_SHARED_LIB=y/' config/common_base", "# ")
+        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB" : "y"})
         self.dut.build_install_dpdk(self.dut.target)
 
     def restore_env(self):
         self.dut.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=y$/CONFIG_RTE_BUILD_SHARED_LIB=n/' config/common_base", "# ")
+        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB" : "n"})
         self.dut.build_install_dpdk(self.dut.target)
 
     def send_and_verify(self):
