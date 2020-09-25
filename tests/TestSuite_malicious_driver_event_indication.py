@@ -124,8 +124,8 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
         self.vf_ports_info = None
 
     def init_pf_testpmd(self):
-        self.pf_testpmd = "{}/{}/app/testpmd".format(
-            self.target_dir, self.dut.target)
+        self.pf_testpmd = os.path.join(self.target_dir,
+                                       self.dut.apps_name['test-pmd'])
 
     def start_pf_testpmd(self):
         core_mask = utils.create_mask(self.pf_pmd_cores)
