@@ -78,13 +78,8 @@ class TestVmPwMgmtPolicy(TestCase):
         _host_crb = host_crb if host_crb else self.dut
         example_dir = "examples/" + name
         out = _host_crb.build_dpdk_apps('./' + example_dir)
-        self.verify("Error" not in out, "Compilation error")
-        self.verify("No such" not in out, "Compilation error")
-        binary_dir = os.path.join(self.target_dir, example_dir, 'build')
-        cmd = ["ls -F {0} | grep '*'".format(binary_dir), '# ', 5]
-        exec_file = self.execute_cmds(cmd, name=_host_crb.session.name)
-        binary_file = os.path.join(binary_dir, exec_file[:-1])
-        return binary_file
+        return os.path.join(self.target_dir,
+                            _host_crb.apps_name[os.path.basename(name)])
 
     def add_console(self, session):
         self.ext_con[session.name] = [
@@ -443,7 +438,7 @@ class TestVmPwMgmtPolicy(TestCase):
             'set promisc all on',
             'port start all',
             'start']
-        self.vm_testpmd.execute_cmd(cmds)
+        [self.vm_testpmd.execute_cmd(cmd) for cmd in cmds]
 
     def close_vm_testpmd(self):
         if not self.is_pmd_on:
