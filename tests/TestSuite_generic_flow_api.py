@@ -1385,22 +1385,6 @@ class TestGeneric_flow_api(TestCase):
         time.sleep(2)
         # create the flow rules
         basic_flow_actions = [
-            {'create': 'validate', 'flows': ['vlan', 'ipv4'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'tcp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'vf0'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp', 'vf1'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['drop']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp', 'vf1'], 'actions': ['drop']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'udp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'vf0'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['queue']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['drop']},
-            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['drop']},
             {'create': 'create', 'flows': ['vlan', 'ipv4'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv4', 'udp'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv4', 'tcp'], 'actions': ['queue']},
@@ -1416,7 +1400,23 @@ class TestGeneric_flow_api(TestCase):
             {'create': 'create', 'flows': ['vlan', 'ipv6', 'vf0'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['queue']},
             {'create': 'create', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['drop']},
-            {'create': 'create', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['drop']}
+            {'create': 'create', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'tcp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'vf0'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp', 'vf1'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'sctp'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv4', 'udp', 'vf1'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'udp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'vf0'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['queue']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'sctp'], 'actions': ['drop']},
+            {'create': 'validate', 'flows': ['vlan', 'ipv6', 'tcp', 'vf1'], 'actions': ['drop']}
         ]
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
@@ -2264,17 +2264,6 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
-            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
-             'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
-             'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
-             'actions': ['vf0', 'queue']},
-            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
-             'actions': ['vf1', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
@@ -2286,6 +2275,17 @@ class TestGeneric_flow_api(TestCase):
              'actions': ['vf0', 'queue']},
             {'create': 'create', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
              'actions': ['vf1', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
+             'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
+             'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'udp', 'vxlan', 'vni', 'ineth', 'invlan'],
+             'actions': ['vf0', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'udp', 'vxlan', 'vni', 'ineth'],
+             'actions': ['vf1', 'queue']}
         ]
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
@@ -2338,13 +2338,6 @@ class TestGeneric_flow_api(TestCase):
 
         # create the flow rules
         basic_flow_actions = [
-            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
-            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['vf0', 'queue']},
-            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['vf1', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
@@ -2352,6 +2345,13 @@ class TestGeneric_flow_api(TestCase):
             {'create': 'create', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
             {'create': 'create', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['vf0', 'queue']},
             {'create': 'create', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['vf1', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['pf', 'queue']},
+            {'create': 'validate', 'flows': ['ipv4', 'nvgre', 'tni', 'ineth', 'invlan'], 'actions': ['vf0', 'queue']},
+            {'create': 'validate', 'flows': ['dst_mac', 'ipv4', 'nvgre', 'tni', 'ineth'], 'actions': ['vf1', 'queue']}
         ]
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
