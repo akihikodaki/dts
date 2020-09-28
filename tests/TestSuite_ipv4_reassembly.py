@@ -152,7 +152,7 @@ class TestIpReassembly(TestCase):
                    '-n {memory_channels} --  -p {dut_port_mask} ' +
                    '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
         self.dut.send_expect(
-            command.format(**self.test_config.__dict__), 'Link Up')
+            command.format(**self.test_config.__dict__), 'Link [Uu]p')
 
     def tcp_ipv4_fragments(self, src_ip, identifier):
         """
