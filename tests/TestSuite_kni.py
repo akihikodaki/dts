@@ -344,7 +344,7 @@ class TestKni(TestCase):
         out_kni = self.dut.send_expect(
             './%s -c %s -n %d -- -P -p %s %s -m &' %
             (self.app_kni_path, core_mask, self.dut.get_memory_channels(), port_mask, config_param),
-            "Link Up", 20)
+            "Link [Uu]p", 20)
 
         time.sleep(5)
         if kthread_mode == 'single':
