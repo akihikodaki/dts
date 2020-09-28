@@ -40,7 +40,6 @@ from typing import List, Iterator, Tuple
 import utils
 from pmd_output import PmdOutput
 
-from port import Port
 
 from test_case import TestCase
 
@@ -124,7 +123,6 @@ class TestStatsChecks(TestCase):
 
         if received:
             self.verify(tx_pkts_difference >= 1, "No packet was sent")
-            self.verify(tx_bytes_difference == pktsize + ETHER_HEADER_LEN)
             self.verify(tx_pkts_difference == rx_pkts_difference, "different numbers of packets sent and received")
             self.verify(tx_bytes_difference == rx_bytes_difference, "different number of bytes sent and received")
             self.verify(tx_err_difference == 0, "unexpected tx error")
