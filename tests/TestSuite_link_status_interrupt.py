@@ -78,7 +78,7 @@ class TestLinkStatusInterrupt(TestCase):
             self.tester.get_local_port(dutPort))
         self.tester.send_expect("ifconfig %s %s" %
                                 (self.intf, status.lower()), "# ", 10)
-        verify_point = "Port %s Link %s" % (dutPort, status) 
+        verify_point = "Port %s Link %s" % (dutPort, status.lower()) 
         out = self.dut.get_session_output(timeout=60)
         self.verify(verify_point in out, "link status update error")
 
