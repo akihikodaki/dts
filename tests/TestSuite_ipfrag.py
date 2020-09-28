@@ -137,7 +137,7 @@ class TestIpfrag(TestCase):
         self.app_ip_fragmentation_path = self.dut.apps_name['ip_fragmentation']
         self.dut.send_expect("%s -c %s -n %d %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, coremask,
                                                                    self.dut.get_memory_channels(), eal_param, portmask,
-                                                                   int(numPortThread)), "Link Up", 120)
+                                                                   int(numPortThread)), "Link [Uu]p", 120)
 
         time.sleep(2)
         self.txItf = self.tester.get_interface(self.tester.get_local_port(P0))
