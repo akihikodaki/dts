@@ -76,8 +76,6 @@ class TestLinkFlowctrl(TestCase):
 
         self.portMask = utils.create_mask([self.rx_port, self.tx_port])
 
-        self.pmdout = PmdOutput(self.dut)
-        self.pmdout.start_testpmd("all", "--portmask=%s" % self.portMask)
         # get dts output path
         if self.logger.log_path.startswith(os.sep):
             self.output_path = self.logger.log_path
@@ -87,6 +85,10 @@ class TestLinkFlowctrl(TestCase):
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
+
+    def set_up(self):
+        self.pmdout = PmdOutput(self.dut)
+        self.pmdout.start_testpmd("all", "--portmask=%s" % self.portMask)
 
     def get_tgen_input(self):
         """
@@ -563,9 +565,15 @@ class TestLinkFlowctrl(TestCase):
                         "Link flow control fail, the loss percent is less than 50%")
         self.dut.send_expect("stop", "testpmd> ")
 
-    def tear_down_all(self):
+    def tear_down(self):
         """
         Run after each test case.
         """
-        self.dut.kill_all()
         self.dut.send_expect("quit", "# ")
+        self.dut.kill_all()
+    
+    def tear_down_all(self):
+        """
+        Run after each test suite.
+        """
+        pass
