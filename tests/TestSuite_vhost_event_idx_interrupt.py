@@ -55,7 +55,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.pci_info = self.dut.ports_info[0]['pci']
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.app_l3fwd_power_path = self.dut.apps_name['l3fwd-power']
-        self.app_name=self.app_l3fwd_power_path.split('/')[-1]
+        self.l3fwdpower_name=self.app_l3fwd_power_path.split('/')[-1]
         self.dut_ports = self.dut.get_ports()
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cbdma_dev_infos=[]
@@ -67,7 +67,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         # Clean the execution ENV
         self.verify_info = []
-        self.dut.send_expect(f"killall {self.app_name}", "#")
+        self.dut.send_expect(f"killall {self.l3fwdpower_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.vhost = self.dut.new_session(suite="vhost-l3fwd")
@@ -158,7 +158,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         relauch l3fwd-power sample for port up
         """
-        self.dut.send_expect("killall -s INT l3fwd-power", "#")
+        self.dut.send_expect("killall -s INT %s" % self.l3fwdpower_name, "#")
         # make sure l3fwd-power be killed
         pid = self.dut.send_expect("ps -ef |grep l3|grep -v grep |awk '{print $2}'", "#")
         if pid:
@@ -285,7 +285,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         """
         for i in range(len(self.vm)):
             self.vm[i].stop()
-        self.dut.send_expect("killall l3fwd-power", "#", timeout=2)
+        self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#", timeout=2)
 
     def test_wake_up_split_ring_vhost_user_core_with_event_idx_interrupt(self):
         """
@@ -442,7 +442,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         Run after each test case.
         """
         self.dut.close_session(self.vhost)
-        self.dut.send_expect(f"killall {self.app_name}", "#")
+        self.dut.send_expect(f"killall {self.l3fwdpower_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.bind_cbdma_device_to_kernel()
         self.bind_nic_driver(self.dut_ports, self.drivername)
