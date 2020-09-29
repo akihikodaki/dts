@@ -2290,7 +2290,7 @@ class TestCVLFdir(TestCase):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop" % (
                                           self.portMask, rxq, txq),
-                                      eal_param="-w %s,flow-mark-support=1 -w %s,flow-mark-support=1 --log-level=ice,7" % (
+                                      eal_param="-w %s -w %s --log-level=ice,7" % (
                                           self.pci0, self.pci1), socket=self.ports_socket)
         self.config_testpmd()
 
@@ -3031,9 +3031,7 @@ class TestCVLFdir(TestCase):
             f.writelines(cmds_li)
         self.dut.session.copy_file_to(cmd_path, cmd_path)
         try:
-            eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci0 + ",flow-mark-support=1",
-                                                                                self.pci1 + ",flow-mark-support=1"],
-                                                       socket=self.ports_socket)
+            eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci0, self.pci1], socket=self.ports_socket)
             param = " --log-level='ice,7' -- -i --portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                 self.portMask, 64, 64, cmd_path)
             command_line = self.dut.apps_name['test-pmd'] + eal_param + param
@@ -3140,7 +3138,7 @@ class TestCVLFdir(TestCase):
             out = self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                                 param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
                                                     self.portMask, 64, 64, cmd_path),
-                                                eal_param="-w %s,flow-mark-support=1 -w %s,flow-mark-support=1 --log-level='ice,7'" % (
+                                                eal_param="-w %s -w %s --log-level='ice,7'" % (
                                                     self.pci0, self.pci1), socket=self.ports_socket)
             self.verify('Failed to create flow' not in out, "create some rule failed")
             self.config_testpmd()
