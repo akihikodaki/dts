@@ -298,8 +298,8 @@ class TestDPDKGROLib(TestCase):
         vm_params_1['driver'] = 'vhost-user'
         vm_params_1['opt_path'] = self.base_dir + '/vhost-net'
         vm_params_1['opt_mac'] = self.virtio_mac1
+        vm_params_1['opt_queue'] = queue
         if mode == 5:
-            vm_params_1['opt_queue'] = queue
             vm_params_1['opt_settings'] = 'mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on,mq=on,vectors=15'
         else:
             vm_params_1['opt_settings'] = 'mrg_rxbuf=on,csum=on,gso=on,host_tso4=on,guest_tso4=on'
@@ -466,15 +466,57 @@ class TestDPDKGROLib(TestCase):
             (self.virtio_ip1), '', 180)
         time.sleep(30)
         print(out)
-        tc4_perfdata = self.iperf_result_verify('GRO lib')
+        perfdata = self.iperf_result_verify('GRO lib')
         print(("the GRO lib %s " % (self.output_result)))
         #self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        tc1_perfdata = self.dut.send_expect("cat /root/dpdk_gro_lib_on_iperf_tc1.log", "#")
-        self.verify("No such file or directory" not in tc1_perfdata, "Cannot find dpdk_gro_lib_on_iperf_tc1.log, please run test_vhost_gro_tcp_lightmode firstly")
-        if tc1_perfdata:
-            self.verify(float(tc4_perfdata) > float(tc1_perfdata), "TestFailed: W/cbdma iperf data is %s Kbits/sec, W/O cbdma iperf data is %s Kbits/sec" %(tc4_perfdata, tc1_perfdata))
+        exp_perfdata = self.dut.send_expect("cat /root/dpdk_gro_lib_on_iperf_tc5.log", "#")
+        self.verify("No such file or directory" not in exp_perfdata, "Cannot find dpdk_gro_lib_on_iperf_tc5.log, please run test_vhost_gro_with_2queues_tcp_lightmode firstly")
+        if exp_perfdata:
+            self.verify(float(perfdata) > float(exp_perfdata), "TestFailed: W/cbdma iperf data is %s Kbits/sec, W/O cbdma iperf data is %s Kbits/sec" %(perfdata, exp_perfdata))
+
+    def test_vhost_gro_with_2queues_tcp_lightmode(self):
+        """
+        Test Case5: DPDK GRO test with 2 queues using tcp/ipv4 traffic
+        """
+        self.config_kernel_nic_host(0)
+        self.launch_testpmd_gro_on(mode=1, queue=2)
+        self.start_vm(mode=1, queue=2)
+        time.sleep(5)
+        self.dut.get_session_output(timeout=2)
+        # Get the virtio-net device name
+        for port in self.vm1_dut.ports_info:
+            self.vm1_intf = port['intf']
+        # Start the Iperf test
+        self.vm1_dut.send_expect('ifconfig -a', '#', 30)
+        self.vm1_dut.send_expect(
+            'ifconfig %s %s' %
+            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
+        self.vm1_dut.send_expect(
+            'ethtool -K %s gro off' % (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('iperf -s', '', 10)
+        self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
+        self.dut.send_expect(
+            'ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %
+            (self.virtio_ip1), '', 180)
+        time.sleep(60)
+        perfdata = self.iperf_result_verify('GRO lib')
+        print(("the GRO lib %s " % (self.output_result)))
+        self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
+        # Turn off DPDK GRO lib and Kernel GRO off
+        self.set_testpmd_gro_off()
+        self.dut.send_expect(
+            'ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %
+            (self.virtio_ip1), '', 180)
+        time.sleep(60)
+        self.iperf_result_verify('Kernel GRO')
+        print(("the Kernel GRO %s " % (self.output_result)))
+        self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
+        self.quit_testpmd()
+        self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.dut.send_expect('echo %s > /root/dpdk_gro_lib_on_iperf_tc5.log' % perfdata, '#', 10)
 
     def tear_down(self):
         """
