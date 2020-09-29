@@ -137,7 +137,7 @@ Prerequisites
 
 5. Launch the app ``testpmd`` with the following arguments::
 
-    ./testpmd -c 0xff -n 6 -w 86:00.0,,flow-mark-support=1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
+    ./testpmd -c 0xff -n 6 -w 86:00.0 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
     testpmd> set fwd rxonly
     testpmd> set verbose 1
 
@@ -148,7 +148,7 @@ Prerequisites
 
    Notes: if need two ports environment, launch ``testpmd`` with the following arguments::
 
-    ./testpmd -c 0xff -n 6 -w 86:00.0,flow-mark-support=1 -w 86:00.1,flow-mark-support=1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
+    ./testpmd -c 0xff -n 6 -w 86:00.0 -w 86:00.1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
 
 
 Default parameters
