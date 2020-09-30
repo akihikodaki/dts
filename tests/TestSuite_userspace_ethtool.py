@@ -585,7 +585,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         mtus = [1519, 2048]
         mtu_threshold = 2022
         offset = 0
-        if self.nic in ['powerville', 'springville']:
+        if self.nic in ['powerville', 'springville', 'foxville']:
             mtu_threshold = 2026
             offset = 4
         # RTE_ETHER_HDR_LEN + RTE_ETHER_CRC_LEN + ICE_VLAN_TAG_SIZE * 2
@@ -605,7 +605,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
 
                 # The mtu threshold is 2022,When it is greater than 2022, the open/stop port is required.
                 if mtu > mtu_threshold:
-                    if self.nic in ['powerville', 'springville']:
+                    if self.nic in ['powerville', 'springville', 'foxville']:
                         mtu = mtu_threshold
                     self.dut.send_expect("stop %s" % index, "EthApp>")
                     self.dut.send_expect("mtu %d %d" % (index, mtu), "EthApp>")
