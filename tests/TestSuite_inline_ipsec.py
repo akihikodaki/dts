@@ -58,7 +58,7 @@ class TestInlineIpsec(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.nic in ["niantic"], "%s NIC not support" % self.nic)
+        self.verify(self.nic in ["niantic", "twinpond"], "%s NIC not support" % self.nic)
         self.verify(self.drivername in ["vfio-pci"], "%s drivername not support" % self.drivername)
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
