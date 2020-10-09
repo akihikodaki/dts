@@ -39,127 +39,129 @@ Description
 
 Enable RSS in CVL IAVF for GTP-U Up/Down Link sperately.
 IAVF RSS hash algorithm is based on 5 Tuple (Src IP Address/Dst IP Address/Src Port/Dst Port/l4 Protocol) using the DPDK RTE_FLOW rules for GTP-U packets.
-It can support ipv4+ipv6 combination of GTP-U packet:
+It can support ipv4+ipv6 combination of GTP-U packet.
 
-    ipv4(outer) + ipv4(inner)
-    ipv4(outer) + ipv6(inner)
-    ipv6(outer) + ipv4(inner)
-    ipv6(outer) + ipv6(inner)
+* ipv4(outer) + ipv4(inner)
+* ipv4(outer) + ipv6(inner)
+* ipv6(outer) + ipv4(inner)
+* ipv6(outer) + ipv6(inner)
 
 IAVF also support symmetric hash function by rte_flow for GTP-U packets. But simple-xor hash function is not supported in IAVF.
 And it need DDP Comms Package to support GTP-U protocol.
 
 support pattern and input set 
 -----------------------------
-table 1::
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| Hash function: toeplitz                                                                                                        |
-+====================================+===========================================================================================+
-| Pattern                            | all the input set options in combination                                                  |
-+====================================+===========================================================================================+
-| MAC_IPV4_GTPU_EH_IPV4              | ipv4, l3-src-only, l3-dst-only                                                            |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV4_UDP          | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV4_TCP          | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4                 | ipv4, gtpu, l3-src-only, l3-dst-only                                                      |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4_UDP             | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4_TCP             | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6              | ipv6, l3-src-only, l3-dst-only                                                            |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6_UDP          | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6_TCP          | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6                 | ipv6, gtpu, l3-src-only, l3-dst-only                                                      |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6_UDP             | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6_TCP             | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4              | ipv4, l3-src-only, l3-dst-only                                                            |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4_UDP          | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4_TCP          | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4                 | ipv4, gtpu, l3-src-only, l3-dst-only                                                      |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4_UDP             | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4_TCP             | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6              | ipv6, l3-src-only, l3-dst-only                                                            |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6_UDP          | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6_TCP          | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6                 | ipv6, gtpu, l3-src-only, l3-dst-only                                                      |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6_UDP             | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6_TCP             | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
-+------------------------------------+-------------------------------------------------------------------------------------------+
+.. table::
 
-table 2::
-+------------------------------------+------------------------------------------------+
-| Hash function: Symmetric_toeplitz                                                   |
-+====================================+================================================+
-| Pattern                            | all the input set options in combination       |
-+====================================+================================================+
-| MAC_IPV4_GTPU_EH_IPV4              | ipv4                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV4_UDP          | ipv4-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV4_TCP          | ipv4-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4                 | ipv4                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4_UDP             | ipv4-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV4_TCP             | ipv4-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6              | ipv6                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6_UDP          | ipv6-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_EH_IPV6_TCP          | ipv6-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6                 | ipv6                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6_UDP             | ipv6-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV4_GTPU_IPV6_TCP             | ipv6-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4              | ipv4                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4_UDP          | ipv4-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV4_TCP          | ipv4-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4                 | ipv4                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4_UDP             | ipv4-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV4_TCP             | ipv4-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6              | ipv6                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6_UDP          | ipv6-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_EH_IPV6_TCP          | ipv6-tcp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6                 | ipv6                                           |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6_UDP             | ipv6-udp                                       |
-+------------------------------------+------------------------------------------------+
-| MAC_IPV6_GTPU_IPV6_TCP             | ipv6-tcp                                       |
-+------------------------------------+------------------------------------------------+
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | Hash function: toeplitz                                                                                                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | Packet Type                        | All the Input Set options in combination                                                  |
+    +====================================+===========================================================================================+
+    | MAC_IPV4_GTPU_EH_IPV4              | ipv4, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV4_UDP          | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV4_TCP          | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4                 | ipv4, gtpu, l3-src-only, l3-dst-only                                                      |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4_UDP             | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4_TCP             | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6              | ipv6, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6_UDP          | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6_TCP          | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6                 | ipv6, gtpu, l3-src-only, l3-dst-only                                                      |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6_UDP             | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6_TCP             | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4              | ipv4, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4_UDP          | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4_TCP          | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4                 | ipv4, gtpu, l3-src-only, l3-dst-only                                                      |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4_UDP             | ipv4, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4_TCP             | ipv4, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6              | ipv6, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6_UDP          | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6_TCP          | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6                 | ipv6, gtpu, l3-src-only, l3-dst-only                                                      |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6_UDP             | ipv6, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6_TCP             | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+
+.. table::
+
+    +------------------------------------+------------------------------------------------+
+    | Hash function: Symmetric_toeplitz                                                   |
+    +------------------------------------+------------------------------------------------+
+    | Pattern                            | all the input set options in combination       |
+    +====================================+================================================+
+    | MAC_IPV4_GTPU_EH_IPV4              | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV4_UDP          | ipv4-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV4_TCP          | ipv4-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4                 | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4_UDP             | ipv4-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV4_TCP             | ipv4-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6              | ipv6                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6_UDP          | ipv6-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_EH_IPV6_TCP          | ipv6-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6                 | ipv6                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6_UDP             | ipv6-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU_IPV6_TCP             | ipv6-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4              | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4_UDP          | ipv4-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV4_TCP          | ipv4-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4                 | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4_UDP             | ipv4-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV4_TCP             | ipv4-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6              | ipv6                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6_UDP          | ipv6-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_EH_IPV6_TCP          | ipv6-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6                 | ipv6                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6_UDP             | ipv6-udp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU_IPV6_TCP             | ipv6-tcp                                       |
+    +------------------------------------+------------------------------------------------+
 
 
 Prerequisites
@@ -273,7 +275,7 @@ Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3DST
 ---------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -321,7 +323,7 @@ Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC
 ---------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -369,7 +371,7 @@ Subcase: MAC_IPV4_GTPU_EH_DL_IPV4
 ---------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -429,7 +431,7 @@ Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_L3DST
 ---------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_L3DST.
 
@@ -437,7 +439,7 @@ Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_L3SRC
 ---------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC.
 
@@ -445,7 +447,7 @@ Subcase: MAC_IPV4_GTPU_EH_UL_IPV4
 ---------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4.
 
@@ -911,7 +913,7 @@ Subcase: MAC_IPV4_GTPU_EH_IPV4_L3DST
 ------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -961,7 +963,7 @@ Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC
 ---------------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -1011,7 +1013,7 @@ Subcase: MAC_IPV4_GTPU_EH_DL_IPV4
 ---------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -1370,7 +1372,7 @@ Subcase: MAC_IPV4_GTPU_IPV4_L3DST
 ---------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -1418,7 +1420,7 @@ Subcase: MAC_IPV4_GTPU_IPV4_L3SRC
 ---------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -1466,7 +1468,7 @@ Subcase: MAC_IPV4_GTPU_IPV4
 ---------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
@@ -1503,7 +1505,7 @@ Subcase: MAC_IPV4_GTPU_IPV4_gtpu
 --------------------------------
 rule::
 
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
 
 hit pattern and defined input set:
 ipv4-nonfrag packet::
