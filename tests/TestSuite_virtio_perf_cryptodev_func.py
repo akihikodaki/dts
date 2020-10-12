@@ -86,7 +86,7 @@ class VirtioCryptodevPerfTest(TestCase):
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
         self.dut.build_dpdk_apps("./examples/vhost_crypto")
-        cc.bind_qat_device(self)
+        cc.bind_qat_device(self, self.drivername)
 
         self.vf_assign_method = "vfio-pci"
         self.dut.setup_modules(None, self.vf_assign_method, None)
@@ -191,9 +191,8 @@ class VirtioCryptodevPerfTest(TestCase):
 
         if not self.dut.skip_setup:
             self.build_user_dpdk(vm_dut)
-
-        vm_dut.setup_modules(self.target, "igb_uio", None)
-        vm_dut.bind_interfaces_linux('igb_uio')
+        vm_dut.setup_modules(self.target, self.drivername, None)
+        vm_dut.bind_interfaces_linux(self.drivername)
         vm.virtio_list = self.set_virtio_pci(vm_dut)
         self.logger.info("{} virtio list: {}".format(vm_name, vm.virtio_list))
         vm.cores = vm_dut.get_core_list("all")

@@ -87,7 +87,7 @@ class TestL2fwdCrypto(TestCase):
         self.verify("Error" not in out, "Compilation error")
         self.verify("No such" not in out, "Compilation error")
 
-        cc.bind_qat_device(self)
+        cc.bind_qat_device(self, self.drivername)
 
     def set_up(self):
         pass

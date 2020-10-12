@@ -57,7 +57,7 @@ class VirtioCryptodevUnitTest(TestCase):
         if not cc.is_build_skip(self):
             self.dut.skip_setup = False
             cc.build_dpdk_with_cryptodev(self)
-        cc.bind_qat_device(self)
+        cc.bind_qat_device(self, self.drivername)
         self.dut.build_dpdk_apps("./examples/vhost_crypto")
 
         self.vf_assign_method = "vfio-pci"

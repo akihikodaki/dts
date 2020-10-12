@@ -76,7 +76,7 @@ class TestIPsecGW(TestCase):
         self.verify("Error"not in out,"Compilation error")
         self.verify("No such"not in out,"Compilation error")
 
-        cc.bind_qat_device(self)
+        cc.bind_qat_device(self, self.drivername)
 
         self._default_ipsec_gw_opts = {
             "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.core_list[-2:]),
