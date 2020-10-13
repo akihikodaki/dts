@@ -87,11 +87,6 @@ class TestSoftnic(TestCase):
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.dut.restore_interfaces()
-        self.used_dut_port = self.dut_ports[1]
-        self.host_intf = self.dut.ports_info[self.used_dut_port]['intf']
-        out = self.dut.send_expect('ethtool %s' % self.host_intf, '#')
-        self.speed = re.findall('Supported link modes:   (\d*)', out)[0]
         self.dut.bind_interfaces_linux(self.drivername, [ports[0]])
 
     def set_up(self):
@@ -109,7 +104,6 @@ class TestSoftnic(TestCase):
         expect_pps = [14, 8, 4, 2, 1, 0.9, 0.8]
 
         self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'firmware.cli'), "testpmd>", timeout=800)
-        self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
         tx_port = self.tester.get_local_port(0)
@@ -135,7 +129,6 @@ class TestSoftnic(TestCase):
     def test_perf_shaping_for_pipe(self):
         self.change_config_file('tm_firmware.cli')
         self.dut.send_expect(self.cmd % (self.path, self.eal_param, 'tm_firmware.cli'), "testpmd> ", timeout=800)
-        self.dut.send_expect("set fwd macswap", "testpmd>")
         self.dut.send_expect("start", "testpmd>")
         rx_port = self.tester.get_local_port(0)
         pkts = ["Ether(dst='%s')/IP(dst='100.0.0.0')/UDP()/Raw(load='x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.15.255')/UDP()/Raw(load='x'*(64 - %s))", "Ether(dst='%s')/IP(dst='100.0.4.0')/UDP()/Raw(load='x'*(64 - %s))"]
@@ -146,16 +139,19 @@ class TestSoftnic(TestCase):
                 pcap = os.sep.join([self.output_path, "test.pcap"])
                 pkt = pkts[i] % (self.dmac, self.headers_size)
                 self.tester.scapy_append('wrpcap("%s", [%s])' % (pcap, pkt))
-                tgen_input.append((rx_port, rx_port, pcap))
-                if i == 2:
-                    vm_config = self.set_fields_ip()
-                else:
-                    vm_config = self.set_fields()
                 self.tester.scapy_execute()
+                if i == 2:
+                    for j in range(16):
+                        pk = "Ether(dst='%s')/IP(dst='100.0.15.%d')/UDP()/Raw(load='x'*(64 - %s))" % (self.dmac, j, self.headers_size)
+                        self.tester.scapy_append('wrpcap("%s/test_%d.pcap", [%s])' % (self.output_path, j, pk))
+                        self.tester.scapy_execute()
+                        tgen_input.append((rx_port, rx_port, "%s/test_%d.pcap" % (self.output_path, j)))
+                else:
+                    tgen_input.append((rx_port, rx_port, pcap))
                 # clear streams before add new streams
                 self.tester.pktgen.clear_streams()
                 # run packet generator
-                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, vm_config, self.tester.pktgen)
+                streams = self.pktgen_helper.prepare_stream_from_tginput(tgen_input, 100, None, self.tester.pktgen)
                 bps, pps = self.tester.pktgen.measure_throughput(stream_ids=streams)
                 if i == 2:
                     self.verify(except_bps_range[1]*16 > bps > except_bps_range[0]*16, 'No traffic detected')
@@ -204,16 +200,6 @@ class TestSoftnic(TestCase):
         self.tester.send_expect("rm -rf getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -A -nn -e -vv -w getPackageByTcpdump.cap -i %s 2> /dev/null& " % self.txItf, "#")
         time.sleep(4)
-
-    def set_fields(self):
-        fields_config = {
-        'ip':  {'dst': {'range': 1, 'action': 'inc'}, }, }
-        return fields_config
-
-    def set_fields_ip(self):
-        fields_config = {
-        'ip':  {'dst': {'range': 16, 'action': 'inc'}, }, }
-        return fields_config
 
     def tear_down(self):
         """
