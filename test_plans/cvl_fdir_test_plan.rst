@@ -610,7 +610,7 @@ Note: there may be error message change.
 
    get the message::
 
-    Invalid input action: Invalid argument
+    'error' in message
 
    Discontinuous queues::
 
@@ -2939,7 +2939,7 @@ Subcase 1: invalid parameters of queue index
 
    Failed to create flow, report message::
 
-    Invalid queue for FDIR.: Invalid argument
+    'error' in message
 
 2. check there is no rule listed.
 
@@ -3053,7 +3053,7 @@ Subcase 6: conflicted rules
 
    or::
 
-    Invalid input action number: Invalid argument
+    'error' in message
 
 3. check there is only one rule listed.
 
@@ -3066,7 +3066,7 @@ Subcase 7: conflicted actions
 
    Failed to create flow, report message::
 
-    Invalid input action: Invalid argument
+    'error' in message
 
 2. check there is no rule listed.
 

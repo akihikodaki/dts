@@ -2428,7 +2428,7 @@ class TestCVLFdir(TestCase):
             check_stats=False, check_msg='Bad arguments')
         self.validate_fdir_rule(
             'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 2 3 end / rss / end',
-            check_stats=False, check_msg='Invalid input action number: Invalid argument')
+            check_stats=False, check_msg='error')
         self.validate_fdir_rule(
             'flow validate 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions passthru / mark id 4294967296 / end',
             check_stats=False, check_msg='Bad arguments')
@@ -2580,7 +2580,7 @@ class TestCVLFdir(TestCase):
     def test_invalid_parameters_of_queue_index(self):
         rule = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 64 / end"
         out = self.dut.send_command(rule, timeout=1)
-        self.verify("Invalid input action: Invalid argument" in out, "failed with output: %s" % out)
+        self.verify("error" in out, "failed with output: %s" % out)
         self.check_fdir_rule(port_id=0, stats=False)
 
     def test_invalid_parameters_of_rss_queues(self):
@@ -2588,11 +2588,11 @@ class TestCVLFdir(TestCase):
             "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 end / end",
             "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 0 end / end",
             "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues end / end"]
-        self.create_fdir_rule(rule=rule1, check_stats=False, msg='Invalid input action: Invalid argument')
+        self.create_fdir_rule(rule=rule1, check_stats=False, msg='error')
         rule2 = 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 1 2 3 5 end / end'
-        self.create_fdir_rule(rule2, check_stats=False, msg='Invalid input action: Invalid argument')
+        self.create_fdir_rule(rule2, check_stats=False, msg='error')
         rule3 = 'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions rss queues 63 64 end / end'
-        self.create_fdir_rule(rule3, check_stats=False, msg='Invalid input action: Invalid argument')
+        self.create_fdir_rule(rule3, check_stats=False, msg='error')
         try:
             # restart testpmd
             self.dut.send_expect("quit", "# ")
@@ -2655,13 +2655,13 @@ class TestCVLFdir(TestCase):
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2021 / end actions mark / end',
             'flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end']
         self.create_fdir_rule(rule2[0:4], check_stats=False, msg="Rule already exists!: File exists", validate=False)
-        self.create_fdir_rule(rule2[4:7], check_stats=False, msg="Invalid input action number: Invalid argument", validate=False)
+        self.create_fdir_rule(rule2[4:7], check_stats=False, msg="error", validate=False)
         self.create_fdir_rule(rule2[7:], check_stats=False, msg="Invalid input set: Invalid argument", validate=False)
         self.check_fdir_rule(stats=True, rule_list=rule_li)
 
     def test_conflicted_actions(self):
         rule1 = "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions queue index 1 / rss queues 2 3 end / end"
-        self.create_fdir_rule(rule1, check_stats=False, msg="Invalid input action number: Invalid argument")
+        self.create_fdir_rule(rule1, check_stats=False, msg="error")
         self.check_fdir_rule(stats=False)
 
     def test_void_action(self):
