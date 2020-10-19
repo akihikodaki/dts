@@ -51,10 +51,9 @@ sys.path.append(DEP_FOLDER + '/scapy_modules')
 from utils import convert_ip2int
 from utils import convert_int2ip
 
-scapy_modules_required = {'nvgre': ['NVGRE', 'IPPROTO_NVGRE'],
-                          'gtp': ['GTP_U_Header', 'GTP_PDUSession_ExtensionHeader'],
-                          'lldp': ['LLDP', 'LLDPManagementAddress'], 'Dot1BR': ['Dot1BR'], 'pfcp': ['PFCP'],
-                          'nsh': ['NSH'], 'igmp': ['IGMP'], 'mpls': ['MPLS'], 'sctp': ['SCTP', 'SCTPChunkData'], 'vxlan': ['VXLAN']}
+scapy_modules_required = {'gtp': ['GTP_U_Header', 'GTP_PDUSession_ExtensionHeader'],
+                          'lldp': ['LLDPDU', 'LLDPDUManagementAddress'], 'Dot1BR': ['Dot1BR'], 'pfcp': ['PFCP'],
+                          'nsh': ['NSH'], 'igmp': ['IGMP'], 'mpls': ['MPLS'], 'sctp': ['SCTP', 'SCTPChunkData']}
 local_modules = [m[:-3] for m in os.listdir(DEP_FOLDER + '/scapy_modules') if (m.endswith('.py') and not m.startswith('__'))]
 
 for m in scapy_modules_required:
@@ -91,6 +90,14 @@ LayersTypes = {
     # ipv4_ext_unknown, ipv6_ext_unknown
     "L3": ['ipv4', 'ipv4ihl', 'ipv6', 'ipv4_ext', 'ipv6_ext', 'ipv6_ext2', 'ipv6_frag'],
     "L4": ['tcp', 'udp', 'frag', 'sctp', 'icmp', 'nofrag'],
+    # The NVGRE pkt format is
+    # <'ether type'=0x0800 'version'=4, 'protocol'=47 'protocol type'=0x6558>
+    # or
+    # <'ether type'=0x86DD 'version'=6, 'next header'=47 'protocol type'=0x6558'>
+    # The GRE pkt format is
+    # <'ether type'=0x0800 'version'=4, 'protocol'=17 'destination port'=4789>
+    # or
+    # <'ether type'=0x86DD 'version'=6, 'next header'=17 'destination port'=4789>
     "TUNNEL": ['ip', 'gre', 'vxlan', 'nvgre', 'geneve', 'grenat'],
     "INNER L2": ['inner_mac', 'inner_vlan'],
     # inner_ipv4_unknown, inner_ipv6_unknown
@@ -145,14 +152,14 @@ class scapy(object):
         'inner_sctp': SCTP(),
         'inner_icmp': ICMP(),
 
-        'lldp': LLDP() / LLDPManagementAddress(),
+        'lldp': LLDPDU() / LLDPDUManagementAddress(_length=6, _management_address_string_length=6,management_address=':12') / IP(),
         'ip_frag': IP(frag=5),
         'ipv6_frag': IPv6(src="::1") / IPv6ExtHdrFragment(),
         'ip_in_ip': IP() / IP(),
         'ip_in_ip_frag': IP() / IP(frag=5),
         'ipv6_in_ip': IP() / IPv6(src="::1"),
         'ipv6_frag_in_ip': IP() / IPv6(src="::1", nh=44) / IPv6ExtHdrFragment(),
-        'nvgre': NVGRE(),
+        'nvgre': GRE(key_present=1,proto=0x6558,key=0x00000100),
         'geneve': "Not Implement",
     }
 
@@ -685,8 +692,34 @@ class Packet(object):
             pkts_str = method_pattern.sub(i.strip('<>')+'()', pkts_str, count=1)
         return pkts_str
 
+    # use the GRE to configure the nvgre package
+    # the field key last Byte configure the reserved1 of NVGRE, first 3 Bytes configure the TNI value of NVGRE
+    def transform_nvgre_layer(self, pkt_str):
+        tni = re.search('TNI\s*=\s*(0x)*(\d*)', pkt_str)
+        if tni is None:
+            nvgre = 'GRE(key_present=1,proto=0x6558,key=0x00000100)'
+        else:
+            tni = int(tni.group(2))
+            tni = tni<<8
+            nvgre = 'GRE(key_present=1,proto=0x6558,key=%d)' % tni
+        pkt_str = re.sub(r'NVGRE\(\)|NVGRE\(TNI=\s*(0x)*\d*\)', nvgre, pkt_str)
+        return pkt_str
+
+    def gernerator_pkt_str(self):
+        pkt_str_list = []
+        for p in self.pktgen.pkts:
+            if not isinstance(p, str):
+                p_str = p.command()
+            else:
+                p_str = p
+            # process the NVGRE
+            if 'NVGRE' in p_str:
+                p_str = self.transform_nvgre_layer(p_str)
+            pkt_str_list.append(p_str)
+        return '[' + ','.join(pkt_str_list) + ']'
+
     def send_pkt(self, crb, tx_port='', count=1, interval=0, timeout=120):
-        p_str = '[' + ','.join([p.command() if not isinstance(p, str) else p for p in self.pktgen.pkts]) + ']'
+        p_str = self.gernerator_pkt_str()
         pkts_str = self._recompose_pkts_str(pkts_str=p_str)
         cmd = 'sendp(' + pkts_str + f',iface="{tx_port}",count={count},inter={interval},verbose=False)'
         if crb.name == 'tester':
@@ -700,7 +733,7 @@ class Packet(object):
         if crb.name != 'tester':
             raise Exception('crb should be tester')
         scapy_session_bg = crb.prepare_scapy_env()
-        p_str = '[' + ','.join([p.command() if not isinstance(p, str) else p for p in self.pktgen.pkts]) + ']'
+        p_str = self.gernerator_pkt_str()
         pkts_str = self._recompose_pkts_str(pkts_str=p_str)
         cmd = 'sendp(' + pkts_str + f',iface="{tx_port}",count={count},inter={interval},loop={loop},verbose=False)'
         scapy_session_bg.send_command(cmd)
