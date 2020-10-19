@@ -44,7 +44,8 @@ class TestVhost1024Ethports(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.max_ethport = 1024
+        # DPDK limits the number of vdev to 1023
+        self.max_ethport = 1023
         self.queue = 1
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, 'Insufficient ports for testing')
