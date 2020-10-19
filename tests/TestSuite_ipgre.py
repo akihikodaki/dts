@@ -44,7 +44,7 @@ import re
 import time
 import os
 
-from packet import Packet, NVGRE, IPPROTO_NVGRE
+from packet import Packet
 
 from scapy.utils import wrpcap, rdpcap
 from scapy.packet import split_layers,bind_layers
@@ -80,7 +80,6 @@ class TestIpgre(TestCase):
         self.tester_iface = self.tester.get_interface(tester_port)
         self.tester_iface_mac =  self.tester.get_mac(tester_port)
         self.initialize_port_config()
-        self.re_bind_nvgre_to_gre()
 
     def initialize_port_config(self):
         self.outer_mac_src = '00:00:10:00:00:00'
@@ -141,10 +140,6 @@ class TestIpgre(TestCase):
                     pkt.config_layer(layer, layer_configs[layer])
             wrpcap("/tmp/ref_pkt.pcap", pkt.pktgen.pkt)
             time.sleep(1)
-
-    def re_bind_nvgre_to_gre(self):
-        split_layers(IP, NVGRE, frag=0, proto=IPPROTO_NVGRE)
-        bind_layers(IP, GRE, frag=0, proto=IPPROTO_NVGRE)
 
     def get_chksums(self, pcap=None):
         """

@@ -48,9 +48,8 @@ from socket import AF_INET6
 from scapy.utils import struct, socket, wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
-from scapy.layers.l2 import Dot1Q
+from scapy.layers.l2 import Dot1Q, GRE
 from scapy.layers.sctp import SCTP, SCTPChunkData
-from nvgre import NVGRE
 from scapy.sendrecv import sniff
 from scapy.config import conf
 from scapy.route import *
@@ -307,7 +306,7 @@ class NvgreTestConfig(object):
         GRE package: outer/GRE header/inner
         """
         if self.outer_ip_proto == 47:
-            self.pkt = outer / NVGRE() / inner
+            self.pkt = outer / GRE(key_present=1,proto=0x6558,key=0x00000100) / inner
         else:
             self.pkt = outer / ("X" * self.payload_size)
 
@@ -332,8 +331,8 @@ class NvgreTestConfig(object):
         if payload.guess_payload_class(payload).name == "IP":
             chk_sums['outer_ip'] = hex(payload[IP].chksum)
 
-        if pkts[0].haslayer(NVGRE) == 1:
-            inner = pkts[0][NVGRE]
+        if pkts[0].haslayer(GRE) == 1:
+            inner = pkts[0][GRE]
             if inner.haslayer(IP) == 1:
                 chk_sums['inner_ip'] = hex(inner[IP].chksum)
                 if inner[IP].proto == 6:

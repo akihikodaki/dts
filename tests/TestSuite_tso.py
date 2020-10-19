@@ -101,16 +101,6 @@ class TestTSO(TestCase):
         """
         pass
 
-    def load_module(self):
-        """
-        Load vxlan or nvgre module to scapy.
-        """
-        cwd = os.getcwd()
-        dir_module = cwd + r'/' + 'dep' + '/scapy_modules'
-        self.tester.scapy_append('sys.path.append("%s")' % dir_module)
-        self.tester.scapy_append("from vxlan import VXLAN")
-        self.tester.scapy_append('from nvgre import NVGRE')
-
     def tcpdump_start_sniffing(self, ifaces=[]):
         """
         Starts tcpdump in the background to sniff the tester interface where
@@ -347,7 +337,6 @@ class TestTSO(TestCase):
         for loading_size in self.loading_sizes:
             # Vxlan test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            self.load_module()
             out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
             self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/UDP(sport=1021,dport=4789)/VXLAN()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
@@ -371,9 +360,8 @@ class TestTSO(TestCase):
         for loading_size in self.loading_sizes:
             # Nvgre test
             self.tcpdump_start_sniffing([tx_interface, rx_interface])
-            self.load_module()
             out = self.dut.send_expect("clear port stats all", "testpmd> ", 120)
-            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/NVGRE()/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
+            self.tester.scapy_append('sendp([Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2",proto=47)/GRE(key_present=1,proto=0x6558,key=0x00001000)/Ether(dst="%s",src="52:00:00:00:00:00")/IP(src="192.168.1.1",dst="192.168.1.2")/TCP(sport=1021,dport=1021)/("X"*%s)], iface="%s")' % (mac, mac, loading_size, tx_interface))
             out = self.tester.scapy_execute()
             out = self.dut.send_expect("show port stats all", "testpmd> ", 120)
             print(out)
