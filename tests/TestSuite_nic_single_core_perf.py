@@ -364,9 +364,11 @@ class TestNicSingleCorePerf(TestCase):
                     row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
                     row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
                     row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
+                    row_dict4 = dict(name="Fwd_core", value=row_in["Fwd_core"])
                     row_dict0['performance'].append(row_dict1)
                     row_dict0['parameters'].append(row_dict2)
                     row_dict0['parameters'].append(row_dict3)
+                    row_dict0['parameters'].append(row_dict4)
                     json_obj[case_name].append(row_dict0)
                     status_result.append(row_dict0['status'])
         with open(os.path.join(rst.path2Result,
