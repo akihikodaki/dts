@@ -36,5 +36,5 @@ numpy==1.18.5
 docutils
 pcapy
 xlrd
-scapy==2.4.3
+scapy==2.4.4
 threadpool
