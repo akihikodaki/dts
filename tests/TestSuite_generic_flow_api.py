@@ -148,19 +148,6 @@ class TestGeneric_flow_api(TestCase):
             time.sleep(2)
         self.vf_flag = 0
 
-    def load_module(self, module=""):
-        """
-        Load vxlan or nvgre module to scapy.
-        """
-        # load vxlan module to scapy
-        cwd = os.getcwd()
-        dir_module = cwd + r'/' + 'dep'
-        self.tester.scapy_append('sys.path.append("%s")' % dir_module)
-        if module == "vxlan":
-            self.tester.scapy_append("from vxlan import VXLAN")
-        elif module == "nvgre":
-            self.tester.scapy_append('from nvgre import NVGRE')
-
     def verify_result(self, pf_vf, expect_rxpkts, expect_queue, verify_mac):
         """
         verify the packet to the expected queue or be dropped
@@ -321,12 +308,6 @@ class TestGeneric_flow_api(TestCase):
             else:
                 self.dut.send_expect(flow_cmd, "created")
                 rule_created = 1
-
-                # Enable vxlan packet sending
-                if "VXLAN" in flow_pkt:
-                    self.load_module("vxlan")
-                elif "NVGRE" in flow_pkt:
-                    self.load_module("nvgre")
 
                 # The rule is created successfully, so send the consistent packet.
                 self.sendpkt(pktstr=flow_pkt)
@@ -2290,21 +2271,17 @@ class TestGeneric_flow_api(TestCase):
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
 
-        self.load_module("vxlan")
         self.sendpkt('Ether(dst="%s")/IP()/UDP()/VXLAN()/Ether(dst="%s")/Dot1Q(vlan=11)/IP()/TCP()/Raw("x" * 20)' % (self.outer_mac, self.inner_mac))
         self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0],
                            verify_mac=self.outer_mac)
 
-        self.load_module("vxlan")
         self.sendpkt('Ether(dst="%s")/IP()/UDP()/VXLAN(vni=5)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)' % (self.outer_mac, self.wrong_mac))
         self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
-        self.load_module("vxlan")
         self.sendpkt('Ether(dst="%s")/IP()/UDP()/VXLAN(vni=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)' % (
         self.outer_mac, extra_packet[5]['vni'], self.wrong_mac, extra_packet[5]['invlan']))
         self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
-        self.load_module("vxlan")
         self.sendpkt('Ether(dst="%s")/IP()/UDP()/VXLAN(vni=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)' % (
         self.wrong_mac, extra_packet[6]['vni'], self.inner_mac))
         self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.wrong_mac)
@@ -2356,22 +2333,18 @@ class TestGeneric_flow_api(TestCase):
         extrapkt_rulenum = self.all_flows_process(basic_flow_actions)
         extra_packet = extrapkt_rulenum['extrapacket']
 
-        self.load_module("nvgre")
         self.sendpkt('Ether(dst="%s")/IP()/NVGRE()/Ether(dst="%s")/Dot1Q(vlan=1)/IP()/TCP()/Raw("x" * 20)' % (self.outer_mac, self.inner_mac))
         self.verify_result("pf", expect_rxpkts="1", expect_queue=extrapkt_rulenum['queue'][0],
                            verify_mac=self.outer_mac)
 
-        self.load_module("nvgre")
         self.sendpkt('Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)' % (
         self.outer_mac, extra_packet[4]['tni'], self.wrong_mac))
         self.verify_result("pf", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
-        self.load_module("nvgre")
         self.sendpkt('Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/Dot1Q(vlan=%s)/IP()/TCP()/Raw("x" * 20)' % (
         self.outer_mac, extra_packet[5]['tni'], self.wrong_mac, extra_packet[5]['invlan']))
         self.verify_result("vf0", expect_rxpkts="1", expect_queue="0", verify_mac=self.outer_mac)
 
-        self.load_module("nvgre")
         self.sendpkt('Ether(dst="%s")/IP()/NVGRE(TNI=%s)/Ether(dst="%s")/IP()/TCP()/Raw("x" * 20)' % (
         self.wrong_mac, extra_packet[6]['tni'], self.inner_mac))
         self.verify_result("vf1", expect_rxpkts="0", expect_queue="NULL", verify_mac=self.wrong_mac)

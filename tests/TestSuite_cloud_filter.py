@@ -46,11 +46,10 @@ from settings import HEADER_SIZE
 from packet import Packet
 
 from scapy.layers.inet import UDP, IP
+from scapy.layers.vxlan import VXLAN
 from scapy.packet import split_layers, bind_layers
 
-from vxlan import VXLAN
-from vxlan import VXLAN_PORT
-
+VXLAN_PORT = 4789
 CLOUD_PORT = 8472
 split_layers(UDP, VXLAN, dport=VXLAN_PORT)
 bind_layers(UDP, VXLAN, dport=CLOUD_PORT)

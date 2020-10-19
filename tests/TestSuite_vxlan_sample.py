@@ -54,7 +54,7 @@ from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
 from scapy.layers.inet6 import IPv6
 from scapy.layers.l2 import Dot1Q
-from vxlan import VXLAN
+from scapy.layers.vxlan import VXLAN
 from scapy.layers.sctp import SCTP, SCTPChunkData
 from scapy.sendrecv import sniff
 from scapy.config import conf
