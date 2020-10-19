@@ -71,6 +71,7 @@ class TestCBDMA(TestCase):
         self.table_header.append("Updating MAC")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
+        self.send_session = self.dut.new_session("new_session")
 
     def get_core_list(self):
         """
@@ -140,7 +141,6 @@ class TestCBDMA(TestCase):
         num is 2
         '''
         # flush other output
-        self.send_session=self.dut.new_session("new_session")
         target = self.app_path.split("/")
         self.send_session.send_expect(f"cd  {'/'.join(target[0:-1])} ", '# ')
         self.send_session.get_session_before(timeout=1)
@@ -310,7 +310,7 @@ class TestCBDMA(TestCase):
                                         ports=dev_info, prefix='cbdma')
             self.launch_ioatfwd_app(eal_params)
             self.send_and_verify_throughput(check_channel=True)
-            self.dut.send_expect('^c', '# ')
+            self.send_session.send_expect('^c', '# ')
         self.result_table_print()
 
     def test_perf_cbdma_with_diff_update_mac(self):
@@ -330,7 +330,7 @@ class TestCBDMA(TestCase):
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
 
-        self.dut.send_expect('^c', '# ')
+        self.send_session.send_expect('^c', '# ')
         self.cbdma_updating_mac = 'disable'
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
@@ -353,7 +353,7 @@ class TestCBDMA(TestCase):
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
 
-        self.dut.send_expect('^c', '# ')
+        self.send_session.send_expect('^c', '# ')
         self.cbdma_copy_mode = 'sw'
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
@@ -363,7 +363,8 @@ class TestCBDMA(TestCase):
         """
         Run after each test case.
         """
-        self.dut.send_expect('^c', '# ')
+        self.send_session.send_expect('^c', '# ')
+        self.dut.close_session(self.send_session)
         self.dut.kill_all()
 
     def tear_down_all(self):
