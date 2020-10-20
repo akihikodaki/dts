@@ -102,7 +102,7 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     testpmd>set txpkts 2000
     testpmd>start tx_first 1
 
-6. Quit pdump and three testpmd, get 284 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+6. Quit pdump and three testpmd, get 288 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
 7. Launch testpmd by below command::
 
@@ -171,11 +171,11 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set burst 1
+    testpmd>set burst 32
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
 
-5. Start vhost, then quit pdump and three testpmd, get 252 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+5. Start vhost, then quit pdump and three testpmd, get 256 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
 6. Launch testpmd by below command::
 
@@ -201,7 +201,7 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set burst 1
+    testpmd>set burst 32
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
 
