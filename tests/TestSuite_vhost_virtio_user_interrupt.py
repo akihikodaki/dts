@@ -58,6 +58,10 @@ class TestVirtioUserInterrupt(TestCase):
         self.core_mask_l3fwd = utils.create_mask(self.core_list_l3fwd)
         self.core_mask_virtio = self.core_mask_l3fwd
         self.pci_info = self.dut.ports_info[0]['pci']
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cbdma_dev_infos = []
+        self.dmas_info = None
+        self.device_str = None
 
         self.prepare_l3fwd_power()
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -116,7 +120,7 @@ class TestVirtioUserInterrupt(TestCase):
         else:
             self.logger.info("Launch l3fwd-power sample finished")
 
-    def start_vhost_testpmd(self, pci=""):
+    def start_vhost_testpmd(self, pci="", dmas=None):
         """
         start testpmd on vhost side
         """
@@ -124,9 +128,18 @@ class TestVirtioUserInterrupt(TestCase):
         vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0"]
         para = " -- -i --rxq=1 --txq=1"
         if len(pci) == 0:
-            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=[self.pci_info], vdevs=vdev)
+            if dmas:
+                vdev = ["net_vhost0,iface=vhost-net,queues=1,dmas=[%s]" % dmas]
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, vdevs=vdev)
+            else:
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=[self.pci_info], vdevs=vdev)
         else:
-            eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
+            if dmas:
+                vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]" % dmas]
+                para = " -- -i"
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=pci, prefix='vhost', vdevs=vdev)
+            else:
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
         cmd_vhost_user = testcmd + eal_params + para
 
         self.vhost.send_expect(cmd_vhost_user, "testpmd>", 30)
@@ -164,6 +177,45 @@ class TestVirtioUserInterrupt(TestCase):
             self.logger.info("Link status is right, status is %s" % status)
         else:
             self.logger.error("Wrong link status not right, status is %s" % result)
+
+    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
+        """
+        get all cbdma ports
+        """
+        str_info = 'Misc (rawdev) devices using kernel driver'
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        device_info = out.split('\n')
+        for device in device_info:
+            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            if pci_info is not None:
+                dev_info = pci_info.group(1)
+                # the numa id of ioat dev, only add the device which
+                # on same socket with nic dev
+                bus = int(dev_info[5:7], base=16)
+                if bus >= 128:
+                    cur_socket = 1
+                else:
+                    cur_socket = 0
+                if self.ports_socket == cur_socket:
+                    self.cbdma_dev_infos.append(pci_info.group(1))
+        self.verify(len(self.cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
+        self.used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
+        dmas_info = ''
+        for dmas in self.used_cbdma:
+            number = self.used_cbdma.index(dmas)
+            dmas = 'txq{}@{};'.format(number, dmas)
+            dmas_info += dmas
+        self.dmas_info = dmas_info[:-1]
+        self.device_str = ' '.join(self.used_cbdma)
+        self.dut.setup_modules(self.target, "igb_uio", "None")
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
+                             ("igb_uio", self.device_str, self.pci_info), '# ', 60)
+
+    def bind_cbdma_device_to_kernel(self):
+        if self.device_str is not None:
+            self.dut.send_expect('modprobe ioatdma', '# ')
+            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
     def test_split_ring_virtio_user_interrupt_with_vhost_net_as_backed(self):
         """
@@ -257,12 +309,46 @@ class TestVirtioUserInterrupt(TestCase):
         self.vhost.send_expect("quit", "#", 20)
         self.check_virtio_side_link_status("down")
 
+    def test_lsc_event_between_vhost_user_and_virtio_user_with_split_ring_and_cbdma_enabled(self):
+        """
+        Test Case7: LSC event between vhost-user and virtio-user with split ring and cbdma enabled
+        """
+        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
+        self.start_vhost_testpmd(pci=self.used_cbdma, dmas=self.dmas_info)
+        self.start_virtio_user()
+        self.check_virtio_side_link_status("up")
+
+        self.vhost.send_expect("quit", "#", 20)
+        self.check_virtio_side_link_status("down")
+        self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.close_all_session()
+
+    def test_split_ring_virtio_user_interrupt_test_with_vhost_user_as_backend_and_cbdma_enabled(self):
+        """
+        Test Case8: Split ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
+        """
+        self.get_cbdma_ports_info_and_bind_to_dpdk(1)
+        self.start_vhost_testpmd(pci="", dmas=self.dmas_info)
+        self.launch_l3fwd(path="./vhost-net")
+        # double check the status of interrupt core
+        for i in range(2):
+            self.tester.scapy_append('pk=[Ether(dst="52:54:00:00:00:01")/IP()/("X"*64)]')
+            self.tester.scapy_append('sendp(pk, iface="%s", count=100)' % self.tx_interface)
+            self.tester.scapy_execute()
+            time.sleep(3)
+            self.check_interrupt_log(status="waked up")
+        self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.close_all_session()
+
     def tear_down(self):
         """
         run after each test case.
         """
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
+        self.bind_cbdma_device_to_kernel()
         self.close_all_session()
 
     def tear_down_all(self):
