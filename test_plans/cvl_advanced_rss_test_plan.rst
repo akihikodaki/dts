@@ -1773,20 +1773,26 @@ Launch testpmd without "--disable-rss"
 all the test cases run the same test steps as below:
 
 1. validate rule.
-2. send hit pattern packets with switched value of input set in the rule.
+2. if the rule is MAC_IPV4_UDP/TCP/SCTP or MAC_IPV6_UDP/TCP/SCTP,
+   set "port config all rss all".
+3. send hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
    check all the packets are distributed to queues by rss.
-3. create rule and list rule.
-4. send same packets with step 2.
+4. create rule and list rule.
+5. send same packets with step 2.
    check the received packets have the same hash value.
    check all the packets are distributed to queues by rss.
-5. send not hit pattern packets with switched value of input set in the rule.
+6. send not hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
    check all the packets are distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
-6. distroy the rule and list rule.
-7. send same packets with step 2.
-   check the received packets have different hash value, or have not hash value.
+7. distroy the rule and list rule.
+8. send same packets with step 2.
+   if the rule is MAC_IPV4_UDP/TCP/SCTP or MAC_IPV6_UDP/TCP/SCTP,
+   check the received packets which switched ip address have different hash value,
+   which only switched L4 ports have same hash value.
+   if the rule is MAC_IPV4 or MAC_IPV6,
+   check the received packets have not hash value.
 
 Test case: symmetric MAC_IPV4
 =============================
