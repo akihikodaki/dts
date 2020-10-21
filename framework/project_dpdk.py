@@ -649,7 +649,7 @@ class DPDKdut(Dut):
                              + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
             self.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_MLX4_PMD=n/"
                              + "CONFIG_RTE_LIBRTE_MLX5_PMD=y/' config/common_base", "# ", 30)
-            sel.set_build_options({'RTE_LIBRTE_MLX5_PMD': 'y',
+            self.set_build_options({'RTE_LIBRTE_MLX5_PMD': 'y',
                                    'RTE_LIBRTE_MLX5_PMD': 'y'})
 
 class DPDKtester(Tester):
