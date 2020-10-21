@@ -1780,10 +1780,8 @@ Subcase: MAC_IPV6_GTPU_EH_IPV6_UDP/TCP
 
 5. flush the rules, send the two packets again, check they are distributed to the same queue.
 
-Test case: multirules
-=====================
-Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
------------------------------------------
+Test case: multirules IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
+======================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -1863,8 +1861,8 @@ Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
     packet 1-3 get same result with step 5.
     packet 4-9 have not hash value, and distributed to queue 0.
 
-Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
----------------------------------------------
+Test case: multirules IPV4_GTPU_EH_IPV4 with/without UL/DL
+==========================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -1914,8 +1912,8 @@ Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
 7. send same packets with step 5,
    packet 1-6 have not hash value.
 
-Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
----------------------------------------------
+Test case: multirules IPV4_GTPU_EH_IPV4 without/with UL/DL
+==========================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -1967,8 +1965,8 @@ Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
 11. send same packets with step 3,
     packet 1-6 have not hash value, and distributed to queue 0.
 
-Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
---------------------------------------------------------
+Test case: multirules IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
+=====================================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2035,8 +2033,8 @@ so the following step don't need to be run in dpdk-20.08.
     check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
     check packet 10-12 have not hash value.
 
-Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
---------------------------------------------------------
+Test case: multirules IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
+=====================================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2099,8 +2097,8 @@ so the following step don't need to be run in dpdk-20.08.
    check packet 8 has same hash value to packet 7, packet 9 have different hash value to packet 7.
    check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
 
-Subcase: IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
-----------------------------------------------------------------------
+Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
+===================================================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2139,8 +2137,8 @@ Subcase: IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
    check packet 6 has same hash value to packet 5.
    check packet 7 has differnt hash value to packet 5.
 
-Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
---------------------------------------------------
+Test case: multirules IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
+===============================================================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2150,7 +2148,7 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
@@ -2509,22 +2507,26 @@ start testpmd without disable rss::
 all the test cases run the same test steps as below:
 
 1. validate rule.
-2. send a basic hit pattern packet,record the hash value.
+2. if the rule inner protocol is IPV4_UDP/TCP or IPV6_UDP/TCP,
+   set "port config all rss all".
+3. send a basic hit pattern packet,record the hash value.
    then send a hit pattern packet with switched value of input set in the rule.
    check the two received packets have different hash value.
    check both the packets are distributed to queues by rss.
-3. create rule and list rule.
-4. send same packets with step 2.
+4. create rule and list rule.
+5. send same packets with step 2.
    check the received packets have same hash value.
    check both the packets are distributed to queues by rss.
-5. send two not hit pattern packets with switched value of input set in the rule.
+6. send two not hit pattern packets with switched value of input set in the rule.
    check the received packets have different hash value.
    check both the packets are distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
-6. distroy the rule and list rule.
-7. send the basic packet.
+7. distroy the rule and list rule.
+8. send the basic packet.
+   if the rule inner protocol is IPV4_UDP/TCP or IPV6_UDP/TCP,
    check the received packet has different hash value in step 4.
-   or the received packet has not hash value, and distributed to queue 0.
+   if the rule inner protocol is IPV4/IPV6,
+   check the received packet has not hash value, and distributed to queue 0.
 
 ==========================================
 Pattern: symmetric outer ipv4 + inner ipv4
