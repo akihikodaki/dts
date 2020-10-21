@@ -31,27 +31,29 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 =============================
-vhost 1024 ethports test plan
+vhost 1023 ethports test plan
 =============================
 
-This test plan test function of launch vhost with 1024 ethports.
+This test plan test function of launch vhost with 1023 ethports.
+Note: Because the value of MAX_FDS is 1024 and there is an extra gobal fd, the number of vdev is limit to 1023. 
+So when vhost-user ports number > 1023, it will report an error "failed to add listen fd".
 
-Test Case1:  Basic test for launch vhost with 1024 ethports
+Test Case1:  Basic test for launch vhost with 1023 ethports
 ===========================================================
 
-1. SW preparation: change "CONFIG_RTE_MAX_ETHPORTS" to 1024 in DPDK configure file::
+1. SW preparation: change "CONFIG_RTE_MAX_ETHPORTS" to 1023 in DPDK configure file::
 
     vi ./config/common_base
     -CONFIG_RTE_MAX_ETHPORTS=32
-    +CONFIG_RTE_MAX_ETHPORTS=1024
+    +CONFIG_RTE_MAX_ETHPORTS=1023
 
-2. Launch vhost with 1024 vdev::
+2. Launch vhost with 1023 vdev::
 
     ./testpmd -c 0x3000 -n 4 --file-prefix=vhost --vdev 'eth_vhost0,iface=vhost-net,queues=1' \
-    --vdev 'eth_vhost1,iface=vhost-net1,queues=1' ... -- -i # only list two vdev, here ommit other 1022 vdevs, from eth_vhost2 to eth_vhost1023
+    --vdev 'eth_vhost1,iface=vhost-net1,queues=1' ... -- -i # only list two vdev, here ommit other 1021 vdevs, from eth_vhost2 to eth_vhost1022
 
 3. Change "CONFIG_RTE_MAX_ETHPORTS" back to 32 in DPDK configure file::
 
     vi ./config/common_base
     +CONFIG_RTE_MAX_ETHPORTS=32
-    -CONFIG_RTE_MAX_ETHPORTS=1024
+    -CONFIG_RTE_MAX_ETHPORTS=1023
