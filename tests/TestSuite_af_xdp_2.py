@@ -67,29 +67,21 @@ class TestAfXdp(TestCase):
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pktgen_helper = PacketGeneratorHelper()
 
-        self.prepare_dpdk()
         self.dut.restore_interfaces()
         self.irqs_set = self.dut.new_session(suite="irqs-set")
 
     def set_up(self):
         pass
 
-    def prepare_dpdk(self):
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AF_XDP=n$/CONFIG_RTE_LIBRTE_PMD_AF_XDP=y/' config/common_base", "# ")
-        self.dut.set_build_options({'RTE_LIBRTE_PMD_AF_XDP': 'y'})
-        self.dut.build_install_dpdk(self.dut.target)
-
     def set_port_queue(self, intf):
         self.dut.send_expect("ethtool -L %s combined %d" % (intf, self.nb_cores/self.port_num), "# ")
 
     def config_stream(self, rx_port, frame_size):
-        payload = frame_size - self.header_size
         tgen_input = []
 
         dst_mac = self.dut.get_mac_address(self.dut_ports[rx_port])
-        flow = 'Ether(dst="%s")/IP(dst="192.168.%d.1", proto=255)/UDP()/("X"*%d)' % (dst_mac, rx_port+1, payload)
-        pkt = Packet(pkt_str=flow)
+        pkt = Packet(pkt_len=frame_size)
+        pkt.config_layers([('ether', {'dst': dst_mac}), ('ipv4', {'dst':"192.168.%d.1" % (rx_port+1), 'proto': 255})])
         pcap = os.path.join(self.out_path, "af_xdp_%d_%d_%d.pcap" %
                 (self.port_num, rx_port, frame_size))
         pkt.save_pcapfile(None, pcap)
@@ -98,12 +90,11 @@ class TestAfXdp(TestCase):
         return tgen_input
 
     def config_rule_stream(self, rule_index, frame_size):
-        payload = frame_size - self.header_size
         tgen_input = []
 
         rule = self.rule[rule_index]
-        flow = 'Ether()/IP()/UDP(sport=%d, dport=%d)/("X"*%d)' % (rule[-2], rule[-1], payload)
-        pkt = Packet(pkt_str=flow)
+        pkt = Packet(pkt_len=frame_size)
+        pkt.config_layers([('udp', {'src': rule[-2], 'dst': rule[-1]})])
         pcap = os.path.join(self.out_path, "af_xdp_%d_%d.pcap" %
                 (rule[-2], frame_size))
         pkt.save_pcapfile(None, pcap)
@@ -432,7 +423,3 @@ class TestAfXdp(TestCase):
 
     def tear_down_all(self):
         self.dut.kill_all()
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_LIBRTE_PMD_AF_XDP=y$/CONFIG_RTE_LIBRTE_PMD_AF_XDP=n/' config/common_base", "# ")
-        self.dut.set_build_options({'RTE_LIBRTE_PMD_AF_XDP': 'n'})
-        self.dut.build_install_dpdk(self.dut.target)
