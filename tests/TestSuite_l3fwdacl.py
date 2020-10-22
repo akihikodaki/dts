@@ -170,7 +170,7 @@ class TestL3fwdacl(TestCase):
         extra_args = ''
 
         if scalar:
-            extra_args = '--scalar'
+            extra_args = '--alg="scalar"'
 
         cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" %s' % \
                   (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
@@ -840,7 +840,7 @@ class TestL3fwdacl(TestCase):
         rule_list_ipv4.append(TestL3fwdacl.invalid_port_rule_ipv4)
         self.create_acl_ipv4_db(rule_list_ipv4)
 
-        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar"' % \
                   (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
@@ -852,7 +852,7 @@ class TestL3fwdacl(TestCase):
         rule_list_ipv6.append(TestL3fwdacl.invalid_port_rule_ipv6)
         self.create_acl_ipv6_db(rule_list_ipv6)
 
-        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --scalar' % \
+        cmdline = '%s -c %s -n %d -- -p %s --config="(%d,0,2),(%d,0,3)" --rule_ipv4="%s" --rule_ipv6="%s" --alg="scalar"' % \
                   (self.app_l3fwd_acl_path, self.core_mask, self.dut.get_memory_channels(),
                    self.port_mask, self.dut_ports[0], self.dut_ports[1],
                    TestL3fwdacl.acl_ipv4_db, TestL3fwdacl.acl_ipv6_db)
