@@ -102,7 +102,7 @@ class TestUnitTestsDump(TestCase):
         
         # Nic driver will create multiple rings.
         # Only check the last one to make sure ring_dump function work.
-        self.verify( 'MP_mbuf_pool_socket_0' in results, "dump ring name failed")
+        self.verify( 'MP_mb_pool_0' in results, "dump ring name failed")
         for result in results:
             self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
             out = self.dut.send_expect("dump_ring %s" % result, "testpmd>", self.run_cmd_time)
@@ -123,7 +123,7 @@ class TestUnitTestsDump(TestCase):
         m = re.compile(r"%s" % match_regex, re.S)
         results = m.findall(out)
 
-        self.verify(results[0][0] == 'mbuf_pool_socket_0', "dump mempool name failed")
+        self.verify(results[0][0] == 'mb_pool_0', "dump mempool name failed")
         for result in results:
             self.dut.send_expect("%s" % cmd, "testpmd>", self.start_test_time)
             out = self.dut.send_expect("dump_mempool %s" % result[0], "testpmd>", self.run_cmd_time * 2)
