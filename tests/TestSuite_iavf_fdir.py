@@ -2496,7 +2496,7 @@ class TestIAVFFdir(TestCase):
         out2 = self.pmd_output.execute_cmd("flow destroy 2 rule 0")
         self.verify("Invalid port" in out2, "there should report error message")
         out3 = self.pmd_output.execute_cmd("flow flush 2")
-        self.verify("No such device" in out3, "port 2 doesn't exist.")
+        self.verify("Invalid port" in out3, "port 2 doesn't exist.")
         out4 = self.pmd_output.execute_cmd("flow list 2")
         self.verify("Invalid port" in out4, "port 2 doesn't exist.")
 
