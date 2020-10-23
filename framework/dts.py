@@ -58,7 +58,8 @@ import logger
 import debugger
 from config import CrbsConf
 from checkCase import CheckCase
-from utils import get_subclasses, copy_instance_attr, create_parallel_locks
+from utils import (get_subclasses, copy_instance_attr, create_parallel_locks,
+                   check_dts_python_version)
 import sys
 import imp
 imp.reload(sys)
@@ -504,6 +505,9 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
     global stats_report
     global log_handler
     global check_case_inst
+
+    # check the python version of the server that run dts 
+    check_dts_python_version()
 
     # save global variable
     serializer = Serializer()
