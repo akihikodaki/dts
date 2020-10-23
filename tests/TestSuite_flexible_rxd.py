@@ -71,7 +71,7 @@ class TestFlexibleRxd(TestCase):
         """
         self.dut.send_expect("cp ./app/test-pmd/util.c .", "#", 15)
         self.dut.send_expect("cp ./app/test-pmd/meson.build /root/", "#", 15)
-        pattern = r"/if dpdk_conf.has('RTE_LIBRTE_IXGBE_PMD')/i\if dpdk_conf.has('RTE_LIBRTE_ICE_PMD')\n\tdeps += 'pmd_ice'\nendif"
+        pattern = r"/if dpdk_conf.has('RTE_NET_IXGBE')/i\if dpdk_conf.has('RTE_NET_ICE')\n\tdeps += 'net_ice'\nendif"
         self.dut.send_expect(f'sed -i "{pattern}" app/test-pmd/meson.build', "#", 15)
         self.dut.send_expect(
             "sed -i '/#include <rte_flow.h>/a\#include <rte_pmd_ice.h>' app/test-pmd/util.c", "#", 15)
