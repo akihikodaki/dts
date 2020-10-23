@@ -371,7 +371,7 @@ class PerfTestsCryptodev(TestCase):
                 return {}
             vdev_list = []
             for i in range(num):
-                vdev = "{}{},slave={}_qat_sym,slave={}_qat_sym,slave={}_qat_sym,mode=round-robin".format(dev,
+                vdev = "{}{},worker={}_qat_sym,worker={}_qat_sym,worker={}_qat_sym,mode=round-robin".format(dev,
                         i, w[i*3], w[i*3 + 1], w[i*3 + 2])
                 vdev_list.append(vdev)
             device["w"] = ' -w '.join(w)
