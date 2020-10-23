@@ -43,7 +43,8 @@ from crb import Crb
 from net_device import GetNicObj
 from etgen import IxiaPacketGenerator, SoftwarePacketGenerator
 import random
-from utils import GREEN, convert_int2ip, convert_ip2int
+from utils import (GREEN, convert_int2ip, convert_ip2int,
+                   check_crb_python_version)
 from exception import ParameterInvalidException
 from multiprocessing import Process
 from pktgen import getPacketGenerator
@@ -66,6 +67,8 @@ class Tester(Crb):
         self.NAME = 'tester'
         self.scapy_session = None
         super(Tester, self).__init__(crb, serializer, self.NAME)
+        # check the python version of tester
+        check_crb_python_version(self)
 
         self.bgProcIsRunning = False
         self.duts = None
