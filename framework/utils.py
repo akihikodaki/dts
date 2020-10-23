@@ -32,6 +32,7 @@
 import json         # json format
 import re
 import os
+import sys
 import inspect
 import socket
 import struct
@@ -280,3 +281,30 @@ def get_backtrace_object(file_name, obj_name):
         obj = getattr(frame.f_locals['self'], obj_name, None)
 
     return obj
+
+
+def check_crb_python_version(crb):
+    cmd = 'python3 -V'
+    out = crb.send_expect(cmd, '#', 5)
+    pat = "Python (\d+).(\d+).(\d+)"
+    result = re.findall(pat, out)
+    if not result or \
+       int(result[0][0]) < 3 or \
+       (int(result[0][0]) == 3 and int(result[0][1]) < 6) or \
+       (int(result[0][0]) == 3 and int(result[0][1]) == 6 and int(result[0][2]) < 9):
+        crb.logger.warning(
+            ("WARNING: Tester node python version is lower than python 3.6, "
+             "it is deprecated for use in DTS, "
+             "and will not work in future releases."))
+        crb.logger.warning("Please use Python >= 3.6.9 instead")
+
+
+def check_dts_python_version():
+    if sys.version_info.major < 3 or \
+       (sys.version_info.major == 3 and sys.version_info.minor < 6) or \
+       (sys.version_info.major == 3 and sys.version_info.minor == 6 and sys.version_info.micro < 9):
+        print(RED(
+            ("WARNING: Dts running node python version is lower than python 3.6, "
+             "it is deprecated for use in DTS, "
+             "and will not work in future releases.")), file=sys.stderr)
+        print(RED("Please use Python >= 3.6.9 instead"), file=sys.stderr)
