@@ -210,23 +210,11 @@ class TestPVPVirtIOBonding(TestCase):
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
             self.logger.error("ERROR: Failure for %s" % str(e))
-        if self.dut.build_type == 'meson':
-            self.build_pmd_bond(self.vm_dut)
-
-    def build_pmd_bond(self, user_dut):
-        user_dut.set_build_options({'RTE_LIBRTE_PMD_BOND': 'y'})
-        user_dut.build_install_dpdk(self.target)
-
-    def restore_env(self, user_dut):
-        user_dut.set_build_options({'RTE_LIBRTE_PMD_BOND': 'n'})
-        user_dut.build_install_dpdk(self.target)
 
     def stop_testpmd_and_vm(self):
         """
         quit testpmd on vhost and stop vm
         """
-        if self.dut.build_type == 'meson':
-            self.restore_env(self.vm_dut)
         self.vhost_testpmd.quit()
         self.vm.stop()
 
