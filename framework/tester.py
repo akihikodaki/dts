@@ -871,8 +871,7 @@ class Tester(Crb):
         if self.scapy_sessions_li:
             for i in self.scapy_sessions_li:
                 if i.session.isalive():
-                    i.session.send_expect("^c", ">>> ", timeout=2)
-                    i.session.send_expect("^d", "#", timeout=2)
+                    i.session.send_expect("quit()", "#", timeout=2)
                     i.session.close()
             self.scapy_sessions_li.clear()
 
