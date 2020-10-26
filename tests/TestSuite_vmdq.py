@@ -56,8 +56,6 @@ class TestVmdq(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
 
-        self.dut.send_expect("sed -i 's/CONFIG_RTE_MAX_QUEUES_PER_PORT=256/CONFIG_RTE_MAX_QUEUES_PER_PORT=1024/' ./config/common_base", "# ", 5)
-        self.dut.set_build_options({'RTE_MAX_QUEUES_PER_PORT': 1024})
         self.dut.build_install_dpdk(self.target)
         # Update the max queue per port for Fortville.
         self.dut.send_expect("sed -i 's/define MAX_QUEUES 128/define MAX_QUEUES 1024/' ./examples/vmdq/main.c", "#", 5)
@@ -270,8 +268,4 @@ class TestVmdq(TestCase):
         Run after each test suite.
         """
         # resume setting
-        self.dut.send_expect(
-            "sed -i 's/CONFIG_RTE_MAX_QUEUES_PER_PORT=1024/CONFIG_RTE_MAX_QUEUES_PER_PORT=256/' ./config/common_base",
-            "# ", 5)
-        self.dut.set_build_options({'RTE_MAX_QUEUES_PER_PORT': 256})
         self.dut.build_install_dpdk(self.target)
