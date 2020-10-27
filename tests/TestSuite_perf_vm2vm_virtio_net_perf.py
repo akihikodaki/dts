@@ -76,6 +76,8 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         self.json_obj = dict()
         self.save_result_flag = True
         self.path=self.dut.apps_name['test-pmd']
+        if self.dut.build_type == 'meson':
+            self.build_pmd_bond(self.dut)
 
     def set_up(self):
         """
@@ -90,6 +92,13 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         self.test_result = {}
         self.table_header = ['Mode', 'Type', 'TXD/RXD', 'Throughput', 'Expected Throughput',
                              'Throughput Difference']
+
+    def build_pmd_bond(self, user_dut):
+        user_dut.set_build_options({'RTE_MEMCPY_AVX512': 'y'})
+        user_dut.build_install_dpdk(self.target)
+
+    def restore_env(self, user_dut):
+        user_dut.build_install_dpdk(self.target)
 
     def handle_expected(self):
         """
@@ -364,5 +373,7 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         Run after each test suite.
 
         """
+        if self.dut.build_type == 'meson':
+            self.restore_env(self.dut)
         if getattr(self, 'vhost', None):
             self.dut.close_session(self.vhost)
