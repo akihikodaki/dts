@@ -116,4 +116,167 @@ Send a packet with size 50 bytes (Single example port show) ::
     ############################################################################
 
 
-Verify that the increase in RX-bytes and RX-packets is as-expected, and no other information changed.
+Functional Tests of xstats Checks
+==================================
+
+Testing the support of xstatus Checks in Poll Mode Drivers consists of
+configuring the gathering the initial status of a port, sending some
+packets to that port, and checking the xstatus of the port.
+This case will compare the initial xstatus and the new xstatus,
+and compare the xstats and stats result.
+The fields checked are RX-packets and TX-packets of each queue stats,
+RX-packets, RX-bytes, TX-packets and TX-bytes of each port stats,
+rx_good_packets and rx_good_bytes of each port xstats,
+tx_good_packets and tx_good_bytes of each port xstats,
+rx_qx_packets, rx_qx_bytes, tx_qx_packets and tx_qx_bytes of each port xstats.
+
+Test Case: PF xstatus Checks
+============================
+1. Bind two PF ports to pmd driver::
+
+    ./usertools/dpdk-devbind.py -b vfio-pci device_bus_id0 device_bus_id1
+
+2. Launch testpmd and enable rss::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    testpmd> port config all rss all
+    testpmd> set fwd mac
+
+3. show the xstats before packet forwarding, all the value are 0.
+4. Start forward and send 100 packets with random src IP address,
+   then stop forward.
+
+5. Check stats and xstats::
+
+  testpmd> stop
+  Telling cores to stop...
+  Waiting for lcores to finish...
+
+  ------- Forward Stats for RX Port= 0/Queue= 0 -> TX Port= 1/Queue= 0 -------
+  RX-packets: 29             TX-packets: 29             TX-dropped: 0
+
+  ------- Forward Stats for RX Port= 0/Queue= 1 -> TX Port= 1/Queue= 1 -------
+  RX-packets: 21             TX-packets: 21             TX-dropped: 0
+
+  ------- Forward Stats for RX Port= 0/Queue= 2 -> TX Port= 1/Queue= 2 -------
+  RX-packets: 24             TX-packets: 24             TX-dropped: 0
+
+  ------- Forward Stats for RX Port= 0/Queue= 3 -> TX Port= 1/Queue= 3 -------
+  RX-packets: 26             TX-packets: 26             TX-dropped: 0
+
+  ---------------------- Forward statistics for port 0  ----------------------
+  RX-packets: 100            RX-dropped: 0             RX-total: 100
+  TX-packets: 0              TX-dropped: 0             TX-total: 0
+  ----------------------------------------------------------------------------
+
+  ---------------------- Forward statistics for port 1  ----------------------
+  RX-packets: 0              RX-dropped: 0             RX-total: 0
+  TX-packets: 100            TX-dropped: 0             TX-total: 100
+  ----------------------------------------------------------------------------
+
+  +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+  RX-packets: 100            RX-dropped: 0             RX-total: 100
+  TX-packets: 100            TX-dropped: 0             TX-total: 100
+  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+  testpmd> show port stats all
+
+  ######################## NIC statistics for port 0  ########################
+  RX-packets: 100        RX-missed: 0          RX-bytes:  6000
+  RX-errors: 0
+  RX-nombuf:  0
+  TX-packets: 0          TX-errors: 0          TX-bytes:  0
+
+  Throughput (since last show)
+  Rx-pps:            0          Rx-bps:            0
+  Tx-pps:            0          Tx-bps:            0
+  ############################################################################
+
+  ######################## NIC statistics for port 1  ########################
+  RX-packets: 0          RX-missed: 0          RX-bytes:  0
+  RX-errors: 0
+  RX-nombuf:  0
+  TX-packets: 100        TX-errors: 0          TX-bytes:  6000
+
+  Throughput (since last show)
+  Rx-pps:            0          Rx-bps:            0
+  Tx-pps:            0          Tx-bps:            0
+  ############################################################################
+
+  testpmd> show port xstats all
+  ###### NIC extended statistics for port 0
+  rx_good_packets: 100
+  tx_good_packets: 0
+  rx_good_bytes: 6000
+  tx_good_bytes: 0
+  ......
+  rx_q0_packets: 29
+  rx_q0_bytes: 1740
+  rx_q0_errors: 0
+  rx_q1_packets: 21
+  rx_q1_bytes: 1260
+  rx_q1_errors: 0
+  rx_q2_packets: 24
+  rx_q2_bytes: 1440
+  rx_q2_errors: 0
+  rx_q3_packets: 26
+  rx_q3_bytes: 1560
+  rx_q3_errors: 0
+  tx_q0_packets: 0
+  tx_q0_bytes: 0
+  tx_q1_packets: 0
+  tx_q1_bytes: 0
+  tx_q2_packets: 0
+  tx_q2_bytes: 0
+  tx_q3_packets: 0
+  tx_q3_bytes: 0
+  ......
+  ###### NIC extended statistics for port 1
+  rx_good_packets: 0
+  tx_good_packets: 100
+  rx_good_bytes: 0
+  tx_good_bytes: 6000
+  rx_q0_packets: 0
+  rx_q0_bytes: 0
+  rx_q0_errors: 0
+  rx_q1_packets: 0
+  rx_q1_bytes: 0
+  rx_q1_errors: 0
+  rx_q2_packets: 0
+  rx_q2_bytes: 0
+  rx_q2_errors: 0
+  rx_q3_packets: 0
+  rx_q3_bytes: 0
+  rx_q3_errors: 0
+  tx_q0_packets: 29
+  tx_q0_bytes: 1740
+  tx_q1_packets: 21
+  tx_q1_bytes: 1260
+  tx_q2_packets: 24
+  tx_q2_bytes: 1440
+  tx_q3_packets: 26
+  tx_q3_bytes: 1560
+
+verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 100.
+rx_good_bytes, RX-bytes of port 0 and tx_good_bytes, TX-bytes of port 1 are the same.
+RX-packets of each queue of port 0 are equal to rx_qx_packets of each queue of port 0.
+TX-packets of each queue of port 1 are equal to tx_qx_packets of each queue of port 1.
+The sum of rx_qx_bytes of each queue of port 0 is equal to the rx_good_packets of port 0.
+The sum of tx_qx_bytes of each queue of port 1 is equal to the tx_good_packets of port 1.
+
+Test Case: VF xstats Checks
+============================
+1. Create one VF port on a kernel PF, then bind the VF to pmd driver::
+
+    echo 1 > /sys/bus/pci/devices/device_bus_id/sriov_numvfs
+    ./usertools/dpdk-devbind.py -s
+    ./usertools/dpdk-devbind.py -b vfio-pci vf_bus_id
+
+2. Launch testpmd on the VF and enable RSS::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c f -n 4 -- -i --rxq=4 --txq=4
+    testpmd> port config all rss all
+    testpmd> set fwd mac
+
+3. Then run the same steps of PF xstats Checks, get same result.
+note: because one port forwarding packets, so check rx and tx both in port 0.
