@@ -330,12 +330,12 @@ tv_iavf_gtpu_ipv4_up_match_dismatch = {
                         "end actions rss types ipv4 l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255,teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader( pdu_type=1, qos_flow=0x34) / IP(src=RandIP()) /("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34) / IP(src=RandIP()) /("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255,teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader( pdu_type=0, qos_flow=0x34) / IP(dst=RandIP()) /("X"*480)' % vf0_mac,
+                     'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) / IP(dst=RandIP()) /("X"*480)' % vf0_mac,
                      'Ether(src="00:00:00:00:01:01",dst="%s")/IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255,teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader( pdu_type=0, qos_flow=0x34) / IP(dst=RandIP()) / UDP() /("X"*480)' % vf0_mac,
+                     'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) / IP(dst=RandIP()) / UDP() /("X"*480)' % vf0_mac,
                      ],
 
     "send_count": 100,
@@ -348,10 +348,10 @@ tv_iavf_gtpu_ipv4_down_match_dismatch = {
                         "end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP())/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst=RandIP())/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01",dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/("X"*480)' % vf0_mac,
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP())/("X"*480)' % vf0_mac,
                      ],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -363,10 +363,10 @@ tv_iavf_gtpu_ipv4_frag_up_match_dismatch = {
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP(),frag=6)/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP(),frag=6)/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src=RandIP(),frag=6)/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src=RandIP(),frag=6)/("X"*480)' % vf0_mac],
 
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -379,10 +379,10 @@ tv_iavf_gtpu_ipv4_frag_down_match_dismatch = {
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) / IP(dst=RandIP(), frag=6) /("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) / IP(dst=RandIP(), frag=6) /("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34) / IP(src=RandIP(), frag=6) /("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34) / IP(src=RandIP(), frag=6) /("X"*480)' % vf0_mac],
 
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -394,10 +394,10 @@ tv_iavf_gtpu_ipv4_udp_up_match_dismatch = {
                         "l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP()) / UDP(dport=RandShort())/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP()) / UDP(dport=RandShort())/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP()) / UDP(dport=RandShort())/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst=RandIP()) / UDP(dport=RandShort())/("X"*480)' % vf0_mac],
 
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -410,10 +410,10 @@ tv_iavf_gtpu_ipv4_udp_down_match_dismatch = {
                         "key_len 0 queues end / end ",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) / IP(dst=RandIP(), frag=6) /("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) / IP(dst=RandIP(), frag=6) /("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34) / IP(src=RandIP(), frag=6) /("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34) / IP(src=RandIP(), frag=6) /("X"*480)' % vf0_mac],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
 }
@@ -424,10 +424,10 @@ tv_iavf_gtpu_ipv4_tcp_up_match_dismatch = {
                         " end actions rss types ipv4-tcp l3-src-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / TCP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
 
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -440,10 +440,10 @@ tv_iavf_gtpu_ipv4_tcp_down_match_dismatch = {
                         " end actions rss types ipv4-tcp l3-dst-only end key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) /IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / TCP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34) /IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(src=RandIP())/TCP(dport=RandShort())/("X"*480)' % vf0_mac],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
 }
@@ -454,10 +454,10 @@ tv_iavf_gtpu_ipv4_icmp_up_match_dismatch = {
                         "key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/ICMP()/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP())/ICMP()/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/ICMP()/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst=RandIP())/ICMP()/("X"*480)' % vf0_mac],
 
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
@@ -470,10 +470,10 @@ tv_iavf_gtpu_ipv4_icmp_down_match_dismatch = {
                         "key_len 0 queues end / end",
 
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) /IP(dst=RandIP())/ICMP()/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst=RandIP())/ICMP()/("X"*480)' % vf0_mac],
 
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34) /IP(src=RandIP())/ICMP()/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(src=RandIP())/ICMP()/("X"*480)' % vf0_mac],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
 }
@@ -483,9 +483,9 @@ tv_iavf_gtpu_ipv4_sctp_up_match_dismatch = {
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types l3-src-only end "
                         "key_len 0 queues end / end",
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src=RandIP())/SCTP()/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src=RandIP())/SCTP()/("X"*480)' % vf0_mac],
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152) / GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst=RandIP())/SCTP()/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst=RandIP())/SCTP()/("X"*480)' % vf0_mac],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
 }
@@ -495,9 +495,9 @@ tv_iavf_gtpu_ipv4_sctp_down_match_dismatch = {
     "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types l3-dst-only end "
                         "key_len 0 queues end / end",
     "match_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                  'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) /IP(dst=RandIP())/SCTP()/("X"*480)' % vf0_mac],
+                  'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst=RandIP())/SCTP()/("X"*480)' % vf0_mac],
     "dismatch_str": ['Ether(src="00:00:00:00:01:01", dst="%s") / IP() / UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/'
-                     'GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34) /IP(src=RandIP())/SCTP()/("X"*480)' % vf0_mac],
+                     'GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(src=RandIP())/SCTP()/("X"*480)' % vf0_mac],
     "send_count": 100,
     "check_func": rfc.check_iavf_packets_rss_queue
 }
