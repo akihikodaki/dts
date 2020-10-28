@@ -51,7 +51,7 @@ sys.path.append(DEP_FOLDER + '/scapy_modules')
 from utils import convert_ip2int
 from utils import convert_int2ip
 
-scapy_modules_required = {'gtp': ['GTP_U_Header', 'GTP_PDUSession_ExtensionHeader'],
+scapy_modules_required = {'gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
                           'lldp': ['LLDPDU', 'LLDPDUManagementAddress'], 'Dot1BR': ['Dot1BR'], 'pfcp': ['PFCP'],
                           'nsh': ['NSH'], 'igmp': ['IGMP'], 'mpls': ['MPLS'], 'sctp': ['SCTP', 'SCTPChunkData']}
 local_modules = [m[:-3] for m in os.listdir(DEP_FOLDER + '/scapy_modules') if (m.endswith('.py') and not m.startswith('__'))]
