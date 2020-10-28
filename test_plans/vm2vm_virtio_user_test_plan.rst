@@ -39,22 +39,6 @@ Description
 
 This test plan includes split virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vector_rx path test, and packed virtqueue vm2vm in-order mergeable, in-order non-mergeable, mergeable, non-mergeable, vectorized path test. This plan also check the payload of packets is accurate. 
 
-Prerequisites
-=============
-
-Enable pcap lib in dpdk code and recompile::
-
-    --- a/config/common_base
-    +++ b/config/common_base
-    @@ -492,7 +492,7 @@ CONFIG_RTE_LIBRTE_PMD_NULL=y
-     #
-     # Compile software PMD backed by PCAP files
-     #
-    -CONFIG_RTE_LIBRTE_PMD_PCAP=n
-    +CONFIG_RTE_LIBRTE_PMD_PCAP=y
-
-Then build DPDK.
-
 Test flow
 =========
 Virtio-user <-> Vhost-user <-> Testpmd <-> Vhost-user <-> Virtio-user
@@ -127,7 +111,7 @@ Test Case 1: packed virtqueue vm2vm mergeable path test
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set burst 1
+    testpmd>set burst 5
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
     testpmd>stop
@@ -201,7 +185,7 @@ Test Case 2: packed virtqueue vm2vm inorder mergeable path test
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set burst 32
+    testpmd>set burst 5
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
 
@@ -451,7 +435,7 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
 
-5. Start vhost, then quit pdump and three testpmd, get 256 packets received by virtio-user1 in pdump-virtio-rx.pcap.
+5. Start vhost, then quit pdump and three testpmd, get 252 packets received by virtio-user1 in pdump-virtio-rx.pcap.
 
 6. Launch testpmd by below command::
 
@@ -477,7 +461,7 @@ Test Case 6: split virtqueue vm2vm inorder mergeable path test
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set burst 5
+    testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 1
 
@@ -811,14 +795,14 @@ Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload 
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
-    -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx
+    -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
+    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -831,7 +815,7 @@ Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
+    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 27
@@ -842,7 +826,7 @@ Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload 
     testpmd>set txpkts 2000
     testpmd>start tx_first 1
 
-5. Start vhost testpmd, then quit pdump and all testpmd, check 64 packets received by virtio-user1 and all packets are 8k length in pdump-virtio-rx.pcap.
+5. Start vhost testpmd, then quit pdump and all testpmd, check 512 packets received by virtio-user1 and 502 packets are 8k length and 10 packets are 2k length in pdump-virtio-rx.pcap.
 
 6. Restart step 1-3, Launch virtio-user0 and send packets::
 
@@ -861,7 +845,7 @@ Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload 
     testpmd>set txpkts 2000
     testpmd>start tx_first 1
 
-7. Start vhost testpm, then quit pdump and all testpmd, check 256 packets received by virtio-user1, check 54 packets with 8k length and 202 packets with 2k length in pdump-virtio-rx.pcap.
+7. Start vhost testpm, then quit pdump and all testpmd, check 512 packets received by virtio-user1, check 54 packets with 8k length and 458 packets with 2k length in pdump-virtio-rx.pcap.
 
 Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
 ================================================================================================
@@ -870,14 +854,14 @@ Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check wi
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
     --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
-    -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx
+    -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
 
 2. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
+    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
 
@@ -890,7 +874,7 @@ Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check wi
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
+    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 27
@@ -906,7 +890,7 @@ Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check wi
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
+    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
     testpmd>start tx_first 27
