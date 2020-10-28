@@ -57,8 +57,6 @@ class TestVM2VMVirtioUser(TestCase):
         self.socket_mem = ','.join(['1024']*socket_num)
         self.get_core_list()
         self.rebuild_flag = False
-        self.config_value = 'RTE_LIBRTE_PMD_PCAP'
-        self.enable_pcap_lib_in_dpdk(self.dut)
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.app_pdump = self.dut.apps_name['pdump']
         self.dut_ports = self.dut.get_ports()
@@ -95,33 +93,13 @@ class TestVM2VMVirtioUser(TestCase):
         self.pmd_virtio0 = PmdOutput(self.dut, self.virtio_user0)
         self.pmd_virtio1 = PmdOutput(self.dut, self.virtio_user1)
 
-    def enable_pcap_lib_in_dpdk(self, client_dut):
-        """
-        enable pcap lib in dpdk code and recompile
-        """
-        client_dut.send_expect("sed -i 's/%s=n$/%s=y/' config/common_base" % (
-                    self.config_value, self.config_value), '# ')
-        client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'y'})
-        client_dut.build_install_dpdk(self.target)
-        self.rebuild_flag = True
-
-    def disable_pcap_lib_in_dpdk(self, client_dut):
-        """
-        reset pcap lib in dpdk and recompile
-        """
-        if self.rebuild_flag is True:
-            client_dut.send_expect("sed -i 's/%s=y$/%s=n/' config/common_base" %
-                        (self.config_value, self.config_value), "#")
-            client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'n'})
-            client_dut.build_install_dpdk(self.target)
-
     def launch_vhost_testpmd(self, vdev_num, fixed_prefix=False, fwd_mode='io',vdevs=None):
         eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost,
                     no_pci=self.nopci, prefix=self.vhost_prefix, fixed_prefix=fixed_prefix)
         vdev_params = ''
         if vdevs:
             vdev_params = vdevs
-            params = " %s -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256 --no-flush-rx"
+            params = " %s -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         else:
             for i in range(vdev_num):
                 vdev_params += "--vdev 'net_vhost%d,iface=./vhost-net%d,queues=1' " % (i, i)
@@ -290,10 +268,10 @@ class TestVM2VMVirtioUser(TestCase):
         # in split mergeable, 1 large pkt will occupied 1 ring, so send 5 large pkt to verify
         mergeable = re.search('mrg_rxbuf\s*=\s*1', path_mode)
         split = re.search('packed_vq\s*=\s*0', path_mode)
-        no_inorder = re.search('in_order\s*=\s*0', path_mode)
-        pkt_num = 1
+        no_inorder = re.search('in_order\s*=\s*1', path_mode)
+        pkt_num = 5
         if split and mergeable and no_inorder:
-            pkt_num = 5
+            pkt_num = 1
         if mergeable:
             self.pmd_virtio0.execute_cmd('stop')
             self.pmd_virtio0.execute_cmd('set burst %d' % pkt_num)
@@ -366,18 +344,16 @@ class TestVM2VMVirtioUser(TestCase):
     def test_vm2vm_virtio_user_packed_virtqueue_mergeable_path(self):
         """
         packed virtqueue vm2vm mergeable path test
-        about packed virtqueue path, the 8k length pkt will occupies 5 ring,
-        2000,2000,2000,2000 will need 4 consequent ring, still need one ring put header
-        so, as the rxt=256, if received pkts include 8k chain pkt, it will received up to 252 pkts
+        about packed virtqueue path, the 8k length pkt will occupies 1 ring since indirect feature enabled
         """
         small_pkts_num = 251
-        large_8k_pkts_num = 1
+        large_8k_pkts_num = 5
         large_2k_pkts_num = 32
         path_mode = 'packed_vq=1,mrg_rxbuf=1,in_order=0'
         ringsize = 256
         extern_params = ''
         # get dump pcap file of virtio
-        # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
+        # the virtio0 will send 283 pkts, but the virtio only will received 256 pkts
         # then resend 32 large pkts, all will received
         self.logger.info('check pcap file info about virtio')
         self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
@@ -401,7 +377,7 @@ class TestVM2VMVirtioUser(TestCase):
         so, as the rxt=256, if received pkts include 8k chain pkt, it will received up to 252 pkts
         """
         small_pkts_num = 251
-        large_8k_pkts_num = 1
+        large_8k_pkts_num = 5
         large_2k_pkts_num = 0
         path_mode = 'packed_vq=1,mrg_rxbuf=1,in_order=1'
         ringsize = 256
@@ -683,7 +659,6 @@ class TestVM2VMVirtioUser(TestCase):
         Run after each test suite.
         """
         self.bind_cbdma_device_to_kernel()
-        self.disable_pcap_lib_in_dpdk(self.dut)
         self.close_all_session()
 
     def bind_nic_driver(self, ports, driver=""):
@@ -710,19 +685,19 @@ class TestVM2VMVirtioUser(TestCase):
         self.cbdma_nic_dev_num = 4
         self.bind_nic_driver(self.dut_ports)
         self.get_cbdma_ports_info_and_bind_to_dpdk()
-        small_pkts_num = 64
-        large_8k_pkts_num = 64
-        large_2k_pkts_num = 0
+        small_pkts_num = 512
+        large_8k_pkts_num = 502
+        large_2k_pkts_num = 10
         self.queue_num=2
         self.nopci=False
-        path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=1,server=1'
-        ringsize = 256
+        path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=1,server=0'
+        ringsize = 4096
         extern_params = '--rxq=2 --txq=2'
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
         self.logger.info('check pcap file info about virtio')
-        vdevs = f"--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]}],dmathr=512' " \
-                f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
+        vdevs = f"--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=0,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]}],dmathr=512' " \
+                f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=0,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
 
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs)
         self.send_8k_pkt()
@@ -730,9 +705,9 @@ class TestVM2VMVirtioUser(TestCase):
                                                    large_2k_pkts_num)
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        small_pkts_num = 256
+        small_pkts_num = 512
         large_8k_pkts_num = 54
-        large_2k_pkts_num = 202
+        large_2k_pkts_num = 458
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs)
         self.send_multiple_pkt()
         self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
@@ -752,14 +727,14 @@ class TestVM2VMVirtioUser(TestCase):
         large_2k_pkts_num = 394
         self.queue_num=2
         self.nopci=False
-        path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=0,server=1'
-        ringsize = 256
+        path_mode = 'packed_vq=0,mrg_rxbuf=1,in_order=0,server=0'
+        ringsize = 4096
         extern_params = '--rxq=2 --txq=2'
         # get dump pcap file of virtio
         # the virtio0 will send 283 pkts, but the virtio only will received 252 pkts
         self.logger.info('check pcap file info about virtio')
-        vdevs = f"--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]}],dmathr=512' " \
-                f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
+        vdevs = f"--vdev 'eth_vhost0,iface=vhost-net0,queues=2,client=0,dmas=[txq0@{self.cbdma_dev_infos[0]};txq1@{self.cbdma_dev_infos[1]}],dmathr=512' " \
+                f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=0,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
 
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs)
         self.send_multiple_pkt_with_8k54_2k394()
