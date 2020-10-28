@@ -93,7 +93,7 @@ def dts_parse_param(config, section):
     try:
         buildtype = config.get(section, 'build_type').split('=')[-1]
     except:
-        buildtype = 'makefile'
+        buildtype = 'meson'
     buildtype = buildtype.lower()
     settings.save_global_setting(settings.HOST_BUILD_TYPE_SETTING, buildtype)
 
