@@ -44,27 +44,25 @@ Test Case1: Vhost/virtio-user pvp share lib test with niantic
 
 1. Enable the shared lib in DPDK configure file::
 
-    vi ./config/common_base
-    -CONFIG_RTE_BUILD_SHARED_LIB=n
-    +CONFIG_RTE_BUILD_SHARED_LIB=y
+    CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib -Dc_args='-DRTE_BUILD_SHARED_LIB=1' --default-library=shared x86_64-native-linuxapp-gcc
 
 2. Recompile dpdk code::
 
-    make install T=x86_64-native-linux-gcc -j 30
+    ninja -C x86_64-native-linuxapp-gcc -j 55
 
 3. Export shared lib files into host environment::
 
-    export LD_LIBRARY_PATH=/root/dpdk/x86_64-native-linuxapp-gcc/lib:$LD_LIBRARY_PATH
+    export LD_LIBRARY_PATH=/root/dpdk/x86_64-native-linuxapp-gcc/drivers:$LD_LIBRARY_PATH
 
 4. Bind niantic port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 -d librte_pmd_vhost.so.2.1 -d librte_pmd_ixgbe.so.2.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so.21.0 -d librte_net_i40e.so.21.0 -d librte_mempool_ring.so.21.0 \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
 
 5. Launch virtio-user::
 
-    ./testpmd -c 0x0c -n 4 -d librte_pmd_virtio.so.1.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd -c 0x0c -n 4 -d librte_net_virtio.so.21.0 -d librte_mempool_ring.so.21.0 \
     --no-pci --file-prefix=virtio  --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net -- -i
     testpmd>start
 
@@ -79,6 +77,6 @@ Similar as Test Case1, all steps are similar except step 4:
 
 4. Bind fortville port with igb_uio, use option ``-d`` to load the dynamic pmd when launch vhost::
 
-    ./testpmd  -c 0x03 -n 4 -d librte_pmd_vhost.so.2.1 -d librte_pmd_i40e.so.1.1 -d librte_mempool_ring.so.1.1 \
+    ./testpmd  -c 0x03 -n 4 -d librte_net_vhost.so -d librte_net_i40e.so -d librte_mempool_ring.so \
     --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1' -- -i
     testpmd>start
