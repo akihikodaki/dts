@@ -57,16 +57,13 @@ class TestNicSingleCorePerf(TestCase):
                                  "Not required NIC ")
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
 
-        # Update DPDK config file and rebuild to get best perf on fortville
-        if self.nic in ["fortville_25g", "fortville_spirit"]:
-            self.dut.send_expect(
-                "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
-            self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
-            self.dut.build_install_dpdk(self.target)
-        elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
-            self.dut.send_expect(
-                "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)
-            self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
+        self.rx_desc = self.get_suite_cfg()['rx_desc_16byte']
+        if 'y' == self.rx_desc:
+            # Update DPDK config file and rebuild to get best perf on fortville
+            if self.nic in ["fortville_25g", "fortville_spirit"]:
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
             self.dut.build_install_dpdk(self.target)
 
         # Based on h/w type, choose how many ports to use
@@ -395,14 +392,11 @@ class TestNicSingleCorePerf(TestCase):
         Run after each test suite.
         """
         # resume setting
-        if self.nic in ["fortville_25g", "fortville_spirit"]:
-            self.dut.send_expect(
-                "sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
-            self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
-            self.dut.build_install_dpdk(self.target)
-        elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
-            self.dut.send_expect(
-                "sed -i -e 's/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=y/CONFIG_RTE_LIBRTE_ICE_16BYTE_RX_DESC=n/' ./config/common_base", "#", 20)
-            self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
+        if 'y' == self.rx_desc:
+            self.rx_desc = 'n'
+            if self.nic in ["fortville_25g", "fortville_spirit"]:
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
             self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()
