@@ -79,16 +79,8 @@ class TestPVPShareLib(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
-        if self.dut.build_type == 'meson':
-            self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %
-                        (self.dut.base_dir, self.dut.target), "# ")
-            self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %
-                        (self.dut.base_dir, self.dut.target), "# ")
-        else:
-            self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
-                        (self.dut.base_dir, self.dut.target), "# ")
-            self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/lib:$LD_LIBRARY_PATH" %
-                        (self.dut.base_dir, self.dut.target), "# ")
+        self.vhost_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %(self.dut.base_dir, self.dut.target), "# ")
+        self.virtio_user.send_expect("export LD_LIBRARY_PATH=%s/%s/drivers:$LD_LIBRARY_PATH" %(self.dut.base_dir, self.dut.target), "# ")
         # Prepare the result table
         self.table_header = ['Frame']
         self.table_header.append("Mode")
@@ -98,13 +90,11 @@ class TestPVPShareLib(TestCase):
         self.result_table_create(self.table_header)
 
     def prepare_share_lib_env(self):
-        self.dut.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=n$/CONFIG_RTE_BUILD_SHARED_LIB=y/' config/common_base", "# ")
-        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB" : "y"})
+        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB": "y"})
         self.dut.build_install_dpdk(self.dut.target)
 
     def restore_env(self):
-        self.dut.send_expect("sed -i 's/CONFIG_RTE_BUILD_SHARED_LIB=y$/CONFIG_RTE_BUILD_SHARED_LIB=n/' config/common_base", "# ")
-        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB" : "n"})
+        self.dut.set_build_options({"RTE_BUILD_SHARED_LIB": "n"})
         self.dut.build_install_dpdk(self.dut.target)
 
     def send_and_verify(self):
@@ -146,9 +136,10 @@ class TestPVPShareLib(TestCase):
         """
         start testpmd on vhost
         """
+        self.pci_info = self.dut.ports_info[0]['pci']
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_vhost_user, prefix='vhost',
-                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1'])
-        eal_param += " -d librte_pmd_vhost.so -d librte_pmd_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
+                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1'], ports=[self.pci_info])
+        eal_param += " -d librte_net_vhost.so -d librte_net_%s.so -d librte_mempool_ring.so --file-prefix=vhost" % driver
         command_line_client = self.path + eal_param + ' -- -i'
 
         self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
@@ -164,7 +155,7 @@ class TestPVPShareLib(TestCase):
                 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net'])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        eal_param += " -d librte_pmd_virtio.so -d librte_mempool_ring.so"
+        eal_param += " -d librte_net_virtio.so -d librte_mempool_ring.so"
         command_line_user = self.path + eal_param + " -- -i"
         self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
         self.virtio_user.send_expect("start", "testpmd> ", 120)
