@@ -106,7 +106,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.core_interrupt = self.core_list_l3fwd[0]
         example_para = "./%s " % self.app_l3fwd_power_path
         vdev = "virtio_user0,path=%s,cq=1" % path if not packed else "virtio_user0,path=%s,cq=1,packed_vq=1" % path
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, ports=[self.pci_info], vdevs=[vdev])
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list_l3fwd, prefix='l3fwd-pwd', no_pci=True, vdevs=[vdev])
         if self.check_2M_env:
             eal_params += " --single-file-segments"
         para = " --config='(0,0,%s)' --parse-ptype --interrupt-only" % self.core_interrupt
