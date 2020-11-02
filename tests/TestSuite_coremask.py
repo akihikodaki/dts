@@ -107,7 +107,7 @@ class TestCoremask(TestCase):
             self.verify("EAL: Detected lcore %s as core" % core in out,
                         "Core %s not detected" % core)
 
-            self.verify("EAL: Master lcore %s is ready" % core in out,
+            self.verify("EAL: Main lcore %s is ready" % core in out,
                         "Core %s not ready" % core)
 
             self.dut.send_expect("quit", "# ", 10)
@@ -126,7 +126,7 @@ class TestCoremask(TestCase):
         command = command_line % (self.app_test_path, core_mask, self.mem_channel)
 
         out = self.dut.send_expect(command, "RTE>>", 10)
-        self.verify("EAL: Master lcore %s is ready" % first_core in out,
+        self.verify("EAL: Main lcore %s is ready" % first_core in out,
                     "Core %s not ready" % first_core )
 
         self.verify("EAL: Detected lcore %s as core" % first_core in out,
