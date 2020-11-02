@@ -258,18 +258,18 @@ MAC_IPV6_GTPU = {
 
 MAC_IPV4_L2TPv3 = {
     "match": [
-        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)",
-        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.1.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.1.3', proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
     "mismatch": [
-        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
+        "Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.3', proto=115)/L2TP(b'\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
 }
 
 MAC_IPV6_L2TPv3 = {
     "match": [
-        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)",
-        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:9999',nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)",
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:9999',nh=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)"],
     "mismatch": [
-        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP('\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
+        "Ether(dst='00:11:22:33:44:55')/IPv6(src='1111:2222:3333:4444:5555:6666:7777:8888',nh=115)/L2TP(b'\\x00\\x00\\x00\\x12')/Raw('x'*480)"]
 }
 
 MAC_IPV4_ESP = {
@@ -335,10 +335,10 @@ L2_Ethertype = [
     'Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(label=0xee456)/IP()']
 
 PFCP = [
-    'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=22, dport=8805)/PFCP(Sfield=0)',
-    'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=22, dport=8805)/PFCP(Sfield=1, SEID=123)',
-    'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=8805)/PFCP(Sfield=0)',
-    'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=8805)/PFCP(Sfield=1, SEID=256)',
+    'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=22, dport=8805)/PFCP(S=0)',
+    'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=22, dport=8805)/PFCP(S=1, seid=123)',
+    'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=8805)/PFCP(S=0)',
+    'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=8805)/PFCP(S=1, seid=256)',
     'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=22, dport=23)/Raw("x"*20)']
 
 CREATE_2048_RULES_4_VFS = [
@@ -3841,17 +3841,17 @@ class TestIAVFFdir(TestCase):
         mac = "00:11:22:33:44:55"
         sndIP = '10.0.0.1'
         sndIPv6 = '::1'
-        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIP),
-                     'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIP),
-                     'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIPv6),
-                     'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIPv6)}
+        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=0)/("X"*46)' % (mac, sndIP),
+                     'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=1)/("X"*46)' % (mac, sndIP),
+                     'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=0)/("X"*46)' % (mac, sndIPv6),
+                     'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=1)/("X"*46)' % (mac, sndIPv6)}
 
         expIP = sndIP
         expIPv6 = sndIPv6
-        pkts_ref = {'IP/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, expIP),
-                    'IP/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, expIP),
-                    'IPv6/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, expIPv6),
-                    'IPv6/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, expIPv6)}
+        pkts_ref = {'IP/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, expIP),
+                    'IP/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, expIP),
+                    'IPv6/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, expIPv6),
+                    'IPv6/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, expIPv6)}
 
         self.checksum_enablehw(port=0, hw="hw")
 
@@ -3937,17 +3937,17 @@ class TestIAVFFdir(TestCase):
         mac = "00:11:22:33:44:55"
         sndIP = '10.0.0.1'
         sndIPv6 = '::1'
-        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIP),
-                'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIP),
-                'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIPv6),
-                'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIPv6)}
+        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=0)/("X"*46)' % (mac, sndIP),
+                'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s", chksum=0xf)/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=1)/("X"*46)' % (mac, sndIP),
+                'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=0)/("X"*46)' % (mac, sndIPv6),
+                'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805, chksum=0xf)/PFCP(S=1)/("X"*46)' % (mac, sndIPv6)}
 
         expIP = sndIP
         expIPv6 = sndIPv6
-        pkts_ref = {'IP/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, expIP),
-                    'IP/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, expIP),
-                    'IPv6/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, expIPv6),
-                    'IPv6/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, expIPv6)}
+        pkts_ref = {'IP/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, expIP),
+                    'IP/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, expIP),
+                    'IPv6/UDP/PFCP_NODE': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, expIPv6),
+                    'IPv6/UDP/PFCP_SESSION': 'Ether(src="%s", dst="52:00:00:00:00:00")/Dot1Q(vlan=51)/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, expIPv6)}
 
         self.checksum_enablehw(port=0, hw="sw")
 
@@ -4027,10 +4027,10 @@ class TestIAVFFdir(TestCase):
         sndIP = '10.0.0.1'
         sndIPv6 = '::1'
         pkt = Packet()
-        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIP),
-                     'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIP),
-                     'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=0)/("X"*46)' % (mac, sndIPv6),
-                     'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(Sfield=1)/("X"*46)' % (mac, sndIPv6)}
+        pkts_sent = {'IP/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, sndIP),
+                     'IP/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/IP(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, sndIP),
+                     'IPv6/UDP/PFCP_NODE': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=0)/("X"*46)' % (mac, sndIPv6),
+                     'IPv6/UDP/PFCP_SESSION': 'Ether(dst="%s", src="52:00:00:00:00:00")/IPv6(src="%s")/UDP(sport=22, dport=8805)/PFCP(S=1)/("X"*46)' % (mac, sndIPv6)}
 
         self.set_vlan(vlan=vlan, port=0, strip="off", rx_tx="tx")
         self.dut.send_expect("start", "testpmd> ")
