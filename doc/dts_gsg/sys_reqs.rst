@@ -79,6 +79,8 @@ DTS uses python module scapy to forge or decode packets of a wide number of prot
 
    pip3 install scapy
 
+scapy 2.4.4: support packet layer PFCP and GTPPDUSessionContainer
+
 Install DPDK Test Suite on tester
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
