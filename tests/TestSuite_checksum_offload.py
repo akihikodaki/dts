@@ -315,7 +315,7 @@ class TestChecksumOffload(TestCase):
         csum = pkt[layer].chksum
         del pkt[layer].chksum
         # Converting it to raw will calculate the checksum
-        return layer(Raw(pkt[layer])).chksum == csum
+        return layer(bytes(Raw(pkt[layer]))).chksum == csum
 
     def scapy_exec(self, cmd: str, timeout=1) -> str:
         return self.tester.send_expect(cmd, ">>>", timeout=timeout)

@@ -425,21 +425,20 @@ class TestUniPacket(TestCase):
         """
         self.verify(self.kdriver == 'i40e', "NSH packet detection only supported by i40e driver nic")
 
-        nsh_packets = {'ether+nsh': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x0,NSP=0x000002,NSI=0xff)', \
-                       'ether+nsh+ip': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()', \
-                       'ether+nsh+ip+icmp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/ICMP()', \
-                       'ether+nsh+ip_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP(frag=1,flags="MF")', \
-                       'ether+nsh+ip+tcp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/TCP()', \
-                       'ether+nsh+ip+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/UDP()', \
-                       'ether+nsh+ip+sctp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x1,NSP=0x000002,NSI=0xff)/IP()/SCTP(tag=1)/SCTPChunkData(data=\'X\' * 16)', \
-                       'ether+nsh+ipv6': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()', \
-                       'ether+nsh+ipv6+icmp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(src="2001::1",dst="2003::2",nh=0x3A)/ICMP()',
-                       'ether+nsh+ipv6_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/IPv6ExtHdrFragment()', \
-                       'ether+nsh+ipv6+tcp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/TCP()', \
-                       'ether+nsh+ipv6+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6()/UDP()', \
-                       'ether+nsh+ipv6+sctp': 'Ether(type=0x894f)/NSH(Len=0x6,NextProto=0x2,NSP=0x000002,NSI=0xff)/IPv6(nh=0x84)/SCTP(tag=1)/SCTPChunkData("x" * 16)'
-                       }
-
+        nsh_packets = {'ether+nsh': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x0,spi=0x000002,si=0xff)', \
+                       'ether+nsh+ip': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP()', \
+                       'ether+nsh+ip+icmp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP()/ICMP()', \
+                       'ether+nsh+ip_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP(frag=1,flags="MF")', \
+                       'ether+nsh+ip+tcp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP()/TCP()', \
+                       'ether+nsh+ip+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP()/UDP()', \
+                       'ether+nsh+ip+sctp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x1,spi=0x000002,si=0xff)/IP()/SCTP(tag=1)/SCTPChunkData(data=\'X\' * 16)', \
+                       'ether+nsh+ipv6': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6()', \
+                       'ether+nsh+ipv6+icmp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6(src="2001::1",dst="2003::2",nh=0x3A)/ICMP()',
+                       'ether+nsh+ipv6_frag': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6()/IPv6ExtHdrFragment()', \
+                       'ether+nsh+ipv6+tcp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6()/TCP()', \
+                       'ether+nsh+ipv6+udp': 'Ether(dst="00:00:00:00:01:00",type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6()/UDP()', \
+                       'ether+nsh+ipv6+sctp': 'Ether(type=0x894f)/NSH(length=0x6,nextproto=0x2,spi=0x000002,si=0xff)/IPv6(nh=0x84)/SCTP(tag=1)/SCTPChunkData(b"x" * 16)'
+                       } 
         nsh_detect_message = {"ether+nsh": "L2_ETHER_NSH", \
                               "ether+nsh+ip": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_NONFRAG", \
                               "ether+nsh+ip+icmp": "L2_ETHER_NSH L3_IPV4_EXT_UNKNOWN L4_ICMP", \
