@@ -38,8 +38,8 @@ import rte_flow_common as rfc
 
 vf0_mac = "00:11:22:33:44:55"
 
-tv_MAC_IPV4_L2TPv3_chksum = {'good_checksum': "Ether(dst='%s')/IP(src='192.168.0.3', proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('X'*480)" % vf0_mac,
-                            'bad_checksum': "Ether(dst='%s')/IP(src='192.168.0.3', proto=115, chksum=0x1234)/L2TP('\\x00\\x00\\x00\\x11')/Raw('X'*480)" % vf0_mac}
+tv_MAC_IPV4_L2TPv3_chksum = {'good_checksum': "Ether(dst='%s')/IP(src='192.168.0.3', proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('X'*480)" % vf0_mac,
+                            'bad_checksum': "Ether(dst='%s')/IP(src='192.168.0.3', proto=115, chksum=0x1234)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('X'*480)" % vf0_mac}
 tv_MAC_IPV4_ESP_chksum = {'good_checksum': 'Ether(dst="%s")/IP(src="192.168.0.3", proto=50)/ESP(spi=11)/Raw("X"*480)' % vf0_mac,
                         'bad_checksum': 'Ether(dst="%s")/IP(src="192.168.0.3", proto=50, chksum=0x1234)/ESP(spi=11)/Raw("X"*480)' % vf0_mac}
 tv_MAC_IPV4_AH_chksum = {'good_checksum': 'Ether(dst="%s")/IP(src="192.168.0.3", proto=50)/AH(spi=11)/Raw("X"*480)' % vf0_mac,
@@ -51,12 +51,12 @@ tv_MAC_IPV4_NAT_T_ESP_chksum = {'good_ip_udp_checksum': 'Ether(dst="%s")/IP(src=
 tv_MAC_IPV6_NAT_T_ESP_chksum = {'good_udp_checksum': 'Ether(dst="%s")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw("x"*480)' % vf0_mac,
                        'bad_udp_checksum': 'Ether(dst="%s")/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500,chksum=0x1234)/ESP(spi=2)/Raw("x"*480)' % vf0_mac}
 
-tv_MAC_IPV4_L2TPv3_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IP(proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
-                            'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IP(proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
-                            'no vlan': "Ether(dst='%s')/IP(proto=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac}
-tv_MAC_IPV6_L2TPv3_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IPv6(nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
-                            'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IPv6(nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
-                            'no vlan': "Ether(dst='%s')/IPv6(nh=115)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac}
+tv_MAC_IPV4_L2TPv3_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IP(proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
+                            'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IP(proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
+                            'no vlan': "Ether(dst='%s')/IP(proto=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac}
+tv_MAC_IPV6_L2TPv3_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IPv6(nh=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
+                            'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IPv6(nh=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac,
+                            'no vlan': "Ether(dst='%s')/IPv6(nh=115)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)" % vf0_mac}
 tv_MAC_IPV4_ESP_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IP(proto=50)/ESP(spi=1)/Raw('x'*480)" % vf0_mac,
                             'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IP(proto=50)/ESP(spi=1)/Raw('x'*480)" % vf0_mac,
                             'no vlan': "Ether(dst='%s')/IP(proto=50)/ESP(spi=1)/Raw('x'*480)" % vf0_mac}
@@ -373,7 +373,7 @@ class L2tpEspCoverage(TestCase):
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 3 / end actions queue index 3 / mark id 2 / end","testpmd> ")
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 4 / end actions queue index 4 / mark id 1 / end","testpmd> ")
         # matched vlan id + bad checksum + matched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP('\\x00\\x00\\x00\\x01')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x01')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         # check the fdir rule
@@ -386,7 +386,7 @@ class L2tpEspCoverage(TestCase):
         receive_pkt = re.findall('vlan 1', tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'vlan id strip on failed')
         # matched vlan id + bad checksum + mismatched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         # check the fdir rule
@@ -402,7 +402,7 @@ class L2tpEspCoverage(TestCase):
         # destroy rule
         self.dut.send_expect("flow flush 0","testpmd> ")
         # matched vlan id + bad checksum + matched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP('\\x00\\x00\\x00\\x01')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/Dot1Q(vlan=1)/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x01')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         # check the fdir rule
@@ -435,7 +435,7 @@ class L2tpEspCoverage(TestCase):
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 3 / end actions queue index 3 / mark id 2 / end","testpmd> ")
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 4 / end actions queue index 4 / mark id 1 / end","testpmd> ")
         # no vlan + matched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115)/L2TP('\\x00\\x00\\x00\\x01')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115)/L2TP(b'\\x00\\x00\\x00\\x01')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         time.sleep(1)
@@ -448,7 +448,7 @@ class L2tpEspCoverage(TestCase):
         
         self.enable_sw_checksum()
         # bad checksum + mismatched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115,chksum=0x123)/L2TP('\\x00\\x00\\x00\\x11')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         # check the fdir rule
@@ -460,7 +460,7 @@ class L2tpEspCoverage(TestCase):
         # destroy rule
         self.dut.send_expect("flow flush 0","testpmd> ")
         # bad checksum + matched session id
-        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115,chksum=0x123)/L2TP('\\x00\\x00\\x00\\x01')/Raw('x'*480)"
+        pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x01')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
         out = self.send_pkts_getouput(pkts)
         # check the fdir rule
