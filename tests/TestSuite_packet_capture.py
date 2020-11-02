@@ -825,17 +825,9 @@ class TestPacketCapture(TestCase):
             self.dut.skip_setup = False
             self.dut.build_install_dpdk(self.target)
         # secondary process (dpdk-pdump)
-        self.pdump_dir = self.target_dir + os.sep + \
-            "%s/build/app/pdump/" % self.target
-        cmd = "ls {0} -F | grep '*'".format(self.pdump_dir)
-        exe_files = self.dut.alt_session.send_expect(cmd, "# ").splitlines()
-        if len(exe_files) == 1:
-            self.tool_name = exe_files[0][:-1]
-        else:
-            self.verify(False, "tool name exception !")
+        self.dut_dpdk_pdump_dir = self.dut.apps_name['pdump']
+        self.tool_name = self.dut_dpdk_pdump_dir.split('/')[-1]
         self.session_ex = self.dut.new_session(self.tool_name)
-        self.dut_dpdk_pdump_dir = self.target_dir + os.sep + \
-            "%s/app/%s" % (self.target, self.tool_name)
         self.dpdk_pdump = self.dut_dpdk_pdump_dir + \
             " -v --file-prefix=test -- --pdump "
         self.send_pcap = os.sep.join([self.pdump_log, "scapy_%s_%s_%d.pcap"])
