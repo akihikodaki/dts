@@ -706,34 +706,40 @@ class TestShutdownApi(TestCase):
     def test_change_thresholds(self):
         """
         Change RX/TX thresholds
+        DPDK-24129:1.CVL and FVL not support tx and rx
+                   2.Ixgbe not support rx, only support tx.
+                   3.foxville, powerville and springville not support txfree and txrs
         """
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
         self.dut.send_expect("set promisc all off", "testpmd>")
 
         self.dut.send_expect("port stop all", "testpmd> ", 100)
-        self.dut.send_expect("port config all txfreet 32", "testpmd> ")
-        self.dut.send_expect("port config all txrst 32", "testpmd> ")
+        if self.nic in ["sagepond","sageville","twinpond","niantic"]:
+            self.dut.send_expect("port config all txfreet 32", "testpmd> ")
+            self.dut.send_expect("port config all txrst 32", "testpmd> ")
         self.dut.send_expect("port config all rxfreet 32", "testpmd> ")
         self.dut.send_expect("port config all txpt 64", "testpmd> ")
         self.dut.send_expect("port config all txht 64", "testpmd> ")
-        self.dut.send_expect("port config all txwt 0", "testpmd> ")
-        self.dut.send_expect("port config all rxpt 64", "testpmd> ")
-        self.dut.send_expect("port config all rxht 64", "testpmd> ")
-        self.dut.send_expect("port config all rxwt 64", "testpmd> ")
+        if self.nic in ["foxville"]:
+            self.dut.send_expect("port config all txwt 16", "testpmd> ")
+        else:
+            self.dut.send_expect("port config all txwt 0", "testpmd> ")
+
         self.dut.send_expect("port start all", "testpmd> ", 100)
         out = self.dut.send_expect("show config rxtx", "testpmd> ")
         self.verify("RX free threshold=32" in out,
                     "RX descriptor not reconfigured properly")
-        self.verify("TX free threshold=32" in out,
+        if self.nic in ["sagepond","sageville","twinpond","niantic"]:
+            self.verify("TX free threshold=32" in out,
                     "TX descriptor not reconfigured properly")
-        self.verify("TX RS bit threshold=32" in out,
+            self.verify("TX RS bit threshold=32" in out,
                     "TX descriptor not reconfigured properly")
         self.verify("pthresh=64" in out, "TX descriptor not reconfigured properly")
         self.verify("hthresh=64" in out, "TX descriptor not reconfigured properly")
-        self.verify("wthresh=64" in out, "TX descriptor not reconfigured properly")
-        self.verify("pthresh=64" in out, "TX descriptor not reconfigured properly")
-        self.verify("hthresh=64" in out, "TX descriptor not reconfigured properly")
-        self.verify("wthresh=64" in out, "TX descriptor not reconfigured properly")
+        if self.nic in ["foxville"]:
+            self.verify("wthresh=16" in out, "TX descriptor not reconfigured properly")
+        else:
+            self.verify("wthresh=0" in out, "TX descriptor not reconfigured properly")
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("start", "testpmd> ")
         self.check_forwarding()
