@@ -163,11 +163,17 @@ class TestDPDKGROLib(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio  %s' % self.pci, '# ', 20)
             eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=["'net_vhost0,iface=%s/vhost-net,queues=%s,dmas=[%s],dmathr=1024'" % (self.base_dir, queue, self.dmas_info)])
             self.testcmd_start = self.path + eal_param + " -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2"
+            self.vhost_user = self.dut.new_session(suite="user")
+            self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         else:
             eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=%s' % (self.base_dir, queue)])
             self.testcmd_start = self.path + eal_param + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
-        self.vhost_user = self.dut.new_session(suite="user")
-        self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
+            self.vhost_user = self.dut.new_session(suite="user")
+            self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
+            self.set_testpmd_params()
+
+    def set_testpmd_params(self, mode=1):
+        # set testpmd params
         self.vhost_user.send_expect("set fwd csum", "testpmd> ", 120)
         self.vhost_user.send_expect("stop", "testpmd> ", 120)
         self.vhost_user.send_expect("port stop 0", "testpmd> ", 120)
@@ -176,10 +182,10 @@ class TestDPDKGROLib(TestCase):
         self.vhost_user.send_expect("csum set ip hw 0", "testpmd> ", 120)
         self.vhost_user.send_expect("csum set tcp hw 1", "testpmd> ", 120)
         self.vhost_user.send_expect("csum set ip hw 1", "testpmd> ", 120)
-        if(mode == 1 or mode == 5):
+        if (mode == 1 or mode == 5):
             self.vhost_user.send_expect("set port 0 gro on", "testpmd> ", 120)
             self.vhost_user.send_expect("set gro flush 1", "testpmd> ", 120)
-        elif(mode == 2):
+        elif (mode == 2):
             self.vhost_user.send_expect("set port 0 gro on", "testpmd> ", 120)
             self.vhost_user.send_expect("set gro flush 2", "testpmd> ", 120)
         elif (mode == 3):
@@ -456,9 +462,8 @@ class TestDPDKGROLib(TestCase):
             'ifconfig %s %s up' %
             (self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ethtool -L %s combined 2' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gro off' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gro off' %  (self.vm1_intf), '#', 10)
+        self.set_testpmd_params()
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         out = self.dut.send_expect(
