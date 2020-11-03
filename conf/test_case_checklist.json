@@ -3515,5 +3515,27 @@
             "Bug ID": "",
             "Comments": "the nic not support this case"
         }
+    ],
+    "change_thresholds": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "columbiaville_100g",
+                "columbiaville_25g",
+	        "fortville_eagle",
+		"fortville_spirit",
+		"fortpark_TLV",
+		"fortpark_BASE-T",
+		"fortville_25g",
+		"carlsville"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "DPDK-24129",
+            "Comments": "CVL and FVL not support this case"
+        }
     ]
 }
