@@ -33,6 +33,7 @@ import json
 import time
 import re
 from utils import GREEN, RED
+from packet import Packet
 
 CVL_TXQ_RXQ_NUMBER = 16
 
@@ -672,3 +673,393 @@ def check_pf_rss_queue(out, count):
         return True
     else:
         return False
+
+
+class RssProcessing(object):
+    def __init__(self, test_case, pmd_output, tester_ifaces, rxq):
+        self.test_case = test_case
+        self.pmd_output = pmd_output
+        self.tester_ifaces = tester_ifaces
+        self.rxq = rxq
+        self.logger = test_case.logger
+        self.pkt = Packet()
+        self.verify = self.test_case.verify
+        self.pass_flag = 'passed'
+        self.fail_flag = 'failed'
+        self.current_saved_hash = ''
+        self.hash_records = {}
+        self.handle_output_methods = {
+            'save_hash': self.save_hash,
+            'save_or_no_hash': self.save_or_no_hash,
+            'check_hash_different': self.check_hash_different,
+            'check_no_hash_or_different': self.check_no_hash_or_different,
+            'check_hash_same': self.check_hash_same,
+            'check_no_hash': self.check_no_hash,
+        }
+        self.error_msgs = []
+
+    def save_hash(self, out, key='', port_id=0):
+        hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
+        if len(key) != 0:
+            self.hash_records[key] = hashes
+        self.current_saved_hash = hashes
+        if not rss_distribute:
+            error_msg = 'the packet do not distribute by rss'
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def save_or_no_hash(self, out, key='', port_id=0):
+        hashes, queues = self.get_hash_and_queues(out, port_id)
+        if len(hashes) == 0:
+            self.logger.info('There no hash value passed as expected')
+            if set(queues) != {'0x0'}:
+                error_msg = 'received queues should all be 0, but are {}'.format(queues)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+            return
+        if len(key) != 0:
+            self.hash_records[key] = hashes
+        self.current_saved_hash = hashes
+        if not self.verify_rss_distribute(hashes, queues):
+            error_msg = 'the packet do not distribute by rss'
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def check_hash_different(self, out, key='', port_id=0):
+        hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
+        if len(key) == 0:
+            if hashes == self.current_saved_hash:
+                error_msg = 'hash value {} should be different ' \
+                            'with current saved hash {}'.format(hashes, self.current_saved_hash)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        else:
+            if hashes == self.hash_records[key]:
+                error_msg = 'hash value {} should be different ' \
+                            'with {} {}'.format(hashes, key, self.hash_records[key])
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        if not rss_distribute:
+            error_msg = 'the packet do not distribute by rss'
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def check_no_hash(self, out, port_id=0):
+        hashes, queues = self.get_hash_and_queues(out, port_id)
+        if len(hashes) != 0:
+            error_msg = 'hash value {} should be empty'.format(hashes)
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+        elif set(queues) != {'0x0'}:
+            error_msg = 'received queues should all be 0, but are {}'.format(queues)
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def check_no_hash_or_different(self, out, key='', port_id=0):
+        hashes, queues = self.get_hash_and_queues(out, port_id)
+        if len(hashes) == 0:
+            self.logger.info('There no hash value passed as expected')
+            if set(queues) != {'0x0'}:
+                error_msg = 'received queues should all be 0, but are {}'.format(queues)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+            return
+        if len(key) == 0:
+            if hashes == self.current_saved_hash:
+                error_msg = 'hash value {} should be different ' \
+                            'with current saved hash {}'.format(hashes, self.current_saved_hash)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        else:
+            if hashes == self.hash_records[key]:
+                error_msg = 'hash value {} should be different ' \
+                            'with {} {}'.format(hashes, key, self.hash_records[key])
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+
+    def check_hash_same(self, out, key='', port_id=0):
+        hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
+        if len(key) == 0:
+            if hashes != self.current_saved_hash:
+                error_msg = 'hash value {} should be same ' \
+                            'with current saved hash {}'.format(hashes, self.current_saved_hash)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        else:
+            if hashes != self.hash_records[key]:
+                error_msg = 'hash value {} should be same ' \
+                            'with {} {}'.format(hashes, key, self.hash_records[key])
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        if not rss_distribute:
+            error_msg = 'the packet do not distribute by rss'
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def check_hash_same_or_no_hash(self, out, key='', port_id=0):
+        hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
+        if len(hashes) != 0:
+            error_msg = 'hash value {} should be empty'.format(hashes)
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+            return
+        elif set(rss_distribute) != {'0x0'}:
+            error_msg = 'received queues should all be 0, but are {}'.format(rss_distribute)
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+            return
+        if len(key) == 0:
+            if hashes != self.current_saved_hash:
+                error_msg = 'hash value {} should be same ' \
+                            'with current saved hash {}'.format(hashes, self.current_saved_hash)
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        else:
+            if hashes != self.hash_records[key]:
+                error_msg = 'hash value {} should be same ' \
+                            'with {} {}'.format(hashes, key, self.hash_records[key])
+                self.logger.error(error_msg)
+                self.error_msgs.append(error_msg)
+        if not rss_distribute:
+            error_msg = 'the packet do not distribute by rss'
+            self.logger.error(error_msg)
+            self.error_msgs.append(error_msg)
+
+    def verify_rss_distribute(self, hashes, queues):
+        if len(hashes) != len(queues):
+            self.logger.warning('hash length {} != queue length {}'.format(hashes, queues))
+            return False
+        for i in range(len(hashes)):
+            if int(hashes[i], 16) % self.rxq != int(queues[i], 16):
+                self.logger.warning('hash values {} mod total queues {} != queue {}'
+                                    .format(hashes[i], self.rxq, queues[i]))
+                return False
+        return True
+
+    def get_hash_verify_rss_distribute(self, out, port_id=0):
+        hashes, queues = self.get_hash_and_queues(out, port_id)
+        if len(hashes) == 0:
+            return [], False
+        return hashes, self.verify_rss_distribute(hashes, queues)
+
+    def get_hash_and_queues(self, out, port_id=0):
+        hash_pattern = re.compile('port\s%s/queue\s\d+:\sreceived\s\d+\spackets.+?\n.*RSS\shash=(\w+)\s-\sRSS\squeue=(\w+)' % port_id)
+        hash_infos = hash_pattern.findall(out)
+        self.logger.info('hash_infos: {}'.format(hash_infos))
+        if len(hash_infos) == 0:
+            queue_pattern = re.compile('Receive\squeue=(\w+)')
+            queues = queue_pattern.findall(out)
+            return [], queues
+        # hashes = [int(hash_info[0], 16) for hash_info in hash_infos]
+        hashes = [hash_info[0].strip() for hash_info in hash_infos]
+        queues = [hash_info[1].strip() for hash_info in hash_infos]
+        return hashes, queues
+
+    def send_pkt_get_output(self, pkts, port_id=0, count=1, interval=0):
+        self.pkt.update_pkt(pkts)
+        tx_port = self.tester_ifaces[0] if port_id == 0 else self.tester_ifaces[1]
+        self.logger.info('----------send packet-------------')
+        self.logger.info('{}'.format(pkts))
+        self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
+        out = self.pmd_output.get_output(timeout=1)
+        pkt_pattern = 'port\s%d/queue\s\d+:\sreceived\s(\d+)\spackets.+?\n.*length=\d{2,}\s' % port_id
+        reveived_data = re.findall(pkt_pattern, out)
+        reveived_pkts = sum(map(int, [i[0] for i in reveived_data]))
+        if isinstance(pkts, list):
+            self.verify(reveived_pkts == len(pkts) * count,
+                        'expect received %d pkts, but get %d instead' % (len(pkts) * count, reveived_pkts))
+        else:
+            self.verify(reveived_pkts == 1 * count,
+                        'expect received %d pkts, but get %d instead' % (1 * count, reveived_pkts))
+        return out
+
+    def send_pkt_get_hash_queues(self, pkts, port_id=0, count=1, interval=0):
+        output = self.send_pkt_get_output(pkts, port_id, count, interval)
+        hashes, queues = self.get_hash_and_queues(output, port_id)
+        return hashes, queues
+
+    def create_rule(self, rule: (list, str), check_stats=True, msg=None):
+        p = re.compile(r"Flow rule #(\d+) created")
+        rule_list = list()
+        if isinstance(rule, list):
+            for i in rule:
+                out = self.pmd_output.execute_cmd(i, timeout=1)
+                if msg:
+                    self.verify(msg in out, "failed: expect %s in %s" % (msg, out))
+                m = p.search(out)
+                if m:
+                    rule_list.append(m.group(1))
+                else:
+                    rule_list.append(False)
+        elif isinstance(rule, str):
+            out = self.pmd_output.execute_cmd(rule, timeout=1)
+            if msg:
+                self.verify(msg in out, "failed: expect %s in %s" % (msg, out))
+            m = p.search(out)
+            if m:
+                rule_list.append(m.group(1))
+            else:
+                rule_list.append(False)
+        else:
+            raise Exception("unsupported rule type, only accept list or str")
+        if check_stats:
+            self.verify(all(rule_list), "some rules create failed, result %s" % rule_list)
+        elif not check_stats:
+            self.verify(not any(rule_list), "all rules should create failed, result %s" % rule_list)
+        return rule_list
+
+    def validate_rule(self, rule, check_stats=True, check_msg=None):
+        flag = 'Flow rule validated'
+        if isinstance(rule, str):
+            if 'create' in rule:
+                rule = rule.replace('create', 'validate')
+            out = self.pmd_output.execute_cmd(rule, timeout=1)
+            if check_stats:
+                self.verify(flag in out.strip(), "rule %s validated failed, result %s" % (rule, out))
+            else:
+                if check_msg:
+                    self.verify(flag not in out.strip() and check_msg in out.strip(),
+                                "rule %s validate should failed with msg: %s, but result %s" % (rule, check_msg, out))
+                else:
+                    self.verify(flag not in out.strip(), "rule %s validate should failed, result %s" % (rule, out))
+        elif isinstance(rule, list):
+            for r in rule:
+                if 'create' in r:
+                    r = r.replace('create', 'validate')
+                out = self.pmd_output.execute_cmd(r, timeout=1)
+                if check_stats:
+                    self.verify(flag in out.strip(), "rule %s validated failed, result %s" % (r, out))
+                else:
+                    if not check_msg:
+                        self.verify(flag not in out.strip(), "rule %s validate should failed, result %s" % (r, out))
+                    else:
+                        self.verify(flag not in out.strip() and check_msg in out.strip(),
+                                    "rule %s should validate failed with msg: %s, but result %s" % (
+                                        r, check_msg, out))
+
+    def check_rule(self, port_id=0, stats=True, rule_list=None):
+        out = self.pmd_output.execute_cmd("flow list %s" % port_id)
+        p = re.compile(r"ID\s+Group\s+Prio\s+Attr\s+Rule")
+        matched = p.search(out)
+        if stats:
+            self.verify(matched, "flow rule on port %s is not existed" % port_id)
+            if rule_list:
+                p2 = re.compile("^(\d+)\s")
+                li = out.splitlines()
+                res = list(filter(bool, list(map(p2.match, li))))
+                result = [i.group(1) for i in res]
+                self.verify(set(rule_list).issubset(set(result)),
+                            "check rule list failed. expect %s, result %s" % (rule_list, result))
+        else:
+            if matched:
+                if rule_list:
+                    res_li = [i.split()[0].strip() for i in out.splitlines() if re.match('\d', i)]
+                    self.verify(not set(rule_list).issubset(res_li), 'rule specified should not in result.')
+                else:
+                    raise Exception('expect no rule listed')
+            else:
+                self.verify(not matched, "flow rule on port %s is existed" % port_id)
+
+    def destroy_rule(self, port_id=0, rule_id=None):
+        if rule_id is None:
+            rule_id = 0
+        if isinstance(rule_id, list):
+            for i in rule_id:
+                out = self.test_case.dut.send_command("flow destroy %s rule %s" % (port_id, i), timeout=1)
+                p = re.compile(r"Flow rule #(\d+) destroyed")
+                m = p.search(out)
+                self.verify(m, "flow rule %s delete failed" % rule_id)
+        else:
+            out = self.test_case.dut.send_command("flow destroy %s rule %s" % (port_id, rule_id), timeout=1)
+            p = re.compile(r"Flow rule #(\d+) destroyed")
+            m = p.search(out)
+            self.verify(m, "flow rule %s delete failed" % rule_id)
+
+    def handle_actions(self, output, actions, port_id=0):
+        if isinstance(actions, dict) or isinstance(actions, str):
+            actions = [actions]
+        for action in actions:  # [{}]
+            self.logger.info('action: {}\n'.format(action))
+            if isinstance(action, str):
+                if action in self.handle_output_methods:
+                    self.handle_output_methods[action](output, port_id=port_id)
+            else:
+                for method in action:  # {'save': ''}
+                    if method in self.handle_output_methods:
+                        if method == 'check_no_hash':
+                            self.check_no_hash(output, port_id=port_id)
+                        else:
+                            self.handle_output_methods[method](output, action[method], port_id=port_id)
+
+    def handle_tests(self, tests, port_id=0):
+        out = ''
+        for test in tests:
+            if 'send_packet' in test:
+                out = self.send_pkt_get_output(test['send_packet'], port_id)
+            if 'action' in test:
+                self.handle_actions(out, test['action'])
+
+    def handle_rss_case(self, case_info):
+        # clear hash_records before each sub case
+        self.hash_records = {}
+        self.error_msgs = []
+        self.current_saved_hash = ''
+        sub_case_name = case_info.get('sub_casename')
+        self.logger.info('===================Test sub case: {}================'.format(sub_case_name))
+        port_id = case_info.get('port_id') if case_info.get('port_id') else 0
+        rules = case_info.get('rule') if case_info.get('rule') else []
+        rule_ids = []
+        if 'pre-test' in case_info:
+            self.logger.info('------------handle pre-test--------------')
+            self.handle_tests(case_info['pre-test'], port_id)
+
+        # handle tests
+        tests = case_info['test']
+        self.logger.info('------------handle test--------------')
+        # validate rule
+        if rules:
+            self.validate_rule(rule=rules, check_stats=True)
+            rule_ids = self.create_rule(rule=case_info['rule'], check_stats=True)
+            self.check_rule(port_id=port_id, rule_list=rule_ids)
+        self.handle_tests(tests, port_id)
+
+        # handle post-test
+        if 'post-test' in case_info:
+            self.logger.info('------------handle post-test--------------')
+            self.destroy_rule(port_id=port_id, rule_id=rule_ids)
+            self.check_rule(port_id=port_id, stats=False)
+            self.handle_tests(case_info['post-test'], port_id)
+        if self.error_msgs:
+            self.verify(False, str(self.error_msgs[:500]))
+
+    def handle_rss_distribute_cases(self, cases_info):
+        sub_cases_result = dict()
+        if not isinstance(cases_info, list):
+            cases_info = [cases_info]
+
+        for case_info in cases_info:
+            try:
+                # self.handle_rss_distribute_case(case_info=case_info)
+                self.handle_rss_case(case_info=case_info)
+            except Exception as e:
+                self.logger.warning('sub_case %s failed: %s' % (case_info['sub_casename'], e))
+                sub_cases_result[case_info['sub_casename']] = self.fail_flag
+            else:
+                self.logger.info('sub_case %s passed' % case_info['sub_casename'])
+                sub_cases_result[case_info['sub_casename']] = self.pass_flag
+            finally:
+                self.pmd_output.execute_cmd('flow flush 0')
+        pass_rate = round(list(sub_cases_result.values()).count(self.pass_flag) / len(sub_cases_result), 4) * 100
+        self.logger.info(sub_cases_result)
+        # self.logger.info('%s pass rate is: %s' % (self.test_case.running_case, pass_rate))
+        self.logger.info('pass rate is: %s' % pass_rate)
+        self.verify(pass_rate == 100.00, 'some subcases failed')
+
+    @staticmethod
+    def get_ipv6_template_by_ipv4(template):
+        if isinstance(template, dict):
+            template = [template]
+        ipv6_template = [eval(str(element).replace('eth / ipv4', 'eth / ipv6')
+                              .replace('IP()', 'IPv6()').replace('mac_ipv4', 'mac_ipv6'))
+                         for element in template]
+        return ipv6_template
