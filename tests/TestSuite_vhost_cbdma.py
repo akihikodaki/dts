@@ -64,7 +64,8 @@ class TestVirTioVhostCbdma(TestCase):
         self.virtio_mac = "00:01:02:03:04:05"
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
         self.pci_info = self.dut.ports_info[0]['pci']
-        self.cores = self.dut.get_core_list("all")
+        self.socket = self.dut.get_numa_id(self.dut_ports[0])
+        self.cores = self.dut.get_core_list("all", socket=self.socket)
         self.cbdma_dev_infos = []
 
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
@@ -197,7 +198,7 @@ class TestVirTioVhostCbdma(TestCase):
 
         pvp_split_all_path_virtio_params = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d " \
                                            "--rxd=%d" % (queue, txd_rxd, txd_rxd)
-        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[1:3],
+        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],
                                           dev=vhost_vdevs % (queue, dmathr), )
 
         for key, path_mode in dev_path_mode_mapper.items():
@@ -206,7 +207,7 @@ class TestVirTioVhostCbdma(TestCase):
                     queue, txd_rxd, txd_rxd)
             vdevs = f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'" % queue
             self.diff_param_launch_send_and_verify(key, pvp_split_all_path_virtio_params, vdevs,
-                                                   self.cores[4:6],
+                                                   self.cores[2:4],
                                                    )
         self.result_table_print()
 
@@ -233,13 +234,13 @@ class TestVirTioVhostCbdma(TestCase):
         vhost_dev = f"'net_vhost0,iface={virtio_path},queues={queue},client=1,%s'"
 
         # launch vhost testpmd
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[27:29],
+        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
                                           dev=vhost_dev % vhost_dmas)
         #
         #  queue 2 start virtio testpmd,virtio queue 2 to 1
         mode = "dynamic_queue2"
         self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params,
-                                           self.cores[29:31],
+                                           self.cores[2:4],
                                            dev=virtio_dev)
         self.send_and_verify(mode)
         self.vhost_or_virtio_set_one_queue(self.virtio_user)
@@ -251,7 +252,7 @@ class TestVirTioVhostCbdma(TestCase):
         self.dut.send_expect(f"rm -rf {virtio_path}", "#")
         # queue 2 start virtio testpmd,vhost queue 2 to 1
         self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params,
-                                           self.cores[29:31],
+                                           self.cores[2:4],
                                            dev=virtio_dev)
         mode = "Relaunch_dynamic_queue2"
         self.send_and_verify(mode)
@@ -264,7 +265,7 @@ class TestVirTioVhostCbdma(TestCase):
         mode = "Relaunch_vhost_2_cbdma"
         dmathr = 512
         vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]}],dmathr={dmathr}"
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[27:29],
+        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
                                           dev=vhost_dev % vhost_dmas)
         self.send_and_verify(mode)
         self.virtio_user.send_expect("quit", "# ")
