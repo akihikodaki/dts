@@ -229,6 +229,15 @@ class Dut(Crb):
         shared_lib_path = settings.load_global_setting(settings.HOST_SHARED_LIB_PATH)
         if use_shared_lib == 'true' and shared_lib_path and 'Virt' not in str(self):
             eal_str = eal_str + ' -d {} '.format(shared_lib_path)
+        rx_mode = settings.load_global_setting(settings.DPDK_RXMODE_SETTING)
+        if rx_mode == 'novector':
+            eal_str = eal_str + ' --force-max-simd-bitwidth=64 '
+        elif rx_mode == 'sse':
+            eal_str = eal_str + ' --force-max-simd-bitwidth=128 '
+        elif rx_mode == 'avx2':
+            eal_str = eal_str + ' --force-max-simd-bitwidth=256 '
+        elif rx_mode == 'avx512':
+            eal_str = eal_str + ' --force-max-simd-bitwidth=512 '
 
         return eal_str
 
