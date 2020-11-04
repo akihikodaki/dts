@@ -249,29 +249,29 @@ DL case
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-tcp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 all the DL cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3DST
 ---------------------------------------
@@ -282,36 +282,36 @@ rule::
 hit pattern/defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-tcp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-tcp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/TCP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/TCP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC
 ---------------------------------------
@@ -322,36 +322,36 @@ rule::
 hit pattern/defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4
 ---------------------------------
@@ -362,14 +362,14 @@ rule::
 hit pattern/defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_GTPU
 --------------------------------------
@@ -380,20 +380,20 @@ rule::
 hit pattern/defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 
 -------
@@ -402,29 +402,29 @@ UL case
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-tcp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 all the UL cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_L3DST
 ---------------------------------------
@@ -466,13 +466,13 @@ DL case
 -------
 basic hit pattern packets are the same in this test case::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 all the DL cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST
 -------------------------------------------
@@ -482,11 +482,11 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC
 -------------------------------------------
@@ -496,11 +496,11 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4SRC
 -------------------------------------------------
@@ -510,12 +510,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4DST
 -------------------------------------------------
@@ -525,12 +525,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4SRC
 -------------------------------------------------
@@ -540,12 +540,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4DST
 -------------------------------------------------
@@ -555,12 +555,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4DST
 -------------------------------------------
@@ -570,11 +570,11 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4SRC
 -------------------------------------------
@@ -584,11 +584,11 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP
 -------------------------------------
@@ -598,14 +598,14 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_GTPU
 ------------------------------------------
@@ -615,24 +615,24 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 -------
 UL case
 -------
 basic hit pattern packets are the same in this test case::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 all the UL cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3DST
 -------------------------------------------
@@ -799,26 +799,26 @@ Test case: MAC_IPV4_GTPU_EH_IPV4 without UL/DL
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 all the cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_L3DST
@@ -830,38 +830,38 @@ rule::
 hit pattern/defined input set::
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 ipv4-nonfrag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 ipv4-frag packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2",frag=6)/("X"*480)],iface="enp216s0f0")
 
 ipv4-icmp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 ipv4-udp packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_L3SRC
 ------------------------------------
@@ -871,13 +871,13 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4
 ------------------------------
@@ -887,14 +887,14 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_GTPU
 -----------------------------------
@@ -904,26 +904,26 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_UDP without UL/DL
 ==================================================
 basic hit pattern packets are the same in this test case::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 all the cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST
 ----------------------------------------
@@ -933,12 +933,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC
 ----------------------------------------
@@ -948,12 +948,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4SRC
 ----------------------------------------------
@@ -963,13 +963,13 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4DST
 ----------------------------------------------
@@ -979,13 +979,13 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4SRC
 ----------------------------------------------
@@ -995,13 +995,13 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4DST
 ----------------------------------------------
@@ -1011,13 +1011,13 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L4DST
 ----------------------------------------
@@ -1027,12 +1027,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L4SRC
 ----------------------------------------
@@ -1042,12 +1042,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP
 ----------------------------------
@@ -1057,15 +1057,15 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_GTPU
 ---------------------------------------
@@ -1075,12 +1075,12 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 hit pattern/not defined input set::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_TCP without UL/DL
 ==================================================
@@ -1146,7 +1146,7 @@ ipv4-udp packets::
 all the cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_L3DST
@@ -1242,7 +1242,7 @@ basic hit pattern packets are the same in this test case::
 all the cases have same pattern, so we send same
 not hit pattern/not defined input set packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
@@ -1518,33 +1518,33 @@ Test case: default pattern supported
 
    IPv4_GTPU_EH_DL_IPv4::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv4::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_DL_IPv4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_DL_IPv4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_IPv4::
 
@@ -1563,33 +1563,33 @@ Test case: default pattern supported
 
    IPv4_GTPU_EH_DL_IPv6::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv6::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_DL_IPv6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_DL_IPv6_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_EH_UL_IPv6_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv4_GTPU_IPv6::
 
@@ -1608,33 +1608,33 @@ Test case: default pattern supported
 
    IPv6_GTPU_EH_DL_IPv4::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv4::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_DL_IPv4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_DL_IPv4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_IPv4::
 
@@ -1653,33 +1653,33 @@ Test case: default pattern supported
 
    IPv6_GTPU_EH_DL_IPv6::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv6::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_DL_IPv6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_DL_IPv6_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_EH_UL_IPv6_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
    IPv6_GTPU_IPv6::
 
@@ -1733,8 +1733,8 @@ Subcase: MAC_IPV4_GTPU_EH_IPV6_UDP/TCP
 
 3. send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
 4. check the two packets received with different hash values, and distributed to queue by RSS.
 
@@ -1753,8 +1753,8 @@ Subcase: MAC_IPV6_GTPU_IPV4_UDP/TCP
 
 3. send packets::
 
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:ca:a3:28:94")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
 4. check the two packets received with different hash values, and distributed to queue by RSS.
 
@@ -1773,8 +1773,8 @@ Subcase: MAC_IPV6_GTPU_EH_IPV6_UDP/TCP
 
 3. send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
 4. check the two packets received with different hash values, and distributed to queue by RSS.
 
@@ -1799,16 +1799,16 @@ Test case: multirules IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check the three packets have different hash value.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
    check the three packets have different hash value.
 
@@ -1825,16 +1825,16 @@ Test case: multirules IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -1873,16 +1873,16 @@ Test case: multirules IPV4_GTPU_EH_IPV4 with/without UL/DL
 
 3. send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check the three packets have different hash value.
 
@@ -1892,16 +1892,16 @@ Test case: multirules IPV4_GTPU_EH_IPV4 with/without UL/DL
 
 5. send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
    send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -1924,12 +1924,12 @@ Test case: multirules IPV4_GTPU_EH_IPV4 without/with UL/DL
 
 3. send packets::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
@@ -1973,18 +1973,18 @@ Test case: multirules IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
 
 2. send packets with different inner UDP/TCP port::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
@@ -2041,18 +2041,18 @@ Test case: multirules IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
 
 2. send packets with different inner UDP/TCP port::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
@@ -2105,13 +2105,13 @@ Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL
 
 2. send packets with different inner UDP/TCP port::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="enp216s0f0")
 
    check packet 2 has same hash value to packet 1.
    check packet 3 and packet 4 have different hash value to packet 1.
@@ -2187,9 +2187,9 @@ Subcase: toeplitz/symmetric with same pattern
 
 2. send packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2199,8 +2199,8 @@ Subcase: toeplitz/symmetric with same pattern
 
 4. send packets with switched inner ipv4 address::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
 
    check the two packets have same hash value.
 
@@ -2231,8 +2231,8 @@ Subcase: toeplitz/symmetric with same pattern (switched rule order)
 
 2. send packets with switched inner ipv4 address::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
 
    check the two packets have same hash value.
 
@@ -2242,9 +2242,9 @@ Subcase: toeplitz/symmetric with same pattern (switched rule order)
 
 4. send packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2255,7 +2255,7 @@ Subcase: toeplitz/symmetric with same pattern (switched rule order)
     0       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
 
-6. repeat step 2, check the toeplitz rule can't work now, but have hash value.
+6. repeat step 2, check the symmetric rule can't work now, but have hash value.
 
 Note: the action after deleting rule is not guaranteed in dpdk-20.08.
 so the following step don't need to be run in dpdk-20.08.
@@ -2275,9 +2275,9 @@ Subcase: toeplitz/symmetric with different pattern (different UL/DL)
 
 2. send packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2287,8 +2287,8 @@ Subcase: toeplitz/symmetric with different pattern (different UL/DL)
 
 4. send packets with switched inner ipv4 address::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
 
    check the two packets have same hash value.
 
@@ -2329,12 +2329,12 @@ Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)
 
 2. send packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
    check packet 5 has different hash value with packet 4, packet 6 has same hash value with packet 4.
@@ -2345,8 +2345,8 @@ Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)
 
 4. send packets with switched inner ipv4 address::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.2",dst="192.168.0.1")/("X"*480)], iface="enp216s0f0")
 
    check the two packets have same hash value.
 
@@ -2366,10 +2366,9 @@ so the following step don't need to be run in dpdk-20.08.
 
     testpmd> flow destroy 0 rule 1
 
-8. repeat step 4, check the symmetric can't work now, the packets have not hash value.
+8. repeat step 4, check the symmetric can't work now.
 
-9. repeat step 2, check the toeplitz can work for UL packets, not work for DL packets.
-   DL packets have not hash value.
+9. repeat step 2, check the toeplitz can work for both UL and DL packets.
 
 10. DUT re-create the symmetric rule::
 
@@ -2393,10 +2392,10 @@ Subcase: toeplitz/symmetric with different pattern
 
 2. send packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)], iface="enp216s0f0")
 
    check packet 2 and packet 3 have different hash value with packet 1, packet 4 has same hash value with packet 1.
 
@@ -2406,8 +2405,8 @@ Subcase: toeplitz/symmetric with different pattern
 
 4. send packets with switched inner ipv6 address::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",dst="2222:3333:4444:5555:6666:7777:8888:9999")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="2222:3333:4444:5555:6666:7777:8888:9999",dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888",dst="2222:3333:4444:5555:6666:7777:8888:9999")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="2222:3333:4444:5555:6666:7777:8888:9999",dst="1111:2222:3333:4444:5555:6666:7777:8888")/("X"*480)], iface="enp216s0f0")
 
    check the two packets have same hash value.
 
@@ -2464,10 +2463,10 @@ Subcase: add/delete IPV4_GTPU_UL_IPV4_TCP rules
 
 4. send IPV4_GTPU_UL_IPV4_TCP packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32, dport=23)/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/TCP(sport=22, dport=33)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=32, dport=23)/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/TCP(sport=22, dport=33)/("X"*480)], iface="enp216s0f0")
 
    check packet 2 and packet 3 have different hash value with packet 1, packet 4 has same hash value with packet 1.
 
@@ -2490,9 +2489,9 @@ Subcase: add/delete IPV4_GTPU_DL_IPV4 rules
 
 4. send IPV4_GTPU_DL_IPV4 packets::
 
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.1.2")/("X"*480)], iface="enp216s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.1", dst="192.168.0.2")/("X"*480)], iface="enp216s0f0")
 
    check packet 2 have different hash value with packet 1, packet 3 has same hash value with packet 1.
 
@@ -2543,49 +2542,49 @@ rule::
 hit pattern/defined input set:
 MAC_IPV4_GTPU_EH_DL_IPV4 nonfrag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV4 frag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV4_ICMP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP()/("X"*480)],iface="enp216s0f0")
     
 not hit pattern with switched value of input set in the rule:
 MAC_IPV4_GTPU_EH_UL_IPV4 nonfrag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_UL_IPV4 frag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_UL_IPV4_ICMP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_UL_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP()/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV6 nonfrag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_IPV4 nonfrag::
 
@@ -2610,26 +2609,26 @@ rule::
 
 hit pattern/defined input set::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
 
 not hit pattern with switched value of input set in the rule:
 MAC_IPV4_GTPU_EH_UL_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_DL_IPV6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_IPV4_UDP::
 
@@ -2671,29 +2670,29 @@ rule::
 hit pattern/defined input set:
 MAC_IPV4_GTPU_EH_IPV4 nonfrag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_IPV4 frag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.3",src="192.168.0.4",frag=6)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.4",src="192.168.0.3",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.3",src="192.168.0.4",frag=6)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.4",src="192.168.0.3",frag=6)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_IPV4_ICMP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.6",src="192.168.0.5")/ICMP()/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.5",src="192.168.0.6")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.6",src="192.168.0.5")/ICMP()/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.5",src="192.168.0.6")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 not hit pattern with switched value of input set in the rule:
 MAC_IPV4_GTPU_EH_IPV6 nonfrag::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_IPV4 nonfrag::
 
@@ -2709,28 +2708,28 @@ rule::
 hit pattern/defined input set:
 MAC_IPV4_GTPU_EH_DL_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_UL_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
 
 not hit pattern with switched value of input set in the rule:
 MAC_IPV4_GTPU_EH_IPV4_TCP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_EH_IPV6_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_IPV4_UDP::
 
@@ -2784,8 +2783,8 @@ MAC_IPV4_GTPU_IPV6 nonfrag::
 
 MAC_IPV4_GTPU_EH_IPV4::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 Test case: symmetric MAC_IPV4_GTPU_IPV4_UDP
 ===========================================
@@ -2804,8 +2803,8 @@ MAC_IPV4_GTPU_IPV4_UDP::
 not hit pattern with switched value of input set in the rule:
 MAC_IPV4_GTPU_EH_IPV4_UDP::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 MAC_IPV4_GTPU_IPV4_TCP::
 
@@ -2906,8 +2905,8 @@ Test case: global simple-xor
 
 2. send packets with switched l3 address::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
@@ -2964,6 +2963,6 @@ Test case: rss function when disable rss
 
 3. send 1280 packets of IPV4_GTPU_EH_IPV4 packet type::
 
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst=RandIP(),src=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)],iface="enp216s0f0",count=1280)
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst=RandIP(),src=RandIP())/UDP(sport=RandShort(),dport=RandShort())/("X"*480)],iface="enp216s0f0",count=1280)
 
 4. check all the packets have hash value and distributed to all queues by RSS.
