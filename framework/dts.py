@@ -160,7 +160,7 @@ def dts_parse_config(config, section):
     test_suites = [suite.strip()
                    for suite in config.get(section, 'test_suites').split(',')]
     try:
-        rx_mode = config.get(section, 'rx_mode').strip()
+        rx_mode = config.get(section, 'rx_mode').strip().lower()
     except:
         rx_mode = 'default'
 
