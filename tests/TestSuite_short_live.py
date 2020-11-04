@@ -160,7 +160,7 @@ class TestShortLiveApp(TestCase):
         """
         time = []
         regex = re.compile(".* (\d+:\d{2}\.\d{2}).*")
-        out = self.dut.send_expect("echo quit | time ./%s/app/testpmd -c 0x3 -n 4 --no-pci -- -i" % self.target, "#", 120)
+        out = self.dut.send_expect("echo quit | time ./%s -c 0x3 -n 4 --no-pci -- -i" % self.app_testpmd, "#", 120)
         time = regex.findall(out)
 
         if time != []:
