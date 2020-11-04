@@ -57,19 +57,22 @@ scapy_modules_required = {'gtp': ['GTP_U_Header', 'GTPPDUSessionContainer'],
 local_modules = [m[:-3] for m in os.listdir(DEP_FOLDER + '/scapy_modules') if (m.endswith('.py') and not m.startswith('__'))]
 
 for m in scapy_modules_required:
-    if m in local_modules:
-        module = import_module(m)
-        for clazz in scapy_modules_required[m]:
-            locals().update({clazz: getattr(module, clazz)})
-    else:
-        if m == 'sctp':
-            module = import_module(f'scapy.layers.{m}')
+    try:
+        if m in local_modules:
+            module = import_module(m)
             for clazz in scapy_modules_required[m]:
                 locals().update({clazz: getattr(module, clazz)})
         else:
-            module = import_module(f'scapy.contrib.{m}')
-            for clazz in scapy_modules_required[m]:
-                locals().update({clazz: getattr(module, clazz)})
+            if m == 'sctp':
+                module = import_module(f'scapy.layers.{m}')
+                for clazz in scapy_modules_required[m]:
+                    locals().update({clazz: getattr(module, clazz)})
+            else:
+                module = import_module(f'scapy.contrib.{m}')
+                for clazz in scapy_modules_required[m]:
+                    locals().update({clazz: getattr(module, clazz)})
+    except Exception as e:
+        print(e)
 
 def get_scapy_module_impcmd():
     cmd_li = list()

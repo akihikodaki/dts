@@ -111,21 +111,17 @@ class Tester(Crb):
 
     def check_scapy_version(self):
         require_version = '2.4.4'
-        self.scapy_session.get_session_before(timeout = 1)
+        self.scapy_session.get_session_before(timeout=1)
         self.scapy_session.send_expect('conf.version', '\'')
-        out = self.scapy_session.get_session_before(timeout = 1)
+        out = self.scapy_session.get_session_before(timeout=1)
         cur_version = out[:out.find('\'')]
         out = self.session.send_expect('grep scapy requirements.txt', '# ')
         value = re.search('scapy\s*==\s*(\S*)', out)
         if value is not None:
             require_version = value.group(1)
-        cur_version = cur_version.split('.')
-        require_version = require_version.split('.')
-        for i in range(len(require_version)):
-            if int(cur_version[i]) < int(require_version[i]):
-                self.logger.warning('The scapy vesrion not meet the requirement on tester,' +
+        if cur_version != require_version:
+            self.logger.warning('The scapy vesrion not meet the requirement on tester,' +
                     'please update your scapy, otherwise maybe some suite will failed')
-                break
 
     def init_ext_gen(self):
         """
