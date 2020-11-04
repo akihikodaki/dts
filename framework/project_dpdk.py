@@ -32,7 +32,7 @@
 import os
 import re
 
-from settings import NICS, load_global_setting, accepted_nic
+from settings import NICS, load_global_setting, save_global_setting, accepted_nic
 from settings import DPDK_RXMODE_SETTING, HOST_DRIVER_SETTING, HOST_DRIVER_MODE_SETTING, HOST_BUILD_TYPE_SETTING
 from settings import HOST_SHARED_LIB_SETTING, HOST_SHARED_LIB_PATH
 from ssh_connection import SSHConnection
@@ -41,6 +41,7 @@ from dut import Dut
 from tester import Tester
 from logger import getLogger
 from settings import IXIA, DRIVERS
+from utils import RED
 
 
 class DPDKdut(Dut):
@@ -217,6 +218,12 @@ class DPDKdut(Dut):
             self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
                                     'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
                                     'RTE_LIBRTE_FM10K_INC_VECTOR': 'n'})
+        if mode == 'avx512':
+            out = self.send_expect('lscpu | grep avx512', '#')
+            if 'avx512f' not in out or 'no-avx512f' in out:
+                self.logger.warning(RED('*********The DUT CPU do not support AVX512 test!!!********'))
+                self.logger.warning(RED('*********Now set the rx_mode to default!!!**********'))
+                save_global_setting(DPDK_RXMODE_SETTING, 'default')
 
     def set_package(self, pkg_name="", patch_list=[]):
         self.package = pkg_name
