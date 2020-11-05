@@ -55,7 +55,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.socket_mem = ','.join(['1024']*socket_num)
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.vhost_user = self.dut.new_session(suite="vhost")
-        self.enable_pcap_lib_in_dpdk(self.dut)
         self.virtio_user0 = None
         self.virtio_user1 = None
         self.pci_info = self.dut.ports_info[0]['pci']
@@ -85,22 +84,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.verify(len(self.cores_list) >= cores_num,
                     "There has not enough cores to test this case %s" %
                     self.running_case)
-
-    def enable_pcap_lib_in_dpdk(self, client_dut):
-        """
-        enable pcap lib in dpdk code and recompile
-        """
-        client_dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=n$/CONFIG_RTE_LIBRTE_PMD_PCAP=y/' config/common_base", "#")
-        client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'y'})
-        client_dut.build_install_dpdk(self.target)
-
-    def disable_pcap_lib_in_dpdk(self, client_dut):
-        """
-        reset pcap lib in dpdk and recompile
-        """
-        client_dut.send_expect("sed -i 's/CONFIG_RTE_LIBRTE_PMD_PCAP=y$/CONFIG_RTE_LIBRTE_PMD_PCAP=n/' config/common_base", "#")
-        client_dut.set_build_options({'RTE_LIBRTE_PMD_PCAP': 'n'})
-        client_dut.build_install_dpdk(self.target)
 
     def start_vhost_testpmd(self):
         """
@@ -359,8 +342,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.get_core_list(2)
         self.start_vhost_testpmd()
         self.start_vms(mode=0, mergeable=True)
-        # enable pcap in VM0
-        self.enable_pcap_lib_in_dpdk(self.vm_dut[0])
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -375,8 +356,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.vm_dut[1].send_expect('start tx_first 10', 'testpmd> ', 30)
          # check the packet in vm0
         self.check_packet_payload_valid(self.vm_dut[0])
-        # reset the evn in vm
-        self.disable_pcap_lib_in_dpdk(self.vm_dut[0])
 
     def test_vhost_vm2vm_virito_10_pmd_with_mergeable_path(self):
         """
@@ -388,8 +367,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.get_core_list(2)
         self.start_vhost_testpmd()
         self.start_vms(mode=1, mergeable=True)
-        # enable pcap in VM0
-        self.enable_pcap_lib_in_dpdk(self.vm_dut[0])
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -404,8 +381,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.vm_dut[1].send_expect('start tx_first 10', 'testpmd> ', 30)
          # check the packet in vm0
         self.check_packet_payload_valid(self.vm_dut[0])
-        # reset the evn in vm
-        self.disable_pcap_lib_in_dpdk(self.vm_dut[0])
 
     def test_vhost_vm2vm_virito_11_pmd_with_normal_path(self):
         """
@@ -429,8 +404,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.get_core_list(2)
         self.start_vhost_testpmd()
         self.start_vms(mode=2, mergeable=True)
-        # enable pcap in VM0
-        self.enable_pcap_lib_in_dpdk(self.vm_dut[0])
         # git the vm enough huge to run pdump
         self.vm_dut[0].set_huge_pages(2048)
         # start testpmd and pdump in VM0
@@ -445,8 +418,6 @@ class TestVM2VMVirtioPMD(TestCase):
         self.vm_dut[1].send_expect('start tx_first 10', 'testpmd> ', 30)
          # check the packet in vm0
         self.check_packet_payload_valid(self.vm_dut[0])
-        # reset the evn in vm
-        self.disable_pcap_lib_in_dpdk(self.vm_dut[0])
 
     def tear_down(self):
         #
@@ -461,5 +432,4 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         Run after each test suite.
         """
-        self.disable_pcap_lib_in_dpdk(self.dut)
         self.dut.close_session(self.vhost_user)
