@@ -179,6 +179,8 @@ class TestPVPMultiPathVhostPerformance(TestCase):
                                                           args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
+        if 'virtio11_vectorized' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
         command_line_user = self.path + eal_param + \
                             " -- -i %s --nb-cores=2 --txd=%d --rxd=%d" % \
                             (args["path"], self.nb_desc, self.nb_desc)

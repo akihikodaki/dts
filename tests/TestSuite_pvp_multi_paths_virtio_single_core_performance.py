@@ -179,6 +179,8 @@ class TestPVPMultiPathVirtioPerformance(TestCase):
         eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' % args["version"]])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
+        if 'virtio11_vectorized' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
         command_line_user = self.path + eal_param + \
             " -- -i %s --rss-ip --nb-cores=1 --txd=%d --rxd=%d" % (
                 args["path"], self.nb_desc, self.nb_desc)
