@@ -309,7 +309,7 @@ class DPDKdut(Dut):
             self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ")
 
         self.send_expect("rm -rf " + target, "#")
-        out = self.send_expect("CC=%s meson --werror -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s" % (
+        out = self.send_expect("CC=%s meson -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s" % (
                         toolchain, extra_options, default_library, target), "# ", build_time)
         assert ("FAILED" not in out), "meson setup failed ..."
 
