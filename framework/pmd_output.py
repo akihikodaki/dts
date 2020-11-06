@@ -162,6 +162,7 @@ class PmdOutput():
             all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
         else:
             w_pci_list, port_options, b_pci_list, file_prefix, no_pci, other_eal_str = self.split_eal_param(eal_param)
+            config['other_eal_param'] = other_eal_str
             if no_pci:
                 config['no_pci'] = no_pci
             if w_pci_list:
