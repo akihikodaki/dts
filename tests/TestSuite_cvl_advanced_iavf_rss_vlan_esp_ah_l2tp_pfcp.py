@@ -42,14 +42,14 @@ vf0_mac = '00:11:22:33:44:55'
 
 mac_ipv4_pfcp_session_packets = {
     'match': [
-        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=2)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=2)/Raw("x"*80)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IP(src="192.168.0.25",dst="192.168.0.23")/UDP(sport=23,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.25",dst="192.168.0.23")/UDP(sport=23,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac)],
     'mismatch': [
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac),
         'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=25)/Raw("x"*80)'.format(vf0_mac)]
 }
@@ -81,14 +81,14 @@ mac_ipv4_pfcp_session = {
 
 mac_ipv6_pfcp_session_packets = {
     'match': [
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=2)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=2)/Raw("x"*80)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac)],
     'mismatch': [
-        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(Sfield=1, SEID=1)/Raw("x"*80)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=8805)/PFCP(S=1, seid=1)/Raw("x"*80)'.format(
             vf0_mac),
         'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=25)/Raw("x"*80)'.format(
             vf0_mac)]
@@ -121,15 +121,15 @@ mac_ipv6_pfcp_session = {
 
 mac_ipv4_l2tpv3_packets = {
     'match': [
-        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.4", proto=115)/L2TP(\'\\x00\\x00\\x00\\x12\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.4", proto=115)/L2TP(b\'\\x00\\x00\\x00\\x12\')/Raw("x"*480)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IP(src="192.168.0.5",dst="192.168.0.7", proto=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.5",dst="192.168.0.7", proto=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac)
     ],
     'mismatch': [
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac),
         'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=25)/Raw("x"*80)'.format(vf0_mac)
     ]
@@ -162,15 +162,15 @@ mac_ipv4_l2tpv3 = {
 
 mac_ipv6_l2tpv3_packets = {
     'match': [
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(\'\\x00\\x00\\x00\\x12\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=115)/L2TP(b\'\\x00\\x00\\x00\\x12\')/Raw("x"*480)'.format(
             vf0_mac),
-        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023", nh=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023", nh=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac)
     ],
     'mismatch': [
-        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac),
         'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=22,dport=25)/Raw("x"*80)'.format(
             vf0_mac)
@@ -208,7 +208,7 @@ mac_ipv4_esp_packets = {
         'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5",proto=50)/ESP(spi=12)/Raw("x"*480)'.format(vf0_mac),
         'Ether(dst="{}")/IP(src="192.168.0.4",dst="192.168.0.7",proto=50)/ESP(spi=11)/Raw("x"*480)'.format(vf0_mac)],
     'mismatch': [
-        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
+        'Ether(dst="{}")/IP(src="192.168.0.3",dst="192.168.0.5", proto=115)/L2TP(b\'\\x00\\x00\\x00\\x11\')/Raw("x"*480)'.format(
             vf0_mac),
         'Ether(dst="{}")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022", nh=50)/ESP(spi=12)/Raw("x"*480)'.format(
             vf0_mac)
