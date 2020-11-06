@@ -60,7 +60,7 @@ class DcfDatePathTest(TestCase):
         self.pkt = Packet()
 
     def set_up(self):
-        self.pmd_output.start_testpmd(cores="1S/4C/1T", param='', eal_param="-w %s,cap=dcf --file-prefix=vf" % self.used_vf_pci)
+        self.pmd_output.start_testpmd(cores="1S/4C/1T", param='--txq=2 --rxq=2 --txd=384 --rxd=384', eal_param="-w %s,cap=dcf --file-prefix=vf" % self.used_vf_pci)
 
     def send_packets(self, packets, tx_port, count=1):
         self.pkt.update_pkt(packets)
