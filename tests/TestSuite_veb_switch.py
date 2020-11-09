@@ -239,11 +239,13 @@ class TestVEBSwitching(TestCase):
         the packets. Check Inter VF-VF MAC switch.
         """
         self.setup_env(driver='default')
-        self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.dut.init_reserved_core()
+        cores_vf1 = self.dut.get_reserved_core('2C',0)
+        self.pmdout.start_testpmd(cores_vf1, prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
-
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        cores_vf2 = self.dut.get_reserved_core('2C',0)
+        self.pmdout_2.start_testpmd(cores_vf2, prefix="test2", ports=[self.sriov_vfs_port[1].pci])
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>", 5)
