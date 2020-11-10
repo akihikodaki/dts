@@ -290,3 +290,31 @@ Test Case 9: loopback test with split ring inorder non-mergeable path
 4. Repeat below command to get throughput 10 times,then check the average throughput can get expected data with below command::
 
     testpmd>show port stats all
+
+Test Case 10: loopback test with packed ring vectorized path
+============================================================
+
+1. Launch vhost by below command::
+
+    rm -rf vhost-net*
+    ./testpmd -n 4 -l 2-4  --no-pci \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0' -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    testpmd>set fwd mac
+
+2. Launch virtio-user by below command::
+
+    ./testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1 \
+    -- -i --rss-ip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send packets with vhost-testpmd,[frame_size] is the parameter changs in [64, 1518]::
+
+    testpmd>set txpkts [frame_size]
+    testpmd>start tx_first 32
+
+4. Repeat below command to get throughput 10 times,then check the average throughput can get expected data with below command::
+
+    testpmd>show port stats all

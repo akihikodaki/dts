@@ -591,7 +591,7 @@ Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queue
 2. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
@@ -622,7 +622,7 @@ Test Case 10: loopback with virtio 1.1 vectorized path using 1 queue and 8 queue
 7. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 10-18 \
-    --no-pci --file-prefix=virtio \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=8,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --nb-cores=8 --rxq=8 --txq=8 --txd=1024 --rxd=1024
     testpmd>set fwd mac

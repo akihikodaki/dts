@@ -420,7 +420,7 @@ Test Case 10: loopback test with packed ring vectorized path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,in_order=0,mrg_rxbuf=0,vectorized=1 \
     -- -i --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac

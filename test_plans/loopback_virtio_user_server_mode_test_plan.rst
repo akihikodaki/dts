@@ -742,7 +742,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 2. Launch virtio-user as server mode with 2 queues::
 
-    ./testpmd -n 4 -l 5-7 --log-level=pmd.net.virtio.driver,8 --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --log-level=pmd.net.virtio.driver,8 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
@@ -777,7 +777,7 @@ Test Case 12: loopback reconnect test with packed ring vectorized path and serve
 
 8. Relaunch virtio-user and send packets::
 
-    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio \
+    ./testpmd -n 4 -l 5-7 --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,server=1,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2
     >set fwd mac
