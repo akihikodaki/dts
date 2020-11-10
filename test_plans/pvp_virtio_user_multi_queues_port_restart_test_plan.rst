@@ -364,7 +364,7 @@ Test Case 10: pvp 2 queues test with packed ring vectorized path
 2. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 5-7 \
-    --no-pci --file-prefix=virtio \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=2 --txq=2 --txd=255 --rxd=255
     >set fwd mac

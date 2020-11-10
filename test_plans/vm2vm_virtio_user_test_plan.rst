@@ -670,7 +670,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 2. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
-    --no-pci --file-prefix=virtio1 \
+    --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set fwd rxonly
@@ -683,7 +683,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 4. Launch virtio-user0 and send 8k length packets::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set burst 1
@@ -712,7 +712,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 8. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
-    --no-pci \
+    --no-pci --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=256 \
     -- -i --nb-cores=1 --txd=256 --rxd=256
     testpmd>set burst 1
@@ -723,7 +723,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
-Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not power of 2
+Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not power of 2
 ==========================================================================================
 
 1. Launch testpmd by below command::
@@ -735,7 +735,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not 
 2. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
-    --no-pci --file-prefix=virtio1 \
+    --no-pci --file-prefix=virtio1 --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255
     testpmd>set fwd rxonly
@@ -748,7 +748,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not 
 4. Launch virtio-user0 and send 8k length packets::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
+    --no-pci --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255
     testpmd>set burst 1
@@ -777,7 +777,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not 
 8. Launch virtio-user1 by below command::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
-    --no-pci \
+    --no-pci --force-max-simd-bitwidth=512 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255 \
     -- -i --nb-cores=1 --txd=255 --rxd=255
     testpmd>set burst 1
@@ -788,7 +788,7 @@ Test Case 10: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
-Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
+Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
 ========================================================================================================
 
 1. Launch vhost by below command::
@@ -847,7 +847,7 @@ Test Case 11: split virtqueue vm2vm inorder mergeable path multi-queues payload 
 
 7. Start vhost testpm, then quit pdump and all testpmd, check 512 packets received by virtio-user1, check 54 packets with 8k length and 458 packets with 2k length in pdump-virtio-rx.pcap.
 
-Test Case 12: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
+Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
 ================================================================================================
 
 1. Launch vhost by below command::
