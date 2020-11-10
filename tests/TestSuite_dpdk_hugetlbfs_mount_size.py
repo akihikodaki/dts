@@ -207,7 +207,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         self.logger.info("launch secondary testpmd")
         ttd_secondary = 'numactl --membind=%d %s -l %s -n %d  --legacy-mem --socket-mem %s --huge-dir' \
                             ' %s --file-prefix=%s -w %s -- -i --socket-num=%d --no-numa'
-        launch_ttd_secondary = ttd_secondary % (self.numa_id, self.app_path, self.core_list2, self.mem_channels, self.socket_mem2, MNT_PATH[1], vhost_name[1], self.pci_info_0, self.numa_id)
+        launch_ttd_secondary = ttd_secondary % (self.numa_id, self.app_path, self.core_list2, self.mem_channels, self.socket_mem2, MNT_PATH[1], vhost_name[1], self.pci_info_1, self.numa_id)
         self.session_secondary.send_expect(launch_ttd_secondary, "testpmd> ", 120)
         self.session_secondary.send_expect("set promisc all off", "testpmd> ", 120)
         self.session_secondary.send_expect("start", "testpmd> ", 120)
@@ -236,6 +236,7 @@ class DpdkHugetlbfsMountSize(TestCase):
         # start send packet and verify the session can receive the packet.
         self.send_pkg(0)
         self.verify_result(self.session_first)
+        self.send_pkg(1)
         self.verify_result(self.session_secondary)
         self.session_first.send_expect("quit", "#", 15)
         self.session_secondary.send_expect("quit", "#", 15)
@@ -262,6 +263,8 @@ class DpdkHugetlbfsMountSize(TestCase):
         """
         Run after each test case.
         """
+        # If case fails, the mount should be cancelled to avoid affecting next cases
+        self.umount_huge([MNT_PATH[0], MNT_PATH[1], MNT_PATH[2]])
         self.dut.kill_all()
         time.sleep(2)
 
