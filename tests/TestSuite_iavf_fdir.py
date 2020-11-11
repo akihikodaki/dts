@@ -325,7 +325,7 @@ MAC_IPV6_NAT_T_ESP = {
 L2_Ethertype = [
     'Ether(dst="00:11:22:33:44:55")/PPPoED()/PPP()/IP()/Raw("x" *80)',
     'Ether(dst="00:11:22:33:44:55", type=0x8863)/IP()/Raw("x" * 80)',
-    'Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP(proto=0x0021)/IP()/Raw("x" * 80)',
+    'Ether(dst="00:11:22:33:44:55")/PPPoE()/PPP(b\'\\x00\\x21\')/IP()/Raw("x" * 80)',
     'Ether(dst="00:11:22:33:44:55", type=0x8864)/IP()/Raw("x" * 80)',
     'Ether(dst="00:11:22:33:44:55")/ARP(pdst="192.168.1.1")',
     'Ether(dst="00:11:22:33:44:55", type=0x0806)/Raw("x" *80)',

@@ -134,10 +134,10 @@ class TestDdpPppL2tp(TestCase):
             pkts = {'IPV4/L2TP': 'Ether(src="%s", dst="%s")/IP()/UDP(dport=1701, sport=1701)/L2TP(session_id=%s)/Raw("X"*20)'
                     % (src_mac, dst_mac, session_id)}
         if flowtype == 28:
-            pkts = {'PPPOE/IPV4/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(proto=0x21)/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+            pkts = {'PPPOE/IPV4/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(b\'\\x00\\x21\')/IP(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
                     % (session_id, src_ip, dst_ip, sport, dport)}
         if flowtype == 29:
-            pkts = {'PPPOE/IPV6/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(proto=0x57)/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
+            pkts = {'PPPOE/IPV6/UDP': 'Ether()/PPPoE(sessionid=%s)/PPP(b\'\\x00\\x57\')/IPv6(src="%s",dst="%s")/UDP(sport=%d,dport=%d)/Raw("X"*20)'
                     % (session_id, src_ipv6, dst_ipv6, sport, dport)}
         if flowtype == 30:
             pkts = {'PPPOE': 'Ether(src="%s", dst="%s")/PPPoE(sessionid=%s)'
