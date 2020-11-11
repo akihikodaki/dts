@@ -454,7 +454,7 @@ def check_iavf_fdir_queue(out, pkt_num, check_param, stats=True):
                 raise Exception("wrong queue value, expect int or list")
         else:
             if isinstance(queue, int):
-                verify(not any(q == queue for q in res_queue), "fail: queue id should not matched, expect queue %s, got %s" % (queue, res_queue))
+                verify_iavf_fdir_directed_by_rss(out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True)
                 print((GREEN("pass: queue id %s not matched" % res_queue)))
             elif isinstance(queue, list):
                 verify_iavf_fdir_directed_by_rss(out, rxq=CVL_TXQ_RXQ_NUMBER, stats=True)
