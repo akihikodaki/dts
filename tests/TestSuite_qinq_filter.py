@@ -72,8 +72,6 @@ class TestQinqFilter(TestCase):
         
         cores = self.dut.get_core_list('1S/2C/1T')
         self.coreMask = utils.create_mask(cores)
-        self.dut.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n'})
-        self.dut.build_install_dpdk(self.target)
         self.path=self.dut.apps_name['test-pmd']
         
     def vlan_send_packet(self, vlans):
@@ -143,9 +141,10 @@ class TestQinqFilter(TestCase):
         Enable receipt of dual VLAN packets
         """
         
-        self.dut.send_expect(r'%s -c %s -n 4 -- -i \
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
+        self.dut.send_expect(r'%s %s -- -i \
                                --portmask=%s --port-topology=loop \
-                               --rxq=4 --txq=4  --disable-rss' % (self.path, self.coreMask, self.portMask),
+                               --rxq=4 --txq=4  --disable-rss' % (self.path, eal_para, self.portMask),
                                "testpmd> ", 30)
         self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ")
@@ -165,9 +164,10 @@ class TestQinqFilter(TestCase):
         """
         qinq filter packet received by assign PF queues
         """
-        self.dut.send_expect(r'%s -c %s -n 4 -- -i \
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
+        self.dut.send_expect(r'%s %s -- -i \
                                --portmask=%s --port-topology=loop \
-                               --rxq=4 --txq=4  --disable-rss' % (self.path, self.coreMask, self.portMask),
+                               --rxq=4 --txq=4  --disable-rss' % (self.path, eal_para, self.portMask),
                                "testpmd> ", 30)
         self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -201,10 +201,10 @@ class TestQinqFilter(TestCase):
         vf0_session = self.dut.new_session('qinq_filter')
         vf1_session = self.dut.new_session('qinq_filter')
 
-        self.dut.send_expect(r'%s -c %s -n 4  \
-                               --socket-mem=1024,1024 --file-prefix=pf -w %s -- -i --port-topology=loop \
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T', prefix='pf', ports=[self.dut.ports_info[dutRxPortId]['pci']])
+        self.dut.send_expect(r'%s %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
-                               % (self.path, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
+                               % (self.path, eal_para),
                                "testpmd> ", 30)
         self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -270,10 +270,10 @@ class TestQinqFilter(TestCase):
         vf0_session = self.dut.new_session('qinq_filter')
         vf1_session = self.dut.new_session('qinq_filter')
 
-        self.dut.send_expect(r'%s -c %s -n 4 \
-                               --socket-mem=1024,1024 --file-prefix=pf -w %s -- -i --port-topology=loop \
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T', prefix='pf', ports=[self.dut.ports_info[dutRxPortId]['pci']])
+        self.dut.send_expect(r'%s %s -- -i --port-topology=loop \
                                --rxq=4 --txq=4  --disable-rss' 
-                               % (self.path, self.coreMask, self.dut.ports_info[dutRxPortId]['pci']),
+                               % (self.path, eal_para),
                                "testpmd> ", 30)
         self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
@@ -348,5 +348,4 @@ class TestQinqFilter(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'y'})
-        self.dut.build_install_dpdk(self.target)
+        pass
