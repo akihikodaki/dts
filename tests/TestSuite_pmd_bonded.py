@@ -475,7 +475,7 @@ UDP(sport=srcport, dport=destport)/Raw(load="\x50"*%s)], iface="%s", count=%d)' 
                         "Bonding port connect socket error")
             self.verify("Link status: down" in out,
                         "Bonding port default link status error")
-            self.verify("Link speed: 0 Mbps" in out,
+            self.verify("Link speed: None" in out,
                         "Bonding port default link speed error")
 
         return bond_port
