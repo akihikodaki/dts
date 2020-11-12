@@ -84,6 +84,8 @@ class TestVhostUserLiveMigration(TestCase):
         backup_socket_num = len(set([int(core['socket']) for core in self.backup_dut.cores]))
         self.host_socket_mem = ','.join(['1024']*host_socket_num)
         self.backup_socket_mem = ','.join(['1024']*backup_socket_num)
+        self.testpmd_path=self.dut.apps_name['test-pmd']
+        self.testpmd_name = self.testpmd_path.split("/")[-1]
 
     def set_up(self):
         self.host_dut.send_expect('rm ./vhost-net*', '# ', 30)
@@ -148,7 +150,7 @@ class TestVhostUserLiveMigration(TestCase):
         zero_copy_str = ''
         if zero_copy is True:
             zero_copy_str = ',dequeue-zero-copy=1'
-        testcmd = self.dut.target + "/app/testpmd "
+        testcmd = self.testpmd_path + " "
         vdev = ['eth_vhost0,iface=%s/vhost-net,queues=%d%s' % (self.base_dir, self.queue_number, zero_copy_str)]
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (self.queue_number, self.queue_number, self.queue_number)
         eal_params_first = self.dut.create_eal_parameters(cores=self.core_list0, prefix='vhost', ports=[self.host_pci_info], vdevs=vdev)
@@ -280,7 +282,7 @@ class TestVhostUserLiveMigration(TestCase):
         vm_dut.send_expect('export TERM=screen', '# ')
         vm_dut.send_expect('screen -S %s' % self.screen_name, '# ', 120)
 
-        vm_testpmd = self.target + '/app/testpmd -c 0x3 -n 4 -- -i'
+        vm_testpmd = self.testpmd_path + ' -c 0x3 -n 4 -- -i'
         vm_dut.send_expect(vm_testpmd, 'testpmd> ', 120)
         vm_dut.send_expect('set fwd rxonly', 'testpmd> ', 30)
         vm_dut.send_expect('set promisc all off', 'testpmd> ', 30)
