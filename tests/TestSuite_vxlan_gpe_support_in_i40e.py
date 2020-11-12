@@ -43,7 +43,7 @@ from pmd_output import PmdOutput
 from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, UDP
 from scapy.layers.l2 import Dot1Q
-from vxlan import VXLAN
+from scapy.layers.vxlan import VXLAN
 from scapy.config import conf
 from test_case import TestCase
 from settings import FOLDERS
@@ -124,7 +124,7 @@ class VxlanGpeTestConfig(object):
         cwd = os.getcwd()
         dir_vxlan_module = cwd + r'/' + FOLDERS['Depends'] + r'/' + FOLDERS['scapy_modules']
         self.test_case.tester.scapy_append("sys.path.append('%s')" % dir_vxlan_module)
-        self.test_case.tester.scapy_append("from vxlan import VXLAN")
+        self.test_case.tester.scapy_append("from scapy.layers.vxlan import VXLAN")
         self.test_case.tester.scapy_append(
             'pcap = rdpcap("%s")' % self.pcap_file)
         self.test_case.tester.scapy_append(
