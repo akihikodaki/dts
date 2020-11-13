@@ -314,7 +314,7 @@ class DPDKdut(Dut):
         assert ("FAILED" not in out), "meson setup failed ..."
 
         out = self.send_expect("ninja -C %s -j %d" % (target, self.number_of_cores), "# ", build_time)
-        assert ("FAILED" not in out), "ninja complie failed ...\r\n %s" % out
+        assert ("FAILED" not in out), "ninja complie failed ..."
 
         # copy kmod file to the folder same as make
         out = self.send_expect("find ./%s/kernel/ -name *.ko" % target, "# ", verify=True)
@@ -555,9 +555,9 @@ class DPDKdut(Dut):
         else:
             example = '/'.join(folder_info[folder_info.index('examples')+1:])
         out = self.send_expect("meson configure -Dexamples=%s %s" % (example, self.target), "# ")
-        assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
+        assert ("FAILED" not in out), "Compilation error..."
         out = self.send_expect("ninja -C %s" % self.target, "# ", timeout)
-        assert ("FAILED" not in out), "Compilation error... \r\n %s" % out
+        assert ("FAILED" not in out), "Compilation error..."
 
         # verify the app build in the config path
         if example != 'all':
