@@ -167,7 +167,7 @@ class ExcelReporter(object):
                 self.sheet.write(self.row, self.col + 1, result)
             else:
                 self.sheet.write(
-                    self.row, self.col + 1, result, self.failed_style)
+                    self.row, self.col + 1, result if len(result) < 5000 else result[:2000] + '\r\n...\r\n...\r\n...\r\n' + result[-2000:], self.failed_style)
 
     def __write_cases(self, dut, target, suite):
         for case in set(self.result.all_test_cases(dut, target, suite)):
@@ -198,7 +198,7 @@ class ExcelReporter(object):
 
     def __write_failed_target(self, dut, target):
         msg = "TARGET ERROR '%s'" % self.result.target_failed_msg(dut, target)
-        self.sheet.write(self.row, self.col + 4, msg, self.failed_style)
+        self.sheet.write(self.row, self.col + 4, msg if len(msg) < 5000 else msg[:2000] + '\r\n...\r\n...\r\n...\r\n' + msg[-2000:], self.failed_style)
         self.row += 1
 
     def __write_targets(self, dut):
@@ -214,7 +214,7 @@ class ExcelReporter(object):
 
     def __write_failed_dut(self, dut):
         msg = "PREREQ FAILED '%s'" % self.result.dut_failed_msg(dut)
-        self.sheet.write(self.row, self.col + 5, msg, self.failed_style)
+        self.sheet.write(self.row, self.col + 5, msg if len(msg) < 5000 else msg[:2000] + '\r\n...\r\n...\r\n...\r\n' + msg[-2000:], self.failed_style)
         self.row += 1
 
     def __parse_result(self):
