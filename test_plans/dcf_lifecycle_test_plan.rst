@@ -711,3 +711,364 @@ Remove MAC-VLAN commands ::
 
     ip link del macvlan0
     ethtool -K enp24s0f1 l2-fwd-offload off
+
+
+Handling of ACL filters added by DCF
+====================================
+1. PF base driver shall track all the ACL filters being added by DCF.
+   Additionally it shall also track the related profiles needed for
+   the ACL filters being added.
+2. PF base driver shall ensure cleanup of these ACL filters and profiles
+   during resets and exception cases.
+
+pre-steps:
+
+1. Generate 2 VFs on PF0::
+
+    echo 2 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+
+    0000:18:01.0 'Ethernet Adaptive Virtual Function 1889' if=enp24s1 drv=iavf unused=vfio-pci
+    0000:18:01.1 'Ethernet Adaptive Virtual Function 1889' if=enp24s1f1 drv=iavf unused=vfio-pci
+
+2. Set VF0 as trust::
+
+    ip link set enp24s0f0 vf 0 trust on
+
+3. Bind VFs to dpdk driver::
+
+    modprobe vfio-pci
+    ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0 0000:18:01.1
+
+4. Launch dpdk on VF0, and VF0 request DCF mode::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -w 0000:18:01.0,cap=dcf --file-prefix=vf0 -- -i
+    testpmd> set fwd mac
+    testpmd> set verbose 1
+    testpmd> start
+    testpmd> show port info all
+
+   check the VF0 driver is net_ice_dcf.
+
+5. Launch dpdk on VF1::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 18:01.1 --file-prefix=vf1 -- -i
+    testpmd> set fwd rxonly
+    testpmd> set verbose 1
+    testpmd> start
+    testpmd> show port info all
+
+   check the VF1 driver is net_iavf.
+   the mac address is 5E:8E:8B:4D:89:05
+
+TC25: Turn trust mode off, when DCF launched
+--------------------------------------------
+If turn trust mode off, when DCF launched. The DCF rules should be removed.
+
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+
+    +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+3. turn VF0 trust mode off, while DCF launched::
+
+    ip link set enp24s0f0 vf 0 trust off
+
+4. check the DCF ACL rule can be listed.
+   send the packet again, check the packet not dropped by VF1.
+   so the rule can't take effect any more.
+
+5. turn VF0 trust mode on, then re-launch dpdk on VF0, which requests DCF mode again.
+   check there is no ACL rule listed.
+   repeat step 1-2, check the packet is dropped by VF1.
+
+TC26: Kill DCF process
+----------------------
+If kill DCF process, when DCF launched. The DCF rules should be removed.
+
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+3. kill DCF process ::
+
+    ps -ef |grep testpmd #Check the process id
+    kill -9 <pid>
+
+4. send the packet again, check the packet not dropped by VF1.
+   so the rule can't take effect any more.
+
+5. re-launch dpdk on VF0, which requests DCF mode again.
+   check there is no ACL rule listed.
+   send the packet again, check the packet not dropped by VF1.
+
+6. repeat step 1-2, check the packet is dropped by VF1.
+
+TC27: Allow AVF request
+-----------------------
+This is a scenario when the DCF user process was killed and a new AVF is being installed.
+Kill DCF process, then fail to launch avf on the previous DCF VF.
+
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+3. kill DCF process ::
+
+    ps -ef |grep testpmd #Check the process id
+    kill -9 <pid>
+
+4. send the packet again, check the packet not dropped by VF1.
+   so the rule can't take effect any more.
+
+5. re-launch dpdk on VF0, which requests AVF mode::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -w 0000:18:01.0 --file-prefix=vf0 -- -i
+
+   report::
+
+    iavf_get_vf_resource(): Failed to execute command of OP_GET_VF_RESOURCE
+    iavf_init_vf(): iavf_get_vf_config failed
+    iavf_dev_init(): Init vf failed
+
+   then quit the process, re-launch AVF on VF0 again, launch successfully.
+   send the packet again, check the packet not dropped by VF1.
+
+TC28: DCF graceful exit
+-----------------------
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+3. Exit the DCF in DCF testpmd ::
+
+    testpmd> quit
+
+4. send the packet again, check the packet not dropped by VF1.
+   the ACL rule is removed.
+
+TC29: DCF enabled, AVF VF reset
+-------------------------------
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+3. reset VF1 in testpmd::
+
+    stop
+    port stop 0
+    port reset 0
+    port start 0
+    start
+
+4. send the packet again, check the packet still be dropped by VF1.
+   so the rule still take effect.
+
+5. Reset VF1 by setting mac addr::
+
+    ip link set enp24s0f0 vf 1 mac 00:01:02:03:04:05
+
+   Reset port in testpmd::
+
+    stop
+    port stop all
+    port reset all
+    port start all
+    start
+
+6. send the packet with changed dst mac address "00:01:02:03:04:05",
+   check the packet still be dropped by VF1.
+   so the rule still take effect.
+
+TC30: DCF enabled, DCF VF reset
+-------------------------------
+1. Create an ACL rule::
+
+    flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end
+
+   check the rule created successfully.
+
+2. send packet with dst mac of VF1::
+
+    sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
+
+   check the packet is dropped by VF1::
+
+3. reset VF0 in testpmd::
+
+    stop
+    port stop 0
+    port reset 0
+    port start 0
+    start
+
+4. check the rule still be listed.
+   send the packet with new mac address of VF1 again, check the packet still be dropped by VF1.
+   the rule still take effect.
+
+DCF mode and any ACL filters (not added by DCF) shall be mutually exclusive
+===========================================================================
+PF base driver shall ensure ACL filters being added by host based
+configuration tools such as tc flower or tc u32 (but not limited to)
+are mutually exclusive to DCF mode.
+
+TC31: add ACL rule by kernel, reject request for DCF functionality
+------------------------------------------------------------------
+1. create 2 VFs on PF0, set trust mode to VF0::
+
+    echo 2 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+    ip link set enp24s0f0 vf 0 trust on
+
+2. create an ACL rule on PF0 by kernel command::
+
+    # ethtool -N enp24s0f0 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
+    Added rule with ID 15871
+
+3. launch testpmd on VF0 requesting for DCF funtionality::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -w 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+
+   report error::
+
+    ice_dcf_init_parent_hw(): firmware 5.1.5 api 1.7.3 build 0x7a25e184
+    ice_load_pkg_type(): Active package is: 1.3.20.0, ICE COMMS Package
+    ice_dcf_send_aq_cmd(): No response (201 times) or return failure (desc: -63 / buff: -63)
+    ice_flow_init(): Failed to initialize engine 4
+    ice_dcf_init_parent_adapter(): Failed to initialize flow
+    ice_dcf_dev_init(): Failed to init DCF parent adapter
+
+   get dmesg::
+
+    ice 0000:18:00.0: Grant request for DCF functionality to VF0
+    ice 0000:18:00.0: Failed to grant ACL capability to VF0 as ACL rules already exist
+
+4. delete the kernel ACL rule::
+
+    ethtool -N enp24s0f0 delete 15871
+
+5. relaunch testpmd on VF0 requesting for DCF funtionality with same command.
+   accept request for DCF functionality.
+   show the port info::
+
+    Driver name: net_ice_dcf
+
+   there is not Failed infomation in dmesg.
+
+TC32: add ACL rule by kernel, accept request for DCF functionality of another PF
+--------------------------------------------------------------------------------
+1. create 2 VFs on PF0, set trust mode to VF0::
+
+    echo 2 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+    ip link set enp24s0f0 vf 0 trust on
+
+2. create an ACL rule on PF1 by kernel command::
+
+    # ethtool -N enp24s0f1 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
+    Added rule with ID 15871
+
+3. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -w 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+
+   show the port info::
+
+    Driver name: net_ice_dcf
+
+   there is not Failed infomation in dmesg.
+
+TC33: ACL DCF mode is active, add ACL filters by way of host based configuration is rejected
+--------------------------------------------------------------------------------------------
+1. create 2 VFs on PF0, set trust mode to VF0::
+
+    echo 2 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+    ip link set enp24s0f0 vf 0 trust on
+
+2. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -w 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+
+   show the port info::
+
+    Driver name: net_ice_dcf
+
+3. failed to add ACL filter by host kernel command::
+
+    ~# ethtool -N enp24s0f0 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
+    rmgr: Cannot insert RX class rule: No such file or directory
+
+4. exit ACL DCF mode::
+
+    testpmd> quit
+
+5. add ACL filters by way of host based configuration successfully::
+
+    # ethtool -N enp24s0f0 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
+    Added rule with ID 15871
+
+TC34: ACL DCF mode is active, add ACL filters by way of host based configuration on another PF successfully
+-----------------------------------------------------------------------------------------------------------
+1. create 2 VFs on PF0, set trust mode to VF0::
+
+    echo 2 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+    ip link set enp24s0f0 vf 0 trust on
+
+2. launch testpmd on VF0 of PF0 requesting for DCF funtionality successfully::
+
+    ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xc -n 4 -w 18:01.0,cap=dcf --log-level=ice,7 -- -i --port-topology=loop
+
+   show the port info::
+
+    Driver name: net_ice_dcf
+
+3. add ACL filter by host kernel command on PF1 successfully::
+
+    # ethtool -N enp24s0f1 flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1
+    Added rule with ID 15871
