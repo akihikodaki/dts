@@ -588,7 +588,22 @@ hit pattern and defined input set::
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
-    
+
+Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3
+----------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+
 UL case
 -------
 basic hit pattern packets are the same in this test case::
@@ -664,6 +679,14 @@ Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
+
+packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP.
+
+Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3
+----------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP.
 
@@ -805,7 +828,22 @@ hit pattern and defined input set::
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
-    
+
+Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3
+----------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+
 UL case
 -------
 basic hit pattern packets are the same in this test case::
@@ -875,6 +913,14 @@ rule::
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types ipv4-tcp l4-src-only end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4SRC.
+
+Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3
+----------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end
+
+packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP
 -------------------------------------
@@ -1182,6 +1228,24 @@ hit pattern but not defined input set::
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.10.2")/UDP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.10.2")/UDP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
 
+Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3
+-------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP
 ----------------------------------
 rule::
@@ -1330,6 +1394,24 @@ hit pattern but not defined input set::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.10.2")/TCP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.10.2")/TCP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3
+-------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP
 ----------------------------------
@@ -1671,7 +1753,22 @@ hit pattern and defined input set::
 hit pattern but not defined input set::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.10.1", dst="192.168.10.2")/UDP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
-   
+
+Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3
+----------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.10.1", dst="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.1", dst="192.168.10.2")/UDP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+
 Subcase: MAC_IPV4_GTPU_IPV4_UDP
 -------------------------------
 rule::
@@ -1807,7 +1904,22 @@ hit pattern and defined input set::
 hit pattern but not defined input set::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.10.1", dst="192.168.10.2")/TCP(sport=22, dport=13)/("X"*480)], iface="enp134s0f0")
-   
+
+Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3
+----------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.10.1", dst="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.1", dst="192.168.10.2")/TCP(sport=22, dport=23)/("X"*480)], iface="enp134s0f0")
+
+hit pattern but not defined input set::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.1", dst="192.168.0.2")/TCP(sport=12, dport=13)/("X"*480)], iface="enp134s0f0")
+
 Subcase: MAC_IPV4_GTPU_IPV4_TCP
 -------------------------------
 rule::
@@ -2141,10 +2253,6 @@ Test case: toeplitz negative case
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
     
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end
-    ice_flow_create(): Failed to create flow
-    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
-    
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
     
