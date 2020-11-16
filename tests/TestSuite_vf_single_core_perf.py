@@ -374,7 +374,7 @@ class TestVfSingleCorePerf(TestCase):
                     json_obj[case_name].append(row_dict0)
                     status_result.append(row_dict0['status'])
         with open(os.path.join(rst.path2Result,
-                               '{0:s}_single_core_perf.json'.format(
+                               '{0:s}_vf_single_core_perf.json'.format(
                                    self.nic)), 'w') as fp:
             json.dump(json_obj, fp)
         self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
