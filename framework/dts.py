@@ -486,8 +486,16 @@ def dts_run_suite(duts, tester, test_suites, target, subtitle):
             settings.report_error("GENERIC_ERR")
             log_handler.error(str(e))
         finally:
-            suite_obj.execute_tear_downall()
-            save_all_results()
+            try:
+                suite_obj.execute_tear_downall()
+            except Exception as e:
+                settings.report_error("GENERIC_ERR")
+                log_handler.error(str(e))
+            try:
+                save_all_results()
+            except Exception as e:
+                settings.report_error("GENERIC_ERR")
+                log_handler.error(str(e))
 
 
 def run_all(config_file, pkgName, git, patch, skip_setup,
