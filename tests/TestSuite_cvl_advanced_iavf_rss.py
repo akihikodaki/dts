@@ -5185,11 +5185,9 @@ class AdvancedIavfRSSTest(TestCase):
         negative_rules = [
             'flow create 0 ingress pattern eth / ipv4 / end actions rss types eth l3-src-only end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-udp end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv6 end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / end actions rss func symmetric_toeplitz types ipv4 l3-src-only end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / end actions rss func symmetric_toeplitz types eth end key_len 0 queues end / end',
         ]
         for i in negative_rules:
             out = self.pmd_output.execute_cmd(i, timeout=1)
