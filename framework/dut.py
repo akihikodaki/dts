@@ -230,7 +230,9 @@ class Dut(Crb):
         if use_shared_lib == 'true' and shared_lib_path and 'Virt' not in str(self):
             eal_str = eal_str + ' -d {} '.format(shared_lib_path)
         rx_mode = settings.load_global_setting(settings.DPDK_RXMODE_SETTING)
-        if 'other_eal_param' not in config or 'force-max-simd-bitwidth' not in config['other_eal_param']:
+        build_type = settings.load_global_setting(settings.HOST_BUILD_TYPE_SETTING)
+        if build_type == 'meson' and ('other_eal_param' not in config or
+                                      'force-max-simd-bitwidth' not in config['other_eal_param']):
             if rx_mode == 'novector':
                 eal_str = eal_str + ' --force-max-simd-bitwidth=64 '
             elif rx_mode == 'sse':
