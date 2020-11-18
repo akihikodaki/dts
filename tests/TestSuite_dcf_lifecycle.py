@@ -317,7 +317,7 @@ class TestDcfLifeCycle(TestCase):
             "{whitelist} "
             "--file-prefix={prefix} "
             "-- -i ").format(**{
-                'bin': self.vf_dcf_testpmd,
+                'bin': ''.join(['./',self.vf_dcf_testpmd]),
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
                 'whitelist': whitelist,
@@ -335,13 +335,14 @@ class TestDcfLifeCycle(TestCase):
             self.logger.error(traceback.format_exc())
         self.is_vf_dcf_pmd_on = False
 
-    def kill_vf_dcf_process(self):
+    def kill_vf_dcf_process(self,**kwargs):
         '''
         Kill DCF process
         '''
         cmd = "ps aux | grep testpmd"
         self.d_a_con(cmd)
-        cmd = r"kill -9 `ps -ef | grep %s | grep -v grep | grep -v %s | awk '{print $2}'`" % (self.vf_dcf_testpmd.split('/')[-1], self.vf_testpmd2.split('/')[-1])
+        file_prefix = '='.join(['file-prefix',kwargs['file_prefix']])
+        cmd = r"kill -9 `ps -ef | grep %s | grep -v grep | grep %s | awk '{print $2}'`" % (self.vf_dcf_testpmd.split('/')[-1], file_prefix)
         self.d_a_con(cmd)
         self.is_vf_dcf_pmd_on = False
         time.sleep(2)
@@ -357,14 +358,8 @@ class TestDcfLifeCycle(TestCase):
         self.verify(output, msg)
         return output
 
-    def create_vf_testpmd2(self):
-        self.vf_testpmd2 = self.dut.apps_name['testpmd_vf']
-        cmd = 'rm -f /root/dpdk/{vf_pmd2};cp /root/dpdk/{vf_dcf_pmd} /root/dpdk/{vf_pmd2}'.format(
-            **{'vf_dcf_pmd': self.vf_dcf_testpmd, 'vf_pmd2': self.vf_testpmd2})
-        self.d_a_con(cmd)
-
     def init_vf_testpmd2(self):
-        self.create_vf_testpmd2()
+        self.vf_testpmd2 = self.dut.apps_name['test-pmd']
         self.vf_pmd2_session_name = 'vf_testpmd2'
         self.vf_pmd2_session = self.dut.new_session(
             self.vf_pmd2_session_name)
@@ -382,7 +377,7 @@ class TestDcfLifeCycle(TestCase):
             "{whitelist} "
             "--file-prefix={prefix} "
             "-- -i ").format(**{
-                'bin': self.vf_testpmd2,
+                'bin': ''.join(['./',self.vf_testpmd2]),
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
                 'whitelist': whitelist,
@@ -460,7 +455,7 @@ class TestDcfLifeCycle(TestCase):
         self.verify(output, msg)
         return output
 
-    def check_vf_pmd2_traffic(self, func_name, topo=None, flag=False):
+    def check_vf_pmd2_traffic(self, func_name, topo=None, flag=False,**kwargs):
         dut_port_id, vf_id = topo if topo else [0, 1]
         pkt = self.config_stream(dut_port_id, vf_id)
         traffic = partial(self.send_packet_by_scapy, pkt, dut_port_id, vf_id)
@@ -468,7 +463,7 @@ class TestDcfLifeCycle(TestCase):
         self.vf_pmd2_clear_port_stats()
         self.check_vf_pmd2_stats(traffic, verbose_parser)
         status_change_func = getattr(self, func_name)
-        status_change_func()
+        status_change_func(**kwargs)
         self.check_vf_pmd2_stats(traffic, verbose_parser, is_traffic_valid=flag)
 
     def run_test_pre(self, pmd_opitons):
@@ -689,7 +684,7 @@ class TestDcfLifeCycle(TestCase):
             pmd_opts = [['pf1_vf0_dcf', 'dcf'], ['pf1_vf1', 'vf']]
             self.run_test_pre(pmd_opts)
             self.vf_dcf_testpmd_set_flow_rule()
-            self.check_vf_pmd2_traffic('kill_vf_dcf_process', flag=True)
+            self.check_vf_pmd2_traffic('kill_vf_dcf_process', flag=True,**{'file_prefix':pmd_opts[0][1]})
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
