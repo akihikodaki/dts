@@ -187,28 +187,33 @@ class DPDKdut(Dut):
     def set_rxtx_mode(self):
         """
         Set default RX/TX PMD function,
-        only i40e support scalar/full RX/TX model.
-        ixgbe and fm10k only support vector and no vector model
-        all NIC default rx/tx model is vector PMD
+        the rx mode scalar/full/novector are supported dynamically since DPDK 20.11,
+        The DPDK version should be <=20.08 when compiling DPDK by makefile to use these rx modes,
+        Rx mode avx512 is only supported in DPDK 20.11 and later version.
         """
 
         mode = load_global_setting(DPDK_RXMODE_SETTING)
-        if mode == 'scalar':
-            self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                    'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'y'})
-        if mode == 'full':
-            self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                    'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'n'})
-        if mode == 'novector':
-            self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
-                                    'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                    'RTE_LIBRTE_FM10K_INC_VECTOR': 'n'})
-        if mode == 'avx512':
-            out = self.send_expect('lscpu | grep avx512', '#')
-            if 'avx512f' not in out or 'no-avx512f' in out:
-                self.logger.warning(RED('*********The DUT CPU do not support AVX512 test!!!********'))
-                self.logger.warning(RED('*********Now set the rx_mode to default!!!**********'))
-                save_global_setting(DPDK_RXMODE_SETTING, 'default')
+        build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
+        if build_type == 'makefile':
+            if mode == 'scalar':
+                self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                        'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'y'})
+            elif mode == 'full':
+                self.set_build_options({'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                        'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'n'})
+            elif mode == 'novector':
+                self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
+                                        'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
+                                        'RTE_LIBRTE_FM10K_INC_VECTOR': 'n'})
+            elif mode == 'avx512':
+                self.logger.warning(RED('*********AVX512 is not supported by makefile!!!********'))
+        else:
+            if mode == 'avx512':
+                out = self.send_expect('lscpu | grep avx512', '#')
+                if 'avx512f' not in out or 'no-avx512f' in out:
+                    self.logger.warning(RED('*********The DUT CPU do not support AVX512 test!!!********'))
+                    self.logger.warning(RED('*********Now set the rx_mode to default!!!**********'))
+                    save_global_setting(DPDK_RXMODE_SETTING, 'default')
 
     def set_package(self, pkg_name="", patch_list=[]):
         self.package = pkg_name
