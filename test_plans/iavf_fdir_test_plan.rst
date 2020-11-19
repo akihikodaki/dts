@@ -2424,6 +2424,231 @@ Subcase 15: MAC_IPV6_GTPU outer src ipv6 mark/rss
 4. verify matched packets are distributed by RSS without FDIR matched ID.
    check there is no rule listed.
 
+Test case: Layer3 co-exist GTPU
+===============================
+
+Subcase 1: Layer3 co-exist GTP EH fdir + dst
+--------------------------------------------
+
+Rules::
+    #1  flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end
+    #2  flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end
+    #3  flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.33 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end
+    #4  flow create 0 ingress pattern eth / ipv6 dst is ::14 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end
+    #5  flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.35 / udp / gtpu / gtp_psc / end actions passthru / mark id 5 / end
+    #6  flow create 0 ingress pattern eth / ipv6 dst is ::36 / udp / gtpu / gtp_psc / end actions passthru / mark id 6 / end
+    #7  flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.37 / udp / gtpu / gtp_psc / end actions drop / end
+    #8  flow create 0 ingress pattern eth / ipv6 dst is ::38 / udp / gtpu / gtp_psc / end actions drop / end
+
+Matched packets::
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Mismatched packets::
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+1. Create above filter rules.
+
+2. Send matched packets.
+
+3. Check result::
+
+    Check p_gtpu1 is distributed to queue 1 or 2 with FDIR matched ID=0x1.
+    Check p_gtpu2 is distributed to queue 3 or 4 or 5 or 6 with FDIR matched ID=0x2.
+    Check p_gtpu3 is distributed to queue 7 with FDIR matched ID=0x3.
+    Check p_gtpu4 is distributed to queue 8 with FDIR matched ID=0x4.
+    Check p_gtpu5 is distributed by RSS with FDIR matched ID=0x5.
+    Check p_gtpu6 is distributed by RSS with FDIR matched ID=0x6.
+    Check p_gtpu7 is dropped.
+    Check p_gtpu8 is dropped.
+
+4. Send mismatched packets.
+
+5. Check result::
+
+    Check p_gtpu1 is distributed by RSS without FDIR matched ID=0x1.
+    Check p_gtpu2 is distributed by RSS without FDIR matched ID=0x2.
+    Check p_gtpu3 is distributed by RSS without FDIR matched ID=0x3.
+    Check p_gtpu4 is distributed by RSS without FDIR matched ID=0x4.
+    Check p_gtpu5 is distributed by RSS without FDIR matched ID=0x5.
+    Check p_gtpu6 is distributed by RSS without FDIR matched ID=0x6.
+    Check p_gtpu7 is not dropped, distributed by RSS.
+    Check p_gtpu8 is not dropped, distributed by RSS.
+
+6. Verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+7. Flush the rule, check there is no rule listed::
+
+    testpmd> flow flush 0
+
+8. Send matched packets.
+
+9. Verify matched packets are distributed by RSS without FDIR matched ID.
+
+10. Repeate above steps.
+
+Subcase 2: Layer3 co-exist GTP fdir + dst
+-----------------------------------------
+
+Rules::
+    #1  flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end
+    #2	flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end
+    #3	flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.33 / udp / gtpu / end actions queue index 7 / mark id 3 / end
+    #4	flow create 0 ingress pattern eth / ipv6 dst is ::14 / udp / gtpu / end actions queue index 8 / mark id 4 / end
+    #5	flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.35 / udp / gtpu / end actions passthru / mark id 5 / end
+    #6	flow create 0 ingress pattern eth / ipv6 dst is ::36 / udp / gtpu / end actions passthru / mark id 6 / end
+    #7	flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.37 / udp / gtpu / end actions drop / end
+    #8	flow create 0 ingress pattern eth / ipv6 dst is ::38 / udp / gtpu / end actions drop / end
+
+Matched packets::
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Mismatched packets::
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Test steps as subcase 1.
+
+Subcase 3: Layer3 co-exist GTP EH fdir + src
+--------------------------------------------
+
+Rules::
+    #1  flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end
+    #2	flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end
+    #3	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end
+    #4	flow create 0 ingress pattern eth / ipv6 src is 2001::4 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end
+    #5	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 / udp / gtpu / gtp_psc / end actions passthru / mark id 5 / end
+    #6	flow create 0 ingress pattern eth / ipv6 src is ::16 / udp / gtpu / gtp_psc / end actions passthru / mark id 6 / end
+    #7	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 / udp / gtpu / gtp_psc / end actions drop / end
+    #8	flow create 0 ingress pattern eth / ipv6 src is 2001::8 / udp / gtpu / gtp_psc / end actions drop / end
+
+Matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Mismatched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Test steps as subcase 1.
+
+Subcase 4: Layer3 co-exist GTP fdir + src
+-----------------------------------------
+
+Rules::
+
+    #1  flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end
+    #2	flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end
+    #3	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 / udp / gtpu / end actions queue index 7 / mark id 3 / end
+    #4	flow create 0 ingress pattern eth / ipv6 src is 2001::4 / udp / gtpu / end actions queue index 8 / mark id 4 / end
+    #5	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 / udp / gtpu / end actions passthru / mark id 5 / end
+    #6	flow create 0 ingress pattern eth / ipv6 src is ::16 / udp / gtpu / end actions passthru / mark id 6 / end
+    #7	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 / udp / gtpu / end actions drop / end
+    #8	flow create 0 ingress pattern eth / ipv6 src is 2001::8 / udp / gtpu / end actions drop / end
+Matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Mismatched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Test steps as subcase 1.
+
+Subcase 5: Layer3 co-exist GTP with/without EH fdir + src/dst
+-------------------------------------------------------------
+
+Rules::
+
+    #1  flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end
+    #2	flow create 0 ingress pattern eth / ipv6 src is ::12 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end
+    #3	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 dst is 192.168.0.33 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end
+    #4	flow create 0 ingress pattern eth / ipv6 src is 2001::4 dst is ::14 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end
+    #5	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 dst is 192.168.0.35 / udp / gtpu / end actions passthru / mark id 5 / end
+    #6	flow create 0 ingress pattern eth / ipv6 src is ::16 dst is ::36 / udp / gtpu / end actions passthru / mark id 6 / end
+    #7	flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 dst is 192.168.0.37 / udp / gtpu / end actions drop / end
+    #8	flow create 0 ingress pattern eth / ipv6 src is 2001::8 dst is ::38 / udp / gtpu / end actions drop / end
+
+Matched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Mismatched packets::
+
+    p_gtpu1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IPv6()/UDP()/Raw('x'*20)
+    p_gtpu2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/TCP()/Raw('x'*20)
+    p_gtpu3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x33)/IPv6()/Raw('x'*20)
+    p_gtpu4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x33)/IP()/TCP()/Raw('x'*20)
+    p_gtpu5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw('x'*20)
+    p_gtpu6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw('x'*20)
+    p_gtpu7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+    p_gtpu8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw('x'*20)
+
+Test steps as subcase 1.
+
 
 Test case: L2 Ethertype pattern
 ===============================
