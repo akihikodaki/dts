@@ -44,7 +44,7 @@ import re
 from test_case import TestCase
 from packet import Packet
 from pktgen import PacketGeneratorHelper
-
+from pmd_output import PmdOutput
 
 class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
 
@@ -66,11 +66,13 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
         self.pci_info = self.dut.ports_info[0]['pci']
-        self.vhost = self.dut.new_session(suite="vhost-user")
+        self.vhost_pmd_session = self.dut.new_session(suite="vhost-user")
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.queue_number = 2
         self.dut.kill_all()
         self.number_of_ports = 1
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost_pmd_session)
+        self.virtio_user_pmd = PmdOutput(self.dut)
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.testpmd_name = self.app_testpmd_path.split("/")[-1]
 
@@ -91,15 +93,13 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        testcmd = self.app_testpmd_path + " "
-        vdev = 'net_vhost0,iface=vhost-net,queues=2,client=0'
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list[2:5], prefix='vhost', ports=[self.pci_info],
-                                                    vdevs=[vdev])
-        para = " -- -i --nb-cores=2 --rxq=%s --txq=%s --rss-ip" % (self.queue_number, self.queue_number)
-        command_line_vhost = testcmd + eal_params + para
-        self.vhost.send_expect(command_line_vhost, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
-        self.vhost.send_expect("start", "testpmd> ", 120)
+        vdev = "'net_vhost0,iface=vhost-net,queues=2,client=0'"
+        param = "--nb-cores=2 --rxq={} --txq={} --rss-ip".format(self.queue_number, self.queue_number)
+        self.vhost_pmd.start_testpmd(cores=self.core_list[2:5], param=param, \
+                eal_param="-w {} --file-prefix=vhost --vdev {}".format(self.pci_info, vdev))
+
+        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("start", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
@@ -110,21 +110,25 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         start testpmd in vm depend on different path
         """
-        testcmd = self.app_testpmd_path + " "
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list[5:8], prefix='virtio', no_pci=True,
-                                                    vdevs=[vdevs])
+        eal_params = "--vdev {}".format(vdevs)
         if self.check_2M_env:
             eal_params += " --single-file-segments"
+        if 'vectorized_path' in self.running_case:
+            eal_params += " --force-max-simd-bitwidth=512"
         if vector_flag:
-            para = " -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq=%s --txq=%s --rss-ip" % (
-            self.queue_number, self.queue_number)
+            # split_ring_vector_rx_path don't use enable-hw-vlan-strip params in testplan
+            param = "--tx-offloads=0x0 --rss-ip --nb-cores=2 --rxq={} --txq={}".format(self.queue_number, self.queue_number)
         else:
-            para = " -- -i --tx-offloads=0x0 --rss-ip --nb-cores=2 --rxq=%s --txq=%s --rss-ip" % (
-            self.queue_number, self.queue_number)
-        command_line_user = testcmd + eal_params + para
-        self.dut.send_expect(command_line_user, "testpmd> ", 30)
-        self.dut.send_expect("set fwd mac", "testpmd> ", 30)
-        self.dut.send_expect("start", "testpmd> ", 30)
+            param = "--tx-offloads=0x0 --enable-hw-vlan-strip --rss-ip --nb-cores=2 --rxq={} --txq={}".format(self.queue_number, self.queue_number)
+
+        if 'packed_ring' in self.running_case:
+            # packed_ring case use txd&rxd in testplan
+            param += " --txd=255 --rxd=255"
+
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list[5:8], param=param, eal_param=eal_params, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 30)
+        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 30)
 
     def check_port_link_status_after_port_restart(self):
         """
@@ -133,7 +137,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         loop = 1
         port_status = 'down'
         while (loop <= 5):
-            out = self.vhost.send_expect("show port info 0", "testpmd> ", 120)
+            out = self.vhost_pmd.execute_cmd("show port info 0", "testpmd> ", 120)
             port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
             if ("down" not in port_status):
                 break
@@ -143,12 +147,12 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
 
     def port_restart(self, restart_times=1):
         for i in range(restart_times):
-            self.vhost.send_expect("stop", "testpmd> ", 120)
-            self.vhost.send_expect("port stop 0", "testpmd> ", 120)
-            self.vhost.send_expect("clear port stats 0", "testpmd> ", 120)
-            self.vhost.send_expect("port start 0", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("stop", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("port stop 0", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("clear port stats 0", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("port start 0", "testpmd> ", 120)
             self.check_port_link_status_after_port_restart()
-            self.vhost.send_expect("start", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("start", "testpmd> ", 120)
 
     def update_table_info(self, case_info, frame_size, Mpps, throughtput, Cycle):
         results_row = [frame_size]
@@ -212,7 +216,7 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         check each queue has receive packets
         """
-        out = self.dut.send_expect("stop", "testpmd> ", 60)
+        out = self.virtio_user_pmd.execute_cmd("stop", "testpmd> ", 60)
         p = re.compile("RX Port= 0/Queue= (\d+) -> TX Port= 0/Queue= \d+.*\n.*RX-packets:\s?(\d+).*TX-packets:\s?(\d+)")
         res = p.findall(out)
         self.res_queues = sorted([int(i[0]) for i in res])
@@ -222,14 +226,14 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
                     "frame_size: %s, expect %s queues to handle packets, result %s queues" % (frame_size, list(range(self.queue_number)), self.res_queues))
         self.verify(all(self.res_rx_pkts), "each queue should has rx packets, result: %s" % self.res_rx_pkts)
         self.verify(all(self.res_tx_pkts), "each queue should has tx packets, result: %s" % self.res_tx_pkts)
-        self.dut.send_expect("start", "testpmd> ", 60)
+        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 60)
 
     def close_all_testpmd(self):
         """
         close testpmd about vhost-user and vm_testpmd
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.dut.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 10)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 10)
 
     def test_perf_pvp_2queues_test_with_packed_ring_mergeable_path(self):
         self.start_vhost_testpmd()
@@ -275,14 +279,14 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
 
     def test_perf_pvp_2queues_test_with_split_ring_vector_rx_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=255", vector_flag=True)
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,in_order=0,mrg_rxbuf=0,vectorized=1", vector_flag=True)
         self.send_and_verify("split_ring_vector_rx")
         self.close_all_testpmd()
         self.result_table_print()
 
     def test_perf_pvp_2queues_test_with_packed_ring_inorder_mergeable_path(self):
         self.start_vhost_testpmd()
-        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255")
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=255")
         self.send_and_verify("packed_ring_inorder_mergeable")
         self.close_all_testpmd()
         self.result_table_print()
@@ -291,6 +295,16 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         self.start_vhost_testpmd()
         self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255")
         self.send_and_verify("packed_ring_inorder_nonmergeable")
+        self.close_all_testpmd()
+        self.result_table_print()
+
+    def test_perf_pvp_2queues_test_with_packed_ring_vectorized_path(self):
+        """
+        Test Case 10: pvp 2 queues test with packed ring vectorized path
+        """
+        self.start_vhost_testpmd()
+        self.start_virtio_user_testpmd(vdevs="net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1,queue_size=255")
+        self.send_and_verify("packed_ring_vectorized_path")
         self.close_all_testpmd()
         self.result_table_print()
 
@@ -305,4 +319,4 @@ class TestPVPVirtioUserMultiQueuesPortRestart(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.close_session(self.vhost)
+        self.dut.close_session(self.vhost_pmd_session)
