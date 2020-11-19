@@ -43,6 +43,7 @@ import re
 import json
 import rst
 import os
+from pmd_output import PmdOutput
 from copy import deepcopy
 from test_case import TestCase
 from settings import UPDATE_EXPECTED, load_global_setting
@@ -70,6 +71,8 @@ class TestPerfVirtioUserLoopback(TestCase):
 
         self.vhost = self.dut.new_session(suite="vhost")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost)
+        self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
         self.save_result_flag = True
         self.json_obj = dict()
         self.path=self.dut.apps_name['test-pmd']
@@ -106,36 +109,31 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         start testpmd on vhost
         """
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_host,
-                        no_pci=True, prefix='vhost')
-        command_line_client = self.path + " %s " + \
-                              "--socket-mem %s --vdev " + \
-                              "'net_vhost0,iface=vhost-net,queues=%d' -- -i --nb-cores=%d " + \
-                              "--rxq=%d --txq=%d --txd=%d --rxd=%d"
-        command_line_client = command_line_client % (
-            eal_params, self.socket_mem, self.queue_number,
-            self.nb_cores, self.queue_number, self.queue_number,
-            nb_desc, nb_desc)
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
+        vdevs = "'net_vhost0,iface=vhost-net,queues={},client=0'".format(self.queue_number)
+        eal_params = "--socket-mem {} --vdev {}".format(self.socket_mem, vdevs)
+        param = "--nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(self.nb_cores, self.queue_number, self.queue_number, nb_desc, nb_desc)
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def start_virtio_testpmd(self, nb_desc, args):
         """
         start testpmd on virtio
         """
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_user,
-                        no_pci=True, prefix='virtio')
-        command_line_user = self.path+ " %s " + \
-                            " --socket-mem %s " + \
-                            "--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s " + \
-                            "-- -i %s --rss-ip --nb-cores=%d --rxq=%d --txq=%d --txd=%d --rxd=%d"
-        command_line_user = command_line_user % (
-            eal_params, self.socket_mem,
-            self.queue_number, args["version"], args["path"], self.nb_cores,
-            self.queue_number, self.queue_number, nb_desc, nb_desc)
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
-        self.virtio_user.send_expect("start", "testpmd> ", 120)
+        eal_param = "--socket-mem {} --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues={},{}".format(self.socket_mem, self.queue_number, args["version"])
+        if self.check_2M_env:
+            eal_param += " --single-file-segments"
+        if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        param = "{} --rss-ip --nb-cores={} --rxq={} --txq={} --txd={} --rxd={}".format(args["path"], self.nb_cores, self.queue_number, self.queue_number, nb_desc, nb_desc)
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
+
+    @property
+    def check_2M_env(self):
+        out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
+        return True if out == '2048' else False
 
     def calculate_avg_throughput(self):
         """
@@ -143,10 +141,10 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         results = 0.0
         results_row = []
-        out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
+        out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
         time.sleep(5)
         for i in range(10):
-            out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
             time.sleep(5)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -161,22 +159,22 @@ class TestPerfVirtioUserLoopback(TestCase):
         """
         for frame_size in self.frame_sizes:
             self.throughput[frame_size] = dict()
-            self.vhost.send_expect("set txpkts %d" % frame_size, "testpmd> ", 30)
-            self.vhost.send_expect("start tx_first 32", "testpmd> ", 30)
+            self.vhost_pmd.execute_cmd("set txpkts %d" % frame_size, "testpmd> ", 30)
+            self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 30)
             Mpps = self.calculate_avg_throughput()
             self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
             self.throughput[frame_size][nb_desc] = Mpps
             self.logger.info("Trouthput of " +
                              "framesize: {}, rxd/txd: {} is :{} Mpps".format(
                                  frame_size, nb_desc, Mpps))
-            self.vhost.send_expect("stop", "testpmd> ", 60)
+            self.vhost_pmd.execute_cmd("stop", "testpmd> ", 60)
 
     def close_all_testpmd(self):
         """
         close all testpmd of vhost and virtio
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
 
     def close_all_session(self):
         """
@@ -418,6 +416,22 @@ class TestPerfVirtioUserLoopback(TestCase):
         self.start_vhost_testpmd(nb_desc)
         self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
         self.send_and_verify(nb_desc, "virtio vector rx")
+        self.close_all_testpmd()
+        self.handle_expected()
+        self.handle_results()
+
+    def test_perf_loopback_packed_ring_vectorized_path(self):
+        """
+        Test Case 10: loopback test with packed ring vectorized path
+        """
+        self.test_target = "packed_ring_vectorized_path"
+        virtio_pmd_arg = {"version": "packed_vq=1,in_order=1,mrg_rxbuf=0,vectorized=1",
+                          "path": "--tx-offloads=0x0"}
+        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
+        nb_desc = self.test_parameters[64][0]
+        self.start_vhost_testpmd(nb_desc)
+        self.start_virtio_testpmd(nb_desc, virtio_pmd_arg)
+        self.send_and_verify(nb_desc, "virtio_1.1 vectorized")
         self.close_all_testpmd()
         self.handle_expected()
         self.handle_results()
