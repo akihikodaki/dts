@@ -2622,6 +2622,58 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_TCP
 
 7. repeat step 2, packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
 
+Test case: co-exist L3 IPv4/IPv6_GTPU_EH
+========================================
+
+Subcase 1: co-exist L3 IPV4/IPV6_GTPU_EH_IPV4
+---------------------------------------------
+
+Rule 1::
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+Rule 2::
+    flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+Packets::
+
+    pkt1=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)
+    pkt2=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)
+    pkt3=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.3")/("X"*480)
+    pkt4=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.3")/("X"*480)
+
+1. Rule1 and rule2 only have outer layer 3 difference.
+2. Send rule1 matched pkt1, mark queue id as Q1, use default input to do hash.
+3. Send rule2 matched pkt2, mark queue id as Q2, use default input to do hash.
+4. Create rule 1.
+5. Send rule1 matched pkt1, mark queue id as Q3.
+6. Check Q3 is different from Q1, use rule1 input set to do hash.
+7. Send rule2 matched pkt2, mark queue id as Q4.
+8. Check Q4 is same as Q2, still use default input to do hash, not use rule1 input set.
+9. Send rule1 nomatched pkt3, change src IP address, mark queue id as Q5.
+10. Check Q5 is same as Q3.
+11. Flush flow list.
+12. Create rule 2.
+13. Send rule2 matched pkt2, mark queue id as Q6.
+14. Check Q6 is different from Q2, use rule2 input set to do hash.
+15. Send rule1 matched pkt1, mark queue id as Q7.
+16. Check Q7 is same as Q1, still use default input set to do hash, not use rule2 input set.
+17. Send rule2 nomatched pkt4, change src IP address, mark queue id as Q8.
+18. Check Q8 is same as Q6.
+
+Subcase 2: co-exist L3 IPV4/IPV6_GTPU_EH_IPV6
+---------------------------------------------
+
+Rule 1::
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+rule 2::
+    flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
+
+Packets::
+
+    pkt1=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::12", src="::35")/("X"*480)
+    pkt2=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::12", src="::35")/("X"*480)
+    pkt3=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::13", src="::35")/("X"*480)
+    pkt4=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::13", src="::35")/("X"*480)
+Test steps are same as subcase 1.
 
 Test case: toeplitz and symmetric rules combination
 ===================================================
