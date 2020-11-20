@@ -38,6 +38,7 @@ Test loopback virtio-user server mode
 import utils
 import time
 import re
+from pmd_output import PmdOutput
 from test_case import TestCase
 
 
@@ -74,15 +75,17 @@ class TestLoopbackVirtioUserServerMode(TestCase):
 
         self.vhost = self.dut.new_session(suite="vhost")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost)
+        self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
 
     def lanuch_vhost_testpmd(self, queue_number=1, nb_cores=1, extern_params=""):
         """
         start testpmd on vhost
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,client=1,queues=%d' % queue_number])
-        command_line_client = self.path + eal_param + " -- -i --rxq=%d --txq=%d --nb-cores=%d %s" % (queue_number, queue_number, nb_cores, extern_params)
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
+        eal_params = "--vdev 'net_vhost0,iface=vhost-net,client=1,queues={}'".format(queue_number)
+        param = "--rxq={} --txq={} --nb-cores={} {}".format(queue_number, queue_number, nb_cores, extern_params)
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
@@ -93,12 +96,15 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         start testpmd of vhost user
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=1,%s' % args["version"]])
+        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=1,{}'".format(args["version"])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.path + eal_param + " -- -i --rxq=1 --txq=1 --no-numa"
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
+        if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        param = "--rxq=1 --txq=1 --no-numa"
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def lanuch_vhost_testpmd_with_multi_queue(self, extern_params=""):
         """
@@ -110,12 +116,15 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         start testpmd of vhost user
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues=%d,%s' % (self.queue_number, mode)])
+        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=vhost-net,server=1,queues={},{}'".format(self.queue_number, mode)
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.path + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d" % (extern_params, self.nb_cores, self.queue_number, self.queue_number)
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
+        if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        param = "{} --nb-cores={} --rxq={} --txq={}".format(extern_params, self.nb_cores, self.queue_number, self.queue_number)
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def start_to_send_packets(self, session_rx, session_tx):
         """
@@ -131,7 +140,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         loop = 1
         while(loop <= 5):
-            out = self.vhost.send_expect("show port stats 0", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats 0", "testpmd>", 60)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             if result == "0":
@@ -146,7 +155,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         loop = 1
         while(loop <= 5):
-            out = self.vhost.send_expect("show port info all", "testpmd> ", 120)
+            out = self.vhost_pmd.execute_cmd("show port info all", "testpmd> ", 120)
             port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
             if("down" not in port_status):
                 break
@@ -163,21 +172,21 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             res.group(1))
 
     def port_restart(self):
-        self.vhost.send_expect("stop", "testpmd> ", 120)
-        self.vhost.send_expect("port stop 0", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("stop", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("port stop 0", "testpmd> ", 120)
         self.check_port_throughput_after_port_stop()
-        self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
-        self.vhost.send_expect("port start 0", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("port start 0", "testpmd> ", 120)
         self.check_port_link_status_after_port_restart()
-        self.vhost.send_expect("start tx_first 32", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 120)
 
     def relanuch_vhost_testpmd_with_multi_queue(self):
-        self.vhost.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
         self.check_link_status(self.virtio_user, "down")
         self.lanuch_vhost_testpmd_with_multi_queue()
 
     def relanuch_virtio_testpmd_with_multi_queue(self, mode, extern_params=""):
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
         self.check_link_status(self.vhost, "down")
         self.lanuch_virtio_user_testpmd_with_multi_queue(mode, extern_params)
 
@@ -187,9 +196,9 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         results = 0.0
         results_row = []
-        self.vhost.send_expect("show port stats all", "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
         for i in range(10):
-            out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
             time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -208,7 +217,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         check all the queue has receive packets
         """
-        out = self.vhost.send_expect("stop", "testpmd> ", 60)
+        out = self.vhost_pmd.execute_cmd("stop", "testpmd> ", 60)
         for queue_index in range(0, self.queue_number):
             queue = "Queue= %d" % queue_index
             index = out.find(queue)
@@ -224,8 +233,8 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         """
         close testpmd about vhost-user and virtio-user
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
 
     def close_all_session(self):
         """
