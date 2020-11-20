@@ -40,6 +40,7 @@ Inorder_no_mergeable, VIRTIO1.1_mergeable, VIRTIO1.1_normal Path.
 import utils
 import time
 import re
+from pmd_output import PmdOutput
 from test_case import TestCase
 
 
@@ -74,6 +75,8 @@ class TestLoopbackPortRestart(TestCase):
 
         self.vhost = self.dut.new_session(suite="vhost")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost)
+        self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
 
     def start_vhost_testpmd(self):
         """
@@ -81,10 +84,10 @@ class TestLoopbackPortRestart(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=1,client=0'])
-        command_line_client = self.path + eal_param + " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
+        eal_params = "--vdev 'net_vhost0,iface=vhost-net,queues=1,client=0'"
+        param = "--nb-cores=1 --txd=1024 --rxd=1024"
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
@@ -95,13 +98,17 @@ class TestLoopbackPortRestart(TestCase):
         """
         start testpmd of vhost user
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,%s' % pmd_arg["version"]])
+        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,{}'".format(pmd_arg["version"])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.path + eal_param + " -- -i %s --rss-ip --nb-cores=1 --txd=1024 --rxd=1024" % pmd_arg["path"]
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
-        self.virtio_user.send_expect("start", "testpmd> ", 120)
+        if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        param = "{} --rss-ip --nb-cores=1 --txd=1024 --rxd=1024".format(pmd_arg["path"])
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
 
     def check_port_throughput_after_port_stop(self):
         """
@@ -109,7 +116,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         loop = 1
         while(loop <= 5):
-            out = self.vhost.send_expect("show port stats 0", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats 0", "testpmd>", 60)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
             if result == "0":
@@ -124,7 +131,7 @@ class TestLoopbackPortRestart(TestCase):
         """
         loop = 1
         while(loop <= 5):
-            out = self.vhost.send_expect("show port info all", "testpmd> ", 120)
+            out = self.vhost_pmd.execute_cmd("show port info all", "testpmd> ", 120)
             port_status = re.findall("Link\s*status:\s*([a-z]*)", out)
             if("down" not in port_status):
                 break
@@ -134,20 +141,20 @@ class TestLoopbackPortRestart(TestCase):
 
     def port_restart(self, restart_times=1):
         if restart_times == 1:
-            self.vhost.send_expect("stop", "testpmd> ", 120)
-            self.vhost.send_expect("port stop 0", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("stop", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("port stop 0", "testpmd> ", 120)
             self.check_port_throughput_after_port_stop()
-            self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
-            self.vhost.send_expect("port start all", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 120)
+            self.vhost_pmd.execute_cmd("port start all", "testpmd> ", 120)
         else:
             for i in range(restart_times):
-                self.vhost.send_expect("stop", "testpmd> ", 120)
-                self.vhost.send_expect("port stop 0", "testpmd> ", 120)
-                self.vhost.send_expect("clear port stats all", "testpmd> ", 120)
-                self.vhost.send_expect("port start all", "testpmd> ", 120)
+                self.vhost_pmd.execute_cmd("stop", "testpmd> ", 120)
+                self.vhost_pmd.execute_cmd("port stop 0", "testpmd> ", 120)
+                self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 120)
+                self.vhost_pmd.execute_cmd("port start all", "testpmd> ", 120)
         self.check_port_link_status_after_port_restart()
-        self.vhost.send_expect("set burst 1", "testpmd> ", 120)
-        self.vhost.send_expect("start tx_first 1", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("set burst 1", "testpmd> ", 120)
+        self.vhost_pmd.execute_cmd("start tx_first 1", "testpmd> ", 120)
 
     def update_table_info(self, case_info, frame_size, Mpps, Cycle):
         results_row = [frame_size]
@@ -161,9 +168,9 @@ class TestLoopbackPortRestart(TestCase):
         calculate the average throughput
         """
         results = 0.0
-        self.vhost.send_expect("show port stats all", "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
         for i in range(10):
-            out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
             time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -177,8 +184,8 @@ class TestLoopbackPortRestart(TestCase):
         start to send packets and calculate the average throughput
         """
         # start to send packets
-        self.vhost.send_expect("set txpkts %s" % frame_size, "testpmd>", 60)
-        self.vhost.send_expect("start tx_first 32", "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("set txpkts %s" % frame_size, "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd>", 60)
         Mpps = self.calculate_avg_throughput()
         self.update_table_info(case_info, frame_size, Mpps, "Before Restart")
 
@@ -190,8 +197,8 @@ class TestLoopbackPortRestart(TestCase):
         """
         close testpmd about vhost-user and virtio-user
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
 
     def close_all_session(self):
         """
