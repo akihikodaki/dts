@@ -39,6 +39,7 @@ Inorder no-mergeable, Virtio 1.1 mergeable, Virtio 1.1 no-mergeable Path.
 import utils
 import time
 import re
+from pmd_output import PmdOutput
 from test_case import TestCase
 
 
@@ -75,6 +76,8 @@ class TestLoopbackMultiQueues(TestCase):
 
         self.vhost = self.dut.new_session(suite="vhost")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost)
+        self.virtio_user_pmd = PmdOutput(self.dut, self.virtio_user)
 
     def get_core_mask(self):
         """
@@ -90,10 +93,10 @@ class TestLoopbackMultiQueues(TestCase):
         """
         start testpmd on vhost
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost', no_pci=True, vdevs=['net_vhost0,iface=vhost-net,queues=%d' % self.queue_number])
-        command_line_client = self.path + eal_param + " -- -i --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (self.nb_cores, self.queue_number, self.queue_number)
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
+        eal_params = "--vdev 'net_vhost0,iface=vhost-net,queues={}'".format(self.queue_number)
+        param = "--nb-cores={} --rxq={} --txq={} --txd=1024 --rxd=1024".format(self.nb_cores, self.queue_number, self.queue_number)
+        self.vhost_pmd.start_testpmd(self.core_list_host, param=param, no_pci=True, ports=[], eal_param=eal_params, prefix='vhost', fixed_prefix=True)
+        self.vhost_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     @property
     def check_2M_env(self):
@@ -104,22 +107,26 @@ class TestLoopbackMultiQueues(TestCase):
         """
         start testpmd on virtio
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio', no_pci=True, vdevs=['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=%d,%s' % (self.queue_number, args["version"])])
+        eal_param = "--vdev 'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues={},{}'".format(self.queue_number, args["version"])
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = self.path + eal_param + " -- -i %s --nb-cores=%d --rxq=%d --txq=%d --txd=1024 --rxd=1024" % (args["path"], self.nb_cores, self.queue_number, self.queue_number)
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd mac", "testpmd> ", 120)
-        self.virtio_user.send_expect("start", "testpmd> ", 120)
+        if 'vectorized_path' in self.running_case:
+            eal_param += " --force-max-simd-bitwidth=512"
+        param = "{} --nb-cores={} --rxq={} --txq={} --txd=1024 --rxd=1024".format(args["path"], self.nb_cores, self.queue_number, self.queue_number)
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
+
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+        self.virtio_user_pmd.execute_cmd("start", "testpmd> ", 120)
 
     def calculate_avg_throughput(self):
         """
         calculate the average throughput
         """
         results = 0.0
-        self.vhost.send_expect("show port stats all", "testpmd>", 60)
+        self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
         for i in range(10):
-            out = self.vhost.send_expect("show port stats all", "testpmd>", 60)
+            out = self.vhost_pmd.execute_cmd("show port stats all", "testpmd>", 60)
             time.sleep(1)
             lines = re.search("Rx-pps:\s*(\d*)", out)
             result = lines.group(1)
@@ -143,7 +150,7 @@ class TestLoopbackMultiQueues(TestCase):
         """
         check each queue has receive packets
         """
-        out = self.vhost.send_expect("stop", "testpmd> ", 60)
+        out = self.vhost_pmd.execute_cmd("stop", "testpmd> ", 60)
         for queue_index in range(0, self.queue_number):
             queue = "Queue= %d" % queue_index
             index = out.find(queue)
@@ -157,15 +164,15 @@ class TestLoopbackMultiQueues(TestCase):
                    "frame_size:%d, rx-packets:%d, tx-packets:%d" %
                    (frame_size, rx_packets, tx_packets))
 
-        self.vhost.send_expect("clear port stats all", "testpmd> ", 60)
+        self.vhost_pmd.execute_cmd("clear port stats all", "testpmd> ", 60)
 
     def send_and_verify(self, case_info):
         """
         start to send packets and calculate avg throughput
         """
         for frame_size in self.frame_sizes:
-            self.vhost.send_expect("set txpkts %d" % frame_size, "testpmd> ", 30)
-            self.vhost.send_expect("start tx_first 32", "testpmd> ", 30)
+            self.vhost_pmd.execute_cmd("set txpkts %d" % frame_size, "testpmd> ", 30)
+            self.vhost_pmd.execute_cmd("start tx_first 32", "testpmd> ", 30)
             Mpps = self.calculate_avg_throughput()
             self.update_result_table(frame_size, case_info, Mpps)
             if self.queue_number > 1:
@@ -186,8 +193,8 @@ class TestLoopbackMultiQueues(TestCase):
         """
         close all testpmd of vhost and virtio
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.vhost_pmd.execute_cmd("quit", "#", 60)
+        self.virtio_user_pmd.execute_cmd("quit", "#", 60)
 
     def close_all_session(self):
         """
