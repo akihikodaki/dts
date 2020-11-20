@@ -3018,45 +3018,6 @@ class TestCVLFdir(TestCase):
         out3 = self.send_pkts_getouput(pkts='Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.22",dst="192.168.0.23") / Raw("x" * 80)', port_id=0, count=1)
         rfc.check_mark(out3, pkt_num=1, check_param={"port_id": 0, "queue": 2, "mark_id": 1}, stats=True)
 
-    def test_add_delete_rules(self):
-        self.pmd_output.execute_cmd("stop")
-        self.dut.send_command("quit", timeout=2)
-        cmd_path = '/tmp/add_delete_rules'
-        cmds = [
-                   'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end',
-                   'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end',
-                   'flow list 0', 'flow flush 0'] * 15360
-        cmds_li = map(lambda x: x + os.linesep, cmds)
-        with open(cmd_path, 'w') as f:
-            f.writelines(cmds_li)
-        self.dut.session.copy_file_to(cmd_path, cmd_path)
-        try:
-            eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[self.pci0, self.pci1], socket=self.ports_socket)
-            param = " --log-level='ice,7' -- -i --portmask=%s --rxq=%d --txq=%d --port-topology=loop --cmdline-file=%s" % (
-                self.portMask, 64, 64, cmd_path)
-            command_line = self.dut.apps_name['test-pmd'] + eal_param + param
-            out = self.dut.send_expect(command_line, 'testpmd>', timeout=600)
-            self.verify('Failed to create file' not in out, "create some rule failed: %s" % out)
-            self.config_testpmd()
-            self.pmd_output.execute_cmd('start')
-            rules = [
-                'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end',
-                'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end']
-            rule_li = self.create_fdir_rule(rule=rules, check_stats=True)
-            self.check_fdir_rule(port_id=0, stats=True, rule_list=rule_li)
-            pkts = [
-                'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw("x" * 80)',
-                'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw("x" * 80)']
-            out1 = self.send_pkts_getouput(pkts=pkts[0], port_id=0, count=1)
-            rfc.check_mark(out1, pkt_num=1, check_param={"port_id": 0, "queue": 1, "mark_id": 0}, stats=True)
-            out2 = self.send_pkts_getouput(pkts=pkts[1], port_id=0, count=1)
-            rfc.check_mark(out2, pkt_num=1, check_param={"port_id": 0, "queue": [2, 3], "mark_id": 1}, stats=True)
-        except Exception as e:
-            raise Exception(e)
-        finally:
-            self.dut.kill_all()
-            self.launch_testpmd_with_mark()
-
     def test_delete_rules(self):
         rules = [
             'flow create 0 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark / end',
