@@ -3967,220 +3967,7 @@ All the max number cases are designed based on 2*100G NIC.
 If the hardware is 4*25G NIC, the guaranteed rule number of PF is 512.
 So in subcase 3 and subcase 4, there can be created at most 14848 rules on 1pf and 2vfs.
 
-Subcase 1: 14336 rules on 1 vf
-------------------------------
-
-1. create 14336 rules on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.1 / end actions queue index 1 / mark / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.255 / end actions queue index 1 / mark / end
-
-   all the rules are created successfully.
-
-2. create one more rule::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 1 / mark / end
-
-   the rule failed to create. return the error message.
-
-3. check the rule list, there are 14336 rules listed.
-
-4. send matched packets for rule 0 and rule 14335::
-
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.0")/Raw('x' * 80)],iface="enp134s0f1")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.55.255")/Raw('x' * 80)],iface="enp134s0f1")
-
-   check all packets are redirected to expected queue with FDIR matched ID=0x0
-
-5. create a rule on vf01, it failed,
-   check the error message, the rule number has expired the max rule number.
-
-6. create a rule on vf10, it failed,
-   check the error message, the rule number has expired the max rule number.
-
-7. flush all the rules, check the rule list,
-   there is no rule listed.
-
-8. verify matched packets for rule 0  and rule 14335 received without FDIR matched ID.
-
-Subcase 2: 14336 rules on 2 vfs of 2pfs
----------------------------------------
-
-1. start testpmd on vf00::
-
-    ./testpmd -c 0xf -n 6 -w 86:01.0 --file-prefix=vf00 -- -i --rxq=4 --txq=4
-
-   create 1 rule on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   created successfully, check the rule is listed.
-
-2. start testpmd on vf10::
-
-    ./testpmd -c 0xf0 -n 6 -w 86:0a.0 --file-prefix=vf10 -- -i --rxq=4 --txq=4
-
-   create 14336 rules on vf10::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.1 / end actions queue index 1 / mark / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.255 / end actions queue index 1 / mark / end
-
-   all the rules except the last one are created successfully.
-   check the rule list, there listed 14335 rules.
-
-3. send matched packet to vf00 and matched packet for rule 14334 to vf10,
-   check all packets are redirected to expected queue with FDIR matched ID=0x0
-
-4. flush all the rules, check the rule list,
-   there is no rule listed.
-
-5. verify matched packet received without FDIR matched ID.
-
-Subcase 3: 1025 rules on 1pf and 14335 rules on 2vfs
-----------------------------------------------------
-each pf can create 1024 rules at least in 2 ports card.
-each pf can create 512 rules at least in 4 ports card.
-there are 14k rules shared by pfs and vfs.
-so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card.
-1 pf and 2 vfs can create 14848 rules at most on 4 ports card.
-
-1. create 1025 rules on pf0::
-
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.1 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-    ......
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.3.255 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.4.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-
-   all the rules can be created successfully::
-
-    Added rule with ID <Rule ID>
-
-   List the rules on pf0::
-
-    ethtool -n enp134s0f0
-
-2. start testpmd on vf00::
-
-    ./testpmd -c 0xf -n 6 -w 86:01.0 --file-prefix=vf00 -- -i --rxq=4 --txq=4
-
-   create 1 rule on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   created successfully, check the rule is listed.
-
-2. start testpmd on vf10::
-
-    ./testpmd -c 0xf0 -n 6 -w 86:0a.0 --file-prefix=vf10 -- -i --rxq=4 --txq=4
-
-   create 14335 rules on vf10::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.1 / end actions queue index 1 / mark / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.254 / end actions queue index 1 / mark / end
-
-   all the rules except the last one are created successfully.
-   check the rule list, there listed 14334 rules.
-
-3. send matched packet to vf00 and matched packet for rule 14333 to vf10,
-   check all packets are redirected to expected queue with FDIR matched ID=0x0
-
-4. delete 1 rule on pf0::
-
-    ethtool -N enp134s0f0 delete <Rule ID>
-
-5. create one more rule on vf10::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.254 / end actions queue index 1 / mark / end
-
-   the rule can be created successfully.
-
-6. send matched packet to vf10, it can be redirected to queue 1 with FDIR matched ID=0x0.
-
-7. flush all the rules, check the rule list,
-   there is no rule listed.
-
-8. verify matched packet received without FDIR matched ID.
-
-Subcase 4: 15360 rules on 1pf and 0 rules on 2vfs
--------------------------------------------------
-each pf can create 1024 rules at least in 2 ports card.
-each pf can create 512 rules at least in 4 ports card.
-there are 14k rules shared by pfs and vfs.
-so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card.
-1 pf and 2 vfs can create 14848 rules at most on 4 ports card.
-so if create 15360/14848 rules on 1 pf, there can't create rule on vf successfully.
-
-1. create 15360 rules on pf0::
-
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.0.1 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-    ......
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.57.255 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-
-   all the rules can be created successfully::
-
-    Added rule with ID <Rule ID>
-
-2. failed to create one more rule on pf0::
-
-    ethtool -N enp134s0f0 flow-type tcp4 src-ip 192.168.58.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8
-
-3. start testpmd on vf00 and vf10::
-
-    ./testpmd -c 0xf -n 6 -w 86:01.0 -w 86:11.0 --file-prefix=vf00 -- -i --rxq=4 --txq=4
-
-   create 1 rule on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   failed to create the rule, check there is no rule listed.
-
-   create 1 rule on vf10::
-
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   failed to create the rule, check there is no rule listed.
-
-4. delete 1 rule on pf0::
-
-    ethtool -N enp134s0f0 delete <Rule ID>
-
-5. create 1 rule on vf00::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.254 / end actions queue index 1 / mark / end
-
-   the rule can be created successfully.
-
-   create 1 rule on vf10::
-
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   failed to create the rule, check there is no rule listed.
-
-6. send matched packet to vf00, it can be redirected to queue 1 with FDIR matched ID=0x0.
-   send matched packet to vf10, it is received without FDIR matched ID.
-
-7. delete 1 more rule on pf0::
-
-    ethtool -N enp134s0f0 delete <Rule ID>
-
-8. create 1 rule on vf10::
-
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 1 / mark / end
-
-   the rule can be created successfully.
-
-9. send matched packet to vf00, it can be redirected to queue 1 with FDIR matched ID=0x0.
-   send matched packet to vf10, it can be redirected to queue 1 with FDIR matched ID=0x0.
-
-Subcase 5: 128 profiles
+Subcase 1: 128 profiles
 -----------------------
 
 1. create 16 vfs on pf0::
@@ -4286,84 +4073,7 @@ Subcase 1: port stop/port start
 
 5. verify matched packet can be still redirected to queue 1 with FDIR matched ID=0x0.
 
-Subcase 2: add/delete rules
----------------------------
-
-1. create two rules::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
-
-   return the message::
-
-    Flow rule #0 created
-    Flow rule #1 created
-
-   list the rules::
-
-    testpmd> flow list 0
-    ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 UDP => QUEUE MARK
-    1       0       0       i--     ETH IPV4 TCP => RSS MARK
-
-2. delete the rules::
-
-    testpmd> flow flush 0
-
-3. repeat the create and delete operations in step1-2 14336 times.
-
-4. create the two rules one more time, check the rules listed.
-
-5. send matched packet::
-
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
-
-   check packet 1 is redirected to queue 1 with FDIR matched ID=0x0
-   check packet 2 is redirected to queue 2 or queue 3 with FDIR matched ID=0x1
-
-Subcase 3: add/delete rules on two VFs
---------------------------------------
-
-1. create a rule on each vf::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.0.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end
-
-   return the message::
-
-    Flow rule #0 created
-    Flow rule #0 created
-
-   list the rules::
-
-    testpmd> flow list 0
-    ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 TCP => QUEUE
-    testpmd> flow list 1
-    ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 TCP => QUEUE
-
-2. delete the rules::
-
-    flow destroy 0 rule 0
-    flow destroy 1 rule 0
-
-3. repeate the create and delete operations in step1-2 14336 times with different IP src address.
-
-4. create the rule on each vf one more time, check the rules listed::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end
-    flow create 1 ingress pattern eth / ipv4 src is 192.168.56.0 dst is 192.1.0.0 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 5 / end
-
-5. send matched packet::
-
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.56.0",dst="192.1.0.0",tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
-    sendp([Ether(dst="00:11:22:33:44:66")/IP(src="192.168.56.0",dst="192.1.0.0",tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
-
-   check the packet is redirected to queue 5 of two vfs.
-
-Subcase 4: delete rules
+Subcase 2: delete rules
 -----------------------
 
 1. create 3 rules and destory the first rule::
@@ -4441,7 +4151,7 @@ Subcase 4: delete rules
 
    send packets match rule 0, rule 1 and rule 2, verify all packets are received without FDIR matched ID.
 
-Subcase 5: VF port reset and create a new rule
+Subcase 3: VF port reset and create a new rule
 ----------------------------------------------
 
 1. create a rule on vf00 and vf01::
@@ -4475,7 +4185,7 @@ Subcase 5: VF port reset and create a new rule
 
 7. send matched packets, check them redirected to expected queue with FDIR matched ID.
 
-Subcase 6: VF port reset and delete the rule
+Subcase 4: VF port reset and delete the rule
 --------------------------------------------
 
 1. create a rule on vf00 and vf01::
@@ -4511,7 +4221,7 @@ Subcase 6: VF port reset and delete the rule
 
 7. send matched packets, check them redirected to expected queue with FDIR matched ID.
 
-Subcase 7: PF reset VF and create a new rule
+Subcase 5: PF reset VF and create a new rule
 --------------------------------------------
 
 1. create a rule on vf00 and vf01::
@@ -4556,7 +4266,7 @@ Subcase 7: PF reset VF and create a new rule
 
 8. send matched packets, check them redirected to expected queue with FDIR matched ID.
 
-Subcase 8: PF reset VF and delete the rule
+Subcase 6: PF reset VF and delete the rule
 ------------------------------------------
 
 1. create a rule on vf00 and vf01::
@@ -4599,7 +4309,7 @@ Subcase 8: PF reset VF and delete the rule
 
 8. send matched packets, check them redirected to expected queue with FDIR matched ID.
 
-Subcase 9: check profile delete
+Subcase 7: check profile delete
 -------------------------------
 
 1. create ipv4-tcp and ipv6-udp rules::
