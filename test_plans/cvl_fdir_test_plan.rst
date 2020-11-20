@@ -3699,43 +3699,7 @@ Subcase 1: port stop/port start/port reset
 
    check the packet are redirected to queue 2 with FDIR matched ID=0x1
 
-Subcase 2: add/delete rules
----------------------------
-
-1. create two rules::
-
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 1 / mark / end
-    flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
-
-   return the message::
-
-    Flow rule #0 created
-    Flow rule #1 created
-
-   list the rules::
-
-    testpmd> flow list 0
-    ID      Group   Prio    Attr    Rule
-    0       0       0       i--     ETH IPV4 UDP => QUEUE MARK
-    1       0       0       i--     ETH IPV4 TCP => RSS MARK
-
-2. delete the rules::
-
-    testpmd> flow flush 0
-
-3. repeate the create and delete operations in step1-2 15360 times.
-
-4. create the two rules one more time, check the rules listed.
-
-5. send matched packet::
-
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/UDP(sport=22,dport=23)/Raw('x' * 80)],iface="enp175s0f0")
-    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.21")/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp175s0f0")
-
-   check packet 1 is redirected to queue 1 with FDIR matched ID=0x0
-   check packet 2 is redirected to queue 2 or queue 3 with FDIR matched ID=0x1
-
-Subcase 3: delete rules
+Subcase 2: delete rules
 -----------------------
 
 1. create 3 rules and destory the first rule::
