@@ -1838,6 +1838,9 @@ Test case: multirules IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 6. destroy IPV4_GTPU_IPV4 rule::
 
     flow destroy 0 rule 0
@@ -1905,12 +1908,16 @@ Test case: multirules IPV4_GTPU_EH_IPV4 with/without UL/DL
 
    check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 6. destroy IPV4_GTPU_EH_IPV4 rule::
 
     flow destroy 0 rule 1
 
 7. send same packets with step 5,
    packet 1-6 have not hash value.
+
 
 Test case: multirules IPV4_GTPU_EH_IPV4 without/with UL/DL
 ==========================================================
@@ -1958,12 +1965,16 @@ Test case: multirules IPV4_GTPU_EH_IPV4 without/with UL/DL
    check packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
 
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 10. destroy IPV4_GTPU_EH_IPV4 rule again::
 
      flow destroy 0 rule 2
 
 11. send same packets with step 3,
     packet 1-6 have not hash value, and distributed to queue 0.
+
 
 Test case: multirules IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
 =====================================================================
@@ -2011,8 +2022,9 @@ Test case: multirules IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
    check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
    check packet 11 has different hash value to packet 10, packet 12 have same hash value to packet 10.
 
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 7. destroy IPV4_GTPU_DL_IPV4_UDP rule::
 
     testpmd> flow destroy 0 rule 0
@@ -2032,6 +2044,7 @@ so the following step don't need to be run in dpdk-20.08.
     check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
     check packet 8 has different hash value to packet 7, packet 9 have different hash value to packet 7 and 8.
     check packet 10-12 have not hash value.
+
 
 Test case: multirules IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
 =====================================================================
@@ -2079,8 +2092,9 @@ Test case: multirules IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
    check packet 8 has same hash value to packet 7, packet 9 have different hash value to packet 7.
    check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
 
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 7. destroy the rule 1::
 
     testpmd> flow destroy 0 rule 1
@@ -2096,6 +2110,7 @@ so the following step don't need to be run in dpdk-20.08.
    check packet 5 has same hash value with packet 4, packet 6 has different hash value with packet 4.
    check packet 8 has same hash value to packet 7, packet 9 have different hash value to packet 7.
    check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
+
 
 Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
 ===================================================================================
@@ -2137,6 +2152,7 @@ Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL
    check packet 6 has same hash value to packet 5.
    check packet 7 has differnt hash value to packet 5.
 
+
 Test case: multirules IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
 ===============================================================
 1. start testpmd without disable rss::
@@ -2177,6 +2193,7 @@ Test case: multirules IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
    check packet 6 has same hash value to packet 5.
    check packet 7 has differnt hash value to packet 5.
 
+
 Test case: toeplitz and symmetric rules combination
 ===================================================
 Subcase: toeplitz/symmetric with same pattern
@@ -2213,8 +2230,9 @@ Subcase: toeplitz/symmetric with same pattern
 
 6. repeat step 2, check the toeplitz rule can't work now, but have hash value.
 
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 7. destroy the rule 1::
 
     testpmd> flow destroy 0 rule 1
@@ -2257,8 +2275,9 @@ Subcase: toeplitz/symmetric with same pattern (switched rule order)
 
 6. repeat step 2, check the symmetric rule can't work now, but have hash value.
 
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 7. destroy the rule 1::
 
     testpmd> flow destroy 0 rule 1
@@ -2300,6 +2319,9 @@ Subcase: toeplitz/symmetric with different pattern (different UL/DL)
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
 
 6. repeat step 2, check the toeplitz rule also can work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 7. destroy the rule 1::
 
@@ -2360,8 +2382,9 @@ Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)
 6. repeat step 2, check the toeplitz rule can work for UL packets, not work for DL packets.
    the DL and UL packets both have hash value.
 
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 7. destroy the rule 1::
 
     testpmd> flow destroy 0 rule 1
@@ -2418,6 +2441,9 @@ Subcase: toeplitz/symmetric with different pattern
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV6 => RSS
 
 6. repeat step 2, check the toeplitz rule also can work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 7. destroy the rule 1::
 
