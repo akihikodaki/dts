@@ -30,7 +30,12 @@
    ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
+========================
+CVL Limit Value Test
+========================
 
+Description
+===========
 
 Supported function type
 -----------------------
@@ -50,7 +55,6 @@ Supported action type
     passthru
     mark
     mark/rss
-
 
 Prerequisites
 =============
@@ -103,13 +107,14 @@ Prerequisites
     >>> from scapy.contrib.mpls import *
 
 Test case: Max number
-=====================
+======================
+
 All the max number cases are designed based on 2*100G NIC.
 If the hardware is 4*25G NIC, the guaranteed rule number of PF is 512.
 So in subcase 3 and subcase 4, there can be created at most 14848 rules on 1pf and 2vfs.
 
 Subcase 1: 14336 rules on 1 vf
-------------------------------
+-------------------------------
 
 1. create 14336 rules on vf00::
 
@@ -183,6 +188,7 @@ Subcase 2: 14336 rules on 2 vfs of 2pfs
 
 Subcase 3: 1025 rules on 1pf and 14335 rules on 2vfs
 ----------------------------------------------------
+
 each pf can create 1024 rules at least in 2 ports card.
 each pf can create 512 rules at least in 4 ports card.
 there are 14k rules shared by pfs and vfs.
@@ -249,8 +255,9 @@ so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card.
 
 8. verify matched packet received without FDIR matched ID.
 
-Subcase 3: 15360 rules on 1pf and 0 rules on 2vfs
+Subcase 4: 15360 rules on 1pf and 0 rules on 2vfs
 -------------------------------------------------
+
 each pf can create 1024 rules at least in 2 ports card.
 each pf can create 512 rules at least in 4 ports card.
 there are 14k rules shared by pfs and vfs.
@@ -320,7 +327,6 @@ so if create 15360/14848 rules on 1 pf, there can't create rule on vf successful
 
 9. send matched packet to vf00, it can be redirected to queue 1 with FDIR matched ID=0x0.
    send matched packet to vf10, it can be redirected to queue 1 with FDIR matched ID=0x0.
-
 
 Test case: Stress test
 ======================
@@ -436,7 +442,7 @@ Prerequisites
     ./testpmd -c 0xff -n 6 -w 86:00.0 -w 86:00.1 --log-level="ice,7" -- -i --portmask=0xff --rxq=64 --txq=64 --port-topology=loop
 
 Test case: add/delete rules
----------------------------
+============================
 
 1. create two rules::
 
