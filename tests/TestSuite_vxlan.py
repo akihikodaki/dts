@@ -43,6 +43,7 @@ import time
 import os
 from pmd_output import PmdOutput
 from packet import IncreaseIP, IncreaseIPv6
+from random import randint
 
 from scapy.utils import wrpcap, rdpcap
 from scapy.layers.inet import Ether, IP, TCP, UDP
@@ -66,6 +67,7 @@ import packet
 
 VXLAN_PORT = 4789
 PACKET_LEN = 128
+MAX_TXQ_RXQ = 4
 BIDIRECT = True
 
 
@@ -503,35 +505,12 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             self.verify(chksums[key] == chksums_ref[
                         key], "%s not matched to %s" % (key, chksums_ref[key]))
 
-    def filter_and_check(self, filter_type="imac-ivlan", queue_id=3,
-                         vlan=False, remove=False):
+    def filter_and_check(self, rule, config, queue_id):
         """
         send vxlan packet and check whether receive packet in assigned queue
         """
-        if vlan is not False:
-            config = VxlanTestConfig(self, inner_vlan=vlan)
-            vlan_id = vlan
-        else:
-            config = VxlanTestConfig(self)
-            vlan_id = 1
-
-        # now cloud filter will default enable L2 mac filter, so dst mac must
-        # be same
-        config.outer_mac_dst = self.dut_port_mac
-
-        args = [self.dut_port, config.outer_mac_dst, config.inner_mac_dst,
-                config.inner_ip_dst, vlan_id, filter_type, config.vni,
-                queue_id]
-
-        self.tunnel_filter_add(*args)
-
-        # invalid case request to remove tunnel filter
-        if remove is True:
-            queue_id = 0
-            args = [self.dut_port, config.outer_mac_dst, config.inner_mac_dst,
-                    config.inner_ip_dst, vlan_id, filter_type, config.vni,
-                    queue_id]
-            self.tunnel_filter_del(*args)
+        # create rule
+        self.tunnel_filter_add(rule)
 
         # send vxlan packet
         config.create_pcap()
@@ -549,6 +528,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # verify received in expected queue
         self.verify(queue_id == int(queue), "invalid receive queue")
 
+        # del rule
+        args = [self.dut_port]
+        self.tunnel_filter_del(*args)
         self.dut.send_expect("stop", "testpmd>", 10)
 
     def test_vxlan_ipv4_detect(self):
@@ -785,7 +767,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify tunnel filter feature
         """
         pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
+            "%(CHANNEL)d -- -i --disable-rss --rxq={} --txq={}".format(MAX_TXQ_RXQ, MAX_TXQ_RXQ) + \
             " --nb-cores=4 --portmask=%(PORT)s"
         pmd_cmd = pmd_temp % {'TARGET': self.path,
                               'COREMASK': self.coremask,
@@ -798,18 +780,56 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
 
-        # check inner mac + inner vlan filter can work
-        self.filter_and_check(filter_type="imac-ivlan", vlan=1)
-        # check inner mac + inner vlan + tunnel id filter can work
-        self.filter_and_check(filter_type="imac-ivlan-tenid", vlan=1)
-        # check inner mac + tunnel id filter can work
-        self.filter_and_check(filter_type="imac-tenid")
-        # check inner mac filter can work
-        self.filter_and_check(filter_type="imac")
-        # check outer mac + inner mac + tunnel id filter can work
-        self.filter_and_check(filter_type="omac-imac-tenid")
-        # iip not supported by now
-        # self.filter_and_check(filter_type="iip")
+        config = VxlanTestConfig(self)
+        config_vlan = VxlanTestConfig(self, inner_vlan=1)
+        config.outer_mac_dst = self.dut_port_mac
+        config_vlan.outer_mac_dst = self.dut_port_mac
+        expect_queue = randint(1, MAX_TXQ_RXQ - 1)
+
+        rule_list = [
+            # check inner mac + inner vlan filter can work
+            'flow create {} ingress pattern eth / ipv4 / udp / vxlan / eth dst is {} / vlan tci is {} / end actions pf '
+            '/ queue index {} / end'.format(self.dut_port,
+                                            config_vlan.inner_mac_dst,
+                                            config_vlan.inner_vlan,
+                                            expect_queue),
+            # check inner mac + inner vlan + tunnel id filter can work
+            'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} '
+            '/ vlan tci is {} / end actions pf / queue index {} / end'.format(self.dut_port,
+                                                                              config_vlan.vni,
+                                                                              config_vlan.inner_mac_dst,
+                                                                              config_vlan.inner_vlan,
+                                                                              expect_queue),
+            # check inner mac + tunnel id filter can work
+            'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} / end actions pf '
+            '/ queue index {} / end'.format(self.dut_port,
+                                            config.vni,
+                                            config.inner_mac_dst,
+                                            expect_queue),
+            # check inner mac filter can work
+            'flow create {} ingress pattern eth / ipv4 / udp / vxlan / eth dst is {} / end actions pf / queue index {} '
+            '/ end'.format(self.dut_port,
+                           config.inner_mac_dst,
+                           expect_queue),
+            # check outer mac + inner mac + tunnel id filter can work
+            'flow create {} ingress pattern eth dst is {} / ipv4 / udp / vxlan vni is {} / eth dst is {} '
+            '/ end actions pf / queue index {} / end'.format(self.dut_port,
+                                                             config.outer_mac_dst,
+                                                             config.vni,
+                                                             config.inner_mac_dst,
+                                                             expect_queue)
+            # iip not supported by now
+            # 'flow create {} ingress pattern eth / ipv4 / udp / vxlan / eth / ipv4 dst is {} / end actions pf '
+            # '/ queue index {} / end'.format(self.dut_port,
+            #                                 config.inner_ip_dst,
+            #                                 queue)
+        ]
+
+        for rule in rule_list:
+            if 'vlan tci is' in rule:
+                self.filter_and_check(rule, config_vlan, expect_queue)
+            else:
+                self.filter_and_check(rule, config, expect_queue)
 
         self.dut.send_expect("quit", "#", 10)
 
@@ -818,8 +838,6 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify tunnel filter parameter check function
         """
         # invalid parameter
-        vlan_id = 1
-        filter_type = 'omac-imac-tenid'
         queue_id = 3
 
         config = VxlanTestConfig(self)
@@ -836,27 +854,39 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
-        args = [self.dut_port, config.outer_mac_dst, self.invalid_mac,
-                config.inner_ip_dst, vlan_id, filter_type, config.vni,
-                queue_id]
-        out = self.tunnel_filter_add_nocheck(*args)
+        rule = 'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} / end actions pf ' \
+               '/ queue index {} / end'.format(self.dut_port,
+                                               config.vni,
+                                               self.invalid_mac,
+                                               queue_id)
+        out = self.tunnel_filter_add_nocheck(rule)
         self.verify("Bad arguments" in out, "Failed to detect invalid mac")
-        args = [self.dut_port, config.outer_mac_dst, config.inner_mac_dst,
-                self.invalid_ip, vlan_id, filter_type, config.vni, queue_id]
-        out = self.tunnel_filter_add_nocheck(*args)
+
+        rule = 'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth / ipv4 dst is {} ' \
+               '/ end actions pf / queue index {} / end'.format(self.dut_port,
+                                                                config.vni,
+                                                                self.invalid_ip,
+                                                                queue_id)
+        out = self.tunnel_filter_add_nocheck(rule)
         self.verify("Bad arguments" in out, "Failed to detect invalid ip")
-        args = [self.dut_port, config.outer_mac_dst, config.inner_mac_dst,
-                config.inner_ip_dst, self.invalid_vlan, filter_type,
-                config.vni, queue_id]
-        out = self.tunnel_filter_add_nocheck(*args)
-        self.verify("Input/output error" in out,
-                    "Failed to detect invalid vlan")
-        args = [self.dut_port, config.outer_mac_dst, config.inner_mac_dst,
-                config.inner_ip_dst, vlan_id, filter_type, config.vni,
-                self.invalid_queue]
-        out = self.tunnel_filter_add_nocheck(*args)
-        self.verify("Input/output error" in out,
-                    "Failed to detect invalid queue")
+
+        # testpmd is not support
+        # rule = 'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} / vlan vid is {} ' \
+        #        '/ end actions pf / queue index {} / end'.format(self.dut_port,
+        #                                                         config.vni,
+        #                                                         config.inner_mac_dst,
+        #                                                         self.invalid_vlan,
+        #                                                         queue_id)
+        # out = self.tunnel_filter_add_nocheck(rule)
+        # self.verify("Invalid argument" in out, "Failed to detect invalid vlan")
+
+        rule = 'flow create {} ingress pattern eth / ipv4 / udp / vxlan vni is {} / eth dst is {} / end actions pf ' \
+               '/ queue index {} / end'.format(self.dut_port,
+                                               config.vni,
+                                               config.inner_mac_dst,
+                                               self.invalid_queue)
+        out = self.tunnel_filter_add_nocheck(rule)
+        self.verify("Invalid queue ID" in out, "Failed to detect invalid queue")
 
         self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
@@ -1151,38 +1181,17 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         self.verify("Bad arguments" not in out, "Failed to set vxlan csum")
         self.verify("error" not in out, "Failed to set vxlan csum")
 
-    def tunnel_filter_add(self, *args):
-        # tunnel_filter add port_id outer_mac inner_mac ip inner_vlan
-        # tunnel_type(vxlan)
-        # filter_type
-        # (imac-ivlan|imac-ivlan-tenid|imac-tenid|imac|omac-imac-tenid|iip)
-        # tenant_id queue_num
-        out = self.dut.send_expect("tunnel_filter add %d " % args[0] +
-                                   "%s %s %s " % (args[1], args[2], args[3]) +
-                                   "%d vxlan %s " % (args[4], args[5]) +
-                                   "%d %d" % (args[6], args[7]),
-                                   "testpmd>", 10)
-        self.verify("Bad arguments" not in out, "Failed to add tunnel filter")
-        self.verify("error" not in out, "Failed to add tunnel filter")
+    def tunnel_filter_add(self, rule):
+        out = self.dut.send_expect(rule, "testpmd>", 3)
+        self.verify("Flow rule #0 created" in out, "Flow rule create failed")
         return out
 
-    def tunnel_filter_add_nocheck(self, *args):
-        out = self.dut.send_expect("tunnel_filter add %d " % args[0] +
-                                   "%s %s %s " % (args[1], args[2], args[3]) +
-                                   "%d vxlan %s " % (args[4], args[5]) +
-                                   "%d %d" % (args[6], args[7]),
-                                   "testpmd>", 10)
+    def tunnel_filter_add_nocheck(self, rule):
+        out = self.dut.send_expect(rule, "testpmd>", 3)
         return out
 
     def tunnel_filter_del(self, *args):
-        out = self.dut.send_expect("tunnel_filter rm %d " % args[0] +
-                                   "%s %s %s " % (args[1], args[2], args[3]) +
-                                   "%d vxlan %s " % (args[4], args[5]) +
-                                   "%d %d" % (args[6], args[7]),
-                                   "testpmd>", 10)
-        self.verify("Bad arguments" not in out,
-                    "Failed to remove tunnel filter")
-        self.verify("error" not in out, "Failed to remove tunnel filter")
+        out = self.dut.send_expect("flow flush 0", "testpmd>", 10)
         return out
 
     def set_up(self):
