@@ -2260,6 +2260,9 @@
                 "ALL"
             ],
             "NIC": [
+                "fortville_eagle",
+                "fortville_25g",
+                "fortville_spirit",
                 "columbiaville_100g",
                 "columbiaville_25g"
             ],
@@ -2276,6 +2279,9 @@
                 "ALL"
             ],
             "NIC": [
+                "fortville_eagle",
+                "fortville_25g",
+                "fortville_spirit",
                 "columbiaville_100g",
                 "columbiaville_25g"
             ],
