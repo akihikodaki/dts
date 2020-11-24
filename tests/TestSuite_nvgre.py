@@ -43,6 +43,7 @@ import time
 import os
 from pmd_output import PmdOutput
 from packet import IncreaseIP, IncreaseIPv6
+from random import randint
 
 from socket import AF_INET6
 from scapy.utils import struct, socket, wrpcap, rdpcap
@@ -62,6 +63,7 @@ from settings import HEADER_SIZE
 # Test class.
 #
 
+MAX_TXQ_RXQ = 4
 
 class NvgreTestConfig(object):
 
@@ -361,9 +363,10 @@ class NvgreTestConfig(object):
         Send nvgre pcap file by tester_tx_iface
         """
         self.test_case.tester.scapy_append('pcap = rdpcap("%s")' % self.pcap_file)
-        time.sleep(10)
+        time.sleep(1)
         self.test_case.tester.scapy_append('sendp(pcap, iface="%s")' % self.test_case.tester_tx_iface)
         self.test_case.tester.scapy_execute()
+        time.sleep(1)
 
     def pcap_len(self):
         """
@@ -507,38 +510,17 @@ class TestNvgre(TestCase):
         self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
         
-    def nvgre_filter(self, filter_type="omac-imac-tenid", queue_id=3, vlan=False, remove=False):
+    def nvgre_filter(self, rule, config, queue_id, remove=False):
         """
         send nvgre packet and check whether receive packet in assigned queue
         """
-        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                             % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
-        self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
-        self.dut.send_expect("set verbose 1", "testpmd>", 10)
+        # send rule
+        out = self.dut.send_expect(rule, "testpmd>", 3)
+        self.verify("Flow rule #0 created" in out, "Flow rule create failed")
 
-        if vlan is not False:
-            config = NvgreTestConfig(self, inner_vlan=vlan)
-            vlan_id = vlan
-        else:
-            config = NvgreTestConfig(self)
-            vlan_id = 1
-
-        # now cloud filter will default enable L2 mac filter, so dst mac must be same
-        config.outer_mac_dst = self.dut_rx_port_mac
-
-        # tunnel_filter add port_id outer_mac inner_mac ip_addr inner_vlan tunnel_type(vxlan|nvgre)
-        #       filter_type (imac-ivlan|imac-ivlan-tenid|imac-tenid|imac|omac-imac-tenid|iip) tenant_id queue_num
-
-        out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
-                                   % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, vlan_id, filter_type, config.tni, queue_id),
-                                   "testpmd>", 10)
-        print(out)
-        # invalid case request to remove tunnel filter
-        if remove is True:
+        if remove:
+            self.dut.send_expect("flow flush 0", "testpmd>", 3)
             queue_id = 0
-            self.dut.send_expect("tunnel_filter rm %d %s %s %s %d nvgre %s %d %d"
-                                 % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, vlan_id,
-                                    filter_type, config.tni, queue_id), "testpmd>", 10)
 
         # send nvgre packet
         config.create_pcap()
@@ -553,10 +535,12 @@ class TestNvgre(TestCase):
             queue = m.group(1)
 
         # verify received in expected queue
-        self.verify(queue_id == int(queue), "invalid receive queue")
+        self.verify(queue_id == int(queue), "invalid receive queue. {} != {}".format(queue_id, int(queue)))
+
+        # del rule
+        self.dut.send_expect("flow flush 0", "testpmd>", 10)
 
         self.dut.send_expect("stop", "testpmd>", 10)
-        self.dut.send_expect("quit", "#", 10)
 
     def nvgre_checksum(self, **kwargs):
 
@@ -725,53 +709,133 @@ class TestNvgre(TestCase):
         self.nvgre_detect(outer_vlan=1)
         # check vlan nvgre + vlan inner packet
         self.nvgre_detect(outer_vlan=1, inner_vlan=1)
-    def test_tunnel_filter(self):
 
+    def test_tunnel_filter(self):
         # verify tunnel filter feature
-        # check outer mac
-        self.nvgre_filter(filter_type="omac-imac-tenid")
-        # check inner mac + inner vlan filter can work
-        self.nvgre_filter(filter_type="imac-ivlan", vlan=1)
-        # check inner mac + inner vlan + tunnel id filter can work
-        self.nvgre_filter(filter_type="imac-ivlan-tenid", vlan=1)
-        # check inner mac + tunnel id filter can work
-        self.nvgre_filter(filter_type="imac-tenid")
-        # check inner mac filter can work
-        self.nvgre_filter(filter_type="imac")
-        # check outer mac + inner mac + tunnel id filter can work
-        self.nvgre_filter(filter_type="omac-imac-tenid")
-        # check iip filter can work
-        # self.nvgre_filter(filter_type="iip")
+        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=%d --txq=%d --nb-cores=4 --portmask=%s"
+                             % (self.path, self.coremask, self.dut.get_memory_channels(),
+                                MAX_TXQ_RXQ, MAX_TXQ_RXQ, self.portmask), "testpmd>", 30)
+        self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
+        self.dut.send_expect("set verbose 1", "testpmd>", 10)
+
+        config = NvgreTestConfig(self)
+        config_vlan = NvgreTestConfig(self, inner_vlan=1)
+
+        # now cloud filter will default enable L2 mac filter, so dst mac must be same
+        config.outer_mac_dst = self.dut_rx_port_mac
+        config_vlan.outer_mac_dst = self.dut_rx_port_mac
+        expect_queue = randint(1, MAX_TXQ_RXQ - 1)
+
+        rule_list = [
+            # check outer mac
+            'flow create {} ingress pattern eth dst is {} / ipv4 / nvgre tni is {} / eth dst is {} '
+            '/ end actions pf / queue index {} / end'.format(self.dut_rx_port,
+                                                             config_vlan.outer_mac_dst,
+                                                             config_vlan.tni,
+                                                             config_vlan.inner_mac_dst,
+                                                             expect_queue),
+            # check inner mac + inner vlan filter can work
+            'flow create {} ingress pattern eth / ipv4 / nvgre / eth dst is {} / vlan tci is {} / end actions pf '
+            '/ queue index {} / end'.format(self.dut_rx_port,
+                                            config_vlan.inner_mac_dst,
+                                            config_vlan.inner_vlan,
+                                            expect_queue),
+
+            # check inner mac + inner vlan + tunnel id filter can work
+            'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth dst is {} '
+            '/ vlan tci is {} / end actions pf / queue index {} / end'.format(self.dut_rx_port,
+                                                                              config_vlan.tni,
+                                                                              config_vlan.inner_mac_dst,
+                                                                              config_vlan.inner_vlan,
+                                                                              expect_queue),
+            # check inner mac + tunnel id filter can work
+            'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth dst is {} / end actions pf '
+            '/ queue index {} / end'.format(self.dut_rx_port,
+                                            config.tni,
+                                            config.inner_mac_dst,
+                                            expect_queue),
+            # check inner mac filter can work
+            'flow create {} ingress pattern eth / ipv4 / nvgre / eth dst is {} / end actions pf / queue index {} '
+            '/ end'.format(self.dut_rx_port,
+                           config.inner_mac_dst,
+                           expect_queue),
+            # check outer mac + inner mac + tunnel id filter can work
+            'flow create {} ingress pattern eth dst is {} / ipv4 / nvgre tni is {} / eth dst is {} '
+            '/ end actions pf / queue index {} / end'.format(self.dut_rx_port,
+                                                             config.outer_mac_dst,
+                                                             config.tni,
+                                                             config.inner_mac_dst,
+                                                             expect_queue)
+            # iip not supported by now
+            # 'flow create {} ingress pattern eth / ipv4 / nvgre / eth / ipv4 dst is {} / end actions pf '
+            # '/ queue index {} / end'.format(self.dut_port,
+            #                                 config.inner_ip_dst,
+            #                                 queue)
+        ]
+
+        for rule in rule_list:
+            if 'vlan tci is' in rule:
+                self.nvgre_filter(rule, config_vlan, expect_queue)
+            else:
+                self.nvgre_filter(rule, config, expect_queue)
+
+        self.dut.send_expect("quit", "# ", 10)
 
     def test_tunnel_filter_invalid(self):
         # verify tunnel filter parameter check function
 
         # invalid parameter
-        vlan_id = 1
-        filter_type = 'omac-imac-tenid'
         queue_id = 3
 
-        self.nvgre_filter(filter_type="imac", remove=True)
         config = NvgreTestConfig(self)
-        # config.outer_mac_dst = self.dut_port_mac
-        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                             % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
-        out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
-                                   % (self.dut_rx_port, config.outer_mac_dst, self.invalid_mac, config.inner_ip_dst, vlan_id,
-                                      filter_type, config.tni, queue_id), "testpmd>", 10)
+        config.outer_mac_dst = self.dut_rx_port_mac
+
+        self.dut.send_expect("%s -c %s -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
+                             % (self.path, self.coremask, self.portmask), "testpmd>", 30)
+        self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
+        self.dut.send_expect("set verbose 1", "testpmd>", 10)
+
+        rule = 'flow create {} ingress pattern eth dst is {} / ipv4 / nvgre tni is {} / eth dst is {} ' \
+               '/ end actions pf / queue index {} / end'.format(self.dut_rx_port,
+                                                                config.outer_mac_dst,
+                                                                config.tni,
+                                                                config.inner_mac_dst,
+                                                                queue_id)
+        self.nvgre_filter(rule, config, queue_id, remove=True)
+
+        rule = 'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth dst is {} / end actions pf ' \
+               '/ queue index {} / end'.format(self.dut_rx_port,
+                                               config.tni,
+                                               self.invalid_mac,
+                                               queue_id)
+        out = self.dut.send_expect(rule, "testpmd>", 3)
         self.verify("Bad arguments" in out, "Failed to detect invalid mac")
-        out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
-                                   % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, self.invalid_ip, vlan_id,
-                                      filter_type, config.tni, queue_id), "testpmd>", 10)
-        self.verify("Bad arguments" in out, "Failed to detect invalid ip")
-        out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
-                                   % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, self.invalid_vlan,
-                                      filter_type, config.tni, queue_id), "testpmd>", 10)
-        self.verify("Input/output error" in out, "Failed to detect invalid vlan")
-        out = self.dut.send_expect("tunnel_filter add %d %s %s %s %d nvgre %s %d %d"
-                                   % (self.dut_rx_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, vlan_id,
-                                      filter_type, config.tni, self.invalid_queue), "testpmd>", 10)
-        self.verify("Input/output error" in out, "Failed to detect invalid queue")
+
+        rule = 'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth / ipv4 dst is {} ' \
+               '/ end actions pf / queue index {} / end'.format(self.dut_rx_port,
+                                                                config.tni,
+                                                                self.invalid_ip,
+                                                                queue_id)
+        out = self.dut.send_expect(rule, "testpmd>", 3)
+        self.verify("Bad arguments" in out, "Failed to detect invalid mac")
+
+        # testpmd is not support
+        # rule = 'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth dst is {} / vlan vid is {} ' \
+        #        '/ end actions pf / queue index {} / end'.format(self.dut_rx_port,
+        #                                                         config.tni,
+        #                                                         config.inner_mac_dst,
+        #                                                         self.invalid_vlan,
+        #                                                         queue_id)
+        # out = self.dut.send_expect(rule, "testpmd>", 3)
+        # self.verify("Invalid argument" in out, "Failed to detect invalid vlan")
+
+        rule = 'flow create {} ingress pattern eth / ipv4 / nvgre tni is {} / eth dst is {} / end actions pf ' \
+               '/ queue index {} / end'.format(self.dut_rx_port,
+                                               config.tni,
+                                               config.inner_mac_dst,
+                                               self.invalid_queue)
+        out = self.dut.send_expect(rule, "testpmd>", 3)
+        self.verify("Invalid queue ID" in out, "Failed to detect invalid queue")
 
         self.dut.send_expect("stop", "testpmd>", 10)
         self.dut.send_expect("quit", "#", 10)
