@@ -116,6 +116,8 @@ class TestChecksumOffload(TestCase):
             cur_path = os.path.dirname(
                 os.path.dirname(os.path.realpath(__file__)))
             self.output_path = os.sep.join([cur_path, self.logger.log_path])
+        # log debug used
+        self.count = 0
 
     def set_up(self):
         """
@@ -277,9 +279,9 @@ class TestChecksumOffload(TestCase):
         return self.checksum_flags_are_good("PKT_RX_IP_CKSUM_", testpmd_output)
 
     def send_pkt_expect_good_bad_from_flag(self, pkt_str: str, flag: str, test_name: str, should_pass: bool = True):
-        self.pmdout.get_output(timeout=5)  # Remove any old output
+        self.pmdout.get_output(timeout=1)  # Remove any old output
         self.scapy_exec(f"sendp({pkt_str}, iface=iface)")
-        testpmd_output: str = self.pmdout.get_output(timeout=5)
+        testpmd_output: str = self.pmdout.get_output(timeout=1)
         self.verify(flag in testpmd_output,
                     f"Flag {flag[:-1]} not found for test {test_name}, please run test_rx_checksum_valid_flags.")
         self.verify((flag + "UNKNOWN") not in testpmd_output,
@@ -304,18 +306,37 @@ class TestChecksumOffload(TestCase):
 
         return None
 
-    def validate_checksum(self, pkt, layer) -> bool:
+    def validate_checksum(self, pkt, pkt_type, inner_flag=False) -> bool:
         """
         @param pkt: The packet to validate the checksum of.
         @return: Whether the checksum was valid.
         """
         if pkt is None:
             return False
-
-        csum = pkt[layer].chksum
-        del pkt[layer].chksum
-        # Converting it to raw will calculate the checksum
-        return layer(bytes(Raw(pkt[layer]))).chksum == csum
+        for i in range(0, len(l3_protos)):
+            if l3_protos[i] in pkt:
+                l3 = l3_protos[i]
+        for j in range(0, len(l4_protos)):
+            if l4_protos[j] in pkt:
+                layer = l4_proto_classes[j]
+                csum = pkt[layer].chksum
+                if csum is None:
+                    csum = 0
+                del pkt[layer].chksum
+                # Converting it to raw will calculate the checksum
+                correct_csum = layer(bytes(Raw(pkt[layer]))).chksum
+                if correct_csum == csum:
+                    # checksum value is correct
+                    return False
+                else:
+                    if inner_flag:
+                        print("{} pkg[{}] VXLAN/{}/{} inner checksum {} is not correct {}".format(
+                            pkt_type, self.count, l3, l4_protos[j],  hex(correct_csum), hex(csum)))
+                    else:
+                        print("{} pkg[{}] {}/{} outer checksum {} is not correct {}".format(
+                            pkt_type, self.count, l3, l4_protos[j], hex(correct_csum), hex(csum)))
+                    return True
+        return False
 
     def scapy_exec(self, cmd: str, timeout=1) -> str:
         return self.tester.send_expect(cmd, ">>>", timeout=timeout)
@@ -330,14 +351,10 @@ class TestChecksumOffload(TestCase):
                 for chksum in checksum_options:
                     # The packet's data can be used to identify how the packet was constructed so avoid any issues with
                     # ordering
-                    pkt = eth / l3() / l4(**chksum) / (
-                        f'UNTUNNELED,{l3.__name__},{l4.__name__},{" " if len(chksum.values()) == 0 else chksum["chksum"]}'
-                    )
-
+                    pkt = eth / l3() / l4(**chksum) / (b'X' * 48)
                     # Prevents the default behavior which adds DNS headers
                     if l4 == UDP:
                         pkt[UDP].dport, pkt[UDP].sport = 1001, 1001
-
                     packets.append(pkt)
 
         # Tunneled
@@ -346,104 +363,78 @@ class TestChecksumOffload(TestCase):
             for l4 in l4_proto_classes:
                 for outer_arg in checksum_options:
                     for inner_arg in checksum_options:
-                        pkt = eth / l3() / UDP(**outer_arg) / VXLAN() / Ether() / l3() / l4(**inner_arg) / (
-                            f'VXLAN,{l3.__name__},{l4.__name__},'
-                            f'{" " if len(outer_arg.values()) == 0 else outer_arg["chksum"]},'
-                            f'{" " if len(inner_arg.values()) == 0 else inner_arg["chksum"]}'
-                        )
+                        pkt = eth / l3() / UDP(**outer_arg) / VXLAN() / Ether() / l3() / l4(**inner_arg) / (b'Y' * 48)
                         # Prevents the default behavior which adds DNS headers
                         if l4 == UDP:
                             pkt[VXLAN][UDP].dport, pkt[VXLAN][UDP].sport = 1001, 1001
-
                         packets.append(pkt)
         # GRE
         for l3 in l3_proto_classes:
             for l4 in l4_proto_classes:
                 for chksum in checksum_options:
-                    pkt = eth / l3() / GRE() / l3() / l4(**chksum) / (
-                        f'GRE,{l3.__name__},{l4.__name__},{" " if len(chksum.values()) == 0 else chksum["chksum"]}'
-                    )
-
+                    pkt = eth / l3() / GRE() / l3() / l4(**chksum) / (b'Z' * 48)
                     # Prevents the default behavior which adds DNS headers
                     if l4 == UDP:
                         pkt[GRE][UDP].dport, pkt[GRE][UDP].sport = 1001, 1001
-
                     packets.append(pkt)
 
         return packets
 
-    def replay_pcap_file_on_tester(self, iface, packet_file_path):
+    def send_tx_package(self, packet_file_path, capture_file_path, packets, iface, dut_mac):
+        if os.path.isfile(capture_file_path):
+            os.remove(capture_file_path)
+        self.tester.send_expect(f"tcpdump -i '{iface}' ether src {dut_mac} -s 0 -w {capture_file_path} &", "# ")
+
+        if os.path.isfile(packet_file_path):
+            os.remove(packet_file_path)
+        wrpcap(packet_file_path, packets)
+        self.tester.session.copy_file_to(packet_file_path, packet_file_path)
+
+        # send packet
         self.tester.send_expect("scapy", ">>>")
         self.scapy_exec(f"packets = rdpcap('{packet_file_path}')")
-        self.scapy_exec(f"sendp(packets, iface='{iface}')")
+        for i in range(0, len(packets)):
+            self.scapy_exec(f"packets[{i}].show")
+            self.scapy_exec(f"sendp(packets[{i}], iface='{iface}')")
+            self.pmdout.get_output(timeout=0.5)
+            self.dut.send_expect("show port stats {}".format(self.dut_ports[0]), "testpmd>")
         self.tester.send_expect("quit()", "# ")
 
+        time.sleep(1)
+        self.tester.send_expect('killall tcpdump', '#')
+        time.sleep(1)
+        self.tester.send_expect('echo "Cleaning buffer"', '#')
+        time.sleep(1)
+        return
+
     def validate_packet_list_checksums(self, packets):
-        name_to_class_dict = {
-            'UDP': UDP,
-            'TCP': TCP,
-            'SCTP': SCTP,
-            'IP': IP,
-            'IPv6': IPv6,
-            'VXLAN': VXLAN,
-            'GRE': GRE,
-        }
-
         error_messages = []
-
-        untunnelled_error_message = f"Invalid untunneled checksum state for %s/%s with a %s checksum."
-
-        vxlan_error_message = f"Invalid VXLAN tunnelled %s checksum state for %s/%s" \
-                              f" with a %s inner checksum and a %s outer checksum."
-
-        gre_error_message = f"Invalid GRE tunnelled checksum state for %s/%s with a %s checksum."
+        untunnelled_error_message = f"un-tunneled checksum state for pkg[%s] with a invalid checksum."
+        vxlan_error_message = f"VXLAN tunnelled checksum state for pkg[%s]  with a invalid checksum."
+        gre_error_message = f"GRE tunnelled checksum state for pkg[%s] with a invalid checksum."
 
         for packet in packets:
+            self.count = self.count + 1
             payload: str
             # try:
-            payload = packet[Raw].load.decode('utf-8').split(",")
+            payload = packet[Raw].load.decode('utf-8')
             # # This error usually happens with tunneling protocols, and means that an additional cast is needed
             # except UnicodeDecodeError:
             #     for proto in tunnelling_proto_classes:
-
-            l3 = name_to_class_dict[payload[1]]
-            l4 = name_to_class_dict[payload[2]]
-            if payload[0] == "UNTUNNELED":
-                chksum_should_be_valid = payload[3] == " "
-                if self.validate_checksum(packet, l4) != chksum_should_be_valid:
-                    error_messages.append(
-                        untunnelled_error_message % (
-                            l3.__name__, l4.__name__, 'valid' if chksum_should_be_valid == '' else 'invalid'
-                        )
-                    )
-            elif payload[0] == "VXLAN":
-                outer_chksum_should_be_valid = payload[3] == " "
-                inner_chksum_should_be_valid = payload[4] == " "
-                if self.validate_checksum(packet[VXLAN], l4) != inner_chksum_should_be_valid:
-                    error_messages.append(
-                        vxlan_error_message % (
-                            "inner", l4.__name__, l3.__name__,
-                            'valid' if inner_chksum_should_be_valid == '' else 'invalid',
-                            'valid' if outer_chksum_should_be_valid == '' else 'invalid'
-                        )
-                    )
-                if self.validate_checksum(packet, l4) != outer_chksum_should_be_valid:
-                    error_messages.append(
-                        vxlan_error_message % (
-                            "outer", l3.__name__, l4.__name__,
-                            'valid' if inner_chksum_should_be_valid == '' else 'invalid',
-                            'valid' if outer_chksum_should_be_valid == '' else 'invalid'
-                        )
-                    )
-            elif payload[0] == "GRE":
-                chksum_should_be_valid = payload[3] == " "
-                if self.validate_checksum(packet, l4) != chksum_should_be_valid:
-                    error_messages.append(
-                        gre_error_message % (
-                            l3.__name__, l4.__name__, 'valid' if chksum_should_be_valid == '' else 'invalid'
-                        )
-                    )
-
+            if 'X' in payload:
+                if self.validate_checksum(packet, 'un-tunneled'):
+                    error_messages.append(untunnelled_error_message % self.count)
+            elif 'Y' in payload:
+                if self.validate_checksum(packet[VXLAN][Ether], 'VXLAN', inner_flag=True):
+                    error_messages.append(vxlan_error_message % self.count)
+                # fortville not support outer udp checksum
+                if 'fortville' in self.nic:
+                    continue
+                if self.validate_checksum(packet, 'VXLAN'):
+                    error_messages.append(vxlan_error_message % self.count)
+            elif 'Z' in payload:
+                if self.validate_checksum(packet, 'GRE'):
+                    error_messages.append(gre_error_message % self.count)
         return error_messages
 
     #
@@ -738,15 +729,9 @@ class TestChecksumOffload(TestCase):
         packet_file_path = "/tmp/test_hardware_checksum_check_l3_tx_packets.pcap"
         capture_file_path = "/tmp/tester/" + capture_file_name
 
-        self.tester.send_expect(f"tcpdump -i {iface} -s 65535 -w {capture_file_path} &", "# ")
+        self.send_tx_package(packet_file_path, capture_file_path, packets, iface, dut_mac)
 
-        wrpcap(packet_file_path, packets)
-        self.tester.session.copy_file_to(packet_file_path, packet_file_path)
-
-        self.replay_pcap_file_on_tester(iface, packet_file_path)
-
-        self.tester.session.copy_file_from(packet_file_path, "output/tmp/pcap/" + capture_file_name)
-
+        self.tester.session.copy_file_from(capture_file_path, "output/tmp/pcap/" + capture_file_name)
         captured_packets = rdpcap("output/tmp/pcap/" + capture_file_name)
 
         self.verify(len(packets) == len(captured_packets), "Not all packets were received")
@@ -783,7 +768,7 @@ class TestChecksumOffload(TestCase):
             for l4 in l4_protos:
                 for chksum in "", "chksum=0xf":
                     vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
-                        f"eth/{l3}()/{l4}({chksum})/('X'*50)",
+                        f"eth/{l3}()/{l4}({chksum})/('X'*48)",
                         "PKT_RX_L4_CKSUM_", f"{l3}/{l4}",
                         should_pass=(chksum == ""))
                     if vf is not None:
@@ -791,20 +776,22 @@ class TestChecksumOffload(TestCase):
 
         # Tunneled
         # VXLAN
-        VXLAN_l4_protos=['UDP']
         for l3 in l3_protos:
-            for l4 in VXLAN_l4_protos:
+            for l4 in l4_protos:
                 for outer_arg in "", "chksum=0xf":
                     for inner_arg in "", "chksum=0xf":
                         for flag in "PKT_RX_L4_CKSUM_", "PKT_RX_OUTER_L4_CKSUM_":
                             if flag == "PKT_RX_L4_CKSUM_":
                                 should_pass = inner_arg == ""
                             else:  # flag == PKT_RX_OUTER_L4_CKSUM_
+                                # fortville not support outer checksum
+                                if 'fortville' in self.nic:
+                                    continue
                                 should_pass = outer_arg == ""
                             vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
-                                f"eth/{l3}()/{l4}(dport=4789,{outer_arg})/VXLAN()/eth/{l3}()/"
-                                f"{l4}({inner_arg})/('X'*50)",
-                                flag, f"{l3}/{l4}/VXLAN/{l3}/{l4}",
+                                f"eth/{l3}()/UDP(dport=4789,{outer_arg})/VXLAN()/eth/{l3}()/"
+                                f"{l4}({inner_arg})/('X'*48)",
+                                flag, f"{l3}/UDP/VXLAN/{l3}/{l4}",
                                 should_pass=should_pass)
 
                             if vf is not None:
@@ -816,7 +803,7 @@ class TestChecksumOffload(TestCase):
                 for inner_arg in "", "chksum=0xf":
                     should_pass: bool = inner_arg == ""
                     vf = self.send_pkt_expect_good_bad_from_flag_catch_failure(
-                        f"eth/{l3}()/GRE()/{l3}()/{l4}({inner_arg})/('X'*50)",
+                        f"eth/{l3}()/GRE()/{l3}()/{l4}({inner_arg})/('X'*48)",
                         "PKT_RX_L4_CKSUM_", f"{l3}/GRE/{l3}/{l4}",
                         should_pass=should_pass)
 
@@ -854,7 +841,6 @@ class TestChecksumOffload(TestCase):
             self.logger.error(str(err))
         self.verify(len(verification_errors) == 0, "See previous output")
 
-
     def test_hardware_checksum_check_l4_tx(self):
         self.checksum_enablehw(self.dut_ports[0])
         self.dut.send_expect("start", "testpmd>")
@@ -872,23 +858,18 @@ class TestChecksumOffload(TestCase):
         packet_file_path = "/tmp/test_hardware_checksum_check_l4_tx_packets.pcap"
         capture_file_path = "/tmp/tester/" + capture_file_name
 
-        self.tester.send_expect(f"tcpdump -i '{iface}' -s 65535 -w {capture_file_path} &", "# ")
+        self.send_tx_package(packet_file_path, capture_file_path, packets, iface, dut_mac)
 
-        wrpcap(packet_file_path, packets)
-        self.tester.session.copy_file_to(packet_file_path, packet_file_path)
-
-        self.replay_pcap_file_on_tester(iface, packet_file_path)
-
-        self.tester.session.copy_file_from(packet_file_path, "output/tmp/pcap/" + capture_file_name)
+        self.tester.session.copy_file_from(capture_file_path, "output/tmp/pcap/" + capture_file_name)
 
         captured_packets = rdpcap("output/tmp/pcap/" + capture_file_name)
 
         self.verify(len(packets) == len(captured_packets), "Not all packets were received")
 
-        error_messages = self.validate_packet_list_checksums(captured_packets)
-
-        self.tester.send_expect("quit", "#")
         self.dut.send_expect("stop", "testpmd>")
+
+        self.count = 0
+        error_messages = self.validate_packet_list_checksums(captured_packets)
 
         if len(error_messages) != 0:
             for error_msg in error_messages:
