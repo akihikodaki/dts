@@ -106,6 +106,15 @@ support pattern and input set
     +------------------------------------+-------------------------------------------------------------------------------------------+
     | MAC_IPV6_GTPU_IPV6_TCP             | ipv6, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only                        |
     +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPU                      | ipv4, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPU                      | ipv6, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV4_GTPC                      | ipv4, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+    | MAC_IPV6_GTPC                      | ipv6, l3-src-only, l3-dst-only                                                            |
+    +------------------------------------+-------------------------------------------------------------------------------------------+
+
 
 .. table::
 
@@ -161,6 +170,14 @@ support pattern and input set
     | MAC_IPV6_GTPU_IPV6_UDP             | ipv6-udp                                       |
     +------------------------------------+------------------------------------------------+
     | MAC_IPV6_GTPU_IPV6_TCP             | ipv6-tcp                                       |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPU                      | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPU                      | ipv6                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV4_GTPC                      | ipv4                                           |
+    +------------------------------------+------------------------------------------------+
+    | MAC_IPV6_GTPC                      | ipv6                                           |
     +------------------------------------+------------------------------------------------+
 
 
@@ -1972,6 +1989,924 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change the ipv4 address to ipv6 address.
 
 
+Test case: MAC_IPV4_GTPU
+========================
+basic hit pattern packets are the same in this test case::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPU_L3SRC
+----------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPU_L3DST
+----------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPU_L3
+-------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoResponse()],iface="enp134s0f0")
+
+
+Test case: MAC_IPV4_GTPC
+========================
+basic hit pattern packets are the same in this test case::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPC_L3SRC
+----------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpc / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPC_L3DST
+----------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpc / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+Subcase: MAC_IPV4_GTPC_L3
+-------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpc / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern and defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.11.1", dst="192.168.11.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+hit pattern but not defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=27)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+
+Test case: MAC_IPV6_GTPU
+========================
+reconfig all the cases of "Test case: MAC_IPV4_GTPU"
+
+    rule:
+        change ipv4 to ipv6.
+    packets:
+        change the packet's L3 layer from IP to IPv6;
+        change the ipv4 address to ipv6 address.
+
+
+Test case: MAC_IPV6_GTPC
+========================
+reconfig all the cases of "Test case: MAC_IPV4_GTPC"
+
+    rule:
+        change ipv4 to ipv6.
+    packets:
+        change the packet's L3 layer from IP to IPv6;
+        change the ipv4 address to ipv6 address.
+
+
 ===============
 symmetric cases
 ===============
@@ -2036,7 +2971,7 @@ Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL
 Subcase: symmetric MAC_IPV4_GTPU_EH_DL_IPV4_UDP
 -----------------------------------------------
 rule::
- 
+
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
 
 hit pattern/defined input set::
@@ -2050,14 +2985,14 @@ hit pattern/defined input set::
 Subcase: symmetric MAC_IPV4_GTPU_EH_UL_IPV4_UDP
 -----------------------------------------------
 rule::
- 
+
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase symmetric MAC_IPV4_GTPU_EH_DL_IPV4.
 
 
-case: symmetric MAC_IPV4_GTPU_EH_IPV4_TCP with UL/DL
-====================================================
+Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_TCP with UL/DL
+=========================================================
 the rules and packets in this test case is similar to "Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL"
 just change some parts of rules and packets::
 
@@ -2065,7 +3000,7 @@ just change some parts of rules and packets::
         change inner udp to tcp, change ipv4-udp to ipv4-tcp
     packets:
         change the packet's inner L4 layer UDP to TCP
-        
+
 Subcase: symmetric MAC_IPV4_GTPU_EH_DL_IPV4_TCP
 -----------------------------------------------
 
@@ -2225,6 +3160,318 @@ reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
         change the ipv4 address to ipv6 address.
 
 
+Test case: symmetric MAC_IPV4_GTPU
+==================================
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+MAC_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_REQUEST packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPU_ECHO_RESPONSE packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+
+Test case: symmetric MAC_IPV4_GTPC
+==================================
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpc / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+MAC_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV4_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+
+Test case: symmetric MAC_IPV6_GTPU
+==================================
+rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / gtpu / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+MAC_IPV6_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV6_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_IPV6_GTPU_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPU_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPU_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPU_EH_PAY packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPU_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPU_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+
+Test case: symmetric MAC_IPV6_GTPC
+==================================
+rule::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / gtpc / end actions rss func symmetric_toeplitz types ipv6 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+MAC_IPV6_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_IPV6_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_EchoRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_EchoResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_CreatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_CreatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_UpdatePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_UpdatePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_DeletePDPContextRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_DeletePDPContextResponse packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_PDUNotificationRequest packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()],iface="enp134s0f0")
+
+MAC_VLAN_IPV6_GTPC_SupportedExtensionHeadersNotification packet::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()],iface="enp134s0f0")
+
+
 Test case: symmetric negative case
 ==================================
 1. create rules with invalid input set::
@@ -2251,15 +3498,15 @@ Test case: toeplitz negative case
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
-    
+
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
-    
+
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
-    
+
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 gtpu end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
@@ -2267,7 +3514,7 @@ Test case: toeplitz negative case
 2. check all the rule failed to be created.
 
 
-Test case: inner L4 protocal hash
+Test case: inner L4 protocol hash
 =================================
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP/TCP
@@ -2345,8 +3592,6 @@ Subcase: MAC_IPV6_GTPU_IPV6_UDP/TCP
 
 Test case: multirules
 =====================
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
 
 Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
 -----------------------------------------
@@ -2381,6 +3626,9 @@ Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.0.1", dst="192.168.10.2")/("X"*480)], iface="enp134s0f0")
 
 8. check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 9. destroy IPV4_GTPU_IPV4 rule::
 
@@ -2435,6 +3683,9 @@ Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
 
 8. check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 9. destroy IPV4_GTPU_EH_IPV4 rule::
 
     flow destroy 0 rule 1
@@ -2477,7 +3728,10 @@ Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
 8. check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
 9. repeat step 2, check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
- 
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
+
 10. destroy IPV4_GTPU_EH_IPV4 rule::
 
      flow destroy 0 rule 0
@@ -2512,6 +3766,9 @@ Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP
 6. check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
 7. repeat step 2, check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 8. destroy IPV4_GTPU_EH_IPV4 rule::
 
@@ -2557,6 +3814,9 @@ Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_TCP
 6. check packet 2 has different hash value with packet 1, packet 3 has same hash value with packet 1.
 
 7. repeat step 2, check all the packets has same hash value.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 8. destroy IPV6_GTPU_EH_IPV6 rule::
 
@@ -2622,63 +3882,9 @@ Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_TCP
 
 7. repeat step 2, packet 2 has same hash value with packet 1, packet 3 has different hash value with packet 1.
 
-Test case: co-exist L3 IPv4/IPv6_GTPU_EH
-========================================
-
-Subcase 1: co-exist L3 IPV4/IPV6_GTPU_EH_IPV4
----------------------------------------------
-
-Rule 1::
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
-Rule 2::
-    flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
-
-Packets::
-
-    pkt1=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)
-    pkt2=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)
-    pkt3=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.3")/("X"*480)
-    pkt4=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=0, qos_flow=0x34)/IP(dst="192.168.1.1", src="192.168.0.3")/("X"*480)
-
-1. Rule1 and rule2 only have outer layer 3 difference.
-2. Send rule1 matched pkt1, mark queue id as Q1, use default input to do hash.
-3. Send rule2 matched pkt2, mark queue id as Q2, use default input to do hash.
-4. Create rule 1.
-5. Send rule1 matched pkt1, mark queue id as Q3.
-6. Check Q3 is different from Q1, use rule1 input set to do hash.
-7. Send rule2 matched pkt2, mark queue id as Q4.
-8. Check Q4 is same as Q2, still use default input to do hash, not use rule1 input set.
-9. Send rule1 nomatched pkt3, change src IP address, mark queue id as Q5.
-10. Check Q5 is same as Q3.
-11. Flush flow list.
-12. Create rule 2.
-13. Send rule2 matched pkt2, mark queue id as Q6.
-14. Check Q6 is different from Q2, use rule2 input set to do hash.
-15. Send rule1 matched pkt1, mark queue id as Q7.
-16. Check Q7 is same as Q1, still use default input set to do hash, not use rule2 input set.
-17. Send rule2 nomatched pkt4, change src IP address, mark queue id as Q8.
-18. Check Q8 is same as Q6.
-
-Subcase 2: co-exist L3 IPV4/IPV6_GTPU_EH_IPV6
----------------------------------------------
-
-Rule 1::
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
-rule 2::
-    flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / end actions rss types ipv6 l3-src-only end key_len 0 queues end / end
-
-Packets::
-
-    pkt1=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::12", src="::35")/("X"*480)
-    pkt2=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::12", src="::35")/("X"*480)
-    pkt3=Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::13", src="::35")/("X"*480)
-    pkt4=Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTP_PDUSession_ExtensionHeader(pdu_type=1, qos_flow=0x34)/IPv6(dst="::13", src="::35")/("X"*480)
-Test steps are same as subcase 1.
 
 Test case: toeplitz and symmetric rules combination
 ===================================================
-Note: the action after deleting rule is not guaranteed in dpdk-20.08.
-so the following step don't need to be run in dpdk-20.08.
 
 Subcase: toeplitz/symmetric with same pattern
 ---------------------------------------------
@@ -2717,6 +3923,9 @@ Subcase: toeplitz/symmetric with same pattern
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
 
 8. repeat step 2, check the toeplitz rule can't work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 11. destroy the rule 1::
 
@@ -2764,6 +3973,9 @@ Subcase: toeplitz/symmetric with same ptype different UL/DL
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV4 => RSS
 
 8. repeat step 2, check the toeplitz rule also can work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 9. destroy the rule 1::
 
@@ -2826,6 +4038,9 @@ Subcase: toeplitz/symmetric with different pattern
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV6 => RSS
 
 8. repeat step 2, check the toeplitz rule also can work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 9. destroy the rule 1::
 
@@ -2894,6 +4109,9 @@ Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)
     1       0       0       i--     ETH IPV4 UDP GTPU GTP_PSC IPV6 => RSS
 
 8. repeat step 2, check the rule with UL/DL can't work now.
+
+Note: the action after deleting rule is not guaranteed so far.
+so the following step don't need to be run.
 
 9. destroy the rule 1::
 
