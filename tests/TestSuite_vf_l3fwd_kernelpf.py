@@ -50,7 +50,8 @@ class TestVfL3fwdKernelPf(TestCase, L3fwdBase):
             "fortville_25g",
             "fortville_eagle",
             "columbiaville_100g",
-            "columbiaville_25g"], "NIC Unsupported: " + str(self.nic))
+            "columbiaville_25g",
+            "columbiaville_25gx2"], "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         valports = [
             _ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
