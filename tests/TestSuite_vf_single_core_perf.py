@@ -249,7 +249,7 @@ class TestVfSingleCorePerf(TestCase):
             if self.nic in ["fortville_25g", "fortville_spirit"] or thread_num == 2:
                 param += " --rxq=2 --txq=2"
             # columbiaville use one queue per port for best performance.
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode
                 param += " --port-topology=loop"
