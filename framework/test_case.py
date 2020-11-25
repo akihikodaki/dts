@@ -498,6 +498,8 @@ class TestCase(object):
             bitrate *=25
         elif nic == 'columbiaville_25g':
             bitrate *= 25
+        elif nic == 'columbiaville_25gx2':
+            bitrate *= 25
         elif nic == 'columbiaville_100g':
             bitrate *= 100
 
