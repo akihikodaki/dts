@@ -2412,6 +2412,209 @@ class TestIAVFFdir(TestCase):
         out3 = self.send_pkts_getouput(MAC_IPV4_GTPU_EH_WITHOUT_QFI["match"])
         rfc.check_iavf_fdir_mark(out3, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=False)
 
+    def run_coexist_outer_gtpu(self, rules, pkts):
+
+        # validate rules
+        self.validate_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, stats=False)
+
+        # create rules
+        rule_li = self.create_fdir_rule(rules, check_stats=True)
+        self.check_fdir_rule(port_id=0, rule_list=rule_li)
+
+        # send matched packet, check action
+        out0 = self.send_pkts_getouput(pkts["match"][0])
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 1, "queue": [1, 2]}, stats=True)
+        out1 = self.send_pkts_getouput(pkts["match"][1])
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 0, "mark_id": 2, "queue": [3, 4, 5, 6]}, stats=True)
+        out2 = self.send_pkts_getouput(pkts["match"][2])
+        rfc.check_iavf_fdir_mark(out2, pkt_num=1, check_param={"port_id": 0, "mark_id": 3, "queue": 7}, stats=True)
+        out3 = self.send_pkts_getouput(pkts["match"][3])
+        rfc.check_iavf_fdir_mark(out3, pkt_num=1, check_param={"port_id": 0, "mark_id": 4, "queue": 8}, stats=True)
+        out4 = self.send_pkts_getouput(pkts["match"][4])
+        rfc.check_iavf_fdir_mark(out4, pkt_num=1, check_param={"port_id": 0, "mark_id": 5, "passthru": True}, stats=True)
+        out5 = self.send_pkts_getouput(pkts["match"][5])
+        rfc.check_iavf_fdir_mark(out5, pkt_num=1, check_param={"port_id": 0, "mark_id": 6, "passthru": True}, stats=True)
+        out6 = self.send_pkts_getouput(pkts["match"][6])
+        rfc.check_iavf_fdir_mark(out6, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=True)
+        out7 = self.send_pkts_getouput(pkts["match"][7])
+        rfc.check_iavf_fdir_mark(out7, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=True)
+
+         # send mismatched packet, check not do match action
+        out0 = self.send_pkts_getouput(pkts["mismatch"][0])
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 1, "queue": [1, 2]}, stats=False)
+        out1 = self.send_pkts_getouput(pkts["mismatch"][1])
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 0, "mark_id": 2, "queue": [3, 4, 5, 6]}, stats=False)
+        out2 = self.send_pkts_getouput(pkts["mismatch"][2])
+        rfc.check_iavf_fdir_mark(out2, pkt_num=1, check_param={"port_id": 0, "mark_id": 3, "queue": 7}, stats=False)
+        out3 = self.send_pkts_getouput(pkts["mismatch"][3])
+        rfc.check_iavf_fdir_mark(out3, pkt_num=1, check_param={"port_id": 0, "mark_id": 4, "queue": 8}, stats=False)
+        out4 = self.send_pkts_getouput(pkts["mismatch"][4])
+        rfc.check_iavf_fdir_mark(out4, pkt_num=1, check_param={"port_id": 0, "mark_id": 5, "passthru": True}, stats=False)
+        out5 = self.send_pkts_getouput(pkts["mismatch"][5])
+        rfc.check_iavf_fdir_mark(out5, pkt_num=1, check_param={"port_id": 0, "mark_id": 6, "passthru": True}, stats=False)
+        out6 = self.send_pkts_getouput(pkts["mismatch"][6])
+        rfc.check_iavf_fdir_mark(out6, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=False)
+        out7 = self.send_pkts_getouput(pkts["mismatch"][7])
+        rfc.check_iavf_fdir_mark(out7, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=False)
+
+
+    def test_mac_outer_co_exist_gtpu_eh_dst(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.33 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::14 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.35 / udp / gtpu / gtp_psc / end actions passthru / mark id 5 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::36 / udp / gtpu / gtp_psc / end actions passthru / mark id 6 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.37 / udp / gtpu / gtp_psc / end actions drop / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::38 / udp / gtpu / gtp_psc / end actions drop / end"]
+        MAC_GTPU_EH = {
+            "match":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
+            "mismatch":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)']
+        }
+        self.run_coexist_outer_gtpu(rules, MAC_GTPU_EH)
+
+    def test_mac_outer_co_exist_gtpu_dst(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end", \
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.33 / udp / gtpu / end actions queue index 7 / mark id 3 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::14 / udp / gtpu / end actions queue index 8 / mark id 4 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.35 / udp / gtpu / end actions passthru / mark id 5 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::36 / udp / gtpu / end actions passthru / mark id 6 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.37 / udp / gtpu / end actions drop / end",\
+                 "flow create 0 ingress pattern eth / ipv6 dst is ::38 / udp / gtpu / end actions drop / end"]
+        MAC_GTPU = {
+            "match":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
+            "mismatch":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)']
+        }
+        self.run_coexist_outer_gtpu(rules, MAC_GTPU)
+
+    def test_mac_outer_co_exist_gtpu_eh_src(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
+                 "flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::4 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 / udp / gtpu / gtp_psc / end actions passthru / mark id 5 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is ::16 / udp / gtpu / gtp_psc / end actions passthru / mark id 6 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 / udp / gtpu / gtp_psc / end actions drop / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::8 / udp / gtpu / gtp_psc / end actions drop / end"]
+        MAC_GTPU_EH = {
+            "match":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
+            "mismatch":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)']
+        }
+        self.run_coexist_outer_gtpu(rules, MAC_GTPU_EH)
+
+    def test_mac_outer_co_exist_gtpu_src(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end", \
+                 "flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 / udp / gtpu / end actions queue index 7 / mark id 3 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::4 / udp / gtpu / end actions queue index 8 / mark id 4 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 / udp / gtpu / end actions passthru / mark id 5 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is ::16 / udp / gtpu / end actions passthru / mark id 6 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 / udp / gtpu / end actions drop / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::8 / udp / gtpu / end actions drop / end"]
+        MAC_GTPU = {
+            "match":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
+            "mismatch":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)']
+        }
+        self.run_coexist_outer_gtpu(rules, MAC_GTPU)
+
+    def test_mac_outer_co_exist_gtpu_mix(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
+                 "flow create 0 ingress pattern eth / ipv6 src is ::12 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.23 dst is 192.168.0.33 / udp / gtpu / gtp_psc / end actions queue index 7 / mark id 3 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::4 dst is ::14 / udp / gtpu / gtp_psc / end actions queue index 8 / mark id 4 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.25 dst is 192.168.0.35 / udp / gtpu / end actions passthru / mark id 5 / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is ::16 dst is ::36 / udp / gtpu / end actions passthru / mark id 6 / end",\
+                 "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.27 dst is 192.168.0.37 / udp / gtpu / end actions drop / end",\
+                 "flow create 0 ingress pattern eth / ipv6 src is 2001::8 dst is ::38 / udp / gtpu / end actions drop / end"]
+        MAC_GTPU_MIX = {
+            "match":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.21", dst="192.168.0.31")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::12", dst="::32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.23", dst="192.168.0.33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::4", dst="::14")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.25", dst="192.168.0.35")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::16", dst="::36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.27", dst="192.168.0.37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::8", dst="::38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)'],
+            "mismatch":[
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.22", dst="192.168.0.32")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IPv6()/UDP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::13", dst="::33")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.24", dst="192.168.0.34")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=1, QFI=0x33)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::5", dst="::15")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/GTPPDUSessionContainer(type=0, QFI=0x33)/IP()/TCP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.26", dst="192.168.0.36")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="::17", dst="::37")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IP()/ICMP()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP(src="192.168.0.28", dst="192.168.0.38")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IPv6(src="2001::9", dst="::39")/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12)/IPv6()/IPv6ExtHdrFragment()/Raw("x"*20)']
+        }
+
+        self.run_coexist_outer_gtpu(rules, MAC_GTPU_MIX)
+
     def test_pfcp(self):
         # open the RSS function for PFCP session packet.
         out = self.pmd_output.execute_cmd("flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end")
