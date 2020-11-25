@@ -543,30 +543,24 @@ class L3fwdBase(object):
         # Update config file and rebuild to get best perf on FVL
         if self.__mode is SUITE_TYPE.PF:
             if self.nic in ["fortville_spirit", "fortville_eagle", "fortville_25g"]:
-                self.d_con(
-                    ("sed -i -e 's/"
-                     "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/"
-                     "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' "
-                     "./config/common_base"))
                 self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
-                self.dut.build_install_dpdk(self.target)
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
+            self.dut.build_install_dpdk(self.target)
 
     def __restore_compilation(self):
         if self.__mode is SUITE_TYPE.PF:
             if self.nic in ["fortville_spirit", "fortville_eagle", "fortville_25g"]:
-                self.d_con(
-                    ("sed -i -e 's/"
-                     "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/"
-                     "CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/' "
-                     "./config/common_base"))
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
-                self.dut.build_install_dpdk(self.target)
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
+            self.dut.build_install_dpdk(self.target)
 
     def __preset_compilation(self):
         # Update config file and rebuild to get best perf on FVL
         self.__preset_dpdk_compilation()
         # init l3fwd binary file
-        if self.nic not in ["columbiaville_100g", "columbiaville_25g"]:
+        if self.nic not in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
             self.logger.info(
                 "Configure RX/TX descriptor to 2048, re-build ./examples/l3fwd")
             self.d_con((
@@ -677,7 +671,7 @@ class L3fwdBase(object):
                 'whitelist': self.__l3fwd_white_list if self.__l3fwd_white_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': config, })
-        if self.nic in ["niantic", "columbiaville_100g", "columbiaville_25g"]:
+        if self.nic in ["niantic", "columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
             command_line += " --parse-ptype"
         if frame_size > 1518:
             command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
