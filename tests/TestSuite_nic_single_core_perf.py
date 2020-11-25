@@ -53,7 +53,7 @@ class TestNicSingleCorePerf(TestCase):
         PMD prerequisites.
         """
         self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit', 'ConnectX5_MT4121',
-                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g'],
+                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2'],
                                  "Not required NIC ")
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
 
@@ -62,7 +62,7 @@ class TestNicSingleCorePerf(TestCase):
             # Update DPDK config file and rebuild to get best perf on fortville
             if self.nic in ["fortville_25g", "fortville_spirit"]:
                 self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
                 self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
             self.dut.build_install_dpdk(self.target)
 
@@ -240,7 +240,7 @@ class TestNicSingleCorePerf(TestCase):
             if self.nic in ["fortville_25g", "fortville_spirit"] or thread_num == 2:
                 param += " --rxq=2 --txq=2"
             # columbiaville use one queue per port for best performance.
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode
                 param += " --port-topology=loop"
@@ -396,7 +396,7 @@ class TestNicSingleCorePerf(TestCase):
             self.rx_desc = 'n'
             if self.nic in ["fortville_25g", "fortville_spirit"]:
                 self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g"]:
+            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
                 self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
             self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()
