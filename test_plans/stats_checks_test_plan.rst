@@ -128,7 +128,8 @@ The fields checked are RX-packets and TX-packets of each queue stats,
 RX-packets, RX-bytes, TX-packets and TX-bytes of each port stats,
 rx_good_packets and rx_good_bytes of each port xstats,
 tx_good_packets and tx_good_bytes of each port xstats,
-rx_qx_packets, rx_qx_bytes, tx_qx_packets and tx_qx_bytes of each port xstats.
+FVL does not support hardware per queue stats,
+so we won't check rx and tx per queue stats.
 
 Test Case: PF xstatus Checks
 ============================
@@ -210,17 +211,17 @@ Test Case: PF xstatus Checks
   rx_good_bytes: 6000
   tx_good_bytes: 0
   ......
-  rx_q0_packets: 29
-  rx_q0_bytes: 1740
+  rx_q0_packets: 0
+  rx_q0_bytes: 0
   rx_q0_errors: 0
-  rx_q1_packets: 21
-  rx_q1_bytes: 1260
+  rx_q1_packets: 0
+  rx_q1_bytes: 0
   rx_q1_errors: 0
-  rx_q2_packets: 24
-  rx_q2_bytes: 1440
+  rx_q2_packets: 0
+  rx_q2_bytes: 0
   rx_q2_errors: 0
-  rx_q3_packets: 26
-  rx_q3_bytes: 1560
+  rx_q3_packets: 0
+  rx_q3_bytes: 0
   rx_q3_errors: 0
   tx_q0_packets: 0
   tx_q0_bytes: 0
@@ -248,21 +249,20 @@ Test Case: PF xstatus Checks
   rx_q3_packets: 0
   rx_q3_bytes: 0
   rx_q3_errors: 0
-  tx_q0_packets: 29
-  tx_q0_bytes: 1740
-  tx_q1_packets: 21
-  tx_q1_bytes: 1260
-  tx_q2_packets: 24
-  tx_q2_bytes: 1440
-  tx_q3_packets: 26
-  tx_q3_bytes: 1560
+  tx_q0_packets: 0
+  tx_q0_bytes: 0
+  tx_q1_packets: 0
+  tx_q1_bytes: 0
+  tx_q2_packets: 0
+  tx_q2_bytes: 0
+  tx_q3_packets: 0
+  tx_q3_bytes: 0
 
 verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 100.
 rx_good_bytes, RX-bytes of port 0 and tx_good_bytes, TX-bytes of port 1 are the same.
-RX-packets of each queue of port 0 are equal to rx_qx_packets of each queue of port 0.
-TX-packets of each queue of port 1 are equal to tx_qx_packets of each queue of port 1.
-The sum of rx_qx_bytes of each queue of port 0 is equal to the rx_good_packets of port 0.
-The sum of tx_qx_bytes of each queue of port 1 is equal to the tx_good_packets of port 1.
+FVL does not support hardware per queue stats,
+so rx_qx_packets and rx_qx_bytes are both 0.
+tx_qx_packets and tx_qx_bytes are both 0 too.
 
 Test Case: VF xstats Checks
 ============================
