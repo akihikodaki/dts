@@ -57,13 +57,19 @@ class TestVM2VMVirtioUser(TestCase):
         self.socket_mem = ','.join(['1024']*socket_num)
         self.get_core_list()
         self.rebuild_flag = False
-        self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.app_pdump = self.dut.apps_name['pdump']
         self.dut_ports = self.dut.get_ports()
         self.cbdma_dev_infos = []
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.queue_num=1
         self.device_str=''
+        self.vhost_pmd_session = self.dut.new_session(suite="vhost-user")
+        self.virtio_user0_pmd_session = self.dut.new_session(suite="virtio-user0")
+        self.virtio_user1_pmd_session = self.dut.new_session(suite="virtio-user1")
+        self.pdump_session = self.dut.new_session(suite="pdump")
+        self.vhost_pmd = PmdOutput(self.dut, self.vhost_pmd_session)
+        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0_pmd_session)
+        self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1_pmd_session)
 
     def set_up(self):
         """
@@ -85,32 +91,18 @@ class TestVM2VMVirtioUser(TestCase):
         self.core_list_virtio0 = self.cores_list[2:4]
         self.core_list_virtio1 = self.cores_list[4:6]
 
-        self.vhost_user = self.dut.new_session(suite="vhost-user")
-        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
-        self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
-        self.pdump_session = self.dut.new_session(suite="pdump")
-        self.pmd_vhost = PmdOutput(self.dut, self.vhost_user)
-        self.pmd_virtio0 = PmdOutput(self.dut, self.virtio_user0)
-        self.pmd_virtio1 = PmdOutput(self.dut, self.virtio_user1)
-
     def launch_vhost_testpmd(self, vdev_num, fixed_prefix=False, fwd_mode='io',vdevs=None):
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost,
-                    no_pci=self.nopci, prefix=self.vhost_prefix, fixed_prefix=fixed_prefix)
-        vdev_params = ''
+        eal_params = ''
         if vdevs:
-            vdev_params = vdevs
-            params = " %s -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
+            eal_params = vdevs
+            params = "--nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx"
         else:
             for i in range(vdev_num):
-                vdev_params += "--vdev 'net_vhost%d,iface=./vhost-net%d,queues=1' " % (i, i)
-            params = " %s -- -i --nb-cores=1 --no-flush-rx"
-
-        self.command_line = self.app_testpmd_path + ' %s ' + params
-
-        self.command_line = self.command_line % (
-                            eal_params, vdev_params)
-        self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
-        self.pmd_vhost.execute_cmd('set fwd %s' % fwd_mode)
+                eal_params += "--vdev 'net_vhost{},iface=./vhost-net{},queues=1' ".format(i, i)
+            params = "--nb-cores=1 --no-flush-rx"
+        self.vhost_pmd.start_testpmd(cores=self.core_list_vhost, param=params, eal_param=eal_params, \
+                                     no_pci=True, ports=[],prefix=self.vhost_prefix, fixed_prefix=fixed_prefix)
+        self.vhost_pmd.execute_cmd('set fwd %s' % fwd_mode)
 
     @property
     def check_2M_env(self):
@@ -121,58 +113,50 @@ class TestVM2VMVirtioUser(TestCase):
         """
         launch the testpmd as virtio with vhost_net1
         """
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio1,
-                no_pci=True, prefix=self.virtio_prefix, fixed_prefix=True)
+        eal_params = ' --socket-mem {} --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues={},{},' \
+                     'queue_size={} '.format(self.socket_mem, self.queue_num, path_mode, ringsize)
         if self.check_2M_env:
-            eal_params += " --single-file-segments "
-        vdev_params = '--vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=%d,%s,queue_size=%d ' \
-                      % (self.queue_num, path_mode, ringsize)
-        command_line = self.app_testpmd_path + " %s " + \
-            "--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s"
-        command_line = command_line % (eal_params, self.socket_mem,
-                                    vdev_params, ringsize, ringsize, extern_params)
-        self.pmd_virtio1.execute_cmd(command_line, timeout=30)
-        self.pmd_virtio1.execute_cmd('set fwd rxonly')
-        self.pmd_virtio1.execute_cmd('start')
+            eal_params += " --single-file-segments"
+        if 'vectorized_path' in self.running_case:
+            eal_params += " --force-max-simd-bitwidth=512"
+        params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
+        self.virtio_user1_pmd.start_testpmd(cores=self.core_list_virtio1, param=params, eal_param=eal_params, \
+                                           no_pci=True, ports=[], prefix=self.virtio_prefix, fixed_prefix=True)
+        self.virtio_user1_pmd.execute_cmd('set fwd rxonly')
+        self.virtio_user1_pmd.execute_cmd('start')
 
     def start_virtio_testpmd_with_vhost_net0(self, path_mode, extern_params, ringsize):
         """
         launch the testpmd as virtio with vhost_net0
         and start to send 251 small packets with diff burst
         """
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio0,
-                no_pci=True, prefix='virtio0')
+        eal_params = ' --socket-mem {} --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,' \
+                     '{},queue_size={} '.format(self.socket_mem, path_mode, ringsize)
         if self.check_2M_env:
-            eal_params += " --single-file-segments "
-        vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=1,%s,queue_size=%d ' % (path_mode, ringsize)
-        command_line = self.app_testpmd_path + ' %s ' + \
-            '--socket-mem %s %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s'
-        command_line = command_line % (eal_params, self.socket_mem,
-                                vdev_params, ringsize, ringsize, extern_params)
-
-        self.pmd_virtio0.execute_cmd(command_line, timeout=30)
-        self.pmd_virtio0.execute_cmd('set burst 1')
-        self.pmd_virtio0.execute_cmd('start tx_first 27')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('start tx_first 7')
+            eal_params += " --single-file-segments"
+        if 'vectorized_path' in self.running_case:
+            eal_params += " --force-max-simd-bitwidth=512"
+        params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
+        self.virtio_user0_pmd.start_testpmd(cores=self.core_list_virtio0, param=params, eal_param=eal_params, \
+                                           no_pci=True, ports=[], prefix='virtio0', fixed_prefix=True)
+        self.virtio_user0_pmd.execute_cmd('set burst 1')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 27')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 7')
 
     def start_virtio_testpmd_with_vhost_net0_cbdma(self, path_mode, extern_params, ringsize):
         """
         launch the testpmd as virtio with vhost_net0
         and start to send 251 small packets with diff burst
         """
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list_virtio0,
-                no_pci=True, prefix='virtio0')
+        eal_params = ' --socket-mem {} --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,' \
+                     'queues={},{},queue_size={} '.format(self.socket_mem, self.queue_num, path_mode, ringsize)
         if self.check_2M_env:
             eal_params += " --single-file-segments "
-        vdev_params = '--vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=%d,%s,queue_size=%d ' % \
-                      (self.queue_num, path_mode, ringsize)
-        command_line = self.app_testpmd_path + eal_params + \
-            ' %s -- -i --nb-cores=1 --txd=%d --rxd=%d %s'
-        command_line = command_line % (vdev_params, ringsize, ringsize, extern_params)
-
-        self.pmd_virtio0.execute_cmd(command_line, timeout=30)
+        params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
+        self.virtio_user_pmd.start_testpmd(cores=self.core_list_virtio1, param=params, eal_param=eal_params, \
+                                           no_pci=True, ports=[], prefix=self.virtio_prefix, fixed_prefix=True)
 
     def check_packet_payload_valid_with_cbdma(self, filename, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num):
         """
@@ -212,10 +196,10 @@ class TestVM2VMVirtioUser(TestCase):
         self.start_virtio_testpmd_with_vhost_net0_cbdma(path_mode, extern_param, ringsize)
 
     def resend_32_large_pkt_from_virtio0(self):
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 1')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 1')
 
     def launch_pdump_to_capture_pkt(self, dump_port, file_prefix, filename):
         """
@@ -243,12 +227,12 @@ class TestVM2VMVirtioUser(TestCase):
         # the virtio0 will send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_param, ringsize)
         # then send 32 large pkts
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 1')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 1')
         # packet will fwd after vhost testpmd start
-        self.pmd_vhost.execute_cmd('start')
+        self.vhost_pmd.execute_cmd('start')
 
     def get_dump_file_of_vhost_user(self, path_mode, extern_params, ringsize):
         """
@@ -258,7 +242,7 @@ class TestVM2VMVirtioUser(TestCase):
         """
         dump_port = 'port=0'
         self.launch_vhost_testpmd(vdev_num=1, fixed_prefix=True, fwd_mode='rxonly')
-        self.pmd_vhost.execute_cmd('start')
+        self.vhost_pmd.execute_cmd('start')
         self.launch_pdump_to_capture_pkt(dump_port, self.vhost_prefix, self.dump_vhost_pcap)
         # the virtio0 send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_params, ringsize)
@@ -273,10 +257,10 @@ class TestVM2VMVirtioUser(TestCase):
         if split and mergeable and no_inorder:
             pkt_num = 1
         if mergeable:
-            self.pmd_virtio0.execute_cmd('stop')
-            self.pmd_virtio0.execute_cmd('set burst %d' % pkt_num)
-            self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-            self.pmd_virtio0.execute_cmd('start tx_first 1')
+            self.virtio_user0_pmd.execute_cmd('stop')
+            self.virtio_user0_pmd.execute_cmd('set burst %d' % pkt_num)
+            self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+            self.virtio_user0_pmd.execute_cmd('start tx_first 1')
 
     def check_packet_payload_valid(self, filename, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num):
         """
@@ -336,9 +320,9 @@ class TestVM2VMVirtioUser(TestCase):
                 'pkt index is: %d, the load index include %s' % (i, diff_list))
 
     def quit_all_testpmd(self):
-        self.pmd_vhost.quit()
-        self.pmd_virtio0.quit()
-        self.pmd_virtio1.quit()
+        self.vhost_pmd.quit()
+        self.virtio_user0_pmd.quit()
+        self.virtio_user1_pmd.quit()
         self.pdump_session.send_expect('^c', '# ', 60)
 
     def test_vm2vm_virtio_user_packed_virtqueue_mergeable_path(self):
@@ -633,11 +617,11 @@ class TestVM2VMVirtioUser(TestCase):
 
     def close_all_session(self):
         if getattr(self, 'vhost_user', None):
-            self.dut.close_session(self.vhost_user)
+            self.dut.close_session(self.vhost_pmd_session)
         if getattr(self, 'virtio-user0', None):
-            self.dut.close_session(self.virtio-user0)
+            self.dut.close_session(self.virtio_user0_pmd_session)
         if getattr(self, 'virtio-user1', None):
-            self.dut.close_session(self.virtio-user1)
+            self.dut.close_session(self.virtio_user1_pmd_session)
         if getattr(self, 'pdump_session', None):
             self.dut.close_session(self.pdump_session)
 
@@ -751,49 +735,49 @@ class TestVM2VMVirtioUser(TestCase):
         self.logger.info('diff the pcap file of vhost and virtio')
 
     def send_multiple_pkt_with_8k54_2k394(self):
-        self.pmd_virtio0.execute_cmd('set burst 1')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 27')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 7')
-        self.pmd_vhost.execute_cmd('start')
+        self.virtio_user0_pmd.execute_cmd('set burst 1')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 27')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 7')
+        self.vhost_pmd.execute_cmd('start')
 
     def send_multiple_pkt_with_8k448(self):
-        self.pmd_virtio0.execute_cmd('set burst 1')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 27')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 7')
-        self.pmd_vhost.execute_cmd('start')
+        self.virtio_user0_pmd.execute_cmd('set burst 1')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 27')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 7')
+        self.vhost_pmd.execute_cmd('start')
 
     def send_8k_pkt(self):
-        self.pmd_virtio0.execute_cmd('set burst 1')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 27')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('start tx_first 7')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 1')
-        self.pmd_vhost.execute_cmd('start')
+        self.virtio_user0_pmd.execute_cmd('set burst 1')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 27')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 7')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 1')
+        self.vhost_pmd.execute_cmd('start')
 
     def send_multiple_pkt(self):
-        self.pmd_virtio0.execute_cmd('set burst 1')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000,2000,2000,2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 27')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set burst 32')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 7')
-        self.pmd_virtio0.execute_cmd('stop')
-        self.pmd_virtio0.execute_cmd('set txpkts 2000')
-        self.pmd_virtio0.execute_cmd('start tx_first 1')
-        self.pmd_vhost.execute_cmd('start')
+        self.virtio_user0_pmd.execute_cmd('set burst 1')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 27')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set burst 32')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 7')
+        self.virtio_user0_pmd.execute_cmd('stop')
+        self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
+        self.virtio_user0_pmd.execute_cmd('start tx_first 1')
+        self.vhost_pmd.execute_cmd('start')
 
 
 
