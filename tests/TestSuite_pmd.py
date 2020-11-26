@@ -90,7 +90,8 @@ class TestPmd(TestCase):
             self.dut.ports_info[port_num]['port'].bind_driver()
 
             sut = SystemInfo(self.dut, pci_device_id)
-            self.system_info = sut.get_system_info()
+            if (self.nic not in ["cavium_a063", "cavium_a064"]):
+                self.system_info = sut.get_system_info()
             self.nic_info = sut.get_nic_info()
 
             self.dut.ports_info[port_num]['port'].bind_driver(ori_driver)
