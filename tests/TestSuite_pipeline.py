@@ -32,6 +32,7 @@
 import utils
 import re
 import time
+import socket
 
 from settings import HEADER_SIZE
 from test_case import TestCase
@@ -5814,6 +5815,220 @@ class TestPipeline(TestCase):
         # rule 3 test
         sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
 
+        sleep(1)
+        cmd = "^C"
+        self.dut.send_expect(cmd, "# ", 20)
+
+    def test_table_002(self):
+
+        cli_file = '/tmp/pipeline/table_002/table_002.cli'
+
+        cmd = "sed -i -e 's/0000:00:04.0/%s/' {}".format(cli_file) % self.dut_p0_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:00:05.0/%s/' {}".format(cli_file) % self.dut_p1_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:00:06.0/%s/' {}".format(cli_file) % self.dut_p2_pci
+        self.dut.send_expect(cmd, "# ", 20)
+        cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
+        self.dut.send_expect(cmd, "# ", 20)
+
+        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
+                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
+
+        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
+
+        sleep(2)
+
+        # create TCP connection to the server
+        SERVER_IP = '192.168.122.216'
+        SERVER_PORT = 8086
+        BUFFER_SIZE = 1024
+
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        except socket.error as err:
+            print("socket creation failed with error %s" % (err))
+
+        try:
+            s.connect((SERVER_IP, SERVER_PORT))
+        except socket.error as err:
+            print("socket connection failed with error %s" % (err))
+
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        # print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+
+        # test empty table scenario
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_1.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_1.txt'
+        filters = "tcp"
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # test single rule scenario
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        # print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_2.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_2.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # test two rules scenario
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_3.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        # print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_3.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_3.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # delete one rule scenario
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_4_1.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        # print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_4_1.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_4_1.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # delete all rules scenario
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_4_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        # print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_4_2.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_4_2.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # action update scenario (restore one of the previously deleted rules and check the update)
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_5_1.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_5_1.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_5_1.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+
+        # action update scenario (change the action of restored rule and check the update)
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_5_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_5_1.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_5_1.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 3, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 2, in_pcap_file, out_pcap_file, filters)
+
+        # deafult action scenario [empty table]
+        '''
+        Empty table => Lookup MISS with default action executed
+        '''
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_6_1.txt'  # delete the previously added rule
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_6_1.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_6_1.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        # deafult action scenario [table with one rule]
+        '''
+        Add key A => Lookup HIT for the right packet with the specific key associated action executed
+                     Lookup MISS for any other packets with default action executed
+        '''
+        CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_6_2.txt'  # add a new rule
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        s.send(CLI_CMD.encode('utf-8'))
+        sleep(0.1)
+        msg = s.recv(BUFFER_SIZE)
+        response = msg.decode()
+        print('Rxd: ' + response)
+        if "pipeline>" not in response:
+            s.close()
+            self.verify(0, "CLI response error")
+        filters = "tcp"
+        in_pcap_file = 'pipeline/table_002/pcap_files/in_6_2.txt'
+        out_pcap_file = 'pipeline/table_002/pcap_files/out_6_2.txt'
+        sniff_pkts = self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(1, 1, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(2, 2, in_pcap_file, out_pcap_file, filters)
+        sniff_pkts = self.send_and_sniff_pkts(3, 3, in_pcap_file, out_pcap_file, filters)
+
+        s.close()
         sleep(1)
         cmd = "^C"
         self.dut.send_expect(cmd, "# ", 20)
