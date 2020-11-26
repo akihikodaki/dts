@@ -90,7 +90,7 @@ class TestRxTx_Offload(TestCase):
         # Support i40e/ixgbe NICs
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
                                  "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville",
-                                 "niantic", "twinpond", "sagepond", "sageville", "foxville"], "NIC Unsupported: " + str(self.nic))
+                                 "niantic", "twinpond", "sagepond", "sageville", "foxville", "cavium_a063", "cavium_a064"], "NIC Unsupported: " + str(self.nic))
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports(self.nic)
         # Verify that enough ports are available
@@ -271,7 +271,10 @@ class TestRxTx_Offload(TestCase):
                     else:
                         self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "ipv4 checksum flag is wrong!")
                     if ("udp" in flags) or ("tcp" in flags):
-                        self.verify("PKT_RX_L4_CKSUM_BAD" in line, "L4 checksum flag is wrong!")
+                        if self.nic in ['cavium_a063', 'cavium_a064']:
+                            self.verify("PKT_RX_L4_CKSUM_BAD" or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "L4 checksum flag is wrong!")
+                        else:
+                            self.verify("PKT_RX_L4_CKSUM_BAD" in line, "L4 checksum flag is wrong!")
                     else:
                         self.verify(("PKT_RX_L4_CKSUM_GOOD" in line) or ("PKT_RX_L4_CKSUM_UNKNOWN" in line), "L4 checksum flag is wrong!")
         # collect the tx checksum result
@@ -431,7 +434,7 @@ class TestRxTx_Offload(TestCase):
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4")
         capabilities = self.check_port_capability("rx")
         for capability in capabilities:
-            if self.nic == 'foxville' and capability == 'sctp_cksum':
+            if self.nic in ['foxville', 'cavium_a063', 'cavium_a064']  and capability == 'sctp_cksum':
                 continue
             if capability != "jumboframe":
                 self.dut.send_expect("port stop 0", "testpmd> ")
@@ -505,7 +508,7 @@ class TestRxTx_Offload(TestCase):
         self.dut.send_expect("set fwd txonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
         if (self.nic in ["fortville_eagle", "fortville_spirit","fortville_25g",
-                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville"]):
+                         "fortville_spirit_single", "fortpark_TLV","fortpark_BASE-T", "carlsville","cavium_a063", "cavium_a064"]):
             self.dut.send_expect("port stop 0", "testpmd> ")
             self.dut.send_expect("port config 0 tx_offload mbuf_fast_free off", "testpmd> ")
         self.check_port_config("tx", "NULL")
