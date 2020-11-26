@@ -341,3 +341,34 @@ Expected output in testpmd::
   Receive queue=0x3f
   doff=5
   flags=AS
+
+
+Test Case 12: Check effect of replacing pkg from RXID #22 to RXID #16
+=====================================================================
+
+Put the ice.pkg with RXID #16(ice-1.3.7.0.pkg and more) to /lib/firmware/updates/intel/ice/ddp/ice.pkg, then reload ice driver::
+
+  rmmod ice
+  modprobe ice
+
+Make sure the new ice.pkg is different with the original one. Take 'dmesg' command to get ice.pkg version::
+
+  dmesg | grep package
+
+Start the testpmd::
+
+  ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64
+
+Check the testpmd started failed. Failed info output::
+
+  Port (0) - Rx queue (0) is set with RXDID : 16
+  ice_rx_queue_start(): fail to program RX queue 0
+  ice_dev_start(): fail to start Rx queue 0
+  Fail to start port 0
+  Please stop the ports first
+  Port (0) - Rx queue (0) is set with RXDID : 16
+
+Replace correct ice.pkg to /lib/firmware/updates/intel/ice/ddp/ice.pkg,then reload ice driver::
+
+  rmmod ice
+  modprobe ice.ko
