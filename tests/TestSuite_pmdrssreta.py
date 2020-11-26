@@ -153,6 +153,7 @@ class TestPmdrssreta(TestCase):
                 # compute the hash result using simple XOR.
                 hash_index_tmp = 0
                 index_tmp = tmp_reta_line["RSS hash"].strip("0x")
+                index_tmp = index_tmp.zfill(8)
                 index_tmp = textwrap.wrap(index_tmp,2)
                 index_tmp = [hex(int(index,16)) for index in index_tmp]
                 for index in  index_tmp:
@@ -219,10 +220,10 @@ class TestPmdrssreta(TestCase):
         for queue in testQueues:
             if(queue == 16):
                 self.pmdout.start_testpmd(
-                    "all", "--rxq=%d --txq=%d" % (queue, queue), socket=self.ports_socket)
+                    "all", "--rxq=%d --txq=%d --rx-offloads=0x00080000 " % (queue, queue), socket=self.ports_socket)
             else:
                 self.pmdout.start_testpmd(
-                    "all", "--mbcache=128 --rxq=%d --txq=%d" % (queue, queue), socket=self.ports_socket)
+                    "all", "--mbcache=128 --rxq=%d --txq=%d --rx-offloads=0x00080000" % (queue, queue), socket=self.ports_socket)
 
             for iptype, rsstype in list(iptypes.items()):
                 self.dut.send_expect("set verbose 8", "testpmd> ")
