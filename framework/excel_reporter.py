@@ -76,38 +76,40 @@ class ExcelReporter(object):
 
     def __add_header(self):
         self.sheet.write(0, 0, 'DUT', self.header_style)
-        self.sheet.write(0, 1, 'Target', self.header_style)
-        self.sheet.write(0, 2, 'NIC', self.header_style)
-        self.sheet.write(0, 3, 'Test suite', self.header_style)
-        self.sheet.write(0, 4, 'Test case', self.header_style)
-        self.sheet.write(0, 5, 'Results', self.header_style)
+        self.sheet.write(0, 1, 'DPDK version', self.header_style)
+        self.sheet.write(0, 2, 'Target', self.header_style)
+        self.sheet.write(0, 3, 'NIC', self.header_style)
+        self.sheet.write(0, 4, 'Test suite', self.header_style)
+        self.sheet.write(0, 5, 'Test case', self.header_style)
+        self.sheet.write(0, 6, 'Results', self.header_style)
 
-        self.sheet.write(0, 7, 'Pass', self.header_style)
-        self.sheet.write(0, 8, 'Fail', self.header_style)
-        self.sheet.write(0, 9, 'Blocked', self.header_style)
-        self.sheet.write(0, 10, 'N/A', self.header_style)
-        self.sheet.write(0, 11, 'Not Run', self.header_style)
-        self.sheet.write(0, 12, 'Total', self.header_style)
+        self.sheet.write(0, 8, 'Pass', self.header_style)
+        self.sheet.write(0, 9, 'Fail', self.header_style)
+        self.sheet.write(0, 10, 'Blocked', self.header_style)
+        self.sheet.write(0, 11, 'N/A', self.header_style)
+        self.sheet.write(0, 12, 'Not Run', self.header_style)
+        self.sheet.write(0, 13, 'Total', self.header_style)
 
-        self.sheet.write(1, 7, Formula('COUNTIF(F2:F2000,"PASSED")'))
-        self.sheet.write(1, 8, Formula('COUNTIF(F2:F2000,"FAILED*") + COUNTIF(F2:F2000,"IXA*")'))
-        self.sheet.write(1, 9, Formula('COUNTIF(F2:F2000,"BLOCKED*")'))
-        self.sheet.write(1, 10, Formula('COUNTIF(F2:F2000,"N/A*")'))
-        self.sheet.write(1, 12, Formula('H2+I2+J2+K2+L2'))
+        self.sheet.write(1, 8, Formula('COUNTIF(G2:G2000,"PASSED")'))
+        self.sheet.write(1, 9, Formula('COUNTIF(G2:G2000,"FAILED*") + COUNTIF(G2:G2000,"IXA*")'))
+        self.sheet.write(1, 10, Formula('COUNTIF(G2:G2000,"BLOCKED*")'))
+        self.sheet.write(1, 11, Formula('COUNTIF(G2:G2000,"N/A*")'))
+        self.sheet.write(1, 13, Formula('I2+J2+K2+L2+M2'))
 
         self.sheet.col(0).width = 4000
-        self.sheet.col(1).width = 7500
-        self.sheet.col(2).width = 3000
-        self.sheet.col(3).width = 5000
-        self.sheet.col(4).width = 8000
-        self.sheet.col(5).width = 3000
-        self.sheet.col(6).width = 1000
-        self.sheet.col(7).width = 3000
+        self.sheet.col(1).width = 4500
+        self.sheet.col(2).width = 7500
+        self.sheet.col(3).width = 3000
+        self.sheet.col(4).width = 5000
+        self.sheet.col(5).width = 8000
+        self.sheet.col(6).width = 3000
+        self.sheet.col(7).width = 1000
         self.sheet.col(8).width = 3000
         self.sheet.col(9).width = 3000
         self.sheet.col(10).width = 3000
         self.sheet.col(11).width = 3000
         self.sheet.col(12).width = 3000
+        self.sheet.col(13).width = 3000
 
     def __styles(self):
         header_pattern = xlwt.Pattern()
@@ -223,6 +225,8 @@ class ExcelReporter(object):
             if self.result.is_dut_failed(dut):
                 self.__write_failed_dut(dut)
             else:
+                self.col = self.col + 1
+                self.sheet.write(self.row, self.col, self.result.current_dpdk_version(dut), self.title_style)
                 self.__write_targets(dut)
             self.row += 1
 
