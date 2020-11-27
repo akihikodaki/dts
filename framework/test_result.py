@@ -86,6 +86,23 @@ class Result(object):
     def __get_dut(self):
         return self.__internals[self.__dut]
 
+    def current_dpdk_version(self, dut):
+        """
+        Returns the dpdk version for a given DUT
+        """
+        try:
+            dut_idx = self.__internals.index(dut)
+            return self.__internals[dut_idx + 1][0]
+        except:
+            return ''
+
+    def __set_dpdk_version(self, dpdk_version):
+        if not self.internals[self.__dut + 1]:
+            self.internals[self.__dut + 1].append(dpdk_version)
+
+    def __get_dpdk_version(self):
+        return self.internals[self.__dut + 1][0]
+
     def __current_targets(self):
         return self.internals[self.__dut + 1]
 
@@ -193,7 +210,7 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
         except:
             return None
-        return self.__internals[dut_idx + 1][::3]
+        return self.__internals[dut_idx + 1][1::3]
 
     def current_nic(self, dut, target):
         """
@@ -287,6 +304,7 @@ class Result(object):
     presented interface.
     """
     dut = property(__get_dut, __set_dut)
+    dpdk_version = property(__get_dpdk_version, __set_dpdk_version)
     target = property(__get_target, __set_target)
     test_suite = property(__get_test_suite, __set_test_suite)
     test_case = property(__get_test_case, __set_test_case)
