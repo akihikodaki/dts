@@ -47,7 +47,7 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
         if (async_vhost_driver) {
                 	f.async_inorder = 1;
 	-               f.async_threshold = 256;
-	+               f.async_threshold = 0;
+	+               f.async_threshold = 1518;
                 	return rte_vhost_async_channel_register(vid, VIRTIO_RXQ,
                         	f.intval, &channel_ops);
         }
@@ -57,7 +57,7 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 3. On host, launch dpdk-vhost by below command::
 
 	./dpdk-vhost -c 0x1c000000 -n 4 – \
-	-p 0x1 --mergeable 1 --vm2vm 1 --async_vhost_driver --stats 1 --socket-file /tmp/vhost-net -dmas [txd0@00:04.0]
+	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net -dmas [txd0@00:04.0]
 
 4. Launch virtio-user with testpmd::
 
@@ -96,22 +96,22 @@ Test Case1: PVP performance check with CBDMA channel using vhost async driver
 	(1)CPU copy vs. sync copy delta < 10% for 64B packet size
 	(2)CBDMA copy vs sync copy delta > 5% for 1518 packet size
 
-Test Case2: PV test with multiple CBDMA channels using vhost async driver
+Test Case2: PVP test with multiple CBDMA channels using vhost async driver
 ==========================================================================
 
-1. Bind two physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
 
 2. On host, launch dpdk-vhost by below command::
 
 	./dpdk-vhost -c 0x1c000000 -n 4 – \
-	-p 0x1 --mergeable 1 --vm2vm 1 --async_vhost_driver --stats 1 --socket-file /tmp/vhost-net0 -socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
+	-p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat --stats 1 --socket-file /tmp/vhost-net0 -socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
 
 3. launch two virtio-user ports::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./x86_64-native-linuxapp-gcc/app/testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1 – -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1 --no-numa
 	
-	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
+	./x86_64-native-linuxapp-gcc/app/testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1 – -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1 --no-numa
 
 4. Start pkts from two virtio-user side individually to let vswitch know the mac addr::
@@ -131,19 +131,19 @@ Test Case2: PV test with multiple CBDMA channels using vhost async driver
 Test Case3: VM2VM performance test with two CBDMA channels using vhost async driver
 ====================================================================================
 
-1.Bind two physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1.Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -c 0x1c000000 -n 4 – -p 0x1 --mergeable 1 --vm2vm 1 --async_vhost_driver \
+	./dpdk-vhost -c 0x1c000000 -n 4 – -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
 
 3. Launch virtio-user::
 
-	./dpdk-testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
+	./testpmd -l 29-30 -n 4 --no-pci --file-prefix=testpmd0 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1 – -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1 --no-numa
 
-	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
+	./x86_64-native-linuxapp-gcc/app/testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net0,queues=1 – -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1 --no-numa
 
 4. Start pkts from two virtio-user sides, record performance number with txpkts=256 and 2000 from testpmd1 seperately::
@@ -173,16 +173,16 @@ Test Case3: VM2VM performance test with two CBDMA channels using vhost async dri
 Test Case4: VM2VM test with 2 vhost device using vhost async driver
 =======================================================================
 
-1. Bind two physical ports to vfio-pci and two CBDMA channels to igb_uio.
+1. Bind one physical ports to vfio-pci and two CBDMA channels to igb_uio.
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -c 0x1c000000 -n 4 – -p 0x1 --mergeable 1 --vm2vm 1 --async_vhost_driver \
+	./dpdk-vhost -c 0x1c000000 -n 4 – -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
 
 3. Start VM0::
 
-    qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 4 -m 4096 \
+ 	/home/qemu-install/qemu-4.2.1/bin/qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -194,8 +194,8 @@ Test Case4: VM2VM test with 2 vhost device using vhost async driver
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
 4. Start VM1::
-   
-    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+
+	/home/qemu-install/qemu-4.2.1/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
