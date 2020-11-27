@@ -32,6 +32,7 @@
 import time
 from packet import Packet
 from pmd_output import PmdOutput
+import re
 
 
 class FlexibleRxdBase(object):
@@ -158,6 +159,21 @@ class FlexibleRxdBase(object):
                 if isinstance(expected_strs, str) else \
                 expected_strs
             self.verify(all([e in out for e in _expected_strs]), msg)
+
+    def replace_pkg(self, pkg='comms'):
+        ice_pkg_path = ''.join([self.ddp_dir, "ice.pkg"])
+        if pkg == 'os_default':
+            self.dut.send_expect("cp {} {}".format(self.os_default_pkg, ice_pkg_path), "# ")
+        if pkg == 'comms':
+            self.dut.send_expect("cp {} {}".format(self.comms_pkg, ice_pkg_path), "# ")
+        self.dut.send_expect("echo {0} > /sys/bus/pci/devices/{0}/driver/unbind".format(self.pci), "# ", 60)
+        self.dut.send_expect("echo {} > /sys/bus/pci/drivers/ice/bind".format(self.pci), "# ", 60)
+        self.dut.send_expect("./usertools/dpdk-devbind.py --force --bind=vfio-pci {}".format(self.pci), "# ", 60)
+        dmesg_out = self.dut.send_expect('dmesg | grep Package | tail -1', '#')
+        package_version = re.search('version (.*)', dmesg_out).group(1)
+        self.logger.info("package version:{}".format(package_version))
+        self.verify(package_version in self.os_default_pkg if pkg == 'os_default' else self.comms_pkg,
+                    'replace package failed')
 
     def check_single_VLAN_fields_in_RXD_8021Q(self):
         """
@@ -481,3 +497,11 @@ class FlexibleRxdBase(object):
             ['Ether(src="{src_mac}", dst="{dst_mac}",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()',
                 'ip_offset=42']]
         self.__verify_common(pkts_list)
+
+    def check_effect_replace_pkg_RXID_22_to_RXID_16(self):
+        self.logger.info("replace ice-1.3.7.0.pkg with RXID 16")
+        self.replace_pkg('os_default')
+        out = self.__pmdout.start_testpmd(cores="1S/4C/1T", param='--rxq=64 --txq=64', eal_param=f"-w {self.__pci}")
+        self.verify("Fail to start port 0" in out, "RXID #16 not support start testpmd")
+        self.__pmdout.execute_cmd("quit", "# ")
+        self.replace_pkg('comms')
