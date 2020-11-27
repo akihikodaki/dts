@@ -64,6 +64,7 @@ class JSONReporter(object):
         if result.is_dut_failed(dut):
             return 'fail'
         target_map = {}
+        target_map['dpdk_version'] = result.current_dpdk_version(dut)
         for target in result.all_targets(dut):
             target_map[target] = self.__scan_target(result, dut, target)
         return target_map
