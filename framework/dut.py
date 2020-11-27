@@ -80,6 +80,7 @@ class Dut(Crb):
         self.hugepage_path = None
         self.apps_name_conf = {}
         self.apps_name = {}
+        self.dpdk_version = ''
 
     def filter_cores_from_crb_cfg(self):
         # get core list from crbs.cfg
@@ -368,7 +369,13 @@ class Dut(Crb):
         Then call pci scan function to collect nic device information.
         At last setup DUT' environment for validation.
         """
-        self.send_expect("cd %s" % self.base_dir, "# ")
+        out = self.send_expect("cd %s" % self.base_dir, "# ")
+        assert 'No such file or directory' not in out, "Can't switch to dpdk folder!!!"
+        out = self.send_expect("cat VERSION", "# ")
+        if 'No such file or directory' in out:
+            self.logger.error("Can't get DPDK version due to VERSION not exist!!!")
+        else:
+            self.dpdk_version = out
         self.send_expect("alias ls='ls --color=none'", "#")
 
         if self.get_os_type() == 'freebsd':
