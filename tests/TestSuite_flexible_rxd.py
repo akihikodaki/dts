@@ -34,7 +34,7 @@
 import time
 from test_case import TestCase
 from flexible_common import FlexibleRxdBase
-
+import rte_flow_common as rfc
 
 class TestFlexibleRxd(TestCase, FlexibleRxdBase):
 
@@ -85,12 +85,17 @@ class TestFlexibleRxd(TestCase, FlexibleRxdBase):
         self.pci = self.dut.ports_info[0]['pci']
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.init_base(self.pci, self.dst_mac, 'pf')
+        self.ddp_dir = "/lib/firmware/updates/intel/ice/ddp/"
+        self.suite_config = rfc.get_suite_config(self)
+        self.os_default_pkg = self.suite_config["os_default_package_file_location"]
+        self.comms_pkg = self.suite_config["comms_package_file_location"]
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
         self.restore_compilation()
+        self.replace_pkg(pkg='comms')
 
     def set_up(self):
         """
@@ -213,3 +218,9 @@ class TestFlexibleRxd(TestCase, FlexibleRxdBase):
         check ip offset with multi MPLS with 2 vlan tag
         """
         self.check_ip_offset_with_multi_MPLS_with_2_vlan_tag()
+
+    def test_check_effect_replace_pkg_RXID_22_to_RXID_16(self):
+        """
+        Check replace pkg RXID #22 to RXID #16 effect of testpmd
+        """
+        self.check_effect_replace_pkg_RXID_22_to_RXID_16()
