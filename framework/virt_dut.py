@@ -172,8 +172,12 @@ class VirtDut(DPDKdut):
             self.prepare_package()
 
         out = self.send_expect("cd %s" % self.base_dir, "# ")
+        assert 'No such file or directory' not in out, "Can't switch to dpdk folder!!!"
+        out = self.send_expect("cat VERSION", "# ")
         if 'No such file or directory' in out:
-            self.logger.error("Can't switch to dpdk folder!!!")
+            self.logger.error("Can't get DPDK version due to VERSION not exist!!!")
+        else:
+            self.dpdk_version = out
 
         self.send_expect("alias ls='ls --color=none'", "#")
 
