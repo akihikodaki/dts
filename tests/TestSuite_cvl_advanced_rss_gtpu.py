@@ -4793,36 +4793,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         self.verify(hash_value3[0] != hash_value3[1] and hash_value3[0] == hash_value3[2],
                     'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
 
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li1)
-        hash_value1, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[0])
-        self.verify(all([i == '0' for i in hash_value1]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-        hash_value2, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[1])
-        self.verify(hash_value2[0] != hash_value2[1] and hash_value2[0] == hash_value2[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-        hash_value3, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[2])
-        self.verify(hash_value3[0] != hash_value3[1] and hash_value3[0] == hash_value3[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-
-        self.rssprocess.create_rule(rule=rules[0])
-        hash_value1, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[0])
-        self.verify(hash_value1[0] == hash_value1[1] and hash_value1[0] != hash_value1[2],
-                    'got wrong hash, expect 1st hash equal to 2nd and different with 3rd')
-        hash_value2, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[1])
-        self.verify(hash_value2[0] != hash_value2[1] and hash_value2[0] == hash_value2[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-        hash_value3, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[2])
-        self.verify(hash_value3[0] != hash_value3[1] and hash_value3[0] == hash_value3[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li2)
-        hash_value1, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[0])
-        self.verify(hash_value1[0] == hash_value1[1] and hash_value1[0] != hash_value1[2],
-                    'got wrong hash, expect 1st hash equal to 2nd and different with 3rd')
-        hash_value2, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2[1] + pkts2[2])
-        self.verify(all([i == '0' for i in hash_value2]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-
     def test_ipv4_gtpu_eh_ipv4_with_without_ul_dl(self):
         self.switch_testpmd(enable_rss=True)
         rules = [
@@ -4866,11 +4836,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         self.verify(hash_value2[0] != hash_value2[1] and hash_value2[0] == hash_value2[2],
                     'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
 
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li2)
-        hash_value1, queues = self.rssprocess.send_pkt_get_hash_queues(pkts2[0] + pkts2[1])
-        self.verify(all([i == '0' for i in hash_value1]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-
     def test_ipv4_gtpu_eh_ipv4_without_with_ul_dl(self):
         self.switch_testpmd(enable_rss=True)
         rules = [
@@ -4909,10 +4874,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         self.verify(hash_values[2] != hash_values[0], 'packet 3 should has different hash value with packet 1')
         self.verify(hash_values[4] == hash_values[3], 'packet 5 should has same hash value with packet 4')
         self.verify(hash_values[5] != hash_values[3], 'packet 6 should has different hash value with packet 4')
-
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule2)
-        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts1)
-        self.verify(all([i == '0' for i in hash_values]), 'all pkts should has no hash value and distribute to queue 0')
 
     def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_udp_tcp(self):
         self.switch_testpmd(enable_rss=True)
@@ -5109,12 +5070,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         self.verify(len(hash_value[0]) != hash_value[2], 'the toeplitz should not work')
         for temp in range(len(hash_value)):
             self.verify(len(hash_value[temp]) != 0, 'all the toeplitz packet should have hash value')
-        #step 4
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the toeplitz packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with same pattern (switched rule order)')
@@ -5131,12 +5086,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         # step 2
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
         self.verify(hash_value[0] != hash_value[1], 'symmetric rule should not work')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the toeplitz packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with different pattern (different UL/DL)')
@@ -5165,20 +5114,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         self.verify(hash_value[1] != hash_value[0], 'second packet should hash value different from the first packet')
         self.verify(hash_value[2] == hash_value[0], 'third packet should hash value same with the first packet')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[1] != hash_value[0], 'second packet should hash value different from the first packet')
-        self.verify(hash_value[2] == hash_value[0], 'third packet should hash value same with the first packet')
-        rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
-        self.rssprocess.check_rule(rule_list=rule_id_symmetric)
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'second packet should hash value same with the first packet')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'third packet should hash value same with the first packet')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)')
@@ -5212,28 +5147,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         for temp in range(len(hash_value)):
             self.verify(len(hash_value[temp]) != 0, 'all the toeplitz packet should have hash value')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] != hash_value[1], 'symmetric rule should not work')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[1] != hash_value[0], 'hash_value[1] should hash value different from hash_value[0]')
-        self.verify(hash_value[2] == hash_value[0], 'hash_value[2] should hash value same with hash_value[0]')
-        self.verify(hash_value[4] != hash_value[3], 'hash_value[4] should hash value different from hash_value[3]')
-        self.verify(hash_value[5] == hash_value[3], 'hash_value[5] should hash value same with hash_value[3]')
-        # step 4
-        rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
-        self.rssprocess.check_rule(rule_list=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'second packet should hash value same with the first packet')
-        # step 5
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'second packet should hash value same with the first packet')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        for temp in range(len(hash_value)):
-            if temp > 2:
-                self.verify(len(hash_value) == 0, 'all the toeplitz UL packet should have no hash value')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with different pattern')
@@ -5264,24 +5177,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         for temp in range(len(hash_value)):
             self.verify(len(hash_value[temp]) != 0, 'all the toeplitz packet should have hash value')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[1] != hash_value[0], 'hash_value[1] should hash value different from hash_value[0]')
-        self.verify(hash_value[2] != hash_value[0], 'hash_value[2] should hash value different with hash_value[0]')
-        self.verify(hash_value[3] == hash_value[0], 'hash_value[3] should hash value same from hash_value[0]')
-        # step 4
-        rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
-        self.rssprocess.check_rule(rule_list=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'second packet should hash value same with the first packet')
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'second packet should hash value same with the first packet')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
         self.pmd_output.execute_cmd('flow flush 0')
 
     def tear_down(self):
