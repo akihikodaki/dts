@@ -624,7 +624,7 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         if dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer) is False:
             dts_crbs_exit(duts, tester)
             continue
-
+        result.dpdk_version = duts[0].dpdk_version
         dts_run_target(duts, tester, targets, test_suites, subtitle)
 
         dts_crbs_exit(duts, tester)
