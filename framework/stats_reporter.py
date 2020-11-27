@@ -65,6 +65,13 @@ class StatsReporter(object):
                             self.__add_stat(test_result)
 
     def __write_stats(self):
+        duts = self.result.all_duts()
+        if len(duts) == 1:
+            self.stats_file.write("dpdk_version = {}\n".format(self.result.current_dpdk_version(duts[0])))
+        else:
+            for dut in duts():
+                dpdk_version = self.result.current_dpdk_version(dut)
+                self.stats_file.write("{}.dpdk_version = {}\n".format(dut, dpdk_version))
         self.__count_stats()
         self.stats_file.write("Passed     = %d\n" % self.passed)
         self.stats_file.write("Failed     = %d\n" % self.failed)
