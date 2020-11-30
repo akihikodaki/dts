@@ -824,11 +824,41 @@ mac_ipv4_gtpu_ipv4_udp_all = {
     ]
 }
 
+mac_ipv4_gtpu_ipv4_udp_l3 = {
+    'sub_casename': 'mac_ipv4_gtpu_ipv4_udp_l3',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22,dport=23', 'sport=12,dport=13'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'action': 'check_no_hash_or_different',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_ipv4_udp_toeplitz = [mac_ipv4_gtpu_ipv4_udp_l3dst, mac_ipv4_gtpu_ipv4_udp_l3src,
                                    mac_ipv4_gtpu_ipv4_udp_l3dst_l4src, mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst,
                                    mac_ipv4_gtpu_ipv4_udp_l3src_l4src, mac_ipv4_gtpu_ipv4_udp_l3src_l4dst,
                                    mac_ipv4_gtpu_ipv4_udp_l4src, mac_ipv4_gtpu_ipv4_udp_l4dst,
-                                   mac_ipv4_gtpu_ipv4_udp_all]
+                                   mac_ipv4_gtpu_ipv4_udp_all, mac_ipv4_gtpu_ipv4_udp_l3]
 
 mac_ipv4_gtpu_ipv4_tcp_toeplitz = [eval(str(element).replace('TCP', 'TCP1').replace('udp', 'tcp')
                                         .replace('UDP(sport', 'TCP(sport').replace('TCP1', 'UDP')
@@ -1977,9 +2007,19 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only = {
             'action': 'check_hash_different',
         },
         {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('192.168.0.2', '192.168.1.2')
-                                                                              .replace('sport=22, dport=23', 'sport=32, dport=33')
-                                                                              .replace('0x123456', '0x12345'),
+                                                                              .replace('sport=22, dport=23',
+                                                                                       'sport=32, dport=33'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.2', '192.168.1.2')
+                .replace('sport=22, dport=23',
+                         'sport=32, dport=33'),
             'action': 'check_hash_same',
         },
     ],
@@ -2144,6 +2184,55 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp = {
     ]
 }
 
+mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3 = {
+    'sub_casename': 'mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('sport=22, dport=23', 'sport=12, dport=13'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('sport=22, dport=23', 'sport=12, dport=13'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': [
+                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
+                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
+            ],
+            'action': 'check_no_hash_or_different',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz = [
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_only,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only,
@@ -2154,6 +2243,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz = [
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4src_only,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4dst_only,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp,
+    mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3,
 ]
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_tcp_toeplitz = [eval(str(element).replace('TCP', 'TCP1').replace('udp', 'tcp')
@@ -2175,6 +2265,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv6_toeplitz = [eval(str(element).replace('gtp_p
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv6_udp_toeplitz = [eval(str(element).replace('gtp_psc / ipv4', 'gtp_psc / ipv6')
                                                          .replace('ipv4-udp', 'ipv6-udp')
+                                                         .replace('types ipv4', 'types ipv6')
                                                          .replace('ul_dl_ipv4_udp', 'ul_dl_ipv6_udp')
                                                          .replace('IP(dst="192.168.0.1",src="192.168.0.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
                                                          .replace('IP(dst="192.168.1.1",src="192.168.0.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
@@ -2184,6 +2275,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv6_udp_toeplitz = [eval(str(element).replace('g
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv6_tcp_toeplitz = [eval(str(element).replace('gtp_psc / ipv4', 'gtp_psc / ipv6')
                                                          .replace('ipv4 / tcp', 'ipv6 / tcp')
+                                                         .replace('types ipv4', 'types ipv6')
                                                          .replace('ipv4-tcp', 'ipv6-tcp')
                                                          .replace('ul_dl_ipv4_tcp', 'ul_dl_ipv6_tcp')
                                                          .replace('IP(dst="192.168.0.1",src="192.168.0.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
@@ -2434,13 +2526,43 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_all = {
     ]
 }
 
+mac_ipv4_gtpu_eh_dl_ipv4_udp_l3 = {
+    'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv4_udp_l3',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=12').replace('dport=23', 'dport=13'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'action': 'check_no_hash_or_different',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_eh_dl_ipv4_udp_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4src,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4dst,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4src,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4dst,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src, mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst,
-                                         mac_ipv4_gtpu_eh_dl_ipv4_udp_all]
+                                         mac_ipv4_gtpu_eh_dl_ipv4_udp_all, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3]
 
 mac_ipv4_gtpu_eh_ul_ipv4_udp_toeplitz = [eval(str(element).replace('(type=1', '(type=2')
                                                           .replace('(type=0', '(type=1').replace('(type=2', '(type=0')
@@ -3363,92 +3485,6 @@ mac_ipv6_gtpc_basic_pkt = {
     ]
 }
 
-# mismatched basic pkt
-
-mac_ipv4_gtpu_mismatched_pkt = {
-    'ipv4-gtpu-eh-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-eh-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-eh-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-    ],
-    'ipv4-gtpc-EchoRequest': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-    ]
-}
-
-mac_ipv6_gtpu_mismatched_pkt = {
-    'ipv6-gtpu-eh-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-eh-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-eh-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/Raw("x"*96)',
-    ],
-    'ipv6-gtpc-EchoRequest': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-    ],
-}
-
-mac_ipv4_gtpc_mismatched_pkt = {
-    'ipv4-gtpu-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-eh-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv4-gtpu-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv6-gtpc-EchoRequest': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-    ]
-}
-
-mac_ipv6_gtpc_mismatched_pkt = {
-    'ipv6-gtpu-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-eh-pay': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-ipv4': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-    ],
-    'ipv6-gtpu-ipv6': [
-        'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-    ],
-    'ipv6-gtpc-EchoRequest': [
-        'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-    ]
-}
-
 # matched change pkt
 
 mac_ipv4_gtpu_l3src_only_changed = {
@@ -3919,70 +3955,6 @@ mac_ipv4_gtpu_l3src_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=3)/IP(src="192.168.1.1", dst="192.168.1.5")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345683,gtp_type=0x01)/GTPEchoResponse()',
             'action': 'check_hash_same',
         },
-        # send mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv4'],
-             'action': 'check_no_hash',
-            #'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.5")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345683, gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x35)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv4'],
-             'action': 'check_no_hash',
-            #'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.5")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv6'],
-             'action': 'check_no_hash',
-            #'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.5")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv6'],
-             'action': 'check_no_hash',
-            #'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.5")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-pay'],
-             #'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-eh-pay'],
-             # 'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-             # 'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv4-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
     ],
     'post-test': [
         {
@@ -4102,70 +4074,6 @@ mac_ipv4_gtpu_l3dst_only = {
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=3)/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPEchoResponse()',
             'action': 'check_hash_same',
-        },
-        # send mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv4'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv6'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-pay'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv4-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -4350,56 +4258,6 @@ mac_ipv4_gtpu_l3_src_only_l3_dst_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x02)/GTPEchoResponse()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv4'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv6'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-            # 'action': {'save_hash': 'ipv4-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        # not support 20.11
-        {
-            #'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-pay'],
-            # 'action': 'check_no_hash',
-        },
-        {
-            #'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            # 'action': 'check_no_hash',
-        },
-        {
-            #'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-            # 'action': 'check_no_hash',
-        },
     ],
     # not support 20.11
     'post-test': [
@@ -4522,70 +4380,6 @@ mac_ipv6_gtpu_l3src_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=25,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x02)/GTPEchoResponse()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv4'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv4'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv6'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpu-eh-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2055")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv6'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2055")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-pay'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            #'action': 'check_no_hash',
-             'action': {'save_hash': 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
     ],
     'post-test': [
         {
@@ -4704,70 +4498,6 @@ mac_ipv6_gtpu_l3dst_only = {
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x02)/GTPEchoResponse()',
             'action': 'check_hash_same',
-        },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv4'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv4'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv6'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-eh-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2091")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv6'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2091")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-pay'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            # 'action': 'check_no_hash',
-            'action': {'save_hash': 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -5248,47 +4978,6 @@ mac_ipv4_gtpc_l3src_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345683,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-pay'],
-            'action': {'save_hash', 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            'action': {'save_hash', 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
     ],
     'post-test': [
         {
@@ -5563,48 +5252,6 @@ mac_ipv4_gtpc_l3dst_only = {
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=3)/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
-        },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-pay'],
-            'action': {'save_hash': 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            'action': {'save_hash': 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv4'],
-            # 'action': {'save_hash': 'ipv4-gtpu-ipv4'},
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -6041,36 +5688,6 @@ mac_ipv4_gtpc_l3_src_only_l3_dst_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.3")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682, gtp_type=255)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_no_hash',
-        },
-        # not support 20.11
-        {
-            # 'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-pay'],
-            # 'action': 'check_no_hash',
-        },
-        {
-            # 'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            # 'action': 'check_no_hash',
-        },
-        {
-            # 'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            # 'action': 'check_no_hash',
-        },
     ],
     # not support 20.11
     'post-test': [
@@ -6349,47 +5966,6 @@ mac_ipv6_gtpc_l3src_only = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=5)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345683,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-pay'],
-            'action': {'save_hash', 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            'action': {'save_hash', 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-ipv4'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-ipv6'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2055")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv4-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
     ],
     'post-test': [
         {
@@ -6664,47 +6240,6 @@ mac_ipv6_gtpc_l3dst_only = {
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=3)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
-        },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-pay'],
-            'action': {'save_hash', 'ipv6-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            'action': {'save_hash', 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x55)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-ipv4'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IP(src="192.168.1.7", dst="192.168.1.9")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-ipv6'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=23,dport=2152)/GTP_U_Header(teid=0x12345682,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2930",dst="CDCD:910A:2222:5498:8475:1111:3900:2023")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv4-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.5", dst="192.168.1.3")/UDP(sport=23,dport=2123)/GTPHeader(teid=0x12345682,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -7206,7 +6741,8 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'ipv4-gtpu-pay'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3',
+                                                                             'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7214,7 +6750,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'ipv4-gtpu-eh-pay'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7222,7 +6758,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'ipv4-gtpu-echo-request'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7230,7 +6766,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'ipv4-gtpu-echo-reponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7238,7 +6774,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpu-pay'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7246,7 +6782,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpu-eh-pay'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7254,7 +6790,7 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpu-echo-request'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
         {
@@ -7262,51 +6798,9 @@ mac_ipv4_gtpu_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpu-echo-reponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0].replace('src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv4'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-eh-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-pay'],
-            'action': {'save_hash', 'ipv6-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            'action': {'save_hash', 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
-
     ],
     'post-test': [
         {
@@ -7394,63 +6888,6 @@ mac_ipv6_gtpu_symmetric = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
             'action': 'check_hash_same',
         },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv4'],
-            'action': {'save_hash', 'ipv6-gtpu-eh-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpc_mismatched_pkt['ipv6-gtpu-ipv4'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-eh-ipv6'],
-            'action': {'save_hash', 'ipv6-gtpu-eh-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv6'],
-            'action': {'save_hash', 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-pay'],
-            'action': {'save_hash', 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            'action': {'save_hash', 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            'action': {'save_hash', 'ipv6-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
-        },
     ],
     'post-test': [
         {
@@ -7479,7 +6916,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-EchoRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7487,7 +6924,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-EchoEesponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7495,7 +6932,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-CreatePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7503,7 +6940,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-CreatePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7511,7 +6948,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-UpdatePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7519,7 +6956,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-UpdatePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7527,7 +6964,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-DeletePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7535,7 +6972,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-DeletePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7543,7 +6980,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-PDUNotificationRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7551,7 +6988,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'ipv4-gtpc-SupportedExtensionHeadersNotification'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7559,7 +6996,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-EchoRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7567,7 +7004,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-EchoEesponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7575,7 +7012,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-CreatePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7583,7 +7020,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-CreatePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7591,7 +7028,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-UpdatePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7599,7 +7036,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-UpdatePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7607,7 +7044,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-DeletePDPContextRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7615,7 +7052,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-DeletePDPContextResponse'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7623,7 +7060,7 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-PDUNotificationRequest'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
         },
         {
@@ -7631,41 +7068,8 @@ mac_ipv4_gtpc_symmetric = {
             'action': {'save_hash': 'vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0].replace('src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
             'action': 'check_hash_same',
-        },
-        # mismatched pkt
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv4'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpu-ipv6'],
-            'action': 'check_no_hash',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv4-gtpu-pay'],
-            'action': {'save_hash': 'ipv4-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv4-gtpu-eh-pay'],
-            'action': {'save_hash': 'ipv4-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpc_mismatched_pkt['ipv6-gtpc-EchoRequest'],
-            'action': {'save_hash': ''},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -7861,47 +7265,6 @@ mac_ipv6_gtpc_symmetric = {
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
             'action': 'check_hash_same',
-        },
-        # mismactched pkt
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv6'],
-            'action': {'save_hash': 'ipv6-gtpu-ipv6'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv6_gtpu_mismatched_pkt['ipv6-gtpu-ipv4'],
-            'action': {'save_hash': 'ipv6-gtpu-ipv4'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=255)/IP(src="192.168.1.5", dst="192.168.1.7")/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-pay'],
-            'action': {'save_hash': 'ipv6-gtpu-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv6-gtpu-eh-pay'],
-            'action': {'save_hash': 'ipv6-gtpu-eh-pay'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
-            'action': 'check_hash_different',
-        },
-        {
-            'send_packet': mac_ipv4_gtpu_mismatched_pkt['ipv4-gtpc-EchoRequest'],
-            'action': {'save_hash': 'ipv4-gtpc-EchoRequest'},
-        },
-        {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.1.3", dst="192.168.1.1")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
-            'action': 'check_hash_different',
         },
     ],
     'post-test': [
@@ -8353,9 +7716,8 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         negative_rules = [
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 gtpu end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end']
+            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end',
+            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 gtpu end key_len 0 queues end / end']
         self.rssprocess.create_rule(rule=negative_rules, check_stats=False, msg="Failed to create parser engine.: Invalid argument")
 
     def test_symmetric_negative_cases(self):
@@ -8464,27 +7826,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
                     'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
 
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li1)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
-        self.verify(all([i == '0' for i in hash_value]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2)
-        self.verify(hash_value[0] != hash_value[1] and hash_value[0] == hash_value[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts3)
-        self.verify(hash_value[0] != hash_value[1] and hash_value[0] == hash_value[2],
-                    'got wrong hash, expect 1st hash equal to 3rd and different with 2nd')
-
-        self.rssprocess.create_rule(rule=rules[0])
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2)
-        self.verify(hash_value[0] != hash_value[1] and hash_value[0] == hash_value[2],
-                    'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li2)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2 + pkts3)
-        self.verify(all([i == '0' for i in hash_value]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-
     def test_ipv4_gtpu_eh_ipv4_with_without_ul_dl(self):
         self.switch_testpmd(True)
         rules = [
@@ -8520,11 +7861,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts3)
         self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
                     'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
-
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_li2)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts3 + pkts2)
-        self.verify(all([i == '0' for i in hash_value]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
 
     def test_ipv4_gtpu_eh_ipv4_without_with_ul_dl(self):
         self.switch_testpmd()
@@ -8565,16 +7901,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
                     'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
 
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule1)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts1)
-        self.verify(all([i == '0' for i in hash_value]),
-                    'got wrong hash, expect not got rss hash and distribute to queue 0')
-
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts3)
-        self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
-                    'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
-
-
     def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_udp(self):
         self.switch_testpmd()
         pkts1 = [
@@ -8603,17 +7929,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
                     'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
 
         hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
-        self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
-                    'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
-
-        self.rssprocess.destroy_rule(rule_id=rule_li2)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
-        self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
-                    'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
-
-        rule_li2 = self.rssprocess.create_rule(rule=rules[1])
-        self.rssprocess.destroy_rule(rule_id=rule_li1)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2)
         self.verify(hash_value[0] == hash_value[2] and hash_value[0] != hash_value[1],
                     'got wrong hash, expect 1st hash equal to 3nd and different with 2rd')
 
@@ -8647,11 +7962,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts1)
         self.verify(hash_value[0] == hash_value[1] and hash_value[1] == hash_value[2],
                     'except all hash same hash')
-
-        self.rssprocess.destroy_rule(rule_id=rule_li2)
-        hash_value, queues = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts2)
-        self.verify(hash_value[0] != hash_value[1] and hash_value[2] != hash_value[1],
-                    'except all the packets hash different hash value')
 
     def test_ipv4_gtpu_eh_ipv6_and_ipv4_gtpu_eh_ipv6_udp_without_ul_dl(self):
         self.switch_testpmd()
@@ -8749,12 +8059,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         for temp in range(len(hash_value)):
             self.verify(len(hash_value[temp]) != 0, 'all the toeplitz packet should have hash value')
-        #step 4
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the toeplitz packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with same ptype different UL/DL')
@@ -8789,24 +8093,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         self.verify(hash_value[1] != hash_value[0], 'second packet should hash value different from the first packet')
         self.verify(hash_value[2] == hash_value[0], 'third packet should hash value same with the first packet')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[1] != hash_value[0], 'second packet should hash value different from the first packet')
-        self.verify(hash_value[2] == hash_value[0], 'third packet should hash value same with the first packet')
-        rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'expect hash_value[0] == hash_value[1]')
-        self.verify(hash_value[2] == hash_value[3], 'expect hash_value[2] == hash_value[3]')
-        self.verify(hash_value[4] == hash_value[5], 'expect hash_value[4] == hash_value[5]')
-
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(all([i != '0' for i in hash_value]), 'expect symmetric also can work')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, "except toeplitz cant't work")
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with different pattern')
@@ -8844,34 +8130,6 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         self.verify(hash_value[1] != hash_value[0], 'hash_value[1] should hash value different from hash_value[0]')
         self.verify(hash_value[2] != hash_value[0], 'hash_value[2] should hash value different with hash_value[0]')
         self.verify(hash_value[3] == hash_value[0], 'hash_value[3] should hash value same with hash_value[0]')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        if len(hash_value) != 0:
-            self.verify(hash_value[0] != hash_value[1] and hash_value[2] != hash_value[3] and hash_value[4] != hash_value[5],
-                        'except symmetric not work')
-        else:
-            self.verify(len(hash_value) == 0, 'except symmetric not work')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[1] != hash_value[0], 'hash_value[1] should hash value different from hash_value[0]')
-        self.verify(hash_value[2] != hash_value[0], 'hash_value[2] should hash value different with hash_value[0]')
-        self.verify(hash_value[3] == hash_value[0], 'hash_value[3] should hash value same with hash_value[0]')
-        # step 4
-        rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
-        self.rssprocess.check_rule(rule_list=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'expect hash_value[0] == hash_value[1]')
-        self.verify(hash_value[2] == hash_value[3], 'expect hash_value[2] == hash_value[3]')
-        self.verify(hash_value[4] == hash_value[5], 'expect hash_value[4] == hash_value[5]')
-        # step 5
-        self.rssprocess.destroy_rule(rule_id=rule_id_toeplitz)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(hash_value[0] == hash_value[1], 'expect hash_value[0] == hash_value[1]')
-        self.verify(hash_value[2] == hash_value[3], 'expect hash_value[2] == hash_value[3]')
-        self.verify(hash_value[4] == hash_value[5], 'expect hash_value[4] == hash_value[5]')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(hash_value[0] != hash_value[1] and hash_value[2] != hash_value[3] and hash_value[4] != hash_value[5],
-                    'except symmetric not work')
         self.pmd_output.execute_cmd('flow flush 0')
 
         self.logger.info('Subcase: toeplitz/symmetric with different pattern (with/without UL/DL)')
@@ -8898,8 +8156,7 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
         self.rssprocess.check_rule(rule_list=rule_id_toeplitz)
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
         self.verify(hash_value[1] != hash_value[0], 'hash_value[1] should hash value different from hash_value[0]')
-        self.verify(hash_value[2] != hash_value[0], 'hash_value[2] should hash value different with hash_value[0]')
-        self.verify(hash_value[3] == hash_value[0], 'hash_value[3] should hash value same from hash_value[0]')
+        self.verify(hash_value[2] == hash_value[0], 'hash_value[2] should hash value same with hash_value[0]')
         rule_id_symmetric = self.rssprocess.create_rule(rule=rule_symmetric)
         self.rssprocess.check_rule(rule_list=rule_id_symmetric)
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
@@ -8911,13 +8168,8 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
                     'hash_value[6] should hash value different from hash_value[7] and equal to hash_value[8]')
         # step 2
         hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
-        # step 3
-        self.rssprocess.destroy_rule(rule_id=rule_id_symmetric)
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_symmetric)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
-        hash_value, _ = self.rssprocess.send_pkt_get_hash_queues(pkts=pkts_toeplitz)
-        self.verify(len(hash_value) == 0, 'all the symmetric packet should have no hash value')
+        self.verify(hash_value[1] == hash_value[0], 'rule with UL/DL should can not work')
+        self.verify(hash_value[2] != hash_value[0], 'rule with UL/DL should can not work')
         self.pmd_output.execute_cmd('flow flush 0')
 
     # vf rss gtpc gtpu
