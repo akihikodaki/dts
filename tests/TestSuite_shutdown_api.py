@@ -501,7 +501,7 @@ class TestShutdownApi(TestCase):
                 if config[0] != '1000' or '10000':
                     continue
             elif self.nic in ["sagepond"]:
-                if config[0] != '1000' and '10000':
+                if config[0] not in ['1000', '10000']:
                     continue
             self.dut.send_expect("port stop all", "testpmd> ", 100)
             for port in self.ports:
@@ -515,8 +515,13 @@ class TestShutdownApi(TestCase):
                 out = self.dut.send_expect("show port info %s" % port, "testpmd>")
                 self.verify("Link status: up" in out,
                             "Wrong link status reported by the dut")
-                self.verify("Link speed: %s Mbps" % config[0] in out,
-                            "Wrong speed reported by the dut")
+                if int(config[0]) < 1000:
+                    self.verify("Link speed: %s Mbps" % config[0] in out,
+                                 "Wrong speed reported by the dut")
+                else:
+                    num =int(int(config[0])/1000)
+                    self.verify("Link speed: %d Gbps" % num in out,
+                                 "Wrong speed reported by the dut")
                 self.verify("Link duplex: %s-duplex" % config[1].lower() in out,
                             "Wrong link type reported by the dut")
                 out = self.tester.send_expect(
@@ -547,7 +552,7 @@ class TestShutdownApi(TestCase):
         if not self.check_linkspeed_config(configs):
             return
 
-        result_linkspeed_scanner = r"Link\s*speed:\s([0-9]+)\s*Mbps"
+        result_linkspeed_scanner = r"Link\s*speed:\s([0-9]+)\s*(\S+)"
         linkspeed_scanner = re.compile(result_linkspeed_scanner, re.DOTALL)
         result_linktype_scanner = r"Link\s*duplex:\s*(\S*)\s*-\s*duplex"
         linktype_scanner = re.compile(result_linktype_scanner, re.DOTALL)
@@ -577,10 +582,13 @@ class TestShutdownApi(TestCase):
 
             out = self.vm0_testpmd.execute_cmd('show port info all')
 
-            linkspeed = linkspeed_scanner.findall(out)
+            linkspeed = linkspeed_scanner.findall(out)[0]
             linktype = linktype_scanner.findall(out)
 
-            self.verify(config[0] in linkspeed,
+            actual_speed = int(linkspeed[0])
+            if linkspeed[1] == "Gbps":
+                actual_speed = actual_speed * 1000
+            self.verify(config[0] == str(actual_speed),
                         "Wrong VF speed reported by the self.tester.")
             self.verify(config[1].lower() == linktype[0].lower(),
                         "Wrong VF link type reported by the self.tester.")
