@@ -527,58 +527,163 @@ while we can create 512 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
 
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.255 / udp / end actions drop / end
 
-3. create 1 ipv4 and 508 ipv4-udp ACL rules::
+3. create 512 ipv4-udp ACL rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.1 dst mask 255.255.255.0 / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.0 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.3 src mask 255.255.255.0 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.0 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / udp / end actions drop / end
     ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.255.255.0 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.1 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.2 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.0 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 / udp / end actions drop / end
     ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.253 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.255 src mask 255.255.255.254 / udp / end actions drop / end
 
    all the rules can be created successfully as ACL rules.
 
-4. list the rules, there are rule 0-509 listed.
+4. list the rules, there are rule 0-512 listed.
 
 5. send packet1::
 
-    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.1", dst="192.168.0.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.0", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
    check the packet dropped.
 
 6. create one more rule::
 
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.1 src mask 255.255.255.254 / udp / end actions drop / end
 
    check the rule can't be created as an ACL rule successfully.
 
 7. send packet2::
 
-    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.2", dst="192.168.1.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.2.1", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
    check the packet can be received by VF1.
 
-8. delete the rule 511::
+8. delete the rule 512::
 
-    flow destroy 0 rule 509
+    flow destroy 0 rule 512
 
    list the rules::
 
     flow list 0
 
-   there are rule 0-508 listed.
+   there are rule 0-511 listed.
 
 9. create the rule in the step6 again,
    check the rule can be created successfully.
-   list the rules, there are rule 0-509 listed.
+   list the rules, there are rule 0-512 listed.
 
 10. send packet2 again, check the packet dropped.
 
-Test Case 6: negative case
+Test Case 6: max entry number ipv4-other
+========================================
+1. launch DPDK on VF0, request DCF mode::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -- -i --port-topology=loop
+
+   Launch dpdk on VF1::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+
+2. create a full mask rule, it's created as a switch rule::
+
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.255 / end actions drop / end
+
+3. create 128 ipv4-other ACL rules::
+
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.2 src mask 255.255.255.254 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.3 src mask 255.255.255.254 / end actions drop / end
+    ......
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.128 src mask 255.255.255.254 / end actions drop / end
+
+   all the rules can be created successfully as ACL rules.
+
+4. list the rules, there are rule 0-128 listed.
+
+5. send packet1::
+
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
+
+   check the packet dropped.
+
+6. create one more rule::
+
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / udp / end actions drop / end
+
+   check the rule can't be created as an ACL rule successfully.
+
+7. send packet2::
+
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.2", dst="192.168.1.2")/Raw(load='X'*30)], iface="enp134s0f1")
+
+   check the packet can be received by VF1.
+
+8. delete the rule 128::
+
+    flow destroy 0 rule 128
+
+   list the rules::
+
+    flow list 0
+
+   there are rule 0-127 listed.
+
+9. create the rule in the step6 again,
+   check the rule can be created successfully.
+   list the rules, there are rule 0-128 listed.
+
+10. send packet2 again, check the packet dropped.
+
+Test Case 7: max entry number combined patterns
+===============================================
+1. launch DPDK on VF0, request DCF mode::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xc -n 4 -w 86:01.0,cap=dcf -- -i --port-topology=loop
+
+   Launch dpdk on VF1::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+
+2. create 64 ipv4-other ACL rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.255.0 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 / end actions drop / end
+    ......
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.62 src mask 255.255.255.0 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.63 src mask 255.255.255.0 / end actions drop / end
+
+   all the rules can be created successfully as ACL rules.
+
+3. create 256 ipv4-udp ACL rules::
+
+    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.254 / udp / end actions drop / end
+    ......
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.254 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.255.255.254 / udp / end actions drop / end
+
+   all the rules can be created successfully as ACL rules.
+
+4. list the rules, there are rule 0-319 listed.
+
+5. create one more ACl rule failed, it is created as a switch rule::
+
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.255 src mask 255.255.255.254 / udp / end actions drop / end
+
+6. delete one ACL rule, create the rule in step5 again, it's created as an ACL rule successfully.
+
+7. delete the switch rule, send packet1::
+
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.2.255", dst="192.168.0.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
+
+   check the packet dropped.
+
+8. delete all the rules, check the packet is received by vf1.
+
+Test Case 8: negative case
 ==========================
 Note:
 4 ports NIC doesn't support eth input set.
@@ -657,9 +762,9 @@ Note: the last rule and last packet can only test on 2 ports NIC.
     / ipv4 src spec 192.168.2.1 src mask 255.255.255.255 dst spec 192.168.2.2 dst mask 255.255.255.255 \
     / sctp src spec 8012 src mask 65535 dst spec 8018 dst mask 65535 / end actions drop / end
 
-   check the rules created successfully as switch rule.
+   check the rules created successfully only as switch rule.
 
-Test Case 7: multirules with different pattern or input set
+Test Case 9: multirules with different pattern or input set
 ===========================================================
 1. create rule 0::
 
@@ -703,8 +808,8 @@ Test Case 7: multirules with different pattern or input set
 10. send same packets, check packet 1 is dropped by rule 0, packet 2 is dropped by rule 1.
    packet 3 is dropped by rule 2, packet 4 is dropped by rule 3, packet 5 is dropped by rule4.
 
-Test Case 8: multirules with all patterns
-=========================================
+Test Case 10: multirules with all patterns
+==========================================
 1. create multirules with different pattern or input set::
 
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 / end actions drop / end
@@ -770,7 +875,7 @@ Test Case 8: multirules with all patterns
 
    check ipv4-sctp packets 1-5 are dropped, packet 6 is not dropped.
 
-Test Case 9: switch/acl/fdir/rss rules combination
+Test Case 11: switch/acl/fdir/rss rules combination
 ===================================================
 1. launch testpmd::
 
