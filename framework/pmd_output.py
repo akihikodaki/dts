@@ -109,11 +109,14 @@ class PmdOutput():
         :param eal_param:
         :return:
         """
-        re_w_pci_str = '\s?-w\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-w\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
+        re_w_pci_str = '\s?-[w,a]\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1},.*=\d+' \
+                       '|\s?-[w,a]\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1}'
         re_file_prefix_str = '--file-prefix[\s*=]\S+\s'
-        re_b_pci_str = '\s?-b\\s+.+?:.+?:.+?\\..+?[,.*=\d+]?\s|\s?-b\\s+.+?:.+?\\..+?[,.*=\d+]?\s'
+        re_b_pci_str = '\s?-b\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1},.*=\d+' \
+                       '|\s?-b\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1}'
         eal_param = eal_param + ' '
-        # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ']
+        # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ',
+        #                   '-a   0000:1a:00.0 ', '-a 0000:1a:00.1,queue-num-per-vf=4 ', '-a 0000:aa:bb.1,queue-num-per-vf=4 ']
         w_pci_str_list = re.findall(re_w_pci_str, eal_param)
         # file_prefix_str eg: ['--file-prefix=dpdk ']
         file_prefix_str = re.findall(re_file_prefix_str, eal_param)
@@ -123,13 +126,13 @@ class PmdOutput():
         if w_pci_str_list:
             for pci_str in w_pci_str_list:
                 # has pci options
-                if ',' in pci_str:
-                    pci_option = pci_str.split(',')
-                    pci = pci_option[0].split(' ')[-1]
-                    has_pci_option[pci] = pci_option[1].strip()
-                    pci_list.append(pci)
+                pci_str_options = pci_str.split('-w ') if '-w ' in pci_str else pci_str.split('-a ')
+                if ',' in pci_str_options[-1]:
+                    pci_option = pci_str_options[-1].split(',')
+                    has_pci_option[pci_option[0]] = pci_option[1].strip()
+                    pci_list.append(pci_option[0])
                 else:
-                    pci_list.append(pci_str.split('-w')[-1].strip())
+                    pci_list.append(pci_str_options[-1])
 
         b_pci_list = []
         if b_pci_str_list:
