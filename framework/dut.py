@@ -116,7 +116,8 @@ class Dut(Crb):
         """
         generate eal parameters character string
         :param config:
-        :return: eal_str eg:'-c 0xf -w 0000:88:00.0 -w 0000:88:00.1 --file-prefix=dpdk_1112_20190809143420'
+        :return: eal_str eg:'-c 0xf -a 0000:88:00.0 -a 0000:88:00.1 --file-prefix=dpdk_1112_20190809143420',
+        if dpdk version < 20.11-rc4, eal_str eg: '-c 0xf -w 0000:88:00.0 --file-prefix=dpdk_1112_20190809143420',
         """
         default_cores = '1S/2C/1T'
         blank = ' '
@@ -137,19 +138,20 @@ class Dut(Crb):
             # deal with ports
             w_pci_list = []
             if 'ports' in config and len(config['ports']) != 0:
+                allow_option = '-a' if self.dpdk_version > '20.11.0-rc3' or self.dpdk_version == '20.11.0' else '-w'
                 for port in config['ports']:
                     if type(port) == int:
                         if 'port_options' in config and port in list(config['port_options'].keys()):
                             port_option = config['port_options'][port]
-                            w_pci_list.append('-w %s,%s' % (self.ports_info[port]['pci'], port_option))
+                            w_pci_list.append('%s %s,%s' % (allow_option, self.ports_info[port]['pci'], port_option))
                         else:
-                            w_pci_list.append('-w %s' % self.ports_info[port]['pci'])
+                            w_pci_list.append('%s %s' % (allow_option, self.ports_info[port]['pci']))
                     else:
                         if 'port_options' in config and port in list(config['port_options'].keys()):
                             port_option = config['port_options'][port]
-                            w_pci_list.append('-w %s,%s' % (port, port_option))
+                            w_pci_list.append('%s %s,%s' % (allow_option, port, port_option))
                         else:
-                            w_pci_list.append('-w %s' % port)
+                            w_pci_list.append('%s %s' % (allow_option, port))
             w_pci_str = ' '.join(w_pci_list)
 
             # deal with black ports
