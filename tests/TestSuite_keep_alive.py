@@ -67,8 +67,9 @@ class TestKeepAlive(TestCase):
     def test_keep_alive(self):
         """
         Verify netmap compatibility with one port 
-        """ 
-        cmd = self.app_l2fwd_keepalive_path + " -c f -n 4 -- -q 8 -p ffff -K 10"
+        """
+        eal_para = self.dut.create_eal_parameters(cores=list(range(4)))
+        cmd = self.app_l2fwd_keepalive_path + " %s -- -q 8 -p ffff -K 10" % eal_para
       
         self.dut.send_expect(cmd,"Port statistics",60)
 
