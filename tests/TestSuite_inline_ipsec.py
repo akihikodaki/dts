@@ -93,6 +93,7 @@ class TestInlineIpsec(TestCase):
         out = self.dut.build_dpdk_apps("./examples/ipsec-secgw")
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
+        self.eal_para = self.dut.create_eal_parameters(cores=[20, 21])
 
         self.cfg_prepare()
 
@@ -207,11 +208,11 @@ class TestInlineIpsec(TestCase):
         verify Ipsec receive package
         """
         if jumboframe is not None:
-            cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 -j 9200 --mtu %s --config='%s' -f %s" % (
-            self.portpci_0, self.portpci_1, jumboframe, config, file_name)
+            cmd = self.path + " %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 -j 9200 --mtu %s --config='%s' -f %s" % (
+            self.eal_para, jumboframe, config, file_name)
         else:
-            cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
-            self.portpci_0, self.portpci_1, config, file_name)
+            cmd = self.path + " %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1024 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
+            self.eal_para, config, file_name)
 
         self.dut.send_expect(cmd, "IPSEC", 60)
 
@@ -341,8 +342,8 @@ class TestInlineIpsec(TestCase):
         """
         test Ipsec Encryption Decryption
         """
-        cmd = self.path + " -l 20,21 -w %s -w %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
-            self.portpci_0, self.portpci_1, '(0,0,21),(1,0,21)', '/root/dpdk/enc_dec.cfg')
+        cmd = self.path + " %s --vdev 'crypto_null' --log-level 8 --socket-mem 1024,1 -- -p 0xf -P -u 0x2 --config='%s' -f %s" % (
+            self.eal_para, '(0,0,21),(1,0,21)', '/root/dpdk/enc_dec.cfg')
         self.dut.send_expect(cmd, "IPSEC", 60)
         session_receive = self.tester.create_session(
             name='receive_encryption_package')
