@@ -126,15 +126,15 @@ class TestPmdPcap(TestCase):
         two_cores = self.dut.get_core_list("1S/2C/1T")
         core_mask = utils.create_mask(two_cores)
 
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
         self.create_pcap_file(in_pcap, TestPmdPcap.pcap_file_sizes[0])
         self.dut.session.copy_file_to(in_pcap)
 
-        command = ("{} -c {} -n {} " +
+        command = ("{} {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "-- -i --port-topology=chained --no-flush-rx")
 
-        self.dut.send_expect(command.format(self.path, core_mask,
-                             self.memory_channel,
+        self.dut.send_expect(command.format(self.path, eal_para,
                              TestPmdPcap.dut_pcap_files_path + in_pcap,
                              out_pcap), 'testpmd> ', 15)
 
@@ -157,18 +157,18 @@ class TestPmdPcap(TestCase):
         four_cores = self.dut.get_core_list("1S/4C/1T")
         core_mask = utils.create_mask(four_cores)
 
+        eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
         self.create_pcap_file(in_pcap1, TestPmdPcap.pcap_file_sizes[0])
         self.dut.session.copy_file_to(in_pcap1)
         self.create_pcap_file(in_pcap2, TestPmdPcap.pcap_file_sizes[1])
         self.dut.session.copy_file_to(in_pcap2)
 
-        command = ("{} -c {} -n {} " +
+        command = ("{} {} " +
                    "--vdev=eth_pcap0,rx_pcap={},tx_pcap={} " +
                    "--vdev=eth_pcap1,rx_pcap={},tx_pcap={} " +
                    "-- -i --no-flush-rx")
 
-        self.dut.send_expect(command.format(self.path, core_mask,
-                                            self.memory_channel,
+        self.dut.send_expect(command.format(self.path, eal_para,
                                             TestPmdPcap.dut_pcap_files_path +
                                             in_pcap1,
                                             out_pcap1,
