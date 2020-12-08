@@ -87,6 +87,7 @@ class TestMultiprocess(TestCase):
         for i in self.dut_ports:
             self.eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
         # start new session to run secondary
         self.session_secondary = self.dut.new_session()
 
@@ -113,12 +114,12 @@ class TestMultiprocess(TestCase):
         # Send message from secondary to primary
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=primary" % (coremask),
+        self.dut.send_expect(self.app_simple_mp + " %s --proc-type=primary" % (self.eal_para),
                              "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
         self.session_secondary.send_expect(
-            self.app_simple_mp + " -n 1 -c %s --proc-type=secondary" % (coremask), "Finished Process Init",
+            self.app_simple_mp + " %s --proc-type=secondary" % (self.eal_para), "Finished Process Init",
             100)
 
         self.session_secondary.send_expect("send hello_primary", ">")
@@ -130,10 +131,10 @@ class TestMultiprocess(TestCase):
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         self.session_secondary.send_expect(
-            self.app_simple_mp + " -n 1 -c %s --proc-type=primary " % (coremask), "Finished Process Init", 100)
+            self.app_simple_mp + " %s --proc-type=primary " % (self.eal_para), "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=secondary" % (coremask),
+        self.dut.send_expect(self.app_simple_mp + " %s --proc-type=secondary" % (self.eal_para),
                              "Finished Process Init", 100)
         self.session_secondary.send_expect("send hello_secondary", ">")
         out = self.dut.get_session_output()
@@ -150,11 +151,11 @@ class TestMultiprocess(TestCase):
 
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=primary" % (coremask),
+        self.session_secondary.send_expect(self.app_simple_mp + " %s --proc-type=primary" % (self.eal_para),
                                            "Finished Process Init", 100)
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=secondary" % (coremask),
+        self.dut.send_expect(self.app_simple_mp + " %s --proc-type=secondary" % (self.eal_para),
                              "Finished Process Init", 100)
         stringsSent = 0
         for line in open('/usr/share/dict/words', 'r').readlines():
@@ -176,13 +177,13 @@ class TestMultiprocess(TestCase):
         # Send message from secondary to primary (auto process type)
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        out = self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=auto " % (coremask),
+        out = self.dut.send_expect(self.app_simple_mp + " %s --proc-type=auto " % (self.eal_para),
                                    "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
         out = self.session_secondary.send_expect(
-            self.app_simple_mp + " -n 1 -c %s --proc-type=auto" % (coremask), "Finished Process Init", 100)
+            self.app_simple_mp + " %s --proc-type=auto" % (self.eal_para), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out,
                     "The type of process (SECONDARY) was not detected properly")
 
@@ -196,11 +197,11 @@ class TestMultiprocess(TestCase):
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
         out = self.session_secondary.send_expect(
-            self.app_simple_mp + " -n 1 -c %s --proc-type=auto" % (coremask), "Finished Process Init", 100)
+            self.app_simple_mp + " %s --proc-type=auto" % (self.eal_para), "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: PRIMARY" in out, "The type of process (PRIMARY) was not detected properly")
         time.sleep(20)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        out = self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s --proc-type=auto" % (coremask),
+        out = self.dut.send_expect(self.app_simple_mp + " %s --proc-type=auto" % (self.eal_para),
                                    "Finished Process Init", 100)
         self.verify("EAL: Auto-detected process type: SECONDARY" in out, "The type of process (SECONDARY) was not detected properly")
         self.session_secondary.send_expect("send hello_secondary", ">", 100)
@@ -218,10 +219,10 @@ class TestMultiprocess(TestCase):
 
         cores = self.dut.get_core_list('1S/2C/1T', socket=self.socket)
         coremask = utils.create_mask(cores)
-        self.session_secondary.send_expect(self.app_simple_mp + " -n 1 -c %s -m 64" % (coremask),
+        self.session_secondary.send_expect(self.app_simple_mp + " %s -m 64" % (self.eal_para),
                                            "Finished Process Init", 100)
         coremask = hex(int(coremask, 16) * 0x10).rstrip("L")
-        out = self.dut.send_expect(self.app_simple_mp + " -n 1 -c %s" % (coremask), "# ", 100)
+        out = self.dut.send_expect(self.app_simple_mp + " %s" % (self.eal_para), "# ", 100)
 
         self.verify("Is another primary process running" in out,
                     "No other primary process detected")
