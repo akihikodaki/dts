@@ -127,11 +127,10 @@ class TestMulticast(TestCase):
         """
         IP4 Multicast Forwarding F1~F6
         """
-        cores = self.dut.get_core_list("1S/2C/1T")
-        coremask = utils.create_mask(cores)
+        eal_para = self.dut.create_eal_parameters(cores="1S/2C/1T")
         payload = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
         self.dut.send_expect("%s -c %s -n 4 -- -p %s -q 2" % (self.app_ipv4_multicast_path,
-                                                              coremask, '0x5'), "IPv4_MULTICAST:", 60)
+                                                              eal_para, '0x5'), "IPv4_MULTICAST:", 60)
 
         for flow in list(trafficFlow.keys()):
             for tx_port in trafficFlow[flow][0].split(","):
