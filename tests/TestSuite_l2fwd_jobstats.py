@@ -56,6 +56,7 @@ class TestL2fwdJobstats(TestCase):
         cores = self.dut.get_core_list("1S/4C/1T")
         self.coremask = utils.create_mask(cores)
 
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
         dut_port0 = self.dut_ports[0]
         dut_port1 = self.dut_ports[1]
         self.tx_ports = [dut_port0, dut_port1]
@@ -76,7 +77,7 @@ class TestL2fwdJobstats(TestCase):
         Verify l2fwd jobstats is correct
         """
         path = self.dut.apps_name["l2fwd-jobstats"]
-        cmd = path + " -c %s -n 4 -- -q 2 -p 0x03 -l" % (self.coremask)
+        cmd = path + " %s -- -q 2 -p 0x03 -l" % (self.eal_para)
         self.dut.send_expect(cmd, "Port statistics", 60)
 
         self.scapy_send_packet(100000)
