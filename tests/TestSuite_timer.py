@@ -69,10 +69,10 @@ class TestTimer(TestCase):
 
         # get the mask for the first core
         cores = self.dut.get_core_list('1S/1C/1T')
-        coreMask = utils.create_mask(cores)
+        eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
 
         # run timer on the background
-        cmdline = "./%s -n 1 -c " % self.app_timer_path + coreMask + " &"
+        cmdline = "./%s %s " % (self.app_timer_path, eal_para) + " &"
 
         self.dut.send_expect(cmdline, "# ", 1)
         time.sleep(15)
