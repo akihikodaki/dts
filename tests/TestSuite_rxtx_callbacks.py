@@ -67,7 +67,8 @@ class TestRxtxCallbacks(TestCase):
         pass
 
     def test_rxtx_callbacks(self):
-        cmd = self.app_rxtx_callbacks_path + " -c %s -n %d " % (self.coremask,self.dut.get_memory_channels())
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
+        cmd = self.app_rxtx_callbacks_path + " %s" % eal_para
         self.dut.send_expect(cmd,"forwarding packets",60)
          
         self.iface_port0 = self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0]))
