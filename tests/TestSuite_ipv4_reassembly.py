@@ -71,6 +71,7 @@ class IpReassemblyTestConfig(object):
         self.packets_config()
 
     def cpu_config(self):
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
         self.core_list = self.test_case.dut.get_core_list('1S/1C/1T')
         self.core_mask = utils.create_mask(self.core_list)
         self.memory_channels = self.test_case.dut.get_memory_channels()
@@ -148,8 +149,8 @@ class TestIpReassembly(TestCase):
         Execute the example app and checks for errors.
         """
 
-        command = ('./%s -c {core_mask} ' % self.app_ip_reassembly_path +
-                   '-n {memory_channels} --  -p {dut_port_mask} ' +
+        command = ('./%s {eal_para} ' % self.app_ip_reassembly_path +
+                   '--  -p {dut_port_mask} ' +
                    '--maxflows={maxflows} --flowttl={flowttl} {extra_args}')
         self.dut.send_expect(
             command.format(**self.test_config.__dict__), 'Link [Uu]p')
