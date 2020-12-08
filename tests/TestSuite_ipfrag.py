@@ -124,19 +124,16 @@ class TestIpfrag(TestCase):
         self.verify("No such file" not in out, "compilation error 2")
 
         cores = self.dut.get_core_list("1S/1C/2T")
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/1C/2T')
         coremask = utils.create_mask(cores)
         portmask = utils.create_mask([P0, P1])
         numPortThread = len([P0, P1]) / len(cores)
         result = True
         errString = ''
-        eal_param = ""
-        for i in [P0, P1]:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
 
         # run ipv4_frag
         self.app_ip_fragmentation_path = self.dut.apps_name['ip_fragmentation']
-        self.dut.send_expect("%s -c %s -n %d %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, coremask,
-                                                                   self.dut.get_memory_channels(), eal_param, portmask,
+        self.dut.send_expect("%s %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, self.eal_para, portmask,
                                                                    int(numPortThread)), "Link [Uu]p", 120)
 
         time.sleep(2)
