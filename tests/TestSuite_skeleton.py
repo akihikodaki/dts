@@ -68,7 +68,8 @@ class TestSkeleton(TestCase):
         pass
 
     def test_skeleton(self):
-        cmd = self.path + " -c %s -n %d " % (self.coremask,self.dut.get_memory_channels())
+        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
+        cmd = self.path + " -c %s -n %d " % eal_para
         self.dut.send_expect(cmd,"forwarding packets",60)
          
         time.sleep(5)
