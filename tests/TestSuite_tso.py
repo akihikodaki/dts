@@ -77,9 +77,7 @@ class TestTSO(TestCase):
             self.table_header.append("%s Mpps" % test_cycle['cores'])
             self.table_header.append("% linerate")
 
-        self.eal_param = ""
-        for i in self.dut_ports:
-            self.eal_param += " -w %s" % self.dut.ports_info[i]['pci']
+        self.eal_param = self.dut.create_eal_parameters(cores='1S/1C/2T')
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['tcp']
@@ -201,9 +199,9 @@ class TestTSO(TestCase):
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
         if (self.nic in ["cavium_a063","cavium_a064"]):
-            cmd = "%s -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x8000" % (self.path, self.coreMask, self.dut.get_memory_channels(), self.eal_param, self.portMask, TSO_MTU)
+            cmd = "%s %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 --tx-offloads=0x8000" % (self.path, self.eal_param, self.portMask, TSO_MTU)
         else:
-            cmd = "%s -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.coreMask, self.dut.get_memory_channels(), self.eal_param, self.portMask, TSO_MTU)
+            cmd = "%s %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.eal_param, self.portMask, TSO_MTU)
 
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -298,7 +296,7 @@ class TestTSO(TestCase):
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
 
-        cmd = "%s -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.coreMask, self.dut.get_memory_channels(), self.eal_param, self.portMask, TSO_MTU)
+        cmd = "%s %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.eal_param, self.portMask, TSO_MTU)
         self.dut.send_expect(cmd, "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
         self.dut.send_expect("port stop all", "testpmd> ", 120)
@@ -398,7 +396,7 @@ class TestTSO(TestCase):
             else:
                 queues = 1
 
-            command_line = "%s -c %s -n %d %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.coreMask, self.dut.get_memory_channels(), self.eal_param, self.portMask, TSO_MTU)
+            command_line = "%s %s -- -i --rxd=512 --txd=512 --burst=32 --rxfreet=64 --mbcache=128 --portmask=%s --max-pkt-len=%s --txpt=36 --txht=0 --txwt=0 --txfreet=32 --txrst=32 " % (self.path, self.eal_param, self.portMask, TSO_MTU)
             info = "Executing PMD using %s\n" % test_cycle['cores']
             self.logger.info(info)
             self.rst_report(info, annex=True)
