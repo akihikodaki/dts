@@ -449,6 +449,7 @@ class TestPmdrssHash(TestCase):
         Run before each test case.
         """
         cores = self.dut.get_core_list("all")
+        self.eal_para = self.dut.create_eal_parameters(cores=cores)
         self.coremask = utils.create_mask(cores)
 
     def test_toeplitz(self):
@@ -462,8 +463,8 @@ class TestPmdrssHash(TestCase):
 
         # test with different rss queues
         self.dut.send_expect(
-            "%s  -c %s -n %d -- -i --rxq=%d --txq=%d" %
-            (self.path, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            "%s %s -- -i --rxq=%d --txq=%d" %
+            (self.path, self.eal_para, queue, queue), "testpmd> ", 120)
 
         for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -500,8 +501,8 @@ class TestPmdrssHash(TestCase):
 
         # test with different rss queues
         self.dut.send_expect(
-            "%s  -c %s -n %d -- -i --rxq=%d --txq=%d" %
-            (self.path, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            "%s %s -- -i --rxq=%d --txq=%d" %
+            (self.path, self.eal_para, queue, queue), "testpmd> ", 120)
 
         for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -545,8 +546,8 @@ class TestPmdrssHash(TestCase):
 
         # test with different rss queues
         self.dut.send_expect(
-            "%s  -c %s -n %d -- -i --rxq=%d --txq=%d" %
-            (self.path, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            "%s %s -- -i --rxq=%d --txq=%d" %
+            (self.path, self.eal_para, queue, queue), "testpmd> ", 120)
 
         for iptype, rsstype in list(iptypes.items()):
             self.logger.info("***********************%s rss test********************************" % iptype)
@@ -585,8 +586,8 @@ class TestPmdrssHash(TestCase):
 
         # test with different rss queues
         self.dut.send_expect(
-            "%s  -c %s -n %d -- -i --rxq=%d --txq=%d" %
-            (self.path, self.coremask, self.dut.get_memory_channels(), queue, queue), "testpmd> ", 120)
+            "%s %s -- -i --rxq=%d --txq=%d" %
+            (self.path, self.eal_para, queue, queue), "testpmd> ", 120)
 
         for iptype, rsstype in list(iptypes.items()):
             self.dut.send_expect("set verbose 8", "testpmd> ")
@@ -621,7 +622,7 @@ class TestPmdrssHash(TestCase):
                     "fortpark_TLV","fortpark_BASE-T", "fortville_25g", "carlsville", "foxville"],
                     "NIC Unsupported: " + str(self.nic))
 
-        self.dut.send_expect("%s -c %s -n %d -- -i" % (self.path, self.coremask, self.dut.get_memory_channels()), "testpmd> ", 120)
+        self.dut.send_expect("%s %s -- -i" % (self.path, self.eal_para), "testpmd> ", 120)
         self.dut.send_expect("set promisc all off", "testpmd> ")
         out = self.dut.send_expect("create bonded device 3 0", "testpmd> ", 30)
         bond_device_id = int(re.search("port \d+", out).group().split(" ")[-1].strip())
