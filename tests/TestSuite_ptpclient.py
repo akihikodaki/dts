@@ -64,6 +64,7 @@ class TestPtpClient(TestCase):
         self.app_name = self.app_ptpclient_path[self.app_ptpclient_path.rfind('/')+1:]
         port = self.tester.get_local_port(dutPorts[0])
         self.itf0 = self.tester.get_interface(port)
+        self.eal_para = self.dut.create_eal_parameters()
 
     def set_up(self):
         """
@@ -99,7 +100,7 @@ class TestPtpClient(TestCase):
             self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
-        self.dut.send_expect("./%s -c f -n 3 -- -T 0 -p 0x1 " % self.app_ptpclient_path + "&",
+        self.dut.send_expect("./%s %s -- -T 0 -p 0x1 " % (self.app_ptpclient_path, self.eal_para) + "&",
                              "Delta between master and slave", 60)
         time.sleep(3)
         out = self.dut.get_session_output()
@@ -130,7 +131,7 @@ class TestPtpClient(TestCase):
             self.tester.send_expect("ptp4l -i %s -2 -m -S &" % self.itf0, "ptp4l")
 
         # run ptpclient on the background
-        self.dut.send_expect("./%s -c f -n 3 -- -T 1 -p 0x1" % self.app_ptpclient_path + "&",
+        self.dut.send_expect("./%s %s -- -T 1 -p 0x1" % (self.app_ptpclient_path, self.eal_para) + "&",
                              "Delta between master and slave", 60)
         time.sleep(3)
         out = self.dut.get_session_output()
