@@ -149,17 +149,16 @@ class TestMeteringAndPolicing(TestCase):
         """
         if len(self.dut_ports) == 2:
             portmask = "0x4"
-            Corelist = "0x7"
+            Corelist = [0, 1, 2]
             Servicecorelist = "0x4"
         if len(self.dut_ports) == 4:
             portmask = "0x10"
-            Corelist = "0x1f"
+            Corelist = [0, 1, 2, 3, 4]
             Servicecorelist = "0x10"
         self.path = self.dut.apps_name['test-pmd']
-        cmd = self.path + " -c %s -s %s -n %d --vdev 'net_softnic0,firmware=%s' \
-         -- -i  --rxq=%d --txq=%d --portmask=%s --disable-rss" \
-              % (Corelist, Servicecorelist, self.dut.get_memory_channels(), filename, self.port_id, self.port_id, portmask)
-        self.dut.send_expect(cmd, "testpmd>", 60)
+        self.pmd_out.start_testpmd(Corelist, "--rxq=%d --txq=%d --portmask=%s --disable-rss"
+                                   % (self.port_id, self.port_id, portmask),
+                                   eal_param="-s %s --vdev 'net_softnic0,firmware=%s'" % (Servicecorelist, filename))
 
     def add_port_meter_profile(self, profile_id, cbs=400, pbs=500):
         """
@@ -246,7 +245,6 @@ class TestMeteringAndPolicing(TestCase):
         Send packet and check the stats. If expect_port == -1, the packet should be dropped.
         """
         # check the ports are UP before sending packets
-        self.pmd_out = PmdOutput(self.dut)
         res = self.pmd_out.wait_link_status_up('all', 30)
         self.verify(res is True, 'there have port link is down')
 
@@ -314,6 +312,7 @@ class TestMeteringAndPolicing(TestCase):
         if len(self.dut_ports) == 4:
             self.dut_p2_pci = self.dut.get_port_pci(self.dut_ports[2])
             self.dut_p3_pci = self.dut.get_port_pci(self.dut_ports[3])
+        self.pmd_out = PmdOutput(self.dut)
         self.dut_p0_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.port_id = len(self.dut_ports)
         self.copy_config_files_to_dut()
