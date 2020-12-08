@@ -67,6 +67,7 @@ class TestShortLiveApp(TestCase):
         self.app_l2fwd_path = self.dut.apps_name['l2fwd']
         self.app_l3fwd_path = self.dut.apps_name['l3fwd']
         self.app_testpmd = self.dut.apps_name['test-pmd']
+        self.eal_para = self.dut.create_eal_parameters()
 
     def set_up(self):
         """
@@ -141,7 +142,7 @@ class TestShortLiveApp(TestCase):
         Basic rx/tx forwarding test
         """
         #dpdk start
-        self.dut.send_expect("./%s -c 0xf -n 4 -- -i --portmask=0x3" % self.app_testpmd, "testpmd>", 120)
+        self.dut.send_expect("./%s %s -- -i --portmask=0x3" % (self.app_testpmd, self.eal_para), "testpmd>", 120)
         time.sleep(5)
         self.dut.send_expect("set fwd mac", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
@@ -160,7 +161,8 @@ class TestShortLiveApp(TestCase):
         """
         time = []
         regex = re.compile(".* (\d+:\d{2}\.\d{2}).*")
-        out = self.dut.send_expect("echo quit | time ./%s -c 0x3 -n 4 --no-pci -- -i" % self.app_testpmd, "#", 120)
+        eal_para = self.dut.create_eal_parameters(no_pci=True)
+        out = self.dut.send_expect("echo quit | time ./%s %s -- -i" % (self.app_testpmd, eal_para), "#", 120)
         time = regex.findall(out)
 
         if time != []:
@@ -173,7 +175,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_testpmd round %d" % (i + 1))
-            self.dut.send_expect("./%s -c 0xf -n 4 -- -i --portmask=0x3" % self.app_testpmd, "testpmd>", 120)
+            self.dut.send_expect("./%s %s -- -i --portmask=0x3" % (self.app_testpmd, self.eal_para), "testpmd>", 120)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("set promisc all off", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
@@ -198,7 +200,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_l2fwd round %d" % (i + 1))
-            self.dut.send_expect("%s -n 4 -c 0xf -- -p 0x3 &" % self.app_l2fwd_path, "L2FWD: entering main loop", 60)
+            self.dut.send_expect("%s %s -- -p 0x3 &" % (self.app_l2fwd_path, self.eal_para), "L2FWD: entering main loop", 60)
             self.check_forwarding([0, 1], self.nic)
 
             # kill with different Signal
@@ -214,7 +216,7 @@ class TestShortLiveApp(TestCase):
         for i in range(repeat_time):
             #dpdk start
             print("clean_up_with_signal_l3fwd round %d" % (i + 1))
-            self.dut.send_expect("%s -n 4 -c 0xf -- -p 0x3 --config='(0,0,1),(1,0,2)' &" % self.app_l3fwd_path, "L3FWD: entering main loop", 120)
+            self.dut.send_expect("%s %s -- -p 0x3 --config='(0,0,1),(1,0,2)' &" % (self.app_l3fwd_path, self.eal_para), "L3FWD: entering main loop", 120)
             self.check_forwarding([0, 0], self.nic)
 
             # kill with different Signal
