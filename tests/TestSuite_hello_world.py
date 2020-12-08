@@ -66,8 +66,8 @@ class TestHelloWorld(TestCase):
 
         # get the mask for the first core
         cores = self.dut.get_core_list('1S/1C/1T')
-        coreMask = utils.create_mask(cores)
-        cmdline = "./%s -n 1 -c " % self.app_helloworld_path + coreMask
+        eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
+        cmdline = "./%s %s" % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 30)
         self.verify("hello from core %s" % cores[0] in out, "EAL not started on core%s" % cores[0])
 
@@ -86,9 +86,9 @@ class TestHelloWorld(TestCase):
         else:
             available_max_lcore = len(cores) + 1
 
-        coreMask = utils.create_mask(cores[:available_max_lcore - 1])
+        eal_para = self.dut.create_eal_parameters(cores=cores[:available_max_lcore - 1])
 
-        cmdline = "./%s -n 1 -c " % self.app_helloworld_path + coreMask
+        cmdline = "./%s %s " % (self.app_helloworld_path, eal_para)
         out = self.dut.send_expect(cmdline, "# ", 50)
         for i in range(available_max_lcore - 1):
             self.verify("hello from core %s" % cores[i] in out, "EAL not started on core%s" % cores[i])
