@@ -50,6 +50,7 @@ class TestInterruptPmd(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         cores = self.dut.get_core_list("1S/4C/1T")
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
         self.coremask = utils.create_mask(cores)
 
         self.path = self.dut.apps_name["l3fwd-power"]
@@ -88,21 +89,25 @@ class TestInterruptPmd(TestCase):
         pass
 
     def test_different_queue(self):
-        cmd = "%s -c %s -n 4 -- -p 0x3 -P --config='(0,0,1),(1,0,2)' "% (self.path, self.coremask)
+        cmd = "%s %s -- -p 0x3 -P --config='(0,0,1),(1,0,2)' "% (self.path, self.eal_para)
         self.dut.send_expect(cmd, "L3FWD_POWER", 60)
         portQueueLcore = self.trafficFlow["Flow1"]
         self.verifier_result(2, 2, portQueueLcore)
 
         self.dut.kill_all()
-        cmd = "%s -c 0x3f -n 4 -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),(0,4,4)' "% self.path
+        cores = list(range(6))
+        eal_para = self.dut.create_eal_parameters(cores=cores)
+        cmd = "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),(0,4,4)' "% (self.path, eal_para)
         self.dut.send_expect(cmd, "L3FWD_POWER", 120)
         portQueueLcore = self.trafficFlow["Flow2"]
         self.verifier_result(20, 1, portQueueLcore)
 
         self.dut.kill_all()
-        cmd = "%s -c 0xffffff -n 4 -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),\
+        cores = list(range(24))
+        eal_para = self.dut.create_eal_parameters(cores=cores)
+        cmd = "%s %s -- -p 0x3 -P --config='(0,0,0),(0,1,1),(0,2,2),(0,3,3),\
         (0,4,4),(0,5,5),(0,6,6),(0,7,7),(1,0,8),(1,1,9),(1,2,10),(1,3,11),\
-        (1,4,12),(1,5,13),(1,6,14)' "% self.path
+        (1,4,12),(1,5,13),(1,6,14)' "% (self.path, eal_para)
 
         self.dut.send_expect(cmd, "L3FWD_POWER", 60)
         portQueueLcore = self.trafficFlow["Flow3"]
