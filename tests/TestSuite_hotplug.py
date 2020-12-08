@@ -55,6 +55,7 @@ class TestPortHotPlug(TestCase):
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
         cores = self.dut.get_core_list("1S/4C/1T")
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
         self.coremask = utils.create_mask(cores)
         self.port = len(self.dut_ports) - 1
         if self.drivername == "vfio-pci:noiommu":
@@ -93,7 +94,7 @@ class TestPortHotPlug(TestCase):
         """
         first run testpmd after attach port
         """
-        cmd = "%s -c %s -n %s -- -i" % (self.path, self.coremask, self.dut.get_memory_channels())
+        cmd = "%s %s -- -i" % (self.path, self.eal_para)
         self.dut.send_expect(cmd, "testpmd>", 60)
         session_secondary = self.dut.new_session()
         session_secondary.send_expect(
@@ -137,7 +138,7 @@ class TestPortHotPlug(TestCase):
             "./usertools/dpdk-devbind.py --bind=%s %s" % (self.driver_name, self.dut.ports_info[self.port]['pci']), "#",
             60)
         self.dut.close_session(session_secondary)
-        cmd = "%s -c %s -n %s -- -i" % (self.path, self.coremask, self.dut.get_memory_channels())
+        cmd = "%s %s -- -i" % (self.path, self.eal_para)
         self.dut.send_expect(cmd, "testpmd>", 60)
         self.detach(self.port)
         self.attach(self.port)
