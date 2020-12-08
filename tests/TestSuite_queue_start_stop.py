@@ -130,8 +130,9 @@ class TestQueueStartStop(TestCase):
         queue start/stop test
         """
         #dpdk start
+        eal_para = self.dut.create_eal_parameters()
         try:
-            self.dut.send_expect("%s -c 0xf -n 4 -- -i --portmask=0x1 --port-topology=loop" % self.app_testpmd_path, "testpmd>", 120)
+            self.dut.send_expect("%s %s -- -i --portmask=0x1 --port-topology=loop" % (self.app_testpmd_path, eal_para), "testpmd>", 120)
             time.sleep(5)
             self.dut.send_expect("set fwd mac", "testpmd>")
             self.dut.send_expect("start", "testpmd>")
