@@ -341,9 +341,11 @@ class TestKni(TestCase):
 
         config_param = self.build_config_param()
 
+        eal_para = self.dut.create_eal_parameters(
+            cores=self.config['rx_cores'] + self.config['tx_cores'] + self.config['kernel_cores'])
         out_kni = self.dut.send_expect(
-            './%s -c %s -n %d -- -P -p %s %s -m &' %
-            (self.app_kni_path, core_mask, self.dut.get_memory_channels(), port_mask, config_param),
+            './%s %s -- -P -p %s %s -m &' %
+            (self.app_kni_path, eal_para, port_mask, config_param),
             "Link [Uu]p", 20)
 
         time.sleep(5)
