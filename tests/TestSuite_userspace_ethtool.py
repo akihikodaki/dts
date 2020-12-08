@@ -68,8 +68,9 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
         cpu_cores = self.dut.send_expect('lscpu |grep "NUMA node%s CPU(s):"' % out, "# ")
         core = re.findall(r"\d+-(\d+)", cpu_cores)[0]
         core = int(core)
-        cores = "%d,%d,%d,%d" % (core - 1, core - 2, core - 3, core - 4)
-        self.cmd = "%s -l %s -n %d" % (self.app_ethtool_path, cores, self.dut.get_memory_channels())
+        cores = [core - 1, core - 2, core - 3, core - 4]
+        eal_para = self.dut.create_eal_parameters(cores=cores)
+        self.cmd = "%s %s" % (self.app_ethtool_path, eal_para)
 
         # pause frame basic configuration
         self.pause_time = 65535
