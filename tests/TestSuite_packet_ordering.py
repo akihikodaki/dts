@@ -60,6 +60,7 @@ class TestPacketOrdering(TestCase):
         # get socket and cores
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores = self.dut.get_core_list("1S/4C/1T", socket=self.socket)
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/4C/1T')
         self.verify(self.cores is not None, "Insufficient cores for speed testing")
 
         self.core_mask = utils.create_mask(self.cores)
@@ -80,8 +81,8 @@ class TestPacketOrdering(TestCase):
     def start_application(self):
 
         app_name = self.dut.apps_name['packet_ordering']
-        cmdline = app_name + '-c {0} -n {1} -- -p {2}'.\
-            format(self.core_mask, self.dut.get_memory_channels(), self.port_mask)
+        cmdline = app_name + '{0} -- -p {1}'.\
+            format(self.eal_para, self.port_mask)
         # Executes the packet ordering example app.
         self.dut.send_expect(cmdline, 'REORDERAPP', 120)
 
