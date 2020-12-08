@@ -269,8 +269,7 @@ class TestPmdrssreta(TestCase):
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
         self.dut.kill_all()
-        cmd = self.dut.apps_name['test-pmd'] + "-c %s -n %d -- -i --rxq=2 --txq=2" % (self.coremask, self.dut.get_memory_channels())
-        self.dut.send_expect(cmd, "testpmd> ", 120)
+        self.pmdout.start_testpmd("all", "--rxq=2 --txq=2")
 
         self.dut.send_expect("start", "testpmd> ", 120)
         out = self.dut.send_expect("show port info all", "testpmd> ", 120)
