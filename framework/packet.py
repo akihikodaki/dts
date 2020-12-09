@@ -119,6 +119,12 @@ PKTGEN_PIDS = {}
 # default filter for LLDP packet
 LLDP_FILTER = {'layer': 'ether', 'config': {'type': 'not lldp'}}
 
+def write_raw_pkt(pkt_str, file_name):
+    tmp = eval(pkt_str)
+    tmp = bytearray(bytes(tmp))
+    with open(file_name, 'wb') as w:
+        w.write(tmp)
+        w.close()
 
 class scapy(object):
     SCAPY_LAYERS = {
