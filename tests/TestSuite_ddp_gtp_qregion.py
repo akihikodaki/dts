@@ -37,6 +37,7 @@ from scapy.all import *
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import get_nic_name
+import packet
 
 
 class TestDdpGtpQregion(TestCase):
@@ -160,14 +161,11 @@ class TestDdpGtpQregion(TestCase):
         template file and packets sent to NIC.
         """
         if flowtype == 23:
-            a = Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=100, sport=200)/Raw("X"*20)
+            a = 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IPv6(dst="1001:0db8:85a3:0000:0000:8a2e:0370:0001", src="2001:0db8:85a3:0000:0000:8a2e:0370:0001")/UDP(dport=100, sport=200)/Raw("X"*20)'
         if flowtype == 26:
-            a = Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=100, sport=200)/Raw("X"*20)
-        ba = bytearray(bytes(a))
+            a = 'Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header(teid=0xfe)/IP(dst="1.1.1.1", src="2.2.2.2")/UDP(dport=100, sport=200)/Raw("X"*20)'
         rawfile_src = '/tmp/test_gtp.raw'
-        File = open("%s" % rawfile_src, "wb")
-        File.write(ba)
-        File.close()
+        packet.write_raw_pkt(a, rawfile_src)
         rawfile_dst = "/tmp/"
         self.dut.session.copy_file_to(rawfile_src, rawfile_dst)
 
@@ -177,10 +175,8 @@ class TestDdpGtpQregion(TestCase):
         """
         pkts = self.gtp_pkts(flowtype, keyword, opt)
         for packet_type in list(pkts.keys()):
-            self.tester.scapy_append(
-                'sendp([%s], iface="%s")'
-                % (pkts[packet_type], self.tester_intf))
-            self.tester.scapy_execute()
+            pkt = packet.Packet(pkts[packet_type])
+            pkt.send_pkt(crb=self.tester, tx_port=self.tester_intf)
             out = self.dut.get_session_output(timeout=2)
             pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
             qnum = self.element_strip(out, pattern)
@@ -239,10 +235,8 @@ class TestDdpGtpQregion(TestCase):
                     keyword = 'src_ipv6'
             pkts = self.gtp_pkts(flowtype, keyword, opt)
             for packet_type in list(pkts.keys()):
-                self.tester.scapy_append(
-                    'sendp([%s], iface="%s")'
-                    % (pkts[packet_type], self.tester_intf))
-                self.tester.scapy_execute()
+                pkt = packet.Packet(pkts[packet_type])
+                pkt.send_pkt(crb=self.tester, tx_port=self.tester_intf)
                 out = self.dut.get_session_output(timeout=2)
                 self.verify("PKT_RX_RSS_HASH" in out, "Failed to test RSS!!!")
                 pattern = "port (\d)/queue (\d{1,2}): received (\d) packets"
