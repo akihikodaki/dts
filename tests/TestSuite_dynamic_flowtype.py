@@ -34,6 +34,7 @@ import re
 import utils
 from test_case import TestCase
 from pmd_output import PmdOutput
+import packet
 
 VM_CORES_MASK = 'all'
 
@@ -202,10 +203,8 @@ class TestDynamicFlowtype(TestCase):
         """
         pkts = self.gtp_packets(flowtype, match_opt)
         for packet_type in list(pkts.keys()):
-            self.tester.scapy_append(
-                'sendp([%s], iface="%s")'
-                % (pkts[packet_type], self.tester_intf))
-            self.tester.scapy_execute()
+            pkt = packet.Packet(pkts[packet_type])
+            pkt.send_pkt(crb=self.tester, tx_port=self.tester_intf)
             out = self.dut.get_session_output(timeout=2)
             if match_opt == 'matched':
                 self.verify("PKT_RX_RSS_HASH" in out,
