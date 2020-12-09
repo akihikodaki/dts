@@ -246,7 +246,7 @@ Test Case 10: vhost single core performance test with virtio 1.1 vectorized path
 
 2. Launch virtio-user by below command::
 
-    ./testpmd -l 7-9 -n 4 --file-prefix=virtio \
+    ./testpmd -l 7-9 -n 4 --file-prefix=virtio --force-max-simd-bitwidth=512 \
     --vdev=virtio_user0,mac=00:11:22:33:44:10,path=./vhost-net,queues=1,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
     -- -i --rss-ip --nb-cores=2 --txd=1024 --rxd=1024
     >set fwd io
