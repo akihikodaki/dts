@@ -54,11 +54,9 @@ class TestCmdline(TestCase):
         self.verify("No such file" not in out, "compilation error 2")
 
         # Run cmdline app
-        cores = self.dut.get_core_list('1S/1C/1T')
-        coreMask = utils.create_mask(cores)
         self.app_cmdline_path = self.dut.apps_name['cmdline']
-        self.dut.send_expect("./%s -n 1 -c " % self.app_cmdline_path + coreMask, "> ", 10)
-
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/1C/1T")
+        self.dut.send_expect(r'./%s %s' % (self.app_cmdline_path, self.eal_para), "> ", 10)
     def set_up(self):
         """
         Run before each test case.
