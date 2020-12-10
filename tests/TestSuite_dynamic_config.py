@@ -72,16 +72,12 @@ class TestDynamicConfig(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
 
         # Prepare cores and ports
-        cores = self.dut.get_core_list('1S/2C/2T')
-        self.coreMask = utils.create_mask(cores)
         self.portMask = utils.create_mask(self.dut_ports[:2])
         self.path=self.dut.apps_name['test-pmd']
         # launch app
-        cmd = "%s -c %s -n 3 -- -i --rxpt=0 \
-        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.coreMask, self.portMask)
-
-        self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
-
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/2C/2T")
+        self.dut.send_expect(r'%s %s -- -i --rxpt=0 --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s'
+                             % (self.path, self.eal_para, self.portMask), "testpmd>", 120)
         # get dest address from self.target port
         out = self.dut.send_expect(
             "show port info %d" % self.dut_ports[0], "testpmd> ")
@@ -118,10 +114,9 @@ class TestDynamicConfig(TestCase):
         """
         Run before each test case.
         """
-        cmd = "%s -n 3 -- -i --rxpt=0 \
-        --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s" % (self.path, self.portMask)
-
-        self.dut.send_expect("%s" % cmd, "testpmd> ", 120)
+        self.eal_para = self.dut.create_eal_parameters('1S/2C/2T')
+        self.dut.send_expect(r'%s %s -- -i --rxpt=0 --rxht=0 --rxwt=0 --txpt=39 --txht=0 --txwt=0 --portmask=%s'
+                             % (self.path, self.eal_para, self.portMask), "testpmd>", 120)
         time.sleep(5)
         self.dut.send_expect("start", "testpmd> ", 120)
 
