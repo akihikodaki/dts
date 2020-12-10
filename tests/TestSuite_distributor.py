@@ -76,7 +76,8 @@ class TestDistributor(TestCase):
         """
         Run distributor unit test
         """
-        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
+        eal_para = self.dut.create_eal_parameters(cores=[0, 1, 2, 3])
+        self.dut.send_expect("./%s %s" % (self.app_test_path, eal_para), "RTE>>", 60)
         out = self.dut.send_expect("distributor_autotest", "RTE>>", 30)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -85,7 +86,8 @@ class TestDistributor(TestCase):
         """
         Run distributor unit perf test
         """
-        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
+        eal_para = self.dut.create_eal_parameters(cores=[0, 1, 2, 3])
+        self.dut.send_expect("./%s %s" % (self.app_test_path, eal_para), "RTE>>", 60)
         out = self.dut.send_expect("distributor_perf_autotest", "RTE>>", 120)
         cycles_single = self.strip_cycles(out, "single")
         cycles_burst = self.strip_cycles(out, "burst")
@@ -112,7 +114,7 @@ class TestDistributor(TestCase):
                         "Throughput Rate Pkts out line rate"]
 
         # output port is calculated from overall ports number
-        cmd_fmt = "%s -c %s -n %d -w %s -- -p 0x1"
+        cmd_fmt = "%s %s -- -p 0x1"
         socket = self.dut.get_numa_id(self.dut_ports[0])
 
         pcap = os.sep.join([self.output_path, "distributor.pcap"])
@@ -133,10 +135,8 @@ class TestDistributor(TestCase):
             if len(cores) < (worker_num + 4):
                 cores = self._get_thread_lcore(worker_num + 4)
 
-            cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
-                             self.dut.get_memory_channels(),
-                             self.dut.get_port_pci(self.dut_ports[0]))
-
+            eal_para = self.dut.create_eal_parameters(cores=cores, ports=[0])
+            cmd = cmd_fmt % (self.app_distributor_path, eal_para)
             self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
             # clear streams before add new streams
@@ -163,8 +163,8 @@ class TestDistributor(TestCase):
         Check distributor app work fine with maximum workers
         """
         self.verify(len(self.dut_ports) >= 1, "Not enough ports")
-        cmd_fmt = "%s -c %s -n %d -w %s -- -p 0x1"
 
+        cmd_fmt = "%s %s -- -p 0x1"
         out = self.dut.send_expect("sed -n '/#define RTE_DISTRIB_MAX_WORKERS/p' lib/librte_distributor/distributor_private.h", "# ")
         reg_match = r"#define RTE_DISTRIB_MAX_WORKERS (.*)"
         m = re.match(reg_match, out)
@@ -172,11 +172,8 @@ class TestDistributor(TestCase):
 
         max_workers = int(m.group(1))
         cores = self._get_thread_lcore(max_workers - 1 + 4)
-
-        cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
-                         self.dut.get_memory_channels(),
-                         self.dut.get_port_pci(self.dut_ports[0]))
-
+        eal_para = self.dut.create_eal_parameters(cores=cores, ports=[0])
+        cmd = cmd_fmt % (self.app_distributor_path, eal_para)
         self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
         tx_port = self.tester.get_local_port(self.dut_ports[0])
@@ -190,15 +187,13 @@ class TestDistributor(TestCase):
         Check distributor app work fine with multiple ports
         """
         self.verify(len(self.dut_ports) >= 2, "Not enough ports")
-        cmd_fmt = "%s -c %s -n %d -w %s -w %s -- -p 0x3"
+
+        cmd_fmt = "%s %s -- -p 0x3"
         socket = self.dut.get_numa_id(self.dut_ports[0])
         cores = self.dut.get_core_list("1S/%dC/1T" % (2 + 4), socket)
 
-        cmd = cmd_fmt % (self.app_distributor_path, utils.create_mask(cores),
-                         self.dut.get_memory_channels(),
-                         self.dut.get_port_pci(self.dut_ports[0]),
-                         self.dut.get_port_pci(self.dut_ports[1]))
-
+        eal_para = self.dut.create_eal_parameters(cores=cores, ports=[0,1])
+        cmd = cmd_fmt % (self.app_distributor_path, eal_para)
         self.dut.send_expect(cmd, "doing packet RX", timeout=30)
 
         tx_port = self.tester.get_local_port(self.dut_ports[0])
