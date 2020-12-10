@@ -314,9 +314,7 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         # Verify that enough threads are available
         netdev = self.dut.ports_info[ports[0]]['port']
         self.ports_socket = netdev.socket
-        cores = self.dut.get_core_list("1S/5C/1T", socket=self.ports_socket)
-        self.verify(cores is not None, "Insufficient cores for speed testing")
-        self.coremask = utils.create_mask(cores)
+
 
         # start testpmd
         self.pmdout = PmdOutput(self.dut)
@@ -540,15 +538,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         if self.nic in ["columbiaville_25g","columbiaville_100g"]:
             print("CVL support default none VECTOR")
             src_vec_model = 'n'
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
 
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+        self.dut.send_expect(r'./%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s'
+                % (self.path, self.eal_para, self.portMask), "testpmd>", 30)
 
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
@@ -579,14 +572,12 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
             print("CVL support default none VECTOR")
             src_vec_model = 'n'
 
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
+
+        self.dut.send_expect(r'./%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s'
+                % (self.path, self.eal_para, self.portMask), "testpmd>", 30)
 
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
@@ -618,14 +609,12 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         verify vxlan packet checksum offload
         """
         # start testpmd with 2queue/1port
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--enable-rx-cksum"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
+
+        self.dut.send_expect(r'./%s %s -- -i --portmask=%s --enable-rx-cksum'
+                % (self.path, self.eal_para, self.portMask), "testpmd>", 30)
         self.iperr_num = 0
 
         # disable vlan filter
@@ -692,14 +681,12 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         not support ipv6 + sctp
         """
         # start testpmd with 2queue/1port
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --portmask=%(PORT)s " + \
-            "--enable-rx-cksum"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
+
+        self.dut.send_expect(r'./%s %s -- -i --portmask=%s --enable-rx-cksum'
+             % (self.path, self.eal_para, self.portMask), "testpmd>", 30)
         self.iperr_num = 0
 
         # disable vlan filter
@@ -766,14 +753,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         """
         verify tunnel filter feature
         """
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq={} --txq={}".format(MAX_TXQ_RXQ, MAX_TXQ_RXQ) + \
-            " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
+
+        self.dut.send_expect(r'./%s %s -- -i --disable-rss --rxq=%d --txq=%d --nb-cores=4 --portmask=%s'
+                % (self.path, self.eal_para, MAX_TXQ_RXQ, MAX_TXQ_RXQ, self.portMask), "testpmd>", 30)
 
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
@@ -843,14 +826,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         config = VxlanTestConfig(self)
         config.outer_mac_dst = self.dut_port_mac
 
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=4 --txq=4" + \
-            " --nb-cores=4 --portmask=%(PORT)s"
-        pmd_cmd = pmd_temp % {'TARGET': self.path,
-                              'COREMASK': self.coremask,
-                              'CHANNEL': self.dut.get_memory_channels(),
-                              'PORT': self.portMask}
-        self.dut.send_expect(pmd_cmd, "testpmd>", 30)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T", socket=self.ports_socket)
+
+        self.dut.send_expect(r'./%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s'
+                % (self.path, self.eal_para, self.portMask), "testpmd>", 30)
 
         self.enable_vxlan(self.dut_port)
         self.enable_vxlan(self.recv_port)
@@ -982,11 +961,9 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
         core_list = self.dut.get_core_list(
             '1S/%dC/1T' % (self.tunnel_multiqueue * 2 + 1),
             socket=self.ports_socket)
-        core_mask = utils.create_mask(core_list)
 
-        pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-            "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-            " --nb-cores=4 --portmask=%(PORT)s"
+
+        pmd_temp = "./%s %s -- -i --disable-rss --rxq=2 --txq=2 --nb-cores=4 --portmask=%s"
 
         for perf_config in self.tunnel_perf:
             tun_filter = perf_config['tunnel_filter']
@@ -995,14 +972,10 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
                             % (perf_config['Packet'], tun_filter, recv_queue))))
 
             if tun_filter == "None" and recv_queue == "Multi":
-                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-                    "%(CHANNEL)d -- -i --rss-udp --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s"
+                pmd_temp = "./%s %s -- -i --rss-udp --rxq=2 --txq=2 --nb-cores=4 --portmask=%s"
 
-            pmd_cmd = pmd_temp % {'TARGET': self.path,
-                                  'COREMASK': core_mask,
-                                  'CHANNEL': self.dut.get_memory_channels(),
-                                  'PORT': self.portMask}
+            self.eal_para = self.dut.create_eal_parameters(cores=core_list)
+            pmd_cmd = pmd_temp % (self.path, self.eal_para, self.portMask)
             self.dut.send_expect(pmd_cmd, "testpmd> ", 100)
 
             # config flow
@@ -1096,18 +1069,12 @@ class TestVxlan(TestCase, IxiaPacketGenerator):
 
             # multi queue and signle queue commands
             if recv_queue == 'Multi':
-                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-                    "%(CHANNEL)d -- -i --disable-rss --rxq=2 --txq=2" + \
-                    " --nb-cores=4 --portmask=%(PORT)s"
+                pmd_temp = "./%s %s -- -i --disable-rss --rxq=2 --txq=2 --nb-cores=4 --portmask=%s"
             else:
-                pmd_temp = "./%(TARGET)s -c %(COREMASK)s -n " + \
-                    "%(CHANNEL)d -- -i --nb-cores=2 --portmask=%(PORT)s" + \
-                    ""
+                pmd_temp = "./%s %s -- -i --nb-cores=2 --portmask=%s"
 
-            pmd_cmd = pmd_temp % {'TARGET': self.path,
-                                  'COREMASK': core_mask,
-                                  'CHANNEL': self.dut.get_memory_channels(),
-                                  'PORT': self.portMask}
+            self.eal_para = self.dut.create_eal_parameters(cores=core_list)
+            pmd_cmd = pmd_temp % (self.path, self.eal_para, self.portMask)
 
             self.dut.send_expect(pmd_cmd, "testpmd> ", 100)
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
