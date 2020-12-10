@@ -410,10 +410,7 @@ class TestNvgre(TestCase):
         self.verify(len(ports) >= 2, "Insufficient ports for testing")
 
         # Verify that enough threads are available
-        self.all_cores_mask = utils.create_mask(self.dut.get_core_list("all"))
-        cores = self.dut.get_core_list("1S/5C/1T")
-        self.verify(cores is not None, "Insufficient cores for speed testing")
-        self.coremask = utils.create_mask(cores)
+
 
         # start testpmd
         self.pmdout = PmdOutput(self.dut)
@@ -485,8 +482,9 @@ class TestNvgre(TestCase):
         """
         send nvgre packet and check whether testpmd detect the correct packet type
         """
-        out = self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                                   % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T")
+        out = self.dut.send_expect(r'%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s'
+                % (self.path, self.eal_para, self.portmask), "testpmd>", 30)
         out = self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
 
@@ -571,8 +569,10 @@ class TestNvgre(TestCase):
         self.logger.info("chksums_ref:" + str(chksums_default))
 
         # start testpmd with 2queue/1port
-        out = self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum"
-                                   % (self.path, self.coremask, self.dut.get_memory_channels(), self.portmask), "testpmd>", 30)
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T")
+        out = self.dut.send_expect(r'%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s --enable-rx-cksum'
+                % (self.path, self.eal_para, self.portmask), "testpmd>", 30)
         # disable vlan filter
         self.dut.send_expect('vlan set filter off %d' % self.dut_rx_port, "testpmd")
 
@@ -712,9 +712,9 @@ class TestNvgre(TestCase):
 
     def test_tunnel_filter(self):
         # verify tunnel filter feature
-        self.dut.send_expect("%s -c %s -n %d -- -i --disable-rss --rxq=%d --txq=%d --nb-cores=4 --portmask=%s"
-                             % (self.path, self.coremask, self.dut.get_memory_channels(),
-                                MAX_TXQ_RXQ, MAX_TXQ_RXQ, self.portmask), "testpmd>", 30)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T")
+        self.dut.send_expect(r'%s %s -- -i --disable-rss --rxq=%d --txq=%d --nb-cores=4 --portmask=%s'
+                             % (self.path, self.eal_para, MAX_TXQ_RXQ, MAX_TXQ_RXQ, self.portmask), "testpmd>", 30)
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
 
@@ -790,8 +790,9 @@ class TestNvgre(TestCase):
         config = NvgreTestConfig(self)
         config.outer_mac_dst = self.dut_rx_port_mac
 
-        self.dut.send_expect("%s -c %s -n 4 -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s"
-                             % (self.path, self.coremask, self.portmask), "testpmd>", 30)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/5C/1T")
+        self.dut.send_expect(r'%s %s -- -i --disable-rss --rxq=4 --txq=4 --nb-cores=4 --portmask=%s'
+                             % (self.path, self.eal_para, self.portmask), "testpmd>", 30)
         self.dut.send_expect("set fwd rxonly", "testpmd>", 10)
         self.dut.send_expect("set verbose 1", "testpmd>", 10)
 
@@ -881,10 +882,6 @@ class TestNvgre(TestCase):
         core_list = self.dut.get_core_list('1S/%dC/1T' % (self.tunnel_multiqueue * 2), socket=self.ports_socket)
         core_mask = utils.create_mask(core_list)
 
-        command_line = "%s -c %s -n %d -- -i --disable-rss --coremask=%s --rxq=4 --txq=4 --portmask=%s" % (self.path,
-                                                                                                                         self.all_cores_mask,
-                                                                                                                         self.dut.get_memory_channels(),
-                                                                                                                         core_mask, self.portmask)
         for perf_config in self.tunnel_perf:
             pkts = []
             config = NvgreTestConfig(self)
@@ -895,7 +892,9 @@ class TestNvgre(TestCase):
             frame_size = config.pcap_len()
 
             # restart testpmd in each performance config
-            self.dut.send_expect(command_line, "testpmd> ", 100)
+            self.eal_para = self.dut.create_eal_parameters(cores="all")
+            self.dut.send_expect(r'%s %s -- -i --disable-rss --coremask=%s --rxq=4 --txq=4 --portmask=%s'
+                                 % (self.path, self.eal_para, core_mask, self.portmask), "testpmd>", 100)
             if perf_config['tunnel_filter'] != 'None':
                 self.dut.send_expect("tunnel_filter add %d %s %s %s %d vxlan %s %d %d"
                                      % (self.dut_port, config.outer_mac_dst, config.inner_mac_dst, config.inner_ip_dst, config.inner_vlan,
@@ -997,14 +996,9 @@ class TestNvgre(TestCase):
                 core_list = self.dut.get_core_list(core_config)
 
             core_mask = utils.create_mask(core_list)
-
-            command_line = "%s -c %s -n %d -- -i \
- --disable-rss --coremask=%s --portmask=%s" % (self.path,
-                                               all_cores_mask,
-                                               self.dut.get_memory_channels(),
-                                               core_mask, self.portmask)
-
-            self.dut.send_expect(command_line, "testpmd> ", 100)
+            self.eal_para = self.dut.create_eal_parameters(cores="all")
+            self.dut.send_expect(r'%s %s -- -i --disable-rss --coremask=%s --rxq=4 --txq=4 --portmask=%s'
+                                 % (self.path, self.eal_para, core_mask, self.portmask), "testpmd>", 100)
             self.dut.send_expect("set fwd csum", "testpmd>", 10)
 
             # different calculate type
