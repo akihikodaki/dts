@@ -46,11 +46,9 @@ class TestExternalMemory(TestCase):
         """
         Run at the start of each test suite.
         """
-
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports")
-        cores = self.dut.get_core_list("1S/4C/1T")
-        self.coremask = utils.create_mask(cores)
+
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
@@ -93,8 +91,9 @@ class TestExternalMemory(TestCase):
         Verifier IGB_UIO and anonymous memory allocation
         """
         self.insmod_modprobe(modename="igb_uio")
-
-        cmd = "./%s -c %s -n 4 -- --mp-alloc=xmem -i" % (self.app_testpmd_path, self.coremask)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
+        self.dut.send_expect(r'./%s %s -- --mp-alloc=xmem -i'
+                             % (self.app_testpmd_path, self.eal_para), "link state change event", 60)
 
         self.dut.send_expect(cmd,"testpmd>",60)
         self.verifier_result()
@@ -104,9 +103,9 @@ class TestExternalMemory(TestCase):
         Verifier IGB_UIO and anonymous hugepage memory allocation
         """
         self.insmod_modprobe(modename="igb_uio")
-        cmd = "./%s -c %s -n 4 -- --mp-alloc=xmemhuge -i" % (self.app_testpmd_path, self.coremask)
-
-        self.dut.send_expect(cmd,"testpmd>",60)
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
+        self.dut.send_expect(r'./%s %s -- --mp-alloc=xmemhuge -i'
+                             % (self.app_testpmd_path, self.eal_para), "link state change event", 60)
         self.verifier_result()
 
     def test_VFIO_PCI_xmem(self):
@@ -114,8 +113,10 @@ class TestExternalMemory(TestCase):
         Verifier VFIO_PCI and anonymous memory allocation
         """
         self.insmod_modprobe(modename="vfio-pci")
-        cmd = "./%s -c %s -n 4 -- --mp-alloc=xmem -i" % (self.app_testpmd_path, self.coremask)
-        self.dut.send_expect(cmd,"testpmd>",60)
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
+        self.dut.send_expect(r'./%s %s -- --mp-alloc=xmem -i'
+                             % (self.app_testpmd_path, self.eal_para),"testpmd>",60)
 
         self.verifier_result()
 
@@ -124,8 +125,10 @@ class TestExternalMemory(TestCase):
         Verifier VFIO and anonymous hugepage memory allocation
         """
         self.insmod_modprobe(modename="vfio-pci")
-        cmd = "./%s -c %s -n 4 -- --mp-alloc=xmemhuge -i" % (self.app_testpmd_path, self.coremask)
-        self.dut.send_expect(cmd,"testpmd>",60)
+
+        self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
+        self.dut.send_expect(r'./%s %s -- --mp-alloc=xmemhuge -i'
+                             % (self.app_testpmd_path, self.eal_para),"testpmd>",60)
 
         self.verifier_result()
 
