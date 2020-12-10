@@ -58,7 +58,8 @@ class TestFlowFiltering(TestCase):
         """
         Run before each test case.
         """
-        cmd = self.dut.apps_name['flow_filtering'] + "-l 1 -n 1"
+        self.eal_para = self.dut.create_eal_parameters(cores=[1])
+        cmd = self.dut.apps_name['flow_filtering'] + self.eal_para
         out = self.dut.send_command(cmd, timeout=15)
         self.verify("Error" not in out, "flow launch failed")
 
