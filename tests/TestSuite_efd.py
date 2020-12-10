@@ -79,7 +79,8 @@ class TestEFD(TestCase):
         """
         Run EFD unit test
         """
-        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
+        eal_para = self.dut.create_eal_parameters(cores=[0, 1, 2, 3])
+        self.dut.send_expect("./%s %s" % (self.app_test_path, eal_para), "RTE>>", 60)
         out = self.dut.send_expect("efd_autotest", "RTE>>", 120)
         self.dut.send_expect("quit", "# ")
         self.verify("Test OK" in out, "Test failed")
@@ -88,7 +89,8 @@ class TestEFD(TestCase):
         """
         Run EFD unit perf test
         """
-        self.dut.send_expect("./%s -n 1 -c f" % self.app_test_path, "RTE>>", 60)
+        eal_para = self.dut.create_eal_parameters(cores=[0, 1, 2, 3])
+        self.dut.send_expect("./%s %s" % (self.app_test_path, eal_para), "RTE>>", 60)
         out = self.dut.send_expect("efd_perf_autotest", "RTE>>", 120)
         self.logger.info(out)
         self.dut.send_expect("quit", "# ")
@@ -175,8 +177,8 @@ class TestEFD(TestCase):
         # extended flow number into etgen module
 
         # output port is calculated from overall ports number
-        server_cmd_fmt = "%s -c %s -n %d -w %s -w %s -- -p 0x3 -n %d -f %s"
-        node_cmd_fmt = "%s -c %s -n %d --proc-type=secondary -- -n %d"
+        server_cmd_fmt = "%s %s -- -p 0x3 -n %d -f %s"
+        node_cmd_fmt = "%s %s --proc-type=secondary -- -n %d"
         socket = self.dut.get_numa_id(self.dut_ports[0])
 
         pcap = os.sep.join([self.output_path, "efd.pcap"])
@@ -195,19 +197,16 @@ class TestEFD(TestCase):
 
         self.verify(len(cores), "Can't find enough cores")
 
-        server_cmd = server_cmd_fmt % (self.server_app, utils.create_mask(cores[0:2]),
-                                       self.dut.get_memory_channels(),
-                                       self.dut.get_port_pci(self.dut_ports[0]),
-                                       self.dut.get_port_pci(self.dut_ports[1]),
-                                       node_num, hex(flow_num))
-
+        eal_para = self.dut.create_eal_parameters(cores=cores[0:2], ports=[0, 1])
+        server_cmd = server_cmd_fmt % (self.server_app, eal_para, node_num, hex(flow_num))
         # create table may need few minutes
         self.dut.send_expect(server_cmd, "Finished Process Init", timeout=240)
 
         node_sessions = []
         for node in range(node_num):
-            node_cmd = node_cmd_fmt % (self.node_app, utils.create_mask([cores[2 + node]]),
-                                       self.dut.get_memory_channels(), node)
+
+            eal_para = self.dut.create_eal_parameters(cores=[cores[2 + node]])
+            node_cmd = node_cmd_fmt % (self.node_app, eal_para, node)
             node_session = self.dut.new_session(suite="node%d" % node)
             node_sessions.append(node_session)
             node_session.send_expect(node_cmd, "Finished Process Init", timeout=30)
