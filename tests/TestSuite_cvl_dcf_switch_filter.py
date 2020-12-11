@@ -1216,6 +1216,156 @@ tv_mac_vlan_pppoe_ipcp_pay = {
                   "expect_results":{"expect_pkts":0}}
 }
 
+tv_mac_ipv4_drop = {
+    "name": "tv_mac_ipv4_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.1")/Raw("x"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2")/Raw("x"*80)'],
+                "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_ipv4_mask_drop = {
+    "name": "tv_mac_ipv4_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="128.0.0.0")/TCP()/Raw("x"*80)'],
+                "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_nvgre_drop = {
+    "name": "tv_mac_nvgre_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.1")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.1")/NVGRE(TNI=1)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)'],
+                "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_ppoes_drop = {
+    "name": "tv_mac_ppoes_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b"\\x00\\x21")/IP()/Raw("x" * 80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=2)/PPP(b"\\x00\\x21")/IP()/Raw("x" * 80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_pfcp_drop = {
+    "name": "tv_mac_pfcp_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=8805)/PFCP(S=0)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=8805)/PFCP(S=1)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_vlan_drop = {
+    "name": "tv_mac_vlan_drop",
+    "rte_flow_pattern": "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2)/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_l2tp_drop = {
+    "name": "tv_mac_l2tp_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / l2tpv3oip session_id is 1 / end actions drop / end",
+    "matched": {"scapy_str": ["Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.2', proto=115)/L2TP(b'\\x00\\x00\\x00\\x01')/('X'*480)"],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ["Ether(dst='00:11:22:33:44:55')/IP(src='192.168.0.2', proto=115)/L2TP(b'\\x00\\x00\\x00\\x02')/('X'*480)"],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_esp_drop = {
+    "name": "tv_mac_l2tp_drop",
+    "rte_flow_pattern": "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.2 / esp spi is 1 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2", proto=50)/ESP(spi=1)/("X"*480)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.2", proto=50)/ESP(spi=2)/("X"*480)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 1}}
+}
+
+tv_mac_blend_pkg_drop = {
+    "name": "tv_mac_blend_pkg_drop",
+    "rte_flow_pattern": ["flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end",
+                         "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end",
+                         "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.3 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end",
+                         "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions drop / end",
+                         "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions drop / end",
+                         "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / end actions drop / end",
+                         "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.4 / l2tpv3oip session_id is 1 / end actions drop / end",
+                         "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.5 / esp spi is 1 / end actions drop / end"],
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.1")/Raw("x"*80)',
+                              'Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)',
+                              'Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.3")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b"\\x00\\x21")/IP()/Raw("X" * 80)',
+                              'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=8805)/PFCP(S=0)',
+                              'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1)/IP(src="192.168.0.1",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*80)',
+                              'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.4", proto=115)/L2TP(b"\\x00\\x00\\x00\\x01")/("X"*480)',
+                              'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.5", proto=50)/ESP(spi=1)/("X"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 0}},
+    "mismatched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.6")/Raw("x"*80)',
+                                 'Ether(dst="00:11:22:33:44:55")/IP(dst="128.0.0.0")/TCP()/Raw("x"*80)',
+                                 'Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.8")/NVGRE(TNI=1)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
+                                 'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=2)/PPP(b"\\x00\\x21")/IP()/Raw("x" * 80)',
+                                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=8805)/PFCP(S=1)',
+                                 'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2)/IP(src="192.168.0.9",dst="192.168.0.2",tos=4,ttl=2)/TCP()/Raw("X"*80)',
+                                 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.10", proto=115)/L2TP(b"\\x00\\x00\\x00\\x02")/("X"*480)',
+                                 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.11", proto=50)/ESP(spi=2)/("X"*80)'],
+               "check_func": {"func": rfc.check_vf_rx_packets_number,
+                             "param": {"expect_port": 1, "expect_queues": "null"}},
+               "expect_results": {"expect_pkts": 8}}
+}
+
+sv_mac_test_drop_action = [
+    tv_mac_ipv4_drop,
+    tv_mac_ipv4_mask_drop,
+    tv_mac_nvgre_drop,
+    tv_mac_ppoes_drop,
+    tv_mac_pfcp_drop,
+    tv_mac_vlan_drop,
+    tv_mac_l2tp_drop,
+    tv_mac_esp_drop,
+    tv_mac_blend_pkg_drop
+]
+
 class CVLDCFSwitchFilterTest(TestCase):
 
     def bind_nics_driver(self, ports, driver=""):
@@ -2174,6 +2324,32 @@ class CVLDCFSwitchFilterTest(TestCase):
     def test_mac_vlan_pppoe_ipcp_pay(self):
         self.setup_1pf_vfs_env()
         self._rte_flow_validate_pattern(tv_mac_vlan_pppoe_ipcp_pay)
+
+    def test_mac_drop_action(self):
+        self.setup_1pf_vfs_env()
+        self.dut.send_expect('ip link set %s vf 1 mac "00:11:22:33:44:55"' % self.pf0_intf, '# ')
+        self.launch_testpmd()
+        for pattern in sv_mac_test_drop_action:
+            # validate a rule
+            self.validate_switch_filter_rule(pattern["rte_flow_pattern"])
+            # create a rule
+            rule_list = self.create_switch_filter_rule(pattern["rte_flow_pattern"])  # create a rule
+            self.check_switch_filter_rule_list(0, rule_list)
+            # send matched packets and check
+            matched_dic = pattern["matched"]
+            self.send_and_check_packets(matched_dic)
+            # send mismatched packets and check
+            mismatched_dic = pattern["mismatched"]
+            self.send_and_check_packets(mismatched_dic)
+            # destroy rule and send matched packets
+            self.destroy_switch_filter_rule(0, rule_list)
+            self.check_switch_filter_rule_list(0, [])
+            # send matched packets and check
+            destroy_dict = copy.deepcopy(matched_dic)
+            destroy_dict["expect_results"]["expect_pkts"] = len(pattern["matched"]["scapy_str"])
+            self.send_and_check_packets(destroy_dict)
+            self.dut.send_expect("flow flush 0", "testpmd> ", 15)
+            self.dut.send_expect("clear port stats all", "testpmd> ", 15)
 
     def tear_down(self):
         """
