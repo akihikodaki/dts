@@ -278,6 +278,17 @@ class DPDKdut(Dut):
         shared_lib_path = load_global_setting(HOST_SHARED_LIB_PATH)
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
+        kernel_driver = ''
+        if 'Virt' in str(self):
+            if self.host_dut.nic:
+                kernel_driver = self.host_dut.nic.default_driver
+        elif self.nic:
+            kernel_driver = self.nic.default_driver
+
+        if kernel_driver == 'i40e':
+            self.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
+            self.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
+
         build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
         build_install_dpdk = getattr(self, 'build_install_dpdk_%s_%s' % (self.get_os_type(), build_type))
         build_install_dpdk(target, extra_options)
