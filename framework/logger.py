@@ -465,7 +465,7 @@ class LogParser(object):
 
     def __dict_log(self, lvl_name, msg):
         tmp = {}
-        if lvl_name is not '':
+        if lvl_name != '':
             tmp[lvl_name] = msg
         return tmp
 

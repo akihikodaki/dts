@@ -354,7 +354,7 @@ class Tester(Crb):
         try:
             for port_info in self.ports_info:
                 nic_type = port_info.get('type') 
-                if nic_type is not 'trex':
+                if nic_type != 'trex':
                     continue
                 pci_bus = port_info.get('pci')
                 port_inst = port_info.get('port')

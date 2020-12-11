@@ -385,7 +385,7 @@ def accepted_nic(pci_id):
     if pci_id not in list(NICS.values()):
         return False
 
-    if nic is 'any':
+    if nic == 'any':
         return True
 
     else:

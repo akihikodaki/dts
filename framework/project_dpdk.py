@@ -319,7 +319,7 @@ class DPDKdut(Dut):
                 if 'i386' in cur_path:
                     pkg_path = cur_path
                     break
-            assert(pkg_path is not ''), "please make sure you env have the i386 pkg-config path"
+            assert(pkg_path != ''), "please make sure you env have the i386 pkg-config path"
 
             self.send_expect("export CFLAGS=-m32", "# ")
             self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ")
@@ -556,7 +556,7 @@ class DPDKdut(Dut):
                 if 'i386' in cur_path:
                     pkg_path = cur_path
                     break
-            assert(pkg_path is not ''), "please make sure you env have the i386 pkg-config path"
+            assert(pkg_path != ''), "please make sure you env have the i386 pkg-config path"
 
             self.send_expect("export CFLAGS=-m32", "# ", alt_session=True)
             self.send_expect("export PKG_CONFIG_LIBDIR=%s" % pkg_path, "# ", alt_session=True)

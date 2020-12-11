@@ -215,7 +215,7 @@ class scapy(object):
     def strip_vlan(self, element, p_index=0):
         value = None
 
-        if self.pkts[p_index].haslayer('Dot1Q') is 0:
+        if self.pkts[p_index].haslayer('Dot1Q') == 0:
             return None
 
         if element == 'vlan':
@@ -233,7 +233,7 @@ class scapy(object):
     def strip_etag(self, element, p_index=0):
         value = None
 
-        if self.pkts[p_index].haslayer('Dot1BR') is 0:
+        if self.pkts[p_index].haslayer('Dot1BR') == 0:
             return None
 
         if element == 'ECIDbase':

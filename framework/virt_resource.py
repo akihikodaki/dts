@@ -83,7 +83,7 @@ class VirtResource(object):
     def __port_on_socket(self, pci, socket):
         for port in self.ports_info:
             if port['pci'] == pci:
-                if socket is -1:
+                if socket == -1:
                     return True
 
                 if port['numa'] == socket:
@@ -118,7 +118,7 @@ class VirtResource(object):
     def __core_on_socket(self, core, socket):
         for dut_core in self.dut.cores:
             if int(dut_core['thread']) == core:
-                if socket is -1:
+                if socket == -1:
                     return True
 
                 if int(dut_core['socket']) == socket:
