@@ -81,6 +81,7 @@ class Dut(Crb):
         self.apps_name_conf = {}
         self.apps_name = {}
         self.dpdk_version = ''
+        self.nic = None
 
     def filter_cores_from_crb_cfg(self):
         # get core list from crbs.cfg
@@ -405,6 +406,8 @@ class Dut(Crb):
         # print latest ports_info
         for port_info in self.ports_info:
             self.logger.info(port_info)
+            if self.nic is None:
+                self.nic = port_info['port']
         if self.ports_map is None or len(self.ports_map) == 0:
             self.logger.warning("ports_map should not be empty, please check all links")
 
