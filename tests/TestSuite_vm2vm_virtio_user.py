@@ -52,7 +52,8 @@ class TestVM2VMVirtioUser(TestCase):
         self.dump_virtio_pcap = "/tmp/pdump-virtio-rx.pcap"
         self.dump_vhost_pcap = "/tmp/pdump-vhost-rx.pcap"
         self.vhost_prefix = 'vhost'
-        self.virtio_prefix = 'virtio'
+        self.virtio_prefix_0 = 'virtio0'
+        self.virtio_prefix_1 = 'virtio1'
         socket_num = len(set([int(core['socket']) for core in self.dut.cores]))
         self.socket_mem = ','.join(['1024']*socket_num)
         self.get_core_list()
@@ -63,13 +64,14 @@ class TestVM2VMVirtioUser(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.queue_num=1
         self.device_str=''
-        self.vhost_pmd_session = self.dut.new_session(suite="vhost-user")
-        self.virtio_user0_pmd_session = self.dut.new_session(suite="virtio-user0")
-        self.virtio_user1_pmd_session = self.dut.new_session(suite="virtio-user1")
-        self.pdump_session = self.dut.new_session(suite="pdump")
-        self.vhost_pmd = PmdOutput(self.dut, self.vhost_pmd_session)
-        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0_pmd_session)
-        self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1_pmd_session)
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
+        self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
+        self.pdump_user = self.dut.new_session(suite="pdump-user")
+        self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
+        self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1)
+        self.dut.restore_interfaces()
 
     def set_up(self):
         """
@@ -91,7 +93,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.core_list_virtio0 = self.cores_list[2:4]
         self.core_list_virtio1 = self.cores_list[4:6]
 
-    def launch_vhost_testpmd(self, vdev_num, fixed_prefix=False, fwd_mode='io',vdevs=None):
+    def launch_vhost_testpmd(self, vdev_num, fixed_prefix=False, fwd_mode='io',vdevs=None, no_pci=True):
         eal_params = ''
         if vdevs:
             eal_params = vdevs
@@ -100,9 +102,9 @@ class TestVM2VMVirtioUser(TestCase):
             for i in range(vdev_num):
                 eal_params += "--vdev 'net_vhost{},iface=./vhost-net{},queues=1' ".format(i, i)
             params = "--nb-cores=1 --no-flush-rx"
-        self.vhost_pmd.start_testpmd(cores=self.core_list_vhost, param=params, eal_param=eal_params, \
-                                     no_pci=True, ports=[],prefix=self.vhost_prefix, fixed_prefix=fixed_prefix)
-        self.vhost_pmd.execute_cmd('set fwd %s' % fwd_mode)
+        self.vhost_user_pmd.start_testpmd(cores=self.core_list_vhost, param=params, eal_param=eal_params, \
+                                     no_pci=no_pci, ports=[],prefix=self.vhost_prefix, fixed_prefix=fixed_prefix)
+        self.vhost_user_pmd.execute_cmd('set fwd %s' % fwd_mode)
 
     @property
     def check_2M_env(self):
@@ -121,7 +123,7 @@ class TestVM2VMVirtioUser(TestCase):
             eal_params += " --force-max-simd-bitwidth=512"
         params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
         self.virtio_user1_pmd.start_testpmd(cores=self.core_list_virtio1, param=params, eal_param=eal_params, \
-                                           no_pci=True, ports=[], prefix=self.virtio_prefix, fixed_prefix=True)
+                                           no_pci=True, ports=[], prefix=self.virtio_prefix_1, fixed_prefix=True)
         self.virtio_user1_pmd.execute_cmd('set fwd rxonly')
         self.virtio_user1_pmd.execute_cmd('start')
 
@@ -138,7 +140,7 @@ class TestVM2VMVirtioUser(TestCase):
             eal_params += " --force-max-simd-bitwidth=512"
         params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
         self.virtio_user0_pmd.start_testpmd(cores=self.core_list_virtio0, param=params, eal_param=eal_params, \
-                                           no_pci=True, ports=[], prefix='virtio0', fixed_prefix=True)
+                                           no_pci=True, ports=[], prefix=self.virtio_prefix_0, fixed_prefix=True)
         self.virtio_user0_pmd.execute_cmd('set burst 1')
         self.virtio_user0_pmd.execute_cmd('start tx_first 27')
         self.virtio_user0_pmd.execute_cmd('stop')
@@ -155,8 +157,8 @@ class TestVM2VMVirtioUser(TestCase):
         if self.check_2M_env:
             eal_params += " --single-file-segments "
         params = "--nb-cores=1 --txd={} --rxd={} {}".format(ringsize, ringsize, extern_params)
-        self.virtio_user_pmd.start_testpmd(cores=self.core_list_virtio1, param=params, eal_param=eal_params, \
-                                           no_pci=True, ports=[], prefix=self.virtio_prefix, fixed_prefix=True)
+        self.virtio_user0_pmd.start_testpmd(cores=self.core_list_virtio0, param=params, eal_param=eal_params, \
+                                           no_pci=True, ports=[],prefix=self.virtio_prefix_0, fixed_prefix=True)
 
     def check_packet_payload_valid_with_cbdma(self, filename, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num):
         """
@@ -167,7 +169,7 @@ class TestVM2VMVirtioUser(TestCase):
         actual_8k_pkt_num = 0
         actual_2k_pkt_num = 0
         time.sleep(20)
-        self.pdump_session.send_expect('^c', '# ', 60)
+        self.pdump_user.send_expect('^c', '# ', 60)
         # quit testpmd
         self.quit_all_testpmd()
         time.sleep(2)
@@ -187,11 +189,11 @@ class TestVM2VMVirtioUser(TestCase):
         self.verify(large_2k_pkts_num == actual_2k_pkt_num, f"2K packet quantity error,expected value:{large_2k_pkts_num}"
                                                             f", actual value : {actual_2k_pkt_num}")
 
-    def get_dump_file_of_virtio_user_cbdma(self, path_mode, extern_param, ringsize, vdevs=None):
+    def get_dump_file_of_virtio_user_cbdma(self, path_mode, extern_param, ringsize, vdevs=None, no_pci=False):
         dump_port = 'device_id=net_virtio_user1'
-        self.launch_vhost_testpmd(vdev_num=2, vdevs=vdevs)
+        self.launch_vhost_testpmd(vdev_num=2, vdevs=vdevs, no_pci=no_pci)
         self.start_virtio_testpmd_with_vhost_net1(path_mode, extern_param, ringsize)
-        self.launch_pdump_to_capture_pkt(dump_port, self.virtio_prefix, self.dump_virtio_pcap)
+        self.launch_pdump_to_capture_pkt(dump_port, self.virtio_prefix_1, self.dump_virtio_pcap)
         # the virtio0 will send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0_cbdma(path_mode, extern_param, ringsize)
 
@@ -212,7 +214,7 @@ class TestVM2VMVirtioUser(TestCase):
                         prefix=file_prefix, fixed_prefix=True)
         command_line = self.app_pdump + " %s -v -- " + \
                     "--pdump  '%s,queue=*,rx-dev=%s,mbuf-size=8000'"
-        self.pdump_session.send_expect(command_line % (eal_params, dump_port, filename), 'Port')
+        self.pdump_user.send_expect(command_line % (eal_params, dump_port, filename), 'Port')
 
     def get_dump_file_of_virtio_user(self, path_mode, extern_param, ringsize):
         """
@@ -223,7 +225,7 @@ class TestVM2VMVirtioUser(TestCase):
         dump_port = 'device_id=net_virtio_user1'
         self.launch_vhost_testpmd(vdev_num=2)
         self.start_virtio_testpmd_with_vhost_net1(path_mode, extern_param, ringsize)
-        self.launch_pdump_to_capture_pkt(dump_port, self.virtio_prefix, self.dump_virtio_pcap)
+        self.launch_pdump_to_capture_pkt(dump_port, self.virtio_prefix_1, self.dump_virtio_pcap)
         # the virtio0 will send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_param, ringsize)
         # then send 32 large pkts
@@ -232,7 +234,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 1')
         # packet will fwd after vhost testpmd start
-        self.vhost_pmd.execute_cmd('start')
+        self.vhost_user_pmd.execute_cmd('start')
 
     def get_dump_file_of_vhost_user(self, path_mode, extern_params, ringsize):
         """
@@ -242,7 +244,7 @@ class TestVM2VMVirtioUser(TestCase):
         """
         dump_port = 'port=0'
         self.launch_vhost_testpmd(vdev_num=1, fixed_prefix=True, fwd_mode='rxonly')
-        self.vhost_pmd.execute_cmd('start')
+        self.vhost_user_pmd.execute_cmd('start')
         self.launch_pdump_to_capture_pkt(dump_port, self.vhost_prefix, self.dump_vhost_pcap)
         # the virtio0 send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0(path_mode, extern_params, ringsize)
@@ -269,7 +271,7 @@ class TestVM2VMVirtioUser(TestCase):
         # stop pdump
         total_pkts_num = small_pkts_num + large_8k_pkts_num + large_2k_pkts_num
         time.sleep(20)
-        self.pdump_session.send_expect('^c', '# ', 60)
+        self.pdump_user.send_expect('^c', '# ', 60)
         # quit testpmd
         self.quit_all_testpmd()
         time.sleep(2)
@@ -320,10 +322,10 @@ class TestVM2VMVirtioUser(TestCase):
                 'pkt index is: %d, the load index include %s' % (i, diff_list))
 
     def quit_all_testpmd(self):
-        self.vhost_pmd.quit()
+        self.vhost_user_pmd.quit()
         self.virtio_user0_pmd.quit()
         self.virtio_user1_pmd.quit()
-        self.pdump_session.send_expect('^c', '# ', 60)
+        self.pdump_user.send_expect('^c', '# ', 60)
 
     def test_vm2vm_virtio_user_packed_virtqueue_mergeable_path(self):
         """
@@ -617,13 +619,13 @@ class TestVM2VMVirtioUser(TestCase):
 
     def close_all_session(self):
         if getattr(self, 'vhost_user', None):
-            self.dut.close_session(self.vhost_pmd_session)
+            self.dut.close_session(self.vhost_user)
         if getattr(self, 'virtio-user0', None):
-            self.dut.close_session(self.virtio_user0_pmd_session)
+            self.dut.close_session(self.virtio_user0)
         if getattr(self, 'virtio-user1', None):
-            self.dut.close_session(self.virtio_user1_pmd_session)
+            self.dut.close_session(self.virtio_user1)
         if getattr(self, 'pdump_session', None):
-            self.dut.close_session(self.pdump_session)
+            self.dut.close_session(self.pdump_user)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -742,7 +744,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('set burst 32')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 7')
-        self.vhost_pmd.execute_cmd('start')
+        self.vhost_user_pmd.execute_cmd('start')
 
     def send_multiple_pkt_with_8k448(self):
         self.virtio_user0_pmd.execute_cmd('set burst 1')
@@ -752,7 +754,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('set burst 32')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 7')
-        self.vhost_pmd.execute_cmd('start')
+        self.vhost_user_pmd.execute_cmd('start')
 
     def send_8k_pkt(self):
         self.virtio_user0_pmd.execute_cmd('set burst 1')
@@ -764,7 +766,7 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('stop')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 1')
-        self.vhost_pmd.execute_cmd('start')
+        self.vhost_user_pmd.execute_cmd('start')
 
     def send_multiple_pkt(self):
         self.virtio_user0_pmd.execute_cmd('set burst 1')
@@ -777,15 +779,12 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('stop')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 1')
-        self.vhost_pmd.execute_cmd('start')
-
-
+        self.vhost_user_pmd.execute_cmd('start')
 
     def get_cbdma_ports_info_and_bind_to_dpdk(self):
         """
         get all cbdma ports
         """
-
         str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc',
                                    '# ', 30)
@@ -805,5 +804,4 @@ class TestVM2VMVirtioUser(TestCase):
                     self.cbdma_dev_infos.append(pci_info.group(1))
         self.verify(len(self.cbdma_dev_infos) >= 8, 'There no enough cbdma device to run this suite')
         self.device_str = ' '.join(self.cbdma_dev_infos[0:self.cbdma_nic_dev_num])
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio %s' %
-                             self.device_str, '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio %s' % self.device_str, '# ', 60)
