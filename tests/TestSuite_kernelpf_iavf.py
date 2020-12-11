@@ -174,21 +174,9 @@ class TestKernelpfIavf(TestCase):
         except Exception as e:
             self.destroy_vm_env()
             raise Exception(e)
-        netdev = self.dut.ports_info[0]['port']
-        nic_drive = netdev.get_nic_driver()
-        if nic_drive == "i40e":
-            self.vm_dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.vm_dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-            self.vm_dut.build_install_dpdk(self.target)
         self.env_done = True
 
     def destroy_vm_env(self):
-        netdev = self.dut.ports_info[0]['port']
-        nic_drive = netdev.get_nic_driver()
-        if nic_drive == "i40e":
-            self.vm_dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },/d' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.vm_dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g' drivers/net/i40e/base/i40e_devids.h", "# ")
-            self.vm_dut.build_install_dpdk(self.target)
         if getattr(self, 'vm', None):
             if getattr(self, 'vm_dut', None):
                 self.vm_dut.kill_all()
