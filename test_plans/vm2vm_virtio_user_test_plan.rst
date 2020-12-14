@@ -801,7 +801,7 @@ Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload 
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
@@ -814,7 +814,7 @@ Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload 
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
@@ -832,7 +832,7 @@ Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload 
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
@@ -860,7 +860,7 @@ Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check wi
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
@@ -873,7 +873,7 @@ Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check wi
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
@@ -889,7 +889,7 @@ Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check wi
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
     testpmd>set txpkts 2000,2000,2000,2000
