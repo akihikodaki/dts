@@ -85,20 +85,20 @@ class TestIpfrag(TestCase):
         """
 
         # Based on h/w type, choose how many ports to use
-        ports = self.dut.get_ports()
+        self.ports = self.dut.get_ports()
 
         # Verify that enough ports are available
-        self.verify(len(ports) >= 2, "Insufficient ports for testing")
+        self.verify(len(self.ports) >= 2, "Insufficient ports for testing")
 
-        self.ports_socket = self.dut.get_numa_id(ports[0])
+        self.ports_socket = self.dut.get_numa_id(self.ports[0])
 
         # Verify that enough threads are available
         cores = self.dut.get_core_list("1S/1C/1T")
         self.verify(cores is not None, "Insufficient cores for speed testing")
 
         global P0, P1
-        P0 = ports[0]
-        P1 = ports[1]
+        P0 = self.ports[0]
+        P1 = self.ports[1]
 
         pat = re.compile("P([0123])")
 
@@ -123,13 +123,9 @@ class TestIpfrag(TestCase):
         self.verify("Error" not in out, "compilation error 1")
         self.verify("No such file" not in out, "compilation error 2")
 
-        cores = self.dut.get_core_list("1S/1C/2T")
-        self.eal_para = self.dut.create_eal_parameters(cores='1S/1C/2T')
-        coremask = utils.create_mask(cores)
+        self.eal_para = self.dut.create_eal_parameters(cores='1S/1C/2T', socket=self.ports_socket, ports=self.ports)
         portmask = utils.create_mask([P0, P1])
         numPortThread = len([P0, P1]) / len(cores)
-        result = True
-        errString = ''
 
         # run ipv4_frag
         self.app_ip_fragmentation_path = self.dut.apps_name['ip_fragmentation']
@@ -299,20 +295,13 @@ class TestIpfrag(TestCase):
         Pct = dict()
 
         if int(lcore[0]) == 1:
-            core_mask = utils.create_mask(self.dut.get_core_list(lcore, socket=self.ports_socket))
+            eal_param = self.dut.create_eal_parameters(cores=lcore, socket=self.ports_socket, ports=self.ports)
         else:
-            core_mask = utils.create_mask(self.dut.get_core_list(lcore))
-
+            eal_param = self.dut.create_eal_parameters(cores=lcore, ports=self.ports)
         portmask = utils.create_mask([P0, P1])
-        eal_param = ""
-        for i in [P0, P1]:
-            eal_param += " -w %s" % self.dut.ports_info[i]['pci']
-
         self.dut.send_expect("^c", "# ", 120)
-        self.dut.send_expect("%s -c %s -n %d %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, core_mask,
-                                                                   self.dut.get_memory_channels(), eal_param, portmask,
-                                                                   num_pthreads), "IP_FRAG:", 120)
-
+        self.dut.send_expect("%s %s -- -p %s -q %s" % (self.app_ip_fragmentation_path, eal_param, portmask,
+                                                       num_pthreads), "IP_FRAG:", 120)
         result = [2, lcore, num_pthreads]
         for size in size_list:
             dmac = self.dut.get_mac_address(P0)
