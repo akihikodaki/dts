@@ -49,8 +49,8 @@ from pmd_output import PmdOutput
 
 class TestVM2VMVirtioNetPerf(TestCase):
     def set_up_all(self):
-        core_config = "1S/4C/1T"
-        self.cores_list = self.dut.get_core_list(core_config)
+        core_config = "1S/5C/1T"
+        self.cores_list = self.dut.get_core_list(core_config, socket=0)
         self.verify(len(self.cores_list) >= 4,
                     "There has not enough cores to test this suite %s" %
                     self.suite_name)
@@ -66,6 +66,13 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vhost = self.dut.new_session(suite="vhost")
         self.pmd_vhost = PmdOutput(self.dut, self.vhost)
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
+        self.dut_ports = self.dut.get_ports()
+        self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
+        # get cbdma device
+        self.cbdma_dev_infos = []
+        self.dmas_info = None
+        self.device_str = None
+        self.dut.restore_interfaces()
 
     def set_up(self):
         """
@@ -77,91 +84,165 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vm_dut = []
         self.vm = []
 
-    def start_vhost_testpmd(self, zerocopy=False):
+    def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num=2, allow_diff_socket=False):
+        """
+        get all cbdma ports
+        """
+        str_info = 'Misc (rawdev) devices using kernel driver'
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        device_info = out.split('\n')
+        for device in device_info:
+            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            if pci_info is not None:
+                dev_info = pci_info.group(1)
+                # the numa id of ioat dev, only add the device which on same socket with nic dev
+                bus = int(dev_info[5:7], base=16)
+                if bus >= 128:
+                    cur_socket = 1
+                else:
+                    cur_socket = 0
+                if allow_diff_socket:
+                    self.cbdma_dev_infos.append(pci_info.group(1))
+                else:
+                    if self.ports_socket == cur_socket:
+                        self.cbdma_dev_infos.append(pci_info.group(1))
+        self.verify(len(self.cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
+        used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
+        dmas_info = ''
+        for dmas in used_cbdma[0:int(cbdma_num/2)]:
+            number = used_cbdma[0:int(cbdma_num/2)].index(dmas)
+            dmas = 'txq{}@{},'.format(number, dmas.replace('0000:', ''))
+            dmas_info += dmas
+        for dmas in used_cbdma[int(cbdma_num/2):]:
+            number = used_cbdma[int(cbdma_num/2):].index(dmas)
+            dmas = 'txq{}@{},'.format(number, dmas.replace('0000:', ''))
+            dmas_info += dmas
+        self.dmas_info = dmas_info[:-1]
+        self.device_str = ' '.join(used_cbdma)
+        self.dut.setup_modules(self.target, "igb_uio","None")
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % ("igb_uio", self.device_str), '# ', 60)
+
+    def bind_cbdma_device_to_kernel(self):
+        if self.device_str is not None:
+            self.dut.send_expect('modprobe ioatdma', '# ')
+            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
+
+    def start_vhost_testpmd(self, cbdma=False, no_pci=True, client=False, queues=1, nb_cores=2):
         """
         launch the testpmd with different parameters
         """
-        if zerocopy is True:
-            zerocopy_arg = ",dequeue-zero-copy=1"
+        if cbdma is True:
+            dmas_info_list = self.dmas_info.split(',')
+            cbdma_arg_0_list = []
+            cbdma_arg_1_list = []
+            for item in dmas_info_list:
+                if dmas_info_list.index(item) < int(len(dmas_info_list) / 2):
+                    cbdma_arg_0_list.append(item)
+                else:
+                    cbdma_arg_1_list.append(item)
+            cbdma_arg_0 = ",dmas=[{}],dmathr=512".format(";".join(cbdma_arg_0_list))
+            cbdma_arg_1 = ",dmas=[{}],dmathr=512".format(";".join(cbdma_arg_1_list))
         else:
-            zerocopy_arg = ""
+            cbdma_arg_0 = ""
+            cbdma_arg_1 = ""
         testcmd = self.app_testpmd_path + " "
-        vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " % (self.base_dir, zerocopy_arg)
-        vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " % (self.base_dir, zerocopy_arg)
-        eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=True)
-        para = " -- -i --nb-cores=2 --txd=1024 --rxd=1024"
+        if not client:
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=%d%s' " % (self.base_dir, queues, cbdma_arg_0)
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=%d%s' " % (self.base_dir, queues, cbdma_arg_1)
+        else:
+            vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,client=1,queues=%d%s' " % (self.base_dir, queues, cbdma_arg_0)
+            vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,client=1,queues=%d%s' " % (self.base_dir, queues, cbdma_arg_1)
+        eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=no_pci)
+        if nb_cores == 4:
+            para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024 --rxq=8 --txq=8" % nb_cores
+        else:
+            para = " -- -i --nb-cores=%d --txd=1024 --rxd=1024" % nb_cores
         self.command_line = testcmd + eal_params + vdev1 + vdev2 + para
         self.pmd_vhost.execute_cmd(self.command_line, timeout=30)
         self.pmd_vhost.execute_cmd('start', timeout=30)
 
-    def start_vms(self, mode="mergeable", packed=False):
+    def start_vms(self, path_mode, server_mode=False, opt_queue=1):
         """
         start two VM, each VM has one virtio device
         """
-        setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
-        if mode == "ufo":
-            setting_args += ",guest_ufo=on,host_ufo=on"
-        elif mode == "mergeable":
-            setting_args = "mrg_rxbuf=on"
-        elif mode == "normal":
-            setting_args = "mrg_rxbuf=off"
-        if packed is True:
-            setting_args = "%s,packed=on" % setting_args
+        if path_mode == 1:
+            setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
+        elif path_mode == 2:
+            setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+        elif path_mode == 4:
+            setting_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
+        elif path_mode == 5:
+            setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+        elif path_mode == 6:
+            setting_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on"
+        elif path_mode == 10:
+            setting_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
+        elif path_mode == 11:
+            setting_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
 
         for i in range(self.vm_num):
             vm_dut = None
             vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
-            vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
+            if not server_mode:
+                vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i
+            else:
+                vm_params['opt_path'] = self.base_dir + '/vhost-net%d' % i + ',server'
+            vm_params['opt_queue'] = opt_queue
             vm_params['opt_mac'] = "52:54:00:00:00:0%d" % (i+1)
             vm_params['opt_settings'] = setting_args
             vm_info.set_vm_device(**vm_params)
             time.sleep(3)
             try:
-                vm_dut = vm_info.start(set_target=False)
+                vm_dut = vm_info.start(set_target=False, migration_vm=True)
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
                 self.logger.error("Failure for %s" % str(e))
                 raise e
-            vm_dut.restore_interfaces()
+            # vm_dut.restore_interfaces()
 
             self.vm_dut.append(vm_dut)
             self.vm.append(vm_info)
 
-    def config_vm_env(self):
+    def config_vm_env(self, combined=False):
         """
         set virtio device IP and run arp protocal
         """
         vm1_intf = self.vm_dut[0].ports_info[0]['intf']
         vm2_intf = self.vm_dut[1].ports_info[0]['intf']
+        if combined:
+            self.vm_dut[0].send_expect("ethtool -L %s combined 8" % vm1_intf, "#", 10)
         self.vm_dut[0].send_expect("ifconfig %s %s" % (vm1_intf, self.virtio_ip1), "#", 10)
+        if combined:
+            self.vm_dut[1].send_expect("ethtool -L %s combined 8" % vm2_intf, "#", 10)
         self.vm_dut[1].send_expect("ifconfig %s %s" % (vm2_intf, self.virtio_ip2), "#", 10)
         self.vm_dut[0].send_expect("arp -s %s %s" % (self.virtio_ip2, self.virtio_mac2), "#", 10)
         self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.virtio_mac1), "#", 10)
 
-    def prepare_test_env(self, zerocopy, path_mode, packed_mode=False):
+    def prepare_test_env(self, path_mode, cbdma=False, no_pci=True, client=False, queues=1, nb_cores=2, server_mode=False, opt_queue=1, combined=False):
         """
         start vhost testpmd and qemu, and config the vm env
         """
-        self.start_vhost_testpmd(zerocopy)
-        self.start_vms(mode=path_mode, packed=packed_mode)
-        self.config_vm_env()
+        self.start_vhost_testpmd(cbdma=cbdma, no_pci=no_pci, client=client, queues=queues, nb_cores=nb_cores)
+        self.start_vms(path_mode=path_mode, server_mode=server_mode, opt_queue=opt_queue)
+        self.config_vm_env(combined=combined)
 
-    def start_iperf(self, mode):
+    def start_iperf(self, iperf_mode='tso'):
         """
         run perf command between to vms
         """
         # clear the port xstats before iperf
         self.vhost.send_expect("clear port xstats all", "testpmd> ", 10)
 
-        if mode == "ufo":
-            iperf_server = "iperf -s -u -i 1"
-            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
-        else:
+        if iperf_mode == "tso":
             iperf_server = "iperf -s -i 1"
             iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30"
+        else:
+            iperf_server = "iperf -s -u -i 1"
+            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
         self.vm_dut[0].send_expect("%s > iperf_server.log &" % iperf_server, "", 10)
         self.vm_dut[1].send_expect("%s > iperf_client.log &" % iperf_client, "", 60)
         time.sleep(90)
@@ -207,12 +288,12 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.verify(int(tx_info.group(1)) > 0,
                     "Port 0 not forward packet greater than 1522")
 
-    def start_iperf_and_verify_vhost_xstats_info(self, mode):
+    def start_iperf_and_verify_vhost_xstats_info(self, iperf_mode='tso'):
         """
         start to send packets and verify vm can received data of iperf
         and verify the vhost can received big pkts in testpmd
         """
-        self.start_iperf(mode)
+        self.start_iperf(iperf_mode)
         self.get_perf_result()
         self.verify_xstats_info_on_vhost()
         self.result_table_print()
@@ -267,121 +348,94 @@ class TestVM2VMVirtioNetPerf(TestCase):
 
     def test_vm2vm_split_ring_iperf_with_tso(self):
         """
-        VM2VM split ring vhost-user/virtio-net test with tcp traffic
+        TestCase1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
         """
-        zerocopy = False
-        path_mode = "tso"
-        self.prepare_test_env(zerocopy, path_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
+        self.prepare_test_env(path_mode=1, cbdma=False, no_pci=True)
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
 
-    def test_vm2vm_split_ring_dequeue_zero_copy_with_tso(self):
+    def test_vm2vm_split_ring_with_tso_and_cbdma_enable(self):
         """
-        VM2VM split ring vhost-user/virtio-net zero copy test with tcp traffic
+        TestCase2: VM2VM split ring vhost-user/virtio-net CBDMA enable test with tcp traffic
         """
-        zerocopy = True
-        path_mode = "tso"
-        self.prepare_test_env(zerocopy, path_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
+        self.prepare_test_env(path_mode=1, cbdma=True, no_pci=False)
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
 
     def test_vm2vm_packed_ring_iperf_with_tso(self):
         """
-        VM2VM packed ring vhost-user/virtio-net test with tcp traffic
+        TestCase7: VM2VM packed ring vhost-user/virtio-net test with tcp traffic
         """
-        zerocopy = False
-        path_mode = "tso"
-        packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
-
-    def test_vm2vm_packed_ring_dequeue_zero_copy_with_tso(self):
-        """
-        VM2VM packed ring vhost-user/virtio-net zero copy test with tcp traffic
-        """
-        zerocopy = True
-        path_mode = "tso"
-        packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
+        self.prepare_test_env(path_mode=4, cbdma=False, no_pci=True)
+        self.start_iperf_and_verify_vhost_xstats_info()
 
     def test_vm2vm_split_ring_iperf_with_ufo(self):
         """
-        VM2VM split ring vhost-user/virtio-net test with udp traffic
+        TestCase3: VM2VM split ring vhost-user/virtio-net test with udp traffic
         """
-        zerocopy = False
-        path_mode = "ufo"
-        self.prepare_test_env(zerocopy, path_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="ufo")
+        self.prepare_test_env(path_mode=2, cbdma=False, no_pci=True)
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='ufo')
 
     def test_vm2vm_packed_ring_iperf_with_ufo(self):
         """
-        VM2VM packed ring vhost-user/virtio-net test with udp traffic
+        TestCase8: VM2VM packed ring vhost-user/virtio-net test with udp traffic
         """
-        zerocopy = False
-        path_mode = "ufo"
-        packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="ufo")
+        self.prepare_test_env(path_mode=4, cbdma=False, no_pci=True)
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='other')
 
     def test_vm2vm_split_ring_device_capbility(self):
         """
-        Check split ring virtio-net device capability
+        TestCase4: Check split ring virtio-net device capability
         """
-        self.start_vhost_testpmd(zerocopy=False)
-        self.start_vms(mode="ufo")
+        self.start_vhost_testpmd(cbdma=False, no_pci=True)
+        self.start_vms(path_mode=2)
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
 
     def test_vm2vm_packed_ring_device_capbility(self):
         """
-        Check split ring virtio-net device capability
+        TestCase9: Check packed ring virtio-net device capability
         """
-        self.start_vhost_testpmd(zerocopy=False)
-        self.start_vms(mode="ufo", packed=True)
+        self.start_vhost_testpmd(cbdma=False, no_pci=True)
+        self.start_vms(path_mode=4)
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
 
-    def test_vm2vm_split_ring_zero_copy_with_mergeable_path_check_large_packet(self):
+    def test_vm2vm_split_ring_with_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
-        VM2VM virtio-net split ring mergeable zero copy test with large packet payload valid check
+        TestCase5: VM2VM virtio-net split ring mergeable CBDMA enable test with large packet payload valid check
         """
-        zerocopy = True
-        path_mode = 'mergeable'
-        self.prepare_test_env(zerocopy, path_mode)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        self.prepare_test_env(path_mode=5, cbdma=True, no_pci=False, client=True, queues=8, nb_cores=4, server_mode=True, opt_queue=8, combined=True)
         self.check_scp_file_valid_between_vms()
 
-    def test_vm2vm_split_ring_zero_copy_with_no_mergeable_path_check_large_packet(self):
+    def test_vm2vm_split_ring_with_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
-        VM2VM virtio-net split ring non-mergeable zero copy test with large packet payload valid check
+        TestCase6: VM2VM virtio-net split ring non-mergeable CBDMA enable test with large packet payload valid check
         """
-        zerocopy = True
-        path_mode = 'normal'
-        self.prepare_test_env(zerocopy, path_mode)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
+        self.prepare_test_env(path_mode=6, cbdma=True, no_pci=False, client=True, queues=8, nb_cores=4, server_mode=True, opt_queue=8, combined=True)
         self.check_scp_file_valid_between_vms()
 
-    def test_vm2vm_packed_ring_zero_copy_with_mergeable_path_check_large_packet(self):
+    def test_vm2vm_packed_ring_mergeable_path_check_large_packet(self):
         """
-        VM2VM packed ring virtio-net mergeable dequeue zero copy test with large packet payload valid check
+        TestCase10: VM2VM packed ring virtio-net mergeable with large packet payload valid check
         """
-        zerocopy = True
-        path_mode = 'mergeable'
-        packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.prepare_test_env(path_mode=10, cbdma=False, no_pci=True)
         self.check_scp_file_valid_between_vms()
 
-    def test_vm2vm_packed_ring_zero_copy_with_no_mergeable_path_check_large_packet(self):
+    def test_vm2vm_packed_ring_no_mergeable_path_check_large_packet(self):
         """
-        VM2VM packed ring virtio-net non-mergeable dequeue zero copy test with large packet payload valid check
+        TestCase11: VM2VM packed ring virtio-net non-mergeable with large packet payload valid check
         """
-        zerocopy = True
-        path_mode = 'normal'
-        packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.prepare_test_env(path_mode=11, cbdma=False, no_pci=True)
         self.check_scp_file_valid_between_vms()
 
     def tear_down(self):
         """
         run after each test case.
         """
+        if "cbdma_enable" in self.running_case:
+            self.bind_cbdma_device_to_kernel()
         self.stop_all_apps()
         self.dut.kill_all()
         time.sleep(2)
