@@ -278,6 +278,8 @@ class TestPipeline(TestCase):
         self.vf2_mac = "00:11:22:33:44:57"
         self.vf3_mac = "00:11:22:33:44:58"
 
+        ports = [self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci]
+        self.eal_para = self.dut.create_eal_parameters(cores=list(range(2)), ports=ports)
         self.sriov_vfs_port = []
         self.session_secondary = self.dut.new_session()
 
@@ -317,11 +319,7 @@ class TestPipeline(TestCase):
         self.dut.send_expect(cmd, "# ", 20)
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
-
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -358,10 +356,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -396,10 +391,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -434,10 +426,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -472,10 +461,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -510,10 +496,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -548,10 +531,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -586,10 +566,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -624,10 +601,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -662,10 +636,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -700,10 +671,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -738,10 +706,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -776,10 +741,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -814,10 +776,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -852,10 +811,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -890,10 +846,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -928,10 +881,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -966,10 +916,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1004,10 +951,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1042,10 +986,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1080,10 +1021,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1118,10 +1056,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1156,10 +1091,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1194,10 +1126,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1232,10 +1161,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1270,10 +1196,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1308,10 +1231,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1346,10 +1266,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1384,10 +1301,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1422,10 +1336,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1460,10 +1371,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1502,10 +1410,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/xor_006/pcap_files/in_1.txt'
@@ -1545,10 +1450,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/xor_007/pcap_files/in_1.txt'
@@ -1584,10 +1486,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1622,10 +1521,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1660,10 +1556,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1698,10 +1591,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1733,10 +1623,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1771,10 +1658,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1809,10 +1693,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1847,10 +1728,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1885,10 +1763,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1923,10 +1798,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1961,10 +1833,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -1999,10 +1868,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2037,10 +1903,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2075,10 +1938,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2113,10 +1973,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2151,10 +2008,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2189,10 +2043,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2227,10 +2078,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2265,10 +2113,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2303,10 +2148,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2341,10 +2183,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2379,10 +2218,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2417,10 +2253,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2455,10 +2288,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2493,10 +2323,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2531,10 +2358,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2569,10 +2393,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2607,10 +2428,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2645,10 +2463,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2683,10 +2498,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2721,10 +2533,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2759,10 +2568,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2797,10 +2603,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2835,10 +2638,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2875,10 +2675,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2913,10 +2710,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -2955,10 +2749,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/mov_004/pcap_files/in_1.txt'
@@ -2998,10 +2789,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/mov_005/pcap_files/in_1.txt'
@@ -3041,10 +2829,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/mov_007/pcap_files/in_1.txt'
@@ -3084,10 +2869,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         in_pcap_file = 'pipeline/mov_008/pcap_files/in_1.txt'
@@ -3123,10 +2905,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3163,10 +2942,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3209,10 +2985,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3248,10 +3021,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3286,10 +3056,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3324,10 +3091,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3362,10 +3126,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3400,10 +3161,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3438,10 +3196,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3476,10 +3231,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3514,10 +3266,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3552,10 +3301,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3590,10 +3336,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3628,10 +3371,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3666,10 +3406,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3704,10 +3441,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3742,10 +3476,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3780,10 +3511,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3818,10 +3546,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3856,10 +3581,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3894,10 +3616,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3932,10 +3651,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -3970,10 +3686,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4008,10 +3721,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4046,10 +3756,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4084,10 +3791,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4122,10 +3826,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4160,10 +3861,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4198,10 +3896,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4236,10 +3931,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4274,10 +3966,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4312,10 +4001,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4350,10 +4036,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4388,10 +4071,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4426,10 +4106,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4464,10 +4141,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4502,10 +4176,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4540,10 +4211,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4578,10 +4246,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4616,10 +4281,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4654,10 +4316,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4692,10 +4351,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4730,10 +4386,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4768,10 +4421,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4806,10 +4456,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4844,10 +4491,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4882,10 +4526,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4920,10 +4561,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4958,10 +4596,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -4996,10 +4631,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5034,10 +4666,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5072,10 +4701,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5110,10 +4736,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5148,10 +4771,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5186,10 +4806,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5224,10 +4841,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5262,10 +4876,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5300,10 +4911,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5338,10 +4946,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5376,10 +4981,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5414,10 +5016,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5452,10 +5051,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5490,10 +5086,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5528,10 +5121,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5566,10 +5156,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5604,10 +5191,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5642,10 +5226,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5680,10 +5261,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5718,10 +5296,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5756,10 +5331,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5794,10 +5366,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         # rule 0 test
@@ -5832,10 +5401,7 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
 
-        DUT_PORTS = " -w {0} -w {1} -w {2} -w {3} "\
-                    .format(self.dut_p0_pci, self.dut_p1_pci, self.dut_p2_pci, self.dut_p3_pci)
-
-        cmd = "{0} -c 0x3 -n 4 {1} -- -s {2}".format(self.app_pipeline_path, DUT_PORTS, cli_file)
+        cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
         self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
         sleep(2)
