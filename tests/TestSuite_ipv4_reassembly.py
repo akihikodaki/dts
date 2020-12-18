@@ -71,7 +71,7 @@ class IpReassemblyTestConfig(object):
         self.packets_config()
 
     def cpu_config(self):
-        self.eal_para = self.dut.create_eal_parameters(cores='1S/1C/1T')
+        self.eal_para = self.test_case.dut.create_eal_parameters(cores='1S/1C/1T')
         self.core_list = self.test_case.dut.get_core_list('1S/1C/1T')
         self.core_mask = utils.create_mask(self.core_list)
         self.memory_channels = self.test_case.dut.get_memory_channels()
