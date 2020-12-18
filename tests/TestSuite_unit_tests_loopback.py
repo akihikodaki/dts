@@ -71,6 +71,7 @@ class TestUnitTestsLoopback(TestCase):
         self.max_traffic_burst = self.get_max_traffic_burst()
         self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              %s/#define MAX_TRAFFIC_BURST              32/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
         self.tmp_path = '/tmp/test_pmd_perf.c'
+        self.dut.send_expect("rm -fr %s" % self.tmp_path, "# ")
         self.dut.send_expect("cp app/test/test_pmd_perf.c %s" % self.tmp_path, "# ")
 
     def set_up(self):
@@ -133,6 +134,7 @@ class TestUnitTestsLoopback(TestCase):
         """
         Run after each test case.
         """
+        self.dut.send_expect("rm -fr app/test/test_pmd_perf.c", "# ")
         self.dut.send_expect("cp %s app/test/test_pmd_perf.c" % self.tmp_path, "# ")
         self.dut.kill_all()
 
@@ -140,7 +142,6 @@ class TestUnitTestsLoopback(TestCase):
         """
         Run after each test suite.
         """
-        self.dut.send_expect("cp %s app/test/test_pmd_perf.c" % self.tmp_path, "# ")
         self.dut.send_expect("sed -i -e 's/#define MAX_TRAFFIC_BURST              32/#define MAX_TRAFFIC_BURST              %s/' app/test/test_pmd_perf.c" % self.max_traffic_burst, "# ", 30)
         self.dut.build_install_dpdk(self.target)        
         self.dut.kill_all()
