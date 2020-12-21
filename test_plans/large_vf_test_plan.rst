@@ -45,7 +45,7 @@ Prerequisites
    scapy: http://www.secdev.org/projects/scapy/
 
 3. Copy specific ice package to /lib/firmware/updates/intel/ice/ddp/ice.pkg
-  Then reinstall kernel driver.
+   Then reinstall kernel driver.
 
 4. Generate 3 VFs on each PF and set mac address for VF0::
 
@@ -345,7 +345,7 @@ Fail to start testpmd with "--txq=256 --rxq=256".
 
 
 Test case: 128 Max VFs + 4 queues (default)
-==========================================
+===========================================
 
 Subcase 1: multi fdir among 4 queues for 128 VFs
 ------------------------------------------------

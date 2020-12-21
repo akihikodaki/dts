@@ -74,7 +74,7 @@ Test Case 1: loopback reconnect test with split ring mergeable path and server m
     testpmd>stop
 
 Test Case 2: pvp test with virtio packed ring vectorized path
-============================================================
+=============================================================
 
 1. Bind one port to vfio-pci, then launch vhost by below command::
 

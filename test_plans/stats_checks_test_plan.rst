@@ -149,114 +149,114 @@ Test Case: PF xstatus Checks
 
 5. Check stats and xstats::
 
-  testpmd> stop
-  Telling cores to stop...
-  Waiting for lcores to finish...
+    testpmd> stop
+    Telling cores to stop...
+    Waiting for lcores to finish...
 
-  ------- Forward Stats for RX Port= 0/Queue= 0 -> TX Port= 1/Queue= 0 -------
-  RX-packets: 29             TX-packets: 29             TX-dropped: 0
+    ------- Forward Stats for RX Port= 0/Queue= 0 -> TX Port= 1/Queue= 0 -------
+    RX-packets: 29             TX-packets: 29             TX-dropped: 0
 
-  ------- Forward Stats for RX Port= 0/Queue= 1 -> TX Port= 1/Queue= 1 -------
-  RX-packets: 21             TX-packets: 21             TX-dropped: 0
+    ------- Forward Stats for RX Port= 0/Queue= 1 -> TX Port= 1/Queue= 1 -------
+    RX-packets: 21             TX-packets: 21             TX-dropped: 0
 
-  ------- Forward Stats for RX Port= 0/Queue= 2 -> TX Port= 1/Queue= 2 -------
-  RX-packets: 24             TX-packets: 24             TX-dropped: 0
+    ------- Forward Stats for RX Port= 0/Queue= 2 -> TX Port= 1/Queue= 2 -------
+    RX-packets: 24             TX-packets: 24             TX-dropped: 0
 
-  ------- Forward Stats for RX Port= 0/Queue= 3 -> TX Port= 1/Queue= 3 -------
-  RX-packets: 26             TX-packets: 26             TX-dropped: 0
+    ------- Forward Stats for RX Port= 0/Queue= 3 -> TX Port= 1/Queue= 3 -------
+    RX-packets: 26             TX-packets: 26             TX-dropped: 0
 
-  ---------------------- Forward statistics for port 0  ----------------------
-  RX-packets: 100            RX-dropped: 0             RX-total: 100
-  TX-packets: 0              TX-dropped: 0             TX-total: 0
-  ----------------------------------------------------------------------------
+    ---------------------- Forward statistics for port 0  ----------------------
+    RX-packets: 100            RX-dropped: 0             RX-total: 100
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
-  ---------------------- Forward statistics for port 1  ----------------------
-  RX-packets: 0              RX-dropped: 0             RX-total: 0
-  TX-packets: 100            TX-dropped: 0             TX-total: 100
-  ----------------------------------------------------------------------------
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 0             RX-total: 0
+    TX-packets: 100            TX-dropped: 0             TX-total: 100
+    ----------------------------------------------------------------------------
 
-  +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
-  RX-packets: 100            RX-dropped: 0             RX-total: 100
-  TX-packets: 100            TX-dropped: 0             TX-total: 100
-  ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    +++++++++++++++ Accumulated forward statistics for all ports+++++++++++++++
+    RX-packets: 100            RX-dropped: 0             RX-total: 100
+    TX-packets: 100            TX-dropped: 0             TX-total: 100
+    ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-  testpmd> show port stats all
+    testpmd> show port stats all
 
-  ######################## NIC statistics for port 0  ########################
-  RX-packets: 100        RX-missed: 0          RX-bytes:  6000
-  RX-errors: 0
-  RX-nombuf:  0
-  TX-packets: 0          TX-errors: 0          TX-bytes:  0
+    ######################## NIC statistics for port 0  ########################
+    RX-packets: 100        RX-missed: 0          RX-bytes:  6000
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 0          TX-errors: 0          TX-bytes:  0
 
-  Throughput (since last show)
-  Rx-pps:            0          Rx-bps:            0
-  Tx-pps:            0          Tx-bps:            0
-  ############################################################################
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
 
-  ######################## NIC statistics for port 1  ########################
-  RX-packets: 0          RX-missed: 0          RX-bytes:  0
-  RX-errors: 0
-  RX-nombuf:  0
-  TX-packets: 100        TX-errors: 0          TX-bytes:  6000
+    ######################## NIC statistics for port 1  ########################
+    RX-packets: 0          RX-missed: 0          RX-bytes:  0
+    RX-errors: 0
+    RX-nombuf:  0
+    TX-packets: 100        TX-errors: 0          TX-bytes:  6000
 
-  Throughput (since last show)
-  Rx-pps:            0          Rx-bps:            0
-  Tx-pps:            0          Tx-bps:            0
-  ############################################################################
+    Throughput (since last show)
+    Rx-pps:            0          Rx-bps:            0
+    Tx-pps:            0          Tx-bps:            0
+    ############################################################################
 
-  testpmd> show port xstats all
-  ###### NIC extended statistics for port 0
-  rx_good_packets: 100
-  tx_good_packets: 0
-  rx_good_bytes: 6000
-  tx_good_bytes: 0
-  ......
-  rx_q0_packets: 0
-  rx_q0_bytes: 0
-  rx_q0_errors: 0
-  rx_q1_packets: 0
-  rx_q1_bytes: 0
-  rx_q1_errors: 0
-  rx_q2_packets: 0
-  rx_q2_bytes: 0
-  rx_q2_errors: 0
-  rx_q3_packets: 0
-  rx_q3_bytes: 0
-  rx_q3_errors: 0
-  tx_q0_packets: 0
-  tx_q0_bytes: 0
-  tx_q1_packets: 0
-  tx_q1_bytes: 0
-  tx_q2_packets: 0
-  tx_q2_bytes: 0
-  tx_q3_packets: 0
-  tx_q3_bytes: 0
-  ......
-  ###### NIC extended statistics for port 1
-  rx_good_packets: 0
-  tx_good_packets: 100
-  rx_good_bytes: 0
-  tx_good_bytes: 6000
-  rx_q0_packets: 0
-  rx_q0_bytes: 0
-  rx_q0_errors: 0
-  rx_q1_packets: 0
-  rx_q1_bytes: 0
-  rx_q1_errors: 0
-  rx_q2_packets: 0
-  rx_q2_bytes: 0
-  rx_q2_errors: 0
-  rx_q3_packets: 0
-  rx_q3_bytes: 0
-  rx_q3_errors: 0
-  tx_q0_packets: 0
-  tx_q0_bytes: 0
-  tx_q1_packets: 0
-  tx_q1_bytes: 0
-  tx_q2_packets: 0
-  tx_q2_bytes: 0
-  tx_q3_packets: 0
-  tx_q3_bytes: 0
+    testpmd> show port xstats all
+    ###### NIC extended statistics for port 0
+    rx_good_packets: 100
+    tx_good_packets: 0
+    rx_good_bytes: 6000
+    tx_good_bytes: 0
+    ......
+    rx_q0_packets: 0
+    rx_q0_bytes: 0
+    rx_q0_errors: 0
+    rx_q1_packets: 0
+    rx_q1_bytes: 0
+    rx_q1_errors: 0
+    rx_q2_packets: 0
+    rx_q2_bytes: 0
+    rx_q2_errors: 0
+    rx_q3_packets: 0
+    rx_q3_bytes: 0
+    rx_q3_errors: 0
+    tx_q0_packets: 0
+    tx_q0_bytes: 0
+    tx_q1_packets: 0
+    tx_q1_bytes: 0
+    tx_q2_packets: 0
+    tx_q2_bytes: 0
+    tx_q3_packets: 0
+    tx_q3_bytes: 0
+    ......
+    ###### NIC extended statistics for port 1
+    rx_good_packets: 0
+    tx_good_packets: 100
+    rx_good_bytes: 0
+    tx_good_bytes: 6000
+    rx_q0_packets: 0
+    rx_q0_bytes: 0
+    rx_q0_errors: 0
+    rx_q1_packets: 0
+    rx_q1_bytes: 0
+    rx_q1_errors: 0
+    rx_q2_packets: 0
+    rx_q2_bytes: 0
+    rx_q2_errors: 0
+    rx_q3_packets: 0
+    rx_q3_bytes: 0
+    rx_q3_errors: 0
+    tx_q0_packets: 0
+    tx_q0_bytes: 0
+    tx_q1_packets: 0
+    tx_q1_bytes: 0
+    tx_q2_packets: 0
+    tx_q2_bytes: 0
+    tx_q3_packets: 0
+    tx_q3_bytes: 0
 
 verify rx_good_packets, RX-packets of port 0 and tx_good_packets, TX-packets of port 1 are both 100.
 rx_good_bytes, RX-bytes of port 0 and tx_good_bytes, TX-bytes of port 1 are the same.

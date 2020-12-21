@@ -68,7 +68,7 @@ present in the {DTS_SRC_DIR}/dep directory.
 Directory Structure of Each Test Case
 =====================================
 Within {DTS_SRC_DIR}/dep/pipeline.tar.gz, all files related to a particular test case are maintained
-in a separate directory of which the directory structure is shown below:
+in a separate directory of which the directory structure is shown below::
 
     test_case_name [directory]
         test_case_name.spec
@@ -79,7 +79,7 @@ in a separate directory of which the directory structure is shown below:
             in_x.txt [x: 1-4; depending on test case]
             out_x.txt [x: 1-4; depending on test case]
 
-For an example, files related to mov_001 test case are maintained as shown below:
+For an example, files related to mov_001 test case are maintained as shown below::
 
     mov_001 [directory]
         mov_001.spec

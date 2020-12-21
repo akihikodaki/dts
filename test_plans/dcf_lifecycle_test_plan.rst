@@ -812,7 +812,7 @@ If kill DCF process, when DCF launched. The DCF rules should be removed.
 
     sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
 
-   check the packet is dropped by VF1::
+   check the packet is dropped by VF1.
 
 3. kill DCF process ::
 
@@ -843,7 +843,7 @@ Kill DCF process, then fail to launch avf on the previous DCF VF.
 
     sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
 
-   check the packet is dropped by VF1::
+   check the packet is dropped by VF1.
 
 3. kill DCF process ::
 
@@ -878,7 +878,7 @@ TC28: DCF graceful exit
 
     sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
 
-   check the packet is dropped by VF1::
+   check the packet is dropped by VF1.
 
 3. Exit the DCF in DCF testpmd ::
 
@@ -899,7 +899,7 @@ TC29: DCF enabled, AVF VF reset
 
     sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
 
-   check the packet is dropped by VF1::
+   check the packet is dropped by VF1.
 
 3. reset VF1 in testpmd::
 
@@ -940,7 +940,7 @@ TC30: DCF enabled, DCF VF reset
 
     sendp([Ether(src="00:11:22:33:44:55", dst="5E:8E:8B:4D:89:05")/IP()/TCP(sport=8012)/Raw(load='X'*30)], iface="testeri0")
 
-   check the packet is dropped by VF1::
+   check the packet is dropped by VF1.
 
 3. reset VF0 in testpmd::
 

@@ -108,11 +108,12 @@ Prerequisites
 
 10. Launch dpdk on VF1::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-    testpmd> start
-    testpmd> show port info all
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
+     testpmd> set fwd rxonly
+     testpmd> set verbose 1
+     testpmd> start
+     testpmd> show port info all
+
 
    check the VF1 driver is net_iavf.
    the mac address is 00:01:23:45:67:89
@@ -806,7 +807,7 @@ Test Case 9: multirules with different pattern or input set
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.3 src mask 255.255.0.255 / udp / end actions drop / end
 
 10. send same packets, check packet 1 is dropped by rule 0, packet 2 is dropped by rule 1.
-   packet 3 is dropped by rule 2, packet 4 is dropped by rule 3, packet 5 is dropped by rule4.
+    packet 3 is dropped by rule 2, packet 4 is dropped by rule 3, packet 5 is dropped by rule4.
 
 Test Case 10: multirules with all patterns
 ==========================================

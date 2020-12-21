@@ -4558,10 +4558,10 @@ Subcase 1: DCF stop/DCF start
 5. send matched packets, port 1 can still receive the packets.
 
 Test case: Drop action test
-======================
+===========================
 
 Subcase 1: DCF DROP IPV4 SRC PACKAGES
------------------------------
+-------------------------------------
 
 1. validate a rule::
 
@@ -4605,7 +4605,7 @@ Subcase 1: DCF DROP IPV4 SRC PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 2: DCF DROP IPV4 SRC SPEC MASK PACKAGES
------------------------------
+-----------------------------------------------
 
 1. validate a rule::
 
@@ -4649,7 +4649,7 @@ Subcase 2: DCF DROP IPV4 SRC SPEC MASK PACKAGES
    send matched packets, check port can receive the packet.
  
 Subcase 3: DCF DROP NVGRE PACKAGES
------------------------------
+----------------------------------
 
 1. validate a rule::
 
@@ -4693,7 +4693,7 @@ Subcase 3: DCF DROP NVGRE PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 4: DCF DROP PPOES PACKAGES
------------------------------
+----------------------------------
 
 1. validate a rule::
 
@@ -4737,7 +4737,7 @@ Subcase 4: DCF DROP PPOES PACKAGES
    send matched packets, check port can receive the packet.
  
 Subcase 5:  DCF DROP PFCP PACKAGES
------------------------------
+----------------------------------
 
 1. validate a rule::
 
@@ -4781,7 +4781,7 @@ Subcase 5:  DCF DROP PFCP PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 6:  DCF DROP VLAN PACKAGES
------------------------------
+----------------------------------
 
 1. validate a rule::
 
@@ -4825,7 +4825,7 @@ Subcase 6:  DCF DROP VLAN PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 7:  DCF DROP L2TP PACKAGES
------------------------------
+----------------------------------
 
 1. validate a rule::
 
@@ -4869,7 +4869,7 @@ Subcase 7:  DCF DROP L2TP PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 8:  DCF DROP ESP PACKAGES
------------------------------
+---------------------------------
 
 1. validate a rule::
 
@@ -4913,7 +4913,7 @@ Subcase 8:  DCF DROP ESP PACKAGES
    send matched packets, check port can receive the packet.
 
 Subcase 8:  DCF DROP blend PACKAGES
------------------------------
+-----------------------------------
 
 1. validate a rule::
 

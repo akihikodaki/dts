@@ -181,11 +181,11 @@ Test Case2: Dynamic queue number test for DMA-accelerated vhost Tx operations
 
 10. Relaunch vhost with another two cbdma channels and 2 queueus, check perforamnce can get target::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
-    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@00:04.5;txq1@00:04.6],dmathr=512' \
-    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
-    >set fwd mac
-    >start
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
+     --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@00:04.5;txq1@00:04.6],dmathr=512' \
+     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+     >set fwd mac
+     >start
 
 11. Stop vhost port, check vhost RX and TX direction both exist packtes in two queues from vhost log.
 
