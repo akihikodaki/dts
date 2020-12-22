@@ -51,8 +51,8 @@ import time
 from test_case import TestCase
 from pktgen import TRANSMIT_CONT
 
-from framework.packet import Packet
-from framework.settings import HEADER_SIZE
+from packet import Packet
+from settings import HEADER_SIZE
 
 ETHER_HEADER_LEN = 18
 IP_HEADER_LEN = 20
@@ -208,6 +208,7 @@ class TestMtuUpdate(TestCase):
         @return: None
         """
         self.admin_tester_port(self.tester.get_local_port(self.tx_port), f"mtu {mtu:d}")
+        self.admin_tester_port(self.tester.get_local_port(self.rx_port), f"mtu {mtu:d}")
     #
     #
     #
@@ -220,7 +221,12 @@ class TestMtuUpdate(TestCase):
         """
         self.set_mtu(packet_size + 1)
 
-        self.pmdout.start_testpmd("Default")
+        if self.kdriver == "mlx5_core" or self.kdriver == "mlx4_core":
+        # Mellanox will need extra options to start testpmd
+            self.pmdout.start_testpmd("Default", "--max-pkt-len=9500 --tx-offloads=0x8000 --enable-scatter -a")
+        else:
+            self.pmdout.start_testpmd("Default")
+        
         self.exec("port stop all")
         self.exec(f"port config mtu 0 {packet_size:d}")
         self.exec(f"port config mtu 1 {packet_size:d}")
