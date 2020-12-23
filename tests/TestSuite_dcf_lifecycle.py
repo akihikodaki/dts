@@ -257,6 +257,7 @@ class TestDcfLifeCycle(TestCase):
             'pf1_vf1_vf2': f"-w {pf1_vf1} -w {pf1_vf2}",
             'pf1_vf1': f"-w {pf1_vf1}",
             'pf2_vf0_dcf': f"-w {pf2_vf0},cap=dcf",
+            'pf1_vf0': f"-w {pf1_vf0}",
         }
         return whitelist
 
@@ -1189,3 +1190,332 @@ class TestDcfLifeCycle(TestCase):
         msg = "begin : DCF and L2 forwarding can be enabled on different PF"
         self.logger.info(msg)
         self.verify_dcf_with_l2fwd_03()
+
+    def preset_handle_acl_filter(self):
+        '''
+        Generate 2 VFs on PF0, launch dpdk on VF0 with DCF mode,and
+        launch dpdk on VF1, then check the driver of each of them
+        '''
+        self.vf_set_trust()
+        pmd_opts = [['pf1_vf0_dcf', 'vf0'], ['pf1_vf1', 'vf1']]
+        self.run_test_pre(pmd_opts)
+        cmds_0 = ['set fwd mac', 'set verbose 1', 'start']
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds_0]
+        time.sleep(1)
+        vf0_output = self.d_con(['show port info all', "testpmd> ", 15])
+        vf0_driver = re.findall("Driver\s*name:\s*(\w+)", vf0_output)
+        self.verify(vf0_driver[0] == 'net_ice_dcf', 'check the VF0 driver failed')
+
+        cmds_1 = ['set fwd rxonly', 'set verbose 1', 'start']
+        [self.vf_pmd2_con([cmd, "testpmd> ", 15]) for cmd in cmds_1]
+        vf1_output = self.vf_pmd2_con(['show port info all', "testpmd> ", 15])
+        vf1_driver = re.findall("Driver\s*name:\s*(\w+)", vf1_output)
+        self.dmac = re.findall("MAC\s*address:\s*(.*:[0-9A-F]{2})", vf1_output)[0]
+        self.verify(vf1_driver[0] == 'net_iavf', 'check the VF1 driver failed')
+
+    def check_rule_list(self, stats=True):
+        out = self.d_con(['flow list 0', "testpmd> ", 15])
+        p = re.compile(r"ID\s+Group\s+Prio\s+Attr\s+Rule")
+        matched = p.search(out)
+        if not stats:
+            self.verify(matched is None, "flow rule on port 0 is still existed")
+        else:
+            self.verify(matched, "flow rule on port 0 is not existed")
+
+    def send_pkt_to_vf1_first(self, dmac):
+        tester_port_id = self.tester.get_local_port(0)
+        tester_itf = self.tester.get_interface(tester_port_id)
+        p = Packet()
+        p.append_pkt('Ether(src="00:11:22:33:44:55", dst="%s")/IP()/TCP(sport=8012)/Raw(load="X"*30)' % dmac)
+        p.send_pkt(self.tester, tx_port=tester_itf)
+        time.sleep(1)
+
+    def pretest_handle_acl_filter(self):
+        # Create an ACL rule, and send packet with dst mac of VF1, then it will dropped by VF1.
+        rule = 'flow create 0 priority 0 ingress pattern eth / ipv4 / tcp src spec 8010 src mask 65520 / end actions drop / end'
+        self.d_con([rule, "testpmd> ", 15])
+        self.check_rule_list()
+        self.send_pkt_to_vf1_first(self.dmac)
+        out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
+        drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 1, 'the packet is not dropped by VF1')
+
+    def clear_vf_pmd2_port0_stats(self):
+        cmds = ['clear port stats 0', 'start']
+        [self.vf_pmd2_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+
+    def send_pkt_to_vf1_again(self):
+        self.clear_vf_pmd2_port0_stats()
+        self.send_pkt_to_vf1_first(self.dmac)
+        out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
+        drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 0, 'the packet is dropped by VF1')
+
+    def kill_vf0_testpmd_process(self):
+        # Kill DCF process
+        cmd = "ps aux | grep testpmd"
+        self.d_a_con(cmd)
+        cmd = r"kill -9 `ps -ef | grep %s | grep -v grep | grep cap=dcf | awk '{print $2}'`" % self.vf_dcf_testpmd.split('/')[-1]
+        self.d_a_con(cmd)
+        time.sleep(1)
+
+    def create_acl_rule_by_kernel_cmd(self, port_id=0, stats=True):
+        # create an ACL rule on PF0 by kernel command
+        intf = self.dut.ports_info[port_id]['port'].intf_name
+        rule = "ethtool -N %s flow-type tcp4 src-ip 192.168.10.0 m 0.255.255.255 dst-port 8000 m 0x00ff action -1" % intf
+        out = self.d_a_con(rule)
+        if not stats:
+            self.verify('rmgr: Cannot insert RX class rule: No such file or directory' in out,
+                        'success to add ACL filter')
+        else:
+            self.verify('Added rule with ID 15871' in out, 'add rule failed')
+
+    def launch_dcf_testpmd(self):
+        # launch testpmd on VF0 requesting for DCF funtionality
+        cores = self.corelist[:5]
+        core_mask = utils.create_mask(cores)
+        whitelist = self.vf_whitelist().get('pf1_vf0_dcf')
+        cmd_dcf = (
+            "{bin} "
+            "-v "
+            "-c {core_mask} "
+            "-n {mem_channel} "
+            "{whitelist} "
+            "--log-level=ice,7 -- -i --port-topology=loop ").format(**{
+            'bin': ''.join(['./', self.vf_dcf_testpmd]),
+            'core_mask': core_mask,
+            'mem_channel': self.dut.get_memory_channels(),
+            'whitelist': whitelist, })
+        return self.d_con([cmd_dcf, "testpmd> ", 120])
+
+    def check_vf_driver(self):
+        vf0_output = self.d_con(['show port info all', "testpmd> ", 15])
+        vf0_driver = re.findall("Driver\s*name:\s*(\w+)", vf0_output)
+        self.verify(vf0_driver[0] == 'net_ice_dcf', 'check the VF0 driver failed')
+
+    def delete_acl_rule_by_kernel_cmd(self, port_id=0):
+        # delete the kernel ACL rule
+        intf = self.dut.ports_info[port_id]['port'].intf_name
+        self.d_a_con('ethtool -N %s delete 15871' % intf)
+
+    def test_handle_acl_filter_01(self):
+        '''
+        If turn trust mode off, when DCF launched. The DCF rules should be removed
+        '''
+        msg = "begin : Turn trust mode off, when DCF launched"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+
+        # turn VF0 trust mode off
+        self.vf_set_trust_off()
+        self.check_rule_list()
+        self.send_pkt_to_vf1_again()
+
+        # turn VF0 trust mode on, then re-launch dpdk on VF0
+        self.d_con(['quit', "# ", 15])
+        self.vf_set_trust()
+        pmd_opts = [['pf1_vf0_dcf', 'vf0']]
+        self.run_test_pre(pmd_opts)
+        cmds = ['set fwd mac', 'set verbose 1', 'start']
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.check_rule_list(stats=False)
+        self.clear_vf_pmd2_port0_stats()
+        self.pretest_handle_acl_filter()
+        self.run_test_post()
+
+    def test_handle_acl_filter_02(self):
+        msg = "begin : Kill DCF process"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+
+        # After killing DCF process, then send the packet again
+        self.kill_vf0_testpmd_process()
+        self.send_pkt_to_vf1_again()
+
+        # re-launch dpdk on VF0
+        pmd_opts = [['pf1_vf0_dcf', 'vf0']]
+        self.run_test_pre(pmd_opts)
+        cmds = ['set fwd mac', 'set verbose 1', 'start']
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.check_rule_list(stats=False)
+        self.send_pkt_to_vf1_again()
+
+        self.clear_vf_pmd2_port0_stats()
+        self.pretest_handle_acl_filter()
+        self.run_test_post()
+
+    def test_handle_acl_filter_03(self):
+        msg = "begin : Allow AVF request"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+        # send the packet again
+        self.kill_vf0_testpmd_process()
+        self.send_pkt_to_vf1_again()
+
+        # re-launch AVF on VF0
+        cores = self.corelist[:5]
+        core_mask = utils.create_mask(cores)
+        whitelist = self.vf_whitelist().get('pf1_vf0')
+        cmd = (
+            "{bin} "
+            "-v "
+            "-c {core_mask} "
+            "-n {mem_channel} "
+            "{whitelist} "
+            "--file-prefix={prefix} "
+            "-- -i ").format(**{
+            'bin': ''.join(['./', self.vf_dcf_testpmd]),
+            'core_mask': core_mask,
+            'mem_channel': self.dut.get_memory_channels(),
+            'whitelist': whitelist,
+            'prefix': 'vf0', })
+        avf_output = self.d_con([cmd, "testpmd> ", 120])
+        expected_strs = [
+            "iavf_get_vf_resource(): Failed to execute command of OP_GET_VF_RESOURCE",
+            "iavf_init_vf(): iavf_get_vf_config failed",
+            "iavf_dev_init(): Init vf failed",
+        ]
+        for expected_str in expected_strs:
+            msg = "'{}' not display".format(expected_str)
+            self.verify(expected_str in avf_output, msg)
+
+        # re-launch AVF on VF0 again
+        self.d_con(['quit', "# ", 15])
+        pmd_opts = [['pf1_vf0', 'vf0']]
+        self.run_test_pre(pmd_opts)
+        cmds = ['set fwd mac', 'set verbose 1', 'start']
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.send_pkt_to_vf1_again()
+        self.run_test_post()
+
+    def test_handle_acl_filter_04(self):
+        msg = "begin : DCF graceful exit"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+
+        # exit the DCF in DCF testpmd, then send the packet again
+        self.d_con(['quit', "# ", 15])
+        self.send_pkt_to_vf1_again()
+        self.run_test_post()
+
+    def test_handle_acl_filter_05(self):
+        msg = "begin : DCF enabled, AVF VF reset"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+
+        # reset VF1 in testpmd
+        cmds = ['stop', 'port stop 0', 'port reset 0', 'port start 0', 'start']
+        [self.vf_pmd2_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.clear_vf_pmd2_port0_stats()
+        self.send_pkt_to_vf1_first(self.dmac)
+        out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
+        drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 1, 'the packet is not dropped by VF1, the rule can not take effect')
+
+        # Reset VF1 by setting mac addr
+        intf = self.dut.ports_info[0]['port'].intf_name
+        self.d_a_con('ip link set %s vf 1 mac 00:01:02:03:04:05' % intf)
+        [self.vf_pmd2_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.clear_vf_pmd2_port0_stats()
+        self.send_pkt_to_vf1_first(dmac='00:01:02:03:04:05')
+        out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
+        drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 1, 'the packet is not dropped by VF1, the rule can not take effect')
+        self.run_test_post()
+
+    def test_handle_acl_filter_06(self):
+        msg = "begin : DCF enabled, DCF VF reset"
+        self.logger.info(msg)
+        self.preset_handle_acl_filter()
+        self.pretest_handle_acl_filter()
+
+        # reset VF0 in testpmd
+        cmds = ['stop', 'port stop 0', 'port reset 0', 'port start 0', 'start']
+        [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
+        self.check_rule_list()
+        self.clear_vf_pmd2_port0_stats()
+        self.send_pkt_to_vf1_first(self.dmac)
+        out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
+        drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 1, 'the packet is not dropped by VF1, the rule can not take effect')
+        self.run_test_post()
+
+    def test_dcf_with_acl_filter_01(self):
+        msg = "begin : add ACL rule by kernel, reject request for DCF functionality"
+        self.logger.info(msg)
+        self.vf_set_trust()
+        self.create_acl_rule_by_kernel_cmd()
+        self.clear_dmesg()
+
+        dcf_output = self.launch_dcf_testpmd()
+        dmesg_output = self.get_dmesg()
+        # vf testpmd
+        expected_strs = [
+            "ice_dcf_send_aq_cmd(): No response (201 times) or return failure (desc: -63 / buff: -63)",
+            "ice_flow_init(): Failed to initialize engine 4",
+            "ice_dcf_init_parent_adapter(): Failed to initialize flow",
+            "ice_dcf_dev_init(): Failed to init DCF parent adapter",
+        ]
+        for expected_str in expected_strs:
+            msg = "'{}' not display".format(expected_str)
+            self.verify(expected_str in dcf_output, msg)
+        # dmesg content
+        pf1 = self.vf_ports_info[0].get('pf_pci')
+        expected_strs = [
+            "ice %s: Grant request for DCF functionality to VF0" % pf1,
+            "ice %s: Failed to grant ACL capability to VF0 as ACL rules already exist" % pf1,
+        ]
+        msg = 'no dmesg output'
+        self.verify(dmesg_output, msg)
+        for expected_str in expected_strs:
+            msg = "'{}' not display".format(expected_str)
+            self.verify(expected_str in dmesg_output, msg)
+
+        # delete the kernel ACL rule
+        self.delete_acl_rule_by_kernel_cmd()
+        self.clear_dmesg()
+        self.d_con(['quit', "# ", 15])
+        self.launch_dcf_testpmd()
+        self.check_vf_driver()
+        d_output = self.get_dmesg()
+        self.verify('Failed' not in d_output, 'there is Failed infomation in dmesg.')
+        self.d_con(['quit', "# ", 15])
+
+    def test_dcf_with_acl_filter_02(self):
+        msg = "begin : add ACL rule by kernel, accept request for DCF functionality of another PF"
+        self.logger.info(msg)
+        self.vf_set_trust()
+        self.create_acl_rule_by_kernel_cmd(port_id=1)
+        self.clear_dmesg()
+        self.launch_dcf_testpmd()
+        self.check_vf_driver()
+        d_output = self.get_dmesg()
+        self.verify('Failed' not in d_output, 'there is Failed infomation in dmesg.')
+        self.delete_acl_rule_by_kernel_cmd(port_id=1)
+        self.d_con(['quit', "# ", 15])
+
+    def test_dcf_with_acl_filter_03(self):
+        msg = "begin : ACL DCF mode is active, add ACL filters by way of host based configuration is rejected"
+        self.logger.info(msg)
+        self.vf_set_trust()
+        self.launch_dcf_testpmd()
+        self.check_vf_driver()
+        self.create_acl_rule_by_kernel_cmd(stats=False)
+        self.d_con(['quit', "# ", 15])
+        self.create_acl_rule_by_kernel_cmd()
+        self.delete_acl_rule_by_kernel_cmd()
+
+    def test_dcf_with_acl_filter_04(self):
+        msg = "begin : ACL DCF mode is active, add ACL filters by way of host based configuration on another PF successfully"
+        self.logger.info(msg)
+        self.vf_set_trust()
+        self.launch_dcf_testpmd()
+        self.check_vf_driver()
+        self.create_acl_rule_by_kernel_cmd(port_id=1)
+        self.d_con(['quit', "# ", 15])
+        self.delete_acl_rule_by_kernel_cmd(port_id=1)
