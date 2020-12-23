@@ -103,87 +103,48 @@ class PmdOutput():
     def get_pmd_cmd(self):
         return self.command
 
-    def split_eal_param(self, eal_param):
+    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, **config):
         """
-        split eal param from test suite
-        :param eal_param:
-        :return:
+        start testpmd with input parameters.
+        :param cores: eg:
+                cores='default'
+                cores='1S/4C/1T'
+        :param param: dpdk application (testpmd) parameters
+        :param eal_param: user defined DPDK eal parameters, eg:
+                eal_param='-a af:00.0 -a af:00.1,proto_xtr=vlan',
+                eal_param='-b af:00.0 --file-prefix=vf0',
+                eal_param='--no-pci',
+        :param socket: physical CPU socket index
+        :param fixed_prefix: use fixed file-prefix or not, when it is true,
+               the file-prefix will not be added a timestamp
+        :param config: kwargs user defined eal parameters, eg:
+                set PCI allow list: ports=[0,1], port_options={0: "proto_xtr=vlan"},
+                set PCI block list: b_ports=['0000:1a:00.0'],
+                disable PCI: no_pci=True,
+                add virtual device: vdevs=['net_vhost0,iface=vhost-net,queues=1']
+        :return: output of launching testpmd
         """
-        re_w_pci_str = '\s?-[w,a]\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1},.*=\d+' \
-                       '|\s?-[w,a]\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1}'
-        re_file_prefix_str = '--file-prefix[\s*=]\S+\s'
-        re_b_pci_str = '\s?-b\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1},.*=\d+' \
-                       '|\s?-b\s+\w*:?[A-Fa-f0-9]{2}:[A-Fa-f0-9]{2}.[A-Fa-f0-9]{1}'
-        eal_param = eal_param + ' '
-        # pci_str_list eg: ['-w   0000:1a:00.0 ', '-w 0000:1a:00.1,queue-num-per-vf=4 ', '-w 0000:aa:bb.1,queue-num-per-vf=4 ',
-        #                   '-a   0000:1a:00.0 ', '-a 0000:1a:00.1,queue-num-per-vf=4 ', '-a 0000:aa:bb.1,queue-num-per-vf=4 ']
-        w_pci_str_list = re.findall(re_w_pci_str, eal_param)
-        # file_prefix_str eg: ['--file-prefix=dpdk ']
-        file_prefix_str = re.findall(re_file_prefix_str, eal_param)
-        b_pci_str_list = re.findall(re_b_pci_str, eal_param)
-        has_pci_option = {}
-        pci_list = []
-        if w_pci_str_list:
-            for pci_str in w_pci_str_list:
-                # has pci options
-                pci_str_options = pci_str.split('-w ') if '-w ' in pci_str else pci_str.split('-a ')
-                if ',' in pci_str_options[-1]:
-                    pci_option = pci_str_options[-1].split(',')
-                    has_pci_option[pci_option[0]] = pci_option[1].strip()
-                    pci_list.append(pci_option[0])
-                else:
-                    pci_list.append(pci_str_options[-1])
-
-        b_pci_list = []
-        if b_pci_str_list:
-            for b_pci in b_pci_str_list:
-                tmp = b_pci.split('-b')[1].strip()
-                b_pci_list.append(tmp)
-
-        file_prefix = ''
+        eal_param = ' ' + eal_param + ' '
+        eal_param = eal_param.replace(' -w ', ' -a ')
+        re_file_prefix = '--file-prefix[\s*=]\S+\s'
+        file_prefix_str = re.findall(re_file_prefix, eal_param)
         if file_prefix_str:
             tmp = re.split('(=|\s+)', file_prefix_str[-1].strip())
             file_prefix = tmp[-1].strip()
+            config['prefix'] = file_prefix
+        eal_param = re.sub(re_file_prefix, '', eal_param)
 
-        other_eal_str = re.sub(re_w_pci_str, '', eal_param)
-        other_eal_str = re.sub(re_b_pci_str, '', other_eal_str)
-        other_eal_str = re.sub(re_file_prefix_str, '', other_eal_str)
-
-        no_pci = False
-        if '--no-pci' in other_eal_str:
-            no_pci = True
-            other_eal_str = other_eal_str.replace('--no-pci','')
-
-        return pci_list, has_pci_option, b_pci_list, file_prefix, no_pci, other_eal_str
-
-    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, **config):
         config['cores'] = cores
-        if eal_param == '':
-            # use configured ports if not set
-            if 'ports' not in list(config.keys()):
-                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
-            all_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
-        else:
-            w_pci_list, port_options, b_pci_list, file_prefix, no_pci, other_eal_str = self.split_eal_param(eal_param)
-            config['other_eal_param'] = other_eal_str
-            if no_pci:
-                config['no_pci'] = no_pci
-            if w_pci_list:
-                config['ports'] = w_pci_list
-            if port_options:
-                config['port_options'] = port_options
-            if b_pci_list:
-                config['b_ports'] = b_pci_list
-            if file_prefix:
-                config['prefix'] = file_prefix
-
-            if not w_pci_list and not b_pci_list and 'ports' not in list(config.keys()):
-                config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
-            part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
-            all_eal_param = part_eal_param + ' ' + other_eal_str
+        if ' -w ' not in eal_param and ' -a ' not in eal_param and ' -b ' not in eal_param \
+            and 'ports' not in config and 'b_ports' not in config and ' --no-pci ' not in eal_param \
+            and ( 'no_pci' not in config or ('no_pci' in config and config['no_pci'] != True)):
+            config['ports'] = [self.dut.ports_info[i]['pci'] for i in range(len(self.dut.ports_info))]
+        part_eal_param = self.dut.create_eal_parameters(fixed_prefix=fixed_prefix, socket=socket, **config)
+        all_eal_param = part_eal_param + ' ' + eal_param
 
         app_name = self.dut.apps_name['test-pmd']
         command = app_name + " %s -- -i %s" % (all_eal_param, param)
+        command = command.replace('  ', ' ')
         if self.session != self.dut:
             self.session.send_expect("cd %s" % self.dut.base_dir, "# ")
         out = self.session.send_expect(command, "testpmd> ", 120)
