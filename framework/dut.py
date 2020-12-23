@@ -208,11 +208,12 @@ class Dut(Crb):
                           + blank + no_pci \
                           + blank + vdev
         else:
+            allow_option = '-a' if self.dpdk_version > '20.11.0-rc3' or self.dpdk_version == '20.11.0' else '-w'
             # get pci from ports_info
             pci_list = []
             if len(self.ports_info) != 0:
                 for port_info in self.ports_info:
-                    pci_list.append('-w %s' % port_info['pci'])
+                    pci_list.append('%s %s' % (allow_option, port_info['pci']))
             self.logger.info(pci_list)
             pci_str = ' '.join(pci_list)
             # default cores '1S/2C/1T'
