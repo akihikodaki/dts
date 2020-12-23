@@ -48,3 +48,4 @@ Getting Started Guide
     trex
     trex_known_issue
     usage_of_create_eal_and_start_testpmd
+    support_igb_uio
