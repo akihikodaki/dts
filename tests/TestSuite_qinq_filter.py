@@ -40,6 +40,7 @@ Test the support of VLAN Offload Features by Poll Mode Drivers.
 from test_case import TestCase
 import utils
 import time
+from pmd_output import PmdOutput
 
 class TestQinqFilter(TestCase):
 
@@ -140,12 +141,9 @@ class TestQinqFilter(TestCase):
         """
         Enable receipt of dual VLAN packets
         """
-        
-        eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
-        self.dut.send_expect(r'%s %s -- -i \
-                               --portmask=%s --port-topology=loop \
-                               --rxq=4 --txq=4  --disable-rss' % (self.path, eal_para, self.portMask),
-                               "testpmd> ", 30)
+        self.logger.info('\r\n-------------------------this case only support novector mode to start testpmd!-------------------------\r\n')
+        pmd_out = PmdOutput(self.dut)
+        pmd_out.start_testpmd("1S/2C/1T", eal_param="--force-max-simd-bitwidth=64", param="--portmask=%s --port-topology=loop --rxq=4 --txq=4 --disable-rss" % self.portMask)
         self.dut.send_expect("vlan set extend on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set strip on %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("vlan set qinq_strip on %s" % dutRxPortId, "testpmd> ")
