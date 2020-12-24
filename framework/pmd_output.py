@@ -133,6 +133,7 @@ class PmdOutput():
             file_prefix = tmp[-1].strip()
             config['prefix'] = file_prefix
         eal_param = re.sub(re_file_prefix, '', eal_param)
+        config['other_eal_param'] = eal_param
 
         config['cores'] = cores
         if ' -w ' not in eal_param and ' -a ' not in eal_param and ' -b ' not in eal_param \
