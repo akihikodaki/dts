@@ -137,7 +137,7 @@ Test Case3: VM2VM performance test with two CBDMA channels using vhost async dri
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 27-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
 
 3. Launch virtio-user::
@@ -179,7 +179,7 @@ Test Case4: VM2VM test with 2 vhost device using vhost async driver
 
 2. On host, launch dpdk-vhost by below command::
 
-	./dpdk-vhost -l 27-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
+	./dpdk-vhost -l 26-28 -n 4 -- -p 0x1 --mergeable 1 --vm2vm 1 --dma-type ioat \
 	--socket-file /tmp/vhost-net0 --socket-file /tmp/vhost-net1 --dmas [txd0@00:04.0,txd1@00:04.1]
 
 3. Start VM0::
