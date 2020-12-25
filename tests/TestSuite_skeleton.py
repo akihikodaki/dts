@@ -69,7 +69,7 @@ class TestSkeleton(TestCase):
 
     def test_skeleton(self):
         eal_para = self.dut.create_eal_parameters(cores='1S/2C/1T')
-        cmd = self.path + " -c %s -n %d " % eal_para
+        cmd = self.path + " %s " % eal_para
         self.dut.send_expect(cmd,"forwarding packets",60)
          
         time.sleep(5)
