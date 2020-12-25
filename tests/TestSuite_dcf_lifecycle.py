@@ -307,8 +307,7 @@ class TestDcfLifeCycle(TestCase):
 
     def start_vf_dcf_testpmd(self, pmd_opiton):
         whitelist_name, prefix = pmd_opiton
-        cores = self.corelist[:5]
-        core_mask = utils.create_mask(cores)
+        core_mask = utils.create_mask(self.core_pf)
         whitelist = self.vf_whitelist().get(whitelist_name)
         cmd = (
             "{bin} "
@@ -367,8 +366,7 @@ class TestDcfLifeCycle(TestCase):
 
     def start_vf_testpmd2(self, pmd_opiton):
         whitelist_name, prefix = pmd_opiton
-        cores = self.corelist[5:]
-        core_mask = utils.create_mask(cores)
+        core_mask = utils.create_mask(self.core_vf)
         whitelist = self.vf_whitelist().get(whitelist_name)
         cmd = (
             "{bin} "
@@ -997,8 +995,9 @@ class TestDcfLifeCycle(TestCase):
     def preset_pmd_res(self):
         self.dcf_dev_id = '8086:1889'
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.corelist = self.dut.get_core_list(
-            "1S/14C/1T", socket=self.socket)[4:]
+        self.dut.init_reserved_core()
+        self.core_pf = self.dut.get_reserved_core('2C', 0)
+        self.core_vf = self.dut.get_reserved_core('2C', 0)
 
     def clear_flags(self):
         self.is_vf_dcf_pmd_on = self.is_vf_pmd2_on = False
@@ -1268,12 +1267,14 @@ class TestDcfLifeCycle(TestCase):
             self.verify('rmgr: Cannot insert RX class rule: No such file or directory' in out,
                         'success to add ACL filter')
         else:
-            self.verify('Added rule with ID 15871' in out, 'add rule failed')
+            pattern = re.compile('.*Added\s+rule\s+with\s+ID\s+(\d+)')
+            res = re.search(pattern, out)
+            self.verify(res, 'NO ACL rule id matched')
+            self.rule_id = res.group(1)
 
     def launch_dcf_testpmd(self):
         # launch testpmd on VF0 requesting for DCF funtionality
-        cores = self.corelist[:5]
-        core_mask = utils.create_mask(cores)
+        core_mask = utils.create_mask(self.core_pf)
         whitelist = self.vf_whitelist().get('pf1_vf0_dcf')
         cmd_dcf = (
             "{bin} "
@@ -1296,7 +1297,7 @@ class TestDcfLifeCycle(TestCase):
     def delete_acl_rule_by_kernel_cmd(self, port_id=0):
         # delete the kernel ACL rule
         intf = self.dut.ports_info[port_id]['port'].intf_name
-        self.d_a_con('ethtool -N %s delete 15871' % intf)
+        self.d_a_con('ethtool -N %s delete %s' % (intf, self.rule_id))
 
     def test_handle_acl_filter_01(self):
         '''
@@ -1356,8 +1357,7 @@ class TestDcfLifeCycle(TestCase):
         self.send_pkt_to_vf1_again()
 
         # re-launch AVF on VF0
-        cores = self.corelist[:5]
-        core_mask = utils.create_mask(cores)
+        core_mask = utils.create_mask(self.core_pf)
         whitelist = self.vf_whitelist().get('pf1_vf0')
         cmd = (
             "{bin} "
