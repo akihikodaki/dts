@@ -204,7 +204,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
             self.check_result(nr_queue, out, out2, pkts_num, count, misc)
 
     def test_set_invalid_vf_queue_num_command_line(self):
-        invalid_queue_num = [0, 17]
+        invalid_queue_num = [0, 257]
         for i in invalid_queue_num:
             self.vm0_testpmd = PmdOutput(self.vm_dut_0)
             self.vm_dut_0.session_secondary = self.vm_dut_0.new_session()
@@ -215,7 +215,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
                 self.verify('Either rx or tx queues should be non-zero' in out, "queue number can't be zero")
             else:
                 # the dpdk output non-zero conflict with >=0, to be fixed...
-                self.verify('txq 17 invalid - must be >= 0 && <= 16' in out, "queue number is too big")
+                self.verify('txq 257 invalid - must be >= 0 && <= 256' in out, "queue number is too big")
 
     def test_set_valid_vf_queue_num_with_function(self):
         random_queue = random.randint(2, 15)
@@ -270,7 +270,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
             self.check_result(nr_queue, out, out2, pkts_num, count, misc)
 
     def test_set_invalid_vf_queue_num_with_testpmd_command(self):
-        invalid_queue_num = [0, 17]
+        invalid_queue_num = [0, 257]
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         eal_param = '-w %(vf0)s' % {'vf0': self.vm_dut_0.vm_pci0}
         self.vm0_testpmd.start_testpmd("all", eal_param=eal_param)
@@ -287,7 +287,7 @@ class TestRuntimeVfQueueNumberKernel(TestCase):
                 self.verify('Either rx or tx queues should be non zero' in out, "queue number can't be zero")
             else:
                 out = self.vm0_testpmd.execute_cmd("port config all rxq %s" % i)
-                self.verify("input rxq (17) can't be greater than max_rx_queues (16) of port 0" in out,
+                self.verify("input rxq (257) can't be greater than max_rx_queues (256) of port 0" in out,
                             "queue number is too big")
             self.vm0_testpmd.execute_cmd("clear port stats all")
             time.sleep(1)
