@@ -302,10 +302,10 @@ class TestRuntimeVfQn(TestCase):
         outstring = self.vm0_testpmd.execute_cmd(command_0, expected='# ')
         self.verify("Either rx or tx queues should be non-zero" in outstring, "The output of testpmd start is different from expect when set invalid VF queue number 0.")
         time.sleep(2)
-        command_17 = app_name + "-c %s -n %d %s -- -i %s" % ('0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=17 --txq=17')
-        outstring1 = self.vm0_testpmd.execute_cmd(command_17, expected='# ')
-        self.verify("rxq 17 invalid - must be >= 0 && <= 16" in outstring1,
-                    "The output of testpmd start is different from expect when set invalid VF queue number 17.")
+        command_257 = app_name + "-c %s -n %d %s -- -i %s" % ('0xf', self.dut.get_memory_channels(), gest_eal_param, ' --rxq=257 --txq=257')
+        outstring1 = self.vm0_testpmd.execute_cmd(command_257, expected='# ')
+        self.verify("rxq 257 invalid - must be >= 0 && <= 256" in outstring1,
+                    "The output of testpmd start is different from expect when set invalid VF queue number 257.")
 
     def test_set_valid_vf_qn_with_testpmd_func_cmd(self):
         """
@@ -341,14 +341,14 @@ class TestRuntimeVfQn(TestCase):
         :return:
         """
         expect_str = ["Warning: Either rx or tx queues should be non zero",
-                      "Fail: input rxq (17) can't be greater than max_rx_queues (16) of port 0",
-                      "Fail: input txq (17) can't be greater than max_tx_queues (16) of port 0"]
+                      "Fail: input rxq (257) can't be greater than max_rx_queues (256) of port 0",
+                      "Fail: input txq (257) can't be greater than max_tx_queues (256) of port 0"]
         host_eal_param = '-w %s --file-prefix=test1 --socket-mem 1024,1024' % self.pf_pci
         self.host_testpmd.start_testpmd(self.pmdout.default_cores, param='', eal_param=host_eal_param)
         gest_eal_param = '-w %s --file-prefix=test2' % self.vm_dut_0.ports_info[0]['pci']
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
         self.vm0_testpmd.start_testpmd(self.pmdout.default_cores, eal_param=gest_eal_param, param='')
-        for invalid_qn in [0, 17]:
+        for invalid_qn in [0, 257]:
             self.vm0_testpmd.execute_cmd('port stop all')
             rxq_output = self.vm0_testpmd.execute_cmd('port config all rxq %d' % invalid_qn)
             txq_output = self.vm0_testpmd.execute_cmd('port config all txq %d' % invalid_qn)
