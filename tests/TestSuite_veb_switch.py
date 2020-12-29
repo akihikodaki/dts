@@ -182,6 +182,10 @@ class TestVEBSwitching(TestCase):
         self.pf_mac_address = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.used_dut_port]['pci']
 
+        self.dut.init_reserved_core()
+        self.cores_vf0 = self.dut.get_reserved_core('2C', 0)
+        self.cores_vf1 = self.dut.get_reserved_core('2C', 0)
+
     def set_up(self):
         """
         This is to clear up environment before the case run.
@@ -239,13 +243,10 @@ class TestVEBSwitching(TestCase):
         the packets. Check Inter VF-VF MAC switch.
         """
         self.setup_env(driver='default')
-        self.dut.init_reserved_core()
-        cores_vf1 = self.dut.get_reserved_core('2C',0)
-        self.pmdout.start_testpmd(cores_vf1, prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.pmdout.start_testpmd(self.cores_vf0, prefix="test1", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.dut.send_expect("set fwd txonly", "testpmd>")
         self.dut.send_expect("set promisc all off", "testpmd>")
-        cores_vf2 = self.dut.get_reserved_core('2C',0)
-        self.pmdout_2.start_testpmd(cores_vf2, prefix="test2", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_2.start_testpmd(self.cores_vf1, prefix="test2", ports=[self.sriov_vfs_port[1].pci])
         self.session_secondary.send_expect("set fwd rxonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         self.session_secondary.send_expect("start", "testpmd>", 5)
@@ -458,12 +459,12 @@ class TestVEBSwitching(TestCase):
         self.pmdout.start_testpmd("Default", prefix="test1", ports=[self.pf_pci])
         self.dut.send_expect("set promisc all off", "testpmd>")
 
-        self.pmdout_2.start_testpmd("Default", prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
+        self.pmdout_2.start_testpmd(self.cores_vf0, prefix="test2", ports=[self.sriov_vfs_port[0].pci], param="--eth-peer=0,%s" % self.vf1_mac)
         self.session_secondary.send_expect("set fwd txonly", "testpmd>")
         self.session_secondary.send_expect("set promisc all off", "testpmd>")
         time.sleep(2)
 
-        self.pmdout_3.start_testpmd("Default", prefix="test3", ports=[self.sriov_vfs_port[1].pci])
+        self.pmdout_3.start_testpmd(self.cores_vf1, prefix="test3", ports=[self.sriov_vfs_port[1].pci])
         self.session_third.send_expect("mac_addr add 0 %s" % self.vf1_mac, "testpmd>")
         self.session_third.send_expect("set fwd rxonly", "testpmd>")
         self.session_third.send_expect("set promisc all off", "testpmd>")
