@@ -464,6 +464,9 @@ class TestVfKernel(TestCase):
         """
         verify packet statistic
         """
+        time.sleep(1)
+        self.vm0_dut.send_expect("sysctl net.ipv6.conf.all.disable_ipv6=1", "#")
+        self.vm0_dut.send_expect("sysctl net.ipv6.conf.default.disable_ipv6=1", "#")
         time.sleep(10)
         out = self.vm0_dut.send_expect("ethtool -S %s" % self.vm0_intf0, "#")
         rx_packets_before = re.findall("\s*rx.*\d+.*packets:\s*(\d*)", out)
