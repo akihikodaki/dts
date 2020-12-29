@@ -94,6 +94,10 @@ class TestKernelpfIavf(TestCase):
         self.tester_intf1 = self.tester.get_interface(tester_port1)
         self.l3fwdpower_name = self.dut.apps_name['l3fwd-power'].strip().split('/')[-1]
 
+        # get driver version
+        out = self.dut.send_expect("ethtool -i %s | awk -F':' 'NR==2{print $2}'" % self.host_intf, "# ")
+        self.driver_version = out.replace(" ", "")
+
     def set_up(self):
 
         if self.running_case == "test_vf_mac_filter":
@@ -416,8 +420,12 @@ class TestKernelpfIavf(TestCase):
         out = self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 2, "fail to tester received vlan packet!!!")
-        self.verify(self.vf_mac in out, "Failed to received vlan packet!!!")
+        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+            self.verify(len(receive_pkt) == 2, "fail to tester received vlan packet!!!")
+            self.verify(self.vf_mac in out, "Failed to received vlan packet!!!")
+        else:
+            self.verify(len(receive_pkt) == 1, "fail to tester received vlan packet!!!")
+            self.verify(self.vf_mac not in out, "Received vlan packet!!!")
 
     def send_and_getout(self, vlan=0, pkt_type="UDP"):
 
@@ -481,7 +489,10 @@ class TestKernelpfIavf(TestCase):
 
         # send vlan 1 packet, vf can receive packet
         out = self.send_and_getout(vlan=1, pkt_type="VLAN_UDP")
-        self.verify(self.vf_mac in out, "received vlan 1 packet!!!")
+        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+            self.verify(self.vf_mac in out, "received vlan 1 packet!!!")
+        else:
+            self.verify(self.vf_mac not in out, "Received vlan 1 packet!!!")
 
     def test_vf_vlan_insertion(self):
         self.vm_testpmd.start_testpmd("all")
@@ -526,7 +537,10 @@ class TestKernelpfIavf(TestCase):
         self.send_and_getout(vlan=random_vlan, pkt_type="VLAN_UDP")
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 2, 'Failed to not received vlan packet!!!')
+        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+            self.verify(len(receive_pkt) == 2, 'Failed to not received vlan packet!!!')
+        else:
+            self.verify(len(receive_pkt) == 1, 'Failed to not received vlan packet!!!')
 
     def test_vf_vlan_filter(self):
         random_vlan = random.randint(2, MAX_VLAN)
@@ -560,7 +574,10 @@ class TestKernelpfIavf(TestCase):
         time.sleep(1)
         tcpdump_out = self.get_tcpdump_package()
         receive_pkt = re.findall('vlan %s' % random_vlan, tcpdump_out)
-        self.verify(len(receive_pkt) == 2, 'Failed to received vlan packet!!!')
+        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+            self.verify(len(receive_pkt) == 2, 'Failed to received vlan packet!!!')
+        else:
+            self.verify(len(receive_pkt) == 1, 'Failed to received vlan packet!!!')
 
     def test_vf_without_jumboframe(self):
         self.tester.send_expect('ifconfig %s mtu %s' % (self.tester_intf, ETHER_JUMBO_FRAME_MTU), '#')
@@ -911,7 +928,10 @@ class TestKernelpfIavf(TestCase):
         self.scapy_send_packet(self.vf_mac, self.tester_intf, vlan_flags=True, count=10)
         out = self.vm_dut.get_session_output()
         packets = len(re.findall('received 1 packets', out))
-        self.verify(packets == 10, "Not receive expected packet")
+        if self.driver_version < "2.13.10" or self.kdriver == 'ice':
+            self.verify(packets == 10, "Not receive expected packet")
+        else:
+            self.verify(packets == 0, "Receive expected packet")
 
         # send 10 untagged packets, and check 10 untagged packets received
         self.scapy_send_packet(self.vf_mac, self.tester_intf, count=10)
