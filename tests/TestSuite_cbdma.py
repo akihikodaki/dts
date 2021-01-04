@@ -39,6 +39,7 @@ import time
 from test_case import TestCase
 from packet import Packet
 from pktgen import TRANSMIT_CONT
+from pmd_output import PmdOutput
 
 
 class TestCBDMA(TestCase):
@@ -55,8 +56,9 @@ class TestCBDMA(TestCase):
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.get_cbdma_ports_info_and_bind_to_dpdk()
         out = self.dut.build_dpdk_apps('./examples/ioat')
-        self.app_path=self.dut.apps_name['ioat']
+        self.ioat_path = self.dut.apps_name['ioat']
         self.verify('Error' not in out, 'compilation ioat error')
+
 
     def set_up(self):
         """
@@ -71,7 +73,7 @@ class TestCBDMA(TestCase):
         self.table_header.append("Updating MAC")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
-        self.send_session = self.dut.new_session("new_session")
+        self.send_session = self.dut.new_session("new_session")      
 
     def get_core_list(self):
         """
@@ -124,7 +126,7 @@ class TestCBDMA(TestCase):
             dev_info.append(self.cbdma_dev_infos[i])
         return dev_info
 
-    def launch_ioatfwd_app(self, eal_params):
+    def launch_ioatfwd_app(self, eal_params, session=None):
         """
         launch ioatfwd with different params
         """
@@ -140,17 +142,18 @@ class TestCBDMA(TestCase):
         when the cores num > 2, there will have 2 thread, and the max value of thread
         num is 2
         '''
-        # flush other output
-        target = self.app_path.split("/")
-        self.send_session.send_expect(f"cd  {'/'.join(target[0:-1])} ", '# ')
-        self.send_session.get_session_before(timeout=1)
-        cmd_command = "./"+target[-1] + eal_params + \
-                      '-- -p %s -q %d %s -c %s' % (hex(port_info),
-                      self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num, mac_info,
-                      self.cbdma_copy_mode)
-        self.send_session.send_expect(cmd_command, f'{target[-1].strip()},')
+        if session is None:
+            session = self.send_session
+        expected = self.ioat_path.split('/')[-1].strip()
+        self.logger.info('expected: {}'.format(expected))
+        cmd_command = '%s %s %s %s -- -p %s -q %d %s -c %s' % (self.ioat_path, eal_params,
+                        self.cbdma_proc, self.v_dev, hex(port_info),
+                        self.cbdma_ioat_dev_num/self.cbdma_nic_dev_num, mac_info,
+                        self.cbdma_copy_mode)
+        out = session.send_expect(cmd_command, expected)
         time.sleep(1)
-        out = self.send_session.get_session_before(timeout=1)
+        out = session.get_session_before(timeout=1)
+        self.logger.info('out before: {}'.format(out))
         thread_num = 2 if self.cbdma_cores_num > 2 else 1
         o_thread_info = 'Worker Threads = %d' % thread_num
         o_copy_info = 'Copy Mode = %s' % self.cbdma_copy_mode
@@ -357,6 +360,32 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'sw'
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
+        self.result_table_print()
+
+    def test_multi_app_mode(self):
+        """
+        CBDMA multi app tests for the simultanous exection of primary
+        and secondary app
+        """
+        self.cbdma_cores_num = 3
+        self.cbdma_nic_dev_num = 1
+        self.cbdma_ioat_dev_num = 4
+        self.cbdma_updating_mac = 'disable'
+        self.cbdma_copy_mode = 'hw'
+        self.v_dev = "--vdev net_null_0"
+        dev_info = self.get_ports_info()
+        dev_info.pop(0)
+        self.get_core_list()
+        self.pmdout = PmdOutput(self.dut)
+        self.pmdout.start_testpmd(cores='', eal_param='--vdev net_null_0 --proc-type=primary',
+                                    ports=dev_info)
+        self.pmdout.execute_cmd('port stop all')
+        self.cbdma_proc = '--proc-type=secondary'
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
+                                        ports=dev_info)
+        self.launch_ioatfwd_app(eal_params)
+        self.send_session.send_expect('^C','#')
+        self.pmdout.execute_cmd('^C')
         self.result_table_print()
 
     def tear_down(self):

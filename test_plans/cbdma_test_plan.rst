@@ -194,3 +194,18 @@ Test Case6: CBDMA performance cmparison between HW copies and SW copies using di
 7. Check performance from ioat app and compare with hw copy test::
 
     Total packets Tx:                   xxx [pps]
+
+Test Case7: CBDMA multi application mode test
+=============================================
+
+1.Bind four cbdma ports to ugb_uio driver.
+
+2.Launch test-pmd app with three cores and proc_type primary:
+
+./build/test-pmd -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=primary
+
+3. Launch another ioatfwd app with three cores and proc_type secondary:
+
+./build/ioatfwd -l 0-2 -n 2 -- -p 0x1 -q 4  --proc-type=secondary
+
+4. check both the application should work and no one should report error.
