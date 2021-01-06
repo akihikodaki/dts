@@ -51,7 +51,7 @@ class TestPortRepresentor(TestCase):
         Prerequisite steps for each test suite.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "fortville_25g", "carlsville"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortville_25g", "carlsville", "columbiaville_25g", "columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports")
 
