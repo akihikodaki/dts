@@ -453,7 +453,7 @@ class TestFlowClassify(TestCase):
         self.verify_traffic(stm_types=stream_list, flow_type="multi_stream")
 
     def verify_supported_nic(self):
-        supported_drivers = ['i40e', 'ixgbe', 'igc', 'igb']
+        supported_drivers = ['i40e', 'ixgbe', 'igc', 'igb', 'ice']
         result = all([self.dut.ports_info[index]['port'].default_driver in
                       supported_drivers
                       for index in self.dut_ports])
