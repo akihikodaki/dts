@@ -79,7 +79,7 @@ class TestFortvilleRssInput(TestCase):
         """
 
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "fortville_25g", "carlsville"],
+                    "fortville_spirit_single", "fortville_25g", "carlsville","columbiaville_25g","columbiaville_100g"],
                     "NIC Unsupported: " + str(self.nic))
         ports = self.dut.get_ports(self.nic)
         self.verify(len(ports) >= 1, "Not enough ports available")
