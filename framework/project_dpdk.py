@@ -279,13 +279,19 @@ class DPDKdut(Dut):
         if use_shared_lib == 'true' and 'Virt' not in str(self):
             self.set_build_options({'RTE_BUILD_SHARED_LIB': 'y'})
         kernel_driver = ''
+        nic_name = ''
         if 'Virt' in str(self):
             if self.host_dut.nic:
                 kernel_driver = self.host_dut.nic.default_driver
+                nic_name = self.host_dut.nic.name
         elif self.nic:
             kernel_driver = self.nic.default_driver
+            nic_name = self.nic.name
 
-        if kernel_driver == 'i40e':
+        if nic_name in ['fortpark_TLV', 'fortpark_BASE-T']:
+            self.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/i { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_X722_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
+            self.send_expect("sed -i '/I40E_DEV_ID_X722_VF/d' drivers/net/i40e/i40e_ethdev_vf.c", "# ")
+        elif kernel_driver == 'i40e':
             self.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
             self.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
 
