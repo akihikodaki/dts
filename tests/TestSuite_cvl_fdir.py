@@ -2264,6 +2264,10 @@ class TestCVLFdir(TestCase):
 
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
+        pf_pci = self.dut.ports_info[0]['pci']
+        out = self.pmd_output.start_testpmd('default', eal_param='-a %s --log-level=ice,7'%pf_pci)
+        self.dut.send_expect("quit", "# ")
+        self.max_rule_num = self.pmd_output.get_max_rule_number(self, out)
         self.launch_testpmd_with_mark()
 
     def set_up(self):
@@ -3070,24 +3074,14 @@ class TestCVLFdir(TestCase):
         # and there are 14k rules shared by pfs and vfs
         # so 1 pf and 2 vfs can create 15360 rules at most on 2 ports card
         # 1 pf and 2 vfs can create 14848 rules at most on 4 ports card
-        if self.nic in ['columbiaville_100g']:
-            rule_li = list(map(str, range(15360)))
-            pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
-                    'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.59.255")/Raw("x" * 80)']
-            for i in range(60):
-                for j in range(256):
-                    rules.append(rule_pattern % (i, j))
-                    pkts2.append(pkt_pattern % (i, j))
-        elif self.nic in ['columbiaville_25g']:
-            rule_li = list(map(str, range(14848)))
-            pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
-                    'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.57.255")/Raw("x" * 80)']
-            for i in range(58):
-                for j in range(256):
-                    rules.append(rule_pattern % (i, j))
-                    pkts2.append(pkt_pattern % (i, j))
-        else:
-            raise Exception('%s not supported by this case' % self.nic)
+        count = int(self.max_rule_num/256)
+        rule_li = list(map(str, range(self.max_rule_num)))
+        pkts = ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.0.0")/Raw("x" * 80)',
+                'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.100.20",dst="192.168.%s.255")/Raw("x" * 80)'%(count-1)]
+        for i in range(count):
+            for j in range(256):
+                rules.append(rule_pattern % (i, j))
+                pkts2.append(pkt_pattern % (i, j))
         cmd_path = '/tmp/test_max_rules'
         cmd_li = map(lambda x: x + os.linesep, rules)
         with open(cmd_path, 'w') as f:
@@ -3104,7 +3098,7 @@ class TestCVLFdir(TestCase):
             self.verify('Failed to create flow' not in out, "create some rule failed")
             self.config_testpmd()
             self.pmd_output.execute_cmd('start')
-            rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.100.20 dst is 192.168.60.0 / end actions queue index 1 / mark / end"
+            rule = "flow create 0 ingress pattern eth / ipv4 src is 192.168.100.20 dst is 192.168.65.0 / end actions queue index 1 / mark / end"
             self.create_fdir_rule(rule=rule, check_stats=False, msg='Failed to create flow', validate=False)
             self.check_fdir_rule(port_id=0, stats=True, rule_list=rule_li)
             out1 = self.send_pkts_getouput(pkts=pkts, port_id=0, count=1)
