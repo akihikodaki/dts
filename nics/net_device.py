@@ -62,6 +62,7 @@ class NetDevice(object):
         self.pci = domain_id + ':' + bus_id + ':' + devfun_id
         self.pci_id = get_pci_id(crb, domain_id, bus_id, devfun_id)
         self.default_driver = settings.get_nic_driver(self.pci_id)
+        self.name = settings.get_nic_name(self.pci_id)
 
         if self.nic_is_pf():
             self.default_vf_driver = ''
