@@ -299,3 +299,11 @@ class PmdOutput():
                 break
             sleep(1)
         return 'down' not in status
+
+    def get_max_rule_number(self,obj,out):
+        res = re.search(r"fd_fltr_guar\s+=\s+(\d+).*fd_fltr_best_effort\s+=\s+(\d+)\.",out)
+        obj.verify(res,"'fd_fltr_guar' and 'fd_fltr_best_effort not found'")
+        fltr_guar,fltr_best = res.group(1),res.group(2)
+        max_rule = int(fltr_guar) + int(fltr_best)
+        obj.logger.info(f'this Card max rule number is :{max_rule}')
+        return max_rule
