@@ -4525,6 +4525,7 @@ class CVLSwitchFilterTest(TestCase):
         #bind pf to vfio-pci
         self.dut.send_expect('modprobe vfio-pci', '#')
         self.bind_nics_driver(self.dut_ports, driver="vfio-pci")
+        self.pmd = PmdOutput(self.dut)
 
         self.generate_file_with_fdir_rules()
         self.path = self.dut.apps_name['test-pmd']
@@ -4547,7 +4548,10 @@ class CVLSwitchFilterTest(TestCase):
         """
         generate file with fdir rules to make fdir table full, then test switch filter
         """
-        self.fdir_rule_number = 14336 + int(2048/(len(self.dut_ports)))
+        pf_pci = self.dut.ports_info[0]['pci']
+        out = self.pmd.start_testpmd('default', eal_param='-a %s --log-level=ice,7'%pf_pci)
+        self.dut.send_expect("quit", "# ")
+        self.fdir_rule_number = self.pmd.get_max_rule_number(self,out)
         src_file = 'dep/testpmd_cmds_rte_flow_fdir_rules'
         flows = open(src_file, mode='w')
         rule_count = 1
