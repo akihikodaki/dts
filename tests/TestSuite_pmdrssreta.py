@@ -150,15 +150,8 @@ class TestPmdrssreta(TestCase):
         for tmp_reta_line in reta_lines:
             status = "false"
             if(self.nic in ["cavium_a063", "cavium_a064"]):
-                # compute the hash result using simple XOR.
-                hash_index_tmp = 0
-                index_tmp = tmp_reta_line["RSS hash"].strip("0x")
-                index_tmp = index_tmp.zfill(8)
-                index_tmp = textwrap.wrap(index_tmp,2)
-                index_tmp = [hex(int(index,16)) for index in index_tmp]
-                for index in  index_tmp:
-                    hash_index_tmp = eval(str(hash_index_tmp)+'^'+index)
-                hash_index = int(hash_index_tmp) % 64
+                # compute the hash index calculation
+                hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
             elif(self.nic in ["hi1822"]):
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 256
             elif (self.nic in ["niantic", "redrockcanyou", "atwood", "boulderrapid", "foxville", "twinpond"]):
