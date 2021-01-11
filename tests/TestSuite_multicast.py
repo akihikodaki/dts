@@ -129,7 +129,7 @@ class TestMulticast(TestCase):
         """
         eal_para = self.dut.create_eal_parameters(cores="1S/2C/1T")
         payload = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
-        self.dut.send_expect("%s -c %s -n 4 -- -p %s -q 2" % (self.app_ipv4_multicast_path,
+        self.dut.send_expect("%s %s -- -p %s -q 2" % (self.app_ipv4_multicast_path,
                                                               eal_para, '0x5'), "IPv4_MULTICAST:", 60)
 
         for flow in list(trafficFlow.keys()):
