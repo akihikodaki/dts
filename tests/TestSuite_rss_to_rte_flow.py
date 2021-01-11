@@ -301,7 +301,7 @@ class TestRSS_to_Rteflow(TestCase):
         Disable and enable RSS.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -400,7 +400,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set valid and invalid parameter.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -479,7 +479,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set valid and invalid parameter.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -541,7 +541,7 @@ class TestRSS_to_Rteflow(TestCase):
         """
         # Only supported by i40e
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         pkt1 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=200)/('X'*48)" % self.pf0_mac
         pkt2 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=100, dport=201)/('X'*48)" % self.pf0_mac
         pkt3 = "Ether(dst='%s')/IP(src='0.0.0.0',dst='4.0.0.0')/UDP(sport=101, dport=201)/('X'*48)" % self.pf0_mac
@@ -616,7 +616,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule while disable RSS in command-line.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --disable-rss --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -682,7 +682,7 @@ class TestRSS_to_Rteflow(TestCase):
         flow directory filter is priority to RSS hash filter.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=8 --txq=8 --pkt-filter-mode=perfect")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -714,7 +714,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule with queue region API.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=16 --txq=16 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -758,7 +758,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue region rule with invalid parameter in rte_flow API.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=16 --txq=16 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -788,7 +788,7 @@ class TestRSS_to_Rteflow(TestCase):
         The queue region is priority to RSS queue rule.
         """
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=16 --txq=16 --port-topology=chained")
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / udp / end actions rss types ipv4-udp end queues end / end", "created", 120)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
@@ -826,7 +826,7 @@ class TestRSS_to_Rteflow(TestCase):
         Disable and enable RSS.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -857,7 +857,7 @@ class TestRSS_to_Rteflow(TestCase):
         Enable IPv4-UDP RSS.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 120)
         self.dut.send_expect("set verbose 1", "testpmd> ", 120)
@@ -882,7 +882,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set valid and invalid parameter.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         else:
@@ -939,7 +939,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set different types rss queue rules.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --port-topology=chained")
         else:
@@ -993,7 +993,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule while disable RSS in command-line.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --disable-rss --port-topology=chained")
         else:
@@ -1039,7 +1039,7 @@ class TestRSS_to_Rteflow(TestCase):
         Set RSS queue rule and flow director rule in meantime.
         """
         self.verify(self.nic not in ["fortville_eagle", "fortville_spirit", "carlsville",
-                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T"], "NIC Unsupported: " + str(self.nic))
+                                 "fortville_spirit_single", "fortpark_TLV", "fortville_25g","fortpark_BASE-T","columbiaville_25g","columbiaville_100g"], "NIC Unsupported: " + str(self.nic))
         if self.nic in ["foxville", "springville"]:
             self.pmdout.start_testpmd("%s" % self.cores, "--rxq=4 --txq=4 --disable-rss --port-topology=chained")
         else:
