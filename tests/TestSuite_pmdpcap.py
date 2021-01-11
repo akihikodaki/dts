@@ -113,7 +113,7 @@ class TestPmdPcap(TestCase):
         self.dut.send_expect('input=rdpcap("%s")' % in_pcap, '>>> ')
         self.dut.send_expect('output=rdpcap("%s")' % out_pcap, '>>> ')
         self.dut.send_expect(
-            'result=[input[i]==output[i] for i in xrange(len(input))]', '>>> ')
+            'result=[input[i]==output[i] for i in range(len(input))]', '>>> ')
         result = self.dut.send_expect('False in result', '>>> ')
         self.dut.send_expect('quit()', '# ')
 
