@@ -192,6 +192,11 @@ class TestVfJumboFrame(TestCase):
         else:
             return None
 
+    def check_vf_driver(self):
+        output = self.vm_testpmd.execute_cmd("show port info 0")
+        vf0_driver = re.findall("Driver\s*name:\s*(\w+)", output)
+        return vf0_driver[0]
+
     def jumboframes_send_packet(self, pktsize, received=True):
         """
         Send 1 packet to portid
@@ -216,13 +221,19 @@ class TestVfJumboFrame(TestCase):
         rx_bytes -= rx_bytes_ori
         rx_err -= rx_err_ori
 
+        vf_driver = self.check_vf_driver()
+
         if received:
             self.verify((rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error")
 
             if self.kdriver == "ixgbe" or self.kdriver == 'ice':
                 self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
             else:
-                self.verify(rx_bytes == pktsize, "Rx packet size should be equal to packet size")
+                if self.kdriver == "i40e":
+                    if vf_driver == "net_iavf":
+                        self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
+                    else:
+                        self.verify(rx_bytes == pktsize, "Rx packet size should be equal to packet size")
 
             if self.kdriver == "igb":
                 self.verify(tx_bytes == pktsize, "Tx packet size should be packet size")
