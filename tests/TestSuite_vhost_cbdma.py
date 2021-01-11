@@ -201,9 +201,8 @@ class TestVirTioVhostCbdma(TestCase):
         out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
         return True if out == '2048' else False
 
-    def launch_testpmd_as_vhost_user(self, command, cores="Default", dev=""):
-        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=[],
-
+    def launch_testpmd_as_vhost_user(self, command, cores="Default", dev="", ports = ""):
+        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=[ports],
                                              prefix="vhost", fixed_prefix=True)
 
         self.vhost_user.send_expect('set fwd mac', 'testpmd> ', 120)
@@ -265,7 +264,7 @@ class TestVirTioVhostCbdma(TestCase):
         pvp_split_all_path_virtio_params = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d " \
                                            "--rxd=%d" % (queue, txd_rxd, txd_rxd)
         self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],
-                                          dev=vhost_vdevs % (queue, dmathr), )
+                                          dev=vhost_vdevs % (queue, dmathr), ports=self.dut_ports[0])
 
         for key, path_mode in dev_path_mode_mapper.items():
             if key == "vector_rx_path":
@@ -319,7 +318,7 @@ class TestVirTioVhostCbdma(TestCase):
 
         # launch vhost testpmd
         self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas)
+                                          dev=vhost_dev % vhost_dmas, ports=self.dut_ports[0])
         #
         #  queue 2 start virtio testpmd, check perforamnce and RX/TX
         mode = "dynamic_queue2"
@@ -360,7 +359,7 @@ class TestVirTioVhostCbdma(TestCase):
         dmathr = 512
         vhost_dmas = f"dmas=[txq0@{self.used_cbdma[2]};txq1@{self.used_cbdma[3]}],dmathr={dmathr}"
         self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas)
+                                          dev=vhost_dev % vhost_dmas, ports=self.dut_ports[0])
         self.virtio_user.send_expect("clear port stats all", "testpmd> ", 30)
         self.send_and_verify(mode, queue_list=range(queue))
         self.check_port_stats_result(self.virtio_user)
