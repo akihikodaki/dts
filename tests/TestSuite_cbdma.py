@@ -55,6 +55,10 @@ class TestCBDMA(TestCase):
         self.verify(len(self.dut_ports) >= 2, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         self.get_cbdma_ports_info_and_bind_to_dpdk()
+        # default --proc-type=primary, case 1-6 use default values, case7 use --proc-type=secondary
+        self.cbdma_proc = '--proc-type=primary'
+        # default v_dev is None, case 1-6 use default None values, case7 use --vdev net_null_0
+        self.v_dev = ''
         out = self.dut.build_dpdk_apps('./examples/ioat')
         self.ioat_path = self.dut.apps_name['ioat']
         self.verify('Error' not in out, 'compilation ioat error')
