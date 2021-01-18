@@ -94,10 +94,6 @@ class TestKernelpfIavf(TestCase):
         self.tester_intf1 = self.tester.get_interface(tester_port1)
         self.l3fwdpower_name = self.dut.apps_name['l3fwd-power'].strip().split('/')[-1]
 
-        # get driver version
-        out = self.dut.send_expect("ethtool -i %s | awk -F':' 'NR==2{print $2}'" % self.host_intf, "# ")
-        self.driver_version = out.replace(" ", "")
-
     def set_up(self):
 
         if self.running_case == "test_vf_mac_filter":
@@ -158,6 +154,10 @@ class TestKernelpfIavf(TestCase):
             self.vf_mac = "00:01:23:45:67:89"
             self.dut.send_expect("ip link set %s vf 0 mac %s" %
                                  (self.host_intf, self.vf_mac), "# ")
+
+        # get driver version
+        out = self.dut.send_expect("ethtool -i %s | awk -F':' 'NR==2{print $2}'" % self.host_intf, "# ")
+        self.driver_version = out.replace(" ", "")
 
         try:
 
