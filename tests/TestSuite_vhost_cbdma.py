@@ -159,6 +159,7 @@ class TestVirTioVhostCbdma(TestCase):
         self.used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
 
         self.device_str = ' '.join(self.used_cbdma)
+        self.dut.setup_modules(self.target, "igb_uio", "None")
         self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
                              ("igb_uio", self.device_str, self.pci_info), '# ', 60)
 
@@ -202,7 +203,7 @@ class TestVirTioVhostCbdma(TestCase):
         return True if out == '2048' else False
 
     def launch_testpmd_as_vhost_user(self, command, cores="Default", dev="", ports = ""):
-        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=[ports],
+        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=ports,
                                              prefix="vhost", fixed_prefix=True)
 
         self.vhost_user.send_expect('set fwd mac', 'testpmd> ', 120)
@@ -263,8 +264,11 @@ class TestVirTioVhostCbdma(TestCase):
 
         pvp_split_all_path_virtio_params = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d " \
                                            "--rxd=%d" % (queue, txd_rxd, txd_rxd)
+        allow_pci = [self.dut.ports_info[0]['pci']]
+        for index in range(used_cbdma_num):
+            allow_pci.append(self.cbdma_dev_infos[index])
         self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],
-                                          dev=vhost_vdevs % (queue, dmathr), ports=self.dut_ports[0])
+                                          dev=vhost_vdevs % (queue, dmathr), ports=allow_pci)
 
         for key, path_mode in dev_path_mode_mapper.items():
             if key == "vector_rx_path":
@@ -317,8 +321,12 @@ class TestVirTioVhostCbdma(TestCase):
         vhost_dev = f"'net_vhost0,iface={virtio_path},queues={queue},client=1,%s'"
 
         # launch vhost testpmd
+        allow_pci = [self.dut.ports_info[0]['pci']]
+        for index in range(used_cbdma_num):
+            if index < used_cbdma_num / 2:
+                allow_pci.append(self.cbdma_dev_infos[index])
         self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas, ports=self.dut_ports[0])
+                                          dev=vhost_dev % vhost_dmas, ports=allow_pci)
         #
         #  queue 2 start virtio testpmd, check perforamnce and RX/TX
         mode = "dynamic_queue2"
@@ -358,8 +366,12 @@ class TestVirTioVhostCbdma(TestCase):
         self.mode_list.append(mode)
         dmathr = 512
         vhost_dmas = f"dmas=[txq0@{self.used_cbdma[2]};txq1@{self.used_cbdma[3]}],dmathr={dmathr}"
+        allow_pci = [self.dut.ports_info[0]['pci']]
+        for index in range(used_cbdma_num):
+            if index >= used_cbdma_num / 2:
+                allow_pci.append(self.cbdma_dev_infos[index])
         self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas, ports=self.dut_ports[0])
+                                          dev=vhost_dev % vhost_dmas, ports=allow_pci)
         self.virtio_user.send_expect("clear port stats all", "testpmd> ", 30)
         self.send_and_verify(mode, queue_list=range(queue))
         self.check_port_stats_result(self.virtio_user)
@@ -388,7 +400,10 @@ class TestVirTioVhostCbdma(TestCase):
         virtio_dev0 = f"net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net0,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096"
         virtio_dev1 = f"net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096"
         vdev_params = '{} --vdev {}'.format(vhost_vdev[0], vhost_vdev[1])
-        self.pmdout_vhost_user.start_testpmd(cores=self.cores[0:2], param=params, vdevs=[vdev_params], ports=[], prefix="vhost", fixed_prefix=True)
+        allow_pci = []
+        for index in range(used_cbdma_num):
+            allow_pci.append(self.cbdma_dev_infos[index])
+        self.pmdout_vhost_user.start_testpmd(cores=self.cores[0:2], param=params, vdevs=[vdev_params], ports=allow_pci, prefix="vhost", fixed_prefix=True)
         self.vhost_user.send_expect('start', 'testpmd> ', 120)
         # vid0,qid0,dma2,threshold:4096
         self.launch_testpmd_as_virtio_user1(params, self.cores[2:4], dev=virtio_dev1)
