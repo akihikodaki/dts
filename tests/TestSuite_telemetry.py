@@ -70,8 +70,8 @@ class TestTelemetry(TestCase):
                     with open(self.json_file, 'w') as fp:
                         fp.write(data)
                 def requestMetrics(self): # Requests metrics for given client
-                    self.socket.client_fd.send(METRICS_REQ)
-                    data = self.socket.client_fd.recv(BUFFER_SIZE)
+                    self.socket.client_fd.send(METRICS_REQ.encode())
+                    data = self.socket.client_fd.recv(BUFFER_SIZE).decode()
                     return data
                 def singleRequestMetrics(self):
                     data = self.requestMetrics()
@@ -128,7 +128,7 @@ class TestTelemetry(TestCase):
         self.query_tool = ';'.join([
             'cd {}'.format(self.target_dir),
             'chmod 777 {}'.format(fileName),
-            './' + fileName])
+            'python3 ' + fileName])
 
     def rename_dpdk_telemetry_tool(self):
         '''
