@@ -663,8 +663,10 @@ class TestKni(TestCase):
         # Ports and cores configuration set in set_up_all function
         self.dut.kill_all()
         self.start_kni()
-        for port in self.config['ports']:
 
+        file_name='packet.log'
+        for port in self.config['ports']:
+            self.dut.send_expect(f"rm -rf {file_name}","#")
             virtual_interface = self.virtual_interface_name(port)
 
             tx_port = self.tester.get_local_port(port)
@@ -674,12 +676,11 @@ class TestKni(TestCase):
 
             self.dut.send_expect("ifconfig %s up" % virtual_interface, "# ")
             time.sleep(5)
-
             # Start tcpdump with filters for src and dst MAC address, this avoids
             # unwanted broadcast, ICPM6... packets
             out = self.dut.send_expect(
-                'tcpdump -i %s -e -w packet.log "ether src %s and ether dst %s"' %
-                (virtual_interface, tx_mac, rx_mac),
+                'tcpdump -i %s -e -w %s "ether src %s and ether dst %s"' %
+                (virtual_interface,file_name, tx_mac, rx_mac),
                 "listening on %s" % virtual_interface, 30)
 
             packets_to_send = [
