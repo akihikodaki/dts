@@ -303,7 +303,7 @@ class DPDKdut(Dut):
         """
         Build DPDK source code on linux use meson
         """
-        build_time = 900
+        build_time = 1200
         target_info = target.split('-')
         arch = target_info[0]
         machine = target_info[1]
@@ -335,7 +335,7 @@ class DPDKdut(Dut):
                         toolchain, extra_options, default_library, target), "# ", build_time)
         assert ("FAILED" not in out), "meson setup failed ..."
 
-        out = self.send_expect("ninja -C %s -j %d" % (target, self.number_of_cores), "# ", build_time)
+        out = self.send_expect("ninja -C %s" % target, "# ", build_time)
         assert ("FAILED" not in out), "ninja complie failed ..."
 
         # copy kmod file to the folder same as make
