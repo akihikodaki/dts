@@ -857,6 +857,7 @@ class PerfTestBase(object):
         return {"unit": "Mpps", "name": "Rfc2544",
                 "value": round(value[0], 3),
                 "delta": round(value[1], 3),
+                "Expected Throughput": round(value[2], 3),
                 }
 
     def __json_throughput(self, value):
@@ -1039,7 +1040,7 @@ class PerfTestBase(object):
                 else 'failed'
             js_results.append(
                 [status,
-                 [mpps, actual_rate_percent - expected_rate], actual_rate_percent,
+                 [mpps, actual_rate_percent - expected_rate, linerate], actual_rate_percent,
                  config, frame_size])
         # save data in json file
         self.__save_rfc2544_result(self.__cur_case, js_results)
