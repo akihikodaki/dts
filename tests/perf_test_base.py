@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -45,10 +45,16 @@ from copy import deepcopy
 
 from config import SuiteConf
 from packet import Packet
-from pktgen import TRANSMIT_CONT, PKTGEN_TREX, PKTGEN_IXIA
+from pktgen import TRANSMIT_CONT, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK
 from utils import convert_int2ip, convert_ip2int
 from exception import VerifyFailure
 import utils
+
+
+@unique
+class BIN_TYPE(Enum):
+    L3FWD = 'l3fwd'
+    PMD = 'testpmd'
 
 
 @unique
@@ -60,6 +66,7 @@ class SUITE_TYPE(Enum):
 @unique
 class SUITE_NAME(Enum):
     VF_KERNELPF = 'vf_l3fwd_kernelpf'
+    TESTPMD_PERF = 'testpmd_perf'
 
 
 @unique
@@ -77,12 +84,6 @@ class MATCH_MODE(Enum):
     EM = 'em'
 
 
-# LPM(longest prefix match) mode
-LPM = MATCH_MODE.LPM
-# EM(Exact-Match) mode
-EM = MATCH_MODE.EM
-
-
 # stream internet protocol layer types
 @unique
 class IP_TYPE(Enum):
@@ -90,12 +91,9 @@ class IP_TYPE(Enum):
     V4 = 'ipv4'
 
 
-L3_IPV6 = IP_TYPE.V6
-L3_IPV4 = IP_TYPE.V4
-
-
 @unique
 class STREAM_TYPE(Enum):
+    TCP = 'TCP'
     UDP = 'UDP'
     RAW = 'RAW'
 
@@ -118,9 +116,13 @@ def get_enum_name(value, enum_cls):
         raise Exception(msg)
 
 
-class L3fwdBase(object):
+class PerfTestBase(object):
 
-    def l3fwd_init(self, valports, socket, mode=None):
+
+    def __init__(self, valports, socket, mode=None, bin_type=None):
+        self.__bin_type = bin_type or BIN_TYPE.L3FWD
+        self.__compile_rx_desc = None
+        self.__compile_avx = None
         self.__mode = mode or SUITE_TYPE.PF
         self.__suite = None
         self.__valports = valports
@@ -131,11 +133,12 @@ class L3fwdBase(object):
         self.__vf_driver = None
         self.__pf_driver = None
         self.__vf_ports_info = None
-        self.__is_l3fwd_on = None
-        self.__l3fwd_white_list = None
-        self.__l3fwd_restart = True
-        self.__pre_l3fwd_cmd = None
-        self.__l3fwd_wait_up = 0
+
+        self.__is_bin_ps_on = None
+        self.__bin_ps_white_list = None
+        self.__bin_ps_restart = True
+        self.__pre_bin_ps_cmd = None
+        self.__bin_ps_wait_up = 0
         self.__traffic_stop_wait_time = 0
         self.__is_pmd_on = None
         self.__pmd_session = None
@@ -186,7 +189,7 @@ class L3fwdBase(object):
             raise VerifyFailure(msg)
         return thread_index//core_index
 
-    def __pmd_con(self, cmd):
+    def __host_pmd_con(self, cmd):
         if not self.__pmd_session:
             return
         _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
@@ -204,11 +207,14 @@ class L3fwdBase(object):
         end_ip = convert_int2ip(convert_ip2int(start_ip) + ip_range - 1)
         layers = {'ipv4': {'src': start_ip, }, }
         fields_config = {
-            'ip': {'dst': {
-                'src': start_ip,
-                'dst': end_ip,
-                'step': 1,
-                'action': 'random', }, }, }
+            'ip': {
+                'src': {
+                    'start': start_ip,
+                    'end': end_ip,
+                    'step': 1,
+                    'action': 'random', },
+                },
+        }
         return layers, fields_config
 
     def __get_ipv6_lpm_vm_config(self, lpm_config):
@@ -220,14 +226,17 @@ class L3fwdBase(object):
             convert_ip2int(start_ip, ip_type=6) + ip_range - 1, ip_type=6)
         layers = {'ipv6': {'src': start_ip, }, }
         fields_config = {
-            'ipv6': {'dst': {
-                'src': start_ip,
-                'dst': end_ip,
-                'step': 1,
-                'action': 'random', }, }, }
+            'ipv6': {
+                'src': {
+                    'start': start_ip,
+                    'end': end_ip,
+                    'step': 1,
+                    'action': 'random', },
+                },
+        }
         return layers, fields_config
 
-    def ___get_pkt_layers(self, pkt_type):
+    def __get_pkt_layers(self, pkt_type):
         if pkt_type in list(Packet.def_packet.keys()):
             return deepcopy(Packet.def_packet.get(pkt_type).get('layers'))
         local_def_packet = {
@@ -240,7 +249,7 @@ class L3fwdBase(object):
         return layers
 
     def __get_pkt_len(self, pkt_type, ip_type='ip', frame_size=64):
-        layers = self.___get_pkt_layers(pkt_type)
+        layers = self.__get_pkt_layers(pkt_type)
         if 'raw' in layers:
             layers.remove('raw')
         headers_size = sum(map(lambda x: HEADER_SIZE[x], layers))
@@ -248,8 +257,14 @@ class L3fwdBase(object):
         return pktlen
 
     def __get_frame_size(self, name, frame_size):
-        _frame_size = 66 if name is IP_TYPE.V6 and frame_size == 64 else \
-            frame_size
+        if self.pktgen_type is PKTGEN_IXIA_NETWORK:
+            # ixNetwork api server will set ipv6 packet size to 78 bytes when
+            # set frame size < 78.
+            _frame_size = 78 if name is IP_TYPE.V6 and frame_size == 64 else \
+                frame_size
+        else:
+            _frame_size = 66 if name is IP_TYPE.V6 and frame_size == 64 else \
+                frame_size
         return _frame_size
 
     def __get_pkt_type_name(self, ip_layer):
@@ -289,7 +304,7 @@ class L3fwdBase(object):
     def __get_pkt_inst(self, pkt_config):
         pkt_type = pkt_config.get('type')
         pkt_layers = pkt_config.get('pkt_layers')
-        _layers = self.___get_pkt_layers(pkt_type)
+        _layers = self.__get_pkt_layers(pkt_type)
         if pkt_type not in Packet.def_packet.keys():
             pkt = Packet()
             pkt.pkt_cfgload = True
@@ -310,8 +325,18 @@ class L3fwdBase(object):
             dmac = self.__vf_ports_info[port_id]['vf_mac']
             layer = {'ether': {'src': smac, 'dst': dmac, }, }
         else:
-            dmac = self.dut.get_mac_address(port_id)
-            layer = {'ether': {'dst': dmac, }, }
+            if self.__bin_type is BIN_TYPE.PMD and self.kdriver == 'ice':
+                # testpmd can't use port real mac address to create traffic packet when use CVL nics.
+                dmacs = [
+                    "52:00:00:00:00:00",
+                    "52:00:00:00:00:01",
+                    "52:00:00:00:00:02",
+                    "52:00:00:00:00:03",
+                    ]
+                layer = {'ether': {'dst': dmacs[self.__valports.index(port_id)], }, }
+            else:
+                dmac = self.dut.get_mac_address(port_id)
+                layer = {'ether': {'dst': dmac, }, }
         return layer
 
     def __preset_flows_configs(self):
@@ -540,25 +565,51 @@ class L3fwdBase(object):
         self.__vf_ports_info = None
 
     def __preset_dpdk_compilation(self):
-        # Update config file and rebuild to get best perf on FVL
-        if self.__mode is SUITE_TYPE.PF:
-            if self.nic in ["fortville_spirit", "fortville_eagle", "fortville_25g"]:
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
-            self.dut.build_install_dpdk(self.target)
+        # set compile flag and rebuild to get best perf
+        compile_flags = {}
+        # RX_DESC
+        if self.__compile_rx_desc:
+            rx_desc_flag = 'RTE_LIBRTE_{nic_drv}_{bit}BYTE_RX_DESC'.format(**{
+                'nic_drv': self.kdriver.upper(),
+                'bit': self.__compile_rx_desc or 32,
+            })
+            if self.__compile_rx_desc == 32:
+                msg = f"{rx_desc_flag} is dpdk default compile flag, ignore this compile flag"
+                self.logger.warning(msg)
+            else:
+                compile_flags[rx_desc_flag] = 'y'
+        # AVX flag
+        if self.__bin_type is BIN_TYPE.PMD:
+            if self.__compile_avx:
+                compile_flags[f"RTE_ENABLE_{self.__compile_avx.upper()}"] = 'y'
+        if not compile_flags:
+            return
+        self.dut.set_build_options(compile_flags)
+        self.dut.build_install_dpdk(self.target)
 
     def __restore_compilation(self):
-        if self.__mode is SUITE_TYPE.PF:
-            if self.nic in ["fortville_spirit", "fortville_eagle", "fortville_25g"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
-            elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
-            self.dut.build_install_dpdk(self.target)
+        compile_flags = {}
+        # RX_DESC
+        if self.__compile_rx_desc:
+            rx_desc_flag = 'RTE_LIBRTE_{nic_drv}_{bit}BYTE_RX_DESC'.format(**{
+                'nic_drv': self.kdriver.upper(),
+                'bit': self.__compile_rx_desc or 32,
+            })
+            if self.__compile_rx_desc == 32:
+                msg = f"{rx_desc_flag} is dpdk default compile flag, ignore this compile flag"
+                self.logger.warning(msg)
+            else:
+                compile_flags[rx_desc_flag] = 'n'
+        # AVX flag
+        if self.__bin_type is BIN_TYPE.PMD:
+            if self.__compile_avx:
+                compile_flags[f"RTE_ENABLE_{self.__compile_avx.upper()}"] = 'n'
+        if not compile_flags:
+            return
+        self.dut.set_build_options(compile_flags)
+        self.dut.build_install_dpdk(self.target)
 
-    def __preset_compilation(self):
-        # Update config file and rebuild to get best perf on FVL
-        self.__preset_dpdk_compilation()
+    def __preset_l3fwd_compilation(self):
         # init l3fwd binary file
         if self.nic not in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
             self.logger.info(
@@ -575,22 +626,33 @@ class L3fwdBase(object):
                 "./examples/l3fwd/l3fwd.h"))
         if self.__mode is SUITE_TYPE.VF:
             self.__l3fwd_lpm = self.__l3fwd_em = \
-                self.__init_l3fwd(MATCH_MODE.EM, rename=False)
+                self.__l3fwd_init(MATCH_MODE.EM, rename=False)
             # init testpmd
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
-                self.__init_testpmd()
+                self.__init_host_testpmd()
         else:
-            self.__l3fwd_em = self.__init_l3fwd(MATCH_MODE.EM)
-            self.__l3fwd_lpm = self.__init_l3fwd(MATCH_MODE.LPM)
+            self.__l3fwd_em = self.__l3fwd_init(MATCH_MODE.EM)
+            self.__l3fwd_lpm = self.__l3fwd_init(MATCH_MODE.LPM)
 
-    def __init_testpmd(self):
+    def __preset_compilation(self):
+        # Update compile config file and rebuild to get best perf on different nics
+        self.__preset_dpdk_compilation()
+        if self.__bin_type is BIN_TYPE.L3FWD:
+            self.__preset_l3fwd_compilation()
+
+    def __init_host_testpmd(self):
+        '''
+        apply under vf testing scenario
+        '''
         self.__pmd_session_name = 'testpmd'
         self.__pmd_session = self.dut.create_session(self.__pmd_session_name)
-        self.__testpmd = "{}/{}/app/testpmd".format(
-            self.__target_dir, self.dut.target)
+        self.__host_testpmd = os.path.join(self.__target_dir,
+            self.dut.apps_name['test-pmd'])
 
-    def __start_testpmd(self):
+    def __start_host_testpmd(self):
         """
+        apply under vf testing scenario
+
         require enough PF ports,using kernel or dpdk driver, create 1 VF from each PF.
         """
         corelist = self.dut.get_core_list(
@@ -607,32 +669,91 @@ class L3fwdBase(object):
             "--file-prefix={prefix} "
             "{whitelist} "
             "-- -i ").format(**{
-                'bin': self.__testpmd,
+                'bin': self.__host_testpmd,
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
                 'memsize': mem_size,
                 'whitelist': self.__get_testpmd_whitelist(),
                 'prefix': 'pf', })
-        self.__pmd_con([cmd, "testpmd> ", 120])
+        self.__host_pmd_con([cmd, "testpmd> ", 120])
         self.__is_pmd_on = True
         index = 0
         for _, info in self.__vf_ports_info.items():
             cmd = 'set vf mac addr %d 0 %s' % (index, info.get('vf_mac'))
-            self.__pmd_con([cmd, "testpmd> ", 15])
+            self.__host_pmd_con([cmd, "testpmd> ", 15])
             index += 1
-        self.__pmd_con(['start', "testpmd> ", 15])
+        self.__host_pmd_con(['start', "testpmd> ", 15])
         time.sleep(1)
 
-    def __close_testpmd(self):
+    def __close_host_testpmd(self):
         """
+        apply under vf testing scenario
+
         destroy the setup VFs
         """
         if not self.__is_pmd_on:
             return
-        self.__pmd_con(['quit', '# ', 15])
+        self.__host_pmd_con(['quit', '# ', 15])
         self.__is_pmd_on = False
 
-    def __init_l3fwd(self, mode, rename=True):
+    def __get_topo_option(self):
+        port_num = len(re.findall('-w', self.__bin_ps_white_list)) \
+            if self.__bin_ps_white_list else len(self.__valports)
+        return 'loop' if port_num == 1 else 'chained'
+
+    def __testpmd_start(self, mode, core_mask, config, frame_size):
+        # use test pmd
+        bin = os.path.join(self.__target_dir,
+                           self.dut.apps_name['test-pmd'])
+        fwd_mode, _config = config
+        port_topo = "--port-topology={}".format(self.__get_topo_option())
+        command_line = (
+            "{bin} "
+            "-v "
+            "-c {cores} "
+            "-n {channel} "
+            "{whitelist}"
+            "-- -i "
+            "{config} "
+            "{port_topo} "
+            "").format(**{
+                'bin': bin,
+                'cores': core_mask,
+                'channel': self.dut.get_memory_channels(),
+                'whitelist': self.__bin_ps_white_list if self.__bin_ps_white_list else '',
+                'port_mask': utils.create_mask(self.__valports),
+                'config': _config,
+                'port_topo': port_topo,
+                })
+        if self.__bin_ps_restart_check(command_line):
+            return
+        self.d_con([command_line, 'testpmd>', 60])
+        self.__is_bin_ps_on = True
+        wait_time = self.__bin_ps_wait_up if self.__bin_ps_wait_up else \
+                    2 * len(self.__valports)
+        self.logger.debug(
+            f"wait {wait_time} seconds for port link up")
+        time.sleep(wait_time)
+        _cmds = [
+            'set fwd {}'.format(fwd_mode),
+            'start',
+        ]
+        [self.dut.send_expect(cmd, 'testpmd>') for cmd in _cmds]
+
+    def __testpmd_close(self):
+        if not self.__is_bin_ps_on:
+            return
+        if not self.__bin_ps_restart and self.__pre_bin_ps_cmd:
+            return
+        _cmds = [
+            'show port stats all',
+            'stop',
+        ]
+        [self.dut.send_expect(cmd, 'testpmd>') for cmd in _cmds]
+        self.dut.send_expect('quit', '# ')
+        self.__is_bin_ps_on = False
+
+    def __l3fwd_init(self, mode, rename=True):
         """
         Prepare long prefix match table, __replace P(x) port pattern
         """
@@ -652,7 +773,7 @@ class L3fwdBase(object):
         l3fwd_bin = os.path.join("./" + self.app_name + l3fwd_method)
         return l3fwd_bin
 
-    def __start_l3fwd(self, mode, core_mask, config, frame_size):
+    def __l3fwd_start(self, mode, core_mask, config, frame_size):
         bin = self.__l3fwd_em if mode is MATCH_MODE.EM else self.__l3fwd_lpm
         # Start L3fwd application
         command_line = (
@@ -668,49 +789,69 @@ class L3fwdBase(object):
                 'bin': bin,
                 'cores': core_mask,
                 'channel': self.dut.get_memory_channels(),
-                'whitelist': self.__l3fwd_white_list if self.__l3fwd_white_list else '',
+                'whitelist': self.__bin_ps_white_list if self.__bin_ps_white_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': config, })
-        if self.nic in ["niantic", "columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
+        suppored_nics = [
+            "niantic",
+            "columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2",
+        ]
+        if self.nic in suppored_nics or self.__mode is SUITE_TYPE.VF:
             command_line += " --parse-ptype"
         if frame_size > 1518:
             command_line += " --enable-jumbo --max-pkt-len %d" % frame_size
         # ignore duplicate start binary with the same option
-        if self.__l3fwd_restart_check(command_line):
+        if self.__bin_ps_restart_check(command_line):
             return
         self.d_con([command_line, "L3FWD:", 120])
-        self.__is_l3fwd_on = True
+        self.__is_bin_ps_on = True
         # wait several second for l3fwd checking ports link status.
         # It is aimed to make sure packet generator detect link up status.
-        wait_time = self.__l3fwd_wait_up if self.__l3fwd_wait_up else \
+        wait_time = self.__bin_ps_wait_up if self.__bin_ps_wait_up else \
                     2 * len(self.__valports)
         self.logger.debug(
             f"wait {wait_time} seconds for port link up")
         time.sleep(wait_time)
 
-    def __l3fwd_restart_check(self, command_line):
-        if self.__l3fwd_restart:
-            self.__pre_l3fwd_cmd = None
-            return False
-
-        if self.__pre_l3fwd_cmd and self.__pre_l3fwd_cmd == command_line:
-            self.logger.debug(
-                ('<{}> is the same command as previous one, '
-                 'ignore re-start l3fwd').format(command_line))
-            return True
-        else:
-            self.__pre_l3fwd_cmd = None
-            self.__close_l3fwd()
-            self.__pre_l3fwd_cmd = command_line
-            return False
-
-    def __close_l3fwd(self):
-        if not self.__is_l3fwd_on:
+    def __l3fwd_close(self):
+        if not self.__is_bin_ps_on:
             return
-        if not self.__l3fwd_restart and self.__pre_l3fwd_cmd:
+        if not self.__bin_ps_restart and self.__pre_bin_ps_cmd:
             return
         self.d_con(["^C", '# ', 25])
-        self.__is_l3fwd_on = False
+        self.__is_bin_ps_on = False
+
+    def __bin_ps_start(self, mode, core_mask, config, frame_size):
+        bin_methods = {
+            BIN_TYPE.PMD: self.__testpmd_start,
+            BIN_TYPE.L3FWD: self.__l3fwd_start,
+        }
+        start_func = bin_methods.get(self.__bin_type)
+        start_func(mode, core_mask, config, frame_size)
+
+    def __bin_ps_close(self):
+        bin_methods = {
+            BIN_TYPE.PMD: self.__testpmd_close,
+            BIN_TYPE.L3FWD: self.__l3fwd_close,
+        }
+        close_func = bin_methods.get(self.__bin_type)
+        close_func()
+
+    def __bin_ps_restart_check(self, command_line):
+        if self.__bin_ps_restart:
+            self.__pre_bin_ps_cmd = None
+            return False
+
+        if self.__pre_bin_ps_cmd and self.__pre_bin_ps_cmd == command_line:
+            self.logger.debug(
+                (f'<{command_line}> is the same command as previous one, '
+                 f'ignore re-start {self.__bin_type.value}'))
+            return True
+        else:
+            self.__pre_bin_ps_cmd = None
+            self.__bin_ps_close()
+            self.__pre_bin_ps_cmd = command_line
+            return False
 
     def __json_rfc2544(self, value):
         return {"unit": "Mpps", "name": "Rfc2544",
@@ -768,19 +909,30 @@ class L3fwdBase(object):
         self.__json_results[case_name] = case_result
 
     def l3fwd_save_results(self, json_file=None):
+        _json_file = json_file if json_file else 'l3fwd_result.json'
+        self.perf_test_save_results(_json_file)
+
+    def perf_test_save_results(self, json_file=None):
         if not self.__json_results:
             msg = 'json results data is empty'
             self.logger.error(msg)
             return
         _js_file = os.path.join(
             self.__output_path,
-            json_file if json_file else 'l3fwd_result.json')
+            json_file if json_file else f'{self.suite_name}_result.json')
         with open(_js_file, 'w') as fp:
             json.dump(self.__json_results, fp, indent=4,
                       separators=(',', ': '),
                       sort_keys=True)
 
-    def __display_suite_result(self, data, mode):
+    def __display_mode_name(self, mode):
+        if self.__bin_type is BIN_TYPE.PMD:
+            mode_name = 'L3 fixed' if mode is MATCH_MODE.EM else "L3 random"
+        else:
+            mode_name = mode.value
+        return mode_name
+
+    def __display_suite_result(self, data):
         values = data.get('values')
         title = data.get('title')
         max_length = sum([len(item) + 5 for item in title])
@@ -845,7 +997,7 @@ class L3fwdBase(object):
         _data = {
             'title': title,
             'values': values}
-        self.__display_suite_result(_data, mode)
+        self.__display_suite_result(_data)
 
     def __check_rfc2544_result(self, stm_name, data, mode):
         if not data:
@@ -860,7 +1012,7 @@ class L3fwdBase(object):
                 self.__test_content.get('expected_rfc2544', {}).get(
                 self.__cur_case, {}).get(self.__nic_name, {}).get(
                 config, {}).get(str(frame_size), {})
-            zero_loss_rate, tx_pkts, rx_pkts, pps = result if result else [None] * 3
+            zero_loss_rate, tx_pkts, rx_pkts, pps = result if result else [None] * 4
             zero_loss_rate = zero_loss_rate or 0
             mpps = pps / 1000000.0
             # expected line rate
@@ -873,7 +1025,7 @@ class L3fwdBase(object):
             expected_rate = float(expected_cfg.get('rate') or 100.0)
             values.append([
                 config, frame_size, mode.upper(),
-                str(linerate * expected_rate /100),
+                str(linerate * expected_rate / 100),
                 str(mpps),
                 str(expected_rate),
                 str(actual_rate_percent),
@@ -897,7 +1049,7 @@ class L3fwdBase(object):
         # Mode: LPM/EM
         # Expected Throughput (Mpps)  :  Max linerate throughput value *  'Expected LineRate %'
         # Actual Throughput (Mpps)  :  actual run throughput value on the zero loss rate
-        # Expected LineRate %  :  which config in l3fwd_lpm_ipv4_rfc2544.cfg
+        # Expected LineRate %  :  which config in <suite name>.cfg
         # Actual LineRate %  :  actual run zero loss rate
         # tx_pkts :  send pkts num
         # rx_pkts :  received pkts num
@@ -916,7 +1068,7 @@ class L3fwdBase(object):
         _data = {
             'title': title,
             'values': values}
-        self.__display_suite_result(_data, mode)
+        self.__display_suite_result(_data)
 
     def ms_throughput(self, l3_proto, mode):
         except_content = None
@@ -924,24 +1076,27 @@ class L3fwdBase(object):
             test_content = self.__test_content.get('port_configs')
             results = []
             for config, core_mask, port_conf, frame_size in test_content:
-                # Start L3fwd application
+                # Start application binary process
                 self.logger.info(
-                    ("Executing l3fwd with {0} mode, {1} ports, "
+                    ("Executing {4} with {0} mode, {1} ports, "
                      "{2} and {3} frame size").format(
-                        mode, len(self.__valports), config, frame_size))
-                self.__start_l3fwd(mode, core_mask, port_conf, frame_size)
+                        self.__display_mode_name(mode),
+                        len(self.__valports), config, frame_size,
+                        self.__bin_type.value,
+                ))
+                self.__bin_ps_start(mode, core_mask, port_conf, frame_size)
                 result = self.__throughput(l3_proto, mode, frame_size)
-                # Stop L3fwd
-                self.__close_l3fwd()
+                # Stop binary process
+                self.__bin_ps_close()
                 if result:
                     results.append([config, frame_size, result])
-            self.__check_throughput_result(l3_proto, results, mode.value)
+            self.__check_throughput_result(l3_proto, results, self.__display_mode_name(mode))
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
         finally:
-            self.__pre_l3fwd_cmd = None
-            self.__close_l3fwd()
+            self.__pre_bin_ps_cmd = None
+            self.__bin_ps_close()
 
         # re-raise verify exception result
         if except_content:
@@ -953,24 +1108,27 @@ class L3fwdBase(object):
             test_content = self.__test_content.get('port_configs')
             results = []
             for config, core_mask, port_conf, frame_size in test_content:
-                # Start L3fwd application
+                # Start application binary process
                 self.logger.info(
-                    ("Executing l3fwd with {0} mode, {1} ports, "
+                    ("Executing {4} with {0} mode, {1} ports, "
                      "{2} and {3} frame size").format(
-                        mode, len(self.__valports), config, frame_size))
-                self.__start_l3fwd(mode, core_mask, port_conf, frame_size)
+                        self.__display_mode_name(mode),
+                        len(self.__valports), config, frame_size,
+                        self.__bin_type.value,
+                ))
+                self.__bin_ps_start(mode, core_mask, port_conf, frame_size)
                 result = self.__rfc2544(config, l3_proto, mode, frame_size)
-                # Stop L3fwd
-                self.__close_l3fwd()
+                # Stop binary process
+                self.__bin_ps_close()
                 if result:
                     results.append([config, frame_size, result])
-            self.__check_rfc2544_result(l3_proto, results, mode.value)
+            self.__check_rfc2544_result(l3_proto, results, self.__display_mode_name(mode))
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
         finally:
-            self.__pre_l3fwd_cmd = None
-            self.__close_l3fwd()
+            self.__pre_bin_ps_cmd = None
+            self.__bin_ps_close()
 
         # re-raise verify exception result
         if except_content:
@@ -979,7 +1137,7 @@ class L3fwdBase(object):
     def __parse_port_config(self, config, cores_for_all):
         '''
         [n]C/[mT]-[i]Q
-        
+
             n: how many physical core use for polling.
             m: how many cpu thread use for polling, if Hyper-threading disabled
                 in BIOS, m equals n, if enabled, m is 2 times as n.
@@ -1020,12 +1178,15 @@ class L3fwdBase(object):
     def __get_core_list(self, thread_num, cores, socket):
         corelist = self.dut.get_core_list(
             cores, socket if cores.startswith('1S') else -1)
-        corelist = corelist[self.__core_offset*thread_num:]
+        if self.__bin_type is BIN_TYPE.PMD:
+            corelist = corelist[(self.__core_offset - 1)*thread_num:]
+        else:
+            corelist = corelist[self.__core_offset*thread_num:]
         if '2T' in cores:
             corelist = corelist[0::2] + corelist[1::2]
         return corelist
 
-    def __get_test_configs(self, options, ports, socket, cores_for_all):
+    def __get_test_configs(self, options, ports, socket, cores_for_all, fixed_config=None):
         if not options:
             msg = "'test_parameters' not set in suite configuration file"
             raise VerifyFailure(msg)
@@ -1038,19 +1199,33 @@ class L3fwdBase(object):
             grp = [list(item)
                    for item in product(range(ports), range(queues_per_port))]
             corelist = self.__get_core_list(thread_num, cores, socket)
-            cores_mask = utils.create_mask(corelist)
-            total = len(grp)
-            _corelist = (corelist * (total // len(corelist) + 1))[:total]
-            # ignore first 2 cores
-            [grp[index].append(core)
-             for index, core in enumerate(_corelist)]
+
+            if self.__bin_type == BIN_TYPE.PMD:
+                # keep only one logic core of the main core
+                cores_mask = utils.create_mask(corelist[thread_num - 1:])
+                [configs.append([
+                    test_item,
+                    cores_mask,
+                    [fixed_config[0],
+                     fixed_config[1] +
+                     ' --rxq={0} --txq={0}'.format(queues_per_port) +
+                     " --nb-cores={}".format(len(corelist) - thread_num)
+                     ],
+                    frame_size, ]) for frame_size in _frame_sizes]
             # (port,queue,lcore)
-            [configs.append([
-                test_item,
-                cores_mask,
-                ','.join(["({0},{1},{2})".format(port, queue, core)
-                          for port, queue, core in grp]),
-                frame_size, ]) for frame_size in _frame_sizes]
+            else:
+                cores_mask = utils.create_mask(corelist)
+                total = len(grp)
+                # ignore first 2 cores
+                _corelist = (corelist * (total // len(corelist) + 1))[:total]
+                [grp[index].append(core)
+                 for index, core in enumerate(_corelist)]
+                [configs.append([
+                    test_item,
+                    cores_mask,
+                    ','.join(["({0},{1},{2})".format(port, queue, core)
+                              for port, queue, core in grp]),
+                    frame_size, ]) for frame_size in _frame_sizes]
         return configs, sorted(set(frame_sizes_grp))
 
     def __get_suite_vf_pf_driver(self, test_content):
@@ -1130,24 +1305,40 @@ class L3fwdBase(object):
         if self.__mode is SUITE_TYPE.VF:
             self.__get_vf_test_content_from_cfg(test_content)
         # binary file process setting
-        self.__l3fwd_wait_up = test_content.get('l3fwd_wait_up', 0)
-        self.__l3fwd_restart = test_content.get('l3fwd_restart', True)
+        if self.__bin_type is BIN_TYPE.L3FWD:
+            self.__bin_ps_wait_up = test_content.get('l3fwd_wait_up', 0)
+            self.__bin_ps_restart = test_content.get('l3fwd_restart', True)
+        else:
+            self.__bin_ps_wait_up = test_content.get('bin_ps_wait_up', 0)
+            self.__bin_ps_restart = test_content.get('bin_ps_restart', True)
         self.__traffic_stop_wait_time = \
             test_content.get('traffic_stop_wait_time', 0)
-        # parse port config of l3fwd suite
+        # parse port config of binary process suite
         cores_for_all = test_content.get('cores_for_all', False)
+        self.__compile_rx_desc = test_content.get('compile_rx_desc')
+        if self.__bin_type == BIN_TYPE.PMD:
+            self.__compile_avx = test_content.get('compile_avx')
+            forwarding_mode = test_content.get('forwarding_mode') or 'io'
+            descriptor_numbers = test_content.get('descriptor_numbers') or {'txd': 2048, 'rxd': 2048}
+            fixed_config = [
+                forwarding_mode,
+                "--rxd={rxd} --txd={txd}".format(**descriptor_numbers)]
+            self.__core_offset += 1
+        else:
+            fixed_config = None
         port_configs, frame_sizes = self.__get_test_configs(
             test_content.get('test_parameters'),
             len(self.__valports),
             self.__socket,
-            cores_for_all)
+            cores_for_all,
+            fixed_config=fixed_config)
         test_content['port_configs'] = port_configs
         test_content['frame_sizes'] = frame_sizes
         self.logger.debug(pformat(test_content))
 
         return test_content
 
-    def __get_l3fwd_whitelist(self, port_list=None):
+    def __get_bin_ps_whitelist(self, port_list=None):
         whitelist = ''
         if self.__mode is SUITE_TYPE.PF:
             if not port_list:
@@ -1183,7 +1374,7 @@ class L3fwdBase(object):
             self.__valports = port_list
         return port_list
 
-    def l3fwd_preset_test_environment(self, test_content):
+    def perf_preset_test_environment(self, test_content):
         # if user set port list in cfg file, use
         port_list = self.__preset_port_list(test_content)
         # get test content
@@ -1194,20 +1385,20 @@ class L3fwdBase(object):
         if self.__mode is SUITE_TYPE.VF:
             self.__vf_init()
             self.__vf_create()
-            self.__l3fwd_white_list = self.__get_l3fwd_whitelist()
+            self.__bin_ps_white_list = self.__get_bin_ps_whitelist()
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
-                self.__start_testpmd()
+                self.__start_host_testpmd()
         else:
-            self.__l3fwd_white_list = self.__get_l3fwd_whitelist(port_list)
+            self.__bin_ps_white_list = self.__get_bin_ps_whitelist(port_list)
         # config streams
         self.__streams = self.__preset_streams()
 
-    def l3fwd_destroy_resource(self):
+    def perf_destroy_resource(self):
         if self.__mode is SUITE_TYPE.VF:
             if self.__pf_driver is NIC_DRV.PCI_STUB:
                 pass
             else:
-                self.__close_testpmd()
+                self.__close_host_testpmd()
                 if self.__pmd_session:
                     self.dut.close_session(self.__pmd_session)
                     self.__pmd_session = None
@@ -1215,10 +1406,10 @@ class L3fwdBase(object):
         if self.__mode is SUITE_TYPE.PF:
             self.__restore_compilation()
 
-    def l3fwd_set_cur_case(self, name):
+    def perf_set_cur_case(self, name):
         self.__cur_case = name
 
-    def l3fwd_reset_cur_case(self):
+    def perf_reset_cur_case(self):
         self.__cur_case = None
 
     @property
@@ -1236,6 +1427,7 @@ class L3fwdBase(object):
         supported_num = {
             PKTGEN_TREX: [2, 4],
             PKTGEN_IXIA: [1, 2, 4],
+            PKTGEN_IXIA_NETWORK: [1, 2, 4],
         }
         if not self.is_pktgen_on:
             msg = 'not using pktgen'
