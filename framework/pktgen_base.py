@@ -39,7 +39,7 @@ from enum import Enum, unique
 
 from config import PktgenConf
 # packet generator name
-from settings import PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN
+from settings import PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK, PKTGEN
 
 # macro definition
 TRANSMIT_CONT = 'continuous'
@@ -355,6 +355,27 @@ class PacketGenerator(object):
         # In real testing scenario, this method can offer more data than it
         return list(result.values())[0]
 
+    def _measure_rfc2544_ixnet(self, stream_ids=[], options={}):
+        """
+        used for ixNetwork
+        """
+        # main traffic
+        self._prepare_transmission(stream_ids=stream_ids)
+        self._start_transmission(stream_ids, options)
+        self._stop_transmission(None)
+        # parsing test result
+        stats = self._retrieve_port_statistic(stream_ids[0], 'rfc2544')
+        tx_pkts, rx_pkts, pps = stats
+        lost_p = tx_pkts - rx_pkts
+        if tx_pkts <= 0:
+            loss_rate = 0
+        else:
+            loss_rate = float(lost_p) / float(tx_pkts)
+            if loss_rate < 0:
+                loss_rate = 0
+        result = (loss_rate, tx_pkts, rx_pkts, pps)
+        return result
+
     def measure_latency(self, stream_ids=[], options={}):
         """
         Measure latency on each tx/rx ports
@@ -533,6 +554,9 @@ class PacketGenerator(object):
             accuracy :
                 dichotomy algorithm accuracy, default 0.001.
         """
+        if self.pktgen_type == PKTGEN_IXIA_NETWORK:
+            return self._measure_rfc2544_ixnet(stream_ids, options)
+
         max_rate = options.get('max_rate') or 100.0
         min_rate = options.get('min_rate') or 0.0
         accuracy = options.get('accuracy') or 0.001
