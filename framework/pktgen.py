@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -42,7 +42,7 @@ from scapy.utils import rdpcap
 from utils import (convert_int2ip, convert_ip2int,
                    convert_mac2long, convert_mac2str)
 
-from pktgen_base import (PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA,
+from pktgen_base import (PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, STAT_TYPE,
                          TRANSMIT_CONT, TRANSMIT_M_BURST, TRANSMIT_S_BURST)
 from pktgen_base import DpdkPacketGenerator
 from pktgen_ixia import IxiaPacketGenerator
@@ -208,7 +208,7 @@ def getPacketGenerator(tester, pktgen_type=PKTGEN_IXIA):
     pktgen_cls = {
         PKTGEN_DPDK: DpdkPacketGenerator,
         PKTGEN_IXIA: IxiaPacketGenerator,
-        PKTGEN_TREX: TrexPacketGenerator,}
+        PKTGEN_TREX: TrexPacketGenerator, }
 
     if pktgen_type in list(pktgen_cls.keys()):
         CLS = pktgen_cls.get(pktgen_type)
