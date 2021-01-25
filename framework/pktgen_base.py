@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,6 +35,7 @@ from abc import abstractmethod
 from copy import deepcopy
 from logger import getLogger
 from pprint import pformat
+from enum import Enum, unique
 
 from config import PktgenConf
 # packet generator name
@@ -44,6 +45,12 @@ from settings import PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN
 TRANSMIT_CONT = 'continuous'
 TRANSMIT_M_BURST = 'multi_burst'
 TRANSMIT_S_BURST = 'single_burst'
+
+
+@unique
+class STAT_TYPE(Enum):
+    RX = 'rx'
+    TXRX = 'txrx'
 
 
 class PacketGenerator(object):
@@ -106,8 +113,8 @@ class PacketGenerator(object):
         return port
 
     def add_stream(self, tx_port, rx_port, pcap_file):
-        pktgen_tx_port  = self._convert_tester_port(tx_port)
-        pktgen_rx_port  = self._convert_tester_port(rx_port)
+        pktgen_tx_port = self._convert_tester_port(tx_port)
+        pktgen_rx_port = self._convert_tester_port(rx_port)
 
         stream_id = len(self.__streams)
         stream = {'tx_port': pktgen_tx_port,
@@ -168,28 +175,50 @@ class PacketGenerator(object):
         time.sleep(delay)
         self._stop_transmission(stream_ids)
 
-    def __get_single_throughput_statistic(self, stream_ids):
+    def __get_single_throughput_statistic(self, stream_ids, stat_type=None):
         bps_rx = []
         pps_rx = []
+        bps_tx = []
+        pps_tx = []
         used_rx_port = []
         msg = 'begin get port statistic ...'
         self.logger.info(msg)
         for stream_id in stream_ids:
             if self.__streams[stream_id]['rx_port'] not in used_rx_port:
-                rxbps_rates, rxpps_rates = self._retrieve_port_statistic(
+                bps_rate, pps_rate = self._retrieve_port_statistic(
                     stream_id, 'throughput')
                 used_rx_port.append(self.__streams[stream_id]['rx_port'])
-                bps_rx.append(rxbps_rates)
-                pps_rx.append(rxpps_rates)
-        bps_rx_total = self._summary_statistic(bps_rx)
-        pps_rx_total = self._summary_statistic(pps_rx)
-        self.logger.info(
-            "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+                if stat_type and stat_type is STAT_TYPE.TXRX:
+                    bps_tx.append(bps_rate[0])
+                    pps_tx.append(pps_rate[0])
 
-        return bps_rx_total, pps_rx_total
+                if isinstance(bps_rate, tuple) and isinstance(pps_rate, tuple):
+                    bps_rx.append(bps_rate[1])
+                    pps_rx.append(pps_rate[1])
+                else:
+                    bps_rx.append(bps_rate)
+                    pps_rx.append(pps_rate)
+        if stat_type and stat_type is STAT_TYPE.TXRX:
+            bps_tx_total = self._summary_statistic(bps_tx)
+            pps_tx_total = self._summary_statistic(pps_tx)
+            bps_rx_total = self._summary_statistic(bps_rx)
+            pps_rx_total = self._summary_statistic(pps_rx)
+            self.logger.info(
+                "throughput: pps_tx %f, bps_tx %f" % (pps_tx_total, bps_tx_total))
+            self.logger.info(
+                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+
+            return (bps_tx_total, bps_rx_total), (pps_tx_total, pps_rx_total)
+        else:
+            bps_rx_total = self._summary_statistic(bps_rx)
+            pps_rx_total = self._summary_statistic(pps_rx)
+            self.logger.info(
+                "throughput: pps_rx %f, bps_rx %f" % (pps_rx_total, bps_rx_total))
+
+            return bps_rx_total, pps_rx_total
 
     def __get_multi_throughput_statistic(
-            self, stream_ids, duration, interval, callback=None):
+            self, stream_ids, duration, interval, callback=None, stat_type=None):
         """
         duration: traffic duration (second)
         interval: interval of get throughput statistics (second)
@@ -202,7 +231,7 @@ class PacketGenerator(object):
         stats = []
         while time_elapsed < duration:
             time.sleep(interval)
-            stats.append(self.__get_single_throughput_statistic(stream_ids))
+            stats.append(self.__get_single_throughput_statistic(stream_ids, stat_type))
             if callback and callable(callback):
                 callback()
             time_elapsed += interval
@@ -237,23 +266,35 @@ class PacketGenerator(object):
 
             duration:
                 traffic lasting time(second). Default value is 10 second.
+
+            stat_type(for trex only):
+                STAT_TYPE.RX  return (rx bps, rx_pps)
+                STAT_TYPE.TXRX return ((tx bps, rx_bps), (tx pps, rx_pps))
         """
         interval = options.get('interval')
         callback = options.get('callback')
         duration = options.get('duration') or 10
         delay = options.get('delay')
+        if self.pktgen_type == PKTGEN_TREX:
+            stat_type = options.get('stat_type') or STAT_TYPE.RX
+        else:
+            if options.get('stat_type') is not None:
+                msg = ("'stat_type' option is only for trex, "
+                       "should not set when use other pktgen tools")
+                raise Exception(msg)
+            stat_type = STAT_TYPE.RX
         self._prepare_transmission(stream_ids=stream_ids)
         # start warm up traffic
         self.__warm_up_pktgen(stream_ids, options, delay)
         # main traffic
-        self._start_transmission(stream_ids)
+        self._start_transmission(stream_ids, options)
         # keep traffic within a duration time and get throughput statistic
         if interval and duration:
             stats = self.__get_multi_throughput_statistic(
-                stream_ids, duration, interval, callback)
+                stream_ids, duration, interval, callback, stat_type)
         else:
             time.sleep(duration)
-            stats = self.__get_single_throughput_statistic(stream_ids)
+            stats = self.__get_single_throughput_statistic(stream_ids, stat_type)
         self._stop_transmission(stream_ids)
         return stats
 
@@ -366,7 +407,7 @@ class PacketGenerator(object):
             return True
 
     def measure_rfc2544(self, stream_ids=[], options={}):
-        """ check loss rate with rate percent dropping 
+        """ check loss rate with rate percent dropping
 
         options usage:
             rate:
