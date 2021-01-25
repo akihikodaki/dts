@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -36,7 +36,7 @@ import os
 import re
 import configparser  # config parse module
 import argparse      # parse arguments module
-from settings import (IXIA, PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA,
+from settings import (IXIA, PKTGEN, PKTGEN_DPDK, PKTGEN_TREX, PKTGEN_IXIA, PKTGEN_IXIA_NETWORK,
                       CONFIG_ROOT_PATH, SUITE_SECTION_NAME)
 from settings import load_global_setting, DTS_CFG_FOLDER
 from exception import ConfigParseException, VirtConfigParseException, PortConfigParseException
@@ -429,6 +429,8 @@ class PktgenConf(UserConf):
                 ixia_group['Ports'] = ixia_ports
             elif key == 'ixia_enable_rsfec':
                 ixia_group['enable_rsfec'] = value
+            else:
+                ixia_group[key] = value
 
         if 'Version' not in ixia_group:
             print('ixia configuration file request ixia_version option!!!')
@@ -466,7 +468,8 @@ class PktgenConf(UserConf):
                 for conf in pktgen_confs:
                     key, value = conf
                     self.pktgen_cfg[key] = value
-            elif self.pktgen_type == PKTGEN_IXIA and section.lower() == PKTGEN_IXIA:
+            elif (self.pktgen_type == PKTGEN_IXIA and section.lower() == PKTGEN_IXIA) or \
+                 (self.pktgen_type == PKTGEN_IXIA_NETWORK and section.lower() == PKTGEN_IXIA_NETWORK):
                 # covert file configuration to dts pktgen cfg
                 self.load_pktgen_ixia_config(section)
 
