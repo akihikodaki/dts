@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2020 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,10 +32,10 @@
 import os
 import time
 from test_case import TestCase
-from l3fwd_base import L3fwdBase, IP_TYPE, MATCH_MODE, SUITE_TYPE
+from perf_test_base import PerfTestBase, IP_TYPE, MATCH_MODE, SUITE_TYPE
 
 
-class TestVfL3fwdKernelPf(TestCase, L3fwdBase):
+class TestVfL3fwdKernelPf(TestCase, PerfTestBase):
     #
     # Test cases.
     #
@@ -62,15 +62,15 @@ class TestVfL3fwdKernelPf(TestCase, L3fwdBase):
         cores = self.dut.get_core_list("1S/6C/1T", socket=socket)
         self.verify(cores, "Requested 6 cores failed")
         # init l3fwd common base class parameters
-        self.l3fwd_init(valports, socket, mode=SUITE_TYPE.VF)
+        PerfTestBase.__init__(self, valports, socket, mode=SUITE_TYPE.VF)
         # preset testing environment
-        self.l3fwd_preset_test_environment(self.get_suite_cfg())
+        self.perf_preset_test_environment(self.get_suite_cfg())
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        self.l3fwd_destroy_resource()
+        self.perf_destroy_resource()
         self.l3fwd_save_results(json_file="{}.json".format(self.suite_name))
 
     def set_up(self):
@@ -84,8 +84,8 @@ class TestVfL3fwdKernelPf(TestCase, L3fwdBase):
         Run after each test case.
         """
         self.dut.kill_all()
-        self.l3fwd_reset_cur_case()
+        self.perf_reset_cur_case()
 
     def test_perf_vf_throughput_ipv4_lpm(self):
-        self.l3fwd_set_cur_case('test_perf_vf_throughput_ipv4_lpm')
+        self.perf_set_cur_case('test_perf_vf_throughput_ipv4_lpm')
         self.ms_throughput(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.LPM)
