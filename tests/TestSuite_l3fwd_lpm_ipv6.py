@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2020 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -34,10 +34,10 @@ DPDK Test suite.
 Layer-3 forwarding test script.
 """
 from test_case import TestCase
-from l3fwd_base import L3fwdBase, LPM, EM, L3_IPV6, L3_IPV4
+from perf_test_base import PerfTestBase, MATCH_MODE, IP_TYPE
 
 
-class TestL3fwdLpmIpv6(TestCase, L3fwdBase):
+class TestL3fwdLpmIpv6(TestCase, PerfTestBase):
     #
     # Test cases.
     #
@@ -57,9 +57,9 @@ class TestL3fwdLpmIpv6(TestCase, L3fwdBase):
         cores = self.dut.get_core_list("1S/8C/1T", socket=socket)
         self.verify(cores is not None, "Insufficient cores for speed testing")
         # init l3fwd common base class parameters
-        self.l3fwd_init(valports, socket)
+        PerfTestBase.__init__(self, valports, socket)
         # preset testing environment
-        self.l3fwd_preset_test_environment(self.get_suite_cfg())
+        self.perf_preset_test_environment(self.get_suite_cfg())
 
     def tear_down_all(self):
         """
@@ -78,8 +78,8 @@ class TestL3fwdLpmIpv6(TestCase, L3fwdBase):
         Run after each test case.
         """
         self.dut.kill_all()
-        self.l3fwd_reset_cur_case()
+        self.perf_reset_cur_case()
 
     def test_perf_throughput_ipv6_lpm(self):
-        self.l3fwd_set_cur_case('test_perf_throughput_ipv6_lpm')
-        self.ms_throughput(l3_proto=L3_IPV6, mode=LPM)
+        self.perf_set_cur_case('test_perf_throughput_ipv6_lpm')
+        self.ms_throughput(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.LPM)
