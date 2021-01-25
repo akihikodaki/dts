@@ -1,6 +1,6 @@
 # BSD LICENSE
 #
-# Copyright(c) 2010-2019 Intel Corporation. All rights reserved.
+# Copyright(c) 2010-2021 Intel Corporation. All rights reserved.
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -696,7 +696,7 @@ class TrexPacketGenerator(PacketGenerator):
         self.logger.debug(pformat(port_stats))
         self.logger.debug(os.linesep.join(msg))
 
-        return rx_bps, rx_pps
+        return (tx_bps, rx_bps), (tx_pps, rx_pps)
 
     def _loss_rate_stats(self, stream, stats):
         # tx packet
