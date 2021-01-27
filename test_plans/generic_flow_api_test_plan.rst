@@ -252,11 +252,11 @@ Test case: Fortville fdir for ipv4
 
    ipv4-other-vf0::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 1 / end
+    testpmd> flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 1 / end
 
    ipv4-sctp-vf1::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 4 / sctp src is 46 dst is 47 tag is 1 / vf id is 1 / end actions queue index 2 / end
+    testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 2 / ipv4 src is 192.168.0.1 dst is 192.168.0.2 tos is 4 ttl is 4 / sctp src is 46 dst is 47 tag is 1 / vf id is 1 / end actions queue index 2 / end
 
    ipv4-sctp drop::
 
@@ -357,11 +357,11 @@ Test case: Fortville fdir for ipv6
 
    ipv6-other-vf0::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 5 / ipv6 src is 2001::3 dst is 2001::4 tc is 5 proto is 5 hop is 50 / vf id is 0 / end actions queue index 1 / end
+    testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 5 / ipv6 src is 2001::3 dst is 2001::4 tc is 5 proto is 5 hop is 50 / vf id is 0 / end actions queue index 1 / end
 
    ipv6-tcp-vf1::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / vf id is 1 / end actions queue index 3 / end
+    testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 4095 / ipv6 src is 2001::3 dst is 2001::4 tc is 6 hop is 60 / tcp src is 32 dst is 33 / vf id is 1 / end actions queue index 3 / end
 
    ipv6-sctp-drop::
 
@@ -369,7 +369,7 @@ Test case: Fortville fdir for ipv6
 
    ipv6-tcp-vf1-drop::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 8 / ipv6 src is 2001::3 dst is 2001::4 tc is 8 hop is 80 / tcp src is 32 dst is 33 / vf id is 1 / end actions drop / end
+    testpmd> flow create 0 ingress transfer pattern eth / vlan tci is 8 / ipv6 src is 2001::3 dst is 2001::4 tc is 8 hop is 80 / tcp src is 32 dst is 33 / vf id is 1 / end actions drop / end
 
 3. send packets::
 
@@ -438,7 +438,7 @@ Test case: Fortville fdir wrong parameters
 
    If create a rule on vf that has invalid queue ID::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
+    testpmd> flow create 0 ingress transfer pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 proto is 3 / vf id is 0 / end actions queue index 4 / end
 
    it shows "Caught error type 11 (specific action): cause: 0x7ffc7bb9a338,
    Invalid queue ID for FDIR".
@@ -501,11 +501,11 @@ Test case: Fortville tunnel vxlan
 
    vni + inner mac + inner vlan + actions vf::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / vxlan vni is 6 / eth dst is 00:11:22:33:44:55 / vlan tci is 30 / end actions vf id 0 / queue index 1 / end
+    testpmd> flow create 0 ingress transfer pattern eth / ipv4 / udp / vxlan vni is 6 / eth dst is 00:11:22:33:44:55 / vlan tci is 30 / end actions vf id 0 / queue index 1 / end
 
    inner mac + outer mac + vni + actions vf::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / udp / vxlan vni is 7 /  eth dst is 00:11:22:33:44:55 / end actions vf id 0 / queue index 3 / end
+    testpmd> flow create 0 ingress transfer pattern eth dst is 00:11:22:33:44:66 / ipv4 / udp / vxlan vni is 7 /  eth dst is 00:11:22:33:44:55 / end actions vf id 0 / queue index 3 / end
 
 3. send packets::
 
@@ -610,11 +610,11 @@ Test case: Fortville tunnel nvgre
 
    tni + inner mac + inner vlan + actions vf::
 
-    testpmd> flow create 0 ingress pattern eth / ipv4 / nvgre tni is 0x112266 / eth dst is 00:11:22:33:44:55 / vlan tci is 60 / end actions vf id 0 / queue index 1 / end
+    testpmd> flow create 0 ingress transfer pattern eth / ipv4 / nvgre tni is 0x112266 / eth dst is 00:11:22:33:44:55 / vlan tci is 60 / end actions vf id 0 / queue index 1 / end
 
    inner mac + outer mac + tni + actions vf::
 
-    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:66 / ipv4 / nvgre tni is 0x112277 /  eth dst is 00:11:22:33:44:55 / end actions vf id 1 / queue index 3 / end
+    testpmd> flow create 0 ingress transfer pattern eth dst is 00:11:22:33:44:66 / ipv4 / nvgre tni is 0x112277 /  eth dst is 00:11:22:33:44:55 / end actions vf id 1 / queue index 3 / end
 
 3. send packets::
 
