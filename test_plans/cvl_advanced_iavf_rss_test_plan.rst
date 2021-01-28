@@ -334,9 +334,8 @@ all the test cases run the same test steps as below:
    check the received packet have same hash value with the basic packet.
    check the packet is distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
-6. destroy the rule and list rule.
-7. send same packet with step 3.
-   check the received packet have different hash value with basic packet.
+6. destroy the rule and list rule. check the flow list has no rule.
+
 
 Test case: MAC_IPV4
 ===================
@@ -1503,7 +1502,7 @@ all the test cases run the same test steps as below:
    note: if there is not this type packet in the case, omit this step.
 6. destroy the rule and list rule.
 7. send same packets with step 2.
-   check the received packets have different hash value, or have no hash value.
+   check the received packets have different hash value.
 
 Test case: symmetric MAC_IPV4
 =============================
@@ -1760,40 +1759,6 @@ Subcase 1: two rules with same pattern but different hash input set, not hit def
 
    check the hash value is different from the first packet.
 
-5. destroy the rule 1::
-
-     testpmd> flow destroy 0 rule 1
-     testpmd> flow list 0
-
-   check the rule 1 not exists in the list.
-   send a MAC_IPV4_UDP packet, you can find it hit default ipv4 profile::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-
-   change the fields [Source IP] or [Dest IP], send a packet::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.7",dst="192.168.0.5")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.7",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-
-   check the hash values of the last two packets are different from the first packet.
-   destroy the rule 0::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule 0 not exists in the list.
-   send a MAC_IPV4_UDP packet, you can find it hit default ipv4 profile::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-
-   change the fields [Source IP] or [Dest IP], send a packet::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.7",dst="192.168.0.5")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.7",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)], iface="enp134s0f0")
-
-   check the hash values of the last two packets are different from the first packet.
 
 Subcase 2: two rules with same pattern but different hash input set, hit default profile
 ----------------------------------------------------------------------------------------
@@ -1842,17 +1807,6 @@ Subcase 2: two rules with same pattern but different hash input set, hit default
 
    check the hash value is different from the first packet.
 
-5. destroy the rule 1::
-
-     testpmd> flow destroy 0 rule 1
-     testpmd> flow list 0
-
-   check the rule 1 not exists in the list.
-   send the MAC_IPV4_PAY packet::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/Raw("x"*480)], iface="enp134s0f0")
-
-   check the hash value is not exist.
 
 Subcase 3: two rules, scope smaller created first, and the larger one created later
 -----------------------------------------------------------------------------------
@@ -1901,19 +1855,6 @@ Subcase 3: two rules, scope smaller created first, and the larger one created la
 
    check the hash value is the same as the first packet.
 
-5. destroy the rule 1::
-
-     testpmd> flow destroy 0 rule 1
-     testpmd> flow list 0
-
-   check the rule 1 not exists in the list.
-   repeat step 2, get the same result.
-   destroy the rule 0::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   send a MAC_IPV4_UDP_PAY packet, check the hash values not exists.
 
 Subcase 4: two rules, scope larger created first, and the smaller one created later
 -----------------------------------------------------------------------------------
@@ -1962,16 +1903,3 @@ Subcase 4: two rules, scope larger created first, and the smaller one created la
 
    check the hash value is the same as the first packet.
 
-5. destroy the rule 1::
-
-     testpmd> flow destroy 0 rule 1
-     testpmd> flow list 0
-
-   check the rule 1 not exists in the list.
-   repeat step 2, hit ipv4 profile, get the same result.
-   destroy the rule 0::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   send a MAC_IPV4_UDP_PAY packet, check the hash values not exists.
