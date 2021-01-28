@@ -253,9 +253,7 @@ run the same test steps as below:
    check all the packets are distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
 
-7. distroy the rule and list rule.
-8. send same packets with step 3.
-   check the received packet has different hash value with which in step 3(including the case has no hash value).
+7. destroy the rule and list rule. check the flow list has no rule.
 
 
 ================================
@@ -2920,7 +2918,7 @@ all the test cases run the same test steps as below:
    check the received packets have same hash value.
    check both the packets are distributed to queues by rss.
 5. destroy the rule and list rule.
-6. send the packet in step 3.
+6. send the packet in step 4.
    check the received packet has different hash value with which in step 3(including the case has no hash value).
 
 ==========================================
