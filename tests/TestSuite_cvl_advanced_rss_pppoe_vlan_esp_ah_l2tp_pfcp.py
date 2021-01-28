@@ -1661,6 +1661,60 @@ mac_pppoe_ipv4_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only = {
     ],
 }
 
+mac_pppoe_ipv4_udp_pay_ipv4_packets = {
+    'mac_pppoe_ipv4_udp_pay':[
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.7")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=19,dport=99)/Raw("x"*80)',
+         ]
+}
+
+mac_pppoe_ipv4_udp_pay_ipv4 = {
+    'sub_casename': 'mac_pppoe_ipv4_udp_pay_ipv4',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / pppoes / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'][0],
+            'action': {'save_hash': 'mac_pppoe_ipv4_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'][1],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'][2],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'][3],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'][-1],
+            'action': {'check_hash_same', 'mac_pppoe_ipv4_udp_pay'},
+        },
+        {
+            'send_packet': [i for i in mac_pppoe_ipv4_udp_pay_packets['mismatch']],
+            'action': 'check_no_hash',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_pppoe_ipv4_udp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_udp_pay'],
+            'action': 'check_no_hash',
+        },
+    ],
+}
+
 mac_pppoe_ipv4_tcp_pay_packets = {
     'mismatch': [
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/'
@@ -2223,6 +2277,58 @@ mac_pppoe_ipv4_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only = {
     ],
 }
 
+mac_pppoe_ipv4_tcp_pay_ipv4_packets = {
+    'mac_pppoe_ipv4_tcp_pay': [
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.2")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.7")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.3", dst="192.168.1.7")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/TCP(sport=19,dport=99)/Raw("x"*80)',
+    ]
+}
+
+mac_pppoe_ipv4_tcp_pay_ipv4 = {
+    'sub_casename': 'mac_pppoe_ipv4_tcp_pay_ipv4',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / pppoes / ipv4 / tcp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_tcp_pay'][0],
+            'action': {'save_hash': 'mac_pppoe_ipv4_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_tcp_pay'][1],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_tcp_pay'][2],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_tcp_pay'][3],
+            'action': {'check_hash_different': 'mac_pppoe_ipv4_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets[
+                'mac_pppoe_ipv4_tcp_pay'][-1],
+            'action': {'check_hash_same', 'mac_pppoe_ipv4_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_packets['mismatch'],
+            'action': 'check_no_hash',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_pppoe_ipv4_tcp_pay_ipv4_packets['mac_pppoe_ipv4_tcp_pay'],
+            'action': 'check_no_hash',
+        },
+    ],
+}
 mac_pppoe_ipv6_pay_packets = {
     'mismatch': [
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x21\')/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)',
@@ -3158,6 +3264,60 @@ mac_pppoe_ipv6_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only = {
     ],
 }
 
+mac_pppoe_ipv6_udp_pay_ipv6_packets = {
+    'mac_pppoe_ipv6_udp_pay': [
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1538", dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=19,dport=99)/Raw("x"*80)',
+    ]
+}
+
+mac_pppoe_ipv6_udp_pay_ipv6 = {
+    'sub_casename': 'mac_pppoe_ipv6_udp_pay_ipv6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / pppoes / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_ipv6_packets[
+                'mac_pppoe_ipv6_udp_pay'][0],
+            'action': {'save_hash': 'mac_pppoe_ipv6_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_ipv6_packets[
+                'mac_pppoe_ipv6_udp_pay'][1],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_ipv6_packets[
+                'mac_pppoe_ipv6_udp_pay'][2],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_ipv6_packets[
+                'mac_pppoe_ipv6_udp_pay'][3],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_ipv6_packets[
+                'mac_pppoe_ipv6_udp_pay'][-1],
+            'action': {'check_hash_same', 'mac_pppoe_ipv6_udp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_udp_pay_packets['mismatch'],
+            'action': 'check_no_hash',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet':mac_pppoe_ipv6_udp_pay_ipv6_packets['mac_pppoe_ipv6_udp_pay'],
+            'action': 'check_no_hash',
+        },
+    ],
+
+}
+
 mac_pppoe_ipv6_tcp_pay_packets = {
     'mismatch': [
         'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/UDP(sport=25,dport=23)/Raw("x"*80)',
@@ -3714,6 +3874,54 @@ mac_pppoe_ipv6_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only = {
     ],
 }
 
+mac_pppoe_ipv6_tcp_pay_ipv6_packets = {
+    'mac_pppoe_ipv6_tcp_pay': [
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1537", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1538", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=25,dport=23)/Raw("x"*80)',
+        'Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(b\'\\x00\\x57\')/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:1536", dst="CDCD:910A:2222:5498:8475:1111:3900:2022")/TCP(sport=19,dport=99)/Raw("x"*80)',
+    ]
+}
+
+mac_pppoe_ipv6_tcp_pay_ipv6 = {
+    'sub_casename': 'mac_pppoe_ipv6_tcp_pay_ipv6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / pppoes / ipv6 / tcp / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'][0],
+            'action': {'save_hash': 'mac_pppoe_ipv6_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'][1],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'][2],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'][3],
+            'action': {'check_hash_different': 'mac_pppoe_ipv6_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'][-1],
+            'action': {'check_hash_same', 'mac_pppoe_ipv6_tcp_pay'},
+        },
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_packets['mismatch'],
+            'action': 'check_no_hash',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_pppoe_ipv6_tcp_pay_ipv6_packets['mac_pppoe_ipv6_tcp_pay'],
+            'action': 'check_no_hash',
+        },
+    ],
+}
+
 mac_pppoe_ipv6_tcp_pay = [
     mac_pppoe_ipv6_tcp_pay_l2_src_only,
     mac_pppoe_ipv6_tcp_pay_l2_dst_only,
@@ -3726,7 +3934,8 @@ mac_pppoe_ipv6_tcp_pay = [
     mac_pppoe_ipv6_tcp_pay_l3_src_only_l4_dst_only,
     mac_pppoe_ipv6_tcp_pay_l3_dst_only_l4_src_only,
     mac_pppoe_ipv6_tcp_pay_l3_dst_only_l4_dst_only,
-    mac_pppoe_ipv6_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only
+    mac_pppoe_ipv6_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only,
+    mac_pppoe_ipv6_tcp_pay_ipv6
 ]
 
 mac_pppoe_ipv6_udp_pay = [
@@ -3741,7 +3950,8 @@ mac_pppoe_ipv6_udp_pay = [
     mac_pppoe_ipv6_udp_pay_l3_src_only_l4_dst_only,
     mac_pppoe_ipv6_udp_pay_l3_dst_only_l4_src_only,
     mac_pppoe_ipv6_udp_pay_l3_dst_only_l4_dst_only,
-    mac_pppoe_ipv6_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only
+    mac_pppoe_ipv6_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only,
+    mac_pppoe_ipv6_udp_pay_ipv6
 
 ]
 
@@ -3766,7 +3976,8 @@ mac_pppoe_ipv4_tcp_pay = [
     mac_pppoe_ipv4_tcp_pay_l3_src_only_l4_dst_only,
     mac_pppoe_ipv4_tcp_pay_l3_dst_only_l4_src_only,
     mac_pppoe_ipv4_tcp_pay_l3_dst_only_l4_dst_only,
-    mac_pppoe_ipv4_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only
+    mac_pppoe_ipv4_tcp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only,
+    mac_pppoe_ipv4_tcp_pay_ipv4
 ]
 
 mac_pppoe_ipv4_udp_pay = [
@@ -3781,7 +3992,9 @@ mac_pppoe_ipv4_udp_pay = [
     mac_pppoe_ipv4_udp_pay_l3_src_only_l4_dst_only,
     mac_pppoe_ipv4_udp_pay_l3_dst_only_l4_src_only,
     mac_pppoe_ipv4_udp_pay_l3_dst_only_l4_dst_only,
-    mac_pppoe_ipv4_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only, ]
+    mac_pppoe_ipv4_udp_pay_l3_src_only_l3_dst_only_l4_src_only_l4_dst_only,
+    mac_pppoe_ipv4_udp_pay_ipv4,
+    ]
 
 mac_pppoe_ipv4_pay_cases = [
     mac_pppoe_ipv4_pay_l2_src_only,
