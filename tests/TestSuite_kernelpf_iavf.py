@@ -631,31 +631,20 @@ class TestKernelpfIavf(TestCase):
             self.verify(rx_err == 1 or tx_pkts == -1, "Packet drop assert error")
 
     def test_vf_rss(self):
+        rss_type = ["ip", "tcp", "udp"]
         self.vm_testpmd.start_testpmd("all", "--txq=4 --rxq=4")
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("set verbose 1")
         for i, j in zip(list(range(64)), [0, 1, 2, 3]*16):
             self.vm_testpmd.execute_cmd("port config 0 rss reta (%d,%d)" % (i, j))
-        self.vm_testpmd.execute_cmd("port config all rss ip")
-        self.vm_testpmd.execute_cmd("port config all rss tcp")
-        self.vm_testpmd.execute_cmd("port config all rss udp")
-        self.vm_testpmd.execute_cmd("start")
-        self.send_packet(self.tester_intf, 'IPV4')
-        time.sleep(2)
-        out = self.vm_dut.get_session_output()
-        self.verify_packet_number(out)
-
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        self.send_packet(self.tester_intf, 'IPV4&TCP')
-        time.sleep(2)
-        out = self.vm_dut.get_session_output()
-        self.verify_packet_number(out)
-
-        self.vm_testpmd.execute_cmd("clear port stats all")
-        self.send_packet(self.tester_intf, 'IPV4&UDP')
-        time.sleep(2)
-        out = self.vm_dut.get_session_output()
-        self.verify_packet_number(out)
+        for type in rss_type:
+            self.vm_testpmd.execute_cmd("port config all rss %s" % type)
+            self.vm_testpmd.execute_cmd("start")
+            self.send_packet(self.tester_intf, 'IPV4&%s' % type)
+            time.sleep(1)
+            out = self.vm_dut.get_session_output()
+            self.verify_packet_number(out)
+            self.vm_testpmd.execute_cmd("clear port stats all")
 
     def verify_packet_number(self, out):
         queue0_number = len(re.findall('port 0/queue 0', out))
@@ -672,21 +661,21 @@ class TestKernelpfIavf(TestCase):
         """
         mac = self.vf_mac
         # send packet with different source and dest ip
-        if tran_type == "IPV4":
+        if tran_type == "IPV4&ip":
             for i in range(30):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", '\
                                   'dst="192.168.0.%d")], iface="%s")' % (mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
-        elif tran_type == "IPV4&TCP":
+        elif tran_type == "IPV4&tcp":
             for i in range(30):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/'\
                                   'TCP(sport=1024,dport=1024)], iface="%s")' % (mac, i + 1, i + 2, itf)
                 self.tester.scapy_append(packet)
             self.tester.scapy_execute()
             time.sleep(.5)
-        elif tran_type == "IPV4&UDP":
+        elif tran_type == "IPV4&udp":
             for i in range(30):
                 packet = r'sendp([Ether(dst="%s", src="02:00:00:00:00:00")/IP(src="192.168.0.%d", dst="192.168.0.%d")/'\
                                   'UDP(sport=1024,dport=1024)], iface="%s")' % (mac, i + 1, i + 2, itf)
