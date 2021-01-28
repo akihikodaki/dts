@@ -172,19 +172,18 @@ multi_fdir_among = {
     "count": 1000
 }
 
-more_than_4_queues_128_vfs = {
-    "name": "test_more_than_4_queues_128_vfs",
+more_than_4_queues_max_vfs = {
+    "name": "test_more_than_4_queues_max_vfs",
     "param": ["--txq=8 --rxq=8", "--txq=4 --rxq=4"],
     "check_param": "configure queues failed"
 }
 
-more_than_128_vfs_4_queues = {
-    "name": "test_more_than_128_vfs_4_queues",
-    "vf_num": [128, 129],
+more_than_max_vfs_4_queues = {
+    "name": "test_more_than_max_vfs_4_queues",
     "check_param": "-bash: echo: write error: Numerical result out of range"
 }
 
-max_vfs_4_queues_128 = [multi_fdir_among, more_than_4_queues_128_vfs, more_than_128_vfs_4_queues]
+max_vfs_4_queues = [multi_fdir_among, more_than_4_queues_max_vfs, more_than_max_vfs_4_queues]
 
 
 class TestLargeVf(TestCase):
@@ -203,6 +202,7 @@ class TestLargeVf(TestCase):
         self.used_dut_port = self.dut_ports[0]
         self.pf0_intf = self.dut.ports_info[self.dut_ports[0]]['intf']
         self.pf0_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
+        self.max_vf_num = int(self.dut.send_expect('cat /sys/bus/pci/devices/%s/sriov_totalvfs' % self.pf0_pci, '#'))
         self.pf0_mac = self.dut.get_mac_address(0)
 
         self.vf_flag = False
@@ -212,6 +212,9 @@ class TestLargeVf(TestCase):
 
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
+
+        self.app_path = self.dut.apps_name["test-pmd"]
+        self.vf_num = 7 if self.max_vf_num > 128 else 3
 
     def set_up(self):
         """
@@ -241,11 +244,20 @@ class TestLargeVf(TestCase):
             self.dut.destroy_sriov_vfs_by_port(self.used_dut_port)
             self.vf_flag = False
 
-    def launch_testpmd(self, param, total=False):
+    def launch_testpmd(self, param, total=False, retry_times=3):
         if total:
             param = param + " --total-num-mbufs=500000"
-        self.pmd_output.start_testpmd("all", param=param,
-                                      ports=[self.sriov_vfs_port[0].pci], socket=self.ports_socket)
+        while retry_times:
+            try:
+                self.pmd_output.start_testpmd("all", param=param,
+                                            ports=[self.sriov_vfs_port[0].pci], socket=self.ports_socket)
+                break
+            except Exception as e:
+                self.logger.info('start testpmd occurred exception: {}'.format(e))
+            retry_times = retry_times - 1
+            time.sleep(1)
+            self.logger.info('try start testpmd the {} times'.format(retry_times))
+
 
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set verbose 1")
@@ -289,55 +301,65 @@ class TestLargeVf(TestCase):
                         self.create_fdir_rule(vectors[0]["rule"])
                         self.check_match_mismatch_pkts(vectors[0])
                 elif subcase_name == "test_pf_large_vf_fdir_coexist":
-                    pmdout = PmdOutput(self.dut, self.session_list[0])
-                    self.create_pf_rule(pmdout, self.pf0_intf, tv["param"][0], tv["param"][1])
-                    self.send_pkts_pf_check(pmdout, self.pf0_intf, self.pf0_mac, tv["param"][0], tv["check_param"], tv["count"])
+                    self.destroy_pf_rule(self.pmdout_list[0], self.pf0_intf)
+                    self.create_pf_rule(self.pmdout_list[0], self.pf0_intf, tv["param"][0], tv["param"][1])
+                    self.send_pkts_pf_check(self.pmdout_list[0], self.pf0_intf, self.pf0_mac, tv["param"][0], tv["check_param"], tv["count"])
                     self.create_fdir_rule(vectors[0]["rule"])
                     self.check_match_mismatch_pkts(vectors[0])
-                    self.destroy_pf_rule(pmdout, self.pf0_intf)
+                    self.destroy_pf_rule(self.pmdout_list[0], self.pf0_intf)
                 elif subcase_name == "test_exceed_256_queues":
                     self.pmd_output.execute_cmd("quit", "#")
-                    eal_param = "-w {} --file-prefix=port0vf0 -- -i ".format(self.sriov_vfs_port[0].pci)
-                    cmd = "x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -l 1,2,3,4 -n 4 " + eal_param + tv["param"][0]
+                    eal_param = self.dut.create_eal_parameters(prefix='port0vf0', ports=[self.sriov_vfs_port[0].pci])
+                    cmd = "{} ".format(self.app_path) + eal_param + "-- -i " + tv["param"][0]
                     out = self.pmd_output.execute_cmd(cmd, "# ")
                     self.verify(tv["check_param"] in out, "fail: testpmd start successfully")
-                    self.pmd_output.execute_cmd("quit", "#")
                     self.launch_testpmd(tv["param"][1])
                     self.check_rxqtxq_number(512, tv["check_param"])
                 elif subcase_name == "test_more_than_3_vfs_256_queues":
                     self.pmd_output.execute_cmd("quit", "#")
-                    self.destroy_iavf()
-                    self.create_iavf(4)
-                    # start 4 testpmd uss 256 queues
-                    for i in range(4):
-                        if i < 3:
-                            eal_param = "-w {} --file-prefix=port0vf{} -- -i ".format(self.sriov_vfs_port[i].pci, i)
-                            cmd = "x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4 -n 4 " + eal_param + tv["param"]
-                            self.session_list[i].send_expect(cmd, "testpmd> ")
-                        else:
-                            # start fourth testpmd failed
-                            eal_param = "-w {} --file-prefix=port0vf3 -- -i ".format(self.sriov_vfs_port[3].pci)
-                            cmd = "x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1,2,3,4 -n 4 " + eal_param + tv[
-                                "param"]
-                            out = self.dut.send_command(cmd)
+                    # start testpmd use 256 queues
+                    for i in range(self.vf_num + 1):
+                        if self.max_vf_num == 64:
+                            self.pmdout_list[0].start_testpmd(param=tv["param"], ports=[self.sriov_vfs_port[0].pci], prefix='port0vf0')
+                            eal_param = self.dut.create_eal_parameters(fixed_prefix=True, ports=[self.sriov_vfs_port[1].pci])
+                            cmd = "{} ".format(self.app_path) + eal_param + "-- -i " + tv["param"]
+                            out = self.pmd_output.execute_cmd(cmd, "#")
                             self.verify(tv["check_param"] in out, "fail: testpmd start successfully")
-                            # quit all testpmd
-                            self.session_list[0].send_expect("quit", "# ")
-                            self.session_list[1].send_expect("quit", "# ")
-                            self.session_list[2].send_expect("quit", "# ")
-                # case 2: 128_vfs_4_queues
+                            self.pmdout_list[0].execute_cmd("quit", "# ")
+                            break
+                        else:
+                            if i < self.vf_num:
+                                self.pmdout_list[i].start_testpmd(param=tv["param"], ports=[self.sriov_vfs_port[i].pci],
+                                                                  prefix='port0vf{}'.format(i))
+                            else:
+                                # start fourth testpmd failed
+                                eal_param = self.dut.create_eal_parameters(fixed_prefix=True, ports=[self.sriov_vfs_port[-1].pci])
+                                cmd = "{} ".format(self.app_path) + eal_param + "-- -i " + tv["param"]
+                                out = self.pmd_output.execute_cmd(cmd, "#")
+                                self.verify(tv["check_param"] in out, "fail: testpmd start successfully")
+                                # quit all testpmd
+                                self.pmdout_list[0].execute_cmd("quit", "# ")
+                                self.pmdout_list[1].execute_cmd("quit", "# ")
+                                self.pmdout_list[2].execute_cmd("quit", "# ")
+                                if self.vf_num > 3:
+                                    self.pmdout_list[3].execute_cmd("quit", "# ")
+                                    self.pmdout_list[4].execute_cmd("quit", "# ")
+                                    self.pmdout_list[5].execute_cmd("quit", "# ")
+                                    self.pmdout_list[6].execute_cmd("quit", "# ")
+
+                # case 2: max_vfs_4_queues
                 elif subcase_name == "test_multi_fdir_among":
                     self.create_fdir_rule(tv["rule"])
                     self.check_match_mismatch_pkts(tv)
-                elif subcase_name == "test_more_than_128_vfs_4_queues":
+                elif subcase_name == "test_more_than_max_vfs_4_queues":
                     self.pmd_output.execute_cmd("quit", "#")
                     out = self.dut.send_expect("echo {} > /sys/bus/pci/devices/{}/sriov_numvfs".format(
-                        tv["vf_num"][0], self.pf0_pci), "# ")
-                    self.verify(tv["check_param"] not in out, "fail: create vfs successfully")
+                        self.max_vf_num, self.pf0_pci), "# ")
+                    self.verify(tv["check_param"] not in out, "fail: create vfs failed")
                     out = self.dut.send_expect("echo {} > /sys/bus/pci/devices/{}/sriov_numvfs".format(
-                        tv["vf_num"][1], self.pf0_pci), "# ")
+                        self.max_vf_num + 1, self.pf0_pci), "# ")
                     self.verify(tv["check_param"] in out, "fail: create vfs successfully")
-                elif subcase_name == "test_more_than_4_queues_128_vfs":
+                elif subcase_name == "test_more_than_4_queues_max_vfs":
                     self.pmd_output.execute_cmd("quit", "# ")
                     out = self.pmd_output.start_testpmd("all", param=tv["param"][0],
                                       ports=[self.sriov_vfs_port[0].pci], socket=self.ports_socket)
@@ -387,7 +409,6 @@ class TestLargeVf(TestCase):
     def create_pf_rule(self,pmdout, pf_intf, ip, action):
         # count: create rules number
         queue_list = []
-        self.validation_pf_rule(pmdout, pf_intf)
         for x in range(10):
             queue_list.append(action)
             cmd = "ethtool -N {} flow-type udp4 dst-ip 192.168.0.{} src-port 22 action {}".format(pf_intf, ip, action)
@@ -407,6 +428,7 @@ class TestLargeVf(TestCase):
             packet = "Ether(dst='{}')/IP(src=RandIP(),dst='192.168.0.{}')/UDP(sport=22,dport=23)/Raw('x'*80)".format(pf_mac, ip)
             self.send_packets(packet, 1)
             ip += 1
+        time.sleep(1)
         out = pmdout.execute_cmd("ethtool -S %s" % pf_intf, "# ")
         for queue in range(check_param[0], check_param[1]+1):
             packet_str = "rx_queue_%d_packets: (\d+)" % queue
@@ -417,10 +439,11 @@ class TestLargeVf(TestCase):
         rule_str = "Filter:.*?(\d+)"
         out = pmdout.execute_cmd("ethtool -n %s" % pf_intf, "#")
         rule_list = re.findall(rule_str, out)
-        for rule in rule_list:
-            cmd = "ethtool -N {} delete {}".format(pf_intf, rule)
-            pmdout.execute_cmd(cmd, "#")
-        self.validation_pf_rule(pmdout, pf_intf)
+        if rule_list:
+            for rule in rule_list:
+                cmd = "ethtool -N {} delete {}".format(pf_intf, rule)
+                pmdout.execute_cmd(cmd, "#")
+            self.validation_pf_rule(pmdout, pf_intf)
 
     def check_iavf_fdir_value(self, out, check_paeam, count, stats=False):
         """
@@ -503,27 +526,31 @@ class TestLargeVf(TestCase):
             self.check_txonly_pkts(rxtx_num)
 
     def test_3_vfs_256_queues(self):
-        self.session_list = []
-        for i in range(3):
-            name = self.dut.new_session()
-            self.session_list.append(name)
-        self.create_iavf(3)
+        self.pmdout_list = []
+        session_list = []
+        for i in range(self.vf_num):
+            session = self.dut.new_session()
+            session_list.append(session)
+            pmdout = PmdOutput(self.dut, session)
+            self.pmdout_list.append(pmdout)
+        self.create_iavf(self.vf_num + 1)
         self.launch_testpmd("--rxq=256 --txq=256", total=True)
         self.config_testpmd()
         self.rte_flow_process(max_vfs_256_queues_3)
-        self.dut.close_session(self.session_list)
+        self.dut.close_session(session_list)
 
-    def test_128_vfs_4_queues(self):
-        self.create_iavf(128)
+    def test_max_vfs_4_queues(self):
+        self.create_iavf(self.max_vf_num)
         self.launch_testpmd("--rxq=4 --txq=4")
         self.config_testpmd()
-        self.rte_flow_process(max_vfs_4_queues_128)
+        self.rte_flow_process(max_vfs_4_queues)
 
     def tear_down(self):
         """
         Run after each test case.
         """
         self.pmd_output.execute_cmd("quit", "#")
+        self.dut.kill_all()
         self.destroy_iavf()
 
 
