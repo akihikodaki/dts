@@ -185,24 +185,6 @@ mac_ipv4_l2_src = {
             'action': {'check_hash_same': 'ipv4-tcp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-    ],
 }
 
 mac_ipv4_l2_dst = {
@@ -241,24 +223,6 @@ mac_ipv4_l2_dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=19,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
         },
     ],
 }
@@ -315,24 +279,6 @@ mac_ipv4_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=23,dport=25)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
         },
     ],
 }
@@ -403,28 +349,6 @@ mac_ipv4_l3_src = {
         #     'action': {'check_hash_same': 'ipv4-udp-vxlan'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-udp-vxlan'][0],
-        #     'action': {'check_hash_different': 'ipv4-udp-vxlan'},
-        # },
-    ],
 }
 
 mac_ipv4_l3_dst = {
@@ -491,28 +415,6 @@ mac_ipv4_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4-udp-vxlan'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-udp-vxlan'][0],
-        #     'action': {'check_hash_different': 'ipv4-udp-vxlan'},
         # },
     ],
 }
@@ -599,28 +501,6 @@ mac_ipv4_all = {
         #     'action': {'check_hash_different': 'ipv4-udp-vxlan'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv4-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-frag'][0],
-            'action': {'check_hash_different': 'ipv4-frag'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-icmp'][0],
-            'action': {'check_hash_different': 'ipv4-icmp'},
-        },
-        {
-            'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-tcp'][0],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_toeplitz_basic_pkt['ipv4-udp-vxlan'][0],
-        #     'action': {'check_hash_different': 'ipv4-udp-vxlan'},
-        # },
-    ],
 }
 
 # mac ipv4_udp
@@ -642,12 +522,6 @@ mac_ipv4_udp_l2_src = {
             'action': {'check_hash_same': 'ipv4-udp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-    ],
 }
 
 mac_ipv4_udp_l2_dst = {
@@ -662,12 +536,6 @@ mac_ipv4_udp_l2_dst = {
         {
             'send_packet': ' Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP(dst="192.168.0.3", src="192.168.0.5")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
         },
     ],
 }
@@ -688,12 +556,6 @@ mac_ipv4_udp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
         },
     ],
 }
@@ -728,16 +590,6 @@ mac_ipv4_udp_l3_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_udp_l3_dst = {
@@ -768,16 +620,6 @@ mac_ipv4_udp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -820,16 +662,6 @@ mac_ipv4_udp_l3src_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_udp_l3src_l4dst = {
@@ -868,16 +700,6 @@ mac_ipv4_udp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -920,16 +742,6 @@ mac_ipv4_udp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_udp_l3dst_l4dst = {
@@ -970,16 +782,6 @@ mac_ipv4_udp_l3dst_l4dst = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_udp_l4_src = {
@@ -1012,16 +814,6 @@ mac_ipv4_udp_l4_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_udp_l4_dst = {
@@ -1052,16 +844,6 @@ mac_ipv4_udp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1116,16 +898,6 @@ mac_ipv4_udp_all = {
         #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['ipv4-udp'],
-            'action': {'check_hash_different': 'ipv4-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_udp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 # mac ipv4_tcp
@@ -1147,12 +919,6 @@ mac_ipv4_tcp_l2_src = {
             'action': {'check_hash_same': 'ipv4-tcp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-    ],
 }
 
 mac_ipv4_tcp_l2_dst = {
@@ -1167,12 +933,6 @@ mac_ipv4_tcp_l2_dst = {
         {
             'send_packet': ' Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
         },
     ],
 }
@@ -1193,12 +953,6 @@ mac_ipv4_tcp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/TCP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
         },
     ],
 }
@@ -1233,16 +987,6 @@ mac_ipv4_tcp_l3_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_tcp_l3_dst = {
@@ -1273,16 +1017,6 @@ mac_ipv4_tcp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1325,16 +1059,6 @@ mac_ipv4_tcp_l3src_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_tcp_l3src_l4dst = {
@@ -1373,16 +1097,6 @@ mac_ipv4_tcp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1425,16 +1139,6 @@ mac_ipv4_tcp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_tcp_l3dst_l4dst = {
@@ -1475,16 +1179,6 @@ mac_ipv4_tcp_l3dst_l4dst = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_tcp_l4_src = {
@@ -1517,16 +1211,6 @@ mac_ipv4_tcp_l4_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_tcp_l4_dst = {
@@ -1557,16 +1241,6 @@ mac_ipv4_tcp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.1.2")/TCP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1621,16 +1295,6 @@ mac_ipv4_tcp_all = {
         #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['ipv4-tcp'],
-            'action': {'check_hash_different': 'ipv4-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_tcp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 # mac ipv4_sctp
@@ -1652,12 +1316,6 @@ mac_ipv4_sctp_l2_src = {
             'action': {'check_hash_same': 'ipv4-sctp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-    ],
 }
 
 mac_ipv4_sctp_l2_dst = {
@@ -1672,12 +1330,6 @@ mac_ipv4_sctp_l2_dst = {
         {
             'send_packet': ' Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP(dst="192.168.0.3", src="192.168.0.5")/SCTP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-sctp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
         },
     ],
 }
@@ -1698,12 +1350,6 @@ mac_ipv4_sctp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.3", src="192.168.0.5")/SCTP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv4-sctp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
         },
     ],
 }
@@ -1738,16 +1384,6 @@ mac_ipv4_sctp_l3_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_sctp_l3_dst = {
@@ -1778,16 +1414,6 @@ mac_ipv4_sctp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/SCTP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1830,16 +1456,6 @@ mac_ipv4_sctp_l3src_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_sctp_l3src_l4dst = {
@@ -1878,16 +1494,6 @@ mac_ipv4_sctp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/SCTP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -1930,16 +1536,6 @@ mac_ipv4_sctp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_sctp_l3dst_l4dst = {
@@ -1980,16 +1576,6 @@ mac_ipv4_sctp_l3dst_l4dst = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_sctp_l4_src = {
@@ -2022,16 +1608,6 @@ mac_ipv4_sctp_l4_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv4_sctp_l4_dst = {
@@ -2062,16 +1638,6 @@ mac_ipv4_sctp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.1.2")/SCTP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -2123,16 +1689,6 @@ mac_ipv4_sctp_all = {
         # },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/SCTP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['ipv4-sctp'],
-            'action': {'check_hash_different': 'ipv4-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv4_sctp_toeplitz_basic_pkt['nvgre'],
         #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
@@ -2193,24 +1749,6 @@ mac_ipv6_l2_src = {
             'action': {'check_hash_same': 'ipv6-udp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-    ],
 }
 
 mac_ipv6_l2_dst = {
@@ -2249,24 +1787,6 @@ mac_ipv6_l2_dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2027")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
         },
     ],
 }
@@ -2323,24 +1843,6 @@ mac_ipv6_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
         },
     ],
 }
@@ -2411,28 +1913,6 @@ mac_ipv6_l3_src = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_toeplitz_basic_pkt['nvgre'][0],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 
 mac_ipv6_l3_dst = {
@@ -2499,28 +1979,6 @@ mac_ipv6_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'nvgre'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_toeplitz_basic_pkt['nvgre'][0],
-        #     'action': {'check_hash_different': 'nvgre'},
         # },
     ],
 }
@@ -2611,28 +2069,6 @@ mac_ipv6_all = {
         #     'action': {'check_hash_same': 'nvgre'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-nonfrag'][0],
-            'action': {'check_hash_different': 'ipv6-nonfrag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-frag'][0],
-            'action': {'check_hash_different': 'ipv6-frag'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-icmp'][0],
-            'action': {'check_hash_different': 'ipv6-icmp'},
-        },
-        {
-            'send_packet': mac_ipv6_toeplitz_basic_pkt['ipv6-udp'][0],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_toeplitz_basic_pkt['nvgre'][0],
-        #     'action': {'check_hash_different': 'nvgre'},
-        # },
-    ],
 }
 # mac_ipv6_udp
 mac_ipv6_udp_l2_src = {
@@ -2653,12 +2089,6 @@ mac_ipv6_udp_l2_src = {
             'action': {'check_hash_same': 'ipv6-udp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-    ],
 }
 
 mac_ipv6_udp_l2_dst = {
@@ -2673,12 +2103,6 @@ mac_ipv6_udp_l2_dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
         },
     ],
 }
@@ -2699,12 +2123,6 @@ mac_ipv6_udp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/UDP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-udp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
         },
     ],
 }
@@ -2739,16 +2157,6 @@ mac_ipv6_udp_l3_src = {
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
 }
 
 mac_ipv6_udp_l3_dst = {
@@ -2779,16 +2187,6 @@ mac_ipv6_udp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
 }
@@ -2823,16 +2221,6 @@ mac_ipv6_udp_l3src_l4src = {
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
 }
 
 mac_ipv6_udp_l3src_l4dst = {
@@ -2863,16 +2251,6 @@ mac_ipv6_udp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
 }
@@ -2907,16 +2285,6 @@ mac_ipv6_udp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
 }
 
 mac_ipv6_udp_l3dst_l4dst = {
@@ -2947,16 +2315,6 @@ mac_ipv6_udp_l3dst_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
 }
@@ -2991,16 +2349,6 @@ mac_ipv6_udp_l4_src = {
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
 }
 
 mac_ipv6_udp_l4_dst = {
@@ -3031,16 +2379,6 @@ mac_ipv6_udp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
 }
@@ -3095,16 +2433,6 @@ mac_ipv6_udp_all = {
         #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv6-udp'],
-            'action': {'check_hash_different': 'ipv6-udp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_udp_toeplitz_basic_pkt['ipv4_udp_vxlan_ipv6_udp'],
-        #     'action': {'check_hash_different': 'ipv4_udp_vxlan_ipv6_udp'},
-        # },
-    ],
 }
 # mac_ipv6_tcp
 mac_ipv6_tcp_l2_src = {
@@ -3125,12 +2453,6 @@ mac_ipv6_tcp_l2_src = {
             'action': {'check_hash_same': 'ipv6-tcp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-    ],
 }
 
 mac_ipv6_tcp_l2_dst = {
@@ -3145,12 +2467,6 @@ mac_ipv6_tcp_l2_dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/TCP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
         },
     ],
 }
@@ -3171,12 +2487,6 @@ mac_ipv6_tcp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/TCP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-tcp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
         },
     ],
 }
@@ -3211,16 +2521,6 @@ mac_ipv6_tcp_l3_src = {
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
 }
 
 mac_ipv6_tcp_l3_dst = {
@@ -3251,16 +2551,6 @@ mac_ipv6_tcp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
 }
@@ -3295,16 +2585,6 @@ mac_ipv6_tcp_l3src_l4src = {
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
 }
 
 mac_ipv6_tcp_l3src_l4dst = {
@@ -3335,16 +2615,6 @@ mac_ipv6_tcp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
 }
@@ -3379,16 +2649,6 @@ mac_ipv6_tcp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
 }
 
 mac_ipv6_tcp_l3dst_l4dst = {
@@ -3419,16 +2679,6 @@ mac_ipv6_tcp_l3dst_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
 }
@@ -3463,16 +2713,6 @@ mac_ipv6_tcp_l4_src = {
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
 }
 
 mac_ipv6_tcp_l4_dst = {
@@ -3503,16 +2743,6 @@ mac_ipv6_tcp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/TCP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
 }
@@ -3567,16 +2797,6 @@ mac_ipv6_tcp_all = {
         #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv6-tcp'],
-            'action': {'check_hash_different': 'ipv6-tcp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_tcp_toeplitz_basic_pkt['ipv4_tcp_vxlan_ipv6_tcp'],
-        #     'action': {'check_hash_different': 'ipv4_tcp_vxlan_ipv6_tcp'},
-        # },
-    ],
 }
 # mac_ipv6_sctp
 mac_ipv6_sctp_l2_src = {
@@ -3597,12 +2817,6 @@ mac_ipv6_sctp_l2_src = {
             'action': {'check_hash_same': 'ipv6-sctp'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-    ],
 }
 
 mac_ipv6_sctp_l2_dst = {
@@ -3617,12 +2831,6 @@ mac_ipv6_sctp_l2_dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/SCTP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-sctp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
         },
     ],
 }
@@ -3643,12 +2851,6 @@ mac_ipv6_sctp_l2src_l2dst = {
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2923",dst="CDCD:910A:2222:5498:8475:1111:3900:2025")/SCTP(sport=25,dport=99)/("X"*480)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-sctp'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
         },
     ],
 }
@@ -3683,16 +2885,6 @@ mac_ipv6_sctp_l3_src = {
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
 }
 
 mac_ipv6_sctp_l3_dst = {
@@ -3723,16 +2915,6 @@ mac_ipv6_sctp_l3_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=33)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
 }
@@ -3767,16 +2949,6 @@ mac_ipv6_sctp_l3src_l4src = {
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
 }
 
 mac_ipv6_sctp_l3src_l4dst = {
@@ -3807,16 +2979,6 @@ mac_ipv6_sctp_l3src_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/SCTP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
 }
@@ -3851,16 +3013,6 @@ mac_ipv6_sctp_l3dst_l4src = {
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
 }
 
 mac_ipv6_sctp_l3dst_l4dst = {
@@ -3891,16 +3043,6 @@ mac_ipv6_sctp_l3dst_l4dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
 }
@@ -3935,16 +3077,6 @@ mac_ipv6_sctp_l4_src = {
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
 }
 
 mac_ipv6_sctp_l4_dst = {
@@ -3975,16 +3107,6 @@ mac_ipv6_sctp_l4_dst = {
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E1")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/SCTP(sport=32,dport=23)/("X"*480)' % vf0_mac,
         #     'action': {'check_hash_same': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
 }
@@ -4036,16 +3158,6 @@ mac_ipv6_sctp_all = {
         # },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=33)/("X"*480)' % vf0_mac,
-        #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
-        # },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv6-sctp'],
-            'action': {'check_hash_different': 'ipv6-sctp'},
-        },
-        # {
-        #     'send_packet': mac_ipv6_sctp_toeplitz_basic_pkt['ipv4_sctp_vxlan_ipv6_sctp'],
         #     'action': {'check_hash_different': 'ipv4_sctp_vxlan_ipv6_sctp'},
         # },
     ],
@@ -4190,7 +3302,7 @@ mac_ipv4_symmetric = {
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/("X"*480)' % vf0_mac,
-             'action': {'check_no_hash_or_different': 'ipv4-nonfrag-post'},
+             'action': {'check_hash_different': 'ipv4-nonfrag-post'},
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2",frag=6)/("X"*480)' % vf0_mac,
@@ -4198,7 +3310,7 @@ mac_ipv4_symmetric = {
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1",frag=6)/("X"*480)' % vf0_mac,
-             'action': {'check_no_hash_or_different': 'ipv4-frag-post'},
+             'action': {'check_hash_different': 'ipv4-frag-post'},
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)' % vf0_mac,
@@ -4206,7 +3318,7 @@ mac_ipv4_symmetric = {
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/ICMP()/("X"*480)' % vf0_mac,
-             'action': {'check_no_hash_or_different': 'ipv4-icmp-post'},
+             'action': {'check_hash_different': 'ipv4-icmp-post'},
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4214,7 +3326,7 @@ mac_ipv4_symmetric = {
          },
          {
              'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-             'action': {'check_no_hash_or_different': 'ipv4-tcp-post'},
+             'action': {'check_hash_different': 'ipv4-tcp-post'},
          },
          # {
          #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4322,15 +3434,15 @@ mac_ipv4_udp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-udp-post'},
+            'action': {'check_hash_different': 'ipv4-udp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-udp-post'},
+            'action': {'check_hash_different': 'ipv4-udp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-udp-post'},
+            'action': {'check_hash_different': 'ipv4-udp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4446,15 +3558,15 @@ mac_ipv4_tcp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-tcp-post'},
+            'action': {'check_hash_different': 'ipv4-tcp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-tcp-post'},
+            'action': {'check_hash_different': 'ipv4-tcp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-tcp-post'},
+            'action': {'check_hash_different': 'ipv4-tcp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4562,15 +3674,15 @@ mac_ipv4_sctp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/SCTP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-sctp-post'},
+            'action': {'check_hash_different': 'ipv4-sctp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/SCTP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-sctp-post'},
+            'action': {'check_hash_different': 'ipv4-sctp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/SCTP(sport=23,dport=22)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv4-sctp-post'},
+            'action': {'check_hash_different': 'ipv4-sctp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/SCTP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4694,7 +3806,7 @@ mac_ipv6_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-nonfrag-post'},
+            'action': {'check_hash_different': 'ipv6-nonfrag-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)' % vf0_mac,
@@ -4702,7 +3814,7 @@ mac_ipv6_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/IPv6ExtHdrFragment()/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-frag-post'},
+            'action': {'check_hash_different': 'ipv6-frag-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)' % vf0_mac,
@@ -4710,7 +3822,7 @@ mac_ipv6_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-icmp-post'},
+            'action': {'check_hash_different': 'ipv6-icmp-post'},
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4718,7 +3830,7 @@ mac_ipv6_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-udp-post'},
+            'action': {'check_hash_different': 'ipv6-udp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)' % vf0_mac,
@@ -4794,7 +3906,7 @@ mac_ipv6_udp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-udp-post'},
+            'action': {'check_hash_different': 'ipv6-udp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4854,14 +3966,14 @@ mac_ipv6_tcp_symmetric = {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
             'action': {'check_hash_different': 'ipv6-udp'},
         },
-        {
-            'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'save_hash': 'nvgre-eth-ipv6-udp'},
-        },
-        {
-            'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_hash_different': 'nvgre-eth-ipv6-udp'},
-        },
+        # {
+        #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+        #     'action': {'save_hash': 'nvgre-eth-ipv6-udp'},
+        # },
+        # {
+        #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac,
+        #     'action': {'check_hash_different': 'nvgre-eth-ipv6-udp'},
+        # },
     ],
     'post-test': [
         {
@@ -4870,7 +3982,7 @@ mac_ipv6_tcp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-tcp-post'},
+            'action': {'check_hash_different': 'ipv6-tcp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4938,7 +4050,7 @@ mac_ipv6_sctp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-sctp-post'},
+            'action': {'check_hash_different': 'ipv6-sctp-post'},
         },
         # {
         #     'send_packet': 'Ether(dst="%s", src="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)' % vf0_mac,
@@ -4978,12 +4090,6 @@ ipv6_64bit_prefix_l3_src_only = {
             'action': {'check_hash_same': 'ipv6-64bit'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': 'Ether(dst="%s")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-64bit'},
-        },
-    ],
 }
 
 ipv6_64bit_prefix_l3_dst_only = {
@@ -5010,12 +4116,6 @@ ipv6_64bit_prefix_l3_dst_only = {
         {
             'send_packet': 'Ether(dst="%s")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/UDP(sport=1234, dport=5678)/Raw("x"*64)' % vf0_mac,
             'action': {'check_hash_same': 'ipv6-64bit'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': 'Ether(dst="%s")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-64bit'},
         },
     ],
 }
@@ -5046,12 +4146,6 @@ ipv6_64bit_prefix_l3_src_dst_only = {
             'action': {'check_hash_same': 'ipv6-64bit'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': 'Ether(dst="%s")/IPv6(src="fe81:1:a6bf:1ff:fe1c::806", dst="fe82:1:a6bf:1ff:fe1c::806")/Raw("x"*64)' % vf0_mac,
-            'action': {'check_no_hash_or_different': 'ipv6-64bit'},
-        },
-    ],
 }
 
 ipv6_64bit_prefix = [ipv6_64bit_prefix_l3_src_only, ipv6_64bit_prefix_l3_dst_only, ipv6_64bit_prefix_l3_src_dst_only]
@@ -5080,8 +4174,10 @@ class AdvancedIavfRSSTest(TestCase):
         self.vf_flag = False
         self.create_iavf()
 
-        self.pass_flag = 'passed'
-        self.fail_flag = 'failed'
+    def set_up(self):
+        """
+        Run before each test case.
+        """
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
         self.launch_testpmd()
@@ -5090,10 +4186,6 @@ class AdvancedIavfRSSTest(TestCase):
         self.logger.info('rssprocess.tester_ifaces: {}'.format(self.rssprocess.tester_ifaces))
         self.logger.info('rssprocess.test_case: {}'.format(self.rssprocess.test_case))
 
-    def set_up(self):
-        """
-        Run before each test case.
-        """
         self.pmd_output.execute_cmd("start")
 
     def create_iavf(self):
@@ -5231,25 +4323,6 @@ class AdvancedIavfRSSTest(TestCase):
             },
         ]
         self.rssprocess.handle_tests(tests, 0)
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.check_rule(port_id=0)
-        tests = [
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(dport=45)/Raw("x"*480)' % vf0_mac,
-                'action': {'save_hash': 'ipv4-udp'},
-            },
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)' % vf0_mac,
-                'action': {'check_hash_different': 'ipv4-udp'},
-            },
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.7",dst="192.168.0.9")/UDP(dport=45)/Raw("x"*480)' % vf0_mac,
-                'action': {'check_hash_different': 'ipv4-udp'},
-            },
-        ]
-        self.rssprocess.handle_tests(tests, 0)
-        #self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
-        self.rssprocess.handle_tests(tests, 0)
         self.dut.send_command("flow flush 0", timeout=1)
 
         # Subcase 2: two rules with same pattern but different hash input set, hit default profile
@@ -5292,16 +4365,6 @@ class AdvancedIavfRSSTest(TestCase):
             },
         ]
         self.rssprocess.handle_tests(tests, 0)
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.check_rule(port_id=0)
-        tests = [
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.5")/Raw("x"*480)' % vf0_mac,
-                'action': {'check_no_hash': 'ipv4-pay'},
-            },
-        ]
-        self.rssprocess.handle_tests(tests, 0)
-        #self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
         self.dut.send_command("flow flush 0", timeout=1)
 
         # Subcase 3: two rules, scope smaller created first, and the larger one created later
@@ -5341,16 +4404,6 @@ class AdvancedIavfRSSTest(TestCase):
             {
                 'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.8")/UDP(sport=25, dport=99)/Raw("x"*480)' % vf0_mac,
                 'action': {'check_hash_same': 'ipv4-udp-pay'},
-            },
-        ]
-        self.rssprocess.handle_tests(tests, 0)
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.handle_tests(tests_3, 0)
-        #self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
-        tests = [
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=23, dport=45)/Raw("x"*480)' % vf0_mac,
-                'action': {'check_no_hash': 'ipv4-udp-pay'},
             },
         ]
         self.rssprocess.handle_tests(tests, 0)
@@ -5396,16 +4449,6 @@ class AdvancedIavfRSSTest(TestCase):
             },
         ]
         self.rssprocess.handle_tests(tests, 0)
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.handle_tests(tests_4, 0)
-        #self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
-        tests = [
-            {
-                'send_packet': 'Ether(dst="%s")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=23, dport=45)/Raw("x"*480)' % vf0_mac,
-                'action': {'check_no_hash': 'ipv4-udp-pay'},
-            },
-        ]
-        self.rssprocess.handle_tests(tests, 0)
         self.verify(not self.rssprocess.error_msgs, 'some subcases failed')
 
     def tear_down(self):
@@ -5413,6 +4456,7 @@ class AdvancedIavfRSSTest(TestCase):
         self.dut.send_command("flow flush 0", timeout=1)
         self.dut.send_command("clear port stats all", timeout=1)
         self.pmd_output.execute_cmd("stop")
+        self.pmd_output.execute_cmd("quit", "#")
 
     def tear_down_all(self):
         self.dut.kill_all()
