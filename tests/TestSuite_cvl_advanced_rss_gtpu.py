@@ -365,27 +365,27 @@ mac_ipv4_gtpu_ipv4_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
-            'action': {'check_no_hash_or_different': 'nonfrag'},
+            'action': {'save_hash': 'nonfrag'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
-            'action': {'check_no_hash_or_different': 'nonfrag'},
+            'action': {'check_hash_different': 'nonfrag'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2", frag=6)/("X"*480)',
-            'action': {'check_no_hash_or_different': 'frag'},
+            'action': {'save_hash': 'frag'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
-            'action': {'check_no_hash_or_different': 'frag'},
+            'action': {'check_hash_different': 'frag'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
-            'action': {'check_no_hash_or_different': 'icmp'},
+            'action': {'save_hash': 'icmp'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
-            'action': {'check_no_hash_or_different': 'icmp'},
+            'action': {'check_hash_different': 'icmp'},
         },
     ],
 }
@@ -466,7 +466,7 @@ mac_ipv4_gtpu_ipv4_udp_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different': 'basic_with_rule'},
+            'action': {'save_hash': 'basic_with_rule'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
@@ -474,7 +474,7 @@ mac_ipv4_gtpu_ipv4_udp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different': 'basic_with_rule'},
+            'action': {'save_hash': 'basic_with_rule'},
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
@@ -611,35 +611,35 @@ mac_ipv4_gtpu_eh_dl_ipv4_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
-            'action': 'save_or_no_hash',
+            'action': 'save_hash',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
-            'action': 'check_no_hash_or_different',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2", frag=6)/("X"*480)',
-            'action': 'save_or_no_hash',
+            'action': 'save_hash',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
-            'action': 'check_no_hash_or_different',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
-            'action': 'save_or_no_hash',
+            'action': 'save_hash',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
-            'action': 'check_no_hash_or_different',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/UDP()/("X"*480)',
-            'action': 'save_or_no_hash',
+            'action': 'save_hash',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
-            'action': 'check_no_hash_or_different',
+            'action': 'check_hash_different',
         },
     ],
 }
@@ -723,16 +723,8 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_symmetric = {
             'action': 'save_hash',
         },
         {
-            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
-            'action': 'check_no_hash_or_different',
-        },
-        {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
-            'action': 'check_no_hash_or_different',
-        },
-        {
-            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
-            'action': 'check_no_hash_or_different',
+            'action': 'check_hash_different',
         },
     ],
 }
@@ -1091,12 +1083,43 @@ mac_ipv4_gtpu_ipv4_udp_gtpu = {
     ]
 }
 
+mac_ipv4_gtpu_ipv4_udp_ipv4 = {
+    'sub_casename': 'mac_ipv4_gtpu_ipv4_udp_ipv4',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32')
+                                                       .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'action': 'check_no_hash',
+        },
+    ]
+}
+
 
 mac_ipv4_gtpu_ipv4_udp_toeplitz = [mac_ipv4_gtpu_ipv4_udp_l3dst, mac_ipv4_gtpu_ipv4_udp_l3src,
                                    mac_ipv4_gtpu_ipv4_udp_l3dst_l4src, mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst,
                                    mac_ipv4_gtpu_ipv4_udp_l3src_l4src, mac_ipv4_gtpu_ipv4_udp_l3src_l4dst,
                                    mac_ipv4_gtpu_ipv4_udp_l4src, mac_ipv4_gtpu_ipv4_udp_l4dst,
-                                   mac_ipv4_gtpu_ipv4_udp_all, mac_ipv4_gtpu_ipv4_udp_gtpu]
+                                   mac_ipv4_gtpu_ipv4_udp_all, mac_ipv4_gtpu_ipv4_udp_gtpu, mac_ipv4_gtpu_ipv4_udp_ipv4]
 
 mac_ipv4_gtpu_ipv4_tcp_toeplitz = [eval(str(element).replace('TCP', 'TCP1').replace('udp', 'tcp')
                                         .replace('UDP(sport', 'TCP(sport').replace('TCP1', 'UDP')
@@ -1667,11 +1690,42 @@ mac_ipv4_gtpu_ipv6_udp_gtpu = {
     ]
 }
 
+mac_ipv4_gtpu_ipv6_udp_ipv6 = {
+    'sub_casename': 'mac_ipv4_gtpu_ipv6_udp_ipv6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32')
+                                                       .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'action': 'check_no_hash',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_ipv6_udp_toeplitz = [mac_ipv4_gtpu_ipv6_udp_l3dst, mac_ipv4_gtpu_ipv6_udp_l3src,
                                    mac_ipv4_gtpu_ipv6_udp_l3dst_l4src, mac_ipv4_gtpu_ipv6_udp_l3dst_l4dst,
                                    mac_ipv4_gtpu_ipv6_udp_l3src_l4src, mac_ipv4_gtpu_ipv6_udp_l3src_l4dst,
                                    mac_ipv4_gtpu_ipv6_udp_l4src, mac_ipv4_gtpu_ipv6_udp_l4dst,
-                                   mac_ipv4_gtpu_ipv6_udp_all, mac_ipv4_gtpu_ipv6_udp_gtpu]
+                                   mac_ipv4_gtpu_ipv6_udp_all, mac_ipv4_gtpu_ipv6_udp_gtpu, mac_ipv4_gtpu_ipv6_udp_ipv6]
 
 mac_ipv4_gtpu_ipv6_tcp_toeplitz = [eval(str(element).replace('TCP', 'TCP1').replace('udp', 'tcp')
                                         .replace('UDP(sport', 'TCP(sport').replace('TCP1', 'UDP')
@@ -2574,6 +2628,46 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_gtpu = {
         },
     ]
 }
+
+mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_ipv4_6 = {
+    'sub_casename': 'mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_ipv4_6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('sport=22', 'sport=32')
+                                                                              .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('sport=22', 'sport=32')
+                                                                              .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': [
+                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
+                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
+            ],
+            'action': 'check_no_hash',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz = [
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_only,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only,
@@ -2584,6 +2678,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz = [
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4dst_only,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp,
     mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_gtpu,
+    mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_ipv4_6,
 ]
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_tcp_toeplitz = [eval(str(element).replace('TCP', 'TCP1').replace('udp', 'tcp')
@@ -2609,7 +2704,8 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv6_udp_toeplitz = [eval(str(element).replace('g
                                                          .replace('IP(dst="192.168.0.1",src="192.168.0.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
                                                          .replace('IP(dst="192.168.1.1",src="192.168.0.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
                                                          .replace('IP(dst="192.168.0.1",src="192.168.1.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"')
-                                                         .replace('IP(dst="192.168.1.1",src="192.168.1.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"'))
+                                                         .replace('IP(dst="192.168.1.1",src="192.168.1.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"')
+                                                         .replace('rss types ipv4', 'rss types ipv6'))
                                                     for element in mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz]
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv6_tcp_toeplitz = [eval(str(element).replace('gtp_psc / ipv4', 'gtp_psc / ipv6')
@@ -2619,7 +2715,8 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv6_tcp_toeplitz = [eval(str(element).replace('g
                                                          .replace('IP(dst="192.168.0.1",src="192.168.0.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
                                                          .replace('IP(dst="192.168.1.1",src="192.168.0.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020"')
                                                          .replace('IP(dst="192.168.0.1",src="192.168.1.2"', 'IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"')
-                                                         .replace('IP(dst="192.168.1.1",src="192.168.1.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"'))
+                                                         .replace('IP(dst="192.168.1.1",src="192.168.1.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"')
+                                                         .replace('rss types ipv4', 'rss types ipv6'))
                                                     for element in mac_ipv4_gtpu_eh_without_ul_dl_ipv4_tcp_toeplitz]
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_basic = 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)'
@@ -2935,11 +3032,42 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_gtpu = {
     ]
 }
 
+mac_ipv4_gtpu_eh_dl_ipv4_udp_ipv4 = {
+    'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv4_udp_ipv4',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32')
+                                                             .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'action': 'check_no_hash',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_eh_dl_ipv4_udp_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4src, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4dst,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4src, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4dst,
                                          mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src, mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst,
-                                         mac_ipv4_gtpu_eh_dl_ipv4_udp_all, mac_ipv4_gtpu_eh_dl_ipv4_udp_gtpu]
+                                         mac_ipv4_gtpu_eh_dl_ipv4_udp_all, mac_ipv4_gtpu_eh_dl_ipv4_udp_gtpu, mac_ipv4_gtpu_eh_dl_ipv4_udp_ipv4]
 
 mac_ipv4_gtpu_eh_ul_ipv4_udp_toeplitz = [eval(str(element).replace('(type=1', '(type=2')
                                                           .replace('(type=0', '(type=1').replace('(type=2', '(type=0')
@@ -3589,11 +3717,42 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_gtpu = {
     ]
 }
 
+mac_ipv4_gtpu_eh_dl_ipv6_udp_ipv6 = {
+    'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv6_udp_ipv6',
+    'port_id': 0,
+    'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6 end key_len 0 queues end / end',
+    'test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32')
+                                                       .replace('dport=23', 'dport=33'),
+            'action': 'check_hash_same',
+        },
+    ],
+    'post-test': [
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'action': 'check_no_hash',
+        },
+    ]
+}
+
 mac_ipv4_gtpu_eh_dl_ipv6_udp_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst, mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src,
                                    mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4src, mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4dst,
                                    mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4src, mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4dst,
                                    mac_ipv4_gtpu_eh_dl_ipv6_udp_l4src, mac_ipv4_gtpu_eh_dl_ipv6_udp_l4dst,
-                                   mac_ipv4_gtpu_eh_dl_ipv6_udp_all, mac_ipv4_gtpu_eh_dl_ipv6_udp_gtpu]
+                                   mac_ipv4_gtpu_eh_dl_ipv6_udp_all, mac_ipv4_gtpu_eh_dl_ipv6_udp_gtpu, mac_ipv4_gtpu_eh_dl_ipv6_udp_ipv6]
 mac_ipv4_gtpu_eh_ul_ipv6_udp_toeplitz = [eval(str(element).replace('(type=1', '(type=2')
                                                           .replace('(type=0', '(type=1').replace('(type=2', '(type=0')
                                                           .replace('gtp_psc pdu_t is 0', 'gtp_psc pdu_t is 1')
@@ -3944,15 +4103,27 @@ mac_ipv4_gtpu_eh_ipv4_without_ul_dl_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
-            'action': {'check_no_hash_or_different': 'ipv4-nonfrag'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2",frag=6)/("X"*480)',
-            'action': {'check_no_hash_or_different': 'ipv4-frag'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1",frag=6)/("X"*480)',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
-            'action': {'check_no_hash_or_different': 'ipv4-icmp'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
+            'action': 'check_hash_different',
         },
     ],
 }
@@ -4067,11 +4238,19 @@ mac_ipv4_gtpu_eh_ipv4_udp_without_ul_dl_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different', 'udp-dl'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different', 'udp-ul'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
+            'action': 'check_hash_different',
         },
     ],
 }
@@ -4184,11 +4363,19 @@ mac_ipv4_gtpu_eh_ipv4_tcp_without_ul_dl_symmetric = {
     'post-test': [
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different', 'udp-dl'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)',
+            'action': 'check_hash_different',
         },
         {
             'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)',
-            'action': {'check_hash_different', 'udp-ul'},
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34) /IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)',
+            'action': 'check_hash_different',
         },
     ],
 }
@@ -4602,22 +4789,17 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         negative_rules = [
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end']
         self.rssprocess.create_rule(rule=negative_rules, check_stats=False, msg="Invalid input pattern: Invalid argument")
 
     def test_symmetric_negative_cases(self):
         rules = [
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types gtpu end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 l3-dst-only end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types tcp end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l3-src-only end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l4-dst-only end key_len 0 queues end / end',
-            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l3-dst-only l4-src-only end key_len 0 queues end / end']
+            'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l3-src-only end key_len 0 queues end / end',]
         self.rssprocess.create_rule(rule=rules, check_stats=False)
 
     def test_global_simple_xor(self):
