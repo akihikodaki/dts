@@ -55,6 +55,7 @@ from packet import Packet
 from settings import HEADER_SIZE
 
 ETHER_HEADER_LEN = 18
+VLAN=4
 IP_HEADER_LEN = 20
 ETHER_STANDARD_MTU = 1518
 ETHER_JUMBO_FRAME_MTU = 9000
@@ -107,7 +108,8 @@ class TestMtuUpdate(TestCase):
         # The packet total size include ethernet header, ip header, and payload.
         # ethernet header length is 18 bytes, ip standard header length is 20 bytes.
         # pktlen = pktsize - ETHER_HEADER_LEN
-        padding = pktsize - IP_HEADER_LEN
+        max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN * 2
+        padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN
         out = self.send_scapy_packet(port_id,
                                      f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*{padding})')
         return out
@@ -117,15 +119,15 @@ class TestMtuUpdate(TestCase):
         """
         Send 1 packet to portid
         """
-        tx_pkts_ori, tx_err_ori, _ = [int(_) for _ in self.get_port_status_rx(self.rx_port)]
-        rx_pkts_ori, rx_err_ori, _ = [int(_) for _ in self.get_port_status_tx(self.tx_port)]
+        tx_pkts_ori, tx_err_ori, _ = [int(_) for _ in self.get_port_status_tx(self.tx_port)]
+        rx_pkts_ori, rx_err_ori, _ = [int(_) for _ in self.get_port_status_rx(self.rx_port)]
 
         out = self.send_packet_of_size_to_port(self.rx_port, pktsize)
 
         sleep(5)
 
-        tx_pkts, tx_err, _ = [int(_) for _ in self.get_port_status_rx(self.rx_port)]
-        rx_pkts, rx_err, _ = [int(_) for _ in self.get_port_status_tx(self.tx_port)]
+        tx_pkts, tx_err, _ = [int(_) for _ in self.get_port_status_tx(self.tx_port)]
+        rx_pkts, rx_err, _ = [int(_) for _ in self.get_port_status_rx(self.rx_port)]
 
         tx_pkts_difference = tx_pkts - tx_pkts_ori
         tx_err_difference = tx_err - tx_err_ori
@@ -166,6 +168,7 @@ class TestMtuUpdate(TestCase):
         self.port_mask = utils.create_mask([self.rx_port, self.tx_port])
 
         self.pmdout = PmdOutput(self.dut)
+        self.set_mtu(ETHER_JUMBO_FRAME_MTU + 600)
 
     def set_up(self):
         """
@@ -219,8 +222,6 @@ class TestMtuUpdate(TestCase):
         """
         Sends a packet of the given size into the testing machine.
         """
-        self.set_mtu(packet_size + 1)
-
         if self.kdriver == "mlx5_core" or self.kdriver == "mlx4_core":
         # Mellanox will need extra options to start testpmd
             self.pmdout.start_testpmd("Default", "--max-pkt-len=9500 --tx-offloads=0x8000 --enable-scatter -a")
@@ -237,11 +238,19 @@ class TestMtuUpdate(TestCase):
         self.exec("set fwd mac")
         self.exec("start")
 
+        self.send_packet_of_size_to_tx_port(packet_size - 1, received=True)
         self.send_packet_of_size_to_tx_port(packet_size, received=True)
-        self.send_packet_of_size_to_tx_port(packet_size + 100, received=False)
+        self.send_packet_of_size_to_tx_port(packet_size + 1, received=False)
 
         self.exec("stop")
         self.pmdout.quit()
+
+    def test_mtu_checks_100(self):
+        """
+        Checks that the port responds properly to having it's MTU set to 100 and
+         then being sent packets of size 100 and 101.
+        """
+        self.helper_test_mut_checks(100)
 
     def test_mtu_checks_1500(self):
         """
