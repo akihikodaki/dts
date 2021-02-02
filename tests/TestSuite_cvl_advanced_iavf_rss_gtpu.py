@@ -115,18 +115,7 @@ mac_ipv4_gtpu_ipv4_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-tcp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_l3src_only = eval(str(mac_ipv4_gtpu_ipv4_l3dst_only)
@@ -221,18 +210,7 @@ mac_ipv4_gtpu_ipv4_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-tcp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_gtpu = {
@@ -289,18 +267,7 @@ mac_ipv4_gtpu_ipv4_gtpu = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-tcp'],
-                mac_ipv4_gtpu_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_toeplitz = [mac_ipv4_gtpu_ipv4_l3dst_only, mac_ipv4_gtpu_ipv4_l3src_only,
@@ -346,19 +313,19 @@ mac_ipv4_gtpu_ipv4_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.1",dst="192.168.0.2")/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-nonfrag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.3",dst="192.168.0.8",frag=6)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-frag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.10",dst="192.168.0.20")/ICMP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-icmp'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(src="192.168.0.10",dst="192.168.0.20")/UDP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-udp'},
         },
     ],
@@ -472,19 +439,19 @@ mac_ipv4_gtpu_eh_dl_ipv4_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-nonfrag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-frag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-icmp'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-udp'},
         },
     ],
@@ -598,12 +565,7 @@ mac_ipv4_gtpu_ipv4_udp_l3dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_l3src = eval(str(mac_ipv4_gtpu_ipv4_udp_l3dst)
@@ -636,12 +598,7 @@ mac_ipv4_gtpu_ipv4_udp_l3src_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
@@ -666,12 +623,7 @@ mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
@@ -696,12 +648,7 @@ mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
@@ -726,12 +673,7 @@ mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_ipv4_udp_l4dst = {
     'sub_casename': 'mac_ipv4_gtpu_ipv4_udp_l4dst',
@@ -752,12 +694,7 @@ mac_ipv4_gtpu_ipv4_udp_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_ipv4_udp_l4src = {
     'sub_casename': 'mac_ipv4_gtpu_ipv4_udp_l4src',
@@ -778,12 +715,7 @@ mac_ipv4_gtpu_ipv4_udp_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_all = {
@@ -816,12 +748,7 @@ mac_ipv4_gtpu_ipv4_udp_all = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_l3 = {
@@ -846,12 +773,7 @@ mac_ipv4_gtpu_ipv4_udp_l3 = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv4_udp_toeplitz = [mac_ipv4_gtpu_ipv4_udp_l3dst, mac_ipv4_gtpu_ipv4_udp_l3src,
@@ -942,18 +864,7 @@ mac_ipv4_gtpu_ipv6_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-tcp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_l3src_only = {
@@ -1022,18 +933,7 @@ mac_ipv4_gtpu_ipv6_l3src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-tcp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_l3src_only = eval(str(mac_ipv4_gtpu_ipv6_l3dst_only)
@@ -1128,18 +1028,7 @@ mac_ipv4_gtpu_ipv6_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-tcp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_gtpu = {
@@ -1196,18 +1085,7 @@ mac_ipv4_gtpu_ipv6_gtpu = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-tcp'],
-                mac_ipv4_gtpu_ipv6_basic['ipv6-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_toeplitz = [mac_ipv4_gtpu_ipv6_l3dst_only, mac_ipv4_gtpu_ipv6_l3src_only,
@@ -1233,12 +1111,7 @@ mac_ipv4_gtpu_ipv6_udp_l3dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_l3src = eval(str(mac_ipv4_gtpu_ipv6_udp_l3dst)
@@ -1270,12 +1143,7 @@ mac_ipv4_gtpu_ipv6_udp_l3src_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_l3src_l4dst = {
@@ -1300,12 +1168,7 @@ mac_ipv4_gtpu_ipv6_udp_l3src_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_l3dst_l4src = {
@@ -1330,12 +1193,7 @@ mac_ipv4_gtpu_ipv6_udp_l3dst_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_l3dst_l4dst = {
@@ -1360,12 +1218,7 @@ mac_ipv4_gtpu_ipv6_udp_l3dst_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_ipv6_udp_l4dst = {
     'sub_casename': 'mac_ipv4_gtpu_ipv6_udp_l4dst',
@@ -1386,12 +1239,7 @@ mac_ipv4_gtpu_ipv6_udp_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_ipv6_udp_l4src = {
     'sub_casename': 'mac_ipv4_gtpu_ipv6_udp_l4src',
@@ -1412,12 +1260,7 @@ mac_ipv4_gtpu_ipv6_udp_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_all = {
@@ -1450,12 +1293,7 @@ mac_ipv4_gtpu_ipv6_udp_all = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_ipv6_udp_toeplitz = [mac_ipv4_gtpu_ipv6_udp_l3dst, mac_ipv4_gtpu_ipv6_udp_l3src,
@@ -1549,18 +1387,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-udp'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-tcp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_l3src_only = eval(str(mac_ipv4_gtpu_eh_dl_ipv4_l3dst_only)
@@ -1655,18 +1482,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-udp'],
-                mac_ipv4_gtpu_eh_dl_ipv4_basic['ipv4-tcp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 
@@ -1759,18 +1575,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag_ul'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_only = eval(str(mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_only)
@@ -1886,18 +1691,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_all = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag_ul'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_gtpu = {
@@ -1966,18 +1760,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_gtpu = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag_ul'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-frag'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-icmp'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-udp'],
-            ],
-            'action': 'check_no_hash',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_toeplitz = [mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_only,
@@ -2023,15 +1806,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_only = eval(str(mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only)
                                                       .replace('ul_dl_ipv4_udp_l3dst', 'ul_dl_ipv4_udp_l3src')
@@ -2070,15 +1845,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_l4dst = eval(str(mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_l4src)
                                                            .replace('udp_l3src_l4src', 'udp_l3src_l4dst')
@@ -2126,15 +1893,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4dst_only = eval(str(mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4src_only)
@@ -2173,15 +1932,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3 = {
@@ -2222,15 +1973,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3 = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'],
-                mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_toeplitz = [
@@ -2303,12 +2046,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src = eval(str(mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst)
@@ -2341,12 +2079,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4dst = {
@@ -2371,12 +2104,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4src = {
@@ -2401,12 +2129,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4dst = {
@@ -2432,12 +2155,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst',
@@ -2458,12 +2176,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src',
@@ -2484,12 +2197,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_all = {
@@ -2518,12 +2226,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3 = {
@@ -2548,12 +2251,7 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3 = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv4_udp_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst, mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src,
@@ -2654,18 +2352,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-udp'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-tcp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_l3src_only = eval(str(mac_ipv4_gtpu_eh_dl_ipv6_l3dst_only)
@@ -2760,18 +2447,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-nonfrag'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-frag'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-icmp'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-udp'],
-                mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-tcp'],
-            ],
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv6_l3dst_only, mac_ipv4_gtpu_eh_dl_ipv6_l3src_only,
@@ -2804,12 +2480,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src = eval(str(mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst)
@@ -2841,12 +2512,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4dst = {
@@ -2871,12 +2537,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4src = {
@@ -2901,12 +2562,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4dst = {
@@ -2931,12 +2587,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l4dst = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv6_udp_l4dst',
@@ -2957,12 +2608,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l4dst = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_different',
-        },
-    ]
+    'post-test': []
 }
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l4src = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv6_udp_l4src',
@@ -2983,12 +2629,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l4src = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_all = {
@@ -3017,12 +2658,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_all = {
             'action': 'check_hash_different',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
-            'action': 'check_no_hash_or_different',
-        },
-    ]
+    'post-test': []
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_udp_toeplitz = [mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst, mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src,
@@ -3155,19 +2791,19 @@ mac_ipv4_gtpu_eh_ipv4_without_ul_dl_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-nonfrag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2",frag=6)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1",frag=6)/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-frag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-icmp'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
             'action': {'check_no_hash_or_different', 'ipv4-udp'},
         },
     ],
@@ -3224,11 +2860,27 @@ mac_ipv4_gtpu_eh_ipv4_udp_without_ul_dl_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
             'action': {'check_no_hash_or_different', 'udp-dl'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-dl'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-dl'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-ul'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-ul'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
             'action': {'check_no_hash_or_different', 'udp-ul'},
         },
     ],
@@ -3283,11 +2935,27 @@ mac_ipv4_gtpu_eh_ipv4_tcp_without_ul_dl_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=23, dport=22)/("X"*480)',
             'action': {'check_no_hash_or_different', 'udp-dl'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-dl'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=23, dport=22)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-dl'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=23, dport=22)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-ul'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=22, dport=23)/("X"*480)',
+            'action': {'check_no_hash_or_different', 'udp-ul'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/TCP(sport=23, dport=22)/("X"*480)',
             'action': {'check_no_hash_or_different', 'udp-ul'},
         },
     ],
@@ -3956,21 +3624,7 @@ mac_ipv4_gtpu_l3src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpu_l3dst_only = {
@@ -4076,21 +3730,7 @@ mac_ipv4_gtpu_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpu_l3_src_only_l3_dst_only = {
@@ -4260,23 +3900,7 @@ mac_ipv4_gtpu_l3_src_only_l3_dst_only = {
         },
     ],
     # not support 20.11
-    'post-test': [
-        {
-            '''
-            'send_packet': [
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_no_hash',
-            '''
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpu_l3src_only = {
@@ -4381,21 +4005,7 @@ mac_ipv6_gtpu_l3src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-reponse'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpu_l3dst_only = {
@@ -4500,21 +4110,7 @@ mac_ipv6_gtpu_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-reponse'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpu_l3_src_only_l3_dst_only = {
@@ -4714,23 +4310,7 @@ mac_ipv6_gtpu_l3_src_only_l3_dst_only = {
         },
     ],
     # not support 20.11
-    'post-test': [
-        {
-            '''
-            'send_packet': [
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-reponse'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_no_hash',
-            '''
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpc_l3src_only = {
@@ -4979,33 +4559,7 @@ mac_ipv4_gtpc_l3src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpc_l3dst_only = {
@@ -5254,33 +4808,7 @@ mac_ipv4_gtpc_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpc_l3_src_only_l3_dst_only = {
@@ -5690,35 +5218,7 @@ mac_ipv4_gtpc_l3_src_only_l3_dst_only = {
         },
     ],
     # not support 20.11
-    'post-test': [
-        {
-            '''
-            'send_packet': [
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_no_hash',
-            '''
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpc_l3src_only = {
@@ -5967,33 +5467,7 @@ mac_ipv6_gtpc_l3src_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpc_l3dst_only = {
@@ -6242,33 +5716,7 @@ mac_ipv6_gtpc_l3dst_only = {
             'action': 'check_hash_same',
         },
     ],
-    'post-test': [
-        {
-            'send_packet': [
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv6_gtpc_l3_src_only_l3_dst_only = {
@@ -6700,35 +6148,7 @@ mac_ipv6_gtpc_l3_src_only_l3_dst_only = {
         },
     ],
     # not support 20.11
-    'post-test': [
-        {
-            '''
-            'send_packet': [
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_no_hash',
-            '''
-        },
-    ],
+    'post-test': [],
 }
 
 mac_ipv4_gtpu_symmetric = {
@@ -6804,17 +6224,44 @@ mac_ipv4_gtpu_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': [
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0],
-                mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3',
+                                                                               'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpu-pay'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-eh-pay'][0].replace('src="192.168.1.1", dst="192.168.1.3',
+                                                                                  'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpu-eh-pay'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-request'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpu-echo-request'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['ipv4-gtpu-echo-reponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpu-echo-reponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-pay'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpu-pay'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-eh-pay'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpu-eh-pay'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-request'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpu-echo-request'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_basic_pkt['vlan-ipv4-gtpu-echo-reponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3', 'src="192.168.1.3", dst="192.168.1.1'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpu-echo-reponse'},
         },
     ],
 }
@@ -6891,17 +6338,36 @@ mac_ipv6_gtpu_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': [
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['ipv6-gtpu-echo-reponse'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-eh-pay'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-request'][0],
-                mac_ipv6_gtpu_basic_pkt['vlan-ipv6-gtpu-echo-reponse'][0],
-            ],
-            'action': 'check_hash_different',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpu-pay'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpu-eh-pay'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpu-echo-request'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpu-echo-reponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/Raw("x"*96)',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpu-pay'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/Raw("x"*96)',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpu-eh-pay'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpu-echo-request'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2152)/GTP_U_Header(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpu-echo-reponse'},
         },
     ],
 }
@@ -7074,29 +6540,104 @@ mac_ipv4_gtpc_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': [
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0],
-                mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-EchoRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-EchoEesponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-EchoEesponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-CreatePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-CreatePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-CreatePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-UpdatePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-UpdatePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-UpdatePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-DeletePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-DeletePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-DeletePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-PDUNotificationRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-PDUNotificationRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['ipv4-gtpc-SupportedExtensionHeadersNotification'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'ipv4-gtpc-SupportedExtensionHeadersNotification'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-EchoRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-EchoEesponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-EchoEesponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-CreatePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-CreatePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-CreatePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-UpdatePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-UpdatePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-UpdatePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-DeletePDPContextRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-DeletePDPContextResponse'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-DeletePDPContextResponse'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-PDUNotificationRequest'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-PDUNotificationRequest'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpc_basic_pkt['vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'][0].replace(
+                'src="192.168.1.1", dst="192.168.1.3"', 'src="192.168.1.3", dst="192.168.1.1"'),
+            'action': {'check_no_hash_or_different': 'vlan-ipv4-gtpc-SupportedExtensionHeadersNotification'},
         },
     ],
 }
@@ -7269,29 +6810,84 @@ mac_ipv6_gtpc_symmetric = {
     ],
     'post-test': [
         {
-            'send_packet': [
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-EchoEesponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-CreatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-UpdatePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-DeletePDPContextResponse'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-PDUNotificationRequest'][0],
-                mac_ipv6_gtpc_basic_pkt['vlan-ipv6-gtpc-SupportedExtensionHeadersNotification'][0],
-            ],
-            'action': 'check_hash_different',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-EchoRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-EchoEesponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-CreatePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-CreatePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-UpdatePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-UpdatePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-DeletePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-DeletePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-PDUNotificationRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
+            'action': {'check_no_hash_or_different': 'ipv6-gtpc-SupportedExtensionHeadersNotification'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x01)/GTPEchoRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-EchoRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x02)/GTPEchoResponse()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-EchoEesponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x10)/GTPCreatePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-CreatePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x11)/GTPCreatePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-CreatePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x12)/GTPUpdatePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-UpdatePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x13)/GTPUpdatePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-UpdatePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x14)/GTPDeletePDPContextRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-DeletePDPContextRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x15)/GTPDeletePDPContextResponse()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-DeletePDPContextResponse'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1B)/GTPPDUNotificationRequest()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-PDUNotificationRequest'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/Dot1Q(vlan=1)/IPv6(src="CDCD:910A:2222:5498:8475:1111:3900:2020", dst="CDCD:910A:2222:5498:8475:1111:3900:1536")/UDP(sport=20,dport=2123)/GTPHeader(teid=0x12345678,gtp_type=0x1F)/GTPSupportedExtensionHeadersNotification()',
+            'action': {'check_no_hash_or_different': 'vlan-ipv6-gtpc-SupportedExtensionHeadersNotification'},
         },
     ],
 }
