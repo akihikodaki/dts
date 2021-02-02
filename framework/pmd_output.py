@@ -103,7 +103,7 @@ class PmdOutput():
     def get_pmd_cmd(self):
         return self.command
 
-    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, **config):
+    def start_testpmd(self, cores='default', param='', eal_param='', socket=0, fixed_prefix=False, expected='testpmd> ', **config):
         """
         start testpmd with input parameters.
         :param cores: eg:
@@ -148,7 +148,7 @@ class PmdOutput():
         command = command.replace('  ', ' ')
         if self.session != self.dut:
             self.session.send_expect("cd %s" % self.dut.base_dir, "# ")
-        out = self.session.send_expect(command, "testpmd> ", 120)
+        out = self.session.send_expect(command, expected, 120)
         self.command = command
         # wait 10s to ensure links getting up before test start.
         sleep(10)
