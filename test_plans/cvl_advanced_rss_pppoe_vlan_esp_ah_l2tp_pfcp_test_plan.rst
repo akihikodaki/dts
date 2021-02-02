@@ -53,18 +53,18 @@ Pattern and input set
     |                               | MAC_PPPOE_IPV4_PAY        | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only, ipv4                    |
     |                               +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_IPV4_UDP_PAY    | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only,                         |
-    |                               |                           | l4-src-only, l4-dst-only, ipv4-udp                                               |
+    |                               |                           | l4-src-only, l4-dst-only, ipv4-udp, ipv4                                         |
     |                               +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_IPV4_TCP_PAY    | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only,                         |
-    |                               |                           | l4-src-only, l4-dst-only, ipv4-tcp                                               |
+    |                               |                           | l4-src-only, l4-dst-only, ipv4-tcp, ipv4                                         |
     |            PPPOE              +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_IPV6_PAY        | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only, ipv6                    |
     |                               +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_IPV6_UDP_PAY    | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only,                         |
-    |                               |                           | l4-src-only, l4-dst-only, ipv6-udp                                               |
+    |                               |                           | l4-src-only, l4-dst-only, ipv6-udp, ipv6                                         |
     |                               +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_IPV6_TCP_PAY    | eth, l2-src-only, l2-dst-only, l3-src-only, l3-dst-only,                         |
-    |                               |                           | l4-src-only, l4-dst-only, ipv6-tcp                                               |
+    |                               |                           | l4-src-only, l4-dst-only, ipv6-tcp, ipv6                                         |
     |                               +---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_PPPOE_PAY             | eth, l2-src-only, l2-dst-only, pppoe                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
@@ -2105,6 +2105,59 @@ Subcase 12: MAC_PPPOE_IPV4_UDP_PAY_L3_SRC_ONLY_L3_DST_ONLY_L4_SRC_ONLY_L4_DST_ON
      change other fields, send packets::
 
        sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="ens786f0")
+
+     check the hash values are the same as the first packet.
+
+4. send packets mismatched the pattern, check the hash values not exist.
+
+5. destroy the rule::
+
+     testpmd> flow destroy 0 rule 0
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send the matched packets, check the hash values of the packets are not exist.
+
+Subcase 13: MAC_PPPOE_IPV4_UDP_PAY_IPV4
+---------------------------------------
+
+1. validate a rule for RSS type of MAC_PPPOE_IPV4_UDP_PAY::
+
+     testpmd> flow validate 0 ingress pattern eth / pppoes / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+   get the message::
+
+     Flow rule validated
+
+   check the flow list::
+
+     testpmd> flow list 0
+
+   check the rule not exists in the list.
+
+2. create a rule for RSS type of MAC_PPPOE_IPV4_UDP_PAY::
+
+     testpmd> flow create 0 ingress pattern eth / pppoes / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+     testpmd> flow list 0
+
+   check the rule exists in the list.
+
+3. send matched packets
+
+   * MAC_PPPOE_IPV4_UDP_PAY packet::
+
+       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="ens786f0")
+
+     change the fields [Source IP][Dest IP], send packets::
+
+       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.2")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="ens786f0")
+       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.7")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="ens786f0")
+       sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.3", dst="192.168.1.7")/UDP(sport=25,dport=23)/Raw("x"*80)],iface="ens786f0")
+
+     check the hash values are different from the first packet.
+     change other fields, send packets::
+
+       sendp([Ether(src="00:11:22:33:44:53", dst="10:22:33:44:55:99")/PPPoE(sessionid=7)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/UDP(sport=19,dport=99)/Raw("x"*80)],iface="ens786f0")
 
      check the hash values are the same as the first packet.
 

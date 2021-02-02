@@ -60,51 +60,51 @@ Pattern and input set
     | IPv4/IPv6 transport           |                           |                                                                                  |
     | IPv4/IPv6 payload             |                           |                                                                                  |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_IPV4_UDP    | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_IPV4_UDP    | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_IPV4_TCP    | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_IPV4_TCP    | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_GTPU_IPV6        | gtpu, ipv6, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_IPV6_UDP    | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_IPV6_UDP    | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_IPV6_TCP    | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_IPV6_TCP    | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV6_GTPU_IPV4        | gtpu, ipv4, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_IPV4_UDP    | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_IPV4_UDP    | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_IPV4_TCP    | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_IPV4_TCP    | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV6_GTPU_IPV6        | gtpu, ipv6, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_IPV6_UDP    | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_IPV6_UDP    | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_IPV6_TCP    | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_IPV6_TCP    | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_GTPU_EH_IPV4     | gtpu, ipv4, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_EH_IPV4_UDP | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_EH_IPV4_UDP | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_EH_IPV4_TCP | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_EH_IPV4_TCP | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV4_GTPU_EH_IPV6     | gtpu, ipv6, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_EH_IPV6_UDP | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_EH_IPV6_UDP | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV4_GTPU_EH_IPV6_TCP | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV4_GTPU_EH_IPV6_TCP | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV6_GTPU_EH_IPV4     | gtpu, ipv4, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_EH_IPV4_UDP | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_EH_IPV4_UDP | gtpu, ipv4-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_EH_IPV4_TCP | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_EH_IPV4_TCP | gtpu, ipv4-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv4         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
     |                               | MAC_IPV6_GTPU_EH_IPV6     | gtpu, ipv6, l3-src-only, l3-dst-only                                             |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_EH_IPV6_UDP | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_EH_IPV6_UDP | gtpu, ipv6-udp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
-    |                               | MAC_IPV6_GTPU_EH_IPV6_TCP | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only               |
+    |                               | MAC_IPV6_GTPU_EH_IPV6_TCP | gtpu, ipv6-tcp, l3-src-only, l3-dst-only, l4-src-only, l4-dst-only, ipv6         |
     +-------------------------------+---------------------------+----------------------------------------------------------------------------------+
 
 .. table::
@@ -240,6 +240,19 @@ run the same test steps as below:
 ================================
 Pattern: outer ipv4 + inner ipv4
 ================================
+GTPoGRE is imported in DPDK-21.02.
+The Ptype is parsed same as GTP packet, so they match gtp RSS rule.
+We just need to add the GTPoGRE packet to the packets check.
+we need to add GTPoGRE packet to "basic hit pattern packets",
+"hit pattern/defined input set" and "hit pattern/not defined input set".
+the GTPoGRE packet format in this pattern is to add::
+
+    IP(proto=0x2F)/GRE(proto=0x0800)/
+
+after Ether layer, before IP layer, just like::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
+
 
 Test case: MAC_IPV4_GTPU_EH_IPV4 with UL/DL
 ===========================================
@@ -590,6 +603,21 @@ hit pattern/not defined input set::
 
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
+Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_IPV4
+------------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+
+hit pattern/not defined input set::
+
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP
 -------------------------------------
 rule::
@@ -697,6 +725,14 @@ rule::
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
 
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4SRC.
+
+Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_IPV4
+------------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_IPV4.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP
 -------------------------------------
@@ -1049,6 +1085,22 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
+Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_IPV4
+---------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
+
+hit pattern/not defined input set::
+
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
+
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP
 ----------------------------------
 rule::
@@ -1362,6 +1414,21 @@ hit pattern/not defined input set::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
 
+Subcase: MAC_IPV4_GTPU_IPV4_UDP_IPV4
+------------------------------------
+rule::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
+
+hit pattern/defined input set::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
+
+hit pattern/not defined input set::
+
+    sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp216s0f0")
+
 Subcase: MAC_IPV4_GTPU_IPV4_UDP
 -------------------------------
 rule::
@@ -1448,6 +1515,14 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
 
+the GTPoGRE packet format in this pattern is to add::
+
+    IP(proto=0x2F)/GRE(proto=0x0800)/
+
+after Ether layer, before IP layer, just like::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
+
 ================================
 Pattern: outer ipv6 + inner ipv4
 ================================
@@ -1458,6 +1533,14 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change outer ipv4 to ipv6.
     packets:
         change the packet's outer L3 layer from IP to IPv6;
+
+the GTPoGRE packet format in this pattern is to add::
+
+    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
+
+after Ether layer, before IP layer, just like::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 ================================
 Pattern: outer ipv6 + inner ipv6
@@ -1473,6 +1556,13 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
 
+the GTPoGRE packet format in this pattern is to add::
+
+    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
+
+after Ether layer, before IP layer, just like::
+
+    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Test case: negative cases
 =========================
@@ -1484,9 +1574,6 @@ Subcase: invalid input set
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end
-    ice_flow_create(): Failed to create flow
-    port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
-    testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
     ice_flow_create(): Failed to create flow
     port_flow_complain(): Caught PMD error type 2 (flow rule (handle)): Invalid input pattern: Invalid argument
     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end
@@ -1502,7 +1589,6 @@ Subcase: invalid input set
 
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types udp end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 gtpu end key_len 0 queues end / end
 
@@ -1700,6 +1786,14 @@ Test case: default pattern supported
 
 Test case: inner L4 protocal hash
 =================================
+Note: add two GTPoGRE packets in each subcase with::
+
+    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
+
+or::
+
+    IP(proto=0x2F)/GRE(proto=0x0800)/
+
 Subcase: MAC_IPV4_GTPU_IPV4_UDP/TCP
 -----------------------------------
 1. start testpmd without disable rss::
@@ -2547,11 +2641,10 @@ all the test cases run the same test steps as below:
    check both the packets are distributed to queues by rss.
    note: if there is not this type packet in the case, omit this step.
 7. distroy the rule and list rule.
-8. send the basic packet.
-   if the rule inner protocol is IPV4_UDP/TCP or IPV6_UDP/TCP,
-   check the received packet has different hash value in step 4.
-   if the rule inner protocol is IPV4/IPV6,
-   check the received packet has not hash value, and distributed to queue 0.
+8. send the same packets in step3, only switch ip address.
+   check the received packets which switched ip address have different hash value.
+
+Note: the GTPoGRE packets need to be added to symmetric cases as a Ptype, just like toeplitz cases.
 
 ==========================================
 Pattern: symmetric outer ipv4 + inner ipv4
@@ -2899,7 +2992,6 @@ Test case: symmetric negative cases
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 l3-dst-only end key_len 0 queues end / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
-    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types tcp end key_len 0 queues end / end
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l3-src-only end key_len 0 queues end / end
@@ -2914,7 +3006,6 @@ Test case: symmetric negative cases
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 l3-dst-only end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
-    flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv6-tcp end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types tcp end key_len 0 queues end / end
     flow validate 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss func symmetric_toeplitz types ipv4-tcp l3-src-only end key_len 0 queues end / end
