@@ -108,8 +108,7 @@ class TestVhostUserInterrupt(TestCase):
             eal_params += " --single-file-segments"
         para = " -- -i --rxq=%d --txq=%d --rss-ip" % (self.queues, self.queues)
         command_line_client =  self.app_testpmd_path + " " + eal_params + para
-        self.virtio_user.send_expect(command_line_client, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
+        self.virtio_user.send_expect(command_line_client, "waiting for client connection...", 120)
 
     def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
         """
@@ -231,6 +230,7 @@ class TestVhostUserInterrupt(TestCase):
         self.get_core_list()
         self.lanuch_virtio_user()
         self.lanuch_l3fwd_power()
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
     def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
@@ -241,6 +241,7 @@ class TestVhostUserInterrupt(TestCase):
         self.get_core_list()
         self.lanuch_virtio_user()
         self.lanuch_l3fwd_power()
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
     def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample(self):
@@ -251,6 +252,7 @@ class TestVhostUserInterrupt(TestCase):
         self.get_core_list()
         self.lanuch_virtio_user(packed=True)
         self.lanuch_l3fwd_power()
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
     def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
@@ -261,6 +263,7 @@ class TestVhostUserInterrupt(TestCase):
         self.get_core_list()
         self.lanuch_virtio_user(packed=True)
         self.lanuch_l3fwd_power()
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
     def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled_and_cbdma_enabled(self):
@@ -271,6 +274,7 @@ class TestVhostUserInterrupt(TestCase):
         self.get_core_list()
         self.lanuch_virtio_user(cbdma=True)
         self.lanuch_l3fwd_power(cbdma=True)
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
     def tear_down(self):
