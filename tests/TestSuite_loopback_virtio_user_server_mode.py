@@ -92,7 +92,7 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         out = self.dut.send_expect("cat /proc/meminfo |grep Hugepagesize|awk '{print($2)}'", "# ")
         return True if out == '2048' else False
 
-    def lanuch_virtio_user_testpmd(self, args):
+    def lanuch_virtio_user_testpmd(self, args, set_fwd_mac=True, expected='testpmd> '):
         """
         start testpmd of vhost user
         """
@@ -103,8 +103,9 @@ class TestLoopbackVirtioUserServerMode(TestCase):
             eal_param += " --force-max-simd-bitwidth=512"
         param = "--rxq=1 --txq=1 --no-numa"
         self.virtio_user_pmd.start_testpmd(cores=self.core_list_user, param=param, eal_param=eal_param, \
-                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True)
-        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
+                no_pci=True, ports=[], prefix="virtio", fixed_prefix=True, expected=expected)
+        if set_fwd_mac:
+            self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
 
     def lanuch_vhost_testpmd_with_multi_queue(self, extern_params=""):
         """
@@ -251,8 +252,9 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.nb_cores = 1
         virtio_pmd_arg = {"version": "packed_vq=0,in_order=0,mrg_rxbuf=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.lanuch_virtio_user_testpmd(virtio_pmd_arg)
+        self.lanuch_virtio_user_testpmd(virtio_pmd_arg, set_fwd_mac=False, expected='waiting for client connection...')
         self.lanuch_vhost_testpmd()
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
         self.start_to_send_packets(self.virtio_user, self.vhost)
         self.calculate_avg_throughput("lanuch virtio first", "")
         self.result_table_print()
@@ -266,8 +268,9 @@ class TestLoopbackVirtioUserServerMode(TestCase):
         self.nb_cores = 1
         virtio_pmd_arg = {"version": "packed_vq=1,in_order=0,mrg_rxbuf=1",
                           "path": "--tx-offloads=0x0 --enable-hw-vlan-strip"}
-        self.lanuch_virtio_user_testpmd(virtio_pmd_arg)
+        self.lanuch_virtio_user_testpmd(virtio_pmd_arg, set_fwd_mac=False, expected='waiting for client connection...')
         self.lanuch_vhost_testpmd()
+        self.virtio_user_pmd.execute_cmd("set fwd mac", "testpmd> ", 120)
         self.start_to_send_packets(self.virtio_user, self.vhost)
         self.calculate_avg_throughput("lanuch virtio first", "")
         self.result_table_print()
