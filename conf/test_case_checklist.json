@@ -2303,6 +2303,36 @@
             "Comments": "Niantic not support this case"
         }
     ],
+    "two_vms_uplink_and_downlink_mirror": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortpark_BASE-T"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC X722 firmware doesn't support to add more than one mirror rule in one vsi"
+        }
+    ],
+    "two_vms_vlan_and_pool_and_uplink_and_downlink": [
+        {
+            "OS": [
+                "ALL"
+            ],
+            "NIC": [
+                "fortpark_BASE-T"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "NIC X722 firmware doesn't support to add more than one mirror rule in one vsi"
+        }
+    ],
      "queue_region_with_rss_rule_api": [
         {
             "OS": [
