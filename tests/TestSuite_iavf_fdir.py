@@ -3211,7 +3211,7 @@ class TestIAVFFdir(TestCase):
             self.verify(False, 'The number of ports is not supported')
 
         self.dut.send_expect("ip link set {} vf {} mac 00:11:22:33:44:55".format(self.pf0_intf, nex_cnt), '#')
-        command = self.path + " -c f -n 6 -- -i --rxq=4 --txq=4"
+        command = self.path + " -c f -n 6 -- -i --rxq=16 --txq=16"
         self.dut.send_expect(command, "testpmd> ", 360)
         self.config_testpmd()
 
