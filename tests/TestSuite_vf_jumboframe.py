@@ -192,11 +192,6 @@ class TestVfJumboFrame(TestCase):
         else:
             return None
 
-    def check_vf_driver(self):
-        output = self.vm_testpmd.execute_cmd("show port info 0")
-        vf0_driver = re.findall("Driver\s*name:\s*(\w+)", output)
-        return vf0_driver[0]
-
     def jumboframes_send_packet(self, pktsize, received=True):
         """
         Send 1 packet to portid
@@ -221,19 +216,11 @@ class TestVfJumboFrame(TestCase):
         rx_bytes -= rx_bytes_ori
         rx_err -= rx_err_ori
 
-        vf_driver = self.check_vf_driver()
-
         if received:
             self.verify((rx_pkts == 1) and (tx_pkts == 1), "Packet forward assert error")
 
-            if self.kdriver == "ixgbe" or self.kdriver == 'ice':
+            if self.kdriver in ["ixgbe", "ice", "i40e"]:
                 self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
-            else:
-                if self.kdriver == "i40e":
-                    if vf_driver == "net_iavf":
-                        self.verify((rx_bytes + 4) == pktsize, "Rx packet size should be packet size - 4")
-                    else:
-                        self.verify(rx_bytes == pktsize, "Rx packet size should be equal to packet size")
 
             if self.kdriver == "igb":
                 self.verify(tx_bytes == pktsize, "Tx packet size should be packet size")
@@ -293,7 +280,7 @@ class TestVfJumboFrame(TestCase):
         self.vm_testpmd.execute_cmd("start")
 
         # On igb, for example i350, refer to :DPDK-1117
-        # For PF, the max-pkt-len = mtu + 18 + 4(VLAN header len).
+        # For PF, the max-pkt-len = mtu + 14(IP_hearder_len) + 4(CRC) + 4(VLAN header len) + 4(VLAN header len).
         # For VF, the real max-pkt-len = the given max-pkt-len + 4(VLAN header len).
         # This behavior is leveraged from kernel driver.
         # And it means max-pkt-len is always 4 bytes longer than assumed.
@@ -301,7 +288,7 @@ class TestVfJumboFrame(TestCase):
         if self.kdriver == "igb":
             self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1 + 4, False)
         else:
-            self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1, False)
+            self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1 + 4 + 4, False)
 
     def test_vf_jumbo_withjumbo(self):
         """
