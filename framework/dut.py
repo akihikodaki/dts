@@ -120,7 +120,6 @@ class Dut(Crb):
         :return: eal_str eg:'-c 0xf -a 0000:88:00.0 -a 0000:88:00.1 --file-prefix=dpdk_1112_20190809143420',
         if dpdk version < 20.11-rc4, eal_str eg: '-c 0xf -w 0000:88:00.0 --file-prefix=dpdk_1112_20190809143420',
         """
-        self.prefix_subfix = str(os.getpid()) + '_' + time.strftime("%Y%m%d%H%M%S", time.localtime())
         default_cores = '1S/2C/1T'
         blank = ' '
         os_type = self.get_os_type()
