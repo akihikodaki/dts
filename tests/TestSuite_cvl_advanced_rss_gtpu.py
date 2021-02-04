@@ -5045,18 +5045,6 @@ class TestCVLAdvancedRSSGTPU(TestCase):
         self.verify(hash_values[4] != hash_values[3], 'packet 5 should has different hash value with packet 4')
         self.verify(hash_values[5] == hash_values[3], 'packet 6 should has same hash value with packet 4')
 
-        self.rssprocess.destroy_rule(port_id=0, rule_id=rule0)
-        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts1[3:])
-        self.verify(hash_values[1] != hash_values[0], 'should get different hash values')
-        self.verify(hash_values[2] == hash_values[0], 'should get same hash values')
-
-        rule2 = self.rssprocess.create_rule(rules[0])
-        hash_values, queues = self.rssprocess.send_pkt_get_hash_queues(pkts1)
-        self.verify(hash_values[1] == hash_values[0], 'packet 2 should has same hash value with packet 1')
-        self.verify(hash_values[2] != hash_values[0], 'packet 3 should has different hash value with packet 1')
-        self.verify(hash_values[4] == hash_values[3], 'packet 5 should has same hash value with packet 4')
-        self.verify(hash_values[5] != hash_values[3], 'packet 6 should has different hash value with packet 4')
-
     def test_ipv4_gtpu_eh_ipv4_and_ipv4_gtpu_eh_ipv4_udp_tcp(self):
         self.switch_testpmd(enable_rss=True)
         pkts1 = [
