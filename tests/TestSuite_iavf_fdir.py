@@ -3267,9 +3267,11 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        self.check_fdir_rule(port_id=0, rule_list=['0'])
+        #show the rule list, there is no rule listed
+        self.check_fdir_rule(port_id=0, stats=False)
         out = self.send_pkts_getouput(pkts=pkt)
-        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=True)
+        rfc.verify_iavf_fdir_directed_by_rss(out)
+        rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 1}, stats=False)
 
     def test_stress_delete_rules(self):
         """
@@ -3354,11 +3356,13 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("port reset 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        # check the rule of port0 is still listed, but doesn't take effect.
-        self.check_fdir_rule(port_id=0, rule_list=['0'])
+        # check there is not rule listed on port 0, the rule of port 1 is still be listed.
+        self.check_fdir_rule(port_id=0, stats=False)
         self.check_fdir_rule(port_id=1, rule_list=['0'])
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
+        #check the packet is distributed by RSS
+        rfc.verify_iavf_fdir_directed_by_rss(out0)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=False)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 1}, stats=True)
         # create the rule again
@@ -3393,22 +3397,22 @@ class TestIAVFFdir(TestCase):
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         # reset vf
         self.dut.send_expect("stop", "testpmd> ")
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port reset 0", "testpmd> ")
-        self.dut.send_expect("port start 0", "testpmd> ")
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port reset 1", "testpmd> ")
+        self.dut.send_expect("port start 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
-        # check the rule of port0 is still listed, but doesn't take effect.
+        # check the rule of port0 is still listed, check there is not rule listed on port 1.
         self.check_fdir_rule(port_id=0, rule_list=['0'])
-        self.check_fdir_rule(port_id=1, rule_list=['0'])
+        self.check_fdir_rule(port_id=1, stats=False)
         out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
+        #check the packet is distributed by RSS
+        rfc.verify_iavf_fdir_directed_by_rss(out1)
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=False)
         # delete the rules
-        self.dut.send_expect("flow destroy 0 rule 0", "Invalid flow destroy")
-        self.destroy_fdir_rule(rule_id='0', port_id=1)
-        out0 = self.send_pkts_getouput(pkts=pkts[0])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=False)
+        self.destroy_fdir_rule(rule_id='0', port_id=0)
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=False)
         # relaunch testpmd, and create the rules, check matched packets.
@@ -3450,6 +3454,8 @@ class TestIAVFFdir(TestCase):
         self.dut.send_expect("port reset 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
+        #check there is not rule listed on vf0
+        self.check_fdir_rule(0,stats=False)
         out0 = self.send_pkts_getouput(pkts=pkts[2])
         rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
         out1 = self.send_pkts_getouput(pkts=pkts[1])
@@ -3491,36 +3497,37 @@ class TestIAVFFdir(TestCase):
         out1 = self.send_pkts_getouput(pkts=pkts[1])
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
 
-        self.session_secondary.send_expect("ip link set %s vf 0 mac 00:11:22:33:44:56" % self.pf0_intf, "# ")
+        self.session_secondary.send_expect("ip link set %s vf 1 mac 00:11:22:33:44:56" % self.pf0_intf, "# ")
         out = self.dut.session.get_session_before(timeout=2)
-        self.verify("Port 0: reset event" in out, "failed to reset vf0")
+        self.verify("Port 1: reset event" in out, "failed to reset vf1")
         self.dut.send_expect("stop", "testpmd> ")
-        self.dut.send_expect("port stop 0", "testpmd> ")
-        self.dut.send_expect("port reset 0", "testpmd> ")
-        self.dut.send_expect("port start 0", "testpmd> ")
+        self.dut.send_expect("port stop 1", "testpmd> ")
+        self.dut.send_expect("port reset 1", "testpmd> ")
+        self.dut.send_expect("port start 1", "testpmd> ")
         self.dut.send_expect("start", "testpmd> ")
+        #check there is not rule listed on vf1
+        self.check_fdir_rule(1,stats=False)
         out0 = self.send_pkts_getouput(pkts=pkts[2])
-        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=True)
-        out1 = self.send_pkts_getouput(pkts=pkts[1])
-        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
-        # delete the rules
-        self.dut.send_expect("flow destroy 0 rule 0", "Invalid flow destroy")
-        self.destroy_fdir_rule(rule_id='0', port_id=1)
-        out0 = self.send_pkts_getouput(pkts=pkts[2])
+        rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 1, "passthru": 1}, stats=True)
+        out1 = self.send_pkts_getouput(pkts=pkts[0])
+        rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
+        #delete the rules
+        self.dut.send_expect("flow destroy 0 rule 0", "Flow rule #0 destroyed")
+        out0 = self.send_pkts_getouput(pkts=pkts[0])
         rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=False)
-        out1 = self.send_pkts_getouput(pkts=pkts[1])
+        out1 = self.send_pkts_getouput(pkts=pkts[2])
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=False)
 
         # relaunch testpmd, and create the rules, check matched packets.
         self.dut.send_expect("quit", "# ")
         self.launch_testpmd()
         self.create_fdir_rule(rules, check_stats=True)
-        out0 = self.send_pkts_getouput(pkts=pkts[2])
+        out0 = self.send_pkts_getouput(pkts=pkts[0])
         rfc.check_iavf_fdir_mark(out0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 6}, stats=True)
-        out1 = self.send_pkts_getouput(pkts=pkts[1])
+        out1 = self.send_pkts_getouput(pkts=pkts[2])
         rfc.check_iavf_fdir_mark(out1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 6}, stats=True)
         self.dut.send_expect("quit", "# ")
-        self.session_secondary.send_expect("ip link set %s vf 0 mac 00:11:22:33:44:55" % self.pf0_intf, "# ")
+        self.session_secondary.send_expect("ip link set %s vf 1 mac 00:11:22:33:44:66" % self.pf0_intf, "# ")
         self.dut.close_session(self.session_secondary)
 
     def checksum_enablehw(self, port, hw):

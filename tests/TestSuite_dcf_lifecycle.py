@@ -1437,12 +1437,13 @@ class TestDcfLifeCycle(TestCase):
         # reset VF0 in testpmd
         cmds = ['stop', 'port stop 0', 'port reset 0', 'port start 0', 'start']
         [self.d_con([cmd, "testpmd> ", 15]) for cmd in cmds]
-        self.check_rule_list()
         self.clear_vf_pmd2_port0_stats()
         self.send_pkt_to_vf1_first(self.dmac)
         out = self.vf_pmd2_con(['stop', "testpmd> ", 15])
         drop_num = re.findall("RX-dropped:\s+(.*?)\s+?", out)
-        self.verify(int(drop_num[0]) == 1, 'the packet is not dropped by VF1, the rule can not take effect')
+        rx_num = re.findall("RX-total:\s+(.*?)\s+?", out)
+        self.verify(int(drop_num[0]) == 0, 'the packet is dropped by VF1, the rule still take effect')
+        self.verify(int(rx_num[0]) == 1, 'the packet not received by VF1')
         self.run_test_post()
 
     def test_dcf_with_acl_filter_01(self):

@@ -2189,8 +2189,8 @@ class CVLDCFSwitchFilterTest(TestCase):
         #stop the DCF, then start the DCF
         self.dut.send_expect("port stop 0", "testpmd> ")
         self.dut.send_expect("port start 0", "testpmd> ")
-        self.check_switch_filter_rule_list(0, rule_list)
-        #send matched packets, port 1 can still receive the packets.
+        #send matched packets, port 1 can not receive the packets.
+        matched_dic['expect_results'] = {"expect_pkts":0}
         self.send_and_check_packets(matched_dic)
 
     def test_mac_ipv4_pfcp_node(self):
