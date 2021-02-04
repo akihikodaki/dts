@@ -586,7 +586,7 @@ class TestKernelpfIavf(TestCase):
         self.vm_testpmd.execute_cmd("set fwd mac")
         self.vm_testpmd.execute_cmd("start")
         self.jumboframes_send_packet(ETHER_STANDARD_MTU - 1, True)
-        self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1, False)
+        self.jumboframes_send_packet(ETHER_STANDARD_MTU + 1 + 4 + 4, False)
         self.tester.send_expect("ifconfig %s mtu %s" % (self.tester_intf, ETHER_STANDARD_MTU), "#")
 
     def test_vf_with_jumboframe(self):
