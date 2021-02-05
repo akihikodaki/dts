@@ -6077,22 +6077,7 @@ Subcase 1: wrong hash input set
 
   there is no listed.
 
-Subcase 2: duplicated rules (not supported in 20.08)
-----------------------------------------------------
-
-1. create a  PFCP rule::
-
-     testpmd> flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end
-
-   the rule is created successfully.
-
-2. create the same rule again, Failed to create flow, report message::
-
-    Add rule failed.: Operation not permitted
-
-3. check only the first rule exists in the list.
-
-Subcase 3: void action
+Subcase 2: void action
 ----------------------
 
 1. validate a rule with void action::
@@ -6117,7 +6102,7 @@ Subcase 3: void action
 
    there is no rule listed.
 
-Subcase 4: delete a non-existing rule
+Subcase 3: delete a non-existing rule
 -------------------------------------
 
 1. show the rule list of port 0::
@@ -6138,7 +6123,7 @@ Subcase 4: delete a non-existing rule
 
    There is no error message reported.
 
-Subcase 5: unsupported pattern with OS default package
+Subcase 4: unsupported pattern with OS default package
 ------------------------------------------------------
 
 1. load os default package and launch testpmd as step 3-5 in Prerequisites.
@@ -6167,7 +6152,7 @@ Subcase 5: unsupported pattern with OS default package
 
    there is no rule listed.
 
-Subcase 6: invalid port
+Subcase 5: invalid port
 -----------------------
 
 1. create a rule with invalid port::

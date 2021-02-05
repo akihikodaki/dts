@@ -5590,13 +5590,6 @@ class Advanced_rss_pppoe_vlan_ah_l2tp_pfcp(TestCase):
             self.rsspro.validate_rule(rule, check_stats=False, check_msg='Invalid argument')
             self.rsspro.create_rule(rule, check_stats=False, msg='Invalid argument')
 
-    def test_duplicated_rules(self):
-        self.switch_testpmd(symmetric=True)
-        rule = 'flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end'
-        self.rsspro.create_rule(rule)
-        self.rsspro.create_rule(rule, check_stats=False, msg='Operation not permitted')
-        self.rsspro.check_rule(rule_list=[rule])
-
     def test_void_action(self):
         self.switch_testpmd(symmetric=True)
         rule = 'flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions end'
