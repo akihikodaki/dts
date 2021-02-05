@@ -93,7 +93,7 @@ class TestExternalMemory(TestCase):
         self.insmod_modprobe(modename="igb_uio")
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(r'./%s %s -- --mp-alloc=xmem -i'
-                             % (self.app_testpmd_path, self.eal_para), "link state change event", 60)
+                             % (self.app_testpmd_path, self.eal_para), "testpmd>", 60)
         self.verifier_result()
 
     def test_IGB_UIO_xmemhuage(self):
@@ -103,7 +103,7 @@ class TestExternalMemory(TestCase):
         self.insmod_modprobe(modename="igb_uio")
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(r'./%s %s -- --mp-alloc=xmemhuge -i'
-                             % (self.app_testpmd_path, self.eal_para), "link state change event", 60)
+                             % (self.app_testpmd_path, self.eal_para), "testpmd>", 60)
         self.verifier_result()
 
     def test_VFIO_PCI_xmem(self):
