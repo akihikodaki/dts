@@ -136,16 +136,16 @@ class TestNtb(TestCase):
         cmd_opt = " ".join(["{}={}".format(key, param[key]) for key in param.keys()])
 
         self.get_core_list()
-        app = self.dut.apps_name['ntb_fwd']
+        app = self.dut.apps_name['ntb']
         eal_host = self.ntb_host.create_eal_parameters(cores=self.host_core_list)
         eal_client = self.ntb_client.create_eal_parameters(cores=self.client_core_list)
         host_cmd_line = ' '.join([app, eal_host, cmd_opt])
         client_cmd_line = ' '.join([app, eal_client, cmd_opt])
         self.ntb_host.send_expect(host_cmd_line, 'Checking ntb link status', 30)
-        self.ntb_client.send_expect(client_cmd_line, 'Checking ntb link status', 30)
+        self.ntb_client.send_expect(client_cmd_line, 'ntb>', 30)
         time.sleep(3)
-        self.ntb_host.send_expect(" ", 'ntb> ', 10)
-        self.ntb_client.send_expect(" ", 'ntb> ', 10)
+        #self.ntb_host.send_expect(" ", 'ntb> ', 10)
+        #self.ntb_client.send_expect(" ", 'ntb> ', 10)
 
     def start_ntb_fwd_on_dut(self, crb, fwd_mode='io'):
         crb.send_expect('set fwd %s' % fwd_mode, 'ntb> ', 30)
@@ -156,11 +156,12 @@ class TestNtb(TestCase):
         tgen_input = []
 
         for i, each_mac in enumerate([self.host_mac, self.client_mac]):
-            flow = 'Ether(dst="%s")/IP(dst="192.168.%d.1", proto=255)/UDP()/("X"*%d)' % (each_mac, i, payload)
-            pkt = Packet(pkt_str=flow)
+            flow = 'Ether(dst="%s")/IP(dst="192.168.%d.1", proto=255)/UDP()/Raw(b"%s")' % (each_mac, i, "X"*payload)
             pcap = os.path.join(self.out_path, "ntb_%d_%d.pcap" %
                     (i, frame_size))
-            pkt.save_pcapfile(None, pcap)
+            self.tester.scapy_append("flow=" + flow)
+            self.tester.scapy_append("wrpcap('%s', flow)" % pcap)
+            self.tester.scapy_execute()
             tgen_input.append((i, (i+1)%2, pcap))
 
         return tgen_input
