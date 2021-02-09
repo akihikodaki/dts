@@ -3569,5 +3569,23 @@
             "Bug ID": "DPDK-24129",
             "Comments": "CVL and FVL not support this case"
         }
+    ],
+    "mtu_checks_100": [
+         {
+             "OS": [
+                 "ALL"
+             ],
+             "NIC": [
+                 "niantic",
+                 "twinpond",
+                 "sageville",
+                 "sagepond"
+             ],
+             "Target": [
+                 "ALL"
+             ],
+             "Bug ID": "",
+             "Comments": "NIC not support this case"
+         }
     ]
 }
