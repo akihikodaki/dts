@@ -473,7 +473,7 @@ class Dut(Crb):
                 port = GetNicObj(self, domain_id, bus_id, devfun_id)
 
                 self.send_expect('echo %s > /sys/bus/pci/devices/%s\:%s\:%s/driver/unbind'
-                                 % (pci_bus, domain_id, bus_id, devfun_id), '# ')
+                                 % (pci_bus, domain_id, bus_id, devfun_id), '# ', timeout=30)
                 # bind to linux kernel driver
                 self.send_expect('modprobe %s' % driver, '# ')
                 self.send_expect('echo %s > /sys/bus/pci/drivers/%s/bind'
