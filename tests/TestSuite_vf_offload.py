@@ -393,6 +393,7 @@ class TestVfOffload(TestCase):
         self.tester.send_expect("ethtool -K %s rx off tx off tso off gso off gro off lro off" % tx_interface, "# ")
         self.tester.send_expect("ip l set %s up" % tx_interface, "# ")
         self.dut.send_expect("ifconfig %s mtu %s" % (self.dut.ports_info[0]['intf'], TSO_MTU), "# ")
+        self.dut.send_expect("ifconfig %s mtu %s" % (self.dut.ports_info[1]['intf'], TSO_MTU), "# ")
 
         self.portMask = utils.create_mask([self.vm0_dut_ports[0]])
         self.vm0_testpmd.start_testpmd(VM_CORES_MASK, "--portmask=0x3 "  + "--enable-rx-cksum " + "--max-pkt-len=%s" % TSO_MTU)
