@@ -555,7 +555,7 @@ class TestUserspaceEthtool(TestCase, IxiaPacketGenerator):
             # about columbiaville_25g(8086:1593),there have a kernel driver link status issue
             # about Sageville(8086:1563),driver do not write register to set link-down
             # so skip this step of verify status
-            if self.nic not in ['columbiaville_25g', 'sageville']:
+            if self.nic not in ['columbiaville_25g', 'sageville', 'columbiaville_100g']:
                 self.verify(self.ethapp_check_link_status(index, 'Down') == True,
                            'Fail to stop port{}'.format(index))
             # check packet not forwarded when port is stop
