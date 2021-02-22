@@ -127,7 +127,7 @@ class TestShortLiveApp(TestCase):
         process_file = "/var/run/dpdk/rte/config"
         delay = 0
         while delay < delay_max:
-            process = self.dut.send_expect("lsof %s | wc -l" % process_file, "#")
+            process = self.dut.send_expect("lsof %s | wc -l" % process_file, "# ")
             # as FUSE filesystem may not be accessible for root, so the output might include some warning info
             res = process.splitlines()[-1].strip()
             if res != '0':
@@ -162,7 +162,7 @@ class TestShortLiveApp(TestCase):
         time = []
         regex = re.compile(".* (\d+:\d{2}\.\d{2}).*")
         eal_para = self.dut.create_eal_parameters(no_pci=True)
-        out = self.dut.send_expect("echo quit | time ./%s %s -- -i" % (self.app_testpmd, eal_para), "#", 120)
+        out = self.dut.send_expect("echo quit | time ./%s %s -- -i" % (self.app_testpmd, eal_para), "# ", 120)
         time = regex.findall(out)
 
         if time != []:
@@ -189,9 +189,9 @@ class TestShortLiveApp(TestCase):
 
             # kill with different Signal
             if i%2 == 0:
-                self.dut.send_expect("pkill -2 testpmd", "#", 60, True)
+                self.dut.send_expect("pkill -2 testpmd", "# ", 60, True)
             else:
-                self.dut.send_expect("pkill -15 testpmd", "#", 60, True)
+                self.dut.send_expect("pkill -15 testpmd", "# ", 60, True)
             self.check_process()
 
     def test_clean_up_with_signal_l2fwd(self):
@@ -205,9 +205,9 @@ class TestShortLiveApp(TestCase):
 
             # kill with different Signal
             if i%2 == 0:
-                self.dut.send_expect("pkill -2 l2fwd", "#", 60, True)
+                self.dut.send_expect("pkill -2 l2fwd", "Bye...", 60)
             else:
-                self.dut.send_expect("pkill -15 l2fwd", "#", 60, True)
+                self.dut.send_expect("pkill -15 l2fwd", "Bye...", 60)
             self.check_process()
 
     def test_clean_up_with_signal_l3fwd(self):
@@ -221,9 +221,9 @@ class TestShortLiveApp(TestCase):
 
             # kill with different Signal
             if i%2 == 0:
-                self.dut.send_expect("pkill -2 l3fwd", "#", 60, True)
+                self.dut.send_expect("pkill -2 l3fwd", "Bye...", 60)
             else:
-                self.dut.send_expect("pkill -15 l3fwd", "#", 60, True)
+                self.dut.send_expect("pkill -15 l3fwd", "Bye...", 60)
             self.check_process()
 
     def tear_down(self):
@@ -238,6 +238,6 @@ class TestShortLiveApp(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        self.dut.send_expect("rm -rf ./app/test-pmd/testpmd", "#")
-        self.dut.send_expect("rm -rf ./app/test-pmd/*.o", "#")
-        self.dut.send_expect("rm -rf ./app/test-pmd/build", "#")
+        self.dut.send_expect("rm -rf ./app/test-pmd/testpmd", "# ")
+        self.dut.send_expect("rm -rf ./app/test-pmd/*.o", "# ")
+        self.dut.send_expect("rm -rf ./app/test-pmd/build", "# ")
