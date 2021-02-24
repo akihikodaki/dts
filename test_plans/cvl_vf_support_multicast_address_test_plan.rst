@@ -410,21 +410,23 @@ Test Case 6: set allmulti on
 2. send multicast and unicast packets::
 
     sendp([Ether(dst="33:33:00:00:00:01")/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+    sendp([Ether(dst="33:33:00:00:00:01")/Dot1Q(vlan=1)/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
     sendp([Ether(dst="33:33:00:40:10:01")/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+    sendp([Ether(dst="33:33:00:40:10:01")/Dot1Q(vlan=2)/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
     sendp([Ether(dst="FE:ED:84:92:64:DD")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
     sendp([Ether(dst="5E:8E:8B:4D:89:05")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
     sendp([Ether(dst="FE:ED:84:92:64:DE")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
 
-   the pkt1-2 can be received by port 0 and port 1, pkt3 is received by port 0, pkt4 is received by port 1.
-   pkt5 can't be received by any port.
+   the pkt1-4 can be received by port 0 and port 1, pkt5 is received by port 0, pkt6 is received by port 1.
+   pkt7 can't be received by any port.
 
 3. set allmulti off and promisc on::
 
     set promisc all on
     set allmulti all off
 
-4. send same packets, the pkt1-2 can't be received by port 0 and port 1,
-   pkt3-5 can be received by both port 0 and port 1.
+4. send same packets, the pkt1-4 can't be received by port 0 and port 1,
+   pkt5-7 can be received by both port 0 and port 1.
 
 Test Case 7: negative case
 ==========================
@@ -466,3 +468,54 @@ Test Case 7: negative case
     mcast_addr remove 0 33:33:00:00:00:40
 
 11.send the packet again, check the packet cannot be received by port 0.
+
+Test Case 8: set vlan filter on
+===============================
+1. send multicast packets with/without vlan ID::
+
+    sendp([Ether(dst="33:33:00:00:00:01")/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+    sendp([Ether(dst="33:33:00:00:00:01")/Dot1Q(vlan=1)/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+    sendp([Ether(dst="33:33:00:40:10:01")/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+    sendp([Ether(dst="33:33:00:40:10:01")/Dot1Q(vlan=1)/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f1")
+
+   the pkt1-4 can't be received by any port.
+
+2. configure multicast address::
+
+    mcast_addr add 0 33:33:00:00:00:01
+
+3. show multicast address of port 0 and port 1::
+
+    testpmd> show port 0 mcast_macs
+    Number of Multicast MAC address added: 1
+      33:33:00:00:00:01
+    testpmd> show port 1 mcast_macs
+    Number of Multicast MAC address added: 0
+
+4. send same packets, pkt1 can be received by port 0, other packets get same result.
+
+5. set vlan filter on::
+
+    vlan set filter on 0
+    rx_vlan add 1 0
+
+   send same packets, pkt1-2 can be received by port 0, other packets can't be received by any port.
+
+6. remove the vlan filter::
+
+    rx_vlan rm 1 0
+
+   send same packets, pkt1 can be received by port 0, other packets can't be received by any port.
+
+7. remove the multicast address configuration::
+
+    mcast_addr remove 0 33:33:00:00:00:01
+
+8. show multicast address of port 0 and port 1::
+
+    testpmd> show port 0 mcast_macs
+    Number of Multicast MAC address added: 0
+    testpmd> show port 1 mcast_macs
+    Number of Multicast MAC address added: 0
+
+9. send same packets, the pkt1-4 can't be received by any port.
