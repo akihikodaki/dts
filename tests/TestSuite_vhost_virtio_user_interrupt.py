@@ -127,17 +127,21 @@ class TestVirtioUserInterrupt(TestCase):
         testcmd = self.app_testpmd_path + " "
         vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0"]
         para = " -- -i --rxq=1 --txq=1"
+        allow_pci = [self.pci_info]
+        if dmas:
+            for item in self.used_cbdma:
+                allow_pci.append(item)
         if len(pci) == 0:
             if dmas:
                 vdev = ["net_vhost0,iface=vhost-net,queues=1,dmas=[%s]" % dmas]
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev)
             else:
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=[self.pci_info], vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, vdevs=vdev)
         else:
             if dmas:
                 vdev = ["net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[%s]" % dmas]
                 para = " -- -i"
-                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=pci, prefix='vhost', vdevs=vdev)
+                eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, ports=allow_pci, prefix='vhost', vdevs=vdev)
             else:
                 eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
         cmd_vhost_user = testcmd + eal_params + para
@@ -217,7 +221,7 @@ class TestVirtioUserInterrupt(TestCase):
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
-    def test_split_ring_virtio_user_interrupt_with_vhost_net_as_backed(self):
+    def test_split_ring_virtio_user_interrupt_with_vhost_net_as_backend(self):
         """
         Check the virtio-user interrupt can work when use vhost-net as backend
         """
@@ -238,7 +242,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.check_interrupt_log(status="waked up")
         self.dut.send_expect("killall -s INT ping", "#")
 
-    def test_split_ring_virtio_user_interrupt_with_vhost_user_as_backed(self):
+    def test_split_ring_virtio_user_interrupt_with_vhost_user_as_backend(self):
         """
         Check the virtio-user interrupt can work when use vhost-user as backend
         """
@@ -263,7 +267,7 @@ class TestVirtioUserInterrupt(TestCase):
         self.vhost.send_expect("quit", "#", 20)
         self.check_virtio_side_link_status("down")
 
-    def test_packed_ring_virtio_user_interrupt_with_vhost_user_as_backed(self):
+    def test_packed_ring_virtio_user_interrupt_with_vhost_user_as_backend(self):
         """
         Check the virtio-user interrupt can work when use vhost-user as backend
         """
@@ -277,7 +281,7 @@ class TestVirtioUserInterrupt(TestCase):
             time.sleep(3)
             self.check_interrupt_log(status="waked up")
 
-    def test_packed_ring_virtio_user_interrupt_with_vhost_net_as_backed(self):
+    def test_packed_ring_virtio_user_interrupt_with_vhost_net_as_backend(self):
         """
         Check the virtio-user interrupt can work when use vhost-net as backend
         """
