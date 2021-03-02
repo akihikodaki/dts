@@ -86,7 +86,7 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     >set fwd mac
     >start
 
-3. Send packets with packet size [64,1518] from packet generator, check the throughput can get expected data, restart vhost port, then check throughput again::
+3. Send imix packets [64,1518] from packet generator, check the throughput can get expected data, restart vhost port, then check throughput again::
 
     testpmd>show port stats all
     testpmd>stop
@@ -158,11 +158,11 @@ Test Case2: Dynamic queue number test for DMA-accelerated vhost Tx operations
     testpmd>start
     testpmd>show port stats all
 
-6. Relaunch virtio-user with 2 queues::
+6. Relaunch virtio-user with vectorized path and 2 queues::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 30-31 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=1,in_order=1,queues=2,server=1 \
-    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=1,vectorized=1,queues=2,server=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
     >set fwd mac
     >start
 
