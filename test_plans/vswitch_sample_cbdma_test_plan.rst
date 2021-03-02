@@ -112,7 +112,7 @@ Test Case2: PV test with multiple CBDMA channels using vhost async driver
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 	
 	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
-	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net1,queues=1,server=1,mrg_rxbuf=0,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Start pkts from two virtio-user side individually to let vswitch know the mac addr::
 
@@ -146,7 +146,7 @@ Test Case3: VM2VM performance test with two CBDMA channels using vhost async dri
 	--vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/vhost-net0,queues=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 	./dpdk-testpmd -l 31-32 -n 4 --no-pci --file-prefix=testpmd1 \
-	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net0,queues=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
+	--vdev=net_virtio_user0,mac=00:11:22:33:44:11,path=/tmp/vhost-net0,queues=1,mrg_rxbuf=0,in_order=1,vectorized=1 -- -i --rxq=1 --txq=1 --txd=1024 --rxd=1024 --nb-cores=1
 
 4. Start pkts from two virtio-user sides, record performance number with txpkts=256 and 2000 from testpmd1 seperately::
 
