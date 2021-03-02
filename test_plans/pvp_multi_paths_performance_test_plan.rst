@@ -260,7 +260,7 @@ Test Case 9: pvp test with virtio 1.1 inorder non-mergeable path
 2. Launch virtio-user by below command::
 
     ./testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1,vectorized=1 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1,mrg_rxbuf=0,in_order=1 \
     -- -i --rx-offloads=0x10 --nb-cores=1 --txd=1024 --rxd=1024
     >set fwd mac
     >start
