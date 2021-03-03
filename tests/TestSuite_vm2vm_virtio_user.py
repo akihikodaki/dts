@@ -160,12 +160,11 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.start_testpmd(cores=self.core_list_virtio0, param=params, eal_param=eal_params, \
                                            no_pci=True, ports=[],prefix=self.virtio_prefix_0, fixed_prefix=True)
 
-    def check_packet_payload_valid_with_cbdma(self, filename, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num):
+    def check_packet_payload_valid_with_cbdma(self, filename, total_pkts_num, large_8k_pkts_num, large_2k_pkts_num):
         """
         check the payload is valid
         """
         # stop pdump
-        total_pkts_num = small_pkts_num
         actual_8k_pkt_num = 0
         actual_2k_pkt_num = 0
         time.sleep(20)
@@ -197,7 +196,10 @@ class TestVM2VMVirtioUser(TestCase):
         # the virtio0 will send 251 small pkts
         self.start_virtio_testpmd_with_vhost_net0_cbdma(path_mode, extern_param, ringsize)
 
-    def resend_32_large_pkt_from_virtio0(self):
+    def send_32_2k_pkts_from_virtio0(self):
+        """
+        send 32 2k length packets from virtio_user0 testpmd
+        """
         self.virtio_user0_pmd.execute_cmd('stop')
         self.virtio_user0_pmd.execute_cmd('set burst 32')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000')
@@ -343,13 +345,13 @@ class TestVM2VMVirtioUser(TestCase):
         # then resend 32 large pkts, all will received
         self.logger.info('check pcap file info about virtio')
         self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
-        self.resend_32_large_pkt_from_virtio0()
+        self.send_32_2k_pkts_from_virtio0()
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
         self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
-        self.resend_32_large_pkt_from_virtio0()
+        self.send_32_2k_pkts_from_virtio0()
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -503,13 +505,13 @@ class TestVM2VMVirtioUser(TestCase):
         # then virtio send 32 large pkts, the virtio will all received
         self.logger.info('check pcap file info about virtio')
         self.get_dump_file_of_virtio_user(path_mode, extern_params, ringsize)
-        self.resend_32_large_pkt_from_virtio0()
+        self.send_32_2k_pkts_from_virtio0()
         self.check_packet_payload_valid(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
         self.get_dump_file_of_vhost_user(path_mode, extern_params, ringsize)
-        self.resend_32_large_pkt_from_virtio0()
+        self.send_32_2k_pkts_from_virtio0()
         self.check_packet_payload_valid(self.dump_vhost_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
@@ -671,9 +673,9 @@ class TestVM2VMVirtioUser(TestCase):
         self.cbdma_nic_dev_num = 4
         self.bind_nic_driver(self.dut_ports)
         self.get_cbdma_ports_info_and_bind_to_dpdk()
-        small_pkts_num = 512
         large_8k_pkts_num = 502
-        large_2k_pkts_num = 10
+        large_2k_pkts_num = 64
+        total_pkts_num = large_8k_pkts_num + large_2k_pkts_num
         self.queue_num=2
         self.nopci=False
         path_mode = 'server=1,packed_vq=0,mrg_rxbuf=1,in_order=1'
@@ -686,17 +688,22 @@ class TestVM2VMVirtioUser(TestCase):
                 f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
 
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs, no_pci=False)
-        self.send_8k_pkt()
-        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num,
-                                                   large_2k_pkts_num)
+        self.send_251_8k_and_32_2k_pkts()
+        # execute stop and port stop all to avoid testpmd tail_pkts issue.
+        self.vhost_user_pmd.execute_cmd('stop')
+        self.vhost_user_pmd.execute_cmd('port stop all')
+        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, total_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        small_pkts_num = 512
         large_8k_pkts_num = 54
-        large_2k_pkts_num = 458
+        large_2k_pkts_num = 512
+        total_pkts_num = large_8k_pkts_num + large_2k_pkts_num
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs, no_pci=False)
-        self.send_multiple_pkt()
-        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+        self.send_27_8k_and_256_2k_pkts()
+        # execute stop and port stop all to avoid testpmd tail_pkts issue.
+        self.vhost_user_pmd.execute_cmd('stop')
+        self.vhost_user_pmd.execute_cmd('port stop all')
+        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, total_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
 
@@ -708,9 +715,9 @@ class TestVM2VMVirtioUser(TestCase):
         self.cbdma_nic_dev_num = 4
         self.bind_nic_driver(self.dut_ports)
         self.get_cbdma_ports_info_and_bind_to_dpdk()
-        small_pkts_num = 448
         large_8k_pkts_num = 54
-        large_2k_pkts_num = 394
+        large_2k_pkts_num = 448
+        total_pkts_num = large_8k_pkts_num + large_2k_pkts_num
         self.queue_num=2
         self.nopci=False
         path_mode = 'server=1,packed_vq=0,mrg_rxbuf=1,in_order=0'
@@ -723,20 +730,26 @@ class TestVM2VMVirtioUser(TestCase):
                 f"--vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@{self.cbdma_dev_infos[2]};txq1@{self.cbdma_dev_infos[3]}],dmathr=512'"
 
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs, no_pci=False)
-        self.send_multiple_pkt_with_8k54_2k394()
-        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+        self.send_27_8k_and_224_2k_pkts()
+        # execute stop and port stop all to avoid testpmd tail_pkts issue.
+        self.vhost_user_pmd.execute_cmd('stop')
+        self.vhost_user_pmd.execute_cmd('port stop all')
+        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, total_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
         # get dump pcap file of vhost
         self.logger.info('check pcap file info about vhost')
-        small_pkts_num = 448
-        large_8k_pkts_num = 448
+        large_8k_pkts_num = 502
         large_2k_pkts_num = 0
+        total_pkts_num = large_8k_pkts_num + large_2k_pkts_num
         self.get_dump_file_of_virtio_user_cbdma(path_mode, extern_params, ringsize, vdevs, no_pci=False)
-        self.send_multiple_pkt_with_8k448()
-        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, small_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
+        self.send_251_8k_pkts()
+        # execute stop and port stop all to avoid testpmd tail_pkts issue.
+        self.vhost_user_pmd.execute_cmd('stop')
+        self.vhost_user_pmd.execute_cmd('port stop all')
+        self.check_packet_payload_valid_with_cbdma(self.dump_virtio_pcap, total_pkts_num, large_8k_pkts_num, large_2k_pkts_num)
 
         self.logger.info('diff the pcap file of vhost and virtio')
 
-    def send_multiple_pkt_with_8k54_2k394(self):
+    def send_27_8k_and_224_2k_pkts(self):
         self.virtio_user0_pmd.execute_cmd('set burst 1')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 27')
@@ -746,7 +759,10 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('start tx_first 7')
         self.vhost_user_pmd.execute_cmd('start')
 
-    def send_multiple_pkt_with_8k448(self):
+    def send_251_8k_pkts(self):
+        """
+        send 251 8k length packets from virtio_user0 testpmd
+        """
         self.virtio_user0_pmd.execute_cmd('set burst 1')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 27')
@@ -756,7 +772,10 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('start tx_first 7')
         self.vhost_user_pmd.execute_cmd('start')
 
-    def send_8k_pkt(self):
+    def send_251_8k_and_32_2k_pkts(self):
+        """
+        send 251 8k and 32 2k length packets from virtio_user0 testpmd
+        """
         self.virtio_user0_pmd.execute_cmd('set burst 1')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 27')
@@ -768,7 +787,10 @@ class TestVM2VMVirtioUser(TestCase):
         self.virtio_user0_pmd.execute_cmd('start tx_first 1')
         self.vhost_user_pmd.execute_cmd('start')
 
-    def send_multiple_pkt(self):
+    def send_27_8k_and_256_2k_pkts(self):
+        """
+        send 27 8k and 256 2k length packets from virtio_user0 testpmd
+        """
         self.virtio_user0_pmd.execute_cmd('set burst 1')
         self.virtio_user0_pmd.execute_cmd('set txpkts 2000,2000,2000,2000')
         self.virtio_user0_pmd.execute_cmd('start tx_first 27')
@@ -785,9 +807,11 @@ class TestVM2VMVirtioUser(TestCase):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc',
-                                   '# ', 30)
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
             pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
@@ -804,4 +828,4 @@ class TestVM2VMVirtioUser(TestCase):
                     self.cbdma_dev_infos.append(pci_info.group(1))
         self.verify(len(self.cbdma_dev_infos) >= 8, 'There no enough cbdma device to run this suite')
         self.device_str = ' '.join(self.cbdma_dev_infos[0:self.cbdma_nic_dev_num])
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio %s' % self.device_str, '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
