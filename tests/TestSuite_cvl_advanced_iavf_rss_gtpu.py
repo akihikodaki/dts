@@ -44,6 +44,7 @@ mac_ipv4_gtpu_ipv4_basic = {
     'ipv4-icmp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/ICMP()/("X"*480)',
     'ipv4-tcp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP()/("X"*480)',
     'ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP()/("X"*480)',
+    'gtpogre-ipv4-nonfrag': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
 }
 
 mac_ipv4_gtpu_ipv4_l3src_changed_pkt = eval(str(mac_ipv4_gtpu_ipv4_basic).replace('192.168.0.2', '192.168.1.2'))
@@ -64,6 +65,18 @@ mac_ipv4_gtpu_ipv4_l3dst_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_ipv4_l3src_changed_pkt['ipv4-nonfrag'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_l3dst_changed_pkt['gtpogre-ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_l3src_changed_pkt['gtpogre-ipv4-nonfrag'],
             'action': 'check_hash_same',
         },
         {
@@ -143,6 +156,22 @@ mac_ipv4_gtpu_ipv4_all = {
         },
         {
             'send_packet': mac_ipv4_gtpu_ipv4_basic['ipv4-nonfrag'].replace('192.168.0.', '192.168.1.'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_l3dst_changed_pkt['gtpogre-ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_l3src_changed_pkt['gtpogre-ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'].replace('192.168.0.', '192.168.1.'),
             'action': 'check_hash_different',
         },
         {
@@ -231,6 +260,18 @@ mac_ipv4_gtpu_ipv4_gtpu = {
             'action': 'check_hash_same',
         },
         {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'].replace('teid=0x123456', 'teid=0x12345'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_basic['gtpogre-ipv4-nonfrag'].replace('192.168.0.', '192.168.1.'),
+            'action': 'check_hash_same',
+        },
+        {
             'send_packet': mac_ipv4_gtpu_ipv4_basic['ipv4-frag'],
             'action': 'save_hash',
         },
@@ -295,6 +336,14 @@ mac_ipv4_gtpu_ipv4_symmetric = {
             'action': 'check_hash_same',
         },
         {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2", frag=6)/("X"*480)',
+            'action': {'save_hash': 'ipv4-frag'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
+            'action': 'check_hash_same',
+        },
+        {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
             'action': {'save_hash': 'ipv4-icmp'},
         },
@@ -318,6 +367,10 @@ mac_ipv4_gtpu_ipv4_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1", frag=6)/("X"*480)',
+            'action': {'check_no_hash_or_different': 'ipv4-frag'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1",frag=6)/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-frag'},
         },
         {
@@ -361,6 +414,10 @@ mac_ipv4_gtpu_ipv4_udp_symmetric = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
             'action': 'check_hash_same',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
+            'action': 'check_hash_same',
+        },
     ],
     'post-test': [
         {
@@ -373,6 +430,10 @@ mac_ipv4_gtpu_ipv4_udp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
+            'action': 'check_no_hash_or_different',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=23, dport=22)/("X"*480)',
             'action': 'check_no_hash_or_different',
         },
     ],
@@ -436,6 +497,14 @@ mac_ipv4_gtpu_eh_dl_ipv4_symmetric = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
             'action': 'check_hash_same',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP()/("X"*480)',
+            'action': {'save_hash': 'ipv4-udp'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
+            'action': 'check_hash_same',
+        },
     ],
     'post-test': [
         {
@@ -447,11 +516,15 @@ mac_ipv4_gtpu_eh_dl_ipv4_symmetric = {
             'action': {'check_no_hash_or_different': 'ipv4-frag'},
         },
         {
-            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/ICMP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-icmp'},
         },
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
+            'action': {'check_no_hash_or_different': 'ipv4-udp'},
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP()/("X"*480)',
             'action': {'check_no_hash_or_different': 'ipv4-udp'},
         },
     ],
@@ -487,6 +560,10 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_symmetric = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
             'action': 'check_hash_same',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
+            'action': 'check_hash_same',
+        },
     ],
     'post-test': [
         {
@@ -499,6 +576,10 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_symmetric = {
         },
         {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)',
+            'action': 'check_no_hash_or_different',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)',
             'action': 'check_no_hash_or_different',
         },
     ],
@@ -545,7 +626,10 @@ mac_ipv4_gtpu_eh_ipv6_tcp_symmetric = eval(str(mac_ipv4_gtpu_eh_ipv4_tcp_symmetr
                                         .replace('ipv4_tcp_symmetric', 'ipv6_tcp_symmetric')
                                         )
 
-mac_ipv4_gtpu_ipv4_udp_basic = 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)'
+mac_ipv4_gtpu_ipv4_udp_basic = {
+        'ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+        'gtpogre-ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+}
 
 mac_ipv4_gtpu_ipv4_udp_l3dst = {
     'sub_casename': 'mac_ipv4_gtpu_ipv4_udp_l3dst',
@@ -553,15 +637,27 @@ mac_ipv4_gtpu_ipv4_udp_l3dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
     ],
@@ -581,19 +677,36 @@ mac_ipv4_gtpu_ipv4_udp_l3src_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33').replace('192.168.0.1',
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.1',
+                                                                                                '192.168.1.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.1',
                                                                                                 '192.168.1.1'),
             'action': 'check_hash_same',
         },
@@ -607,19 +720,35 @@ mac_ipv4_gtpu_ipv4_udp_l3src_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_same',
+        },
+         {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_same',
         },
     ],
@@ -632,19 +761,35 @@ mac_ipv4_gtpu_ipv4_udp_l3dst_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
     ],
@@ -657,19 +802,35 @@ mac_ipv4_gtpu_ipv4_udp_l3dst_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32').replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
     ],
@@ -681,15 +842,28 @@ mac_ipv4_gtpu_ipv4_udp_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32')
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32')
+                                                       .replace('192.168.0', '192.168.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32')
                                                        .replace('192.168.0', '192.168.1'),
             'action': 'check_hash_same',
         },
@@ -702,15 +876,28 @@ mac_ipv4_gtpu_ipv4_udp_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=32')
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=32')
+                                                       .replace('192.168.0', '192.168.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=32')
                                                        .replace('192.168.0', '192.168.1'),
             'action': 'check_hash_same',
         },
@@ -724,27 +911,51 @@ mac_ipv4_gtpu_ipv4_udp_all = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('teid=0x123456', 'teid=0x12345'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('teid=0x123456', 'teid=0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('teid=0x123456', 'teid=0x12345'),
             'action': 'check_hash_same',
         },
     ],
@@ -757,19 +968,35 @@ mac_ipv4_gtpu_ipv4_udp_l3 = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic.replace('sport=22,dport=23', 'sport=12,dport=13'),
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['ipv4-udp'].replace('sport=22,dport=23', 'sport=12,dport=13'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22,dport=23', 'sport=12,dport=13'),
             'action': 'check_hash_same',
         },
     ],
@@ -793,6 +1020,7 @@ mac_ipv4_gtpu_ipv6_basic = {
     'ipv6-icmp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
     'ipv6-tcp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(''src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)',
     'ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/("X"*480)',
+    'gtpogre-ipv6-nonfrag': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
 }
 
 mac_ipv4_gtpu_ipv6_l3src_changed_pkt = eval(str(mac_ipv4_gtpu_ipv6_basic).replace('ABAB', '1212'))
@@ -813,6 +1041,18 @@ mac_ipv4_gtpu_ipv6_l3dst_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_ipv6_l3src_changed_pkt['ipv6-nonfrag'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': {'save_hash', 'ipv6-nonfrag'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3dst_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3src_changed_pkt['gtpogre-ipv6-nonfrag'],
             'action': 'check_hash_same',
         },
         {
@@ -882,6 +1122,18 @@ mac_ipv4_gtpu_ipv6_l3src_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_ipv6_l3dst_changed_pkt['ipv6-nonfrag'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': {'save_hash', 'ipv6-nonfrag'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3src_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3dst_changed_pkt['gtpogre-ipv6-nonfrag'],
             'action': 'check_hash_same',
         },
         {
@@ -961,6 +1213,22 @@ mac_ipv4_gtpu_ipv6_all = {
         },
         {
             'send_packet': mac_ipv4_gtpu_ipv6_basic['ipv6-nonfrag'].replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': {'save_hash', 'ipv6-nonfrag'},
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3dst_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_l3src_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'].replace('ABAB', '1212').replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
@@ -1049,6 +1317,18 @@ mac_ipv4_gtpu_ipv6_gtpu = {
             'action': 'check_hash_same',
         },
         {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'].replace('teid=0x123456', 'teid=0x12345'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_basic['gtpogre-ipv6-nonfrag'].replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
             'send_packet': mac_ipv4_gtpu_ipv6_basic['ipv6-frag'],
             'action': 'save_hash',
         },
@@ -1091,23 +1371,37 @@ mac_ipv4_gtpu_ipv6_gtpu = {
 mac_ipv4_gtpu_ipv6_toeplitz = [mac_ipv4_gtpu_ipv6_l3dst_only, mac_ipv4_gtpu_ipv6_l3src_only,
                                mac_ipv4_gtpu_ipv6_all, mac_ipv4_gtpu_ipv6_gtpu]
 
-mac_ipv4_gtpu_ipv6_udp_basic = 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)'
-
+mac_ipv4_gtpu_ipv6_udp_basic = {
+        'ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+        'gtpogre-ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+}
 mac_ipv4_gtpu_ipv6_udp_l3dst = {
     'sub_casename': 'mac_ipv4_gtpu_ipv6_udp_l3dst',
     'port_id': 0,
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -1127,19 +1421,35 @@ mac_ipv4_gtpu_ipv6_udp_l3src_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33').replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
     ],
@@ -1152,19 +1462,35 @@ mac_ipv4_gtpu_ipv6_udp_l3src_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32').replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
     ],
@@ -1177,19 +1503,35 @@ mac_ipv4_gtpu_ipv6_udp_l3dst_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33').replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33').replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33').replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -1202,19 +1544,35 @@ mac_ipv4_gtpu_ipv6_udp_l3dst_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32').replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32').replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32').replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -1226,15 +1584,28 @@ mac_ipv4_gtpu_ipv6_udp_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32')
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32')
+                .replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32')
                 .replace('ABAB', '1212').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
@@ -1247,15 +1618,28 @@ mac_ipv4_gtpu_ipv6_udp_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=32')
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=32')
+                .replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=32')
                 .replace('ABAB', '1212').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
@@ -1269,27 +1653,51 @@ mac_ipv4_gtpu_ipv6_udp_all = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic.replace('teid=0x123456', 'teid=0x12345'),
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['ipv6-udp'].replace('teid=0x123456', 'teid=0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('teid=0x123456', 'teid=0x12345'),
             'action': 'check_hash_same',
         },
     ],
@@ -1503,7 +1911,7 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic = {
     'ipv4-frag': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2", frag=6)/("X"*480)',
     'ipv4-icmp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/ICMP()/("X"*480)',
     'ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP()/("X"*480)',
-
+    'gtpogre-ipv4-nonfrag': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/("X"*480)',
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_changed_pkt = eval(str(mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic).replace('192.168.0.2', '192.168.1.2'))
@@ -1524,6 +1932,18 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_changed_pkt['ipv4-nonfrag'].replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_changed_pkt['gtpogre-ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_changed_pkt['gtpogre-ipv4-nonfrag'].replace('0x123456', '0x12345'),
             'action': 'check_hash_same',
         },
         {
@@ -1600,6 +2020,18 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_all = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_changed_pkt['ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3dst_changed_pkt['gtpogre-ipv4-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_l3src_changed_pkt['gtpogre-ipv4-nonfrag'],
             'action': 'check_hash_different',
         },
         {
@@ -1712,6 +2144,18 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_gtpu = {
             'action': 'check_hash_same',
         },
         {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['gtpogre-ipv4-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['gtpogre-ipv4-nonfrag'].replace('0x123456', '0x12345'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['gtpogre-ipv4-nonfrag'].replace('192.168.0.', '192.168.1.'),
+            'action': 'check_hash_same',
+        },
+        {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_basic['ipv4-nonfrag_ul'],
             'action': 'save_hash',
         },
@@ -1770,6 +2214,8 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_toeplitz = [mac_ipv4_gtpu_eh_without_ul_dl_i
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic = {
     'dl': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
     'ul': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
+    'gtpogre-dl': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
+    'gtpogre-ul': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)',
 }
 
 mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only = {
@@ -1801,6 +2247,34 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3dst_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.2', '192.168.1.2')
+                .replace('sport=22, dport=23',
+                         'sport=32, dport=33'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.2', '192.168.1.2')
+                                                                              .replace('sport=22, dport=23',
+                                                                                       'sport=32, dport=33'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0.2', '192.168.1.2')
                 .replace('sport=22, dport=23',
                          'sport=32, dport=33'),
             'action': 'check_hash_same',
@@ -1840,6 +2314,30 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3src_l4src = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('192.168.0.1', '192.168.1.1')
+                .replace('dport=23', 'dport=33')
+                .replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.1', '192.168.1.1')
+                .replace('dport=23', 'dport=33')
+                .replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0.1', '192.168.1.1')
                 .replace('dport=23', 'dport=33')
                 .replace('0x123456', '0x12345'),
             'action': 'check_hash_same',
@@ -1892,6 +2390,26 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l4src_only = {
             .replace('0x123456', '0x12345'),
             'action': 'check_hash_same',
         },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0', '192.168.1')
+            .replace('dport=23', 'dport=33')
+            .replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0', '192.168.1')
+            .replace('dport=23', 'dport=33')
+            .replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
     ],
     'post-test': []
 }
@@ -1929,6 +2447,30 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['dl'].replace('0x123456', '0x12345'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('0x123456', '0x12345'),
             'action': 'check_hash_same',
         },
     ],
@@ -1970,6 +2512,38 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_l3 = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['ul'].replace('sport=22, dport=23', 'sport=12, dport=13'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-dl'].replace('sport=22, dport=23', 'sport=12, dport=13'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_without_ul_dl_ipv4_udp_basic['gtpogre-ul'].replace('sport=22, dport=23', 'sport=12, dport=13'),
             'action': 'check_hash_same',
         },
     ],
@@ -2027,22 +2601,37 @@ mac_ipv4_gtpu_eh_without_ul_dl_ipv6_tcp_toeplitz = [eval(str(element).replace('g
                                                          .replace('IP(dst="192.168.1.1",src="192.168.1.2"', 'IPv6(dst="1212:910B:6666:3457:8295:3333:1800:2929",src="3434:910A:2222:5498:8475:1111:3900:2020"'))
                                                     for element in mac_ipv4_gtpu_eh_without_ul_dl_ipv4_tcp_toeplitz]
 
-mac_ipv4_gtpu_eh_dl_ipv4_udp_basic = 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)'
+mac_ipv4_gtpu_eh_dl_ipv4_udp_basic = {
+        'ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+        'gtpogre-ipv4-udp': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+}
 mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst',
     'port_id': 0,
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
     ],
@@ -2063,19 +2652,35 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33').replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_same',
         },
     ],
@@ -2088,19 +2693,35 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3src_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32').replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_same',
         },
     ],
@@ -2113,19 +2734,35 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33').replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
     ],
@@ -2138,19 +2775,36 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3dst_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32')
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32')
+                                                             .replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32')
                                                              .replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_same',
         },
@@ -2163,15 +2817,28 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32')
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32')
+                                                             .replace('192.168.0', '192.168.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32')
                                                              .replace('192.168.0', '192.168.1'),
             'action': 'check_hash_same',
         },
@@ -2184,15 +2851,28 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=32')
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=32')
+                                                             .replace('192.168.0', '192.168.1'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=32')
                                                              .replace('192.168.0', '192.168.1'),
             'action': 'check_hash_same',
         },
@@ -2206,23 +2886,43 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_all = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
     ],
@@ -2235,19 +2935,35 @@ mac_ipv4_gtpu_eh_dl_ipv4_udp_l3 = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.1', '192.168.1.1'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('192.168.0.2', '192.168.1.2'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic.replace('sport=22', 'sport=12').replace('dport=23', 'dport=13'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['ipv4-udp'].replace('sport=22', 'sport=12').replace('dport=23', 'dport=13'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.1', '192.168.1.1'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('192.168.0.2', '192.168.1.2'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv4_udp_basic['gtpogre-ipv4-udp'].replace('sport=22', 'sport=12').replace('dport=23', 'dport=13'),
             'action': 'check_hash_same',
         },
     ],
@@ -2281,6 +2997,7 @@ mac_ipv4_gtpu_eh_dl_ipv6_basic = {
     'ipv6-icmp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/("X"*480)',
     'ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/("X"*480)',
     'ipv6-tcp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP()/("X"*480)',
+    'gtpogre-ipv6-nonfrag': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)',
 }
 
 mac_ipv4_gtpu_eh_dl_ipv6_l3src_changed_pkt = eval(str(mac_ipv4_gtpu_eh_dl_ipv6_basic).replace('ABAB', '1212'))
@@ -2301,6 +3018,18 @@ mac_ipv4_gtpu_eh_dl_ipv6_l3dst_only = {
         },
         {
             'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_l3src_changed_pkt['ipv6-nonfrag'],
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_l3dst_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_l3src_changed_pkt['gtpogre-ipv6-nonfrag'],
             'action': 'check_hash_same',
         },
         {
@@ -2383,6 +3112,22 @@ mac_ipv4_gtpu_eh_dl_ipv6_all = {
             'action': 'check_hash_different',
         },
         {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_basic['gtpogre-ipv6-nonfrag'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_l3dst_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_l3src_changed_pkt['gtpogre-ipv6-nonfrag'],
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_basic['gtpogre-ipv6-nonfrag'].replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
             'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_basic['ipv6-frag'],
             'action': 'save_hash',
         },
@@ -2461,22 +3206,37 @@ mac_ipv4_gtpu_eh_ul_ipv6_toeplitz = [eval(str(element).replace('(type=1', '(type
 
 mac_ipv4_gtpu_eh_ipv6_toeplitz = mac_ipv4_gtpu_eh_dl_ipv6_toeplitz + mac_ipv4_gtpu_eh_ul_ipv6_toeplitz
 
-mac_ipv4_gtpu_eh_dl_ipv6_udp_basic = 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)'
+mac_ipv4_gtpu_eh_dl_ipv6_udp_basic = {
+        'ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+        'gtpogre-ipv6-udp': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+}
 mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst = {
     'sub_casename': 'mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst',
     'port_id': 0,
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -2496,19 +3256,35 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33').replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
     ],
@@ -2521,19 +3297,35 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3src_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l3-src-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32').replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
     ],
@@ -2546,19 +3338,35 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33').replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33').replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33').replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -2571,19 +3379,35 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l3dst_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l3-dst-only l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32').replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32').replace('ABAB', '1212'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32').replace('ABAB', '1212'),
             'action': 'check_hash_same',
         },
     ],
@@ -2595,15 +3419,28 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l4dst = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l4-dst-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32')
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32')
+                                                       .replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32')
                                                        .replace('ABAB', '1212').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
@@ -2616,15 +3453,28 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_l4src = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp l4-src-only end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=32')
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=32')
+                                                       .replace('ABAB', '1212').replace('CDCD', '3434'),
+            'action': 'check_hash_same',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=32')
                                                        .replace('ABAB', '1212').replace('CDCD', '3434'),
             'action': 'check_hash_same',
         },
@@ -2638,23 +3488,43 @@ mac_ipv4_gtpu_eh_dl_ipv6_udp_all = {
     'rule': 'flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss types ipv6-udp end key_len 0 queues end / end',
     'test': [
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic,
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'],
             'action': 'save_hash',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('sport=22', 'sport=32'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('sport=22', 'sport=32'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('dport=23', 'dport=33'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('dport=23', 'dport=33'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('CDCD', '3434'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('CDCD', '3434'),
             'action': 'check_hash_different',
         },
         {
-            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic.replace('ABAB', '1212'),
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['ipv6-udp'].replace('ABAB', '1212'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'],
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('sport=22', 'sport=32'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('dport=23', 'dport=33'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('CDCD', '3434'),
+            'action': 'check_hash_different',
+        },
+        {
+            'send_packet': mac_ipv4_gtpu_eh_dl_ipv6_udp_basic['gtpogre-ipv6-udp'].replace('ABAB', '1212'),
             'action': 'check_hash_different',
         },
     ],
@@ -2696,6 +3566,14 @@ inner_l4_mac_ipv4_gtpu_ipv4_udp_tcp = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
             'action': 'check_hash_different',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+            'action': 'check_hash_different',
+        },
     ],
     'post-test': [
         {
@@ -2706,6 +3584,14 @@ inner_l4_mac_ipv4_gtpu_ipv4_udp_tcp = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
             'action': 'check_hash_same_or_no_hash',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)',
+            'action': 'save_or_no_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1",src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)',
+            'action': 'check_hash_same_or_no_hash',
+        },
     ]
 }
 inner_l4_mac_ipv6_gtpu_ipv4_udp_tcp = eval(str(inner_l4_mac_ipv4_gtpu_ipv4_udp_tcp)
@@ -2713,7 +3599,8 @@ inner_l4_mac_ipv6_gtpu_ipv4_udp_tcp = eval(str(inner_l4_mac_ipv4_gtpu_ipv4_udp_t
                                            .replace('gtpu / ipv4', 'gtpu / gtp_psc / ipv4')
                                            .replace('IP()', 'IPv6()')
                                            .replace('teid=0x123456)', 'teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)')
-                                           .replace('mac_ipv4', 'mac_ipv6'))
+                                           .replace('mac_ipv4', 'mac_ipv6')
+                                           .replace('IP(proto=0x2F)/GRE(proto=0x0800)', 'IPv6(nh=0x2F)/GRE(proto=0x86DD)'))
 inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp = {
     'sub_casename': 'inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp',
     'port_id': 0,
@@ -2730,6 +3617,14 @@ inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
             'action': 'check_hash_different',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'action': 'save_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
+            'action': 'check_hash_different',
+        },
     ],
     'post-test': [
         {
@@ -2740,6 +3635,14 @@ inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp = {
             'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
             'action': 'check_hash_same_or_no_hash',
         },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)',
+            'action': 'save_or_no_hash',
+        },
+        {
+            'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)',
+            'action': 'check_hash_same_or_no_hash',
+        },
     ]
 }
 inner_l4_mac_ipv6_gtpu_eh_ipv6_udp_tcp = eval(str(inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp)
@@ -2747,7 +3650,8 @@ inner_l4_mac_ipv6_gtpu_eh_ipv6_udp_tcp = eval(str(inner_l4_mac_ipv4_gtpu_eh_ipv6
                                               .replace('pdu_t is 0', 'pdu_t is 1')
                                               .replace('(type=0', '(type=1')
                                               .replace('IP()', 'IPv6()')
-                                              .replace('mac_ipv4', 'mac_ipv6'))
+                                              .replace('mac_ipv4', 'mac_ipv6')
+                                              .replace('IP(proto=0x2F)/GRE(proto=0x0800)', 'IPv6(nh=0x2F)/GRE(proto=0x86DD)'))
 inner_l4_protocal_hash = [inner_l4_mac_ipv4_gtpu_ipv4_udp_tcp, inner_l4_mac_ipv6_gtpu_ipv4_udp_tcp,
                           inner_l4_mac_ipv4_gtpu_eh_ipv6_udp_tcp, inner_l4_mac_ipv6_gtpu_eh_ipv6_udp_tcp]
 
