@@ -45,7 +45,7 @@ network interface card.
 Prerequisites
 =============
 
-Copy correct ``ice.pkg`` into ``/usr/lib/firmware/intel/ice/ddp/``, \
+Copy correct ``ice.pkg`` into ``/lib/firmware/updates/intel/ice/ddp/``, \
 For the test cases, comms package is expected.
 
 Prepare test toplogoy, in the test case, it requires
@@ -89,8 +89,6 @@ Bind Intel E810 interface to igb_uio driver, (e.g. 0000:18:00.0) ::
 
   ./usertools/dpdk-devbind.py -b igb_uio 18:00.0
 
-
-
 Test Case 01: Check single VLAN fields in RXD (802.1Q)
 ======================================================
 
@@ -116,7 +114,7 @@ Send a packet with VLAN tag from test network interface::
 Please notice
 
 - Change ethernet source address with your test network interface's address
-- Make sure the ethernet destination addres is NOT your real E810 interface's address
+- Make sure the ethernet destination address is NOT your real E810 interface's address
 
 Check the output in testpmd, **ctag=1:0:23** is expected, which is consistent with VLAN tag set in test packet::
 
@@ -372,3 +370,327 @@ Replace correct ice.pkg to /lib/firmware/updates/intel/ice/ddp/ice.pkg,then relo
 
   rmmod ice
   modprobe ice.ko
+
+MPLS cases
+==========
+
+Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
+
+MPLS cases use same parameter Launch testpmd::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=ip_offset -- -i  --portmask=0x1 --nb-cores=2
+
+check RXDID value correct::
+
+    expected: RXDID[25]
+
+scapy prepare::
+
+    about scapy:
+    from scapy.contrib.mpls import MPLS
+
+Test Case: Check ip offset of ip
+--------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=18
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=18
+
+Test Case: check ip offset with vlan
+------------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test Case: check offset with 2 vlan tag
+---------------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test Case: check ip offset with multi MPLS
+------------------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=18
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=18
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test Case: check ip offset with multi MPLS with vlan tag
+--------------------------------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=38
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=22
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=38
+
+Test Case: check ip offset with multi MPLS with 2 vlan tag
+----------------------------------------------------------
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=38
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IP()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=42
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=26
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=30
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=34
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=38
+
+Test packet::
+
+    p = Ether(dst="00:11:22:33:44:55",type=0x88A8)/Dot1Q(type=0x8100)/Dot1Q(type=0x8847)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=0)/MPLS(s=1)/IPv6()
+
+Expected output in testpmd::
+
+    Protocol Offset:ip_offset=42
