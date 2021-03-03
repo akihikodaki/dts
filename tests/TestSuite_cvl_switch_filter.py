@@ -4548,8 +4548,8 @@ class CVLSwitchFilterTest(TestCase):
         """
         generate file with fdir rules to make fdir table full, then test switch filter
         """
-        pf_pci = self.dut.ports_info[0]['pci']
-        out = self.pmd.start_testpmd('default', eal_param='-a %s --log-level=ice,7'%pf_pci)
+        pf_pci = [self.dut.ports_info[0]['pci']]
+        out = self.pmd.start_testpmd('default', ports=pf_pci, eal_param='--log-level=ice,7')
         self.dut.send_expect("quit", "# ")
         self.fdir_rule_number = self.pmd.get_max_rule_number(self,out)
         src_file = 'dep/testpmd_cmds_rte_flow_fdir_rules'

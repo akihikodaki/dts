@@ -2264,8 +2264,8 @@ class TestCVLFdir(TestCase):
 
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
-        pf_pci = self.dut.ports_info[0]['pci']
-        out = self.pmd_output.start_testpmd('default', eal_param='-a %s --log-level=ice,7'%pf_pci)
+        pf_pci = [self.dut.ports_info[0]['pci']]
+        out = self.pmd_output.start_testpmd('default', ports=pf_pci,eal_param='--log-level=ice,7')
         self.dut.send_expect("quit", "# ")
         self.max_rule_num = self.pmd_output.get_max_rule_number(self, out)
         self.launch_testpmd_with_mark()
