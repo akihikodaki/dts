@@ -950,9 +950,8 @@ TC30: DCF enabled, DCF VF reset
     port start 0
     start
 
-4. check the rule still be listed.
-   send the packet with new mac address of VF1 again, check the packet still be dropped by VF1.
-   the rule still take effect.
+4. send the packet with new mac address of VF1 again, check the packet not dropped by VF1.
+   the rule is removed.
 
 DCF mode and any ACL filters (not added by DCF) shall be mutually exclusive
 ===========================================================================

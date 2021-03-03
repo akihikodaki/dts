@@ -4549,13 +4549,7 @@ Subcase 1: DCF stop/DCF start
      tetspmd> port stop 0
      testpmd> port start 0
 
-4. check the rule list::
-
-     testpmd> flow list 0
-
-   check the rule is still there.
-
-5. send matched packets, port 1 can still receive the packets.
+4. send matched packets, port 1 can't receive the packets.
 
 Test case: Drop action test
 ===========================

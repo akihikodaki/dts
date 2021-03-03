@@ -4077,9 +4077,9 @@ Subcase 1: port stop/port start
     testpmd> port stop 0
     testpmd> port start 0
 
-4. show the rule list, the rule is still there.
+4. show the rule list, there is no rule listed.
 
-5. verify matched packet can be still redirected to queue 1 with FDIR matched ID=0x0.
+5. verify matched packet is distributed by RSS without FDIR matched ID.
 
 Subcase 2: delete rules
 -----------------------
@@ -4182,8 +4182,9 @@ Subcase 3: VF port reset and create a new rule
 
    the port can be stop/reset/start normally without error message.
 
-4. check the rule still be listed,
-   send matched packet to vf0, check the packet is redirected by RSS without FDIR matched ID.
+4. check there is not rule listed on port 0.
+   the rule of port 1 is still be listed.
+   send matched packet to vf0, check the packet is distributed by RSS.
    send matched packet to vf1, check the packet is redirected to queue 5 with FDIR matched ID=0x0.
 
 5. create rule 0 on port 0 again, the rule can be created successfully.
@@ -4210,18 +4211,18 @@ Subcase 4: VF port reset and delete the rule
 
 3. vf reset::
 
-    port stop 0
-    port reset 0
-    port start 0
+    port stop 1
+    port reset 1
+    port start 1
 
    the port can be stop/reset/start normally without error message.
 
-4. check the rule still be listed,
-   send matched packet to vf0, check the packet is redirected by RSS without FDIR matched ID.
-   send matched packet to vf1, check the packet is redirected to queue 5 with FDIR matched ID=0x0.
+4. check there is not rule listed on port 1.
+   the rule of port 0 is still be listed.
+   send matched packet to vf0, check the packet is redirected to queue 5 with FDIR matched ID=0x0.
+   send matched packet to vf1, check the packet is distributed by RSS.
 
-5. destroy rule 0 of vf0, report error, but no core dump.
-   destroy rule 0 of vf1 successfully.
+5. destroy rule 0 of vf0 successfully.
    send matched packet to vf0, check the packet is redirected by RSS without FDIR matched ID.
    send matched packet to vf1, check the packet is redirected by RSS without FDIR matched ID.
 
@@ -4260,7 +4261,7 @@ Subcase 5: PF reset VF and create a new rule
 
    the port can be stop/reset/start normally without error message.
 
-5. check the rule of vf0 still be listed,
+5. check there is not rule listed on vf0.
    send matched packet to vf0 with new mac address, check the packet is redirected by RSS without FDIR matched ID.
    send matched packet to vf1, check the packet is redirected to queue 5 with FDIR matched ID=0x0.
 
@@ -4291,27 +4292,27 @@ Subcase 6: PF reset VF and delete the rule
 
 3. pf trigger vf reset::
 
-    ip link set enp134s0f0 vf 0 mac 00:11:22:33:44:56
+    ip link set enp134s0f0 vf 1 mac 00:11:22:33:44:56
 
 4. testpmd shows::
 
-    Port 0: reset event
+    Port 1: reset event
 
    then vf reset::
 
-    port stop 0
-    port reset 0
-    port start 0
+    port stop 1
+    port reset 1
+    port start 1
 
    the port can be stop/reset/start normally without error message.
 
-5. destroy rule 0 of vf0, report error, but no core dump.
-   destroy rule 0 of vf1 successfully.
+5. check there is not rule listed on vf1.
+   destroy rule 0 of vf0 successfully.
    send matched packet to vf0, check the packet is redirected by RSS without FDIR matched ID.
    send matched packet to vf1, check the packet is redirected by RSS without FDIR matched ID.
 
-6. create rule 0 on port 0 again, the rule can be created successfully.
-   send matched packet to port 0, the packet can be redirected to queue 5 with FDIR matched ID=0x0.
+6. create rule 1 on port 1 again, the rule can be created successfully.
+   send matched packet to port 1, the packet can be redirected to queue 5 with FDIR matched ID=0x0.
 
 7. quit and relaunch testpmd, then create same rules successfully.
 
