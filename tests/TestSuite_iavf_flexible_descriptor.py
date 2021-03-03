@@ -79,13 +79,14 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
             netdev.bind_driver(driver=self.kdriver)
         # set vf assign method and vf driver
         vf_driver = 'vfio-pci'
+        self.pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]['intf']
+        self.dut.send_expect('ethtool --set-priv-flags {} vf-vlan-prune-disable on'.format(self.pf0_intf),'#')
         # generate 2 VFs on PF
         self.dut.generate_sriov_vfs_by_port(
             used_dut_port, 1, driver=self.kdriver)
-        pf0_intf = self.dut.ports_info[self.dut_ports[dut_index]]['intf']
         vf_mac = "00:11:22:33:44:55"
         self.dut.send_expect(
-            'ip link set {} vf 0 mac {}'.format(pf0_intf, vf_mac), '#')
+            'ip link set {} vf 0 mac {}'.format(self.pf0_intf, vf_mac), '#')
         sriov_vf0 = self.dut.ports_info[used_dut_port]['vfs_port'][0]
         sriov_vf0.bind_driver(vf_driver)
         return sriov_vf0, vf_mac
@@ -122,6 +123,7 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         """
         self.destroy_vf()
         self.restore_compilation()
+        self.dut.send_expect('ethtool --set-priv-flags {} vf-vlan-prune-disable off'.format(self.pf0_intf), '#')
 
     def set_up(self):
         """
