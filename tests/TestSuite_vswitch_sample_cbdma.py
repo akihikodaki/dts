@@ -84,7 +84,11 @@ class TestVswitchSampleCBDMA(TestCase):
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
+        self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
+        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
+        self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1)
 
     def set_up(self):
         """
@@ -92,11 +96,6 @@ class TestVswitchSampleCBDMA(TestCase):
         """
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("killall -I qemu-system-x86_64", '#', 20)
-        self.vhost_user = self.dut.new_session(suite="vhost-user")
-        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
-        self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
-        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
-        self.virtio_user1_pmd = PmdOutput(self.dut, self.virtio_user1)
 
     def set_async_threshold(self, async_threshold=256):
         self.logger.info("Configure async_threshold to {}".format(async_threshold))
@@ -149,19 +148,27 @@ class TestVswitchSampleCBDMA(TestCase):
         time.sleep(3)
 
     def start_virtio_testpmd(self, pmd_session, dev_mac, dev_id, cores, prefix,  enable_queues=1, server_mode=False,
-                             nb_cores=1, used_queues=1):
+                             vectorized_path=False, nb_cores=1, used_queues=1):
         """
         launch the testpmd as virtio with vhost_net0
         """
         if server_mode:
-            eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={},server=1".format(dev_mac, dev_id,
-                                                                                                        enable_queues)
+            if vectorized_path:
+                eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={},server=1," \
+                             "mrg_rxbuf=0,in_order=1,vectorized=1".format(dev_mac, dev_id, enable_queues)
+            else:
+                eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={},server=1"\
+                    .format(dev_mac, dev_id, enable_queues)
         else:
-            eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={}".format(dev_mac, dev_id,
-                                                                                               enable_queues)
+            if vectorized_path:
+                eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={}," \
+                             "mrg_rxbuf=0,in_order=1,vectorized=1".format(dev_mac, dev_id, enable_queues)
+            else:
+                eal_params = " --vdev=net_virtio_user0,mac={},path=./vhost-net{},queues={}"\
+                    .format(dev_mac, dev_id, enable_queues)
         if self.check_2M_env:
             eal_params += " --single-file-segments"
-        params = "--nb-cores={} --rxq={} --txq={} --txd=1024 --rxd=1024".format(nb_cores, used_queues, used_queues)
+        params = "--rxq={} --txq={} --txd=1024 --rxd=1024 --nb-cores={}".format(used_queues, used_queues, nb_cores)
         pmd_session.start_testpmd(cores=cores, param=params, eal_param=eal_params, no_pci=True, ports=[], prefix=prefix,
                                   fixed_prefix=True)
 
@@ -310,7 +317,7 @@ class TestVswitchSampleCBDMA(TestCase):
         self.start_vhost_app(with_cbdma=with_cbdma, cbdma_num=cbdma_num, socket_num=socket_num, client_mode=False)
         self.start_virtio_testpmd(pmd_session=self.virtio_user0_pmd, dev_mac=self.virtio_dst_mac0, dev_id=0,
                                   cores=self.vuser0_core_list, prefix='testpmd0', enable_queues=1, server_mode=False,
-                                  nb_cores=1, used_queues=1)
+                                  vectorized_path=False, nb_cores=1, used_queues=1)
         self.virtio_user0_pmd.execute_cmd('set fwd mac')
         self.virtio_user0_pmd.execute_cmd('start tx_first')
         self.virtio_user0_pmd.execute_cmd('stop')
@@ -373,7 +380,7 @@ class TestVswitchSampleCBDMA(TestCase):
                                       nb_cores=1, used_queues=1)
             self.start_virtio_testpmd(pmd_session=self.virtio_user1_pmd, dev_mac=self.virtio_dst_mac1, dev_id=1,
                                       cores=self.vuser1_core_list, prefix='testpmd1', enable_queues=1, server_mode=True,
-                                      nb_cores=1, used_queues=1)
+                                      vectorized_path=True, nb_cores=1, used_queues=1)
             self.virtio_user0_pmd.execute_cmd('set fwd mac')
             self.virtio_user0_pmd.execute_cmd('start tx_first')
             self.virtio_user0_pmd.execute_cmd('stop')
@@ -459,7 +466,7 @@ class TestVswitchSampleCBDMA(TestCase):
                                   nb_cores=1, used_queues=1)
         self.start_virtio_testpmd(pmd_session=self.virtio_user1_pmd, dev_mac=self.virtio_dst_mac1, dev_id=1,
                                   cores=self.vuser1_core_list, prefix='testpmd1', enable_queues=1, server_mode=False,
-                                  nb_cores=1, used_queues=1)
+                                  vectorized_path=True, nb_cores=1, used_queues=1)
         self.set_testpmd0_param(self.virtio_user0_pmd, self.virtio_dst_mac1)
         self.set_testpmd1_param(self.virtio_user1_pmd, self.virtio_dst_mac0)
 
@@ -614,7 +621,6 @@ class TestVswitchSampleCBDMA(TestCase):
         Run after each test case.
         """
         self.bind_cbdma_device_to_kernel()
-        self.close_all_session()
 
     def tear_down_all(self):
         """
@@ -623,3 +629,4 @@ class TestVswitchSampleCBDMA(TestCase):
         self.set_max_queues(128)
         self.set_async_threshold(256)
         self.dut.build_install_dpdk(self.target)
+        self.close_all_session()
