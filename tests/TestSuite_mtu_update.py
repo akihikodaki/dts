@@ -108,8 +108,12 @@ class TestMtuUpdate(TestCase):
         # The packet total size include ethernet header, ip header, and payload.
         # ethernet header length is 18 bytes, ip standard header length is 20 bytes.
         # pktlen = pktsize - ETHER_HEADER_LEN
-        max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN * 2
-        padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN
+        if self.kdriver == "ixgbe":
+            max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN
+            padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN-VLAN
+        else:
+            max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN * 2
+            padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN
         out = self.send_scapy_packet(port_id,
                                      f'Ether(dst=dutmac, src="52:00:00:00:00:00")/IP()/Raw(load="\x50"*{padding})')
         return out
@@ -222,18 +226,17 @@ class TestMtuUpdate(TestCase):
         """
         Sends a packet of the given size into the testing machine.
         """
-        if self.kdriver == "mlx5_core" or self.kdriver == "mlx4_core":
+        if self.kdriver == "mlx5_core" or self.kdriver == "mlx4_core" or self.kdriver == "ixgbe":
         # Mellanox will need extra options to start testpmd
             self.pmdout.start_testpmd("Default", "--max-pkt-len=9500 --tx-offloads=0x8000 --enable-scatter -a")
         else:
             self.pmdout.start_testpmd("Default")
-        
+
         self.exec("port stop all")
         self.exec(f"port config mtu 0 {packet_size:d}")
         self.exec(f"port config mtu 1 {packet_size:d}")
         self.verify(int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 0)) == packet_size, "MTU did not update")
         self.verify(int(self.pmdout.get_detail_from_port_info("MTU: ", "\d+", 1)) == packet_size, "MTU did not update")
-
         self.exec("port start all")
         self.exec("set fwd mac")
         self.exec("start")
