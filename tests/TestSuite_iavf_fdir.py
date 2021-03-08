@@ -575,6 +575,38 @@ tv_pfcp_drop = {
         {"port_id": 0, "passthru": 1}]
 }
 
+MAC_IPV4_TCP_WITHOUT = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())',
+                 'Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())/SCTP()',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())']
+}
+
+MAC_IPV4_UDP_WITHOUT = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=RandShort(),dport=RandShort())'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())',
+                 'Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())/SCTP()',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())']
+}
+
+MAC_IPV6_TCP_WITHOUT = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/SCTP(sport=RandShort(),dport=RandShort())']
+}
+
+MAC_IPV6_UDP_WITHOUT = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())',
+                 'Ether(dst="00:11:22:33:44:55")/IPv6()/SCTP(sport=RandShort(),dport=RandShort())']
+}
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -1783,6 +1815,186 @@ tv_mac_ipv6_nat_t_esp_mark = {
     "check_param": {"port_id": 0, "passthru": 1, "mark_id": 15}
 }
 
+# mac_ipv4_tcp_without_input_set
+tv_mac_ipv4_tcp_without_input_set_queue_index = {
+    "name": "test_mac_ipv4_tcp_without_input_set_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions queue index 1 / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": 1}
+}
+
+tv_mac_ipv4_tcp_without_input_set_queue_group = {
+    "name": "test_mac_ipv4_tcp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss queues 0 1 2 3 end / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_tcp_without_input_set_passthru = {
+    "name": "test_mac_ipv4_tcp_without_input_set_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_tcp_without_input_set_drop = {
+    "name": "test_mac_ipv4_tcp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_tcp_without_input_set_mark_rss = {
+    "name": "test_mac_ipv4_tcp_without_input_set_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions mark id 2 / rss / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 2}
+}
+
+tv_mac_ipv4_tcp_without_input_set_mark = {
+    "name": "test_mac_ipv4_tcp_without_input_set_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / tcp / end actions mark id 1 / end",
+    "scapy_str": MAC_IPV4_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+# mac_ipv4_udp_without_input_set
+tv_mac_ipv4_udp_without_input_set_queue_index = {
+    "name": "test_mac_ipv4_udp_without_input_set_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions queue index 1 / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": 1}
+}
+
+tv_mac_ipv4_udp_without_input_set_queue_group = {
+    "name": "test_mac_ipv4_udp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions rss queues 0 1 2 3 end / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_udp_without_input_set_passthru = {
+    "name": "test_mac_ipv4_udp_without_input_set_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_udp_without_input_set_drop = {
+    "name": "test_mac_ipv4_udp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_udp_without_input_set_mark_rss = {
+    "name": "test_mac_ipv4_udp_without_input_set_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions mark id 2 / rss / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 2}
+}
+
+tv_mac_ipv4_udp_without_input_set_mark = {
+    "name": "test_mac_ipv4_udp_without_input_set_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / end actions mark id 1 / end",
+    "scapy_str": MAC_IPV4_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+# mac_ipv6_tcp_without_input_set
+tv_mac_ipv6_tcp_without_input_set_queue_index = {
+    "name": "test_mac_ipv6_tcp_without_input_set_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions queue index 1 / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": 1}
+}
+
+tv_mac_ipv6_tcp_without_input_set_queue_group = {
+    "name": "test_mac_ipv6_tcp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss queues 0 1 2 3 end / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv6_tcp_without_input_set_passthru = {
+    "name": "test_mac_ipv6_tcp_without_input_set_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv6_tcp_without_input_set_drop = {
+    "name": "test_mac_ipv6_tcp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv6_tcp_without_input_set_mark_rss = {
+    "name": "test_mac_ipv6_tcp_without_input_set_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions mark id 2 / rss / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 2}
+}
+
+tv_mac_ipv6_tcp_without_input_set_mark = {
+    "name": "test_mac_ipv6_tcp_without_input_set_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / tcp / end actions mark id 1 / end",
+    "scapy_str": MAC_IPV6_TCP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+# mac_ipv6_udp_without_input_set
+tv_mac_ipv6_udp_without_input_set_queue_index = {
+    "name": "test_mac_ipv6_udp_without_input_set_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions queue index 1 / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": 1}
+}
+
+tv_mac_ipv6_udp_without_input_set_queue_group = {
+    "name": "test_mac_ipv6_udp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions rss queues 0 1 2 3 end / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "count": 10,
+    "check_param": {"port_id": 0, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv6_udp_without_input_set_passthru = {
+    "name": "test_mac_ipv6_udp_without_input_set_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv6_udp_without_input_set_drop = {
+    "name": "test_mac_ipv6_udp_without_input_set_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv6_udp_without_input_set_mark_rss = {
+    "name": "test_mac_ipv6_udp_without_input_set_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions mark id 2 / rss / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 2}
+}
+
+tv_mac_ipv6_udp_without_input_set_mark = {
+    "name": "test_mac_ipv6_udp_without_input_set_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / udp / end actions mark id 1 / end",
+    "scapy_str": MAC_IPV6_UDP_WITHOUT,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
 vectors_ipv4_pay = [tv_mac_ipv4_pay_queue_index, tv_mac_ipv4_pay_mark_rss,tv_mac_ipv4_pay_passthru,
                          tv_mac_ipv4_pay_drop, tv_mac_ipv4_pay_queue_group, tv_mac_ipv4_pay_mark]
 
@@ -1873,6 +2085,22 @@ vectors_ipv4_nat_t_esp = [tv_mac_ipv4_nat_t_esp_queue_index, tv_mac_ipv4_nat_t_e
 
 vectors_ipv6_nat_t_esp = [tv_mac_ipv6_nat_t_esp_queue_index, tv_mac_ipv6_nat_t_esp_queue_group, tv_mac_ipv6_nat_t_esp_mark]
 
+vectors_ipv4_tcp_without_input_set = [tv_mac_ipv4_tcp_without_input_set_queue_index, tv_mac_ipv4_tcp_without_input_set_queue_group,
+                                      tv_mac_ipv4_tcp_without_input_set_mark_rss, tv_mac_ipv4_tcp_without_input_set_passthru,
+                                      tv_mac_ipv4_tcp_without_input_set_drop, tv_mac_ipv4_tcp_without_input_set_mark]
+
+vectors_ipv4_udp_without_input_set = [tv_mac_ipv4_udp_without_input_set_queue_index, tv_mac_ipv4_udp_without_input_set_queue_group,
+                                      tv_mac_ipv4_udp_without_input_set_mark_rss, tv_mac_ipv4_udp_without_input_set_passthru,
+                                      tv_mac_ipv4_udp_without_input_set_drop, tv_mac_ipv4_udp_without_input_set_mark]
+
+vectors_ipv6_tcp_without_input_set = [tv_mac_ipv6_tcp_without_input_set_queue_index, tv_mac_ipv6_tcp_without_input_set_queue_group,
+                                      tv_mac_ipv6_tcp_without_input_set_mark_rss, tv_mac_ipv6_tcp_without_input_set_passthru,
+                                      tv_mac_ipv6_tcp_without_input_set_drop, tv_mac_ipv6_tcp_without_input_set_mark]
+
+vectors_ipv6_udp_without_input_set = [tv_mac_ipv6_udp_without_input_set_queue_index, tv_mac_ipv6_udp_without_input_set_queue_group,
+                                      tv_mac_ipv6_udp_without_input_set_mark_rss, tv_mac_ipv6_udp_without_input_set_passthru,
+                                      tv_mac_ipv6_udp_without_input_set_drop, tv_mac_ipv6_udp_without_input_set_mark]
+
 class TestIAVFFdir(TestCase):
 
     def rte_flow_process(self, vectors):
@@ -1893,9 +2121,13 @@ class TestIAVFFdir(TestCase):
                         "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end"]
                     gtpu_rss_rule_li = self.create_fdir_rule(gtpu_rss, check_stats=True)
 
-                # send and check match packets
-                out1 = self.send_pkts_getouput(pkts=tv["scapy_str"]["match"])
-                rfc.check_iavf_fdir_mark(out1, pkt_num=len(tv["scapy_str"]["match"]), check_param=tv["check_param"])
+                if "count" in tv:
+                    out1 = self.send_pkts_getouput(pkts=tv["scapy_str"]["match"], count=tv["count"])
+                    rfc.check_iavf_fdir_mark(out1, pkt_num=tv["count"], check_param=tv["check_param"])
+                else:
+                    # send and check match packets
+                    out1 = self.send_pkts_getouput(pkts=tv["scapy_str"]["match"])
+                    rfc.check_iavf_fdir_mark(out1, pkt_num=len(tv["scapy_str"]["match"]), check_param=tv["check_param"])
                 # send and check mismatch packets
                 out2 = self.send_pkts_getouput(pkts=tv["scapy_str"]["mismatch"])
                 rfc.check_iavf_fdir_mark(out2, pkt_num=len(tv["scapy_str"]["mismatch"]), check_param=tv["check_param"],
@@ -2106,17 +2338,17 @@ class TestIAVFFdir(TestCase):
                                       socket=self.ports_socket)
         self.config_testpmd()
 
-    def send_packets(self, packets, pf_id=0):
+    def send_packets(self, packets, pf_id=0, count=1):
         self.pkt.update_pkt(packets)
         tx_port = self.tester_iface0 if pf_id == 0 else self.tester_iface1
-        self.pkt.send_pkt(crb=self.tester, tx_port=tx_port)
+        self.pkt.send_pkt(crb=self.tester, tx_port=tx_port, count=count)
 
-    def send_pkts_getouput(self, pkts, pf_id=0):
+    def send_pkts_getouput(self, pkts, pf_id=0, count=1):
         """
         if pkt_info is True, we need to get packet infomation to check the RSS hash and FDIR.
         if pkt_info is False, we just need to get the packet number and queue number.
         """
-        self.send_packets(pkts, pf_id)
+        self.send_packets(pkts, pf_id, count)
         time.sleep(1)
         out_info = self.dut.get_session_output(timeout=1)
         out_pkt = self.pmd_output.execute_cmd("stop")
@@ -2277,6 +2509,18 @@ class TestIAVFFdir(TestCase):
 
     def test_mac_ipv6_nat_t_esp(self):
         self.rte_flow_process(vectors_ipv6_nat_t_esp)
+
+    def test_mac_ipv4_tcp_without_input_set(self):
+        self.rte_flow_process(vectors_ipv4_tcp_without_input_set)
+
+    def test_mac_ipv4_udp_without_input_set(self):
+        self.rte_flow_process(vectors_ipv4_udp_without_input_set)
+
+    def test_mac_ipv6_tcp_without_input_set(self):
+        self.rte_flow_process(vectors_ipv6_tcp_without_input_set)
+
+    def test_mac_ipv6_udp_without_input_set(self):
+        self.rte_flow_process(vectors_ipv6_udp_without_input_set)
 
     def test_mac_ipv4_protocol(self):
         rules = [
@@ -2457,7 +2701,6 @@ class TestIAVFFdir(TestCase):
         rfc.check_iavf_fdir_mark(out6, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=False)
         out7 = self.send_pkts_getouput(pkts["mismatch"][7])
         rfc.check_iavf_fdir_mark(out7, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=False)
-
 
     def test_mac_outer_co_exist_gtpu_eh_dst(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
@@ -2691,6 +2934,12 @@ class TestIAVFFdir(TestCase):
         self.create_fdir_rule(rule1, check_stats=False)
         rule2 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / end actions drop / end"
         self.create_fdir_rule(rule2, check_stats=False)
+        self.create_fdir_rule(rule2, check_stats=False)
+        self.pmd_output.execute_cmd("flow destroy 0 rule 0", timeout=1)
+        rule3 = "flow create 0 ingress pattern eth / ipv4 / tcp / end actions queue index 1 / end"
+        self.create_fdir_rule(rule3, check_stats=True)
+        rule4 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 ttl is 2 tos is 4 / tcp / end actions queue index 1 / end"
+        self.create_fdir_rule(rule4, check_stats=False)
         self.pmd_output.execute_cmd("flow destroy 0 rule 0", timeout=1)
 
         # delete a non-existent rule
