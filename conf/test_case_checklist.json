@@ -2953,6 +2953,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"fdir_for_nvgre": [
@@ -2968,6 +2981,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+	{
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"L2_tunnel_filter": [
@@ -3195,6 +3221,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"fdir_for_flexbytes": [
@@ -3210,6 +3249,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"fdir_for_mac_vlan": [
@@ -3240,6 +3292,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"fdir_for_ipv4": [
@@ -3255,6 +3320,34 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
+        }
+    ],
+       "fdir_for_ipv6": [
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"fdir_for_vxlan": [
@@ -3270,6 +3363,19 @@
             ],
             "Bug ID": "",
             "Comments": "NIC not support this case"
+        },
+        {
+            "OS": [
+                "freebsd"
+            ],
+            "NIC": [
+                "fortville_eagle"
+            ],
+            "Target": [
+                "ALL"
+            ],
+            "Bug ID": "",
+            "Comments": "testpmd not support socket-mem and file-prefix param in freebsd"
         }
     ],
 	"link_status_interrupt_change": [
@@ -3579,7 +3685,10 @@
                  "niantic",
                  "twinpond",
                  "sageville",
-                 "sagepond"
+                 "sagepond",
+		 "springville",
+		 "powerville",
+                 "foxville"
              ],
              "Target": [
                  "ALL"
