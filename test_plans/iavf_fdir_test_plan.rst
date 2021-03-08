@@ -4552,3 +4552,264 @@ subcase 3: PFCP FDIR vlan insert on
 8. DUT check the packets are not distributed to expected queue without mark id without "PKT_RX_VLAN_STRIPPED",
    verify that the same number of packet are correctly received on the traffic generator side port A with VLAN tag "1".
    And UDP checksum need be validated as pass by the tester.
+
+Test case: without input set test
+=================================
+Support ipv4 and ipv6 tcp/udp flow director rule without input set.
+The packets are for testing without input set cases.
+
+* MAC_IPV4_TCP
+
+    matched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+    mismatched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())/SCTP()],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+* MAC_IPV4_UDP
+
+    matched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+    mismatched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP(src=RandIP(), dst=RandIP())/SCTP()],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+* MAC_IPV6_TCP
+
+    matched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+    mismatched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/SCTP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+* MAC_IPV6_UDP
+
+    matched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/UDP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+    mismatched packets::
+
+        sendp([Ether(dst="00:11:22:33:44:55")/IP()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/TCP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+        sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/SCTP(sport=RandShort(),dport=RandShort())],iface='ens192f1',count=100)
+
+Test Case: MAC_IPV4_TCP_WITHOUT_INPUT_SET
+-----------------------------------------
+
+Subcase 1: MAC_IPV4_TCP queue index
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions queue index 1 / end
+
+2. send ``MAC_IPV4_TCP`` matched packets, check all packets are distributed to queue 1.
+   send the mismatched packets, check all packets are distributed to all queues.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+   testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed to all queues.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_TCP rss queue
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions rss queues 0 1 2 3 end / end
+
+2. send ``MAC_IPV4_TCP`` matched packets, check all packets are distributed to queue 0-3.
+   send the mismatched packets, check all packets are distributed to all queues.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_TCP passthru
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions passthru / mark id 1 / end
+
+2. send ``MAC_IPV4_TCP`` matched packets, check all packets are distributed to all queue with FDIR matched ID=0x1.
+   send the mismatched packets, check all packets are distributed to all queues without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_TCP drop
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions drop / end
+
+2. send ``MAC_IPV4_TCP`` matched packets, check all packets are dropped.
+   send the mismatched packets, check all packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_TCP mark+rss
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions mark id 2 / rss / end
+
+2. send ``MAC_IPV4_TCP`` matched packets, check all packets are distributed to all queue with FDIR matched ID=0x2.
+   send the mismatched packets, check all packets are distributed to all queues without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_TCP mark
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / tcp / end actions mark id 1 / end
+
+2. repeat the step 2-3 of in subcase 3,
+   get the same result.
+
+Test Case: MAC_IPV4_UDP_WITHOUT_INPUT_SET
+-----------------------------------------
+
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV4_TCP_WITHOUT_INPUT_SET pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_TCP_WITHOUT_INPUT_SET pattern.
+3. get the same result.
+
+Test Case: MAC_IPV6_TCP_WITHOUT_INPUT_SET
+-----------------------------------------
+
+Subcase 1: MAC_IPV6_TCP queue index
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions queue index 1 / end
+
+2. send ``MAC_IPV6_TCP`` matched packets, check all packets are distributed to queue 1.
+   send the mismatched packets, check all packets are distributed to all queues.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+   testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are distributed to all queues.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV6_TCP rss queue
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions rss queues 0 1 2 3 end / end
+
+2. send ``MAC_IPV6_TCP`` matched packets, check all packets are distributed to queue 0-3.
+   send the mismatched packets, check all packets are distributed to all queues.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV6_TCP passthru
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions passthru / mark id 1 / end
+
+2. send ``MAC_IPV6_TCP`` matched packets, check all packets are distributed to all queue with FDIR matched ID=0x1.
+   send mismatched packets, check all packets are distributed to all queues without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV6_TCP drop
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions drop / end
+
+2. send ``MAC_IPV6_TCP`` matched packets, check all packets are dropped.
+   send the mismatched packets, check all packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV6_TCP mark+rss
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / tcp / end actions mark id 2 / rss / end
+
+2. send ``MAC_IPV6_TCP`` matched packets, check all packets are distributed to all queue with FDIR matched ID=0x2.
+   send the mismatched packets, check all packets are distributed to all queues without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to all queues without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV6_TCP mark
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv6 / udp / end actions mark id 1 / end
+
+2. repeat the step 2-3 of in subcase 3,
+   get the same result.
+
+Test Case: MAC_IPV6_UDP_WITHOUT_INPUT_SET
+-----------------------------------------
+
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV6_TCP_WITHOUT_INPUT_SET pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV6_TCP_WITHOUT_INPUT_SET pattern.
+3. get the same result.
