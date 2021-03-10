@@ -164,6 +164,37 @@ DCF switch filter support pattern and input set
 
 Test case 01: DCF switch for MAC_QINQ_IPV4_PAY
 ==============================================
+subcase: dest mac
+-----------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv4 / end actions vf id 1 / end
+    testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets in step 2, check the packets are not to port 1.
+
 subcase: src ip
 ---------------
 1. create a rule::
@@ -229,6 +260,37 @@ subcase: dst ip
 
 Test case 02: DCF switch for MAC_QINQ_IPV6_PAY
 ==============================================
+subcase: dest mac
+-----------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / ipv6 / end actions vf id 1 / end
+    testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x0800)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x0800)/IP()/("X"*480)], iface="ens786f0")
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets in step 2, check the packets are not to port 1.
+
 subcase: src ip
 ---------------
 1. create a rule::
@@ -297,25 +359,27 @@ Test case 03: DCF switch for MAC_QINQ_PPPOE_PAY
 
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / end actions vf id 1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
 
 2. send matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
 
    check port 1 receive the packet.
    send mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
 
@@ -333,22 +397,23 @@ Test case 04: DCF switch for MAC_QINQ_PPPOE_PAY_Proto
 
 1. create a rule::
 
-    testpmd> flow create 0 ingress pattern eth / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / pppoe_proto_id is 0x0057 / end actions vf id 1 / end
     testpmd> flow list 0
 
    check the rule exists in the list.
 
 2. send matched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
 
    check port 1 receive the packet.
    send mismatched packets::
 
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
-    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/("X"*480)], iface="ens786f0")
 
    check the packets are not to port 1.
 
@@ -363,6 +428,38 @@ Test case 04: DCF switch for MAC_QINQ_PPPOE_PAY_Proto
 
 Test case 05: DCF switch for MAC_QINQ_PPPOE_IPV4
 ================================================
+subcase: dest mac
+-----------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv4 / end actions vf id 1 / end
+    testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets in step 2, check the packets are not to port 1.
+
 subcase: src ip
 ---------------
 1. create a rule::
@@ -430,6 +527,38 @@ subcase: dst ip
 
 Test case 06: DCF switch for MAC_QINQ_PPPOE_IPV6
 ================================================
+subcase: dest mac
+-----------------
+1. create a rule::
+
+    testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 2 / vlan tci is 1 / pppoes seid is 1 / ipv6 / end actions vf id 1 / end
+    testpmd> flow list 0
+
+   check the rule exists in the list.
+
+2. send matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+
+   check port 1 receive the packet.
+   send mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x2)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IP()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:33",type=0x8100)/Dot1Q(vlan=2,type=0x8100)/Dot1Q(vlan=0x1,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x57)/IPv6()/UDP(dport=23)/("X"*480)], iface="ens786f0")
+
+   check the packets are not to port 1.
+
+3. verify rules can be destroyed::
+
+    testpmd> flow destroy 0 rule 0
+    testpmd> flow list 0
+
+   check the rule not exists in the list.
+   send matched packets in step 2, check the packets are not to port 1.
+
 subcase: src ip
 ---------------
 1. create a rule::
