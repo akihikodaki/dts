@@ -43,6 +43,7 @@ from packet import Packet
 from pktgen import PacketGeneratorHelper
 from settings import UPDATE_EXPECTED, load_global_setting
 from copy import deepcopy
+from pmd_output import PmdOutput
 
 
 class TestPVPMultiPathVhostPerformance(TestCase):
@@ -67,8 +68,10 @@ class TestPVPMultiPathVhostPerformance(TestCase):
             self.tester.send_expect('mkdir -p %s' % self.out_path, '# ')
         # create an instance to set stream field setting
         self.pktgen_helper = PacketGeneratorHelper()
-        self.vhost_user = self.dut.new_session(suite="user")
-        self.vhost = self.dut.new_session(suite="vhost")
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
+        self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
         self.save_result_flag = True
         self.json_obj = {}
         self.path=self.dut.apps_name['test-pmd']
@@ -160,33 +163,26 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name , "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_host, prefix='vhost',
-                                                   no_pci=True,
-                                                   vdevs=['net_vhost0,iface=vhost-net,queues=1'])
-        command_line_client =self.path + eal_param + \
-                    " -- -i --nb-cores=1 --txd=%d --rxd=%d" % (self.nb_desc, self.nb_desc)
-        self.vhost.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost.send_expect("set fwd mac", "testpmd> ", 120)
-        self.vhost.send_expect("start", "testpmd> ", 120)
+        vdevs = ['net_vhost0,iface=vhost-net,queues=1']
+        param = "--nb-cores=1 --txd=%d --rxd=%d" % (self.nb_desc, self.nb_desc)
+        self.vhost_user_pmd.start_testpmd(cores=self.core_list_host, param=param, vdevs=vdevs, no_pci=True, prefix="vhost")
+        self.vhost_user_pmd.execute_cmd("set fwd mac")
+        self.vhost_user_pmd.execute_cmd("start")
 
     def start_virtio_testpmd(self, args):
         """
         start testpmd on virtio
         """
-        eal_param = self.dut.create_eal_parameters(cores=self.core_list_user, prefix='virtio',
-                                                    ports=[0],
-                                                   vdevs=['virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,%s' %
-                                                          args["version"]])
+        eal_param = ""
         if self.check_2M_env:
             eal_param += " --single-file-segments"
         if 'virtio11_vectorized' in self.running_case:
             eal_param += " --force-max-simd-bitwidth=512"
-        command_line_user = self.path + eal_param + \
-                            " -- -i %s --nb-cores=2 --txd=%d --rxd=%d" % \
-                            (args["path"], self.nb_desc, self.nb_desc)
-        self.vhost_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.vhost_user.send_expect("set fwd io", "testpmd> ", 120)
-        self.vhost_user.send_expect("start", "testpmd> ", 120)
+        vdevs = ['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=1,%s' % args["version"]]
+        param = "%s --rss-ip --nb-cores=2 --txd=%d --rxd=%d" % (args["path"], self.nb_desc, self.nb_desc)
+        self.virtio_user0_pmd.start_testpmd(cores=self.core_list_user, eal_param=eal_param, param=param, vdevs=vdevs, ports=[0], prefix='virtio')
+        self.virtio_user0_pmd.execute_cmd("set fwd mac")
+        self.virtio_user0_pmd.execute_cmd("start")
 
     def handle_expected(self):
         """
@@ -287,15 +283,15 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         close all testpmd of vhost and virtio
         """
-        self.vhost.send_expect("quit", "#", 60)
-        self.vhost_user.send_expect("quit", "#", 60)
+        self.vhost_user_pmd.quit()
+        self.virtio_user0_pmd.quit()
 
     def close_all_session(self):
         """
         close all session of vhost and vhost-user
         """
         self.dut.close_session(self.vhost_user)
-        self.dut.close_session(self.vhost)
+        self.dut.close_session(self.virtio_user0)
 
     def test_perf_vhost_single_core_virtio11_mergeable(self):
         """
@@ -354,7 +350,7 @@ class TestPVPMultiPathVhostPerformance(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0,vectorized=0",
+        virtio_pmd_arg = {"version": "in_order=1,packed_vq=1,mrg_rxbuf=0",
                             "path": "--enable-hw-vlan-strip --rss-ip"}
         self.start_vhost_testpmd()
         self.start_virtio_testpmd(virtio_pmd_arg)
