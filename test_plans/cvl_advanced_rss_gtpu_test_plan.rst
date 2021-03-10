@@ -208,8 +208,8 @@ Prerequisites
    There are some gaps between the expected result and actual result in multirule cases and combination cases.
    the gaps will be resolved in 20.11 release, so the related cases will not be automated before fix version.
 
-Test steps
-==========
+toeplitz cases
+==============
 all the test cases in the pattern::
 
     outer ipv4 + inner ipv4
@@ -237,9 +237,8 @@ run the same test steps as below:
 8. send same packets with step 3.
    check the received packets have not hash value, and distributed to queue 0,
 
-================================
 Pattern: outer ipv4 + inner ipv4
-================================
+--------------------------------
 GTPoGRE is imported in DPDK-21.02.
 The Ptype is parsed same as GTP packet, so they match gtp RSS rule.
 We just need to add the GTPoGRE packet to the packets check.
@@ -255,10 +254,10 @@ after Ether layer, before IP layer, just like::
 
 
 Test case: MAC_IPV4_GTPU_EH_IPV4 with UL/DL
-===========================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 DL case
--------
+
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
@@ -287,7 +286,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3DST
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
@@ -327,7 +326,7 @@ ipv4-tcp packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/TCP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
@@ -367,7 +366,7 @@ ipv4-udp packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4
----------------------------------
+:::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
@@ -385,7 +384,7 @@ ipv4-nonfrag packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_GTPU
---------------------------------------
+::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
@@ -409,9 +408,8 @@ ipv4-icmp packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/ICMP()/("X"*480)],iface="enp216s0f0")
 
 
--------
 UL case
--------
+
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
@@ -440,7 +438,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_L3DST
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
@@ -448,7 +446,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_L3DST.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_L3SRC
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
@@ -456,7 +454,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_L3SRC.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4
----------------------------------
+:::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
@@ -464,7 +462,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_GTPU
---------------------------------------
+::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
@@ -473,10 +471,10 @@ packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTP
 
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL
-===============================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 
 DL case
--------
+
 basic hit pattern packets are the same in this test case::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
@@ -488,7 +486,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
@@ -502,7 +500,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
@@ -516,7 +514,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
@@ -531,7 +529,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -546,7 +544,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
@@ -561,7 +559,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
@@ -576,7 +574,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
@@ -590,7 +588,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
@@ -604,7 +602,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_IPV4
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
@@ -619,7 +617,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
@@ -636,7 +634,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_UDP_GTPU
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss types gtpu end key_len 0 queues end / end
@@ -649,9 +647,8 @@ hit pattern/not defined input set::
 
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
--------
 UL case
--------
+
 basic hit pattern packets are the same in this test case::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
@@ -663,7 +660,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
@@ -671,7 +668,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
@@ -679,7 +676,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3SRC_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
@@ -687,7 +684,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4DST.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3SRC_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -695,7 +692,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3DST_L4SRC.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3DST_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
@@ -703,7 +700,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4DST.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L3DST_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
@@ -711,7 +708,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L3SRC_L4SRC.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
@@ -719,7 +716,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4DST.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
@@ -727,7 +724,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_L4SRC.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_IPV4
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
@@ -735,7 +732,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP_IPV4.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
@@ -743,7 +740,7 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTPU_EH_DL_IPV4_UDP.
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_UDP_GTPU
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss types gtpu end key_len 0 queues end / end
@@ -752,7 +749,7 @@ packets: change the pdu_type value(0->1/1->0) of packets of Subcase MAC_IPV4_GTP
 
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_TCP with UL/DL
-===============================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL"
 just change some parts of rules and packets:
 
@@ -763,75 +760,72 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is TCP, change it to UDP;
 
 DL case
--------
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3SRT
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3DST_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3DST_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3SRC_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L3SRC_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_DL_IPV4_TCP_GTPU
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 
--------
 UL case
--------
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3SRT
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3DST_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3DST_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3SRC_L4DST
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L3SRC_L4SRC
--------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_UL_IPV4_TCP_GTPU
-------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::
 
 
 Test case: MAC_IPV4_GTPU_EH_IPV4 without UL/DL
-==============================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
@@ -858,7 +852,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_L3DST
-------------------------------------
+::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
@@ -900,7 +894,7 @@ ipv4-udp packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_L3SRC
-------------------------------------
+::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
@@ -916,7 +910,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4
-------------------------------
+::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
@@ -933,7 +927,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_GTPU
------------------------------------
+:::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
@@ -949,7 +943,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_UDP without UL/DL
-==================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 basic hit pattern packets are the same in this test case::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
@@ -962,7 +956,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
@@ -977,7 +971,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
@@ -992,7 +986,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4SRC
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
@@ -1008,7 +1002,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3SRC_L4DST
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -1024,7 +1018,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4SRC
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
@@ -1040,7 +1034,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L3DST_L4DST
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
@@ -1056,7 +1050,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L4DST
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
@@ -1071,7 +1065,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_L4SRC
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
@@ -1086,7 +1080,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_IPV4
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
@@ -1102,7 +1096,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP
-----------------------------------
+::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
@@ -1120,7 +1114,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_UDP_GTPU
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss types gtpu end key_len 0 queues end / end
@@ -1135,7 +1129,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32, dport=33)/("X"*480)],iface="enp216s0f0")
 
 Test case: MAC_IPV4_GTPU_EH_IPV4_TCP without UL/DL
-==================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: MAC_IPV4_GTPU_EH_IPV4_UDP without UL/DL"
 just change some parts of rules and packets:
 
@@ -1146,38 +1140,38 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is TCP, change it to UDP;
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3DST
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3SRT
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3DST_L4DST
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3DST_L4SRC
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3SRC_L4DST
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L3SRC_L4SRC
-----------------------------------------------
+::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L4DST
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_L4SRC
-----------------------------------------
+::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP
-----------------------------------
+::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_EH_IPV4_TCP_GTPU
----------------------------------------
+:::::::::::::::::::::::::::::::::::::::
 
 
 Test case: MAC_IPV4_GTPU_IPV4
-=============================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 basic hit pattern packets are the same in this test case:
 ipv4-nonfrag packets::
 
@@ -1202,7 +1196,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_L3DST
----------------------------------
+:::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-dst-only end key_len 0 queues end / end
@@ -1242,7 +1236,7 @@ ipv4-udp packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP()/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_L3SRC
----------------------------------
+:::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 l3-src-only end key_len 0 queues end / end
@@ -1256,7 +1250,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4
----------------------------
+:::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
@@ -1272,7 +1266,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_GTPU
---------------------------------
+::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss types gtpu end key_len 0 queues end / end
@@ -1286,7 +1280,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.1.1", src="192.168.1.2")/("X"*480)],iface="enp216s0f0")
 
 Test case: MAC_IPV4_GTPU_IPV4_UDP
-=================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 basic hit pattern packets are the same in this test case::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
@@ -1299,7 +1293,7 @@ not hit pattern/not defined input set packets::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3DST
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only end key_len 0 queues end / end
@@ -1313,7 +1307,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3SRC
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only end key_len 0 queues end / end
@@ -1327,7 +1321,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3SRC_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-src-only end key_len 0 queues end / end
@@ -1342,7 +1336,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3SRC_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-src-only l4-dst-only end key_len 0 queues end / end
@@ -1357,7 +1351,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3DST_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-src-only end key_len 0 queues end / end
@@ -1372,7 +1366,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L3DST_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l3-dst-only l4-dst-only end key_len 0 queues end / end
@@ -1387,7 +1381,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L4DST
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-dst-only end key_len 0 queues end / end
@@ -1401,7 +1395,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_L4SRC
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp l4-src-only end key_len 0 queues end / end
@@ -1415,7 +1409,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_IPV4
-------------------------------------
+::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4 end key_len 0 queues end / end
@@ -1430,7 +1424,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:ca:a3:28:94")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP
--------------------------------
+:::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types ipv4-udp end key_len 0 queues end / end
@@ -1447,7 +1441,7 @@ hit pattern/not defined input set::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x12345)/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP_GTPU
-------------------------------------
+::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss types gtpu end key_len 0 queues end / end
@@ -1462,7 +1456,7 @@ hit pattern/not defined input set::
 
 
 Test case: MAC_IPV4_GTPU_IPV4_TCP
-=================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: MAC_IPV4_GTPU_IPV4_UDP"
 just change some parts of rules and packets:
 
@@ -1473,39 +1467,37 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is TCP, change it to UDP;
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3DST
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3SRT
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3DST_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3DST_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3SRC_L4DST
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L3SRC_L4SRC
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L4DST
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_L4SRC
--------------------------------------
+:::::::::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP
--------------------------------
+:::::::::::::::::::::::::::::::
 
 Subcase: MAC_IPV4_GTPU_IPV4_TCP_GTPU
-------------------------------------
+::::::::::::::::::::::::::::::::::::
 
-
-================================
 Pattern: outer ipv4 + inner ipv6
-================================
+--------------------------------
 
 reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
 
@@ -1523,9 +1515,8 @@ after Ether layer, before IP layer, just like::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
-================================
 Pattern: outer ipv6 + inner ipv4
-================================
+--------------------------------
 
 reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
 
@@ -1542,9 +1533,8 @@ after Ether layer, before IP layer, just like::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
-================================
 Pattern: outer ipv6 + inner ipv6
-================================
+--------------------------------
 
 reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
 
@@ -1564,8 +1554,8 @@ after Ether layer, before IP layer, just like::
 
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
-Test case: negative cases
-=========================
+negative case
+=============
 Subcase: invalid input set 
 --------------------------
 1. create rules with invalid input set::
@@ -1594,8 +1584,8 @@ Subcase: invalid input set
 
    check all the rule failed to be validated.
 
-Test case: default pattern supported
-====================================
+default pattern supported case
+==============================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -1784,8 +1774,8 @@ Test case: default pattern supported
 
 3. check all the packets with symmetric L3 address have different hash value and distributed to queues by RSS.
 
-Test case: inner L4 protocal hash
-=================================
+inner L4 protocal hash case
+===========================
 Note: add two GTPoGRE packets in each subcase with::
 
     IPv6(nh=0x2F)/GRE(proto=0x86dd)/
@@ -1874,8 +1864,10 @@ Subcase: MAC_IPV6_GTPU_EH_IPV6_UDP/TCP
 
 5. flush the rules, send the two packets again, check they are distributed to the same queue.
 
-Test case: multirules IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
-======================================================
+multirules case
+===============
+Subcase: IPV4_GTPU_IPV4/IPV4_GTPU_EH_IPV4
+-----------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -1958,8 +1950,8 @@ so the following step don't need to be run.
     packet 1-3 get same result with step 5.
     packet 4-9 have not hash value, and distributed to queue 0.
 
-Test case: multirules IPV4_GTPU_EH_IPV4 with/without UL/DL
-==========================================================
+Subcase: IPV4_GTPU_EH_IPV4 with/without UL/DL
+---------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2013,8 +2005,8 @@ so the following step don't need to be run.
    packet 1-6 have not hash value.
 
 
-Test case: multirules IPV4_GTPU_EH_IPV4 without/with UL/DL
-==========================================================
+Subcase: IPV4_GTPU_EH_IPV4 without/with UL/DL
+---------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2070,8 +2062,8 @@ so the following step don't need to be run.
     packet 1-6 have not hash value, and distributed to queue 0.
 
 
-Test case: multirules IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
-=====================================================================
+Subcase: IPV4_GTPU_EH_IPV4 and IPV4_GTPU_EH_IPV4_UDP/TCP
+--------------------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2140,8 +2132,8 @@ so the following step don't need to be run.
     check packet 10-12 have not hash value.
 
 
-Test case: multirules IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
-=====================================================================
+Subcase: IPV6_GTPU_EH_IPV6 and IPV6_GTPU_EH_IPV6_UDP/TCP
+--------------------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2206,8 +2198,8 @@ so the following step don't need to be run.
    check packet 11 has different hash value to packet 10, packet 12 have different hash value to packet 10 and 11.
 
 
-Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
-===================================================================================
+Subcase: IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL/DL
+----------------------------------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2247,8 +2239,8 @@ Test case: multirules IPV4_GTPU_EH_IPV6 and IPV4_GTPU_EH_IPV6_UDP/TCP without UL
    check packet 7 has differnt hash value to packet 5.
 
 
-Test case: multirules IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
-===============================================================
+Subcase: IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
+--------------------------------------------------
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --port-topology=loop
@@ -2288,8 +2280,8 @@ Test case: multirules IPV6_GTPU_IPV4 and IPV6_GTPU_IPV4_UDP/TCP
    check packet 7 has differnt hash value to packet 5.
 
 
-Test case: toeplitz and symmetric rules combination
-===================================================
+toeplitz and symmetric rules combination
+========================================
 Subcase: toeplitz/symmetric with same pattern
 ---------------------------------------------
 1. create a toeplitz rule::
@@ -2562,8 +2554,8 @@ so the following step don't need to be run.
 14. repeat step 2, check the toeplitz can't work now, the packets have hash value.
 
 
-Test case: stress cases
-=======================
+stress cases
+============
 Subcase: add/delete IPV4_GTPU_UL_IPV4_TCP rules
 -----------------------------------------------
 1. start testpmd without disable rss::
@@ -2615,7 +2607,6 @@ Subcase: add/delete IPV4_GTPU_DL_IPV4 rules
 
    check packet 2 have different hash value with packet 1, packet 3 has same hash value with packet 1.
 
-===============
 symmetric cases
 ===============
 
@@ -2646,14 +2637,13 @@ all the test cases run the same test steps as below:
 
 Note: the GTPoGRE packets need to be added to symmetric cases as a Ptype, just like toeplitz cases.
 
-==========================================
 Pattern: symmetric outer ipv4 + inner ipv4
-==========================================
+------------------------------------------
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4 with UL/DL
-=====================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Subcase: symmetric MAC_IPV4_GTPU_EH_DL_IPV4
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
@@ -2711,7 +2701,7 @@ MAC_IPV4_GTPU_IPV4 nonfrag::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 Subcase: symmetric MAC_IPV4_GTPU_EH_UL_IPV4
--------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
@@ -2719,9 +2709,9 @@ rule::
 packets: change the pdu_type value(0->1/1->0) of packets of Subcase symmetric MAC_IPV4_GTPU_EH_DL_IPV4.
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL
-=========================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 Subcase: symmetric MAC_IPV4_GTPU_EH_DL_IPV4_UDP
------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
@@ -2755,7 +2745,7 @@ MAC_IPV4_GTPU_IPV4_UDP::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Subcase: symmetric MAC_IPV4_GTPU_EH_UL_IPV4_UDP
------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
@@ -2764,7 +2754,7 @@ packets: change the pdu_type value(0->1/1->0) of packets of Subcase symmetric MA
 
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_TCP with UL/DL
-=========================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP with UL/DL"
 just change some parts of rules and packets:
 
@@ -2775,13 +2765,13 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is TCP, change it to UDP;
 
 Subcase: symmetric MAC_IPV4_GTPU_EH_DL_IPV4_TCP
------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::
 
 Subcase: symmetric MAC_IPV4_GTPU_EH_UL_IPV4_TCP
------------------------------------------------
+:::::::::::::::::::::::::::::::::::::::::::::::
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4 without UL/DL
-========================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
@@ -2819,7 +2809,7 @@ MAC_IPV4_GTPU_IPV4 nonfrag::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP without UL/DL
-============================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
@@ -2856,7 +2846,7 @@ MAC_IPV4_GTPU_IPV4_UDP::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IP(dst="192.168.0.2",src="192.168.0.1")/UDP(sport=23, dport=22)/("X"*480)],iface="enp216s0f0")
 
 Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_TCP without UL/DL
-============================================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: symmetric MAC_IPV4_GTPU_EH_IPV4_UDP without UL/DL"
 just change some parts of rules and packets:
 
@@ -2868,7 +2858,7 @@ just change some parts of rules and packets:
 
 
 Test case: symmetric MAC_IPV4_GTPU_IPV4
-=======================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / end actions rss func symmetric_toeplitz types ipv4 end key_len 0 queues end / end
@@ -2906,7 +2896,7 @@ MAC_IPV4_GTPU_EH_IPV4::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.2",src="192.168.0.1")/("X"*480)],iface="enp216s0f0")
 
 Test case: symmetric MAC_IPV4_GTPU_IPV4_UDP
-===========================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 rule::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss func symmetric_toeplitz types ipv4-udp end key_len 0 queues end / end
@@ -2936,7 +2926,7 @@ MAC_IPV4_GTPU_IPV6_UDP::
     sendp([Ether(dst="68:05:CA:BB:26:E0")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/("X"*480)],iface="enp216s0f0")
 
 Test case: symmetric MAC_IPV4_GTPU_IPV4_TCP
-===========================================
+>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
 the rules and packets in this test case is similar to "Test case: symmetric MAC_IPV4_GTPU_IPV4_UDP"
 just change some parts of rules and packets:
 
@@ -2946,10 +2936,8 @@ just change some parts of rules and packets:
         if the packet's inner L4 layer is UDP, change it to TCP;
         if the packet's inner L4 layer is TCP, change it to UDP;
 
-
-==========================================
 Pattern: symmetric outer ipv4 + inner ipv6
-==========================================
+------------------------------------------
 
 reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
 
@@ -2959,9 +2947,8 @@ reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
 
-==========================================
 Pattern: symmetric outer ipv6 + inner ipv4
-==========================================
+------------------------------------------
 
 reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
 
@@ -2970,9 +2957,8 @@ reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
     packets:
         change the packet's outer L3 layer from IP to IPv6;
 
-==========================================
 Pattern: symmetric outer ipv6 + inner ipv6
-==========================================
+------------------------------------------
 
 reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
 
@@ -2984,8 +2970,8 @@ reconfig all the cases of "Pattern: symmetric outer ipv4 + inner ipv4"
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
 
-Test case: symmetric negative cases
-===================================
+symmetric negative cases
+========================
 1. create rules with invalid input set::
 
     flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / end actions rss func symmetric_toeplitz types gtpu end key_len 0 queues end / end
@@ -3014,8 +3000,8 @@ Test case: symmetric negative cases
 
    check all the rule failed to be validated.
 
-Test case: global simple-xor
-============================
+global simple-xor
+=================
 1. create a simple-xor rule::
 
     flow create 0 ingress pattern end actions rss func simple_xor key_len 0 queues end / end
@@ -3068,8 +3054,8 @@ Test case: global simple-xor
    send the packets in step4, check the pair of packets with switched l4 port have same hash value, and distributed to same queue.
 
 
-Test case: rss function when disable rss
-========================================
+rss function when disable rss
+=============================
 1. start testpmd without disable rss::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -c 0xff -n 4 -- -i --rxq=64 --txq=64 --disable-rss --port-topology=loop
