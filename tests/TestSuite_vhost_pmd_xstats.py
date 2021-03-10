@@ -43,6 +43,7 @@ from test_case import TestCase
 from settings import HEADER_SIZE
 from qemu_kvm import QEMUKvm
 from packet import Packet
+from pmd_output import PmdOutput
 ETHER_JUMBO_FRAME_MTU = 9000
 DEFAULT_JUMBO_FRAME_MTU = 1500
 
@@ -63,17 +64,18 @@ class TestVhostPmdXstats(TestCase):
         self.virtio1_mac = "52:54:00:00:00:01"
         self.core_config = "1S/6C/1T"
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
-                              == self.ports_socket])
-        self.verify(self.cores_num >= 6,
-                    "There has not enough cores to test this case")
-        self.core_list = self.dut.get_core_list(
-            self.core_config, socket=self.ports_socket)
+        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == self.ports_socket])
+        self.verify(self.cores_num >= 6, "There has not enough cores to test this case")
+        self.core_list = self.dut.get_core_list(self.core_config, socket=self.ports_socket)
         self.core_list_user = self.core_list[0:3]
         self.core_list_host = self.core_list[3:6]
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.app_testpmd_path = self.dut.apps_name['test-pmd']
         self.testpmd_name=self.app_testpmd_path.split("/")[-1]
+        self.vhost_user = self.dut.new_session(suite="vhost-user")
+        self.virtio_user0 = self.dut.new_session(suite="virtio-user0")
+        self.vhost_user_pmd = PmdOutput(self.dut, self.vhost_user)
+        self.virtio_user0_pmd = PmdOutput(self.dut, self.virtio_user0)
 
     def set_up(self):
         """ 
@@ -82,8 +84,6 @@ class TestVhostPmdXstats(TestCase):
         """
         self.dut.send_expect("rm -rf ./vhost-net*", "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
-        self.vhost_user = self.dut.new_session(suite="vhost-user")
-        self.virtio_user = self.dut.new_session(suite="virtio-user")
 
     @property
     def check_2M_env(self):
@@ -103,49 +103,42 @@ class TestVhostPmdXstats(TestCase):
         """
         according the scope to check results
         """
-        out = self.vhost_user.send_expect(
-            "show port xstats 1", "testpmd>", 60)
+        out = self.vhost_user_pmd.execute_cmd("show port xstats 1")
         packet_rx = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
         sum_packet_rx = packet_rx.group(1)
         packet_tx = re.search("tx_%s_packets:\s*(\d*)" % scope, out)
         sum_packet_tx = packet_tx.group(1)
-        self.verify(int(sum_packet_rx) >= mun,
-                    "Insufficient the received packets from nic")
-        self.verify(int(sum_packet_tx) >= mun,
-                    "Insufficient the received packets from virtio")
+        self.verify(int(sum_packet_rx) >= mun, "Insufficient the received packets from nic")
+        self.verify(int(sum_packet_tx) >= mun, "Insufficient the received packets from virtio")
 
     def start_vhost_testpmd(self):
         """
         start testpmd on vhost
         """
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_host, prefix='vhost',
-                                                   vdevs=['net_vhost0,iface=vhost-net,queues=2,client=0'])
-        command_line_client = "./%s " % self.app_testpmd_path + eal_param + ' -- -i --nb-cores=2 --rxq=2 --txq=2 --rss-ip'
-        self.vhost_user.send_expect(command_line_client, "testpmd> ", 120)
-        self.vhost_user.send_expect("set fwd io", "testpmd> ", 120)
-        self.vhost_user.send_expect("start", "testpmd> ", 120)
+        vdevs = ['net_vhost0,iface=vhost-net,queues=2,client=0']
+        param = "--nb-cores=2 --rxq=2 --txq=2"
+        self.vhost_user_pmd.start_testpmd(cores=self.core_list_host, param=param, vdevs=vdevs,ports=[0], prefix="vhost")
+        self.vhost_user_pmd.execute_cmd("set fwd io")
+        self.vhost_user_pmd.execute_cmd("start")
 
     def start_virtio_testpmd(self, args):
         """
         start testpmd on virtio
         """
-        eal_param = self.dut.create_eal_parameters(socket=self.ports_socket, cores=self.core_list_user, prefix='virtio',
-                                                   no_pci=True, vdevs=[
-                'net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,%s' % args["version"]])
+        eal_param = ""
         if self.check_2M_env:
             eal_param += " --single-file-segments"
-        command_line_user = "./%s " % self.app_testpmd_path + eal_param + " -- -i %s --rss-ip --nb-cores=2 --rxq=2 --txq=2" % \
-                            args["path"]
-        self.virtio_user.send_expect(command_line_user, "testpmd> ", 120)
-        self.virtio_user.send_expect("set fwd io", "testpmd> ", 120)
-        self.virtio_user.send_expect("start", "testpmd> ", 120)
+        vdevs = ['net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,%s' % args["version"]]
+        param =  "%s --rss-ip --nb-cores=2 --rxq=2 --txq=2" % args["path"]
+        self.virtio_user0_pmd.start_testpmd(cores=self.core_list_user, eal_param=eal_param, param=param, vdevs=vdevs, no_pci=True, prefix="virtio")
+        self.virtio_user0_pmd.execute_cmd("set fwd io")
+        self.virtio_user0_pmd.execute_cmd("start")
 
     def xstats_number_and_type_verify(self):
         """
         Verify receiving and transmitting packets correctly in the Vhost PMD xstats
         """
-        out = self.vhost_user.send_expect(
-            "show port xstats 1", "testpmd>", 60)
+        out = self.vhost_user_pmd.execute_cmd("show port xstats 1")
         p = re.compile(r'rx_size_[0-9]+_[to_\w+]*packets')
         categories = p.findall(out)
         categories = categories[:-1]
@@ -330,14 +323,13 @@ class TestVhostPmdXstats(TestCase):
         """
         close all testpmd of vhost and virtio
         """
-        self.vhost_user.send_expect("quit", "#", 60)
-        self.virtio_user.send_expect("quit", "#", 60)
+        self.vhost_user_pmd.quit()
+        self.virtio_user0_pmd.quit()
 
     def clear_port_xstats(self, scope):
 
-        self.vhost_user.send_expect("clear port xstats 1", "testpmd>", 60)
-        out = self.vhost_user.send_expect(
-            "show port xstats 1", "testpmd>", 60)
+        self.vhost_user_pmd.execute_cmd("clear port xstats 1")
+        out = self.vhost_user_pmd.execute_cmd("show port xstats 1")
         packet = re.search("rx_%s_packets:\s*(\d*)" % scope, out)
         sum_packet = packet.group(1)
         self.verify(int(sum_packet) == 0, "Insufficient the received package")
@@ -352,4 +344,5 @@ class TestVhostPmdXstats(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.close_session(self.vhost_user)
+        self.dut.close_session(self.virtio_user0)
