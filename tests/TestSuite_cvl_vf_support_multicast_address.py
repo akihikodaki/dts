@@ -393,21 +393,23 @@ class TestCvlVfSupportMulticastAdress(TestCase):
 
         # send 5 packets
         pkt1 = 'Ether(dst="%s")/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_0
-        pkt2 = 'Ether(dst="%s")/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_1
-        pkt3 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac
-        pkt4 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf1_mac
-        pkt5 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf0_wrong_mac
-        pkts = [pkt1, pkt2, pkt3, pkt4, pkt5]
+        pkt2 = 'Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_0
+        pkt3 = 'Ether(dst="%s")/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_1
+        pkt4 = 'Ether(dst="%s")/Dot1Q(vlan=2)/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_1
+        pkt5 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf0_mac
+        pkt6 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf1_mac
+        pkt7 = 'Ether(dst="%s")/IP(src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)' % vf0_wrong_mac
+        pkts = [pkt1, pkt2, pkt3, pkt4, pkt5, pkt6, pkt7]
         p = Packet()
         for i in pkts:
             p.append_pkt(i)
         p.send_pkt(self.tester, tx_port=self.tester_itf)
         output_1 = self.check_pkts_received()
-        self.verify(len(output_1) == 6, "Wrong number of pkts received")
-        self.verify(('0', vf0_mac) in output_1, "pkt3 can't be received by port 0")
-        self.verify(('1', vf1_mac) in output_1, "pkt4 can't be received by port 1")
-        self.verify(('0', mul_mac_0) in output_1 and ('0', mul_mac_1) in output_1, "pkt1-2 can't be received by port 0")
-        self.verify(('1', mul_mac_0) in output_1 and ('1', mul_mac_1) in output_1, "pkt1-2 can't be received by port 1")
+        self.verify(len(output_1) == 10, "Wrong number of pkts received")
+        self.verify(('0', vf0_mac) in output_1, "pkt5 can't be received by port 0")
+        self.verify(('1', vf1_mac) in output_1, "pkt6 can't be received by port 1")
+        self.verify(('0', mul_mac_0) in output_1 and ('0', mul_mac_1) in output_1, "pkt1-4 can't be received by port 0")
+        self.verify(('1', mul_mac_0) in output_1 and ('1', mul_mac_1) in output_1, "pkt1-4 can't be received by port 1")
 
         # set allmulti off and promisc on
         self.pmd_output.execute_cmd("set promisc all on")
@@ -416,8 +418,8 @@ class TestCvlVfSupportMulticastAdress(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf)
         output_2 = self.check_pkts_received()
         self.verify(len(output_2) == 6, "Wrong number of pkts received")
-        self.verify(('0', vf0_mac) in output_2 and ('0', vf1_mac) in output_2 and ('0', vf0_wrong_mac) in output_2, "pkt3-5 can't be received by port 0")
-        self.verify(('1', vf0_mac) in output_2 and ('1', vf1_mac) in output_2 and ('1', vf0_wrong_mac) in output_2, "pkt3-5 can't be received by port 1")
+        self.verify(('0', vf0_mac) in output_2 and ('0', vf1_mac) in output_2 and ('0', vf0_wrong_mac) in output_2, "pkt5-7 can't be received by port 0")
+        self.verify(('1', vf0_mac) in output_2 and ('1', vf1_mac) in output_2 and ('1', vf0_wrong_mac) in output_2, "pkt5-7 can't be received by port 1")
 
     def test_negative_case(self):
         # send one packet
@@ -468,6 +470,55 @@ class TestCvlVfSupportMulticastAdress(TestCase):
         p.send_pkt(self.tester, tx_port=self.tester_itf)
         output_6 = self.check_pkts_received()
         self.verify(len(output_6) == 0, "Wrong number of pkts received")
+
+    def test_set_vlan_filter_on(self):
+        # send 4 packets
+        pkt1 = 'Ether(dst="%s")/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_0
+        pkt2 = 'Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="224.0.0.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_0
+        pkt3 = 'Ether(dst="%s")/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_1
+        pkt4 = 'Ether(dst="%s")/Dot1Q(vlan=1)/IP(src="224.192.16.1")/UDP(sport=22,dport=23)/("X"*480)' % mul_mac_1
+        pkts = [pkt1, pkt2, pkt3, pkt4]
+        p = Packet()
+        for i in pkts:
+            p.append_pkt(i)
+        p.send_pkt(self.tester, tx_port=self.tester_itf)
+        out_1 = self.check_pkts_received()
+        self.verify(len(out_1) == 0, "pkt1-4 can be received by any port")
+
+        # configure multicast address
+        self.pmd_output.execute_cmd("mcast_addr add 0 %s" % mul_mac_0)
+        self.check_ports_multicast_address_number(1, 0)
+        # send 4 packets
+        p.send_pkt(self.tester, tx_port=self.tester_itf)
+        out_2 = self.check_pkts_received()
+        self.verify(len(out_2) == 1, "Wrong number of pkts received")
+        self.verify(('0', mul_mac_0) in out_2, "pkt1 can't be received by port 0")
+
+        # set vlan filter on
+        self.pmd_output.execute_cmd("vlan set filter on 0")
+        self.pmd_output.execute_cmd("rx_vlan add 1 0")
+        # send 4 packets
+        p.send_pkt(self.tester, tx_port=self.tester_itf)
+        out_3 = self.check_pkts_received()
+        self.verify(len(out_3) == 2, "Wrong number of pkts received")
+        self.verify(('0', mul_mac_0) in out_3, "pkt1-2 can't be received by port 0")
+        self.verify(('0', mul_mac_1) not in out_3, "other pkt can be received by port 0")
+
+        # remove the vlan filter
+        self.pmd_output.execute_cmd("rx_vlan rm 1 0")
+        # send 4 packets
+        p.send_pkt(self.tester, tx_port=self.tester_itf)
+        out_4 = self.check_pkts_received()
+        self.verify(len(out_4) == 1, "Wrong number of pkts received")
+        self.verify(('0', mul_mac_0) in out_4, "pkt1 can't be received by port 0")
+
+        # remove the multicast address configuration
+        self.pmd_output.execute_cmd("mcast_addr remove 0 %s" % mul_mac_0)
+        self.check_ports_multicast_address_number(0, 0)
+        # send 4 packets
+        p.send_pkt(self.tester, tx_port=self.tester_itf)
+        out_5 = self.check_pkts_received()
+        self.verify(len(out_5) == 0, "pkt1-4 can be received by any port")
 
     def tear_down(self):
         """
