@@ -193,10 +193,7 @@ class TestChecksumOffload(TestCase):
                             if (flag == 1):
                                 self.verify("PKT_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
                             elif (flag == 0):
-                                if self.nic == "cavium_a063":
-                                    self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
-                                else:
-                                    self.verify("PKT_RX_L4_CKSUM_BAD" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
                     else:
                         if "PKT_RX_L4_CKSUM" not in line:
                             self.verify(0, "There is no L4 checksum flags appeared!")
@@ -207,7 +204,7 @@ class TestChecksumOffload(TestCase):
                                 self.verify("PKT_RX_L4_CKSUM_GOOD" in line, "Packet Rx L4 checksum valid-flags error!")
                                 self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "Packet Rx IP checksum valid-flags error!")
                             elif (flag == 0):
-                                self.verify("PKT_RX_L4_CKSUM_BAD" in line, "Packet Rx L4 checksum valid-flags error!")
+                                self.verify("PKT_RX_L4_CKSUM_BAD" in line or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "Packet Rx L4 checksum valid-flags error!")
                                 self.verify("PKT_RX_IP_CKSUM_BAD" in line, "Packet Rx IP checksum valid-flags error!")
 
         self.dut.send_expect("stop", "testpmd>")

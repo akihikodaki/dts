@@ -271,10 +271,7 @@ class TestRxTx_Offload(TestCase):
                     else:
                         self.verify("PKT_RX_IP_CKSUM_GOOD" in line, "ipv4 checksum flag is wrong!")
                     if ("udp" in flags) or ("tcp" in flags):
-                        if self.nic in ['cavium_a063', 'cavium_a064']:
-                            self.verify("PKT_RX_L4_CKSUM_BAD" or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "L4 checksum flag is wrong!")
-                        else:
-                            self.verify("PKT_RX_L4_CKSUM_BAD" in line, "L4 checksum flag is wrong!")
+                        self.verify("PKT_RX_L4_CKSUM_BAD" or "PKT_RX_L4_CKSUM_UNKNOWN" in line, "L4 checksum flag is wrong!")
                     else:
                         self.verify(("PKT_RX_L4_CKSUM_GOOD" in line) or ("PKT_RX_L4_CKSUM_UNKNOWN" in line), "L4 checksum flag is wrong!")
         # collect the tx checksum result
