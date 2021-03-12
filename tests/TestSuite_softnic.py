@@ -174,6 +174,8 @@ class TestSoftnic(TestCase):
                 self.pmdout.start_testpmd(list(range(3)), "--forward-mode=softnic --portmask=0x2",
                                           eal_param="-s 0x4 %s --vdev 'net_softnic0,firmware=/tmp/%s,cpu_id=1,conn_port=8086'" % (
                                           self.eal_param, 'nat_firmware.cli'))
+                if self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
+                    self.dut.send_expect("set fwd mac", "testpmd>")
                 self.dut.send_expect("start", "testpmd>")
                 # src ip tcp
                 for j in range(2):
