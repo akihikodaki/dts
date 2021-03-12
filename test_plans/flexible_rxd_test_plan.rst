@@ -123,25 +123,7 @@ Check the output in testpmd, **ctag=1:0:23** is expected, which is consistent wi
   ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
 
-Test Case 02: Check single VLAN fields in RXD (802.1ad)
-=======================================================
-
-Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
-
-Launch testpmd command::
-
-  ./x86_64-native-linux-gcc/app/testpmd -l 6-9 -n 4 -w 18:00.0,proto_xtr=vlan -- -i --rxq=32 --txq=32 --portmask=0x1 --nb-cores=2
-
-Test packet::
-
-  p = Ether(src='3c:fd:fe:bc:f6:78', dst='68:05:ca:a3:13:4c', type=0x88A8)/Dot1Q(prio=1,vlan=23)/IP()/UDP()/DNS()
-
-Expected output in testpmd::
-
-  stag=1:0:23
-
-
-Test Case 03: Check double VLAN fields in RXD (802.1Q) only 1 VLAN tag
+Test Case 02: Check double VLAN fields in RXD (802.1Q) only 1 VLAN tag
 ======================================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -159,7 +141,7 @@ Expected output in testpmd::
   stag=1:0:23
 
 
-Test Case 04: Check double VLAN fields in RXD (802.1Q) 2 VLAN tags
+Test Case 03: Check double VLAN fields in RXD (802.1Q) 2 VLAN tags
 ==================================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -178,7 +160,7 @@ Expected output in testpmd::
   ctag=4:0:56
 
 
-Test Case 05: Check double VLAN fields in RXD (802.1ad)
+Test Case 04: Check double VLAN fields in RXD (802.1ad)
 =======================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -197,7 +179,7 @@ Expected output in testpmd::
   ctag=4:0:56
 
 
-Test Case 06: Check IPv4 fields in RXD
+Test Case 05: Check IPv4 fields in RXD
 ======================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -219,7 +201,7 @@ Expected output in testpmd::
   proto=17
 
 
-Test Case 07: Check IPv6 fields in RXD 
+Test Case 06: Check IPv6 fields in RXD
 =======================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -241,7 +223,7 @@ Expected output in testpmd::
   hoplimit=34
 
 
-Test Case 08: Check IPv6 flow field in RXD
+Test Case 07: Check IPv6 flow field in RXD
 =======================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -261,7 +243,7 @@ Expected output in testpmd::
   flow=0x98765
 
 
-Test Case 09: Check TCP fields in IPv4 in RXD
+Test Case 08: Check TCP fields in IPv4 in RXD
 =======================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -280,7 +262,7 @@ Expected output in testpmd::
   flags=AS
 
 
-Test Case 10: Check TCP fields in IPv6 in RXD
+Test Case 09: Check TCP fields in IPv6 in RXD
 =======================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -299,7 +281,7 @@ Expected output in testpmd::
   flags=S
 
 
-Test Case 11: Check IPv4, IPv6, TCP fields in RXD on specific queues
+Test Case 10: Check IPv4, IPv6, TCP fields in RXD on specific queues
 ====================================================================
 
 Test steps are same to ``Test Case 01``, just change the launch command of testpmd, test packet and expected output
@@ -341,7 +323,7 @@ Expected output in testpmd::
   flags=AS
 
 
-Test Case 12: Check effect of replacing pkg from RXID #22 to RXID #16
+Test Case 11: Check effect of replacing pkg from RXID #22 to RXID #16
 =====================================================================
 
 Put the ice.pkg with RXID #16(ice-1.3.7.0.pkg and more) to /lib/firmware/updates/intel/ice/ddp/ice.pkg, then reload ice driver::

@@ -117,12 +117,6 @@ class TestFlexibleRxd(TestCase, FlexibleRxdBase):
         """
         self.check_single_VLAN_fields_in_RXD_8021Q()
 
-    def test_check_single_VLAN_fields_in_RXD_8021ad(self):
-        """
-        Check single VLAN fields in RXD (802.1ad)
-        """
-        self.check_single_VLAN_fields_in_RXD_8021ad()
-
     def test_check_double_VLAN_fields_in_RXD_8021Q_1_VLAN_tag(self):
         """
         Check double VLAN fields in RXD (802.1Q) only 1 VLAN tag
