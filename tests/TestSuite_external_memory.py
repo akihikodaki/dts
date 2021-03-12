@@ -111,6 +111,7 @@ class TestExternalMemory(TestCase):
         Verifier VFIO_PCI and anonymous memory allocation
         """
         self.insmod_modprobe(modename="vfio-pci")
+        self.dut.send_expect("echo 655359 > /sys/module/vfio_iommu_type1/parameters/dma_entry_limit", "#", 10)
 
         self.eal_para = self.dut.create_eal_parameters(cores="1S/4C/1T")
         self.dut.send_expect(r'./%s %s -- --mp-alloc=xmem -i'
