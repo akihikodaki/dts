@@ -104,7 +104,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
         self.src1 = "192.168.4.1"
         self.dst1 = "192.168.3.1"
         self.header_row = ["QemuVersion", "FrameSize(B)", "Throughput(Mpps)",
-                           "LineRate(%)", "Cycle"]
+                           "LineRate(%)", "Cycle", "Expected Throughput(Mpps)"]
 
     def get_qemu_list_from_config(self):
         """
@@ -233,6 +233,7 @@ class TestVhostPVPDiffQemuVersion(TestCase):
 
     def send_verify(self, qemu_version, vlan_id1=0, tag="Performance"):
         self.result_table_create(self.header_row)
+        perf_result = {}
         for frame_size in self.frame_sizes:
             info = "Running test %s, and %d frame size." % (self.running_case, frame_size)
             self.logger.info(info)
@@ -253,15 +254,17 @@ class TestVhostPVPDiffQemuVersion(TestCase):
             traffic_opt = {'delay': 5, 'duration': 20}
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
             Mpps = pps / 1000000.0
-            pct = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
-            self.verify(Mpps > self.check_value[frame_size],
-                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
-                        self.running_case, frame_size, self.check_value[frame_size], Mpps))
+            line_rate = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
             # update print table info
-            data_row = [qemu_version, frame_size, str(Mpps), str(pct), tag]
+            data_row = [qemu_version, frame_size, str(Mpps), str(line_rate), tag, self.check_value[frame_size]]
             self.result_table_add(data_row)
+            perf_result[frame_size] = Mpps
 
         self.result_table_print()
+        for frame_size in perf_result.keys():
+            self.verify(perf_result[frame_size] > self.check_value[frame_size],
+                        "%s of frame size %d speed verify failed, expect %s, result %s" % (
+                            self.running_case, frame_size, self.check_value[frame_size], perf_result[frame_size]))
 
     def close_testpmd_and_qemu(self):
         """
