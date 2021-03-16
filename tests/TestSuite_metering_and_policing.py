@@ -159,6 +159,8 @@ class TestMeteringAndPolicing(TestCase):
         self.pmd_out.start_testpmd(Corelist, "--rxq=%d --txq=%d --portmask=%s --disable-rss"
                                    % (self.port_id, self.port_id, portmask),
                                    eal_param="-s %s --vdev 'net_softnic0,firmware=%s'" % (Servicecorelist, filename))
+        if self.nic in ["columbiaville_25g","columbiaville_100g"]:
+            self.dut.send_expect('set fwd mac','testpmd>')
 
     def add_port_meter_profile(self, profile_id, cbs=400, pbs=500):
         """
