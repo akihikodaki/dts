@@ -448,8 +448,6 @@ class TestVhostUserLiveMigration(TestCase):
 
     def tear_down(self):
         self.destroy_vm_env()
-        # stop send packet on tester
-        self.stop_send_pkts_on_tester()
         self.duts[0].send_expect('killall -s INT qemu-system-x86_64', '#')
         self.duts[1].send_expect('killall -s INT qemu-system-x86_64', '#')
         pass
