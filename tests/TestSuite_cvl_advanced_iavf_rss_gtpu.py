@@ -35,7 +35,7 @@ import random
 import time
 from packet import Packet
 from pmd_output import PmdOutput
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
 from rte_flow_common import RssProcessing
 
 mac_ipv4_gtpu_ipv4_basic = {
@@ -7807,7 +7807,10 @@ mac_ipv6_gtpc_symmetric_toeplitz = [mac_ipv6_gtpc_symmetric]
 
 
 class TestCVLAdvancedIAVFRSSGTPU(TestCase):
+    supported_nic = ['columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2']
 
+    @check_supported_nic(supported_nic)
+    @skip_unsupported_pkg('os default')
     def set_up_all(self):
         """
         Run at the start of each test suite.
