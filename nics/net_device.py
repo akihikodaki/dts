@@ -71,6 +71,7 @@ class NetDevice(object):
         self.intf2_name = None
         self.get_interface_name()
         self.socket = self.get_nic_socket()
+        self.pkg = {}
 
     def stop(self):
         pass
@@ -117,6 +118,27 @@ class NetDevice(object):
         Get the NIC driver.
         """
         return self.crb.get_pci_dev_driver(self.domain_id, self.bus_id, self.devfun_id)
+
+    def get_nic_pkg(self):
+        """
+        Get the NIC pkg.
+        """
+        out = self.__send_expect('dmesg | grep "DDP package" | tail -1', '# ')
+        if 'could not load' in out:
+            print(RED(out))
+            print(RED('Warning: The loaded DDP package version may not as you expected'))
+            try:
+                pkg_info = out.split('. ')[1].lower()
+                self.pkg['type'] = re.findall(".*package '(.*)'", pkg_info)[0].strip()
+                self.pkg['version'] = re.findall("version(.*)", pkg_info)[0].strip()
+            except:
+                print(RED('Warning: get pkg info failed'))
+        else:
+            pkg_info = out.split(': ')[-1].lower().split('package version')
+            if len(pkg_info) > 1:
+                self.pkg['type'] = pkg_info[0].strip()
+                self.pkg['version'] = pkg_info[1].strip()
+        return self.pkg
 
     def get_nic_socket(self):
         """
@@ -427,7 +449,6 @@ class NetDevice(object):
                            intf, "# ")
         self.__send_expect("ifconfig %s down" % intf, "# ")
         self.__send_expect("ifconfig %s up" % intf, "# ")
-
 
     @nic_has_driver
     def disable_ipv6(self):
