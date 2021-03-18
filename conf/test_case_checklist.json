@@ -1267,7 +1267,9 @@
             "NIC": [
                 "springville",
                 "cavium_a034",
-                "cavium_0011"
+                "cavium_0011",
+                "columbiaville_25g",
+                "columbiaville_100g"
             ],
             "Target": [
                 "ALL"
