@@ -404,11 +404,12 @@ class Dut(Crb):
         self.map_available_ports()
         # disable tester port ipv6
         self.disable_tester_ipv6()
+        self.get_nic_configurations()
+
         # print latest ports_info
         for port_info in self.ports_info:
             self.logger.info(port_info)
-            if self.nic is None:
-                self.nic = port_info['port']
+
         if self.ports_map is None or len(self.ports_map) == 0:
             self.logger.warning("ports_map should not be empty, please check all links")
 
@@ -418,6 +419,24 @@ class Dut(Crb):
         # load app name conf
         name_cfg = AppNameConf()
         self.apps_name_conf = name_cfg.load_app_name_conf()
+
+    def get_nic_configurations(self):
+        retry_times = 3
+        if self.ports_info:
+            self.nic = self.ports_info[0]['port']
+            # TODO: get nic driver/firmware version
+            if self.nic.default_driver == 'ice':
+                self.get_nic_pkg(retry_times)
+
+    def get_nic_pkg(self, retry_times=3):
+        self.nic.pkg = self.nic.get_nic_pkg()
+        while not self.nic.pkg and retry_times > 0:
+            self.restore_interfaces()
+            self.nic.pkg = self.nic.get_nic_pkg()
+            retry_times = retry_times - 1
+        self.logger.info('pkg: {}'.format(self.nic.pkg))
+        if not self.nic.pkg:
+            raise Exception('Get nic pkg failed')
 
     def restore_interfaces(self):
         """
