@@ -38,7 +38,7 @@ import traceback
 import signal
 import time
 
-from exception import VerifyFailure, TimeoutException
+from exception import VerifyFailure, VerifySkip, TimeoutException
 from settings import DRIVERS, NICS, get_nic_name, load_global_setting
 from settings import PERF_SETTING, FUNC_SETTING, DEBUG_SETTING
 from settings import DEBUG_CASE_SETTING, HOST_DRIVER_SETTING
@@ -48,6 +48,7 @@ from test_result import ResultTable, Result
 from logger import getLogger
 from config import SuiteConf
 from utils import BLUE, RED
+from functools import wraps
 
 class TestCase(object):
 
@@ -68,15 +69,10 @@ class TestCase(object):
         self._check_and_reconnect(crb=self.tester)
 
         # convert netdevice to codename
-        self.nics = []
-        for portid in range(len(self.dut.ports_info)):
-            nic_type = self.dut.ports_info[portid]['type']
-            self.nics.append(get_nic_name(nic_type))
-        if len(self.nics):
-            self.nic = self.nics[0]
-        else:
-            self.nic = ''
-        self.kdriver = self._get_nic_driver(self.nic)
+        self.nic = self.dut.nic.name
+        self.nic_obj = self.dut.nic
+        self.kdriver = self.dut.nic.default_driver
+        self.pkg = self.dut.nic.pkg
 
         # result object for save suite result
         self._suite_result = Result()
@@ -168,6 +164,12 @@ class TestCase(object):
                 print(RED("History dump finished."))
             raise VerifyFailure(description)
 
+    def skip_case(self, passed, description):
+        if not passed:
+            if self._enable_debug:
+                print("skip case: \"%s\" " % RED(description))
+            raise VerifySkip(description)
+
     def _get_nic_driver(self, nic_name):
         if nic_name in list(DRIVERS.keys()):
             return DRIVERS[nic_name]
@@ -257,17 +259,28 @@ class TestCase(object):
         try:
             self.set_up_all()
             return True
-        except Exception:
+        except VerifySkip as v:
+            self.logger.info('set_up_all SKIPPED:\n' + traceback.format_exc())
+            # record all cases N/A
+            if self._enable_func:
+                for case_obj in self._get_functional_cases():
+                    self._suite_result.test_case = case_obj.__name__
+                    self._suite_result.test_case_skip(str(v))
+            if self._enable_perf:
+                for case_obj in self._get_performance_cases():
+                    self._suite_result.test_case = case_obj.__name__
+                    self._suite_result.test_case_skip(str(v))
+        except Exception as v:
             self.logger.error('set_up_all failed:\n' + traceback.format_exc())
             # record all cases blocked
             if self._enable_func:
                 for case_obj in self._get_functional_cases():
                     self._suite_result.test_case = case_obj.__name__
-                    self._suite_result.test_case_blocked('set_up_all failed')
+                    self._suite_result.test_case_blocked('set_up_all failed: {}'.format(str(v)))
             if self._enable_perf:
                 for case_obj in self._get_performance_cases():
                     self._suite_result.test_case = case_obj.__name__
-                    self._suite_result.test_case_blocked('set_up_all failed')
+                    self._suite_result.test_case_blocked('set_up_all failed: {}'.format(str(v)))
             return False
 
     def _execute_test_case(self, case_obj):
@@ -328,6 +341,10 @@ class TestCase(object):
             self._suite_result.test_case_failed(str(v))
             self._rst_obj.write_result("FAIL")
             self.logger.error('Test Case %s Result FAILED: ' % (case_name) + str(v))
+        except VerifySkip as v:
+            self._suite_result.test_case_skip(str(v))
+            self._rst_obj.write_result("N/A")
+            self.logger.info('Test Case %s N/A: ' % (case_name))
         except KeyboardInterrupt:
             self._suite_result.test_case_blocked("Skipped")
             self.logger.error('Test Case %s SKIPPED: ' % (case_name))
@@ -504,3 +521,62 @@ class TestCase(object):
             bitrate *= 100
 
         return bitrate * num_ports / 8 / (frame_size + 20)
+
+
+def skip_unsupported_pkg(pkgs):
+    """
+    Skip case which are not supported by the input pkgs
+    """
+    if isinstance(pkgs, str):
+        pkgs = [pkgs]
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            test_case = args[0]
+            pkg_type = test_case.pkg.get('type')
+            pkg_version = test_case.pkg.get('version')
+            if not pkg_type or not pkg_version:
+                raise VerifyFailure('Failed due to pkg is empty'.format(test_case.pkg))
+            for pkg in pkgs:
+                if pkg in pkg_type:
+                    raise VerifySkip('{} {} do not support this case'.format(pkg_type, pkg_version))
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def skip_unsupported_nic(nics):
+    """
+    Skip case which are not supported by the input nics
+    """
+    if isinstance(nics, str):
+        nics = [nics]
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            test_case = args[0]
+            if test_case.nic in nics:
+                raise VerifySkip('{} do not support this case'.format(test_case.nic))
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def check_supported_nic(nics):
+    """
+    check if the test case is supported by the input nics
+    """
+    if isinstance(nics, str):
+        nics = [nics]
+
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            test_case = args[0]
+            if test_case.nic not in nics:
+                raise VerifySkip('{} do not support this case'.format(test_case.nic))
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
