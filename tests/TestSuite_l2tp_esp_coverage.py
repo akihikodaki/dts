@@ -33,7 +33,7 @@ import re
 import time
 from packet import Packet
 from pmd_output import PmdOutput
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
 import rte_flow_common as rfc
 
 vf0_mac = "00:11:22:33:44:55"
@@ -76,9 +76,10 @@ tv_MAC_IPV6_NAT_T_ESP_vlan = {'matched vlan': "Ether(dst='%s')/Dot1Q(vlan=1)/IPv
                             'dismatched vlan': "Ether(dst='%s')/Dot1Q(vlan=2)/IPv6()/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)" % vf0_mac,
                             'no vlan': "Ether(dst='%s')/IPv6()/UDP(dport=4500)/ESP(spi=1)/Raw('x'*480)" % vf0_mac}
 
-
 class L2tpEspCoverage(TestCase):
+    supported_nic = ['columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2']
 
+    @check_supported_nic(supported_nic)
     def set_up_all(self):
         """
         Run at the start of each test suite.
@@ -95,7 +96,6 @@ class L2tpEspCoverage(TestCase):
         self.pf_interface = self.dut.ports_info[self.dut_ports[0]]['intf']
         self.pf_mac = self.dut.get_mac_address(0)
         self.pf_pci = self.dut.ports_info[self.dut_ports[0]]['pci']
-        self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g"], "%s nic not support ethertype filter" % self.nic)
         self.vf_flag = False
         self.create_iavf()
         self.pkt = Packet()
@@ -104,6 +104,7 @@ class L2tpEspCoverage(TestCase):
         """
         Run before each test case.
         """
+        cases_list = ["test_MAC_IPV4_L2TPv3_HW_checksum_vlan_strip", "test_MAC_IPV4_L2TPv3_SW_checksum_vlan_insertion"]
         self.dut.kill_all()
 
     def tear_down(self):
@@ -156,21 +157,12 @@ class L2tpEspCoverage(TestCase):
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
         self.dut.send_expect("set verbose 1", "testpmd> ", 15)
 
-    def enable_hw_checksum(self):
+    def enable_checksum(self, param_type="hw"):
+
         self.dut.send_expect("stop","testpmd> ")
         self.dut.send_expect("port stop all","testpmd> ")
-        self.dut.send_expect("csum set ip hw 0","testpmd> ")
-        self.dut.send_expect("csum set udp hw 0","testpmd> ")
-        self.dut.send_expect("port start all","testpmd> ")
-        self.dut.send_expect("set fwd csum","testpmd> ")
-        self.dut.send_expect("set verbose 1","testpmd> ")
-        self.dut.send_expect("start","testpmd> ")
-    
-    def enable_sw_checksum(self):
-        self.dut.send_expect("stop","testpmd> ")
-        self.dut.send_expect("port stop all","testpmd> ")
-        self.dut.send_expect("csum set ip sw 0","testpmd> ")
-        self.dut.send_expect("csum set udp sw 0","testpmd> ")
+        self.dut.send_expect("csum set ip %s 0" % param_type,"testpmd> ")
+        self.dut.send_expect("csum set udp %s 0" % param_type,"testpmd> ")
         self.dut.send_expect("port start all","testpmd> ")
         self.dut.send_expect("set fwd csum","testpmd> ")
         self.dut.send_expect("set verbose 1","testpmd> ")
@@ -221,30 +213,29 @@ class L2tpEspCoverage(TestCase):
         
     def test_MAC_IPV4_L2TPv3_HW_checksum(self):
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
-        self.enable_hw_checksum()
+        self.enable_checksum()
         self.checksum_verify(tv_MAC_IPV4_L2TPv3_chksum)
     
     def test_MAC_IPV4_ESP_HW_checksum(self):
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
-        self.enable_hw_checksum()
+        self.enable_checksum()
         self.checksum_verify(tv_MAC_IPV4_ESP_chksum)
     
     def test_MAC_IPV4_AH_HW_checksum(self):
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
-        self.enable_hw_checksum()
+        self.enable_checksum()
         self.checksum_verify(tv_MAC_IPV4_AH_chksum)
     
     def test_MAC_IPV4_NAT_T_ESP_HW_checksum(self):
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
-        self.enable_hw_checksum()
+        self.enable_checksum()
         self.checksum_verify(tv_MAC_IPV4_NAT_T_ESP_chksum)
     
     def test_MAC_IPV6_NAT_T_ESP_HW_checksum(self):
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
-        self.enable_hw_checksum()
+        self.enable_checksum()
         self.checksum_verify(tv_MAC_IPV6_NAT_T_ESP_chksum)
-    
-    
+
     def start_tcpdump(self, rxItf):
         self.tester.send_expect("rm -rf getPackageByTcpdump.cap", "#")
         self.tester.send_expect("tcpdump -A -nn -e -vv -w getPackageByTcpdump.cap -i %s 2> /dev/null& " % rxItf, "#")
@@ -358,6 +349,7 @@ class L2tpEspCoverage(TestCase):
         tx_port = self.tx_iface
         self.pkt.send_pkt(crb=self.tester, tx_port=tx_port)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_MAC_IPV4_L2TPv3_HW_checksum_vlan_strip(self):
 
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
@@ -366,7 +358,7 @@ class L2tpEspCoverage(TestCase):
         self.dut.send_expect("vlan set strip on 0","testpmd> ")
         self.dut.send_expect("rx_vlan add 1 0","testpmd> ")
 
-        self.enable_hw_checksum()
+        self.enable_checksum()
         #create rule
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 1 / end actions queue index 1 / mark id 4 / end","testpmd> ")
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 2 / end actions queue index 2 / mark id 3 / end","testpmd> ")
@@ -415,6 +407,7 @@ class L2tpEspCoverage(TestCase):
         receive_pkt = re.findall('vlan 1', tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'vlan id strip on failed')
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_MAC_IPV4_L2TPv3_SW_checksum_vlan_insertion(self):
 
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
@@ -446,7 +439,7 @@ class L2tpEspCoverage(TestCase):
         receive_pkt = re.findall('vlan 1', tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'vlan insertion failed')
         
-        self.enable_sw_checksum()
+        self.enable_checksum("sw")
         # bad checksum + mismatched session id
         pkts="Ether(dst='00:11:22:33:44:55')/IP(proto=115,chksum=0x123)/L2TP(b'\\x00\\x00\\x00\\x11')/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)
@@ -468,8 +461,8 @@ class L2tpEspCoverage(TestCase):
         # check the rx checksum 
         bad_ipcsum = self.pmd_output.get_pmd_value("Bad-ipcsum:", out)
         self.verify(bad_ipcsum == 1, "bad ip csum check error")
-    
 
+    @skip_unsupported_pkg('os default')
     def test_MAC_IPV4_ESP_HW_checksum_vlan_strip(self):
 
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
@@ -478,7 +471,7 @@ class L2tpEspCoverage(TestCase):
         self.dut.send_expect("vlan set strip on 0","testpmd> ")
         self.dut.send_expect("rx_vlan add 1 0","testpmd> ")
 
-        self.enable_hw_checksum()
+        self.enable_checksum()
         #create rule
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / esp spi is 1 / end actions queue index 1 / mark id 4 / end","testpmd> ")
         self.dut.send_expect("flow create 0 ingress pattern eth / ipv4 / esp spi is 2 / end actions queue index 2 / mark id 3 / end","testpmd> ")
@@ -527,6 +520,7 @@ class L2tpEspCoverage(TestCase):
         receive_pkt = re.findall('vlan 1', tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'vlan id strip on failed')
 
+    @skip_unsupported_pkg('os default')
     def test_MAC_IPV4_NAT_T_ESP_SW_checksum_vlan_insertion(self):
 
         self.create_testpmd_command(self.vf0_prop,rx_checksum=1)
@@ -557,7 +551,7 @@ class L2tpEspCoverage(TestCase):
         receive_pkt = re.findall('vlan 1', tcpdump_out)
         self.verify(len(receive_pkt) == 1, 'vlan insertion failed')
         
-        self.enable_sw_checksum()
+        self.enable_checksum("sw")
         # bad checksum + mismatched session id
         pkts="Ether(dst='00:11:22:33:44:55')/IP(chksum=0x123)/UDP(dport=4500)/ESP(spi=11)/Raw('x'*480)"
         self.start_tcpdump(self.tx_iface)

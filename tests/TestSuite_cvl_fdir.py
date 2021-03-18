@@ -37,7 +37,7 @@ import os
 
 from packet import Packet
 from pmd_output import PmdOutput
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg
 import rte_flow_common as rfc
 
 from utils import GREEN, RED
@@ -2825,6 +2825,7 @@ class TestCVLFdir(TestCase):
         out = self.pmd_output.execute_cmd("flow query 0 0 count")
         self.verify("Flow rule #0 not found" in out, "query should failed")
 
+    @skip_unsupported_pkg('os default')
     def test_multi_patterns_mark_count_query(self):
         rule1 = 'flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / count / end'
         rule2 = 'flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / mark id 1 / count / end'
@@ -2943,6 +2944,7 @@ class TestCVLFdir(TestCase):
         out2 = self.send_pkts_getouput(pkts=pkt, port_id=1)
         rfc.check_mark(out2, pkt_num=1, check_param={"port_id": 1, "queue": [2, 3], "rss": True}, stats=False)
 
+    @skip_unsupported_pkg('os default')
     def test_two_ports_multi_patterns_count_query(self):
         rules = [
             'flow create 1 ingress pattern eth / ipv4 dst is 192.168.0.21 proto is 255  tos is 4 / end actions queue index 1 / mark id 1 / count identifier 0x1234 shared on / end',
@@ -3161,15 +3163,19 @@ class TestCVLFdir(TestCase):
     def test_mac_ipv4_tun_mac_ipv4_sctp(self):
         self._rte_flow_validate(vectors_mac_ipv4_tun_mac_ipv4_sctp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu_eh(self):
         self._rte_flow_validate(vectors_mac_ipv4_gtpu_eh)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu(self):
         self._rte_flow_validate(vectors_mac_ipv4_gtpu)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_gtpu_eh(self):
         self._rte_flow_validate(vectors_mac_ipv6_gtpu_eh)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_gtpu(self):
         self._rte_flow_validate(vectors_mac_ipv6_gtpu)
 

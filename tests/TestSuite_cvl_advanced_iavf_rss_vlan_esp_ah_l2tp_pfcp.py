@@ -32,7 +32,7 @@ import re
 import random
 import string
 import time
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
 from pmd_output import PmdOutput
 from packet import Packet
 from rte_flow_common import RssProcessing
@@ -831,28 +831,32 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
 
         self.pkt = Packet()
         self.pmd_output = PmdOutput(self.dut)
-        self.ddp_dir = "/lib/firmware/updates/intel/ice/ddp/"
-        conf_file = 'conf/cvl_advanced_rss_pppoe.cfg'
-        conf_info = UserConf(conf_file)
-        conf_section = conf_info.conf._sections['suite']
-        self.os_default_package = conf_section['os_default_package_file_location']
-        self.comms_package = conf_section['comms_package_file_location']
-        self.ice_driver = conf_section['ice_driver_file_location']
         self.symmetric = False
         self.rxq = 16
         self.rsspro = RssProcessing(self, self.pmd_output, [self.tester_iface0, self.tester_iface1], self.rxq)
         self.logger.info('rssprocess.tester_ifaces: {}'.format(self.rsspro.tester_ifaces))
         self.logger.info('rssprocess.test_case: {}'.format(self.rsspro.test_case))
+        self.switch_testpmd(symmetric=self.symmetric)
+        self.dut_session = self.dut.new_session()
 
     def set_up(self):
         """
         Run before each test case.
         """
-        pass
+        # check testpmd process status
+        cmd = "ps -aux | grep testpmd | grep -v grep"
+        out = self.dut_session.send_expect(cmd, "#", 15)
+        if "testpmd" not in out:
+            self.switch_testpmd(symmetric=False)
+
+        if self.running_case == "test_unsupported_pattern_with_OS_default_package":
+            self.dut.kill_all()
+            self.switch_testpmd(symmetric=True)
 
     def create_iavf(self):
         if self.vf_flag is False:
             self.dut.bind_interfaces_linux('ice')
+            self.dut.send_expect("ethtool --set-priv-flags %s vf-vlan-prune-disable on" % self.pf_interface, "# ")
             self.dut.generate_sriov_vfs_by_port(self.used_dut_port, 1)
             self.sriov_vfs_port = self.dut.ports_info[self.used_dut_port]['vfs_port']
             self.vf_flag = True
@@ -876,10 +880,10 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
         Run after each test case.
         """
         # destroy all flow rule on port 0
-        self.dut.send_command("flow flush 0", timeout=1)
-        self.dut.send_command("clear port stats all", timeout=1)
+        self.pmd_output.execute_cmd("flow flush 0", timeout=1)
+        self.pmd_output.execute_cmd("clear port stats all", timeout=1)
         self.pmd_output.execute_cmd("stop")
-        self.dut.kill_all()
+        self.pmd_output.execute_cmd("start")
 
     def tear_down_all(self):
         """
@@ -887,16 +891,7 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
         """
         self.dut.kill_all()
         self.destroy_iavf()
-
-    def replace_package(self, package='comms'):
-        ice_pkg_path = ''.join([self.ddp_dir,"ice.pkg"])
-        self.dut.send_expect("rm -f {}".format(ice_pkg_path), "# ")
-        if package == 'os_default':
-            self.dut.send_expect("cp {} {}".format(self.os_default_package,ice_pkg_path), "# ")
-        elif package == 'comms':
-            self.dut.send_expect("cp {} {}".format(self.comms_package,ice_pkg_path), "# ")
-        self.dut.send_expect("rmmod ice", "# ", 15)
-        self.dut.send_expect("insmod {}".format(self.ice_driver), "# ",)
+        self.dut.send_expect("ethtool --set-priv-flags %s vf-vlan-prune-disable off" % self.pf_interface, "# ")
 
     def launch_testpmd(self, symmetric=False):
         param = "--rxq=16 --txq=16"
@@ -919,48 +914,47 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
     def _gener_str(self, str_len=6):
         return ''.join(random.sample(string.ascii_letters + string.digits, k=str_len))
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_pfcp_session(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_pfcp_session)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv6_pfcp_session(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_pfcp_session)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_l2tpv3(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_l2tpv3)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv6_l2tpv3(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_l2tpv3)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv4_esp(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_udp_esp(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_udp_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_esp(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_udp_esp(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_udp_esp)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv4_ah(self):
-        self.switch_testpmd()
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_ah)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_ah(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_ah)
 
     def test_wrong_hash_input_set(self):
-        self.switch_testpmd(symmetric=False)
         rule_list = [
             'flow create 0 ingress pattern eth / pppoes / ipv4 / end actions rss types l2-src-only l2-dst-only end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / pppoes / ipv4 / udp / end actions rss types ipv4-tcp end key_len 0 queues end / end',
@@ -971,23 +965,18 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
             self.rsspro.create_rule(rule, check_stats=False, msg='Invalid argument')
 
     def test_void_action(self):
-        self.switch_testpmd(symmetric=False)
         rule = 'flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions end'
         self.rsspro.create_rule(rule, check_stats=False, msg='Invalid argument')
         self.rsspro.check_rule(stats=False, rule_list=[rule])
 
     def test_delete_nonexisting_rule(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.check_rule(stats=False)
         out = self.dut.send_command("flow destroy 0 rule 0", timeout=1)
         self.verify('error' not in out, 'delete nonexisting rule raise err,expected no err')
         self.dut.send_command("flow flush 0", timeout=1)
 
+    @skip_unsupported_pkg(['comms', 'wireless'])
     def test_unsupported_pattern_with_OS_default_package(self):
-        self.destroy_iavf()
-        self.replace_package('os_default')
-        self.create_iavf()
-        self.switch_testpmd(symmetric=True)
         rule_list = [
             'flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv4 / l2tpv3oip / end actions rss types l2tpv3 end key_len 0 queues end / end',
@@ -997,14 +986,9 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
         self.rsspro.create_rule(rule_list, check_stats=False, msg='Invalid argument')
         self.rsspro.check_rule(stats=False)
         self.dut.kill_all()
-        self.destroy_iavf()
-        self.replace_package('comms')
-        self.create_iavf()
-        self.switch_testpmd(symmetric=True)
-        self.rsspro.create_rule(rule_list, check_stats=True)
+        self.switch_testpmd(symmetric=False)
 
     def test_invalid_port(self):
-        self.switch_testpmd(symmetric=False)
         rule = 'flow create 1 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end'
         self.rsspro.create_rule(rule, check_stats=False, msg='No such device')
         self.rsspro.check_rule(stats=False, rule_list=[rule])
@@ -1014,33 +998,25 @@ class Cvl_advance_iavf_rss_vlan_ah_l2tp_pfcp(TestCase):
         self.verify(result, 'actual result not match expected,expected result is:{}'.format(pattern))
 
     def test_mac_vlan_ipv4_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_pay)
 
     def test_mac_vlan_ipv4_udp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_udp_pay)
 
     def test_mac_vlan_ipv4_tcp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_tcp_pay)
 
     def test_mac_vlan_ipv4_sctp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv4_sctp_pay)
 
     def test_mac_vlan_ipv6_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_pay)
 
     def test_mac_vlan_ipv6_udp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_udp_pay)
 
     def test_mac_vlan_ipv6_tcp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_tcp_pay)
 
     def test_mac_vlan_ipv6_sctp_pay(self):
-        self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_vlan_ipv6_sctp_pay)

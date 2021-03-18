@@ -35,7 +35,7 @@ import time
 
 from packet import Packet
 from pmd_output import PmdOutput
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg
 import rte_flow_common as rfc
 from rte_flow_common import CVL_TXQ_RXQ_NUMBER
 from multiprocessing import Process
@@ -2234,8 +2234,6 @@ class TestIAVFFdir(TestCase):
         """
         Run before each test case.
         """
-        self.re_load_ice_driver()
-        time.sleep(1)
         self.setup_2pf_4vf_env()
         time.sleep(1)
         self.launch_testpmd()
@@ -2307,16 +2305,6 @@ class TestIAVFFdir(TestCase):
         time.sleep(2)
         self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
         self.dut.destroy_sriov_vfs_by_port(self.dut_ports[1])
-
-    def re_load_ice_driver(self):
-        """
-        remove and reload the ice driver
-        """
-        self.dut.send_expect("rmmod ice", "# ", 40)
-        ice_driver_file_location = self.suite_config["ice_driver_file_location"]
-        self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ")
-        self.dut.send_expect("ifconfig %s up" % self.pf0_intf, "# ", 15)
-        self.dut.send_expect("ifconfig %s up" % self.pf1_intf, "# ", 15)
 
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set fwd rxonly")
@@ -2474,39 +2462,51 @@ class TestIAVFFdir(TestCase):
     def test_mac_ipv6_sctp(self):
         self.rte_flow_process(vectors_ipv6_sctp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu_eh(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu(self):
         self.rte_flow_process(vectors_ipv4_gtpu)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_gtpu_eh(self):
         self.rte_flow_process(vectors_ipv6_gtpu_eh)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_gtpu(self):
         self.rte_flow_process(vectors_ipv6_gtpu)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_l2tpv3(self):
         self.rte_flow_process(vectors_ipv4_l2tpv3)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv6_l2tpv3(self):
         self.rte_flow_process(vectors_ipv6_l2tpv3)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_esp(self):
         self.rte_flow_process(vectors_ipv4_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_esp(self):
         self.rte_flow_process(vectors_ipv6_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_ah(self):
         self.rte_flow_process(vectors_ipv4_ah)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_ah(self):
         self.rte_flow_process(vectors_ipv6_ah)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_nat_t_esp(self):
         self.rte_flow_process(vectors_ipv4_nat_t_esp)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv6_nat_t_esp(self):
         self.rte_flow_process(vectors_ipv6_nat_t_esp)
 
@@ -2586,6 +2586,7 @@ class TestIAVFFdir(TestCase):
         out4 = self.send_pkts_getouput(MAC_IPV6_PAY_protocol["match"])
         rfc.check_iavf_fdir_mark(out4, pkt_num=6, check_param={"port_id": 0, "passthru": 1}, stats=False)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu_eh_without_teid(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end", \
                  "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc qfi is 0x34 / end actions queue index 1 / mark id 3 / end"]
@@ -2621,6 +2622,7 @@ class TestIAVFFdir(TestCase):
         out3 = self.send_pkts_getouput(MAC_IPV4_GTPU_EH_WITHOUT_TEID["match"])
         rfc.check_iavf_fdir_mark(out3, pkt_num=1, check_param={"port_id": 0, "passthru": 1}, stats=False)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_ipv4_gtpu_eh_without_qfi(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end", \
                  "flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc / end actions rss queues 2 3 end / mark id 1 / end"]
@@ -2702,6 +2704,7 @@ class TestIAVFFdir(TestCase):
         out7 = self.send_pkts_getouput(pkts["mismatch"][7])
         rfc.check_iavf_fdir_mark(out7, pkt_num=1, check_param={"port_id": 0, "drop": True}, stats=False)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_outer_co_exist_gtpu_eh_dst(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
                  "flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
@@ -2733,6 +2736,7 @@ class TestIAVFFdir(TestCase):
         }
         self.run_coexist_outer_gtpu(rules, MAC_GTPU_EH)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_outer_co_exist_gtpu_dst(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.31 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end", \
                  "flow create 0 ingress pattern eth / ipv6 dst is ::32 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
@@ -2764,6 +2768,7 @@ class TestIAVFFdir(TestCase):
         }
         self.run_coexist_outer_gtpu(rules, MAC_GTPU)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_outer_co_exist_gtpu_eh_src(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
                  "flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
@@ -2795,6 +2800,7 @@ class TestIAVFFdir(TestCase):
         }
         self.run_coexist_outer_gtpu(rules, MAC_GTPU_EH)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_outer_co_exist_gtpu_src(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 / udp / gtpu / end actions rss queues 1 2 end / mark id 1 / end", \
                  "flow create 0 ingress pattern eth / ipv6 src is ::12 / udp / gtpu / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
@@ -2826,6 +2832,7 @@ class TestIAVFFdir(TestCase):
         }
         self.run_coexist_outer_gtpu(rules, MAC_GTPU)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_outer_co_exist_gtpu_mix(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 src is 192.168.0.21 dst is 192.168.0.31 / udp / gtpu / gtp_psc / end actions rss queues 1 2 end / mark id 1 / end", \
                  "flow create 0 ingress pattern eth / ipv6 src is ::12 dst is ::32 / udp / gtpu / gtp_psc / end actions rss queues 3 4 5 6 end / mark id 2 / end",\
@@ -2858,6 +2865,7 @@ class TestIAVFFdir(TestCase):
 
         self.run_coexist_outer_gtpu(rules, MAC_GTPU_MIX)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_pfcp(self):
         # open the RSS function for PFCP session packet.
         out = self.pmd_output.execute_cmd("flow create 0 ingress pattern eth / ipv4 / udp / pfcp / end actions rss types pfcp end key_len 0 queues end / end")
@@ -2866,6 +2874,7 @@ class TestIAVFFdir(TestCase):
         self.verify("Flow rule #1 created" in out, "failed to enable RSS function for MAC_IPV6_PFCP session packet")
         self.multirules_process(vectors_pfcp)
 
+    @skip_unsupported_pkg('os default')
     def test_l2_ethertype(self):
         self.multirules_process(vectors_l2_ethertype)
 
@@ -2955,6 +2964,7 @@ class TestIAVFFdir(TestCase):
         self.check_fdir_rule(port_id=0, stats=False)
         self.check_fdir_rule(port_id=1, stats=False)
 
+    @skip_unsupported_pkg(['comms', 'wireless'])
     def test_unsupported_pattern_with_OS_package(self):
         """
         Create GTPU rule, PFCP rule, L2 Ethertype rule, l2tpv3 rule and esp rule with OS default package
@@ -2964,23 +2974,10 @@ class TestIAVFFdir(TestCase):
                 "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end",
                 "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 end / mark id 6 / end",
                 "flow create 0 ingress pattern eth / ipv6 / udp / esp spi is 6 / end actions rss queues 1 2 end / mark id 6 / end"]
-        self.destroy_env()
-        os_package_location = self.suite_config["os_default_package_file_location"]
-        comms_package_location = self.suite_config["comms_package_file_location"]
-        package_location = self.suite_config["package_file_location"]
-        self.dut.send_expect("cp %s %s" % (os_package_location, package_location), "# ")
-        self.re_load_ice_driver()
-        self.setup_2pf_4vf_env()
         self.launch_testpmd()
-
         self.validate_fdir_rule(rule, check_stats=False)
         self.create_fdir_rule(rule, check_stats=False)
         self.check_fdir_rule(port_id=0, stats=False)
-
-        self.destroy_env()
-        self.dut.send_expect("cp %s %s" % (comms_package_location, package_location), "# ")
-        self.re_load_ice_driver()
-        self.setup_2pf_4vf_env()
 
     def test_create_same_rule_on_pf_vf(self):
         """
@@ -3441,6 +3438,7 @@ class TestIAVFFdir(TestCase):
         self.dut.close_session(self.session_secondary)
         self.dut.close_session(self.session_third)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_maxnum_128_profiles(self):
         """
         There are 128 profiles in total.
@@ -3883,6 +3881,7 @@ class TestIAVFFdir(TestCase):
             vlans.append(vlan)
         return vlans
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_pfcp_vlan_strip_on_hw_checksum(self):
         """
         Set PFCP FDIR rules
@@ -3979,6 +3978,7 @@ class TestIAVFFdir(TestCase):
         self.verify(bad_ipcsum == 2, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 4, "Bad-l4csum check error")
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_pfcp_vlan_strip_off_sw_checksum(self):
         """
         Set PFCP FDIR rules
@@ -4073,6 +4073,7 @@ class TestIAVFFdir(TestCase):
         self.verify(bad_ipcsum == 2, "Bad-ipcsum check error")
         self.verify(bad_l4csum == 4, "Bad-l4csum check error")
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_pfcp_vlan_insert_on(self):
         """
         Set PFCP FDIR rules
