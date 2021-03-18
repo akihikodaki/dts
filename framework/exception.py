@@ -35,6 +35,19 @@ class VerifyFailure(Exception):
         return repr(self.value)
 
 
+class VerifySkip(Exception):
+
+    """
+    To be used within the test cases to verify if case should be skipped.
+    """
+
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+
 class SSHConnectionException(Exception):
 
     """
