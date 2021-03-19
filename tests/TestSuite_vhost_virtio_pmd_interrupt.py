@@ -56,14 +56,11 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) ==
-                        self.ports_socket])
+        self.cores_num = len([n for n in self.dut.cores if int(n['socket']) == self.ports_socket])
         self.pci_info = self.dut.ports_info[0]['pci']
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
-        self.logger.info("Please comfirm the kernel of vm greater than 4.8.0 "
-                        "and enable vfio-noiommu in kernel")
-
+        self.logger.info("Please comfirm the kernel of vm greater than 4.8.0 and enable vfio-noiommu in kernel")
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
         if 'No such file or directory' in out:
@@ -94,24 +91,19 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         get core list about testpmd
         """
         core_config = "1S/%dC/1T" % (self.nb_cores + 1)
-        self.verify(self.cores_num >= (self.nb_cores + 1),
-                    "There has not enough cores to running case: %s" %
-                    self.running_case)
-        self.core_list = self.dut.get_core_list('all',
-                                    socket=self.ports_socket)
+        self.verify(self.cores_num >= (self.nb_cores + 1), "There has not enough cores to running case: %s" %self.running_case)
+        self.core_list = self.dut.get_core_list('all', socket=self.ports_socket)
 
     def prepare_vm_env(self):
         """
         rebuild l3fwd-power in vm and set the virtio-net driver
         """
         self.vm_dut.send_expect("cp ./examples/l3fwd-power/main.c /tmp/", "#")
-        self.vm_dut.send_expect(
-                "sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
+        self.vm_dut.send_expect("sed -i '/DEV_RX_OFFLOAD_CHECKSUM/d' ./examples/l3fwd-power/main.c", "#", 10)
         self.vm_dut.send_expect(
                 "sed -i 's/.mq_mode        = ETH_MQ_RX_RSS,/.mq_mode        = ETH_MQ_RX_NONE,/g' ./examples/l3fwd-power/main.c", "#", 10)
         out = self.vm_dut.build_dpdk_apps('examples/l3fwd-power')
         self.verify("Error" not in out, "compilation l3fwd-power error")
-
         self.vm_dut.send_expect("modprobe vfio enable_unsafe_noiommu_mode=1", "#")
         self.vm_dut.send_expect("modprobe vfio-pci", "#")
         self.vm_dut.ports_info[0]['port'].bind_driver('vfio-pci')
@@ -140,8 +132,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         launch l3fwd-power with a virtual vhost device
         """
-        self.verify(len(self.vm_dut.cores) >= self.nb_cores,
-                "The vm done not has enought cores to use, please config it")
+        self.verify(len(self.vm_dut.cores) >= self.nb_cores, "The vm done not has enought cores to use, please config it")
         core_config = "1S/%dC/1T" % self.nb_cores
         core_list_l3fwd = self.vm_dut.get_core_list(core_config)
         core_mask_l3fwd = utils.create_mask(core_list_l3fwd)
@@ -215,8 +206,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         for i in range(len(self.verify_info)):
             if status == "waked up":
                 info = "lcore %s is waked up from rx interrupt on port %d queue %d"
-                info = info % (self.verify_info[i]["core"], self.verify_info[i]['port'],
-                                self.verify_info[i]['queue'])
+                info = info % (self.verify_info[i]["core"], self.verify_info[i]['port'], self.verify_info[i]['queue'])
             elif status == "sleeps":
                 info = "lcore %s sleeps until interrupt triggers" % self.verify_info[i]["core"]
             if info in out_result:
@@ -227,8 +217,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         if fix_ip is True:
             self.verify(change == 1, "There has other cores change the status")
         else:
-            self.verify(change == self.queues,
-                        "There has cores not change the status")
+            self.verify(change == self.queues, "There has cores not change the status")
 
     def set_fields(self):
         """
@@ -280,7 +269,9 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         """
         get all cbdma ports
         """
-        self.dut.setup_modules(self.target, "igb_uio","None")
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         cbdma_dev_infos = re.findall('\s*(0000:\d+:\d+.\d+)', out)
         self.verify(len(cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
@@ -292,10 +283,8 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             dmas = 'txq{}@{};'.format(number, dmas)
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
-
         self.device_str = ' '.join(used_cbdma)
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
-                             ("igb_uio", self.device_str, self.pci_info), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -317,7 +306,6 @@ class TestVhostVirtioPmdInterrupt(TestCase):
             self.dut.close_session(vm_dut2)
         self.vhost_user.send_expect("quit", "#", 10)
         self.dut.close_session(self.vhost_user)
-
 
     def test_perf_virtio_pmd_interrupt_with_4queues(self):
         """
@@ -400,9 +388,9 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         Run after each test case.
         """
         self.stop_all_apps()
-        self.bind_cbdma_device_to_kernel()
         self.dut.kill_all()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
+        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
