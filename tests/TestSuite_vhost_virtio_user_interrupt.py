@@ -62,7 +62,6 @@ class TestVirtioUserInterrupt(TestCase):
         self.cbdma_dev_infos = []
         self.dmas_info = None
         self.device_str = None
-
         self.prepare_l3fwd_power()
         self.tx_port = self.tester.get_local_port(self.dut_ports[0])
         self.tx_interface = self.tester.get_interface(self.tx_port)
@@ -78,7 +77,6 @@ class TestVirtioUserInterrupt(TestCase):
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("rm -rf vhost-net*", "#")
-
         self.l3fwd = self.dut.new_session(suite="l3fwd")
         self.vhost = self.dut.new_session(suite="vhost")
         self.virtio = self.dut.new_session(suite="virito")
@@ -145,7 +143,6 @@ class TestVirtioUserInterrupt(TestCase):
             else:
                 eal_params = self.dut.create_eal_parameters(cores=self.core_list_vhost, prefix='vhost', no_pci=True, vdevs=vdev)
         cmd_vhost_user = testcmd + eal_params + para
-
         self.vhost.send_expect(cmd_vhost_user, "testpmd>", 30)
         self.vhost.send_expect("set fwd mac", "testpmd>", 30)
         self.vhost.send_expect("start", "testpmd>", 30)
@@ -186,6 +183,9 @@ class TestVirtioUserInterrupt(TestCase):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
@@ -211,9 +211,7 @@ class TestVirtioUserInterrupt(TestCase):
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(self.used_cbdma)
-        self.dut.setup_modules(self.target, "igb_uio", "None")
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
-                             ("igb_uio", self.device_str, self.pci_info), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -309,7 +307,6 @@ class TestVirtioUserInterrupt(TestCase):
         self.start_vhost_testpmd(pci="--no-pci")
         self.start_virtio_user(packed=True)
         self.check_virtio_side_link_status("up")
-
         self.vhost.send_expect("quit", "#", 20)
         self.check_virtio_side_link_status("down")
 
@@ -321,7 +318,6 @@ class TestVirtioUserInterrupt(TestCase):
         self.start_vhost_testpmd(pci=self.used_cbdma, dmas=self.dmas_info)
         self.start_virtio_user()
         self.check_virtio_side_link_status("up")
-
         self.vhost.send_expect("quit", "#", 20)
         self.check_virtio_side_link_status("down")
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
