@@ -63,7 +63,6 @@ class TestCBDMA(TestCase):
         self.ioat_path = self.dut.apps_name['ioat']
         self.verify('Error' not in out, 'compilation ioat error')
 
-
     def set_up(self):
         """
         Run before each test case.
@@ -84,18 +83,18 @@ class TestCBDMA(TestCase):
         get cores list depend on thread_num
         """
         core_config = '1S/%dC/1T' % self.cbdma_cores_num
-        self.core_list = self.dut.get_core_list(
-                        core_config, socket=self.ports_socket)
-        self.verify(len(self.core_list) >= self.cbdma_cores_num,
-                                'There no enough cores to run this case')
+        self.core_list = self.dut.get_core_list(core_config, socket=self.ports_socket)
+        self.verify(len(self.core_list) >= self.cbdma_cores_num, 'There no enough cores to run this case')
 
     def get_cbdma_ports_info_and_bind_to_dpdk(self):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc',
-                                '# ', 30)
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
             pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
@@ -112,15 +111,13 @@ class TestCBDMA(TestCase):
                     self.cbdma_dev_infos.append(pci_info.group(1))
         self.verify(len(self.cbdma_dev_infos) >= 8, 'There no enough cbdma device to run this suite')
         self.device_str = ' '.join(self.cbdma_dev_infos[0:8])
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio %s' %
-                            self.device_str, '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
             self.dut.send_expect('modprobe ioatdma', '# ')
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
-            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str,
-                                '# ', 60)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
     def get_ports_info(self):
         dev_info = []
@@ -183,7 +180,6 @@ class TestCBDMA(TestCase):
             pkt.config_layer('ether', {'dst': '%s' % dst_mac})
             pkt.config_layer('udp', {'src': 1111, 'dst': 1112})
             pkt.save_pcapfile(self.tester, "%s/cbdma_%d.pcap" % (self.tester.tmp_file, port))
-
             stream_option = {
                 'pcap': "%s/cbdma_%d.pcap" % (self.tester.tmp_file, port),
                 'fields_config': {
@@ -197,7 +193,6 @@ class TestCBDMA(TestCase):
                             "%s/cbdma_%d.pcap" % (self.tester.tmp_file, port))
             self.tester.pktgen.config_stream(stream_id, stream_option)
             stream_ids.append(stream_id)
-
         return stream_ids
 
     def send_and_verify_throughput(self, check_channel=False):
@@ -256,8 +251,7 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info, prefix='cbdma')
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
         self.result_table_print()
@@ -274,8 +268,7 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                         ports=dev_info, prefix='cbdma')
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
         self.result_table_print()
@@ -292,8 +285,7 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info, prefix='cbdma')
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=True)
         self.result_table_print()
@@ -309,12 +301,10 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         queue_num_list = [2, 4, 8]
         self.get_core_list()
-
         for queue_num in queue_num_list:
             self.cbdma_ioat_dev_num = queue_num
             dev_info = self.get_ports_info()
-            eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info, prefix='cbdma')
+            eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
             self.launch_ioatfwd_app(eal_params)
             self.send_and_verify_throughput(check_channel=True)
             self.send_session.send_expect('^c', '# ')
@@ -332,11 +322,9 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info, prefix='cbdma')
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
-
         self.send_session.send_expect('^c', '# ')
         self.cbdma_updating_mac = 'disable'
         self.launch_ioatfwd_app(eal_params)
@@ -355,11 +343,9 @@ class TestCBDMA(TestCase):
         self.cbdma_copy_mode = 'hw'
         self.get_core_list()
         dev_info = self.get_ports_info()
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info, prefix='cbdma')
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info, prefix='cbdma')
         self.launch_ioatfwd_app(eal_params)
         self.send_and_verify_throughput(check_channel=False)
-
         self.send_session.send_expect('^c', '# ')
         self.cbdma_copy_mode = 'sw'
         self.launch_ioatfwd_app(eal_params)
@@ -381,12 +367,10 @@ class TestCBDMA(TestCase):
         dev_info.pop(0)
         self.get_core_list()
         self.pmdout = PmdOutput(self.dut)
-        self.pmdout.start_testpmd(cores='', eal_param='--vdev net_null_0 --proc-type=primary',
-                                    ports=dev_info)
+        self.pmdout.start_testpmd(cores='', eal_param='--vdev net_null_0 --proc-type=primary', ports=dev_info)
         self.pmdout.execute_cmd('port stop all')
         self.cbdma_proc = '--proc-type=secondary'
-        eal_params = self.dut.create_eal_parameters(cores=self.core_list,
-                                        ports=dev_info)
+        eal_params = self.dut.create_eal_parameters(cores=self.core_list, ports=dev_info)
         self.launch_ioatfwd_app(eal_params)
         self.send_session.send_expect('^C','#')
         self.pmdout.execute_cmd('^C')
