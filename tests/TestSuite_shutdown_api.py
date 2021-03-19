@@ -621,9 +621,8 @@ class TestShutdownApi(TestCase):
                 vlan_jumbo_size = jumbo_size + 4
             else:
                 vlan_jumbo_size = jumbo_size
-            out = self.dut.send_expect("show port cap %d" % port, "testpmd> ")
-            state = re.findall("VLAN stripped:\s*([a-z]*)", out)
-            if state[0] == 'on':
+            out = self.dut.send_expect("show port %d rx_offload configuration" % port, "testpmd> ")
+            if 'VLAN_STRIP' in out:
                 vlan_strip = True
             else:
                 vlan_strip = False
