@@ -97,29 +97,29 @@ Prerequisites
 
 10. Bind VFs to dpdk driver::
 
-    modprobe vfio-pci
-    ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0 0000:18:01.1 0000:18:01.2 0000:18:01.3
+     modprobe vfio-pci
+     ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0 0000:18:01.1 0000:18:01.2 0000:18:01.3
 
 11. Disabel spoofchk for VF::
 
-    ip link set dev ens785f0 vf 0 spoofchk off
-    ip link set dev ens785f0 vf 1 spoofchk off
-    ip link set dev ens785f0 vf 2 spoofchk off
-    ip link set dev ens785f0 vf 3 spoofchk off
+     ip link set dev ens785f0 vf 0 spoofchk off
+     ip link set dev ens785f0 vf 1 spoofchk off
+     ip link set dev ens785f0 vf 2 spoofchk off
+     ip link set dev ens785f0 vf 3 spoofchk off
 
 12. For test cases for DCF switch filter(01-06), use below cmd to launch testpmd::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
-    testpmd> set fwd rxonly
-    testpmd> set verbose 1
-    testpmd> start
-    testpmd> show port info all
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
+     testpmd> set fwd rxonly
+     testpmd> set verbose 1
+     testpmd> start
+     testpmd> show port info all
 
    check the VF0 driver is net_ice_dcf.
 
    For test cases for DCF pvid(07-09), use below cmd to launch testpmd::
 
-   ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1] -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0,cap=dcf,representor=[1] -a 0000:18:01.1 -a 0000:18:01.2 -a 0000:18:01.3 -- -i
     testpmd> set fwd mac
     testpmd> set verbose 1
     testpmd> start
@@ -129,17 +129,17 @@ Prerequisites
 
 13. For AVF QinQ test cases(10-14), recreate Generate 1 VFs on PF0, reconfig the VF then launch testpmd::
 
-    echo 0 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
-    ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable off
-    echo 1 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
-    ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
-    ip link set dev ens785f0 vf 0 spoofchk off
+     echo 0 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+     ethtool --set-priv-flags ens785f0 vf-vlan-prune-disable off
+     echo 1 > /sys/bus/pci/devices/0000:18:00.0/sriov_numvfs
+     ip link set ens785f0 vf 0 mac 00:11:22:33:44:11
+     ip link set dev ens785f0 vf 0 spoofchk off
 
-    ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0
-    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
-    testpmd> set fwd mac
-    testpmd> set verbose 1
-    testpmd> start
+     ./usertools/dpdk-devbind.py -b vfio-pci 0000:18:01.0
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf -n 4 -a 0000:18:01.0 -- -i --rxq=16 --txq=16
+     testpmd> set fwd mac
+     testpmd> set verbose 1
+     testpmd> start
 
 DCF switch filter support pattern and input set
 -----------------------------------------------
@@ -724,27 +724,27 @@ Test case 07: vlan strip when pvid enable
 
 10. relaunch testpmd and enable vlan strip by AVF::
 
-    testpmd> vlan set strip on 2
+     testpmd> vlan set strip on 2
 
 11. repeat step 1,2 and 3, check the pkts can be received in VF1 and fwd to tester without both outer and inner vlan header::
 
-    testpmd> port 2/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 2/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    port 2/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 2/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    10:28:01.642361 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    10:28:01.642438 00:11:22:33:44:22 > 02:00:00:00:00:03, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:28:01.642361 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:28:01.642438 00:11:22:33:44:22 > 02:00:00:00:00:03, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
-    10:28:10.185876 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 21, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    10:28:10.185916 00:11:22:33:44:22 > 02:00:00:00:00:03, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:28:10.185876 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 518: vlan 21, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:28:10.185916 00:11:22:33:44:22 > 02:00:00:00:00:03, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 
 Test case 08: vlan insertion when pvid enable
@@ -834,73 +834,73 @@ Test case 08: vlan insertion when pvid enable
 
 10. repeat step 3, check the dpdk can receive this pkt with VF2 and fwd this pkt with outer vlan header id 24 by VF1, and the vlan header ptype is 9100::
 
-    testpmd> port 4/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 4/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    port 4/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 4/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    tcpdump -i ens786f0 -nn -e -v
-    11:12:13.237834 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:12:13.237890 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q-9100 (0x9100), length 518: vlan 24, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     tcpdump -i ens786f0 -nn -e -v
+     11:12:13.237834 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:12:13.237890 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q-9100 (0x9100), length 518: vlan 24, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
-    11:12:26.049869 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:12:26.049920 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q-9100, vlan 24, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:12:26.049869 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:12:26.049920 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q-9100, vlan 24, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 11. enable tx_vlan for VF1 by AVF::
 
-    testpmd> port stop 2
-    Stopping ports...
-    Checking link statuses...
-    Done
-    testpmd> tx_vlan set 2 11
-    testpmd> port start 2
+     testpmd> port stop 2
+     Stopping ports...
+     Checking link statuses...
+     Done
+     testpmd> tx_vlan set 2 11
+     testpmd> port start 2
 
 12. repeat step 3, check the dpdk can receive this pkt with VF2 and fwd this pkt with outer vlan header id 24, inner vlan id 11 by VF1::
 
-    testpmd> port 3/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 3/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    port 3/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 3/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    11:22:29.561918 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:22:29.561992 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:29.561918 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:29.561992 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
-    11:22:44.481889 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:22:44.481922 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 526: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype 802.1Q, vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:44.481889 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:44.481922 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 526: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype 802.1Q, vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 13. relaunch testpmd and execute step 11 then step 1, 2 and 3, check the dpdk can receive this pkt with VF2 and fwd this pkt with outer vlan header id 24, inner vlan id 11 by VF1::
 
-    testpmd> port 3/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 3/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x0800 - length=514 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER L3_IPV4  - l2_len=14 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    port 3/queue 0: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
-    ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 3/queue 0: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:22 - type=0x8100 - length=518 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Receive queue=0x0
+     ol_flags: PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    11:22:29.561918 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:22:29.561992 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:29.561918 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype IPv4 (0x0800), length 514: (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:29.561992 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 522: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
-    11:22:44.481889 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    11:22:44.481922 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 526: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype 802.1Q, vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:44.481889 00:00:00:00:00:00 > 00:11:22:33:44:22, ethertype 802.1Q (0x8100), length 518: vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     11:22:44.481922 00:11:22:33:44:11 > 02:00:00:00:00:02, ethertype 802.1Q (0x8100), length 526: vlan 24, p 0, ethertype 802.1Q, vlan 11, p 0, ethertype 802.1Q, vlan 1, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 
 Test case 09: vlan filter when pvid enable
@@ -984,7 +984,7 @@ Test case 10: Enable/Disable IAVF VLAN filtering
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=2,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:11",type=0x8100)/Dot1Q(vlan=1,type=0x0800)/IP(src="196.222.232.221")/("X"*480)], iface="ens786f0")
 
-4. check the pkts can't be received in VF::
+4. check the pkts can't be received in VF.
 
 5. add rx_vlan in VF::
 
@@ -1416,121 +1416,121 @@ Test case 14: AVF CRC strip and Vlan strip co-exists
 
 10. check the vlan strip disable successfully::
 
-    testpmd> show port info 0
-    ********************* Infos for port 0  *********************
-    MAC address: 00:11:22:33:44:11
-    Device name: 0000:18:01.1
-    Driver name: net_iavf
-    ......
-    VLAN offload:
-      strip off, filter on, extend off, qinq strip off
+     testpmd> show port info 0
+     ********************* Infos for port 0  *********************
+     MAC address: 00:11:22:33:44:11
+     Device name: 0000:18:01.1
+     Driver name: net_iavf
+     ......
+     VLAN offload:
+       strip off, filter on, extend off, qinq strip off
 
 11. request disable crc strip::
 
-    testpmd> stop
-    testpmd> port stop 0
-    testpmd> port config 0 rx_offload keep_crc on
-    testpmd> port start 0
-    testpmd> start
+     testpmd> stop
+     testpmd> port stop 0
+     testpmd> port config 0 rx_offload keep_crc on
+     testpmd> port start 0
+     testpmd> start
 
 12. repeat step 5, send qinq pkts to check vlan strip is off, crc strip is off(rx+4)::
 
-    testpmd> port 0/queue 7: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
-    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 0/queue 7: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    show port stats all
-    ######################## NIC statistics for port 0  ########################
-    RX-packets: 1          RX-missed: 0          RX-bytes:  526
-    RX-errors: 0
-    RX-nombuf:  0
-    TX-packets: 1          TX-errors: 0          TX-bytes:  522
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  526
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
 
-    Throughput (since last show)
-    Rx-pps:            0          Rx-bps:            0
-    Tx-pps:            0          Tx-bps:            0
-    ############################################################################
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
 
-    10:23:57.350934 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    10:23:57.351008 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:23:57.350934 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:23:57.351008 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 13. request enable vlan strip::
 
-    testpmd> vlan set strip on 0
-    iavf_execute_vf_cmd(): No response or return failure (-64) for cmd 54
-    iavf_config_vlan_strip_v2(): fail to execute command VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2
-    rx_vlan_strip_set(port_pi=0, on=1) failed diag=-5
+     testpmd> vlan set strip on 0
+     iavf_execute_vf_cmd(): No response or return failure (-64) for cmd 54
+     iavf_config_vlan_strip_v2(): fail to execute command VIRTCHNL_OP_ENABLE_VLAN_STRIPPING_V2
+     rx_vlan_strip_set(port_pi=0, on=1) failed diag=-5
 
 14. repeat step 5, send qinq pkts to check the vlan strip can not enable::
 
-    testpmd> port 0/queue 7: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
-    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 0/queue 7: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=518 - nb_segs=1 - RSS hash=0xbc8b1857 - RSS queue=0x7 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN L3_IPV4  - l2_len=18 - l3_len=20 - Tail/CRC: 0x58585858/0x6d870bf6 - Receive queue=0x7
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    show port stats all
-    ######################## NIC statistics for port 0  ########################
-    RX-packets: 1          RX-missed: 0          RX-bytes:  526
-    RX-errors: 0
-    RX-nombuf:  0
-    TX-packets: 1          TX-errors: 0          TX-bytes:  522
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  526
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
 
-    Throughput (since last show)
-    Rx-pps:            0          Rx-bps:            0
-    Tx-pps:            0          Tx-bps:            0
-    ############################################################################
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
 
-    10:26:08.346936 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    10:26:08.347006 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:26:08.346936 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:26:08.347006 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
 
 15. request disable vlan strip::
 
-    vlan set strip off 0
+     vlan set strip off 0
 
 16. check the vlan strip still disable::
 
-    testpmd> show port info 0
-    ********************* Infos for port 0  *********************
-    MAC address: 00:11:22:33:44:11
-    Device name: 0000:18:01.1
-    Driver name: net_iavf
-    ......
-    VLAN offload:
-      strip off, filter on, extend off, qinq strip off
+     testpmd> show port info 0
+     ********************* Infos for port 0  *********************
+     MAC address: 00:11:22:33:44:11
+     Device name: 0000:18:01.1
+     Driver name: net_iavf
+     ......
+     VLAN offload:
+       strip off, filter on, extend off, qinq strip off
 
 17. request enable crc strip::
 
-    testpmd> stop
-    testpmd> port stop 0
-    testpmd> port config 0 rx_offload keep_crc off
-    testpmd> port start 0
-    testpmd> start
+     testpmd> stop
+     testpmd> port stop 0
+     testpmd> port config 0 rx_offload keep_crc off
+     testpmd> port start 0
+     testpmd> start
 
 18. repeat step 5, send qinq pkts to check the crc strip enable successfully::
 
-    testpmd> port 0/queue 3: received 1 packets
-    src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0x2b4ad203 - RSS queue=0x3 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Receive queue=0x3
-    ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
-    port 0/queue 3: sent 1 packets
-    src=00:11:22:33:44:11 - dst=02:00:00:00:00:00 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Send queue=0x3
-    ol_flags: PKT_RX_L4_CKSUM_UNKNOWN PKT_RX_IP_CKSUM_UNKNOWN PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     testpmd> port 0/queue 3: received 1 packets
+     src=00:00:00:00:00:00 - dst=00:11:22:33:44:11 - type=0x8100 - length=522 - nb_segs=1 - RSS hash=0x2b4ad203 - RSS queue=0x3 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Receive queue=0x3
+     ol_flags: PKT_RX_RSS_HASH PKT_RX_L4_CKSUM_GOOD PKT_RX_IP_CKSUM_GOOD PKT_RX_OUTER_L4_CKSUM_UNKNOWN
+     port 0/queue 3: sent 1 packets
+     src=00:11:22:33:44:11 - dst=02:00:00:00:00:00 - type=0x8100 - length=522 - nb_segs=1 - hw ptype: L2_ETHER L3_IPV4_EXT_UNKNOWN L4_NONFRAG  - sw ptype: L2_ETHER_VLAN INNER_L2_ETHER_VLAN INNER_L3_IPV4  - l2_len=18 - inner_l2_len=4 - inner_l3_len=20 - Send queue=0x3
+     ol_flags: PKT_RX_L4_CKSUM_UNKNOWN PKT_RX_IP_CKSUM_UNKNOWN PKT_RX_OUTER_L4_CKSUM_UNKNOWN
 
-    show port stats all
-    ######################## NIC statistics for port 0  ########################
-    RX-packets: 1          RX-missed: 0          RX-bytes:  522
-    RX-errors: 0
-    RX-nombuf:  0
-    TX-packets: 1          TX-errors: 0          TX-bytes:  522
+     show port stats all
+     ######################## NIC statistics for port 0  ########################
+     RX-packets: 1          RX-missed: 0          RX-bytes:  522
+     RX-errors: 0
+     RX-nombuf:  0
+     TX-packets: 1          TX-errors: 0          TX-bytes:  522
 
-    Throughput (since last show)
-    Rx-pps:            0          Rx-bps:            0
-    Tx-pps:            0          Tx-bps:            0
-    ############################################################################
+     Throughput (since last show)
+     Rx-pps:            0          Rx-bps:            0
+     Tx-pps:            0          Tx-bps:            0
+     ############################################################################
 
-    10:29:19.995352 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
-    10:29:19.995424 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
-    196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:29:19.995352 00:00:00:00:00:00 > 00:11:22:33:44:11, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480
+     10:29:19.995424 00:11:22:33:44:11 > 02:00:00:00:00:00, ethertype 802.1Q (0x8100), length 522: vlan 1, p 0, ethertype 802.1Q, vlan 2, p 0, ethertype IPv4, (tos 0x0, ttl 64, id 1, offset 0, flags [none], proto Options (0), length 500)
+     196.222.232.221 > 127.0.0.1:  ip-proto-0 480

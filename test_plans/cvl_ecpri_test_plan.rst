@@ -96,39 +96,39 @@ Prerequisites
 
     check the VF0 driver is net_ice_dcf.
 
-9. For test case 01 and test case 02, need to add print log in testpmd to show the eCPRI ptype, then compile DPDK again:
+9. For test case 01 and test case 02, need to add print log in testpmd to show the eCPRI ptype, then compile DPDK again::
 
-diff --git a/drivers/net/iavf/iavf_rxtx.c b/drivers/net/iavf/iavf_rxtx.c
- index af5a28d84..3dbd5ab97 100644
- --- a/drivers/net/iavf/iavf_rxtx.c
- +++ b/drivers/net/iavf/iavf_rxtx.c
- @@ -1314,6 +1314,8 @@ iavf_recv_pkts_flex_rxd(void *rx_queue,
-                 rxm->ol_flags = 0;
-                 rxm->packet_type = ptype_tbl[IAVF_RX_FLEX_DESC_PTYPE_M &
-                         rte_le_to_cpu_16(rxd.wb.ptype_flex_flags0)];
- +                printf("++++++++++++ptype=%u\n",
- +                       IAVF_RX_FLEX_DESC_PTYPE_M & rte_le_to_cpu_16(rxd.wb.ptype_flex_flags0));
-                 iavf_flex_rxd_to_vlan_tci(rxm, &rxd);
-                 rxq->rxd_to_pkt_fields(rxq, rxm, &rxd);
-                 pkt_flags = iavf_flex_rxd_error_to_pkt_flags(rx_stat_err0);
- @@ -2346,7 +2348,7 @@ iavf_set_rx_function(struct rte_eth_dev *dev)
-                 IAVF_DEV_PRIVATE_TO_ADAPTER(dev->data->dev_private);
-         struct iavf_info *vf = IAVF_DEV_PRIVATE_TO_VF(dev->data->dev_private);
+    diff --git a/drivers/net/iavf/iavf_rxtx.c b/drivers/net/iavf/iavf_rxtx.c
+    index af5a28d84..3dbd5ab97 100644
+    --- a/drivers/net/iavf/iavf_rxtx.c
+    +++ b/drivers/net/iavf/iavf_rxtx.c
+    @@ -1314,6 +1314,8 @@ iavf_recv_pkts_flex_rxd(void *rx_queue,
+                    rxm->ol_flags = 0;
+                    rxm->packet_type = ptype_tbl[IAVF_RX_FLEX_DESC_PTYPE_M &
+                            rte_le_to_cpu_16(rxd.wb.ptype_flex_flags0)];
+    +                printf("++++++++++++ptype=%u\n",
+    +                       IAVF_RX_FLEX_DESC_PTYPE_M & rte_le_to_cpu_16(rxd.wb.ptype_flex_flags0));
+                    iavf_flex_rxd_to_vlan_tci(rxm, &rxd);
+                    rxq->rxd_to_pkt_fields(rxq, rxm, &rxd);
+                    pkt_flags = iavf_flex_rxd_error_to_pkt_flags(rx_stat_err0);
+    @@ -2346,7 +2348,7 @@ iavf_set_rx_function(struct rte_eth_dev *dev)
+                    IAVF_DEV_PRIVATE_TO_ADAPTER(dev->data->dev_private);
+            struct iavf_info *vf = IAVF_DEV_PRIVATE_TO_VF(dev->data->dev_private);
 
- -#ifdef RTE_ARCH_X86
- +#if 0
-         struct iavf_rx_queue *rxq;
-         int i;
-         bool use_avx2 = false;
- @@ -2446,6 +2448,7 @@ iavf_set_rx_function(struct rte_eth_dev *dev)
-                 else
-                         dev->rx_pkt_burst = iavf_recv_pkts;
-         }
- +        dev->rx_pkt_burst = iavf_recv_pkts_flex_rxd;
-  }
+    -#ifdef RTE_ARCH_X86
+    +#if 0
+            struct iavf_rx_queue *rxq;
+            int i;
+            bool use_avx2 = false;
+    @@ -2446,6 +2448,7 @@ iavf_set_rx_function(struct rte_eth_dev *dev)
+                    else
+                            dev->rx_pkt_burst = iavf_recv_pkts;
+            }
+    +        dev->rx_pkt_burst = iavf_recv_pkts_flex_rxd;
+     }
 
-  /* choose tx function*/
- --
+     /* choose tx function*/
+    --
 
 
 Test case 01: add and delete eCPRI port config in DCF
@@ -179,7 +179,7 @@ MAC_IPV4_UDP_ECPRI(ptype=381)::
 
     sendp([Ether(dst="00:11:22:33:44:11")/IP()/UDP(dport=0x5123)/Raw('\x10\x06')], iface="ens786f0")
 
-3. send eCPRI pkts which udp dport is not matched the config to VF1, check the pattern can not be recognized(all the ptype is 24)::
+3. send eCPRI pkts which udp dport is not matched the config to VF1, check the pattern can not be recognized(all the ptype is 24):
 
 MAC_IPV4_UDP_ECPRI_MSGTYPE0::
 
@@ -243,7 +243,7 @@ Test case 02: test eCPRI port config when DCF exit and reset
     testpmd> set verbose 1
     testpmd> start
 
-3. send eCPRI pkts which udp dport is match before config to VF1, check the pattern can not be recognized(all the ptype is 24)::
+3. send eCPRI pkts which udp dport is match before config to VF1, check the pattern can not be recognized(all the ptype is 24):
 
 MAC_IPV4_UDP_ECPRI_MSGTYPE0::
 
@@ -453,8 +453,8 @@ Test case 06: rss for eth_ecpri
    check the received packets have different hash values with basic packet,
    check the packets are distributed to queues by rss::
 
-   sendp([Ether(dst="00:11:22:33:44:11", type=0xAEFE)/Raw('\x10\x00\x02\x24\x23\x46')], iface="ens786f0")
-   sendp([Ether(dst="00:11:22:33:44:11", type=0xAEFE)/Raw('\x10\x00\x02\x24\x23\x47')], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11", type=0xAEFE)/Raw('\x10\x00\x02\x24\x23\x46')], iface="ens786f0")
+    sendp([Ether(dst="00:11:22:33:44:11", type=0xAEFE)/Raw('\x10\x00\x02\x24\x23\x47')], iface="ens786f0")
 
 6. Destroy the rule and list rule::
 
@@ -580,7 +580,7 @@ Test case 09: DCF reset for udp ecpri rss
 
 10. Set VF0 as trust::
 
-    ip link set ens785f0 vf 0 trust on
+      ip link set ens785f0 vf 0 trust on
 
 
 Test case 10: DCF reset for eth ecpri rss

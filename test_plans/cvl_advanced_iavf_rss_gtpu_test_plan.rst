@@ -434,8 +434,8 @@ ipv4-udp packet::
 
 UL case::
 
-basic hit pattern packets are the same in this test case.
-ipv4-nonfrag packet::
+   basic hit pattern packets are the same in this test case.
+   ipv4-nonfrag packet::
 
     sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=1, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp134s0f0")
 
@@ -2956,6 +2956,7 @@ all the test cases run the same test steps as below:
 5. destroy the rule and list rule.
 6. send the packet in step 4.
    check the received packet has different hash value with which in step 3(including the case has no hash value).
+
 Note: the GTPoGRE packets need to be added to symmetric cases as a Ptype, just like toeplitz cases.
 
 

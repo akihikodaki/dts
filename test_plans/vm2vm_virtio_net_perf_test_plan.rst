@@ -343,11 +343,11 @@ Test Case 5: VM2VM virtio-net split ring mergeable 8 queues CBDMA enable test wi
 
 11. On VM1, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 12. On VM2, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 13. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
 
@@ -436,11 +436,11 @@ Test Case 6: VM2VM virtio-net split ring non-mergeable 8 queues CBDMA enable tes
 
 11. On VM1, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 12. On VM2, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 13. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
 
@@ -744,11 +744,11 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
 
 11. On VM1, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 12. On VM2, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 13. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
 
@@ -837,11 +837,11 @@ Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable t
 
 11. On VM1, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 12. On VM2, set virtio device::
 
-    ethtool -L ens5 combined 1
+      ethtool -L ens5 combined 1
 
 13. Scp 1MB file form VM1 to VM2M, check packets can be forwarding success by scp::
 

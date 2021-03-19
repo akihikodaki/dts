@@ -40,6 +40,9 @@ Enable fdir filter for GTP (comm #1 package)
 Enable fdir filter for L2 Ethertype (comm #1 package)
 Enable fdir filter for PFCP (comm #1 package)
 
+Description
+===========
+
 Pattern and input set
 ---------------------
 
@@ -4555,6 +4558,7 @@ subcase 3: PFCP FDIR vlan insert on
 
 Test case: without input set test
 =================================
+
 Support ipv4 and ipv6 tcp/udp flow director rule without input set.
 The packets are for testing without input set cases.
 
@@ -4625,12 +4629,12 @@ Subcase 1: MAC_IPV4_TCP queue index
 
 3. verify rules can be listed and destroyed::
 
-    testpmd> flow list 0
+      testpmd> flow list 0
 
    check the rule listed.
    destroy the rule::
 
-   testpmd> flow destroy 0 rule 0
+      testpmd> flow destroy 0 rule 0
 
 4. verify matched packets are distributed to all queues.
    check there is no rule listed.
@@ -4732,7 +4736,7 @@ Subcase 1: MAC_IPV6_TCP queue index
    check the rule listed.
    destroy the rule::
 
-   testpmd> flow destroy 0 rule 0
+      testpmd> flow destroy 0 rule 0
 
 4. verify matched packets are distributed to all queues.
    check there is no rule listed.

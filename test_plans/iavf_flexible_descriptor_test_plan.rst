@@ -74,70 +74,69 @@ The default DPDK don't support dump flexible descriptor fields, so need to patch
 
  1. Patch testpmd for dumping flexible fields from RXD::
 
-  diff --git a/app/test-pmd/meson.build b/app/test-pmd/meson.build
-  index 7e9c7bdd6..b75b90a9c 100644
-  --- a/app/test-pmd/meson.build
-  +++ b/app/test-pmd/meson.build
-  @@ -49,6 +49,9 @@ endif
-  if dpdk_conf.has('RTE_NET_I40E')
-        deps += 'net_i40e'
-   endif
-  +if dpdk_conf.has('RTE_NET_ICE')
-  +       deps += ['net_ice', 'net_iavf']
-  +endif
-   if dpdk_conf.has('RTE_NET_IXGBE')
-          deps += 'net_ixgbe'
-   endif
+      diff --git a/app/test-pmd/meson.build b/app/test-pmd/meson.build
+      index 7e9c7bdd6..b75b90a9c 100644
+      --- a/app/test-pmd/meson.build
+      +++ b/app/test-pmd/meson.build
+      @@ -49,6 +49,9 @@ endif
+      if dpdk_conf.has('RTE_NET_I40E')
+      deps += 'net_i40e'
+      endif
+      +if dpdk_conf.has('RTE_NET_ICE')
+      +       deps += ['net_ice', 'net_iavf']
+      +endif
+      if dpdk_conf.has('RTE_NET_IXGBE')
+      deps += 'net_ixgbe'
+      endif
 
-  diff --git a/app/test-pmd/util.c b/app/test-pmd/util.c
-  index a9e431a8b..3447a9b43 100644
-  --- a/app/test-pmd/util.c
-  +++ b/app/test-pmd/util.c
-  @@ -12,6 +12,7 @@
-   #include <rte_vxlan.h>
-   #include <rte_ethdev.h>
-   #include <rte_flow.h>
-  +#include <rte_pmd_iavf.h>
+      diff --git a/app/test-pmd/util.c b/app/test-pmd/util.c
+      index a9e431a8b..3447a9b43 100644
+      --- a/app/test-pmd/util.c
+      +++ b/app/test-pmd/util.c
+      @@ -12,6 +12,7 @@
+      #include <rte_vxlan.h>
+      #include <rte_ethdev.h>
+      #include <rte_flow.h>
+      +#include <rte_pmd_iavf.h>
 
-   #include "testpmd.h"
+      #include "testpmd.h"
 
-  @@ -151,6 +152,7 @@ dump_pkt_burst(uint16_t port_id, uint16_t queue, struct rte_mbuf *pkts[],
-                            eth_type, (unsigned int) mb->pkt_len,
-                            (int)mb->nb_segs);
-                  ol_flags = mb->ol_flags;
-  +                rte_pmd_ifd_dump_proto_xtr_metadata(mb);
-                  if (ol_flags & PKT_RX_RSS_HASH) {
-                          MKDUMPSTR(print_buf, buf_size, cur_len,
-                                    " - RSS hash=0x%x",
+      @@ -151,6 +152,7 @@ dump_pkt_burst(uint16_t port_id, uint16_t queue, struct rte_mbuf *pkts[],
+      eth_type, (unsigned int) mb->pkt_len,
+      (int)mb->nb_segs);
+      ol_flags = mb->ol_flags;
+      +                rte_pmd_ifd_dump_proto_xtr_metadata(mb);
+      if (ol_flags & PKT_RX_RSS_HASH) {
+      MKDUMPSTR(print_buf, buf_size, cur_len,
+      " - RSS hash=0x%x",
 
  2. Compile DPDK and testpmd::
 
-  CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib x86_64-native-linuxapp-gcc
-  ninja -C x86_64-native-linuxapp-gcc -j 70
+      CC=gcc meson --werror -Denable_kmods=True -Dlibdir=lib x86_64-native-linuxapp-gcc
+      ninja -C x86_64-native-linuxapp-gcc -j 70
 
 5. Generate 1 VF on each PF and set mac address for each VF::
 
-  echo 1 > /sys/bus/pci/devices/0000:af:00.0/sriov_numvfs
-  ip link set ens802f0 vf 0 mac 00:11:22:33:44:55
+      echo 1 > /sys/bus/pci/devices/0000:af:00.0/sriov_numvfs
+      ip link set ens802f0 vf 0 mac 00:11:22:33:44:55
 
 6. Bind the vf interface to vfio-pci driver::
 
-  ./usertools/dpdk-devbind.py -b vfio-pci af:01.0
+   ./usertools/dpdk-devbind.py -b vfio-pci af:01.0
 
 VLAN cases
 ==========
 
 1. Launch testpmd by::
 
-  ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=vlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
-
-  testpmd>set verbose 1
-  testpmd>set fwd io
-  testpmd>start
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 6-9 -n 4 -w af:01.0,proto_xtr=vlan -- -i --rxq=4 --txq=4 --portmask=0x1 --nb-cores=2
+     testpmd>set verbose 1
+     testpmd>set fwd io
+     testpmd>start
 
 2. check RXDID value correct::
 
-   expected: RXDID[17]
+      expected: RXDID[17]
 
 .. note::
     Please change the core setting (-l option) and port's PCI (-w option) by your DUT environment

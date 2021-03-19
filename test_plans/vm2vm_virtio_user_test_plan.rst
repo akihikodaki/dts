@@ -964,7 +964,7 @@ Test Case 14: packed virtqueue vm2vm inorder mergeable path multi-queues payload
 7. Start vhost testpmd, then quit pdump and all testpmd, check 512 packets received by virtio-user1, check 54 packets with 8k length and 458 packets with 2k length in pdump-virtio-rx.pcap.
 
 Test Case 15: packed virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
-================================================================================================
+=================================================================================================
 
 1. Launch vhost by below command::
 
