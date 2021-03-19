@@ -114,6 +114,9 @@ class TestVhostUserInterrupt(TestCase):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
@@ -139,9 +142,7 @@ class TestVhostUserInterrupt(TestCase):
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(used_cbdma)
-        self.dut.setup_modules(self.target, "igb_uio","None")
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
-                             ("igb_uio", self.device_str, self.pci_info), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -285,13 +286,12 @@ class TestVhostUserInterrupt(TestCase):
         self.dut.send_expect("killall %s" % self.l3fwdpower_name, "#")
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.kill_all()
+        self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
         # revert the code
-        self.bind_cbdma_device_to_kernel()
         self.dut.send_expect("mv ./main.c ./examples/l3fwd-power/", "#")
         self.dut.build_dpdk_apps('examples/l3fwd-power')
-        pass
