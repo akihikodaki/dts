@@ -59,7 +59,6 @@ class TestVirTioVhostCbdma(TestCase):
         # Get and verify the ports
         self.dut_ports = self.dut.get_ports()
         self.number_of_ports = 1
-
         self.vhost_user = self.dut.new_session(suite="vhost-user")
         self.virtio_user = self.dut.new_session(suite="virtio-user")
         self.virtio_user1 = self.dut.new_session(suite="virtio-user1")
@@ -73,9 +72,7 @@ class TestVirTioVhostCbdma(TestCase):
         self.socket = self.dut.get_numa_id(self.dut_ports[0])
         self.cores = self.dut.get_core_list("all", socket=self.socket)
         self.cbdma_dev_infos = []
-
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.bind_nic_driver(self.dut_ports)
         # the path of pcap file
         self.out_path = '/tmp/%s' % self.suite_name
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
@@ -97,48 +94,29 @@ class TestVirTioVhostCbdma(TestCase):
         self.table_header.append("Mpps")
         self.table_header.append("% linerate")
         self.result_table_create(self.table_header)
-
         # test parameters include: frames size, descriptor numbers
         self.test_parameters = self.get_suite_cfg()['test_parameters']
-
         # traffic duraion in second
         self.test_duration = self.get_suite_cfg()['test_duration']
-
         # initilize throughput attribution
         # {'TestCase':{ 'Mode': {'$framesize':{"$nb_desc": 'throughput'}}}
         self.throughput = {}
-
         # Accepted tolerance in Mpps
         self.gap = self.get_suite_cfg()['accepted_tolerance']
         self.test_result = {}
         self.nb_desc = self.test_parameters[64][0]
-
         self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("rm -rf /tmp/s0", "#")
         self.mode_list = []
 
-    def bind_nic_driver(self, ports, driver=""):
-        if driver == "igb_uio":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
     def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
         """
         get all cbdma ports
         """
-
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
         for device in device_info:
@@ -155,20 +133,15 @@ class TestVirTioVhostCbdma(TestCase):
                 if self.ports_socket == cur_socket:
                     self.cbdma_dev_infos.append(pci_info.group(1))
         self.verify(len(self.cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
-
         self.used_cbdma = self.cbdma_dev_infos[0:cbdma_num]
-
         self.device_str = ' '.join(self.used_cbdma)
-        self.dut.setup_modules(self.target, "igb_uio", "None")
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
-                             ("igb_uio", self.device_str, self.pci_info), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
             self.dut.send_expect('modprobe ioatdma', '# ')
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
-            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str,
-                                 '# ', 60)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
 
     def check_packets_of_each_queue(self, queue_list):
         """
@@ -187,7 +160,6 @@ class TestVirTioVhostCbdma(TestCase):
                         queue_index + \
                         "rx-packets:%d, tx-packets:%d" %
                         (rx_packets, tx_packets))
-
         self.vhost_user.send_expect("clear port stats all", "testpmd> ", 30)
         self.vhost_user.send_expect("start", "testpmd> ", 30)
 
@@ -203,9 +175,7 @@ class TestVirTioVhostCbdma(TestCase):
         return True if out == '2048' else False
 
     def launch_testpmd_as_vhost_user(self, command, cores="Default", dev="", ports = ""):
-        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=ports,
-                                             prefix="vhost", fixed_prefix=True)
-
+        self.pmdout_vhost_user.start_testpmd(cores=cores, param=command, vdevs=[dev], ports=ports, prefix="vhost")
         self.vhost_user.send_expect('set fwd mac', 'testpmd> ', 120)
         self.vhost_user.send_expect('start', 'testpmd> ', 120)
 
@@ -213,8 +183,7 @@ class TestVirTioVhostCbdma(TestCase):
         eal_params = ""
         if self.check_2m_env:
             eal_params += " --single-file-segments"
-        self.pmdout_virtio_user1.start_testpmd(cores, command, vdevs=[dev], ports=[], no_pci=True,
-                                               prefix="virtio1", fixed_prefix=True, eal_param=eal_params)
+        self.pmdout_virtio_user1.start_testpmd(cores, command, vdevs=[dev], no_pci=True, prefix="virtio1", eal_param=eal_params)
         self.virtio_user1.send_expect('set fwd mac', 'testpmd> ', 30)
         self.virtio_user1.send_expect('start', 'testpmd> ', 30)
         self.virtio_user1.send_expect('show port info all', 'testpmd> ', 30)
@@ -223,9 +192,7 @@ class TestVirTioVhostCbdma(TestCase):
         eal_params = ""
         if self.check_2m_env:
             eal_params += " --single-file-segments"
-        self.pmdout_virtio_user.start_testpmd(cores, command, vdevs=[dev], ports=[], no_pci=True,
-                                              prefix="virtio", fixed_prefix=True, eal_param=eal_params)
-
+        self.pmdout_virtio_user.start_testpmd(cores, command, vdevs=[dev],no_pci=True, prefix="virtio", eal_param=eal_params)
         self.virtio_user.send_expect('set fwd mac', 'testpmd> ', 120)
         self.virtio_user.send_expect('start', 'testpmd> ', 120)
         self.virtio_user.send_expect('show port info all', 'testpmd> ', 30)
@@ -233,7 +200,6 @@ class TestVirTioVhostCbdma(TestCase):
     def diff_param_launch_send_and_verify(self, mode, params, dev, cores, is_quit=True, launch_virtio=True):
         if launch_virtio:
             self.launch_testpmd_as_virtio_user(params, cores, dev=dev)
-
         self.send_and_verify(mode)
         if is_quit:
             self.virtio_user.send_expect("quit", "# ")
@@ -246,7 +212,6 @@ class TestVirTioVhostCbdma(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-
         txd_rxd = 1024
         dmathr = 1024
         eal_tx_rxd = ' --nb-cores=%d --txd=%d --rxd=%d'
@@ -261,23 +226,16 @@ class TestVirTioVhostCbdma(TestCase):
             "non_mergeable_path": 'mrg_rxbuf=0,in_order=0',
             "vector_rx_path": 'mrg_rxbuf=0,in_order=0',
         }
-
-        pvp_split_all_path_virtio_params = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d " \
-                                           "--rxd=%d" % (queue, txd_rxd, txd_rxd)
+        pvp_split_all_path_virtio_params = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d --rxd=%d" % (queue, txd_rxd, txd_rxd)
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
             allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],
-                                          dev=vhost_vdevs % (queue, dmathr), ports=allow_pci)
-
+        self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs % (queue, dmathr), ports=allow_pci)
         for key, path_mode in dev_path_mode_mapper.items():
             if key == "vector_rx_path":
-                pvp_split_all_path_virtio_params = eal_tx_rxd % (
-                    queue, txd_rxd, txd_rxd)
+                pvp_split_all_path_virtio_params = eal_tx_rxd % (queue, txd_rxd, txd_rxd)
             vdevs = f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'" % queue
-            self.diff_param_launch_send_and_verify(key, pvp_split_all_path_virtio_params, vdevs,
-                                                   self.cores[2:4], is_quit=False,
-                                                   )
+            self.diff_param_launch_send_and_verify(key, pvp_split_all_path_virtio_params, vdevs, self.cores[2:4], is_quit=False)
             self.mode_list.append(key)
             # step3 restart vhost port, then check throughput again
             key += "_RestartVhost"
@@ -289,7 +247,6 @@ class TestVirTioVhostCbdma(TestCase):
             self.diff_param_launch_send_and_verify(key, pvp_split_all_path_virtio_params, vdevs,
                                                    self.cores[2:4], launch_virtio=False)
             self.mode_list.append(key)
-
         self.vhost_user.send_expect("quit", "# ")
         self.result_table_print()
         self.handle_expected(mode_list=self.mode_list)
@@ -302,7 +259,6 @@ class TestVirTioVhostCbdma(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-
         used_cbdma_num = 4
         queue = 2
         txd_rxd = 1024
@@ -312,55 +268,40 @@ class TestVirTioVhostCbdma(TestCase):
         path_mode = 'mrg_rxbuf=1,in_order=1'
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
         vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}],dmathr={dmathr}"
-
         eal_params = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d " % (nb_cores, txd_rxd, txd_rxd, queue, queue)
-
         dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params}"
-
         virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queue},server=1"
         vhost_dev = f"'net_vhost0,iface={virtio_path},queues={queue},client=1,%s'"
-
         # launch vhost testpmd
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
             if index < used_cbdma_num / 2:
                 allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas, ports=allow_pci)
-        #
+        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
         #  queue 2 start virtio testpmd, check perforamnce and RX/TX
         mode = "dynamic_queue2"
         self.mode_list.append(mode)
-        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params,
-                                           self.cores[2:4],
-                                           dev=virtio_dev)
+        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
         self.send_and_verify(mode, queue_list=range(queue))
-
         # On virtio-user side, dynamic change rx/tx queue numbers from 2 queue to 1 queues
         self.vhost_or_virtio_set_one_queue(self.virtio_user)
-
         self.send_and_verify("virtio_user_" + mode + "_change_to_1", queue_list=[0])
         self.mode_list.append("virtio_user_" + mode + "_change_to_1")
         self.virtio_user.send_expect("stop", "testpmd> ")
         self.virtio_user.send_expect("quit", "# ")
         time.sleep(5)
         self.dut.send_expect(f"rm -rf {virtio_path}", "#")
-
         # queue 2 start virtio testpmd, check perforamnce and RX/TX
-        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params,
-                                           self.cores[2:4],
-                                           dev=virtio_dev)
+        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
         mode = "Relaunch_dynamic_queue2"
         self.mode_list.append(mode)
         self.send_and_verify(mode, queue_list=range(queue))
-
         # On vhost side, dynamic change rx queue numbers from 2 queue to 1 queues
         self.vhost_or_virtio_set_one_queue(self.vhost_user)
         self.send_and_verify("vhost_user" + mode + "_change_to_1")
         self.mode_list.append("vhost_user" + mode + "_change_to_1")
         self.vhost_user.send_expect("quit", "# ")
         time.sleep(2)
-
         # Relaunch vhost with another two cbdma channels
         mode = "Relaunch_vhost_2_cbdma"
         self.mode_list.append(mode)
@@ -370,14 +311,12 @@ class TestVirTioVhostCbdma(TestCase):
         for index in range(used_cbdma_num):
             if index >= used_cbdma_num / 2:
                 allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2],
-                                          dev=vhost_dev % vhost_dmas, ports=allow_pci)
+        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
         self.virtio_user.send_expect("clear port stats all", "testpmd> ", 30)
         self.send_and_verify(mode, queue_list=range(queue))
         self.check_port_stats_result(self.virtio_user)
         self.virtio_user.send_expect("quit", "# ")
         self.vhost_user.send_expect("quit", "# ")
-
         self.result_table_print()
         # result_rows = [[], [64, 'dynamic_queue2', 7.4959375, 12.593175], [1518, 'dynamic_queue2', 1.91900225, 59.028509209999996]]
         result_rows = self.result_table_getrows()  #
@@ -452,42 +391,31 @@ class TestVirTioVhostCbdma(TestCase):
         self.throughput[mode] = dict()
         for frame_size in self.frame_sizes:
             self.throughput[mode][frame_size] = dict()
-
             payload_size = frame_size - self.headers_size
             tgenInput = []
             port = self.tester.get_local_port(self.dut_ports[0])
-
             fields_config = {'ip': {'src': {'action': 'random'},},}
             if not multiple_queue:
                 fields_config = None
-
             pkt1 = Packet()
             pkt1.assign_layers(['ether', 'ipv4', 'raw'])
             pkt1.config_layers([('ether', {'dst': '%s' % self.virtio_mac}), ('ipv4', {'src': '1.1.1.1'}),
                                 ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
-
             pkt1.save_pcapfile(self.tester, "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size))
             tgenInput.append((port, port, "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size)))
-
             self.tester.pktgen.clear_streams()
             streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, fields_config, self.tester.pktgen)
             trans_options = {'delay': 5, 'duration': 20}
             _, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=trans_options)
-
             Mpps = pps / 1000000.0
-            self.verify(Mpps > 0,
-                        "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
-            throughput = Mpps * 100 / \
-                         float(self.wirespeed(self.nic, frame_size, 1))
-
+            self.verify(Mpps > 0, "%s can not receive packets of frame size %d" % (self.running_case, frame_size))
+            throughput = Mpps * 100 / float(self.wirespeed(self.nic, frame_size, 1))
             self.throughput[mode][frame_size][self.nb_desc] = Mpps
-
             results_row = [frame_size]
             results_row.append(mode)
             results_row.append(Mpps)
             results_row.append(throughput)
             self.result_table_add(results_row)
-
         if queue_list:
             # check RX/TX can work normally in each queues
             self.check_packets_of_each_queue(queue_list=queue_list)
@@ -519,7 +447,6 @@ class TestVirTioVhostCbdma(TestCase):
         header.append("nb_desc")
         header.append("Expected Throughput")
         header.append("Throughput Difference")
-
         for mode in mode_list:
             self.test_result[mode] = dict()
             for frame_size in self.test_parameters.keys():
@@ -551,7 +478,6 @@ class TestVirTioVhostCbdma(TestCase):
                         table_row.append(
                             self.test_result[mode][frame_size][nb_desc][header[i]])
                     self.result_table_add(table_row)
-
         # present test results to screen
         self.result_table_print()
         # save test results as a file
@@ -567,7 +493,6 @@ class TestVirTioVhostCbdma(TestCase):
         case_name = self.running_case
         self.json_obj[case_name] = list()
         status_result = []
-
         for mode in mode_list:
             for frame_size in self.test_parameters.keys():
                 for nb_desc in self.test_parameters[frame_size]:
@@ -597,10 +522,7 @@ class TestVirTioVhostCbdma(TestCase):
                     row_dict0['parameters'].append(row_dict3)
                     self.json_obj[case_name].append(row_dict0)
                     status_result.append(row_dict0['status'])
-
-        with open(os.path.join(rst.path2Result,
-                               '{0:s}_{1}.json'.format(
-                                   self.nic, self.suite_name)), 'w') as fp:
+        with open(os.path.join(rst.path2Result, '{0:s}_{1}.json'.format(self.nic, self.suite_name)), 'w') as fp:
             json.dump(self.json_obj, fp)
         self.verify("FAIL" not in status_result, "Exceeded Gap")
 
@@ -611,14 +533,11 @@ class TestVirTioVhostCbdma(TestCase):
         """
         self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
         self.bind_cbdma_device_to_kernel()
-        self.bind_nic_driver(self.dut_ports)
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-
-        self.bind_nic_driver(self.dut_ports, self.drivername)
         self.dut.close_session(self.vhost_user)
         self.dut.close_session(self.virtio_user)
         self.dut.close_session(self.virtio_user1)
