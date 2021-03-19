@@ -57,7 +57,6 @@ class TestDPDKGROLib(TestCase):
         for i in self.dut_ports:
             port = self.dut.ports_info[i]['port']
             port.bind_driver()
-
         # get and bind the port in config file
         self.pci = peer.get_pci_info()
         self.pci_drv = peer.get_pci_driver_info()
@@ -80,8 +79,7 @@ class TestDPDKGROLib(TestCase):
             self.socket = 0
         # get core list on this socket, 2 cores for testpmd, 1 core for qemu
         cores_config = '1S/3C/1T'
-        self.verify(self.dut.number_of_cores >= 3,
-                "There has not enought cores to test this case %s" % self.suite_name)
+        self.verify(self.dut.number_of_cores >= 3, "There has not enought cores to test this case %s" % self.suite_name)
         cores_list = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.vhost_list = cores_list[0:2]
         self.qemu_cpupin = cores_list[2:3][0]
@@ -96,7 +94,6 @@ class TestDPDKGROLib(TestCase):
             self.socket_mem = '1024,1024'
         self.prepare_dpdk()
         self.base_dir = self.dut.base_dir.replace('~', '/root')
-
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
         # get cbdma device
         self.cbdma_dev_infos = []
@@ -116,6 +113,9 @@ class TestDPDKGROLib(TestCase):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
@@ -141,8 +141,7 @@ class TestDPDKGROLib(TestCase):
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(self.cbdma_dev_infos)
-        self.dut.setup_modules(self.target, "igb_uio","None")
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % ("igb_uio", self.device_str), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -160,7 +159,6 @@ class TestDPDKGROLib(TestCase):
         # mode 5 : tcp traffice light mode with cdbma enable
         if mode == 5:
             self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=2)
-            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=igb_uio  %s' % self.pci, '# ', 20)
             eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=["'net_vhost0,iface=%s/vhost-net,queues=%s,dmas=[%s],dmathr=1024'" % (self.base_dir, queue, self.dmas_info)])
             self.testcmd_start = self.path + eal_param + " -- -i --txd=1024 --rxd=1024 --txq=2 --rxq=2"
             self.vhost_user = self.dut.new_session(suite="user")
@@ -218,47 +216,26 @@ class TestDPDKGROLib(TestCase):
         if (mode == 0):
             self.dut.send_expect("ip netns del ns1", "#")
             self.dut.send_expect("ip netns add ns1", "#")
-            self.dut.send_expect(
-                "ip link set %s netns ns1" %
-                self.nic_in_kernel, "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ifconfig %s 1.1.1.8 up" %
-                self.nic_in_kernel, "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ethtool -K %s tso on" %
-                self.nic_in_kernel, "#")
+            self.dut.send_expect("ip link set %s netns ns1" %self.nic_in_kernel, "#")
+            self.dut.send_expect("ip netns exec ns1 ifconfig %s 1.1.1.8 up" %self.nic_in_kernel, "#")
+            self.dut.send_expect("ip netns exec ns1 ethtool -K %s tso on" %self.nic_in_kernel, "#")
         if (mode == 1):
             self.dut.send_expect("ip netns del ns1", "#")
             self.dut.send_expect("ip netns add ns1", "#")
-            self.dut.send_expect(
-                "ip link set %s netns ns1" %
-                self.nic_in_kernel, "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ifconfig %s 1.1.2.4/24 up" %
-                self.nic_in_kernel, "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ip link add vxlan1 type vxlan id 42 dev %s dstport 4789" %
-                self.nic_in_kernel, "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 bridge fdb append to 00:00:00:00:00:00 dst 1.1.2.3 dev vxlan1", "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ip addr add 50.1.1.1/24 dev vxlan1", "#")
-            self.dut.send_expect(
-                "ip netns exec ns1 ip link set up dev vxlan1", "#")
+            self.dut.send_expect("ip link set %s netns ns1" %self.nic_in_kernel, "#")
+            self.dut.send_expect("ip netns exec ns1 ifconfig %s 1.1.2.4/24 up" %self.nic_in_kernel, "#")
+            self.dut.send_expect("ip netns exec ns1 ip link add vxlan1 type vxlan id 42 dev %s dstport 4789" %self.nic_in_kernel, "#")
+            self.dut.send_expect("ip netns exec ns1 bridge fdb append to 00:00:00:00:00:00 dst 1.1.2.3 dev vxlan1", "#")
+            self.dut.send_expect("ip netns exec ns1 ip addr add 50.1.1.1/24 dev vxlan1", "#")
+            self.dut.send_expect("ip netns exec ns1 ip link set up dev vxlan1", "#")
 
     def prepare_dpdk(self):
         #
         # Changhe the testpmd checksum fwd code for mac change
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c",
-            "#")
-        self.dut.send_expect(
-            "cp ./drivers/net/vhost/rte_eth_vhost.c ./drivers/net/vhost/rte_eth_vhost-backup.c",
-            "#")
-        self.dut.send_expect(
-            "sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#")
-        self.dut.send_expect(
-            "sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c", "#")
+        self.dut.send_expect("cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c", "#")
+        self.dut.send_expect("cp ./drivers/net/vhost/rte_eth_vhost.c ./drivers/net/vhost/rte_eth_vhost-backup.c", "#")
+        self.dut.send_expect("sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#")
+        self.dut.send_expect("sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c", "#")
         # change offload of vhost
         tx_offload = 'DEV_TX_OFFLOAD_VLAN_INSERT | ' + \
                     'DEV_TX_OFFLOAD_UDP_CKSUM | ' + \
@@ -270,20 +247,14 @@ class TestDPDKGROLib(TestCase):
                     'DEV_RX_OFFLOAD_UDP_CKSUM | ' + \
                     'DEV_RX_OFFLOAD_IPV4_CKSUM | ' + \
                     'DEV_RX_OFFLOAD_TCP_LRO;'
-        self.dut.send_expect(
-            "sed -i 's/DEV_TX_OFFLOAD_VLAN_INSERT;/%s/' drivers/net/vhost/rte_eth_vhost.c" % tx_offload, "#")
-        self.dut.send_expect(
-            "sed -i 's/DEV_RX_OFFLOAD_VLAN_STRIP;/%s/' drivers/net/vhost/rte_eth_vhost.c" % rx_offload, "#")
+        self.dut.send_expect("sed -i 's/DEV_TX_OFFLOAD_VLAN_INSERT;/%s/' drivers/net/vhost/rte_eth_vhost.c" % tx_offload, "#")
+        self.dut.send_expect("sed -i 's/DEV_RX_OFFLOAD_VLAN_STRIP;/%s/' drivers/net/vhost/rte_eth_vhost.c" % rx_offload, "#")
         self.dut.build_install_dpdk(self.dut.target)
 
     def unprepare_dpdk(self):
         # Recovery the DPDK code to original
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ",
-            "#")
-        self.dut.send_expect(
-            "cp ./drivers/net/vhost/rte_eth_vhost-backup.c ./drivers/net/vhost/rte_eth_vhost.c ",
-            "#")
+        self.dut.send_expect("cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ", "#")
+        self.dut.send_expect("cp ./drivers/net/vhost/rte_eth_vhost-backup.c ./drivers/net/vhost/rte_eth_vhost.c ", "#")
         self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
         self.dut.send_expect("rm -rf ./drivers/net/vhost/rte_eth_vhost-backup.c", "#")
         self.dut.build_install_dpdk(self.dut.target)
@@ -356,26 +327,19 @@ class TestDPDKGROLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' %(self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gro off' % (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gro off' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(30)
         tc1_perfdata = self.iperf_result_verify('GRO lib')
         print(("the GRO lib %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         # Turn off DPDK GRO lib and Kernel GRO off
         self.set_testpmd_gro_off()
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 1 -t 10  -P 1 > /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 1 -t 10  -P 1 > /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('Kernel GRO')
         print(("the Kernel GRO %s " % (self.output_result)))
@@ -396,18 +360,12 @@ class TestDPDKGROLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' %(self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gro off' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gro off' %(self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('GRO lib')
         print(("the GRO lib %s " % (self.output_result)))
@@ -427,18 +385,12 @@ class TestDPDKGROLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' %(self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gro off' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gro off' %(self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 1 -t 10 -P 1> /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(30)
         self.iperf_result_verify('GRO lib')
         print(("the GRO lib %s " % (self.output_result)))
@@ -458,17 +410,13 @@ class TestDPDKGROLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s up' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s up' %(self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ethtool -L %s combined 2' % self.vm1_intf, '#', 10)
         self.vm1_dut.send_expect('ethtool -K %s gro off' %  (self.vm1_intf), '#', 10)
         self.set_testpmd_params()
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        out = self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 1 -t 60 -m -P 2 > /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        out = self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 1 -t 60 -m -P 2 > /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(30)
         print(out)
         perfdata = self.iperf_result_verify('GRO lib')
@@ -477,9 +425,11 @@ class TestDPDKGROLib(TestCase):
         self.quit_testpmd()
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         exp_perfdata = self.dut.send_expect("cat /root/dpdk_gro_lib_on_iperf_tc5.log", "#")
-        self.verify("No such file or directory" not in exp_perfdata, "Cannot find dpdk_gro_lib_on_iperf_tc5.log, please run test_vhost_gro_with_2queues_tcp_lightmode firstly")
+        self.verify("No such file or directory" not in exp_perfdata,
+                    "Cannot find dpdk_gro_lib_on_iperf_tc5.log, please run test_vhost_gro_with_2queues_tcp_lightmode firstly")
         if exp_perfdata:
-            self.verify(float(perfdata) > float(exp_perfdata), "TestFailed: W/cbdma iperf data is %s Kbits/sec, W/O cbdma iperf data is %s Kbits/sec" %(perfdata, exp_perfdata))
+            self.verify(float(perfdata) > float(exp_perfdata),
+                        "TestFailed: W/cbdma iperf data is %s Kbits/sec, W/O cbdma iperf data is %s Kbits/sec" %(perfdata, exp_perfdata))
 
     def test_vhost_gro_with_2queues_tcp_lightmode(self):
         """
@@ -495,26 +445,19 @@ class TestDPDKGROLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' %(self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gro off' % (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gro off' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('iperf -s', '', 10)
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(60)
         perfdata = self.iperf_result_verify('GRO lib')
         print(("the GRO lib %s " % (self.output_result)))
         self.dut.send_expect('rm /root/iperf_client.log', '#', 10)
         # Turn off DPDK GRO lib and Kernel GRO off
         self.set_testpmd_gro_off()
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %
-            (self.virtio_ip1), '', 180)
+        self.dut.send_expect('ip netns exec ns1 iperf -c %s -i 2 -t 60 -f g -m > /root/iperf_client.log &' %(self.virtio_ip1), '', 180)
         time.sleep(60)
         self.iperf_result_verify('Kernel GRO')
         print(("the Kernel GRO %s " % (self.output_result)))
@@ -532,24 +475,13 @@ class TestDPDKGROLib(TestCase):
         self.dut.send_expect("rm -rf %s/vhost-net" % self.base_dir, "#")
         time.sleep(2)
         self.dut.send_expect("ip netns del ns1", "# ", 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % (self.peer_pci), '# ', 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b %s %s" %
-            (self.pci_drv, self.peer_pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.peer_pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -b %s %s" %(self.pci_drv, self.peer_pci), '# ', 30)
         self.bind_cbdma_device_to_kernel()
 
     def tear_down_all(self):
         """
         Run after each test suite.
         """
-        for i in self.dut_ports:
-            port = self.dut.ports_info[i]['port']
-            port.bind_driver(self.def_driver)
         self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "# ", 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % (self.pci), '# ', 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b %s %s" %
-            (self.pci_drv, self.pci), '# ', 30)
