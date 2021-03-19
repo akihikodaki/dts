@@ -55,12 +55,10 @@ class TestVirtioIdxInterrupt(TestCase):
         self.dut_ports = self.dut.get_ports()
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.ports_socket = self.dut.get_numa_id(self.dut_ports[0])
-        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])
-                            == self.ports_socket])
+        self.cores_num = len([n for n in self.dut.cores if int(n['socket'])== self.ports_socket])
         self.dst_mac = self.dut.get_mac_address(self.dut_ports[0])
         self.base_dir = self.dut.base_dir.replace('~', '/root')
         self.pf_pci = self.dut.ports_info[0]['pci']
-
         self.out_path = '/tmp'
         out = self.tester.send_expect('ls -d %s' % self.out_path, '# ')
         if 'No such file or directory' in out:
@@ -84,20 +82,19 @@ class TestVirtioIdxInterrupt(TestCase):
 
     def get_core_mask(self):
         self.core_config = "1S/%dC/1T" % (self.nb_cores + 1)
-        self.verify(self.cores_num >= (self.nb_cores + 1),
-                    "There has not enough cores to test this case %s" %
-                    self.running_case)
+        self.verify(self.cores_num >= (self.nb_cores + 1),"There has not enough cores to test this case %s" %self.running_case)
         self.core_list = self.dut.get_core_list(self.core_config)
 
     def get_cbdma_ports_info_and_bind_to_dpdk(self, cbdma_num):
         """
         get all cbdma ports
         """
-        self.dut.setup_modules(self.target, "igb_uio","None")
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         cbdma_dev_infos = re.findall('\s*(0000:\d+:\d+.\d+)', out)
         self.verify(len(cbdma_dev_infos) >= cbdma_num, 'There no enough cbdma device to run this suite')
-
         used_cbdma = cbdma_dev_infos[0:cbdma_num]
         dmas_info = ''
         for dmas in used_cbdma:
@@ -106,8 +103,7 @@ class TestVirtioIdxInterrupt(TestCase):
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(used_cbdma)
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s %s' %
-                             ("igb_uio", self.device_str, self.pf_pci), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def bind_cbdma_device_to_kernel(self):
         if self.device_str is not None:
@@ -177,8 +173,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.verify(self.vm_intf not in out, "the virtio-pci down failed")
         self.vm_dut.send_expect("ifconfig %s up" % self.vm_intf, "#")
         if self.queues > 1:
-            self.vm_dut.send_expect("ethtool -L %s combined %d" %
-                            (self.vm_intf, self.queues), "#", 20)
+            self.vm_dut.send_expect("ethtool -L %s combined %d" %(self.vm_intf, self.queues), "#", 20)
 
     def start_to_send_packets(self, delay):
         """
@@ -189,7 +184,6 @@ class TestVirtioIdxInterrupt(TestCase):
         self.tester.scapy_append('a=[Ether(dst="%s")/IP(src="0.240.74.101",proto=255)/UDP()/("X"*18)]' % (self.dst_mac))
         self.tester.scapy_append('wrpcap("%s/interrupt.pcap", a)' % self.out_path)
         self.tester.scapy_execute()
-
         tgen_input.append((port, port, "%s/interrupt.pcap" % self.out_path))
         self.tester.pktgen.clear_streams()
         fields_config = {'ip':  {'dst': {'action': 'random'}, }, }
@@ -210,26 +204,21 @@ class TestVirtioIdxInterrupt(TestCase):
         # reload virtio device to check the virtio-net can receive packets
         for i in range(reload_times+1):
             if time.time() - start_time > reload_times*30:
-                self.logger.error("The ixia has stop to send packets, "
-                        "please change the delay time of ixia")
+                self.logger.error("The ixia has stop to send packets, please change the delay time of ixia")
                 self.logger.info("The virtio device has reload %d times" % i)
                 return False
             self.logger.info("The virtio net device reload %d times" % i)
-            self.vm_dut.send_expect("tcpdump -n -vv -i %s" % self.vm_intf,
-                                    "tcpdump", 30)
+            self.vm_dut.send_expect("tcpdump -n -vv -i %s" % self.vm_intf, "tcpdump", 30)
             time.sleep(5)
             out = self.vm_dut.get_session_output(timeout=3)
             self.vm_dut.send_expect("^c", "#", 30)
-            self.verify("ip-proto-255" in out,
-                        "The virtio device can not receive packets"
-                        "after reload %d times" % i)
+            self.verify("ip-proto-255" in out, "The virtio device can not receive packets after reload %d times" % i)
             time.sleep(2)
             # reload virtio device
             self.vm_dut.restore_interfaces()
             time.sleep(3)
             self.vm_dut.send_expect("ifconfig %s down" % self.vm_intf, "#")
             self.vm_dut.send_expect("ifconfig %s up" % self.vm_intf, "#")
-
         # wait ixia thread exit
         self.logger.info("wait the thread of ixia to exit")
         while(1):
@@ -257,7 +246,6 @@ class TestVirtioIdxInterrupt(TestCase):
                    queue_index + \
                    "rx-packets:%d, tx-packets:%d" %
                    (rx_packets, tx_packets))
-
         self.vhost.send_expect("clear port stats all", "testpmd> ", 60)
 
     def stop_all_apps(self):
