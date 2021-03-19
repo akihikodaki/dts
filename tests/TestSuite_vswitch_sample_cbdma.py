@@ -228,6 +228,9 @@ class TestVswitchSampleCBDMA(TestCase):
         """
         get all cbdma ports
         """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
         str_info = 'Misc (rawdev) devices using kernel driver'
         out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
         device_info = out.split('\n')
@@ -252,8 +255,7 @@ class TestVswitchSampleCBDMA(TestCase):
             dmas_info += dmas
         self.dmas_info = dmas_info[:-1]
         self.device_str = ' '.join(used_cbdma)
-        self.dut.setup_modules(self.target, "igb_uio","None")
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % ("igb_uio", self.device_str), '# ', 60)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
 
     def send_vlan_packet(self, dts_mac, pkt_size=64, pkt_count=1):
         """
@@ -338,7 +340,6 @@ class TestVswitchSampleCBDMA(TestCase):
         self.set_async_threshold(1518)
         self.build_vhost_app()
         cbmda_copy = self.pvp_test_with_cbdma(socket_num=1, with_cbdma=True, cbdma_num=1)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
 
@@ -348,14 +349,12 @@ class TestVswitchSampleCBDMA(TestCase):
         self.set_async_threshold(0)
         self.build_vhost_app()
         sync_copy = self.pvp_test_with_cbdma(socket_num=1, with_cbdma=True, cbdma_num=1)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
 
         # test CPU copy
         # CPU copy means vhost enqueue w/o cbdma channel
         cpu_copy = self.pvp_test_with_cbdma(socket_num=1, with_cbdma=False, cbdma_num=0)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
 
@@ -414,7 +413,6 @@ class TestVswitchSampleCBDMA(TestCase):
 
         self.logger.info("Relaunch vhost app perf test")
         after_relunch = self.pvp_test_with_multi_cbdma(socket_num=2, with_cbdma=True, cbdma_num=2, launch_virtio=False, quit_vhost=False)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.virtio_user1_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
@@ -492,13 +490,11 @@ class TestVswitchSampleCBDMA(TestCase):
         self.build_vhost_app()
 
         cbdma_enable = self.vm2vm_check_with_two_cbdma(with_cbdma=True, cbdma_num=2, socket_num=2)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.virtio_user1_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
 
         cbdma_disable = self.vm2vm_check_with_two_cbdma(with_cbdma=False, cbdma_num=2, socket_num=2)
-
         self.virtio_user0_pmd.execute_cmd("quit", "#")
         self.virtio_user1_pmd.execute_cmd("quit", "#")
         self.vhost_user.send_expect("^C", "# ", 20)
@@ -545,7 +541,6 @@ class TestVswitchSampleCBDMA(TestCase):
             self.result_table_add([frame_size, rx_pps])
             rx_throughput[frame_size] = rx_pps
             self.result_table_print()
-
         return rx_throughput
 
     def start_vms_testpmd_and_test(self, launch, quit_vm_testpmd=False):
