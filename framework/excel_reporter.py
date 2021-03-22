@@ -193,8 +193,20 @@ class ExcelReporter(object):
 
     def __write_nic(self, dut, target):
         nic = self.result.current_nic(dut, target)
+        driver = self.result.current_driver(dut)
+        kdriver = self.result.current_kdriver(dut)
+        firmware = self.result.current_firmware_version(dut)
+        pkg = self.result.current_package_version(dut)
         self.col += 1
+        self.sheet.col(self.col).width = 32 * 256  # 32 characters
         self.sheet.write(self.row, self.col, nic, self.title_style)
+        self.sheet.write(self.row+1, self.col, 'driver: ' + driver)
+        self.sheet.write(self.row+2, self.col, 'kdriver: ' + kdriver)
+        self.sheet.write(self.row+3, self.col, 'firmware: ' + firmware)
+        if pkg is not None:
+            self.sheet.write(self.row+4, self.col, 'pkg: ' + pkg)
+            self.row = self.row + 1
+        self.row = self.row + 3
         self.__write_suites(dut, target)
         self.col -= 1
 
