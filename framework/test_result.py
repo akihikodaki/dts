@@ -46,6 +46,11 @@ class Result(object):
 
     internals = [
         'dut1', [
+            'kdriver',
+            'firmware',
+            'pkg',
+            'driver',
+            'dpdk_version',
             'target1', 'nic1', [
                 'suite1', [
                     'case1', ['PASSED', ''],
@@ -92,16 +97,84 @@ class Result(object):
         """
         try:
             dut_idx = self.__internals.index(dut)
-            return self.__internals[dut_idx + 1][0]
+            return self.__internals[dut_idx + 1][4]
         except:
             return ''
 
     def __set_dpdk_version(self, dpdk_version):
-        if not self.internals[self.__dut + 1]:
+        if dpdk_version not in self.internals[self.__dut + 1]:
             self.internals[self.__dut + 1].append(dpdk_version)
 
     def __get_dpdk_version(self):
+        return self.internals[self.__dut + 1][3]
+
+    def current_kdriver(self, dut):
+        """
+        Returns the driver version for a given DUT
+        """
+        try:
+            dut_idx = self.__internals.index(dut)
+            return self.__internals[dut_idx + 1][0]
+        except:
+            return ''
+
+    def __set_kdriver(self, driver):
+        if not self.internals[self.__dut + 1]:
+            self.internals[self.__dut + 1].append(driver)
+
+    def __get_kdriver(self):
         return self.internals[self.__dut + 1][0]
+
+    def current_firmware_version(self, dut):
+        """
+        Returns the firmware version for a given DUT
+        """
+        try:
+            dut_idx = self.__internals.index(dut)
+            return self.__internals[dut_idx + 1][1]
+        except:
+            return ''
+
+    def __set_firmware(self, firmware):
+        if firmware not in self.internals[self.__dut + 1]:
+            self.internals[self.__dut + 1].append(firmware)
+
+    def __get_firmware(self):
+        return self.internals[self.__dut + 1][1]
+
+    def current_package_version(self, dut):
+        """
+        Returns the DDP package version for a given DUT
+        """
+        try:
+            dut_idx = self.__internals.index(dut)
+            return self.__internals[dut_idx + 1][2]
+        except:
+            return ''
+
+    def __set_ddp_package(self, package):
+        if package not in self.internals[self.__dut + 1]:
+            self.internals[self.__dut + 1].append(package)
+
+    def __get_ddp_package(self):
+        return self.internals[self.__dut + 1][2]
+
+    def current_driver(self, dut):
+        """
+        Returns the DDP package version for a given DUT
+        """
+        try:
+            dut_idx = self.__internals.index(dut)
+            return self.__internals[dut_idx + 1][3]
+        except:
+            return ''
+
+    def __set_driver(self, package):
+        if package not in self.internals[self.__dut + 1]:
+            self.internals[self.__dut + 1].append(package)
+
+    def __get_driver(self):
+        return self.internals[self.__dut + 1][3]
 
     def __current_targets(self):
         return self.internals[self.__dut + 1]
@@ -210,7 +283,7 @@ class Result(object):
             dut_idx = self.__internals.index(dut)
         except:
             return None
-        return self.__internals[dut_idx + 1][1::3]
+        return self.__internals[dut_idx + 1][5::3]
 
     def current_nic(self, dut, target):
         """
@@ -305,6 +378,10 @@ class Result(object):
     """
     dut = property(__get_dut, __set_dut)
     dpdk_version = property(__get_dpdk_version, __set_dpdk_version)
+    kdriver = property(__get_kdriver, __set_kdriver)
+    driver = property(__get_driver, __set_driver)
+    firmware = property(__get_firmware, __set_firmware)
+    package = property(__get_ddp_package, __set_ddp_package)
     target = property(__get_target, __set_target)
     test_suite = property(__get_test_suite, __set_test_suite)
     test_case = property(__get_test_case, __set_test_case)
