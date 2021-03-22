@@ -71,7 +71,9 @@ class NetDevice(object):
         self.intf2_name = None
         self.get_interface_name()
         self.socket = self.get_nic_socket()
-        self.pkg = {}
+        self.driver_version = ''
+        self.firmware = ''
+        self.pkg = None
 
     def stop(self):
         pass
@@ -123,6 +125,7 @@ class NetDevice(object):
         """
         Get the NIC pkg.
         """
+        self.pkg = {'type': '', 'version': ''}
         out = self.__send_expect('dmesg | grep "DDP package" | tail -1', '# ')
         if 'could not load' in out:
             print(RED(out))
@@ -139,6 +142,36 @@ class NetDevice(object):
                 self.pkg['type'] = pkg_info[0].strip()
                 self.pkg['version'] = pkg_info[1].strip()
         return self.pkg
+
+    @nic_has_driver
+    def get_driver_firmware(self):
+        """
+        Get NIC driver and firmware version.
+        """
+        get_driver_firmware = getattr(
+            self, 'get_driver_firmware_%s' %
+                  self.__get_os_type())
+        get_driver_firmware()
+
+    def get_driver_firmware_linux(self):
+        """
+        Get NIC driver and firmware version.
+        """
+        rexp = 'version:\s.+'
+        pattern = re.compile(rexp)
+        out = self.__send_expect('ethtool -i {} | grep version'.format(self.intf_name), '# ')
+        driver_firmware = pattern.findall(out)
+        if len(driver_firmware) > 1:
+            self.driver_version = driver_firmware[0].split(': ')[-1].strip()
+            self.firmware = driver_firmware[1].split(': ')[-1].strip()
+
+        return self.driver_version, self.firmware
+
+    def get_driver_firmware_freebsd(self):
+        """
+        Get the NIC driver and firmware version.
+        """
+        NotImplemented
 
     def get_nic_socket(self):
         """
