@@ -624,6 +624,10 @@ def run_all(config_file, pkgName, git, patch, skip_setup,
         if dts_run_prerequisties(duts, tester, pkgName, patch, dts_commands, serializer) is False:
             dts_crbs_exit(duts, tester)
             continue
+        result.kdriver = duts[0].nic.default_driver + '-' + duts[0].nic.driver_version
+        result.firmware = duts[0].nic.firmware
+        result.package = duts[0].nic.pkg['type'] + ' ' + duts[0].nic.pkg['version'] if duts[0].nic.pkg else None
+        result.driver = settings.load_global_setting(settings.HOST_DRIVER_SETTING)
         result.dpdk_version = duts[0].dpdk_version
         dts_run_target(duts, tester, targets, test_suites, subtitle)
 
