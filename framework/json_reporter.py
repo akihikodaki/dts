@@ -65,8 +65,15 @@ class JSONReporter(object):
             return 'fail'
         target_map = {}
         target_map['dpdk_version'] = result.current_dpdk_version(dut)
+        target_map['nic'] = {}
         for target in result.all_targets(dut):
+            target_map['nic']['name'] = result.current_nic(dut, target)
             target_map[target] = self.__scan_target(result, dut, target)
+            target_map['nic']['kdriver'] = result.current_kdriver(dut)
+            target_map['nic']['driver'] = result.current_driver(dut)
+            target_map['nic']['firmware'] = result.current_firmware_version(dut)
+            if result.current_package_version(dut) is not None:
+                target_map['nic']['pkg'] = result.current_package_version(dut)
         return target_map
 
     def save(self, result):
