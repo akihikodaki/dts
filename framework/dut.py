@@ -424,13 +424,13 @@ class Dut(Crb):
         retry_times = 3
         if self.ports_info:
             self.nic = self.ports_info[0]['port']
-            # TODO: get nic driver/firmware version
+            self.nic.get_driver_firmware()
             if self.nic.default_driver == 'ice':
                 self.get_nic_pkg(retry_times)
 
     def get_nic_pkg(self, retry_times=3):
         self.nic.pkg = self.nic.get_nic_pkg()
-        while not self.nic.pkg and retry_times > 0:
+        while not self.nic.pkg.get('type') and retry_times > 0:
             self.restore_interfaces()
             self.nic.pkg = self.nic.get_nic_pkg()
             retry_times = retry_times - 1
