@@ -239,19 +239,6 @@ run the same test steps as below:
 
 Pattern: outer ipv4 + inner ipv4
 --------------------------------
-GTPoGRE is imported in DPDK-21.02.
-The Ptype is parsed same as GTP packet, so they match gtp RSS rule.
-We just need to add the GTPoGRE packet to the packets check.
-we need to add GTPoGRE packet to "basic hit pattern packets",
-"hit pattern/defined input set" and "hit pattern/not defined input set".
-the GTPoGRE packet format in this pattern is to add::
-
-    IP(proto=0x2F)/GRE(proto=0x0800)/
-
-after Ether layer, before IP layer, just like::
-
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
-
 
 Test case: MAC_IPV4_GTPU_EH_IPV4 with UL/DL
 >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
@@ -1507,14 +1494,6 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
 
-the GTPoGRE packet format in this pattern is to add::
-
-    IP(proto=0x2F)/GRE(proto=0x0800)/
-
-after Ether layer, before IP layer, just like::
-
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IP(proto=0x2F)/GRE(proto=0x0800)/IP()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
-
 Pattern: outer ipv6 + inner ipv4
 --------------------------------
 
@@ -1524,14 +1503,6 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change outer ipv4 to ipv6.
     packets:
         change the packet's outer L3 layer from IP to IPv6;
-
-the GTPoGRE packet format in this pattern is to add::
-
-    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
-
-after Ether layer, before IP layer, just like::
-
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IP(dst="192.168.0.1", src="192.168.0.2")/("X"*480)],iface="enp216s0f0")
 
 Pattern: outer ipv6 + inner ipv6
 --------------------------------
@@ -1545,14 +1516,6 @@ reconfig all the cases of "Pattern: outer ipv4 + inner ipv4"
         change the packet's outer L3 layer from IP to IPv6;
         change the packet's inner L3 layer from IP to IPv6;
         change the ipv4 address to ipv6 address.
-
-the GTPoGRE packet format in this pattern is to add::
-
-    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
-
-after Ether layer, before IP layer, just like::
-
-    sendp([Ether(dst="68:05:CA:BB:26:E0")/IPv6(nh=0x2F)/GRE(proto=0x86dd)/IPv6()/UDP(dport=2152)/GTP_U_Header(gtp_type=255, teid=0x123456)/GTPPDUSessionContainer(type=0, P=1, QFI=0x34)/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="enp216s0f0")
 
 negative case
 =============
@@ -1779,13 +1742,6 @@ default pattern supported case
 
 inner L4 protocal hash case
 ===========================
-Note: add two GTPoGRE packets in each subcase with::
-
-    IPv6(nh=0x2F)/GRE(proto=0x86dd)/
-
-or::
-
-    IP(proto=0x2F)/GRE(proto=0x0800)/
 
 Subcase: MAC_IPV4_GTPU_IPV4_UDP/TCP
 -----------------------------------
@@ -2637,8 +2593,6 @@ all the test cases run the same test steps as below:
 7. distroy the rule and list rule.
 8. send the same packets in step3, only switch ip address.
    check the received packets which switched ip address have different hash value.
-
-Note: the GTPoGRE packets need to be added to symmetric cases as a Ptype, just like toeplitz cases.
 
 Pattern: symmetric outer ipv4 + inner ipv4
 ------------------------------------------
