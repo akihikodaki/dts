@@ -6988,6 +6988,11 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
             self.pmd_output.quit()
             self.launch_testpmd(symmetric=symmetric)
             self.pmd_output.execute_cmd("start")
+        self.pmd_output.execute_cmd('vlan set filter on 0')
+        self.pmd_output.execute_cmd('rx_vlan add 1 0')
+        self.pmd_output.execute_cmd('rx_vlan add 3 0')
+        self.pmd_output.execute_cmd('rx_vlan add 5 0')
+        self.pmd_output.execute_cmd('rx_vlan add 7 0')
 
     def test_mac_ipv4_gtpu_ipv4(self):
         self.switch_testpmd(symmetric=False)
