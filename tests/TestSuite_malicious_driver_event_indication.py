@@ -38,6 +38,7 @@ import re
 import time
 import traceback
 from contextlib import contextmanager
+from pmd_output import PmdOutput
 
 
 from exception import VerifyFailure
@@ -159,28 +160,12 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
     def init_vf_testpmd(self):
         self.vf_pmd_session_name = 'vf_testpmd'
         self.vf_pmd_session = self.dut.create_session(self.vf_pmd_session_name)
-        self.vf_testpmd = "{}/{}/app/testpmd_vf".format(
-            self.target_dir, self.dut.target)
-        cmd = 'rm -f {vf_pmd};cp -f {pf_pmd} {vf_pmd}'.format(
-            **{'pf_pmd': self.pf_testpmd, 'vf_pmd': self.vf_testpmd})
-        self.d_a_con(cmd)
+        self.vf_pmdout = PmdOutput(self.dut, self.vf_pmd_session)
 
     def start_vf_testpmd(self):
-        core_mask = utils.create_mask(self.vf_pmd_cores)
-        cmd = (
-            "{bin} "
-            "-v "
-            "-c {core_mask} "
-            "-n {mem_channel} "
-            "--file-prefix={prefix} "
-            "{whitelist} "
-            "-- -i ").format(**{
-                'bin': self.vf_testpmd,
-                'core_mask': core_mask,
-                'mem_channel': self.dut.get_memory_channels(),
-                'whitelist': self.vf_pmd_whitelist,
-                'prefix': 'vf_pmd', })
-        self.vf_pmd_con([cmd, "testpmd> ", 120])
+        self.vf_pmdout.start_testpmd(self.vf_pmd_cores,
+                                     eal_param="-v {}".format(self.vf_pmd_allowlst),
+                                     prefix='vf_pmd')
         self.is_vf_pmd_on = True
         cmds = [
             'set fwd txonly',
@@ -269,7 +254,7 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
         corelist = self.dut.get_core_list("1S/6C/1T", socket=socket)[2:]
         self.pf_pmd_whitelist = '-w ' + self.vf_ports_info[0].get('pf_pci')
         self.pf_pmd_cores = corelist[:2]
-        self.vf_pmd_whitelist = '-w ' + self.vf_ports_info[0].get('vfs_pci')[0]
+        self.vf_pmd_allowlst = '-w ' + self.vf_ports_info[0].get('vfs_pci')[0]
         self.vf_pmd_cores = corelist[2:]
 
     def init_params(self):
@@ -278,11 +263,6 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
 
     def preset_test_environment(self):
         self.preset_dpdk_compilation()
-        self.init_pf_testpmd()
-        self.init_vf_testpmd()
-        self.vf_create()
-        # get socket and cores
-        self.preset_pmd_res()
 
     def destroy_resource(self):
         with self.restore_dpdk_compilation():
@@ -297,7 +277,6 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
         """
         Run at the start of each test suite.
         """
-        self.init_params()
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Not enough ports")
         self.verify_supported_nic()
@@ -314,13 +293,21 @@ class TestSuiteMaliciousDrvEventIndication(TestCase):
         """
         Run before each test case.
         """
-        pass
+        self.init_params()
+        self.init_pf_testpmd()
+        self.init_vf_testpmd()
+        self.vf_create()
+        self.preset_pmd_res()
 
     def tear_down(self):
         """
         Run after each test case.
         """
         self.dut.kill_all()
+        self.vf_destroy()
+        if self.vf_pmd_session:
+            self.dut.close_session(self.vf_pmd_session)
+            self.vf_pmd_session = None
 
     def test_malicious_driver_event_detected(self):
         """
