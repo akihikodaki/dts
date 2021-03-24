@@ -77,6 +77,7 @@ class SystemInfo(object):
         Size: 8192 MB Locator: DIMM_A1 Speed: 2133 MHz
         """
         s_regex = r"(\s+)Size: (\d+) MB"
+        s1_regex = r"(\s+)Size: (\d+) GB"
         l_regex= r"(\s+)Locator: .*_(\w+)"
         speed_regex = r"(\s+)Speed: (.*)"
         size = ""
@@ -88,8 +89,11 @@ class SystemInfo(object):
         total_size = 0
         for line in lines:
             m = re.match(s_regex, line)
+            m1 = re.match(s1_regex, line)
             if m:
                 size = m.group(2)
+            if m1:
+                size = int(m1.group(2)) * 1024
             l_m = re.match(l_regex, line)
             if l_m:
                 locate = l_m.group(2)
