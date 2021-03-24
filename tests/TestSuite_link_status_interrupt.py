@@ -77,6 +77,8 @@ class TestLinkStatusInterrupt(TestCase):
         """
         self.intf = self.tester.get_interface(
             self.tester.get_local_port(dutPort))
+        if self.dut.get_os_type() != 'freebsd':
+            self.tester.send_expect("ethtool --set-priv-flags %s link-down-on-close on" % self.intf, "#", 10)
         self.tester.send_expect("ifconfig %s %s" %
                                 (self.intf, status.lower()), "# ", 10)
         verify_point = "Port %s Link %s" % (dutPort, status.lower()) 
