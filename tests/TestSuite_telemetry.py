@@ -44,11 +44,7 @@ from pmd_output import PmdOutput
 class TestTelemetry(TestCase):
 
     def set_compiler_switch(self):
-        cmd = (
-            "sed -i -e "
-            "'s/CONFIG_RTE_LIBRTE_TELEMETRY=n/CONFIG_RTE_LIBRTE_TELEMETRY=y/g'"
-            " {}/config/common_base").format(self.target_dir)
-        self.d_a_console(cmd)
+        self.dut.set_build_options({'RTE_LIBRTE_TELEMETRY': 'y'})
 
     def create_query_script(self):
         '''
@@ -588,7 +584,8 @@ class TestTelemetry(TestCase):
         """
         Run after each test suite.
         """
-        pass
+        self.dut.set_build_options({'RTE_LIBRTE_TELEMETRY': 'n'})
+        self.dut.build_install_dpdk(self.target)
 
     def test_basic_connection(self):
         '''
