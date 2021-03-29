@@ -81,8 +81,7 @@ class TestDPDKGsoLib(TestCase):
             self.socket = 0
         # get core list on this socket, 2 cores for testpmd, 1 core for qemu
         cores_config = '1S/3C/1T'
-        self.verify(self.dut.number_of_cores >= 3,
-                "There has not enought cores to test this case %s" % self.suite_name)
+        self.verify(self.dut.number_of_cores >= 3, "There has not enought cores to test this case %s" % self.suite_name)
         cores_list = self.dut.get_core_list("1S/3C/1T", socket=self.socket)
         self.vhost_list = cores_list[0:2]
         self.qemu_cpupin = cores_list[2:3][0]
@@ -114,7 +113,7 @@ class TestDPDKGsoLib(TestCase):
         # mode = 2: DPDK GSO for Vxlan/GRE Traffic
         # mode = 3: TSO
         # mode = others: NO DPDK GSO/TSO
-        eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=1' % self.base_dir])
+        eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=1' % self.base_dir], ports=[self.pci])
         self.testcmd_start = self.path + eal_param + " -- -i --tx-offloads=0x00 --txd=1024 --rxd=1024"
         self.vhost_user = self.dut.new_session(suite="user")
         self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
@@ -164,65 +163,37 @@ class TestDPDKGsoLib(TestCase):
         #
         self.dut.send_expect("ip netns del ns1", "#")
         self.dut.send_expect("ip netns add ns1", "#")
-        self.dut.send_expect(
-            "ip link set %s netns ns1" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ifconfig %s 1.1.1.8 up" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ethtool -K %s gro on" %
-            self.nic_in_kernel, "#")
+        self.dut.send_expect("ip link set %s netns ns1" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ifconfig %s 1.1.1.8 up" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ethtool -K %s gro on" % self.nic_in_kernel, "#")
 
     def config_kernel_nic_host_for_vxlan(self):
         self.dut.send_expect("ip netns del ns1", "#")
         self.dut.send_expect("ip netns add ns1", "#")
-        self.dut.send_expect(
-            "ip link set %s netns ns1" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ifconfig %s 188.0.0.1 up" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ip link add vxlan100 type vxlan id 1000 remote 188.0.0.2 local 188.0.0.1 dstport 4789 dev %s" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ifconfig vxlan100 1.1.1.1/24 up",
-            "#")
+        self.dut.send_expect("ip link set %s netns ns1" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ifconfig %s 188.0.0.1 up" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ip link add vxlan100 type vxlan id 1000 remote 188.0.0.2 local 188.0.0.1 dstport 4789 dev %s" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ifconfig vxlan100 1.1.1.1/24 up", "#")
 
     def config_kernel_nic_host_for_gre(self):
         self.dut.send_expect("ip netns del ns1", "#")
         self.dut.send_expect("ip netns add ns1", "#")
-        self.dut.send_expect(
-            "ip link set %s netns ns1" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ifconfig %s 188.0.0.1 up" %
-            self.nic_in_kernel, "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ip tunnel add gre100 mode gre remote 188.0.0.2 local 188.0.0.1",
-            "#")
-        self.dut.send_expect(
-            "ip netns exec ns1 ifconfig gre100 1.1.1.1/24 up",
-            "#")
+        self.dut.send_expect("ip link set %s netns ns1" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ifconfig %s 188.0.0.1 up" % self.nic_in_kernel, "#")
+        self.dut.send_expect("ip netns exec ns1 ip tunnel add gre100 mode gre remote 188.0.0.2 local 188.0.0.1", "#")
+        self.dut.send_expect("ip netns exec ns1 ifconfig gre100 1.1.1.1/24 up", "#")
 
     def prepare_dpdk(self):
         # Changhe the testpmd checksum fwd code for mac change
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c",
-            "#")
-        self.dut.send_expect(
-            "sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#")
-        self.dut.send_expect(
-            "sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c", "#")
+        self.dut.send_expect("cp ./app/test-pmd/csumonly.c ./app/test-pmd/csumonly_backup.c", "#")
+        self.dut.send_expect("sed -i '/ether_addr_copy(&peer_eth/i\#if 0' ./app/test-pmd/csumonly.c", "#")
+        self.dut.send_expect("sed -i '/parse_ethernet(eth_hdr, &info/i\#endif' ./app/test-pmd/csumonly.c", "#")
         self.dut.build_install_dpdk(self.dut.target)
 
     def unprepare_dpdk(self):
         # Recovery the DPDK code to original
         time.sleep(5)
-        self.dut.send_expect(
-            "cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ",
-            "#")
+        self.dut.send_expect("cp ./app/test-pmd/csumonly_backup.c ./app/test-pmd/csumonly.c ", "#")
         self.dut.send_expect("rm -rf ./app/test-pmd/csumonly_backup.c", "#")
         self.dut.build_install_dpdk(self.dut.target)
 
@@ -330,17 +301,12 @@ class TestDPDKGsoLib(TestCase):
         # Get the virtio-net device name
         for port in self.vm1_dut.ports_info:
             self.vm1_intf = port['intf']
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' % (self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
         self.vm1_dut.send_expect('ethtool -K %s gso off' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
         self.dut.send_expect('ip netns exec ns1 iperf -s -u', '', 10)
-        self.vm1_dut.send_expect(
-            'iperf -c 1.1.1.8 -i 1 -u -t 10 -l 9000 -b 10G -P 5 > /root/iperf_client.log &',
-            '',
-            60)
+        self.vm1_dut.send_expect('iperf -c 1.1.1.8 -i 1 -u -t 10 -l 9000 -b 10G -P 5 > /root/iperf_client.log &', '', 60)
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
@@ -361,22 +327,12 @@ class TestDPDKGsoLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' % (self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gso off' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gso off' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -s',
-            '',
-            10)
-        self.vm1_dut.send_expect(
-            'iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &',
-            '',
-            180)
+        self.dut.send_expect('ip netns exec ns1 iperf -s', '', 10)
+        self.vm1_dut.send_expect('iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &', '', 180)
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
@@ -396,23 +352,12 @@ class TestDPDKGsoLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' % (self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gso on' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gso on' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -s',
-            '',
-            10)
-
-        self.vm1_dut.send_expect(
-            'iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &',
-            '',
-            180)
+        self.dut.send_expect('ip netns exec ns1 iperf -s', '', 10)
+        self.vm1_dut.send_expect('iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &', '', 180)
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
@@ -432,22 +377,12 @@ class TestDPDKGsoLib(TestCase):
             self.vm1_intf = port['intf']
         # Start the Iperf test
         self.vm1_dut.send_expect('ifconfig -a', '#', 30)
-        self.vm1_dut.send_expect(
-            'ifconfig %s %s' %
-            (self.vm1_intf, self.virtio_ip1), '#', 10)
+        self.vm1_dut.send_expect('ifconfig %s %s' % (self.vm1_intf, self.virtio_ip1), '#', 10)
         self.vm1_dut.send_expect('ifconfig %s up' % self.vm1_intf, '#', 10)
-        self.vm1_dut.send_expect(
-            'ethtool -K %s gso off' %
-            (self.vm1_intf), '#', 10)
+        self.vm1_dut.send_expect('ethtool -K %s gso off' % (self.vm1_intf), '#', 10)
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
-        self.dut.send_expect(
-            'ip netns exec ns1 iperf -s',
-            '',
-            10)
-        self.vm1_dut.send_expect(
-            'iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &',
-            '',
-            180)
+        self.dut.send_expect('ip netns exec ns1 iperf -s', '', 10)
+        self.vm1_dut.send_expect('iperf -c 1.1.1.8 -i 1 -t 10 -P 5 > /root/iperf_client.log &', '', 180)
         time.sleep(30)
         self.dut.send_expect('^C', '#', 10)
         self.iperf_result_verify(self.vm1_dut)
@@ -468,12 +403,8 @@ class TestDPDKGsoLib(TestCase):
         # Get the virtio-net device name and unbind virtio net
         for port in self.vm1_dut.ports_info:
             self.vm1_intf = port['intf']
-        self.vm1_dut.send_expect(
-            'ifconfig %s 188.0.0.2 up' %
-            self.vm1_intf, '#', 30)
-        self.vm1_dut.send_expect(
-            'ip link add vxlan100 type vxlan id 1000 remote 188.0.0.1 local 188.0.0.2 dstport 4789 dev %s' %
-            self.vm1_intf, '#', 30)
+        self.vm1_dut.send_expect('ifconfig %s 188.0.0.2 up' % self.vm1_intf, '#', 30)
+        self.vm1_dut.send_expect('ip link add vxlan100 type vxlan id 1000 remote 188.0.0.1 local 188.0.0.2 dstport 4789 dev %s' % self.vm1_intf, '#', 30)
         self.vm1_dut.send_expect('ifconfig vxlan100 1.1.1.2/24 up', '#', 30)
         # Start Iperf test
         self.dut.send_expect('ip netns exec ns1 iperf -s ', '', 10)
@@ -500,13 +431,8 @@ class TestDPDKGsoLib(TestCase):
         # Get the virtio-net device name and unbind virtio net
         for port in self.vm1_dut.ports_info:
             self.vm1_intf = port['intf']
-        self.vm1_dut.send_expect(
-            'ifconfig %s 188.0.0.2 up' %
-            self.vm1_intf, '#', 30)
-        self.vm1_dut.send_expect(
-            'ip tunnel add gre100 mode gre remote 188.0.0.1 local 188.0.0.2',
-            '#',
-            30)
+        self.vm1_dut.send_expect('ifconfig %s 188.0.0.2 up' % self.vm1_intf, '#', 30)
+        self.vm1_dut.send_expect('ip tunnel add gre100 mode gre remote 188.0.0.1 local 188.0.0.2', '#', 30)
         self.vm1_dut.send_expect('ifconfig gre100 1.1.1.2/24 up', '#', 30)
         self.dut.send_expect('ip netns exec ns1 iperf -s', '', 10)
         self.vm1_dut.send_expect('rm /root/iperf_client.log', '#', 10)
@@ -525,11 +451,8 @@ class TestDPDKGsoLib(TestCase):
         """
         self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % (self.peer_pci), '# ', 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b %s %s" %
-            (self.pci_drv, self.peer_pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.peer_pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -b %s %s" % (self.pci_drv, self.peer_pci), '# ', 30)
         time.sleep(2)
 
     def tear_down_all(self):
@@ -541,8 +464,5 @@ class TestDPDKGsoLib(TestCase):
             port.bind_driver(self.def_driver)
         self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "#", 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -u %s" % (self.pci), '# ', 30)
-        self.dut.send_expect(
-            "./usertools/dpdk-devbind.py -b %s %s" %
-            (self.pci_drv, self.pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -b %s %s" % (self.pci_drv, self.pci), '# ', 30)
