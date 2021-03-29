@@ -118,8 +118,7 @@ class TestPVPVhostUserReconnect(TestCase):
         for i in range(self.vm_num):
             vdev_info += "--vdev 'net_vhost%d,iface=vhost-net%d,client=1,queues=1' " % (i, i)
         testcmd = self.dut.base_dir + "/%s" % self.path
-        eal_params = self.dut.create_eal_parameters(cores=self.cores, no_pci=True, prefix='vhost',
-                                                    ports=[self.pci_info])
+        eal_params = self.dut.create_eal_parameters(cores=self.cores, no_pci=True, prefix='vhost')
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.vhostapp_testcmd = testcmd + eal_params + vdev_info + para
         self.vhost_user.send_expect(self.vhostapp_testcmd, "testpmd> ", 40)
