@@ -425,14 +425,14 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
         self.prepare_test_env(path_mode=5, cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
                               server_mode=True, opt_queue=8, combined=True, used_queues=8)
-        self.check_scp_file_valid_between_vms(file_size=1)
+        self.check_scp_file_valid_between_vms(file_size=1024)
         iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
 
         self.logger.info("Re-launch without CBDMA and used 8 queue")
         self.vhost.send_expect("quit", "# ", 30)
         self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, used_queues=8)
-        self.check_scp_file_valid_between_vms(file_size=1)
+        self.check_scp_file_valid_between_vms(file_size=1024)
         iperf_data_cbdma_disable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Disable','mergeable path', 8, iperf_data_cbdma_disable_8_queue])
 
@@ -440,7 +440,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vhost.send_expect("quit", "# ", 30)
         self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, used_queues=1)
         self.config_vm_env(combined=True, used_queues=1)
-        self.check_scp_file_valid_between_vms(file_size=1)
+        self.check_scp_file_valid_between_vms(file_size=1024)
         iperf_data_cbdma_disable_1_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Disable', 'mergeable path', 1, iperf_data_cbdma_disable_1_queue])
 
