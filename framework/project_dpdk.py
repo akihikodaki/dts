@@ -619,34 +619,34 @@ class DPDKdut(Dut):
                                                                   folder, extra_options),
                                 "# ", 180)
 
-    def get_blacklist_string(self, target, nic):
+    def get_blocklist_string(self, target, nic):
         """
-        Get black list command string.
+        Get block list command string.
         """
-        get_blacklist_string = getattr(self, 'get_blacklist_string_%s' % self.get_os_type())
-        return get_blacklist_string(target, nic)
+        get_blocklist_string = getattr(self, 'get_blocklist_string_%s' % self.get_os_type())
+        return get_blocklist_string(target, nic)
 
-    def get_blacklist_string_linux(self, target, nic):
+    def get_blocklist_string_linux(self, target, nic):
         """
-        Get black list command string on Linux.
+        Get block list command string on Linux.
         """
-        blacklist = ''
+        blocklist = ''
         dutPorts = self.get_ports(nic)
         self.restore_interfaces()
         self.send_expect('insmod ./%s/kmod/igb_uio.ko' % target, '# ')
         self.bind_interfaces_linux()
         for port in range(0, len(self.ports_info)):
             if(port not in dutPorts):
-                blacklist += '-b %s ' % self.ports_info[port]['pci']
-        return blacklist
+                blocklist += '-b %s ' % self.ports_info[port]['pci']
+        return blocklist
 
-    def get_blacklist_string_freebsd(self, target, nic):
+    def get_blocklist_string_freebsd(self, target, nic):
         """
-        Get black list command string on Freebsd.
+        Get block list command string on Freebsd.
         """
-        blacklist = ''
-        # No blacklist option in FreeBSD
-        return blacklist
+        blocklist = ''
+        # No blocklist option in FreeBSD
+        return blocklist
 
     def get_def_rte_config(self, config):
         """

@@ -178,8 +178,8 @@ The steps to run the unit test manually are as follow::
   # ./app/test/test -n 1 -c ffff -w|-b pci_address
   RTE>> dump_devargs
 
-The final output of the test will be the pci address of white list
-or black list.
+The final output of the test will be the pci address of allow list
+or block list.
 
 =============================
 Unit Tests: Dump malloc stats

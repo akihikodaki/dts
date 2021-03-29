@@ -244,13 +244,13 @@ class TestDcfLifeCycle(TestCase):
             port_obj.bind_driver(self.drivername)
         self.vf_ports_info = None
 
-    def vf_whitelist(self):
+    def vf_allowlist(self):
         pf1_vf0 = self.vf_ports_info[0].get('vfs_pci')[0]
         pf1_vf1 = self.vf_ports_info[0].get('vfs_pci')[1]
         pf1_vf2 = self.vf_ports_info[0].get('vfs_pci')[2]
         pf2_vf0 = self.vf_ports_info[1].get('vfs_pci')[0] \
             if len(self.vf_ports_info) >= 2 else ''
-        whitelist = {
+        allowlist = {
             'pf1_vf0_dcf': f"-w {pf1_vf0},cap=dcf",
             'pf1_vf1_dcf': f"-w {pf1_vf1},cap=dcf",
             'pf1_vf0_pf2_vf0_dcf': f"-w {pf1_vf0},cap=dcf -w {pf2_vf0},cap=dcf",
@@ -259,7 +259,7 @@ class TestDcfLifeCycle(TestCase):
             'pf2_vf0_dcf': f"-w {pf2_vf0},cap=dcf",
             'pf1_vf0': f"-w {pf1_vf0}",
         }
-        return whitelist
+        return allowlist
 
     def vf_set_mac_addr(self, dut_port_id=0, vf_id=1):
         intf = self.dut.ports_info[dut_port_id]['port'].intf_name
@@ -306,21 +306,21 @@ class TestDcfLifeCycle(TestCase):
         self.vf_dcf_testpmd = self.dut.apps_name['test-pmd']
 
     def start_vf_dcf_testpmd(self, pmd_opiton):
-        whitelist_name, prefix = pmd_opiton
+        allowlist_name, prefix = pmd_opiton
         core_mask = utils.create_mask(self.core_pf)
-        whitelist = self.vf_whitelist().get(whitelist_name)
+        allowlist = self.vf_allowlist().get(allowlist_name)
         cmd = (
             "{bin} "
             "-v "
             "-c {core_mask} "
             "-n {mem_channel} "
-            "{whitelist} "
+            "{allowlist} "
             "--file-prefix={prefix} "
             "-- -i ").format(**{
                 'bin': ''.join(['./',self.vf_dcf_testpmd]),
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
-                'whitelist': whitelist,
+                'allowlist': allowlist,
                 'prefix': prefix, })
         self.vf_dcf_pmd_start_output = self.d_con([cmd, "testpmd> ", 120])
         self.is_vf_dcf_pmd_on = True
@@ -365,21 +365,21 @@ class TestDcfLifeCycle(TestCase):
             self.vf_pmd2_session_name)
 
     def start_vf_testpmd2(self, pmd_opiton):
-        whitelist_name, prefix = pmd_opiton
+        allowlist_name, prefix = pmd_opiton
         core_mask = utils.create_mask(self.core_vf)
-        whitelist = self.vf_whitelist().get(whitelist_name)
+        allowlist = self.vf_allowlist().get(allowlist_name)
         cmd = (
             "{bin} "
             "-v "
             "-c {core_mask} "
             "-n {mem_channel} "
-            "{whitelist} "
+            "{allowlist} "
             "--file-prefix={prefix} "
             "-- -i ").format(**{
                 'bin': ''.join(['./',self.vf_testpmd2]),
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
-                'whitelist': whitelist,
+                'allowlist': allowlist,
                 'prefix': prefix, })
         self.vf_pmd2_start_output = self.vf_pmd2_con([cmd, "testpmd> ", 120])
         self.is_vf_pmd2_on = True
@@ -1275,18 +1275,18 @@ class TestDcfLifeCycle(TestCase):
     def launch_dcf_testpmd(self):
         # launch testpmd on VF0 requesting for DCF funtionality
         core_mask = utils.create_mask(self.core_pf)
-        whitelist = self.vf_whitelist().get('pf1_vf0_dcf')
+        allowlist = self.vf_allowlist().get('pf1_vf0_dcf')
         cmd_dcf = (
             "{bin} "
             "-v "
             "-c {core_mask} "
             "-n {mem_channel} "
-            "{whitelist} "
+            "{allowlist} "
             "--log-level=ice,7 -- -i --port-topology=loop ").format(**{
             'bin': ''.join(['./', self.vf_dcf_testpmd]),
             'core_mask': core_mask,
             'mem_channel': self.dut.get_memory_channels(),
-            'whitelist': whitelist, })
+            'allowlist': allowlist, })
         return self.d_con([cmd_dcf, "testpmd> ", 120])
 
     def check_vf_driver(self):
@@ -1358,19 +1358,19 @@ class TestDcfLifeCycle(TestCase):
 
         # re-launch AVF on VF0
         core_mask = utils.create_mask(self.core_pf)
-        whitelist = self.vf_whitelist().get('pf1_vf0')
+        allowlist = self.vf_allowlist().get('pf1_vf0')
         cmd = (
             "{bin} "
             "-v "
             "-c {core_mask} "
             "-n {mem_channel} "
-            "{whitelist} "
+            "{allowlist} "
             "--file-prefix={prefix} "
             "-- -i ").format(**{
             'bin': ''.join(['./', self.vf_dcf_testpmd]),
             'core_mask': core_mask,
             'mem_channel': self.dut.get_memory_channels(),
-            'whitelist': whitelist,
+            'allowlist': allowlist,
             'prefix': 'vf0', })
         avf_output = self.d_con([cmd, "testpmd> ", 120])
         expected_strs = [

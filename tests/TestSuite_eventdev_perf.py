@@ -81,7 +81,7 @@ class TestEventdevPerf(TestCase,IxiaPacketGenerator):
 
         self.perf_results = {'header': [], 'data': []}
 
-        self.blacklist = ""
+        self.blocklist = ""
 
         # Based on h/w type, choose how many ports to use
         self.dut_ports = self.dut.get_ports()

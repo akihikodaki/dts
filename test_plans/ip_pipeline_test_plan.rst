@@ -238,7 +238,7 @@ Test Case: vf l2fwd pipeline(pf bound to dpdk driver)
     ./build/ip_pipeline -c 0x3 -n 4 -w 0000:05:02.0 -w 0000:05:06.0 \
     -w 0000:05:0a.0 -w 0000:05:0e.0 --file-prefix=vf --socket-mem 1024,1024 -- -s examples/vf.cli
 
-   The exact format of port whitelist: domain:bus:devid:func
+   The exact format of port allowlist: domain:bus:devid:func
 
 5. Send packets at tester side with scapy::
 

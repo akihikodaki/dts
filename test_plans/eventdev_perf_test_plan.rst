@@ -56,7 +56,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
        -l CORELIST        : List of cores to run on
                             The argument format is <c1>[-c2][,c3[-c4],...]
                             where c1, c2, etc are core indexes between 0 and 24
-       -w --pci-whitelist : Add a PCI device in white list.
+       -w --pci-allowlist : Add a PCI device in allow list.
                             Only use the specified PCI devices. The argument format
                             is <[domain:]bus:devid.func>. This option can be present
                             several times (once per device).

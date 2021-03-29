@@ -31,7 +31,7 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ====================
-Port Blacklist Tests
+Port Blocklist Tests
 ====================
 
 Prerequisites
@@ -47,7 +47,7 @@ to the device under test::
    modprobe vfio-pci
    usertools/dpdk-devbind.py --bind=vfio-pci device_bus_id
 
-Test Case: Testpmd with no blacklisted device
+Test Case: Testpmd with no blocklisted device
 =============================================
 
 Run testpmd in interactive mode and ensure that at least 2 ports
@@ -86,10 +86,10 @@ are bound and available::
   Initializing port 3... done:  Link Up - speed 10000 Mbps - full-duplex
 
 
-Test Case: Testpmd with one port blacklisted
+Test Case: Testpmd with one port blocklisted
 ============================================
 
-Select first available port to be blacklisted and specify it with -b option. For the example above::
+Select first available port to be blocklisted and specify it with -b option. For the example above::
 
   build/testpmd -c 3 -b 0000:01:00.0 -- -i
 
@@ -120,10 +120,10 @@ only 3 ports are available now:::
   Initializing port 2... done:  Link Up - speed 10000 Mbps - full-duplex
 
 
-Test Case: Testpmd with all but one port blacklisted
+Test Case: Testpmd with all but one port blocklisted
 ====================================================
 
-Blacklist all devices except the last one.
+Blocklist all devices except the last one.
 For the example above:::
 
   build/testpmd -c 3 -b 0000:01:00.0  -b 0000:01:00.0 -b 0000:02:00.0 -- -i

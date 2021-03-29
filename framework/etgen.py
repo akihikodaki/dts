@@ -54,7 +54,7 @@ class SoftwarePacketGenerator():
         self.tester.send_expect("insmod igb_uio.ko", "#")
 
         bind_cmd = ""
-        white_list = ""
+        allow_list = ""
         ports = []
         tx_ports = []
         for (tx_port, rx_port, pcap_file) in portList:
@@ -66,7 +66,7 @@ class SoftwarePacketGenerator():
 
         for port in ports:
             bind_cmd += " %s" % self.tester.ports_info[port]['pci']
-            white_list += " -w %s"  % self.tester.ports_info[port]['pci']
+            allow_list += " -w %s" % self.tester.ports_info[port]['pci']
 
         self.tester.send_expect("./dpdk-devbind.py --bind=igb_uio %s" % bind_cmd, "#")
 
@@ -109,9 +109,9 @@ class SoftwarePacketGenerator():
         socket_mem = "--socket-mem 1024,1024"
 
         # current support version is dpdk v18.02 + pktgen v3.5.0
-        pkt_cmd = "./pktgen -n 2 -c {CORE} --file-prefix=pktgen {WHITE} " \
+        pkt_cmd = "./pktgen -n 2 -c {CORE} --file-prefix=pktgen {ALLOW} " \
                   "{MEM} -- -P -m \"{CORE_MAP}\" {PCAP}".format(CORE=cores_mask,
-                  WHITE=white_list, MEM=socket_mem, CORE_MAP=map_cmd, PCAP=pcap_cmd)
+                  ALLOW=allow_list, MEM=socket_mem, CORE_MAP=map_cmd, PCAP=pcap_cmd)
 
         self.tester.send_expect(pkt_cmd, "Pktgen:/>", 100)
         self.tester.send_expect("disable screen", "Pktgen:/>")

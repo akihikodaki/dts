@@ -74,7 +74,7 @@ class TestPmd(TestCase):
 
         self.perf_results = {'header': [], 'data': []}
 
-        self.blacklist = ""
+        self.blocklist = ""
 
         # Update config file and rebuild to get best perf on FVL
         self.dut.send_expect("sed -i -e 's/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=n/CONFIG_RTE_LIBRTE_I40E_16BYTE_RX_DESC=y/' ./config/common_base", "#", 20)

@@ -87,7 +87,7 @@ are initialized. Also, x86 specific crc implementation
 
 References:
 [1] Fast CRC Computation for Generic Polynomials Using PCLMULQDQ Instruction
-http://www.intel.com/content/dam/www/public/us/en/documents/white-papers
+http://www.intel.com/content/dam/www/public/us/en/documents/allow-papers
 /fast-crc-computation-generic-polynomials-pclmulqdq-paper.pdf
 [2] A PAINLESS GUIDE TO CRC ERROR DETECTION ALGORITHMS
 http://www.ross.net/crc/download/crc_v3.txt

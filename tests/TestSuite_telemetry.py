@@ -218,7 +218,7 @@ class TestTelemetry(TestCase):
         # prepare telemetry tool
         self.rename_dpdk_telemetry_tool()
 
-    def get_whitelist(self, num=1, nic_types=2):
+    def get_allowlist(self, num=1, nic_types=2):
         self.used_ports = []
         if len(self.dut_ports) < 4 or len(self.nic_grp) < nic_types:
             self.used_ports = self.dut_ports
@@ -231,16 +231,16 @@ class TestTelemetry(TestCase):
             if info['pci'] not in pci_addrs:
                 continue
             self.used_ports.append(index)
-        white_list = ' '.join(['-w ' + pci_addr for pci_addr in pci_addrs])
-        return white_list
+        allow_list = ' '.join(['-w ' + pci_addr for pci_addr in pci_addrs])
+        return allow_list
 
-    def start_telemetry_server(self, whitelist=None):
+    def start_telemetry_server(self, allowlist=None):
         if self.testpmd_status != 'close':
             return None
         # use dut first port's socket
         socket = self.dut.get_numa_id(0)
         config = "Default"
-        eal_option = '--telemetry ' + whitelist if whitelist else '--telemetry'
+        eal_option = '--telemetry ' + allowlist if allowlist else '--telemetry'
         output = self.testpmd.start_testpmd(config,
                                             eal_param=eal_option,
                                             socket=socket)
@@ -494,8 +494,8 @@ class TestTelemetry(TestCase):
         self.verify(len(list(self.nic_grp.values())[0]) >= 2, msg)
         try:
             # check and verify error show on testpmd
-            whitelist = self.get_whitelist(num=2, nic_types=1)
-            self.start_telemetry_server(whitelist)
+            allowlist = self.get_allowlist(num=2, nic_types=1)
+            self.start_telemetry_server(allowlist)
             # check telemetry metric data
             self.check_metric_data()
             self.close_telemetry_server()
@@ -523,8 +523,8 @@ class TestTelemetry(TestCase):
                                pformat(self.nic_grp)])
         self.verify(len(list(self.nic_grp.keys())) >= 2, msg)
         try:
-            whitelist = self.get_whitelist()
-            self.start_telemetry_server(whitelist)
+            allowlist = self.get_allowlist()
+            self.start_telemetry_server(allowlist)
             # check telemetry metric data
             self.check_metric_data()
             self.close_telemetry_server()

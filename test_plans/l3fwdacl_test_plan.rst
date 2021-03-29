@@ -48,7 +48,7 @@ address, source port, destination port and a protocol identifier.
 The ``l3fwd-acl`` application supports two types of rules:
 
 #. Route information which is used for L3 forwarding.
-#. An access control list which defines the black list to block.
+#. An access control list which defines the block list to block.
 
 The ``l3fwd-acl`` application needs to load ACL and route rules before
 running. Route rules are mandatory while ACL rules are optional. After

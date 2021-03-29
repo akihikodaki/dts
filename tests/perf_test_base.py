@@ -153,7 +153,7 @@ class PerfTestBase(object):
         self.__vf_ports_info = None
 
         self.__is_bin_ps_on = None
-        self.__bin_ps_white_list = None
+        self.__bin_ps_allow_list = None
         self.__bin_ps_restart = True
         self.__pre_bin_ps_cmd = None
         self.__bin_ps_wait_up = 0
@@ -713,13 +713,13 @@ class PerfTestBase(object):
             "-n {mem_channel} "
             "--socket-mem={memsize} "
             "--file-prefix={prefix} "
-            "{whitelist} "
+            "{allowlist} "
             "-- -i ").format(**{
                 'bin': self.__host_testpmd,
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
                 'memsize': mem_size,
-                'whitelist': self.__get_host_testpmd_whitelist(),
+                'allowlist': self.__get_host_testpmd_allowlist(),
                 'prefix': 'pf', })
         self.__host_pmd_con([cmd, "testpmd> ", 120])
         self.__is_pmd_on = True
@@ -743,8 +743,8 @@ class PerfTestBase(object):
         self.__is_pmd_on = False
 
     def __get_topo_option(self):
-        port_num = len(re.findall('-w', self.__bin_ps_white_list)) \
-            if self.__bin_ps_white_list else len(self.__valports)
+        port_num = len(re.findall('-w', self.__bin_ps_allow_list)) \
+            if self.__bin_ps_allow_list else len(self.__valports)
         return 'loop' if port_num == 1 else 'chained'
 
     def __testpmd_start(self, mode, core_mask, config, frame_size):
@@ -758,7 +758,7 @@ class PerfTestBase(object):
             "-v "
             "-c {cores} "
             "-n {channel} "
-            "{whitelist}"
+            "{allowlist}"
             "-- -i "
             "{config} "
             "{port_topo} "
@@ -766,7 +766,7 @@ class PerfTestBase(object):
                 'bin': bin,
                 'cores': core_mask,
                 'channel': self.dut.get_memory_channels(),
-                'whitelist': self.__bin_ps_white_list if self.__bin_ps_white_list else '',
+                'allowlist': self.__bin_ps_allow_list if self.__bin_ps_allow_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': _config,
                 'port_topo': port_topo,
@@ -827,7 +827,7 @@ class PerfTestBase(object):
             "-v "
             "-c {cores} "
             "-n {channel} "
-            "{whitelist}"
+            "{allowlist}"
             "-- "
             "-p {port_mask} "
             "--config '{config}'"
@@ -835,7 +835,7 @@ class PerfTestBase(object):
                 'bin': bin,
                 'cores': core_mask,
                 'channel': self.dut.get_memory_channels(),
-                'whitelist': self.__bin_ps_white_list if self.__bin_ps_white_list else '',
+                'allowlist': self.__bin_ps_allow_list if self.__bin_ps_allow_list else '',
                 'port_mask': utils.create_mask(self.__valports),
                 'config': config, })
         suppored_nics = [
@@ -1401,8 +1401,8 @@ class PerfTestBase(object):
 
         return test_content
 
-    def __get_bin_ps_whitelist(self, port_list=None):
-        whitelist = ''
+    def __get_bin_ps_allowlist(self, port_list=None):
+        allowlist = ''
         if self.__mode is SUITE_TYPE.PF:
             if not port_list:
                 return None
@@ -1410,18 +1410,18 @@ class PerfTestBase(object):
                 pci = self.dut.ports_info[port_index].get('pci')
                 if not pci:
                     continue
-                whitelist += '-w {} '.format(pci)
+                allowlist += '-w {} '.format(pci)
         else:
-            whitelist = ''.join(['-w {} '.format(pci)
+            allowlist = ''.join(['-w {} '.format(pci)
                                  for _, info in self.__vf_ports_info.items()
                                  for pci in info.get('vfs_pci')])
 
-        return whitelist
+        return allowlist
 
-    def __get_host_testpmd_whitelist(self):
-        whitelist = ''.join(['-w {} '.format(info.get('pf_pci'))
+    def __get_host_testpmd_allowlist(self):
+        allowlist = ''.join(['-w {} '.format(info.get('pf_pci'))
                              for _, info in self.__vf_ports_info.items()])
-        return whitelist
+        return allowlist
 
     def __preset_port_list(self, test_content):
         port_list = test_content.get('port_list')
@@ -1477,11 +1477,11 @@ class PerfTestBase(object):
         if self.__mode is SUITE_TYPE.VF:
             self.__vf_init()
             self.__vf_create()
-            self.__bin_ps_white_list = self.__get_bin_ps_whitelist()
+            self.__bin_ps_allow_list = self.__get_bin_ps_allowlist()
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
                 self.__start_host_testpmd()
         else:
-            self.__bin_ps_white_list = self.__get_bin_ps_whitelist(port_list)
+            self.__bin_ps_allow_list = self.__get_bin_ps_allowlist(port_list)
         # config streams
         self.__streams = self.__preset_streams()
 

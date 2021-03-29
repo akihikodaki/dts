@@ -44,7 +44,7 @@ from pmd_output import PmdOutput
 class TestRuntimeVfQnMaxinum(TestCase):
     supported_vf_driver = ['igb_uio', 'vfio-pci']
     rss_key = '6EA6A420D5138E712433B813AE45B3C4BECB2B405F31AD6C331835372D15E2D5E49566EE0ED1962AFA1B7932F3549520FD71C75E'
-    max_white_per_testpmd = 18
+    max_allow_per_testpmd = 18
 
     def set_up_all(self):
         self.verify(self.nic in ["fortville_eagle", "fortville_spirit", "fortville_25g", "fortpark_TLV","fortpark_BASE-T"],
@@ -147,28 +147,28 @@ class TestRuntimeVfQnMaxinum(TestCase):
         """
         pf_eal_param = '-w {} --file-prefix=test1 --socket-mem 1024,1024'.format(self.pf_pci)
         self.pf_pmdout.start_testpmd(self.pf_pmdout.default_cores, eal_param=pf_eal_param)
-        vf1_white_index = 0
-        vf1_white_list = ''
+        vf1_allow_index = 0
+        vf1_allow_list = ''
         vf2_queue_number = 0
-        vf3_white_index = 0
-        vf3_white_list = ''
+        vf3_allow_index = 0
+        vf3_allow_list = ''
         if self.nic in ['fortville_eagle']:
             left_queues = 384 - 65 - 32 * 4
-            vf1_white_index = left_queues / 16
+            vf1_allow_index = left_queues / 16
             vf2_queue_number = left_queues % 16
         elif self.nic in ['fortville_25g', 'fortville_spirit', 'fortpark_TLV',"fortpark_BASE-T"]:
             left_queues = 768 - 65 - 64 * 4
-            vf1_white_index = left_queues / 16
+            vf1_allow_index = left_queues / 16
             vf2_queue_number = left_queues % 16
 
-        # The white list max length is 18
-        if vf1_white_index > self.max_white_per_testpmd:
-            vf3_white_index = vf1_white_index % self.max_white_per_testpmd
-            vf1_white_index = vf1_white_index - vf3_white_index
+        # The allow list max length is 18
+        if vf1_allow_index > self.max_allow_per_testpmd:
+            vf3_allow_index = vf1_allow_index % self.max_allow_per_testpmd
+            vf1_allow_index = vf1_allow_index - vf3_allow_index
             self.vf3_session = self.dut.new_session()
             self.vf3_pmdout = PmdOutput(self.dut, self.vf3_session)
 
-        self.logger.info('vf2_queue_number: {}, vf3_white_index: {}'.format(vf2_queue_number, vf3_white_index))
+        self.logger.info('vf2_queue_number: {}, vf3_allow_index: {}'.format(vf2_queue_number, vf3_allow_index))
 
         if vf2_queue_number > 0:
             # The driver will alloc queues as power of 2, and queue must be equal or less than 16
@@ -179,25 +179,25 @@ class TestRuntimeVfQnMaxinum(TestCase):
         for vf in self.sriov_vfs_port_0:
             vf_pcis.append(vf.pci)
         vf_pcis.sort()
-        for pci in vf_pcis[:vf1_white_index]:
-            vf1_white_list = vf1_white_list + '-w {} '.format(pci)
-        for pci in vf_pcis[vf1_white_index:vf1_white_index+vf3_white_index]:
-            vf3_white_list = vf3_white_list + '-w {} '.format(pci)
+        for pci in vf_pcis[:vf1_allow_index]:
+            vf1_allow_list = vf1_allow_list + '-w {} '.format(pci)
+        for pci in vf_pcis[vf1_allow_index:vf1_allow_index+vf3_allow_index]:
+            vf3_allow_list = vf3_allow_list + '-w {} '.format(pci)
 
-        self.logger.info('vf1 white list: {}'.format(vf1_white_list))
-        self.logger.info('vf3_white_list: {}'.format(vf3_white_list))
+        self.logger.info('vf1 allow list: {}'.format(vf1_allow_list))
+        self.logger.info('vf3_allow_list: {}'.format(vf3_allow_list))
         self.logger.info('vf2_queue_number: {}'.format(vf2_queue_number))
 
-        vf1_eal_param = '{} --file-prefix=vf1 --socket-mem 1024,1024'.format(vf1_white_list)
+        vf1_eal_param = '{} --file-prefix=vf1 --socket-mem 1024,1024'.format(vf1_allow_list)
         self.start_testpmd_multiple_times(self.vf1_pmdout, '--rxq=16 --txq=16', vf1_eal_param)
 
-        if vf3_white_index > 0:
-            vf3_eal_param = '{} --file-prefix=vf3 --socket-mem 1024,1024'.format(vf3_white_list)
+        if vf3_allow_index > 0:
+            vf3_eal_param = '{} --file-prefix=vf3 --socket-mem 1024,1024'.format(vf3_allow_list)
             self.start_testpmd_multiple_times(self.vf3_pmdout, '--rxq=16 --txq=16', vf3_eal_param)
 
         if vf2_queue_number > 0:
             vf2_eal_param = '-w {} --file-prefix=vf2 --socket-mem 1024,1024'.format(
-                vf_pcis[vf1_white_index+vf3_white_index])
+                vf_pcis[vf1_allow_index+vf3_allow_index])
             self.vf2_pmdout.start_testpmd(self.vf2_pmdout.default_cores, param='--rxq={0} --txq={0}'.format(
                 vf2_queue_number), eal_param=vf2_eal_param)
 
@@ -207,7 +207,7 @@ class TestRuntimeVfQnMaxinum(TestCase):
         if vf2_queue_number > 0:
             vf2_out = self.vf2_pmdout.execute_cmd('show port info all')
             self.verify('Max possible RX queues: 16' in vf2_out, 'vf2 max RX queues is not 16')
-        if vf3_white_index > 0:
+        if vf3_allow_index > 0:
             vf3_out = self.vf3_pmdout.execute_cmd('show port info all')
             self.verify('Max possible RX queues: 16' in vf3_out, 'vf3 max RX queues is not 16')
 
@@ -218,16 +218,16 @@ class TestRuntimeVfQnMaxinum(TestCase):
             vf2_out = self.vf2_pmdout.execute_cmd('start')
             self.verify('port 0: RX queue number: {0} Tx queue number: {0}'.format(vf2_queue_number) in vf2_out,
                         'vf2 actual RX/TX queues is not {}'.format(vf2_queue_number))
-        if vf3_white_index > 0:
+        if vf3_allow_index > 0:
             vf3_out = self.vf3_pmdout.execute_cmd('start')
             self.verify('RX queue number: 16 Tx queue number: 16' in vf3_out,
                         'vf3 actual RX/TX queues is not 16')
 
         # Set all the ports share a same rss-hash key in testpmd vf1, vf3
-        for i in range(vf1_white_index):
+        for i in range(vf1_allow_index):
             self.vf1_pmdout.execute_cmd('port config {} rss-hash-key ipv4 {}'.format(i, self.rss_key))
 
-        for i in range(vf3_white_index):
+        for i in range(vf3_allow_index):
             self.vf3_pmdout.execute_cmd('port config {} rss-hash-key ipv4 {}'.format(i, self.rss_key))
 
         # send packets to vf1/vf2, and check all the queues could receive packets
@@ -235,22 +235,22 @@ class TestRuntimeVfQnMaxinum(TestCase):
         self.vf1_pmdout.execute_cmd('set promisc all on')
         if vf2_queue_number > 0:
             self.vf2_pmdout.execute_cmd('set promisc all on')
-        if vf3_white_index > 0:
+        if vf3_allow_index > 0:
             self.vf3_pmdout.execute_cmd('set promisc all on')
 
         self.send_packet('00:11:22:33:44:55', self.src_intf, 256)
         vf1_out = self.vf1_pmdout.execute_cmd('stop')
         if vf2_queue_number > 0:
             vf2_out = self.vf2_pmdout.execute_cmd('stop')
-        if vf3_white_index > 0:
+        if vf3_allow_index > 0:
             vf3_out = self.vf3_pmdout.execute_cmd('stop')
 
         # check all queues in vf1 can receive packets
         for i in range(16):
-            for j in range(vf1_white_index):
+            for j in range(vf1_allow_index):
                 self.verify('Forward Stats for RX Port={:>2d}/Queue={:>2d}'.format(j, i) in vf1_out,
                             'Testpmd vf1 port {}, queue {} did not receive packet'.format(j, i))
-            for m in range(vf3_white_index):
+            for m in range(vf3_allow_index):
                 self.verify('Forward Stats for RX Port={:>2d}/Queue={:>2d}'.format(m, i) in vf3_out,
                             'Testpmd vf3 port {}, queue {} did not receive packet'.format(m, i))
 

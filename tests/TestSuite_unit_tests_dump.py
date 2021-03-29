@@ -208,8 +208,8 @@ class TestUnitTestsDump(TestCase):
         self.dut.send_expect(app_name + eal_params,"R.*T.*E.*>.*>", self.start_test_time)       
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
-        black_str = " %s" % pci_address
-        self.verify(black_str in out, "Dump black list failed")
+        block_str = " %s" % pci_address
+        self.verify(block_str in out, "Dump block list failed")
 
         eal_params1 = self.dut.create_eal_parameters(cores=self.cores,ports=[pci_address])
         app_name = self.dut.apps_name['test']
@@ -217,8 +217,8 @@ class TestUnitTestsDump(TestCase):
         out = self.dut.send_expect("dump_devargs", "RTE>>", self.run_cmd_time * 2)
         self.dut.send_expect("quit", "# ")
 
-        white_str = "[pci]: %s" % pci_address
-        self.verify(white_str in out, "Dump white list failed")
+        allow_str = "[pci]: %s" % pci_address
+        self.verify(allow_str in out, "Dump allow list failed")
 
     def test_dump_malloc_stats(self):
         """

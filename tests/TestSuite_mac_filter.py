@@ -31,7 +31,7 @@
 
 """
 DPDK Test suite.
-Test the support of Whitelist Features by Poll Mode Drivers
+Test the support of Allowlist Features by Poll Mode Drivers
 """
 
 import utils
@@ -46,7 +46,7 @@ class TestMacFilter(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Whitelist Prerequisites:
+        Allowlist Prerequisites:
             Two Ports
             testpmd can normally started
         """
@@ -82,7 +82,7 @@ class TestMacFilter(TestCase):
         self.max_mac_addr = utils.regexp(out, "Maximum number of MAC addresses: ([0-9]+)")
 
 
-    def whitelist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
+    def allowlist_send_packet(self, portid, destMac="00:11:22:33:44:55", count=-1):
         """
         Send 1 packet to portid.
         """
@@ -107,7 +107,7 @@ class TestMacFilter(TestCase):
         self.dut.send_expect("clear port stats all", "testpmd> ")
 
         # send one packet with the portid MAC address
-        self.whitelist_send_packet(portid, self.dest)
+        self.allowlist_send_packet(portid, self.dest)
 
         # Niantic and FVL have different packet statistics when using the
         # "show port stats" command. Packets number is stripped from log.
@@ -119,7 +119,7 @@ class TestMacFilter(TestCase):
 
         # send one packet to a different MAC address
         # new_mac = self.dut.get_mac_address(portid)
-        self.whitelist_send_packet(portid, fake_mac_addr)
+        self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         # check the packet DO NOT increase
         self.verify("received" not in out,
@@ -128,7 +128,7 @@ class TestMacFilter(TestCase):
         # add the different MAC address
         self.dut.send_expect("mac_addr add %d" % portid + " %s" % fake_mac_addr, "testpmd>")
         # send again one packet to a different MAC address
-        self.whitelist_send_packet(portid, fake_mac_addr)
+        self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         cur_rxpkt = utils.regexp(out, "received ([0-9]+) packets")
         # check the packet increase
@@ -138,7 +138,7 @@ class TestMacFilter(TestCase):
         # remove the fake MAC address
         self.dut.send_expect("mac_addr remove %d" % portid + " %s" % fake_mac_addr, "testpmd>")
         # send again one packet to a different MAC address
-        self.whitelist_send_packet(portid, fake_mac_addr)
+        self.allowlist_send_packet(portid, fake_mac_addr)
         out = self.dut.get_session_output()
         # check the packet increase
         self.verify("received" not in out,
@@ -195,14 +195,14 @@ class TestMacFilter(TestCase):
         self.dut.send_expect("clear port stats all", "testpmd> ")
 
         self.dut.send_expect(f"mcast_addr add {portid:d} {mcast_addr}", "testpmd>")
-        self.whitelist_send_packet(portid, mcast_addr, count=1)
+        self.allowlist_send_packet(portid, mcast_addr, count=1)
         time.sleep(1)
         out = self.dut.get_session_output()
         self.verify("received" in out,
                     "Packet has not been received when it should have on a broadcast address")
 
         self.dut.send_expect(f"mcast_addr remove {portid:d} {mcast_addr}", "testpmd>")
-        self.whitelist_send_packet(portid, mcast_addr, count=1)
+        self.allowlist_send_packet(portid, mcast_addr, count=1)
         time.sleep(1)
         out = self.dut.get_session_output()
         self.verify("received" not in out,

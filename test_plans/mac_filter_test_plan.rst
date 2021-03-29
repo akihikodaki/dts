@@ -31,7 +31,7 @@
    OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ==================
-Whitelisting Tests
+Allowlisting Tests
 ==================
 
 If using vfio the kernel must be >= 3.6+ and VT-d must be enabled in bios.When

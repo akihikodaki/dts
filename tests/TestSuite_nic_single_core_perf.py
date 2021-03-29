@@ -212,7 +212,7 @@ class TestNicSingleCorePerf(TestCase):
         """
         Single core Performance Benchmarking test
         """
-        # ports whitelist
+        # ports allowlist
         eal_para = ""
         for i in range(port_num):
             eal_para += " -w " + self.dut.ports_info[i]['pci']

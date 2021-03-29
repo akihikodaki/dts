@@ -31,25 +31,25 @@
 
 """
 DPDK Test suite.
-Test device blacklisting.
+Test device blocklisting.
 """
 import utils
 from test_case import TestCase
 from pmd_output import PmdOutput
 from settings import DRIVERS
 
-class TestBlackList(TestCase):
+class TestBlockList(TestCase):
     def set_up_all(self):
         """
         Run at the start of each test suite.
-        Blacklist Prerequisites.
+        Blocklist Prerequisites.
         Requirements:
             Two Ports
         """
         self.ports = self.dut.get_ports(self.nic)
         self.verify(len(self.ports) >= 2, "Insufficient ports for testing")
         [arch, machine, self.env, toolchain] = self.target.split('-')
-        self.regexp_blacklisted_port = "Probe PCI driver: net.*%s \(%s\) device: .*%s \(socket [-0-9]+\)"
+        self.regexp_blocklisted_port = "Probe PCI driver: net.*%s \(%s\) device: .*%s \(socket [-0-9]+\)"
         self.pmdout = PmdOutput(self.dut)
 
     def set_up(self):
@@ -59,59 +59,59 @@ class TestBlackList(TestCase):
         """
         pass
 
-    def check_blacklisted_ports(self, output, ports, blacklisted=False):
+    def check_blocklisted_ports(self, output, ports, blocklisted=False):
         """
-        Check if any of the ports in `ports` have been blacklisted, if so, raise
+        Check if any of the ports in `ports` have been blocklisted, if so, raise
         exception.
-        If `blacklisted` is True, then raise an exception if any of the ports
-        in `ports` have not been blacklisted.
+        If `blocklisted` is True, then raise an exception if any of the ports
+        in `ports` have not been blocklisted.
         """
         for port in ports:
             # Look for the PCI ID of each card followed by
-            # "Device is blacklisted, not initializing" but avoid to consume more
+            # "Device is blocklisted, not initializing" but avoid to consume more
             # than one device.
             port_pci = self.dut.ports_info[port]['pci']
-            regexp_blacklisted_port = self.regexp_blacklisted_port % (
+            regexp_blocklisted_port = self.regexp_blocklisted_port % (
                 DRIVERS.get(self.nic), self.dut.ports_info[port]['type'],
                 port_pci)
-            matching_ports = utils.regexp(output, regexp_blacklisted_port, True)
-            if blacklisted:
+            matching_ports = utils.regexp(output, regexp_blocklisted_port, True)
+            if blocklisted:
                 self.verify(len(matching_ports) == 0,
-                            "Blacklisted port is being initialized")
+                            "Blocklisted port is being initialized")
             else:
                 self.verify(len(matching_ports) == 1,
-                            "Not blacklisted port is being blacklisted")
+                            "Not blocklisted port is being blocklisted")
 
-    def test_bl_noblacklisted(self):
+    def test_bl_noblocklisted(self):
         """
-        Run testpmd with no blacklisted device.
+        Run testpmd with no blocklisted device.
         """
         out = self.pmdout.start_testpmd("Default")
         rexp = r"Link"
         match_status = utils.regexp(out, rexp, True)
 
-        self.check_blacklisted_ports(out, self.ports)
+        self.check_blocklisted_ports(out, self.ports)
 
-    def test_bl_oneportblacklisted(self):
+    def test_bl_oneportblocklisted(self):
         """
-        Run testpmd with one port blacklisted.
+        Run testpmd with one port blocklisted.
         """
         self.dut.kill_all()
         out = self.pmdout.start_testpmd("Default", eal_param="-b %s" % self.dut.ports_info[0]['pci'])
-        self.check_blacklisted_ports(out, self.ports[1:])
+        self.check_blocklisted_ports(out, self.ports[1:])
 
-    def test_bl_allbutoneportblacklisted(self):
+    def test_bl_allbutoneportblocklisted(self):
         """
-        Run testpmd with all but one port blacklisted.
+        Run testpmd with all but one port blocklisted.
         """
         self.dut.kill_all()
-        ports_to_blacklist = self.ports[:-1]
+        ports_to_blocklist = self.ports[:-1]
         cmdline = ""
-        for port in ports_to_blacklist:
+        for port in ports_to_blocklist:
             cmdline += " -b %s" % self.dut.ports_info[port]['pci']
         out = self.pmdout.start_testpmd("Default", eal_param=cmdline)
-        blacklisted_ports = self.check_blacklisted_ports(out,
-                                              ports_to_blacklist, True)
+        blocklisted_ports = self.check_blocklisted_ports(out,
+                                              ports_to_blocklist, True)
 
     def tear_down(self):
         """

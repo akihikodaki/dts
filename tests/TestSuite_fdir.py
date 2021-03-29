@@ -166,7 +166,7 @@ class TestFdir(TestCase, IxiaPacketGenerator):
         self.dut_tx_interface = self.tester.get_interface(self.dut_rx_port)
         self.path=self.dut.apps_name['test-pmd']
 
-        self.blacklist = ""
+        self.blocklist = ""
 
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE[
             'ip'] + HEADER_SIZE['udp']

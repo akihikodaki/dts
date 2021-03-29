@@ -469,11 +469,11 @@ class TestKni(TestCase):
 
         return len(cores)
 
-    def make_white_list(self, target, nic):
+    def make_allow_list(self, target, nic):
         """
-        Create white list with ports.
+        Create allow list with ports.
         """
-        white_list = []
+        allow_list = []
         dut_ports = self.dut.get_ports(self.nic)
         self.dut.restore_interfaces()
         allPort = self.dut.ports_info
@@ -482,8 +482,8 @@ class TestKni(TestCase):
                 "insmod ./" + self.target + "/kmod/igb_uio.ko", "#")
         for port in range(0, len(allPort)):
             if port in dut_ports:
-                white_list.append(allPort[port]['pci'])
-        return white_list
+                allow_list.append(allPort[port]['pci'])
+        return allow_list
 
     #
     #
@@ -943,9 +943,9 @@ class TestKni(TestCase):
             'wrpcap("%s", [Ether(src=srcmac, dst="ff:ff:ff:ff:ff:ff")/IP(len=46)/UDP()/("X"*18)])' % pcap)
         self.tester.scapy_execute()
 
-        white_list = self.make_white_list(self.target, self.nic)
+        allow_list = self.make_allow_list(self.target, self.nic)
         port_virtual_interaces = []
-        for port in white_list:
+        for port in allow_list:
             information = self.dut.send_expect(
                 "./usertools/dpdk-devbind.py --status | grep '%s'" % port, "# ")
             data = information.split(' ')
@@ -987,7 +987,7 @@ class TestKni(TestCase):
         self.dut.send_expect("ifconfig br1 down", "# ")
         self.dut.send_expect("brctl delbr \"br1\"", "# ", 30)
 
-        for port in white_list:
+        for port in allow_list:
             self.dut.send_expect(
                 "./usertools/dpdk-devbind.py -b igb_uio %s" % (port), "# ")
         self.result_table_print()
@@ -1117,10 +1117,10 @@ class TestKni(TestCase):
 
         dut_ports = self.dut.get_ports(self.nic)
 
-        white_list = self.make_white_list(self.target, self.nic)
+        allow_list = self.make_allow_list(self.target, self.nic)
         port_virtual_interaces = []
 
-        for port in white_list:
+        for port in allow_list:
 
             # Enables the interfaces
             information = self.dut.send_expect(
@@ -1206,7 +1206,7 @@ class TestKni(TestCase):
 
         self.result_table_print()
 
-        for port in white_list:
+        for port in allow_list:
             self.dut.send_expect(
                 "./usertools/dpdk-devbind.py -b %s %s" % (self.drivername, port), "# ")
 

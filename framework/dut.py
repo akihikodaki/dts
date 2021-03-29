@@ -155,7 +155,7 @@ class Dut(Crb):
                             w_pci_list.append('%s %s' % (allow_option, port))
             w_pci_str = ' '.join(w_pci_list)
 
-            # deal with black ports
+            # deal with block ports
             b_pci_list = []
             if 'b_ports' in config and len(config['b_ports']) != 0:
                 for port in config['b_ports']:

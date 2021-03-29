@@ -56,7 +56,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -80,7 +80,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -105,7 +105,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -130,7 +130,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -154,7 +154,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -179,7 +179,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -204,7 +204,7 @@ Description: Execute performance test with Atomic_atq type of stage in multi-flo
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -228,7 +228,7 @@ Description: Execute performance test with Parallel_atq type of stage in multi-f
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).
@@ -253,7 +253,7 @@ Description: Execute performance test with Ordered_atq type of stage in multi-fl
     Parameters::
 
         -c, COREMASK         : Hexadecimal bitmask of cores to run on
-        -w, --pci-whitelist  : Add a PCI device in white list.
+        -w, --pci-allowlist  : Add a PCI device in allow list.
                                Only use the specified PCI devices. The argument format
                                is <[domain:]bus:devid.func>. This option can be present
                                several times (once per device).

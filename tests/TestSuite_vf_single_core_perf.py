@@ -222,7 +222,7 @@ class TestVfSingleCorePerf(TestCase):
         """
         Single core Performance Benchmarking test
         """
-        # ports whitelist
+        # ports allowlist
         eal_para = ""
         for i in range(port_num):
             eal_para += " -w " + self.sriov_vfs_port[i][0].pci
