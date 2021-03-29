@@ -93,7 +93,7 @@ class TestVM2VMVirtioPMD(TestCase):
         testcmd = self.app_testpmd_path + " "
         vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " % self.base_dir
         vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " % self.base_dir
-        eal_params = self.dut.create_eal_parameters(cores=vhost_mask, no_pci=True, prefix='vhost', ports=[self.pci_info])
+        eal_params = self.dut.create_eal_parameters(cores=vhost_mask, no_pci=True, prefix='vhost')
         para = " -- -i --nb-cores=1 --txd=1024 --rxd=1024"
         self.command_line = testcmd + eal_params + vdev1 + vdev2 + para
         self.vhost_user.send_expect(self.command_line, "testpmd> ", 30)
