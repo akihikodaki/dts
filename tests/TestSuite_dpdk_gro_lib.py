@@ -164,7 +164,7 @@ class TestDPDKGROLib(TestCase):
             self.vhost_user = self.dut.new_session(suite="user")
             self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
         else:
-            eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=%s' % (self.base_dir, queue)])
+            eal_param = self.dut.create_eal_parameters(cores=self.vhost_list, vdevs=['net_vhost0,iface=%s/vhost-net,queues=%s' % (self.base_dir, queue)], ports=[self.pci])
             self.testcmd_start = self.path + eal_param + " -- -i  --enable-hw-vlan-strip --tx-offloads=0x00 --txd=1024 --rxd=1024"
             self.vhost_user = self.dut.new_session(suite="user")
             self.vhost_user.send_expect(self.testcmd_start, "testpmd> ", 120)
@@ -485,3 +485,5 @@ class TestDPDKGROLib(TestCase):
         """
         self.unprepare_dpdk()
         self.dut.send_expect("ip netns del ns1", "# ", 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -u %s" % (self.pci), '# ', 30)
+        self.dut.send_expect("./usertools/dpdk-devbind.py -b %s %s" % (self.pci_drv, self.pci), '# ', 30)
