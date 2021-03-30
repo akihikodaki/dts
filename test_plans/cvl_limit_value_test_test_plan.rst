@@ -66,8 +66,9 @@ Prerequisites
    DPDK: http://dpdk.org/git/dpdk
    scapy: http://www.secdev.org/projects/scapy/
 
-3. Copy specific ice package to /lib/firmware/intel/ice/ddp/ice.pkg
-   Then reboot server, and compile DPDK
+3. Support ice pkg::
+
+    os default/comms/wireless
 
 4. Generate 2 VFs on each PF and set mac address for each VF::
 

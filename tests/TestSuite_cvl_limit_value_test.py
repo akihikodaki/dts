@@ -189,15 +189,6 @@ class TestCvlLimitValue(TestCase):
         self.dut.destroy_sriov_vfs_by_port(self.dut_ports[0])
         self.dut.destroy_sriov_vfs_by_port(self.dut_ports[1])
 
-    def re_load_ice_driver(self):
-        """
-        remove and reload the ice driver
-        """
-        ice_driver_file_location = self.suite_config["ice_driver_file_location"]
-        self.dut.send_expect("rmmod ice", "# ", 15)
-        self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ", 60)
-        time.sleep(5)
-
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set fwd rxonly")
         self.pmd_output.execute_cmd("set verbose 1")
@@ -813,12 +804,6 @@ class TestCvlLimitValue(TestCase):
     def test_max_rule_number(self):
         #bind pf to kernel
         self.bind_nics_driver(self.dut_ports, driver="ice")
-        #move comms package to package folder
-        self.suite_config = rfc.get_suite_config(self)
-        comms_package_location = self.suite_config["comms_package_file_location"]
-        package_location = self.suite_config["package_file_location"]
-        self.dut.send_expect("cp %s %s" % (comms_package_location, package_location), "# ")
-        self.re_load_ice_driver()
         #set vf driver
         self.vf_driver = 'vfio-pci'
         self.dut.send_expect('modprobe vfio-pci', '#')
