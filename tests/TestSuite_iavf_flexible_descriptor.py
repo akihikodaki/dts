@@ -35,11 +35,12 @@ import time
 import traceback
 
 
-from test_case import TestCase
+from test_case import TestCase, skip_unsupported_pkg, check_supported_nic
 from flexible_common import FlexibleRxdBase
 
 
 class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
+    supported_nic = ['columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2', 'foxville']
 
     def preset_compilation(self):
         """
@@ -100,17 +101,11 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         except Exception as e:
             self.logger.info(traceback.format_exc())
 
+    @check_supported_nic(supported_nic)
     def set_up_all(self):
         """
         run at the start of each test suite.
         """
-        support_nics = [
-            "columbiaville_25g",
-            "columbiaville_100g",
-            "foxville",
-        ]
-        self.verify(self.nic in support_nics,
-            "flexible rxd only supports CVL NIC.")
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Insufficient ports for testing")
         self.preset_compilation()
@@ -139,18 +134,21 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         time.sleep(2)
         self.dut.kill_all()
 
+    @skip_unsupported_pkg('os default')
     def test_check_single_VLAN_fields_in_RXD_8021Q(self):
         """
         Check single VLAN fields in RXD (802.1Q)
         """
         self.check_single_VLAN_fields_in_RXD_8021Q()
 
+    @skip_unsupported_pkg('os default')
     def test_check_single_VLAN_fields_in_RXD_8021ad(self):
         """
         Check single VLAN fields in RXD (802.1ad)
         """
         self.check_single_VLAN_fields_in_RXD_8021ad()
 
+    @skip_unsupported_pkg('os default')
     def test_check_double_VLAN_fields_in_RXD_8021Q_1_VLAN_tag(self):
         """
         Check double VLAN fields in RXD (802.1Q) only 1 VLAN tag
@@ -163,42 +161,49 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         """
         self.check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag()
 
+    @skip_unsupported_pkg('os default')
     def test_check_double_VLAN_fields_in_RXD_8021ad(self):
         """
         Check double VLAN fields in RXD (802.1ad)
         """
         self.check_double_VLAN_fields_in_RXD_8021ad()
 
+    @skip_unsupported_pkg('os default')
     def test_check_IPv4_fields_in_RXD(self):
         """
         Check IPv4 fields in RXD
         """
         self.check_IPv4_fields_in_RXD()
 
+    @skip_unsupported_pkg('os default')
     def test_check_IPv6_fields_in_RXD(self):
         """
         Check IPv6 fields in RXD
         """
         self.check_IPv6_fields_in_RXD()
 
+    @skip_unsupported_pkg('os default')
     def test_check_IPv6_flow_field_in_RXD(self):
         """
         Check IPv6 flow field in RXD
         """
         self.check_IPv6_flow_field_in_RXD()
 
+    @skip_unsupported_pkg('os default')
     def test_check_TCP_fields_in_IPv4_in_RXD(self):
         """
         Check TCP fields in IPv4 in RXD
         """
         self.check_TCP_fields_in_IPv4_in_RXD()
 
+    @skip_unsupported_pkg('os default')
     def test_check_TCP_fields_in_IPv6_in_RXD(self):
         """
         Check TCP fields in IPv6 in RXD
         """
         self.check_TCP_fields_in_IPv6_in_RXD()
 
+    @skip_unsupported_pkg('os default')
     def test_check_IPv4_IPv6_TCP_fields_in_RXD_on_specific_queues(self):
         """
         Check IPv4, IPv6, TCP fields in RXD on specific queues
