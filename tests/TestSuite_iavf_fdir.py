@@ -2309,6 +2309,8 @@ class TestIAVFFdir(TestCase):
     def config_testpmd(self):
         self.pmd_output.execute_cmd("set fwd rxonly")
         self.pmd_output.execute_cmd("set verbose 1")
+        self.pmd_output.execute_cmd("vlan set filter on 0")
+        self.pmd_output.execute_cmd("rx_vlan add 1 0")
         # specify a fixed rss-hash-key for cvl ether
         self.pmd_output.execute_cmd(
             "port config 0 rss-hash-key ipv4 1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd1234abcd")
