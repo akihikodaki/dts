@@ -32,7 +32,7 @@
 import os
 import time
 from test_case import TestCase
-from perf_test_base import PerfTestBase, IP_TYPE, MATCH_MODE, SUITE_TYPE
+from perf_test_base import PerfTestBase, IP_TYPE, MATCH_MODE, SUITE_TYPE, VF_L3FWD_NIC_SUPPORT
 
 
 class TestVfL3fwdKernelPf(TestCase, PerfTestBase):
@@ -44,14 +44,8 @@ class TestVfL3fwdKernelPf(TestCase, PerfTestBase):
         """
         Run at the start of each test suite.
         """
-        self.verify(self.nic in [
-            "niantic",
-            "fortville_spirit",
-            "fortville_25g",
-            "fortville_eagle",
-            "columbiaville_100g",
-            "columbiaville_25g",
-            "columbiaville_25gx2"], "NIC Unsupported: " + str(self.nic))
+        self.verify(self.nic in VF_L3FWD_NIC_SUPPORT,
+                    "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         valports = [
             _ for _ in self.dut_ports if self.tester.get_local_port(_) != -1]
@@ -86,6 +80,34 @@ class TestVfL3fwdKernelPf(TestCase, PerfTestBase):
         self.dut.kill_all()
         self.perf_reset_cur_case()
 
+    def test_perf_vf_rfc2544_ipv4_lpm(self):
+        self.perf_set_cur_case('test_perf_vf_rfc2544_ipv4_lpm')
+        self.qt_rfc2544(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.LPM)
+
+    def test_perf_vf_rfc2544_ipv4_em(self):
+        self.perf_set_cur_case('test_perf_vf_rfc2544_ipv4_em')
+        self.qt_rfc2544(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.EM)
+
     def test_perf_vf_throughput_ipv4_lpm(self):
         self.perf_set_cur_case('test_perf_vf_throughput_ipv4_lpm')
         self.ms_throughput(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.LPM)
+
+    def test_perf_vf_throughput_ipv4_em(self):
+        self.perf_set_cur_case('test_perf_vf_throughput_ipv4_em')
+        self.ms_throughput(l3_proto=IP_TYPE.V4, mode=MATCH_MODE.EM)
+
+    def test_perf_vf_rfc2544_ipv6_lpm(self):
+        self.perf_set_cur_case('test_perf_vf_rfc2544_ipv6_lpm')
+        self.qt_rfc2544(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.LPM)
+
+    def test_perf_vf_rfc2544_ipv6_em(self):
+        self.perf_set_cur_case('test_perf_vf_rfc2544_ipv6_em')
+        self.qt_rfc2544(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.EM)
+
+    def test_perf_vf_throughput_ipv6_lpm(self):
+        self.perf_set_cur_case('test_perf_vf_throughput_ipv6_lpm')
+        self.ms_throughput(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.LPM)
+
+    def test_perf_vf_throughput_ipv6_em(self):
+        self.perf_set_cur_case('test_perf_vf_throughput_ipv6_em')
+        self.ms_throughput(l3_proto=IP_TYPE.V6, mode=MATCH_MODE.EM)
