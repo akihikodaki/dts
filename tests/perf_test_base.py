@@ -51,6 +51,17 @@ from exception import VerifyFailure
 import utils
 
 
+VF_L3FWD_NIC_SUPPORT = frozenset((
+    "niantic",
+    "fortville_spirit",
+    "fortville_25g",
+    "fortville_eagle",
+    "columbiaville_100g",
+    "columbiaville_25g",
+    "columbiaville_25gx2",
+))
+
+
 @unique
 class BIN_TYPE(Enum):
     L3FWD = 'l3fwd'
@@ -625,14 +636,11 @@ class PerfTestBase(object):
                 "define RTE_TEST_TX_DESC_DEFAULT 2048/' "
                 "./examples/l3fwd/l3fwd.h"))
         if self.__mode is SUITE_TYPE.VF:
-            self.__l3fwd_lpm = self.__l3fwd_em = \
-                self.__l3fwd_init(MATCH_MODE.EM, rename=False)
             # init testpmd
             if self.__pf_driver is not NIC_DRV.PCI_STUB:
                 self.__init_host_testpmd()
-        else:
-            self.__l3fwd_em = self.__l3fwd_init(MATCH_MODE.EM)
-            self.__l3fwd_lpm = self.__l3fwd_init(MATCH_MODE.LPM)
+        self.__l3fwd_em = self.__l3fwd_init(MATCH_MODE.EM)
+        self.__l3fwd_lpm = self.__l3fwd_init(MATCH_MODE.LPM)
 
     def __preset_compilation(self):
         # Update compile config file and rebuild to get best perf on different nics
@@ -673,7 +681,7 @@ class PerfTestBase(object):
                 'core_mask': core_mask,
                 'mem_channel': self.dut.get_memory_channels(),
                 'memsize': mem_size,
-                'whitelist': self.__get_testpmd_whitelist(),
+                'whitelist': self.__get_host_testpmd_whitelist(),
                 'prefix': 'pf', })
         self.__host_pmd_con([cmd, "testpmd> ", 120])
         self.__is_pmd_on = True
@@ -1238,8 +1246,19 @@ class PerfTestBase(object):
             vf_driver = test_content.get('vf_driver')
         return pf_driver, vf_driver
 
+    def __set_suite_series_name(self):
+        pat = "vf_l3fwd.*_kernelpf"
+        if re.match(pat, self.suite_name):
+            self.__suite = SUITE_NAME.VF_KERNELPF
+            return
+        pat = "testpmd*_perf"
+        if re.match(pat, self.suite_name):
+            self.__suite = SUITE_NAME.TESTPMD_PERF
+            return
+        self.__suite = None
+
     def __get_vf_test_content_from_cfg(self, test_content):
-        self.__suite = get_enum_name(self.suite_name, SUITE_NAME)
+        self.__set_suite_series_name()
         # pf driver
         pf_driver, vf_driver = self.__get_suite_vf_pf_driver(test_content)
         if pf_driver and isinstance(pf_driver, str):
@@ -1356,7 +1375,7 @@ class PerfTestBase(object):
 
         return whitelist
 
-    def __get_testpmd_whitelist(self):
+    def __get_host_testpmd_whitelist(self):
         whitelist = ''.join(['-w {} '.format(info.get('pf_pci'))
                              for _, info in self.__vf_ports_info.items()])
         return whitelist
@@ -1404,8 +1423,7 @@ class PerfTestBase(object):
                     self.dut.close_session(self.__pmd_session)
                     self.__pmd_session = None
             self.__vf_destroy()
-        if self.__mode is SUITE_TYPE.PF:
-            self.__restore_compilation()
+        self.__restore_compilation()
 
     def perf_set_cur_case(self, name):
         self.__cur_case = name
