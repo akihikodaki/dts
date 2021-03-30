@@ -129,7 +129,7 @@ class Testddp_mpls(TestCase):
             "Default","--port-topology=chained --txq=%s --rxq=%s" 
             % (PF_MAX_QUEUE, PF_MAX_QUEUE))
         self.vm0_testpmd.start_testpmd(
-            VM_CORES_MASK,"--port-topology=chained --txq=%s --rxq=%s" 
+            VM_CORES_MASK,"--port-topology=chained --txq=%s --rxq=%s --disable-rss"
             % (VF_MAX_QUEUE, VF_MAX_QUEUE))
         
 
