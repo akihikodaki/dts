@@ -57,11 +57,9 @@ Prerequisites
    dpdk: http://dpdk.org/git/dpdk
    scapy: http://www.secdev.org/projects/scapy/
 
-3. Copy specific ice package to /lib/firmware/updates/intel/ice/ddp/ice.pkg,
-   then load driver::
+3. Support ice pkg::
 
-    rmmod ice
-    insmod ice.ko
+    os default/comms/wireless
 
 4. Compile DPDK::
 
