@@ -38,6 +38,7 @@ import time
 import traceback
 import texttable
 import json
+import numpy as np
 from enum import Enum, unique
 from pprint import pformat
 from itertools import product
@@ -107,6 +108,12 @@ class STREAM_TYPE(Enum):
     TCP = 'TCP'
     UDP = 'UDP'
     RAW = 'RAW'
+
+
+@unique
+class STAT_ALGORITHM(Enum):
+    ONE = "one"
+    MEAN = "mean"
 
 
 HEADER_SIZE = {
@@ -449,6 +456,37 @@ class PerfTestBase(object):
         time.sleep(self.__traffic_stop_wait_time)
         return result
 
+    def __throughput_set_traffic_opt(self, duration):
+        option = {
+            'method': 'throughput',
+            'duration': duration,
+            'interval': self.__throughput_stat_sample_interval,
+        }
+        return option
+
+    def __throughput_calculate_result(self, result):
+        if self.__stat_algorithm is STAT_ALGORITHM.ONE:
+            return result
+
+        if not result or len(result) <= 0:
+            msg = "failed to get throughput stat"
+            self.logger.error(msg)
+            return (0.0, 0.0)
+
+        result = sorted(result)
+        if self.__stat_algorithm is STAT_ALGORITHM.MEAN:
+            result = result[1:-1] if len(result) >= 5 else result
+            bps, pps = [], []
+            for v1, v2 in result:
+                bps.append(v1), pps.append(v2)
+            ret_stat = round(np.array(bps).mean(), 1), round(np.array(pps).mean(), 1)
+        else:
+            msg = f"current not support algorithm <{self.__stat_algorithm}>"
+            self.logger.warning(msg)
+            ret_stat = (0.0, 0.0)
+
+        return ret_stat
+
     def __throughput(self, l3_proto, mode, frame_size):
         """
         measure __throughput according to Layer-3 Protocol and Lookup Mode
@@ -464,11 +502,11 @@ class PerfTestBase(object):
         option = {
             'stream': streams,
             'rate': 100,
-            'traffic_opt': {
-                'method': 'throughput',
-                'duration': duration, }}
+            'traffic_opt': self.__throughput_set_traffic_opt(duration),
+        }
         # run traffic
         result = self.__send_packets_by_pktgen(option)
+        result = self.__throughput_calculate_result(result)
         # statistics result
         _, pps = result
         self.verify(pps > 0, "No traffic detected")
@@ -871,7 +909,8 @@ class PerfTestBase(object):
     def __json_throughput(self, value):
         return {"unit": "Mpps", "name": "Throughput",
                 "value": round(value[0], 3),
-                "delta": round(value[1], 3),
+                "delta": value[1],
+                "expected": value[2],
                 }
 
     def __json_rate_percent(self, value):
@@ -987,12 +1026,16 @@ class PerfTestBase(object):
                         expected, pps, round(gap, 2))
                     self.logger.error(msg)
             else:
-                expected = pps
+                expected = None
                 msg = ('{0} {1} expected throughput value is not set, '
                        'ignore check').format(config, frame_size)
                 self.logger.warning(msg)
                 status = 'pass'
-            js_results.append([status, [pps, pps - expected], percentage, config, frame_size])
+            js_results.append([
+                status,
+                [pps, (str(round((pps - expected)/expected, 3))) if expected is not None else "N/A",
+                 round(expected, 3) if expected is not None else "N/A"],
+                percentage, config, frame_size])
         # save data with json format
         self.__save_throughput_result(self.__cur_case, js_results)
         # display result table
@@ -1394,11 +1437,40 @@ class PerfTestBase(object):
             self.__valports = port_list
         return port_list
 
+    @property
+    def __stat_algorithm(self):
+        algorithm_type = get_enum_name(
+            self.__test_content.get('stat_algorithm') or 'one', STAT_ALGORITHM)
+        return algorithm_type
+
+    @property
+    def __throughput_stat_sample_interval(self):
+        if self.__stat_algorithm is STAT_ALGORITHM.ONE:
+            return None
+        else:
+            return self.__test_content.get('throughput_stat_sample_interval') or 5
+
+    def __parse_accepted_tolerance(self):
+        tolerance = self.__test_content.get('accepted_tolerance')
+        def get_num(value):
+            pat = "(\d+\.?\d?)"
+            result = re.findall(pat, value)
+            return result[0] if result else '2.0'
+
+        if isinstance(tolerance, int):
+            _tolerance = float(tolerance)
+        elif isinstance(tolerance, str):
+            _tolerance = float(tolerance if tolerance.isdigit() else get_num(tolerance))
+        else:
+            _tolerance = None
+        self.__test_content['accepted_tolerance'] = float(_tolerance or 2.0)
+
     def perf_preset_test_environment(self, test_content):
         # if user set port list in cfg file, use
         port_list = self.__preset_port_list(test_content)
         # get test content
         self.__test_content = self.__get_test_content_from_cfg(test_content)
+        self.__parse_accepted_tolerance()
         # prepare target source code application
         self.__preset_compilation()
         # set up testing environment
