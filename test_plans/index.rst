@@ -45,8 +45,10 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_advanced_rss_test_plan
     cvl_advanced_rss_gtpu_test_plan
     cvl_advanced_rss_pppoe_test_plan
+    cvl_advanced_rss_gtpogre_test_plan
     cvl_advanced_iavf_rss_test_plan
     cvl_advanced_iavf_rss_gtpu_test_plan
+    cvl_advanced_iavf_rss_gtpogre_test_plan
     cvl_advanced_iavf_rss_vlan_esp_ah_l2tp_pfcp_test_plan
     cvl_advanced_rss_vlan_esp_ah_l2tp_pfcp_test_plan
     cvl_dcf_acl_filter_test_plan
