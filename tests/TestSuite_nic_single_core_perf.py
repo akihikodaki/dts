@@ -368,10 +368,11 @@ class TestNicSingleCorePerf(TestCase):
                     row_dict0['parameters'].append(row_dict4)
                     json_obj[case_name].append(row_dict0)
                     status_result.append(row_dict0['status'])
-        with open(os.path.join(rst.path2Result,
-                               '{0:s}_single_core_perf.json'.format(
-                                   self.nic)), 'w') as fp:
-            json.dump(json_obj, fp)
+
+        json_file = os.path.join(rst.path2Result, '{0:s}_single_core_perf.json'.format(self.nic))
+        with open(json_file, 'w') as fp:
+            json.dump(json_obj, fp, indent=4, separators=(',', ': '), sort_keys=True)
+
         self.verify("FAIL" not in status_result, "Excessive gap between test results and expectations")
 
     def set_fields(self):
