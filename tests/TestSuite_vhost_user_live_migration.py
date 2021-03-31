@@ -142,16 +142,13 @@ class TestVhostUserLiveMigration(TestCase):
         self.verify(len(self.core_list0) >= core_number and len(self.core_list1) >= core_number,
                     'There have not enough cores to start testpmd on duts')
 
-    def launch_testpmd_as_vhost_on_both_dut(self, zero_copy=False):
+    def launch_testpmd_as_vhost_on_both_dut(self):
         """
         start testpmd as vhost user on host_dut and backup_dut
         """
         self.get_core_list()
-        zero_copy_str = ''
-        if zero_copy is True:
-            zero_copy_str = ',dequeue-zero-copy=1'
         testcmd = self.testpmd_path + " "
-        vdev = ['eth_vhost0,iface=%s/vhost-net,queues=%d%s' % (self.base_dir, self.queue_number, zero_copy_str)]
+        vdev = ['eth_vhost0,iface=%s/vhost-net,queues=%d' % (self.base_dir, self.queue_number)]
         para = " -- -i --nb-cores=%d --rxq=%d --txq=%d" % (self.queue_number, self.queue_number, self.queue_number)
         eal_params_first = self.dut.create_eal_parameters(cores=self.core_list0, prefix='vhost', ports=[self.host_pci_info], vdevs=vdev)
         eal_params_secondary = self.dut.create_eal_parameters(cores=self.core_list1, prefix='vhost', ports=[self.backup_pci_info], vdevs=vdev)
