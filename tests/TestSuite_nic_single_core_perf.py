@@ -58,13 +58,15 @@ class TestNicSingleCorePerf(TestCase):
                                  "Not required NIC ")
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
 
-        self.rx_desc = self.get_suite_cfg()['rx_desc_16byte']
-        if 'y' == self.rx_desc:
+        self.rx_desc_size = self.get_suite_cfg().get('rx_desc_size', 32)
+        err_msg = "Rx desc only has 16B and 32B size, %d is not valid" % self.rx_desc_size
+        self.verify(self.rx_desc_size == 16 or self.rx_desc_size == 32, err_msg)
+        if self.rx_desc_size == 16:
             # Update DPDK config file and rebuild to get best perf on fortville
             if self.nic in ["fortville_25g", "fortville_spirit"]:
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'y'})
             elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'y'})
             self.dut.build_install_dpdk(self.target)
 
         # Based on h/w type, choose how many ports to use
@@ -417,11 +419,10 @@ class TestNicSingleCorePerf(TestCase):
         Run after each test suite.
         """
         # resume setting
-        if 'y' == self.rx_desc:
-            self.rx_desc = 'n'
+        if self.rx_desc_size == 16:
             if self.nic in ["fortville_25g", "fortville_spirit"]:
-                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': self.rx_desc})
+                self.dut.set_build_options({'RTE_LIBRTE_I40E_16BYTE_RX_DESC': 'n'})
             elif self.nic in ["columbiaville_100g", "columbiaville_25g", "columbiaville_25gx2"]:
-                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': self.rx_desc})
+                self.dut.set_build_options({'RTE_LIBRTE_ICE_16BYTE_RX_DESC': 'n'})
             self.dut.build_install_dpdk(self.target)
         self.dut.kill_all()
