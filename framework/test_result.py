@@ -169,12 +169,20 @@ class Result(object):
         except:
             return ''
 
-    def __set_driver(self, package):
-        if package not in self.internals[self.__dut + 1]:
-            self.internals[self.__dut + 1].append(package)
+    def __set_driver(self, driver):
+        if driver not in self.internals[self.__dut + 1]:
+            driver_current = self.__get_driver()
+            if driver_current:
+                if driver not in driver_current:
+                    self.internals[self.__dut + 1][3] = driver_current + '/' + driver
+            else:
+                self.internals[self.__dut + 1].append(driver)
 
     def __get_driver(self):
-        return self.internals[self.__dut + 1][3]
+        try:
+            return self.internals[self.__dut + 1][3]
+        except:
+            return ''
 
     def __current_targets(self):
         return self.internals[self.__dut + 1]
