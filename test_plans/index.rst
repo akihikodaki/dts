@@ -229,7 +229,6 @@ The following are the test plans for the DPDK DTS automated test system.
     vm2vm_virtio_pmd_test_plan
     dpdk_gro_lib_test_plan
     dpdk_gso_lib_test_plan
-    vhost_dequeue_zero_copy_test_plan
     vswitch_sample_cbdma_test_plan
     vxlan_gpe_support_in_i40e_test_plan
     pvp_diff_qemu_version_test_plan
