@@ -41,6 +41,7 @@ from exception import VerifyFailure
 from settings import HEADER_SIZE, UPDATE_EXPECTED, load_global_setting
 from pmd_output import PmdOutput
 from copy import deepcopy
+from numpy import mean
 import rst
 from pktgen import PacketGeneratorHelper
 
@@ -96,6 +97,7 @@ class TestNicSingleCorePerf(TestCase):
 
         # traffic duraion in second
         self.test_duration = self.get_suite_cfg()['test_duration']
+        self.throughput_stat_sample_interval = self.get_suite_cfg().get('throughput_stat_sample_interval', 5)
 
         # load the expected throughput for required nic
         if self.nic in ["ConnectX4_LX_MT4117"]:
@@ -265,21 +267,43 @@ class TestNicSingleCorePerf(TestCase):
                     # run packet generator
                     streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, vm_config, self.tester.pktgen)
                     # set traffic option
-                    traffic_opt = {'duration': self.test_duration}
-                    # _, pps = self.tester.traffic_generator_throughput(tgenInput, rate_percent=100, delay=30)
-                    _, packets_received = self.tester.pktgen.measure_throughput(stream_ids=streams, options=traffic_opt)
-                    self.verify(packets_received > 0, "No traffic detected")
-                    throughput = packets_received / 1000000.0
-                    self.throughput[fwd_config][frame_size][nb_desc] = throughput
+                    traffic_opt = {
+                        'method': 'throughput',
+                        'rate': 100,
+                        'duration': self.test_duration,
+                        'interval': self.throughput_stat_sample_interval,
+                        }
+                    stats = self.tester.pktgen.measure(stream_ids=streams, traffic_opt=traffic_opt)
+
+                    #####################################################
+                    # Remove max and min if count >=5, then get average
+                    #####################################################
+                    if isinstance(stats, list):
+                        total_pps_rxs = []
+                        c = len(stats)
+                        for i in range(c):
+                            stats_pps = stats[i][1]
+                            if isinstance(stats_pps, tuple):
+                                total_pps_rxs.append(stats_pps[1])
+                            else:
+                                total_pps_rxs.append(stats_pps)
+                        if c >= 5:
+                            total_pps_rxs.remove(max(total_pps_rxs))
+                            total_pps_rxs.remove(min(total_pps_rxs))
+                        total_pps_rx = mean(total_pps_rxs)
+                    else:
+                        total_pps_rx = stats
+
+                    self.verify(total_pps_rx > 0, "No traffic detected, please check your configuration")
+                    total_mpps_rx = total_pps_rx / 1000000.0
+                    self.throughput[fwd_config][frame_size][nb_desc] = total_mpps_rx
 
                     self.dut.send_expect("stop", "testpmd> ")
                     self.dut.send_expect("quit", "# ", 30)
 
-                    self.verify(throughput,
-                        "No traffic detected, please check your configuration")
                     self.logger.info("Trouthput of " +
                         "framesize: {}, rxd/txd: {} is :{} Mpps".format(
-                            frame_size, nb_desc, throughput))
+                            frame_size, nb_desc, total_mpps_rx))
 
         return self.throughput
 
