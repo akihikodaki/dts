@@ -120,8 +120,8 @@ class TestNicSingleCorePerf(TestCase):
         self.gap = self.get_suite_cfg()['accepted_tolerance']
 
         # header to print test result table
-        self.table_header = ['Fwd_core', 'Frame Size', 'TXD/RXD', 'Throughput', 'Rate',
-                             'Expected Throughput', 'Throughput Difference']
+        self.table_header = ['Fwd_core', 'Frame Size', 'TXD/RXD', 'Real-Mpps', 'Rate',
+                             'Expected-Mpps', 'Real - Expected', 'Status']
         self.test_result = {}
 
     def flows(self):
@@ -327,15 +327,17 @@ class TestNicSingleCorePerf(TestCase):
                     ret_data[header[0]] = fwd_config
                     ret_data[header[1]] = frame_size
                     ret_data[header[2]] = nb_desc
-                    ret_data[header[3]] = "{:.3f} Mpps".format(
-                        self.throughput[fwd_config][frame_size][nb_desc])
-                    ret_data[header[4]] = "{:.3f}%".format(
-                        self.throughput[fwd_config][frame_size][nb_desc] * 100 / wirespeed)
-                    ret_data[header[5]] = "{:.3f} Mpps".format(
-                        self.expected_throughput[fwd_config][frame_size][nb_desc])
-                    ret_data[header[6]] = "{:.3f} Mpps".format(
-                        self.throughput[fwd_config][frame_size][nb_desc] -
-                            self.expected_throughput[fwd_config][frame_size][nb_desc])
+                    _real = self.throughput[fwd_config][frame_size][nb_desc]
+                    _exp = self.expected_throughput[fwd_config][frame_size][nb_desc]
+                    ret_data[header[3]] = "{:.3f}".format(_real)
+                    ret_data[header[4]] = "{:.3f}%".format(_real * 100 / wirespeed)
+                    ret_data[header[5]] = "{:.3f}".format(_exp)
+                    delta = _real - _exp
+                    ret_data[header[6]] = "{:.3f}".format(delta)
+                    if delta > -self.gap:
+                        ret_data[header[7]] = 'PASS'
+                    else:
+                        ret_data[header[7]] = 'FAIL'
 
                     ret_datas[frame_size][nb_desc] = deepcopy(ret_data)
                 self.test_result[fwd_config] = deepcopy(ret_datas)
@@ -374,8 +376,8 @@ class TestNicSingleCorePerf(TestCase):
                     row_dict0 = dict()
                     row_dict0['performance'] = list()
                     row_dict0['parameters'] = list()
-                    result_throughput = float(row_in['Throughput'].split()[0])
-                    expected_throughput = float(row_in['Expected Throughput'].split()[0])
+                    result_throughput = float(row_in['Real-Mpps'])
+                    expected_throughput = float(row_in['Expected-Mpps'])
                     # delta value and accepted tolerance in percentage
                     delta = result_throughput - expected_throughput
                     if delta > -self.gap:
