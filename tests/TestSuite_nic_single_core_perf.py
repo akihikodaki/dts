@@ -382,7 +382,7 @@ class TestNicSingleCorePerf(TestCase):
                     row_dict0['parameters'] = list()
                     row_dict0['status'] = row_in['Status']
                     row_dict1 = dict(name="Throughput", value=row_in['Real-Mpps'], unit="Mpps",
-                                     delta=row_in['Fluc Ratio'])
+                                     delta=row_in['Fluc Ratio'], expected=row_in['Expected-Mpps'])
                     row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
                     row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
                     row_dict4 = dict(name="Fwd_core", value=row_in["Fwd_core"])
