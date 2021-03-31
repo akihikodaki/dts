@@ -116,12 +116,12 @@ class TestNicSingleCorePerf(TestCase):
         # {'$framesize':{"$nb_desc": 'throughput'}
         self.throughput = {}
 
-        # Accepted tolerance in Mpps
-        self.gap = self.get_suite_cfg()['accepted_tolerance']
+        # Accepted tolerance is ratio
+        self.gap = self.get_suite_cfg().get('accepted_tolerance', 0.1)
 
         # header to print test result table
         self.table_header = ['Fwd_core', 'Frame Size', 'TXD/RXD', 'Real-Mpps', 'Rate',
-                             'Expected-Mpps', 'Real - Expected', 'Status']
+                             'Expected-Mpps', 'Fluc Ratio', 'Status']
         self.test_result = {}
 
     def flows(self):
@@ -332,12 +332,16 @@ class TestNicSingleCorePerf(TestCase):
                     ret_data[header[3]] = "{:.3f}".format(_real)
                     ret_data[header[4]] = "{:.3f}%".format(_real * 100 / wirespeed)
                     ret_data[header[5]] = "{:.3f}".format(_exp)
-                    delta = _real - _exp
-                    ret_data[header[6]] = "{:.3f}".format(delta)
-                    if delta > -self.gap:
-                        ret_data[header[7]] = 'PASS'
+                    delta = (_real - _exp)/_exp
+                    if _exp != 0:
+                        ret_data[header[6]] = "{:.3f}".format(delta)
+                        if delta > -self.gap:
+                            ret_data[header[7]] = 'PASS'
+                        else:
+                            ret_data[header[7]] = 'FAIL'
                     else:
-                        ret_data[header[7]] = 'FAIL'
+                        ret_data[header[6]] = "N/A"
+                        ret_data[header[7]] = 'PASS'
 
                     ret_datas[frame_size][nb_desc] = deepcopy(ret_data)
                 self.test_result[fwd_config] = deepcopy(ret_datas)
@@ -376,15 +380,9 @@ class TestNicSingleCorePerf(TestCase):
                     row_dict0 = dict()
                     row_dict0['performance'] = list()
                     row_dict0['parameters'] = list()
-                    result_throughput = float(row_in['Real-Mpps'])
-                    expected_throughput = float(row_in['Expected-Mpps'])
-                    # delta value and accepted tolerance in percentage
-                    delta = result_throughput - expected_throughput
-                    if delta > -self.gap:
-                        row_dict0['status'] = 'PASS'
-                    else:
-                        row_dict0['status'] = 'FAIL'
-                    row_dict1 = dict(name="Throughput", value=result_throughput, unit="Mpps", delta=delta)
+                    row_dict0['status'] = row_in['Status']
+                    row_dict1 = dict(name="Throughput", value=row_in['Real-Mpps'], unit="Mpps",
+                                     delta=row_in['Fluc Ratio'])
                     row_dict2 = dict(name="Txd/Rxd", value=row_in["TXD/RXD"], unit="descriptor")
                     row_dict3 = dict(name="frame_size", value=row_in["Frame Size"], unit="bytes")
                     row_dict4 = dict(name="Fwd_core", value=row_in["Fwd_core"])
