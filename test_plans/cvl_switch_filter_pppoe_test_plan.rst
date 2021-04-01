@@ -69,7 +69,7 @@ Pattern and input set
   |                     | MAC_VLAN_PPPOE_IPV4_PAY       | [Dest MAC], [VLAN], [seid],               | [Dest MAC], [VLAN], [seid],               |
   |                     | _session_id_proto_id          | [pppoe_proto_id]                          | [pppoe_proto_id]                          |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
-  |                	    | MAC_VLAN_PPPOE_IPV6_PAY       | [Dest MAC], [VLAN], [seid],               | [Dest MAC], [VLAN], [seid],               |
+  |                	| MAC_VLAN_PPPOE_IPV6_PAY       | [Dest MAC], [VLAN], [seid],               | [Dest MAC], [VLAN], [seid],               |
   |                     | _session_id_proto_id          | [pppoe_proto_id]                          | [pppoe_proto_id]                          |
   |                     +-------------------------------+-------------------------------------------+-------------------------------------------+
   |                     | MAC_PPPOE_IPV4_PAY_session_id | [Dest MAC], [seid], [pppoe_proto_id]      | [Dest MAC], [seid], [pppoe_proto_id]      |

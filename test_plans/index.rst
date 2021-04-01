@@ -54,6 +54,7 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_dcf_acl_filter_test_plan
     cvl_dcf_date_path_test_plan
     cvl_dcf_switch_filter_test_plan
+    cvl_dcf_switch_filter_pppoe_test_plan
     cvl_ecpri_test_plan
     cvl_fdir_test_plan
     cvl_iavf_rss_configure_test_plan
@@ -61,6 +62,7 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_qinq_test_plan
     cvl_rss_configure_test_plan
     cvl_switch_filter_test_plan
+    cvl_switch_filter_pppoe_test_plan
     cvl_vf_support_multicast_address_test_plan
     cloud_filter_with_l4_port_test_plan
     dcf_lifecycle_test_plan
