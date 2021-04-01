@@ -1,4 +1,4 @@
-.. Copyright (c) <2020>, Intel Corporation
+.. Copyright (c) <2021>, Intel Corporation
    All rights reserved.
 
    Redistribution and use in source and binary forms, with or without
@@ -126,10 +126,10 @@ TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
     >set fwd mac
     >start
 
-Test Case2: Dynamic queue number test for DMA-accelerated vhost Tx operations
-=============================================================================
+Test Case2: Split ring dynamic queue number test for DMA-accelerated vhost Tx operations
+========================================================================================
 
-1. Bind four cbdma port and one nic port to igb_uio, then launch vhost by below command::
+1. Bind four cbdma channels and one nic port to igb_uio, then launch vhost by below command::
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
     --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@80:04.5;txq1@80:04.6],dmathr=1024' \
@@ -222,4 +222,136 @@ Test Case3: CBDMA threshold value check
     dma parameters: vid1,qid0,dma*,threshold:4096
     dma parameters: vid1,qid2,dma*,threshold:4096
 
+Test Case 4: PVP packed ring all path with DMA-accelerated vhost enqueue
+========================================================================
 
+Packet pipeline: 
+================
+TG --> NIC --> Vhost --> Virtio--> Vhost --> NIC --> TG
+
+1. Bind one cbdma port and one nic port to igb_uio, then launch vhost by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 2-3 --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+2. Launch virtio-user with inorder mergeable path::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=1,in_order=1,queues=1,packed_vq=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+3. Send imix packets [64,1518] from packet generator, check the throughput can get expected data, restart vhost port, then check throughput again::
+
+    testpmd>show port stats all
+    testpmd>stop
+    testpmd>start
+    testpmd>show port stats all
+
+4. Relaunch virtio-user with mergeable path, then repeat step 3::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=1,in_order=0,queues=1,packed_vq=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+5. Relaunch virtio-user with inorder non-mergeable path, then repeat step 3::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=1,queues=1,packed_vq=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+6. Relaunch virtio-user with non-mergeable path, then repeat step 3::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=0,queues=1,packed_vq=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+7. Relaunch virtio-user with vectorized path, then repeat step 3::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=1,queues=1,packed_vq=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+8. Relaunch virtio-user with vector_rx path, then repeat step 3::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
+    --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=1,queues=1,packed_vq=1 \
+    -- -i --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024
+    >set fwd mac
+    >start
+
+Test Case5: Packed ring dynamic queue number test for DMA-accelerated vhost Tx operations
+=========================================================================================
+
+1. Bind four cbdma channels and one nic port to igb_uio, then launch vhost by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
+    --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@80:04.5;txq1@80:04.6],dmathr=1024' \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+    >set fwd mac
+    >start
+
+2. Launch virtio-user by below command::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 30-31 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=1,in_order=1,queues=2,server=1,packed_vq=1 \
+    -- -i --tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+    >set fwd mac
+    >start
+
+3. Send imix packets [64,1518] from packet generator with random ip, check perforamnce can get target.
+
+4. Stop vhost port, check vhost RX and TX direction both exist packets in two queues from vhost log.
+
+5. On virtio-user side, dynamic change rx queue numbers from 2 queue to 1 queues, then check one queue RX/TX can work normally::
+
+    testpmd>port stop all
+    testpmd>port config all rxq 1
+    testpmd>port config all txq 1
+    testpmd>port start all
+    testpmd>start
+    testpmd>show port stats all
+
+6. Relaunch virtio-user with vectorized path and 2 queues::
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 30-31 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=/tmp/s0,mrg_rxbuf=0,in_order=1,vectorized=1,queues=2,server=1,packed_vq=1 \
+    -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+    >set fwd mac
+    >start
+
+7. Send imix packets [64,1518] from packet generator with random ip, check perforamnce can get target.
+
+8. Stop vhost port, check vhost RX and TX direction both exist packets in queue0 from vhost log.
+
+9. On vhost side, dynamic change rx queue numbers from 2 queue to 1 queues, then check one queue RX/TX can work normally::
+
+    testpmd>port stop all
+    testpmd>port config all rxq 1
+    testpmd>port config all txq 1
+    testpmd>port start all
+    testpmd>start
+    testpmd>show port stats all
+
+10. Relaunch vhost with another two cbdma channels and 2 queueus, check perforamnce can get target::
+
+     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 28-29  \
+     --file-prefix=vhost --vdev 'net_vhost0,iface=/tmp/s0,queues=2,client=1,dmas=[txq0@00:04.5;txq1@00:04.6],dmathr=512' \
+     -- -i --nb-cores=1 --txd=1024 --rxd=1024 --txq=2 --rxq=2
+     >set fwd mac
+     >start
+
+11. Stop vhost port, check vhost RX and TX direction both exist packets in two queues from vhost log.
