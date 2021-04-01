@@ -148,3 +148,24 @@ Test Case5: Wake up split ring vhost-user cores with l3fwd-power sample when mul
     testpmd>start
 
 4. Stop and restart testpmd again, check vhost-user cores will sleep and wakeup again.
+
+Test Case6: Wake up packed ring vhost-user cores with l3fwd-power sample when multi queues and cbdma are enabled
+================================================================================================================
+
+1. Launch virtio-user with server mode::
+
+    ./testpmd -l 1-5 -n 4 --no-pci --file-prefix=virtio \
+    --vdev=net_virtio_user0,mac=00:11:22:33:44:10,path=/tmp/sock0,server=1,queues=4,packed_vq=1 -- -i --rxq=4 --txq=4 --rss-ip
+
+2. Bind 4 cbdma ports to igb_uio driver, then launch l3fwd-power with a virtual vhost device::
+
+    ./l3fwd-power -l 9-12 -n 4 --log-level=9 \
+    --vdev 'eth_vhost0,iface=/tmp/sock0,queues=4,client=1,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3]' -- -p 0x1 --parse-ptype 1 \
+    --config "(0,0,9),(0,1,10),(0,2,11),(0,3,12)"
+
+3. Send packet by testpmd, check vhost-user multi-cores will keep wakeup status::
+
+    testpmd>set fwd txonly
+    testpmd>start
+
+4. Stop and restart testpmd again, check vhost-user cores will sleep and wakeup again.
