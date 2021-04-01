@@ -1061,6 +1061,9 @@ class Dut(Crb):
             bus_id = addr_array[1]
             devfun_id = addr_array[2]
             port = GetNicObj(self, domain_id, bus_id, devfun_id)
+            port.pci_id= pci_id
+            port.name = settings.get_nic_name(pci_id)
+            port.default_driver = settings.get_nic_driver(pci_id)
             intf = port.get_interface_name()
 
             macaddr = port.get_mac_addr()
