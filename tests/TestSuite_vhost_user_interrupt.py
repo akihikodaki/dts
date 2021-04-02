@@ -225,7 +225,7 @@ class TestVhostUserInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample(self):
         """
-        Check the virtio-user interrupt can work when use vhost-net as backend
+        Test Case1: Wake up split ring vhost-user core with l3fwd-power sample
         """
         self.queues = 1
         self.get_core_list()
@@ -236,7 +236,7 @@ class TestVhostUserInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
         """
-        Check the virtio-user interrupt can work with multi queue
+        Test Case2: Wake up split ring vhost-user cores with l3fwd-power sample when multi queues are enabled
         """
         self.queues = 4
         self.get_core_list()
@@ -247,7 +247,7 @@ class TestVhostUserInterrupt(TestCase):
 
     def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample(self):
         """
-        Check the virtio-user interrupt can work when use vhost-net as backend
+        Test Case3: Wake up packed ring vhost-user core with l3fwd-power sample
         """
         self.queues = 1
         self.get_core_list()
@@ -258,7 +258,7 @@ class TestVhostUserInterrupt(TestCase):
 
     def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled(self):
         """
-        Check the virtio-user interrupt can work with multi queue
+        Test Case4:  Wake up packed ring vhost-user cores with l3fwd-power sample when multi queues are enabled
         """
         self.queues = 4
         self.get_core_list()
@@ -269,11 +269,22 @@ class TestVhostUserInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled_and_cbdma_enabled(self):
         """
-        Check the virtio-user interrupt can work with multi queue and cbdma_enabled
+        Test Case5: Wake up split ring vhost-user cores with l3fwd-power sample when multi queues and cbdma are enabled
         """
         self.queues = 4
         self.get_core_list()
         self.lanuch_virtio_user(cbdma=True)
+        self.lanuch_l3fwd_power(cbdma=True)
+        self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
+        self.send_and_verify()
+
+    def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled_and_cbdma_enabled(self):
+        """
+        Test Case6: Wake up packed ring vhost-user cores with l3fwd-power sample when multi queues and cbdma are enabled
+        """
+        self.queues = 4
+        self.get_core_list()
+        self.lanuch_virtio_user(packed=True, cbdma=True)
         self.lanuch_l3fwd_power(cbdma=True)
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
