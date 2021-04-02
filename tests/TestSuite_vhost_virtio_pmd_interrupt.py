@@ -180,7 +180,10 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         vm_params['opt_path'] = '%s/vhost-net' % self.base_dir
         vm_params['opt_mac'] = "00:11:22:33:44:55"
         vm_params['opt_queue'] = self.queues
-        opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d" % (2*self.queues+2) if not packed else "mrg_rxbuf=on,csum=on,mq=on,vectors=%d,packed=on" % (2*self.queues+2)
+        if not packed:
+            opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d" % (2 * self.queues + 2)
+        else:
+            opt_param = "mrg_rxbuf=on,csum=on,mq=on,vectors=%d,packed=on" % (2 * self.queues + 2)
         if mode == 0:
             vm_params['opt_settings'] = "disable-modern=true," + opt_param
         elif mode == 1:
@@ -309,7 +312,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
     def test_perf_virtio_pmd_interrupt_with_4queues(self):
         """
-        wake up virtio_user 0.95 core with l3fwd-power sample
+        Test Case 1: Basic virtio interrupt test with 4 queues
         """
         self.queues = 4
         self.nb_cores = 4
@@ -321,7 +324,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
     def test_perf_virtio_pmd_interrupt_with_16queues(self):
         """
-        wake up virtio_user 0.95 core with l3fwd-power sample
+        Test Case 2: Basic virtio interrupt test with 16 queues
         """
         self.queues = 16
         self.nb_cores = 16
@@ -333,7 +336,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
     def test_perf_virito10_pmd_interrupt_with_4queues(self):
         """
-        wake up virtio_user 1.0 core with l3fwd-power sample
+        Test Case 3: Basic virtio-1.0 interrupt test with 4 queues
         """
         self.queues = 4
         self.nb_cores = 4
@@ -345,7 +348,7 @@ class TestVhostVirtioPmdInterrupt(TestCase):
 
     def test_perf_packed_ring_virtio_interrupt_with_16queues(self):
         """
-        wake up virtio_user 0.95 core with l3fwd-power sample
+        Test Case 4: Packed ring virtio interrupt test with 16 queues
         """
         self.queues = 16
         self.nb_cores = 16
@@ -383,12 +386,27 @@ class TestVhostVirtioPmdInterrupt(TestCase):
         self.launch_l3fwd_power_in_vm()
         self.send_and_verify()
 
+    def test_perf_packed_ring_virtio_interrupt_with_16_queues_and_cbdma_enabled(self):
+        """
+        Test Case 7: Packed ring virtio interrupt test with 16 queues and cbdma enabled
+        """
+        used_cbdma_num = 16
+        self.queues = 16
+        self.nb_cores = 16
+        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
+        self.start_testpmd_on_vhost(self.dmas_info)
+        self.start_vms(mode=0, packed=True)
+        self.prepare_vm_env()
+        self.launch_l3fwd_power_in_vm()
+        self.send_and_verify()
+
     def tear_down(self):
         """
         Run after each test case.
         """
         self.stop_all_apps()
         self.dut.kill_all()
+        self.dut.send_expect("killall -s INT %s" % self.testpmd_name, "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.bind_cbdma_device_to_kernel()
 
