@@ -246,3 +246,51 @@ flow: TG --> NIC --> Vhost --> Virtio
 4. Stop sending packets with packet generator, check virtio-user related core change to sleep status.
 
 5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
+
+Test Case9: LSC event between vhost-user and virtio-user with packed ring and cbdma enabled
+===========================================================================================
+
+flow: Vhost <--> Virtio
+
+1. Bind one cbdma port to igb_uio driver, then start vhost-user side::
+
+    ./testpmd -c 0x3000 -n 4 -w 00:04.0 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net,queues=1,client=0,dmas=[txq0@00:04.0]' -- -i
+    testpmd>set fwd mac
+    testpmd>start
+
+2. Start virtio-user side::
+
+    ./testpmd -c 0xc000 -n 4 --no-pci --file-prefix=virtio --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,packed_vq=1 -- -i --tx-offloads=0x00
+    testpmd>set fwd mac
+    testpmd>start
+
+3. Check the virtio-user side link status::
+
+    testpmd> show port info 0
+    #it should show "up"
+
+4. Quit the vhost-user side with testpmd, then check the virtio-user side link status::
+
+    testpmd> show port info 0
+    #it should show "down"
+
+Test Case10: Packed ring virtio-user interrupt test with vhost-user as backend and cbdma enabled
+================================================================================================
+
+flow: TG --> NIC --> Vhost --> Virtio
+
+1. Bind one cbdma port and one NIC port to igb_uio, launch testpmd with a virtual vhost device as backend::
+
+    ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=1,dmas=[txq0@00:04.0]' -- -i  --rxq=1 --txq=1
+    testpmd>start
+
+2. Start l3fwd-power with a virtio-user device::
+
+    ./l3fwd-power -c 0xc000 -n 4 --log-level='user1,7' --no-pci --file-prefix=l3fwd-pwd \
+    --vdev=virtio_user0,path=./vhost-net,packed_vq=1 -- -p 1 -P --config="(0,0,14)" --parse-ptype
+
+3. Send packets with packet generator, check the virtio-user related core can be wakeup status.
+
+4. Stop sending packets with packet generator, check virtio-user related core change to sleep status.
+
+5. Restart sending packets with packet generator, check virtio-user related core change to wakeup status again.
