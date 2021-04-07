@@ -269,7 +269,7 @@ class TestPowerBidirectionChannel(TestCase):
             '-c {core_mask} '
             '-n {mem_channel} '
             '--no-pci ').format(**{
-                'core_mask': self.get_cores_mask("1S/3C/1T"),
+                'core_mask': self.get_cores_mask("1S/12C/1T"),
                 'mem_channel': self.dut.get_memory_channels(), })
         prompt = 'vmpower>'
         cmd = [' '.join([self.vm_power_mgr, option]), prompt, 30]
@@ -320,7 +320,7 @@ class TestPowerBidirectionChannel(TestCase):
             '-- '
             '--vm-name={vm_name} '
             '--vcpu-list={vpus} ').format(**{
-                'core_mask': '0xff',
+                'core_mask': '0xfe',
                 'memory_channel': self.vm_dut.get_memory_channels(),
                 'memory_size': 1024,
                 'file_prefix': 'vmpower1',
