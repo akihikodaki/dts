@@ -257,7 +257,7 @@ class TestVirtioIdxInterrupt(TestCase):
 
     def test_perf_split_ring_virito_pci_driver_reload(self):
         """
-        virtio-pci driver reload test
+        Test Case 2: Split ring virtio-pci driver reload test
         """
         self.queues = 1
         self.nb_cores = 1
@@ -270,7 +270,7 @@ class TestVirtioIdxInterrupt(TestCase):
 
     def test_perf_wake_up_split_ring_virtio_net_cores_with_event_idx_interrupt_mode_16queue(self):
         """
-        wake up virtio-net cores with event idx interrupt mode 16 queues test
+        Test Case 3: Wake up split ring virtio-net cores with event idx interrupt mode 16 queues test
         """
         self.queues = 16
         self.nb_cores = 16
@@ -283,7 +283,7 @@ class TestVirtioIdxInterrupt(TestCase):
 
     def test_perf_packed_ring_virito_pci_driver_reload(self):
         """
-        virtio-pci driver reload test
+        Test Case 5: Packed ring virtio-pci driver reload test
         """
         self.queues = 1
         self.nb_cores = 1
@@ -296,7 +296,7 @@ class TestVirtioIdxInterrupt(TestCase):
 
     def test_perf_wake_up_packed_ring_virtio_net_cores_with_event_idx_interrupt_mode_16queue(self):
         """
-        wake up virtio-net cores with event idx interrupt mode 16 queues test
+        Test Case 6: Wake up packed ring virtio-net cores with event idx interrupt mode 16 queues test
         """
         self.queues = 16
         self.nb_cores = 16
@@ -331,7 +331,37 @@ class TestVirtioIdxInterrupt(TestCase):
         used_cbdma_num = 16
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
         self.start_vhost_testpmd(dmas=self.dmas_info, mode='client')
-        self.start_vms(packed=False, mode='server')
+        self.start_vms(mode='server')
+        self.config_virito_net_in_vm()
+        self.start_to_send_packets(delay=15)
+        self.check_each_queue_has_packets_info_on_vhost()
+        self.stop_all_apps()
+
+    def test_perf_packed_ring_virito_pci_driver_reload_with_cbdma_enabled(self):
+        """
+        Test Case 9: Packed ring virtio-pci driver reload test with CBDMA enabled
+        """
+        self.queues = 1
+        self.nb_cores = 1
+        used_cbdma_num = 1
+        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
+        self.start_vhost_testpmd(dmas=self.dmas_info)
+        self.start_vms(packed=True)
+        self.config_virito_net_in_vm()
+        res = self.check_packets_after_reload_virtio_device(reload_times=30)
+        self.verify(res is True, "Should increase the wait times of ixia")
+        self.stop_all_apps()
+
+    def test_perf_wake_up_packed_ring_virtio_net_cores_with_event_idx_interrupt_mode_and_cbdma_enabled_16queue(self):
+        """
+        Test Case 10: Wake up packed ring virtio-net cores with event idx interrupt mode and cbdma enabled 16 queues test
+        """
+        self.queues = 16
+        self.nb_cores = 16
+        used_cbdma_num = 16
+        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
+        self.start_vhost_testpmd(dmas=self.dmas_info, mode='client')
+        self.start_vms(packed=True, mode='server')
         self.config_virito_net_in_vm()
         self.start_to_send_packets(delay=15)
         self.check_each_queue_has_packets_info_on_vhost()
