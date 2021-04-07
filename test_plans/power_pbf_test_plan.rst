@@ -59,7 +59,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then Luanch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --file-prefix=power --no-pci
+    ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
 
     Check two different base_max frequency will be shown in log, for example on Intel 6230N Processor:
     The log will be like as following
@@ -87,7 +87,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then aunch VM power manager sample::
 
-    ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --file-prefix=power --no-pci
+    ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
 
 Step 3. Prepare different command in JSON format::
 
@@ -129,7 +129,7 @@ Step 1. Create powermonitor fold for::
 
 Step 2. Compile DPDK with Power Lib debug info on, then launch VM power manager sample::
 
- ./examples/vm_power_manager/build/vm_power_mgr -l 1-4 -n 4 --file-prefix=power --no-pci
+ ./examples/vm_power_manager/build/vm_power_mgr -l 1-46 -n 4 --file-prefix=power --no-pci
 
 Step 3. Prepare Several command in JSON format then send it to the fifo channel for the high priority core::
 

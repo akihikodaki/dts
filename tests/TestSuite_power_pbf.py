@@ -166,7 +166,7 @@ class TestPowerPbf(TestCase):
         if self.is_mgr_on:
             return
         bin_file = os.sep.join([self.target_dir, ''])
-        config = "1S/4C/1T"
+        config = "2S/23C/1T"
         option = '-v -c {0} -n {1} --file-prefix=vmpower --no-pci'.format(
             self.get_cores_mask(config),
             self.memory_channels)
