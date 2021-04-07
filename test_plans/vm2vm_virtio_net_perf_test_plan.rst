@@ -676,7 +676,7 @@ Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test 
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
-2. Launch VM1 and VM2 using qemu3.0::
+2. Launch VM1 and VM2::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
@@ -769,7 +769,7 @@ Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable t
     --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=512'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
     testpmd>start
 
-2. Launch VM1 and VM2 using qemu3.0::
+2. Launch VM1 and VM2::
 
     taskset -c 32 qemu-system-x86_64 -name vm1 -enable-kvm -cpu host -smp 8 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
