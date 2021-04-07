@@ -212,7 +212,7 @@ Test Case 4: Packed ring virtio interrupt test with 16 queues
 Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
 =========================================================================
 
-1. Bind 16 cbdma ports and one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind 16 cbdma channels and one NIC port to igb_uio, then launch testpmd by below command::
 
     ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
 
@@ -247,7 +247,7 @@ Test Case 5: Basic virtio interrupt test with 16 queues and cbdma enabled
 Test Case 6: Basic virtio-1.0 interrupt test with 4 queues and cbdma enabled
 ============================================================================
 
-1. Bind four cbdma port and one NIC port to igb_uio, then launch testpmd by below command::
+1. Bind four cbdma channels and one NIC port to igb_uio, then launch testpmd by below command::
 
     ./testpmd -c 0x7c -n 4 --vdev 'net_vhost0,iface=vhost-net,queues=4,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3]' -- -i --nb-cores=4 --rxq=4 --txq=4 --rss-ip
 
@@ -272,6 +272,41 @@ Test Case 6: Basic virtio-1.0 interrupt test with 4 queues and cbdma enabled
 4. In VM, launch l3fwd-power sample::
 
     ./l3fwd-power -c 0xf -n 4 --log-level='user1,7' -- -p 1 -P --config="(0,0,0),(0,1,1),(0,2,2),(0,3,3)" --no-numa --parse-ptype
+
+5. Send random dest ip address packets to host nic with packet generator, packets will distribute to all queues, check l3fwd-power log that all related cores are waked up.
+
+6. Change dest IP address to fixed ip, packets will distribute to 1 queue, check l3fwd-power log that only one related core is waked up.
+
+7. Stop the date transmitter, check all related core will be back to sleep status.
+
+Test Case 7: Packed ring virtio interrupt test with 16 queues and cbdma enabled
+===============================================================================
+
+1. Bind 16 cbdma channels ports and one NIC port to igb_uio, then launch testpmd by below command::
+
+    ./testpmd -c 0x1ffff -n 4 --vdev 'eth_vhost0,iface=vhost-net,queues=16,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7;txq8@00:04.0;txq9@00:04.1;txq10@00:04.2;txq11@00:04.3;txq12@00:04.4;txq13@00:04.5;txq14@00:04.6;txq15@00:04.7],dmathr=1024' -- -i --nb-cores=16 --rxq=16 --txq=16 --rss-ip
+
+2. Launch VM1, set queues=16, vectors>=2xqueues+2, mq=on::
+
+    taskset -c 34-35 \
+    qemu-system-x86_64 -name us-vhost-vm2 \
+     -cpu host -enable-kvm -m 2048 -object memory-backend-file,id=mem,size=2048M,mem-path=/mnt/huge,share=on -numa node,memdev=mem -mem-prealloc \
+     -smp cores=16,sockets=1 -drive file=/home/osimg/ubuntu1910.img \
+     -monitor unix:/tmp/vm2_monitor.sock,server,nowait -device e1000,netdev=nttsip1 \
+     -netdev user,id=nttsip1,hostfwd=tcp:127.0.0.1:6003-:22 \
+     -chardev socket,id=char1,path=./vhost-net -netdev type=vhost-user,id=mynet2,chardev=char1,vhostforce,queues=16 \
+     -device virtio-net-pci,mac=52:54:00:00:00:02,netdev=mynet2,mrg_rxbuf=on,csum=on,mq=on,vectors=40,packed=on  \
+     -vnc :11 -daemonize
+
+3. Bind virtio port to vfio-pci::
+
+    modprobe vfio enable_unsafe_noiommu_mode=1
+    modprobe vfio-pci
+    ./usertools/dpdk-devbind.py --bind=vfio-pci xx:xx.x
+
+4. In VM, launch l3fwd-power sample::
+
+    ./l3fwd-power -c 0x0ffff -n 4 --log-level='user1,7' -- -p 1 -P  --config '(0,0,0),(0,1,1),(0,2,2),(0,3,3)(0,4,4),(0,5,5),(0,6,6),(0,7,7)(0,8,8),(0,9,9),(0,10,10),(0,11,11)(0,12,12),(0,13,13),(0,14,14),(0,15,15)' --no-numa  --parse-ptype
 
 5. Send random dest ip address packets to host nic with packet generator, packets will distribute to all queues, check l3fwd-power log that all related cores are waked up.
 
