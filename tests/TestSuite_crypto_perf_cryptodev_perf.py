@@ -90,7 +90,7 @@ class PerfTestsCryptodev(TestCase):
         if not self._perf_result:
             return
 
-        with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "w") as fv:
+        with open(self.logger.log_path + "/" + "perf_cryptodev_result.json", "a") as fv:
             json.dump(self._perf_result, fv, indent=4)
 
     def set_up(self):
@@ -352,7 +352,7 @@ class PerfTestsCryptodev(TestCase):
             dev = "crypto_aesni_mb"
         elif self.get_case_cfg()["devtype"] == "crypto_qat":
             w = cc.get_qat_devices(self, cpm_num=1, num=num)
-            device["w"] = ' -w '.join(w)
+            device["a"] = ' -a '.join(w)
             device["vdev"] = None
         elif self.get_case_cfg()["devtype"] == "crypto_openssl":
             dev = "crypto_openssl"
@@ -374,7 +374,7 @@ class PerfTestsCryptodev(TestCase):
                 vdev = "{}{},worker={}_qat_sym,worker={}_qat_sym,worker={}_qat_sym,mode=round-robin".format(dev,
                         i, w[i*3], w[i*3 + 1], w[i*3 + 2])
                 vdev_list.append(vdev)
-            device["w"] = ' -w '.join(w)
+            device["a"] = ' -a '.join(w)
             device["vdev"] = ' --vdev '.join(vdev_list)
         else:
             return {}
@@ -384,7 +384,7 @@ class PerfTestsCryptodev(TestCase):
             for i in range(num):
                 vdev = "{}{}".format(dev, i)
                 vdev_list.append(vdev)
-            device["w"] = "0000:00:00.0"
+            device["a"] = "0000:00:00.0"
             device["vdev"] = ' --vdev '.join(vdev_list)
 
         return device

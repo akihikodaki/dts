@@ -126,7 +126,7 @@ class VirtioCryptodevPerfTest(TestCase):
         default_eal_opts = {
             "c": None,
             "l": ','.join(self.cores),
-            "w": None,
+            "a": None,
             "vdev": None,
             "socket-mem": "2048,0",
             "n": self.mem_channel
@@ -206,7 +206,7 @@ class VirtioCryptodevPerfTest(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None})
+        eal_opt_str = cc.get_eal_opt_str(self, {"a":None})
         crypto_perf_opt_str = cc.get_opt_str(self, self._default_crypto_perf_opts)
         out = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
         self.logger.info(out)
@@ -217,7 +217,7 @@ class VirtioCryptodevPerfTest(TestCase):
         if cc.is_test_skip(self):
             return
 
-        eal_opt_str = cc.get_eal_opt_str(self, {"w": self.vm0.virtio_list[0], "vdev":None})
+        eal_opt_str = cc.get_eal_opt_str(self, {"a": self.vm0.virtio_list[0], "vdev":None})
         crypto_perf_opt_str = cc.get_opt_str(self, self._default_crypto_perf_opts)
         out = self._run_crypto_perf(eal_opt_str, crypto_perf_opt_str)
         self.logger.info(out)

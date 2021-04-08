@@ -162,7 +162,7 @@ Test Case: Cryptodev VIRTIO test
 
 command::
 
-      ./build/app/dpdk-test-crypto-perf -c 0xf  -w 00:05.0 -- --ptest throughput \
+      ./build/app/dpdk-test-crypto-perf -c 0xf  -a 00:05.0 -- --ptest throughput \
       --devtype crypto_virtio --optype cipher-then-auth  --cipher-algo aes-cbc --cipher-op encrypt \
       --cipher-key-sz 16 --cipher-iv-sz 16 --auth-algo sha1-hmac --auth-op generate --auth-key-sz 64 \
       --auth-aad-sz 0 --auth-digest-sz 20 --total-ops 10000000 --burst-sz 32 --buffer-sz 1024

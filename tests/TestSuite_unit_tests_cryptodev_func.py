@@ -110,7 +110,7 @@ class UnitTestsCryptodev(TestCase):
 
         self.logger.info("STEP_TEST: " + testsuite)
         self.dut.send_expect("dmesg -C", "# ", 30)
-        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str + " --log-level=6 -w %s" % w[0])
+        cmd_str = cc.get_dpdk_app_cmd_str(self._app_path, eal_opt_str + " --log-level=6 -a %s" % w[0])
         self.dut.send_expect(cmd_str, "RTE>>", 30)
 
         out = ""

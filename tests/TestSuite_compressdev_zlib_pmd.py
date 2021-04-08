@@ -40,7 +40,7 @@ class TestCompressdevZlibPmd(TestCase):
 
     def set_up_all(self):
         self.prepare_dpdk()
-        cc.default_eals.update({"w":"0000:00:00.0", "vdev": "compress_zlib"})
+        cc.default_eals.update({"a":"0000:00:00.0", "vdev": "compress_zlib"})
         cc.default_opts.update({"driver-name": "compress_zlib"})
         self._perf_result = dict()
 
@@ -95,5 +95,5 @@ class TestCompressdevZlibPmd(TestCase):
 
         if not self._perf_result:
             return
-        with open(self.logger.log_path + "/" + self.suite_name + ".json", "w") as fv:
+        with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as fv:
             json.dump(self._perf_result, fv, indent=4)

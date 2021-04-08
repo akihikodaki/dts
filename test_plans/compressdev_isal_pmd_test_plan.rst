@@ -65,7 +65,7 @@ Test Case: Compressdev ISA-L PMD Unit test
 ----------------------------------------------------------------
 Start test application and run isal pmd unit test::
 
-    ./app/test -l1 -n1 -w vdev_bus_id --vdev=compress_isal
+    ./app/test -l1 -n1 -a vdev_bus_id --vdev=compress_isal
     RTE>>compressdev_autotest
 
 Verify all test cases passed in the test.
@@ -74,7 +74,7 @@ Test Case: Compressdev ISA-L PMD fixed function test
 ---------------------------------------------------------
 Run Compressdev isal pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_isal -- --driver-name compress_isal --input-file file_name \
     --compress-level level --num-iter number --huffman-enc fixed
 
@@ -86,7 +86,7 @@ Test Case: Compressdev ISA-L PMD dynamic function test
 ---------------------------------------------------------
 Run Compressdev isal pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_isal -- --driver-name compress_isal --input-file file_name \
     --compress-level level --num-iter number --huffman-enc dynamic
 
@@ -98,7 +98,7 @@ Test Case: Compressdev ISA-L PMD fixed performance test
 -----------------------------------------------------------
 Run Compressdev isal pmd performance test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_isal -- --driver-name compress_isal --input-file file_name \
     --compress-level level --seg-sz size --num-iter number --huffman-enc fixed
 
@@ -110,7 +110,7 @@ Test Case: Compressdev ISA-L PMD dynamic performance test
 ----------------------------------------------------------------
 Run Compressdev isal pmd performance test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_isal -- --driver-name compress_isal --input-file file_name \
     --compress-level level --seg-sz size --num-iter number --huffman-enc dynamic
 

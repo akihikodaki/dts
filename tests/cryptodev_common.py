@@ -190,7 +190,7 @@ def clear_dpdk_config(test_case):
 default_eal_opts = {
     "c": None,
     "l": None,
-    "w": None,
+    "a": None,
     "vdev": None,
     "socket-mem": "512,512",
     "n": "4"
@@ -222,10 +222,10 @@ def get_opt_str(test_case, default_opts, override_opts={}, add_port=False):
     opts.update(override_opts)
 
     pci_list = [port["pci"] for port in test_case.dut.ports_info]
-    if 'w' in list(opts.keys()) and opts['w']:
-        pci_list.append(opts['w'])
+    if 'a' in list(opts.keys()) and opts['a']:
+        pci_list.append(opts['a'])
     if add_port and pci_list:
-        opts['w'] = " -w ".join(pci_list)
+        opts['a'] = " -a ".join(pci_list)
 
     # Generate option string
     opt_str = ""

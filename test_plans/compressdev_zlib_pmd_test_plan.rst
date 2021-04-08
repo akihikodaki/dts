@@ -64,7 +64,7 @@ Test Case: Compressdev ZLIB PMD Unit test
 ----------------------------------------------------------------
 Start test application and run zlib pmd unit test::
 
-    ./app/test -l1 -n1 -w vdev_bus_id --vdev=compress_zlib
+    ./app/test -l1 -n1 -a vdev_bus_id --vdev=compress_zlib
     RTE>>compressdev_autotest
 
 Verify all test cases passed in the test.
@@ -73,7 +73,7 @@ Test Case: Compressdev ZLIB PMD fixed function test
 -------------------------------------------------------------
 Run Compressdev zlib pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
     --compress-level level --num-iter number --huffman-enc fixed
 
@@ -85,7 +85,7 @@ Test Case: Compressdev ZLIB PMD dynamic function test
 -------------------------------------------------------------
 Run Compressdev zlib pmd test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
     --compress-level level --num-iter number --huffman-enc dynamic
 
@@ -97,7 +97,7 @@ Test Case: Compressdev ZLIB PMD fixed performance test
 ----------------------------------------------------------------------------
 Run Compressdev zlib pmd performance test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
     --compress-level level --seg-sz size --num-iter number --huffman-enc fixed
 
@@ -109,7 +109,7 @@ Test Case: Compressdev ZLIB PMD dynamic performance test
 ---------------------------------------------------------------------------
 Run Compressdev zlib pmd performance test with below sample commands::
 
-    ./app/dpdk-test-compress-perf  -w vdev_bus_id -l 4 \
+    ./app/dpdk-test-compress-perf  -a vdev_bus_id -l 4 \
     --vdev=compress_zlib -- --driver-name compress_zlib --input-file file_name \
     --compress-level level --seg-sz size --num-iter number --huffman-enc dynamic
 

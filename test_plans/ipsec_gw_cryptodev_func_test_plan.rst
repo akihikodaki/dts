@@ -131,7 +131,7 @@ The test commands of ipsec-secgw is below::
 
     ./build/ipsec-secgw [EAL options] --
         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
-        -l -w REPLAY_WINOW_SIZE -e -a
+        -l -a REPLAY_WINOW_SIZE -e -a
         --config (port,queue,lcore)[,(port,queue,lcore]
         --single-sa SAIDX
         --rxoffload MASK
@@ -200,7 +200,7 @@ Cryptodev AES-NI algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_aesni_mb_pmd_1 --vdev=crypto_aesni_mb_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -231,8 +231,8 @@ Cryptodev QAT algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
-    -w 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
+    -a 0000:1a:01.0 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)" -u 0x1 -p 0x3
     -f /root/dts/local_conf/ipsec_test.cfg
 
 Sub-case: AES-GCM test case
@@ -248,7 +248,7 @@ Cryptodev AES-GCM algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_aesni_gcm_pmd_1 --vdev=crypto_aesni_gcm_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg
 
@@ -265,6 +265,6 @@ Cryptodev NULL algorithm validation matrix is showed in table below.
 
 example::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -w 0000:60:00.0 -w 0000:60:00.2
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 2048,0 --legacy-mem -a 0000:60:00.0 -a 0000:60:00.2
     --vdev crypto_null_pmd_1 --vdev=crypto_null_pmd_2 -l 9,10,11 -n 6  -- -P  --config "(0,0,10),(1,0,11)"
     -u 0x1 -p 0x3 -f /root/dts/local_conf/ipsec_test.cfg

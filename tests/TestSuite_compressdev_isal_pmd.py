@@ -40,7 +40,7 @@ class TestCompressdevIsalPmd(TestCase):
 
     def set_up_all(self):
         self.prepare_dpdk()
-        cc.default_eals.update({'w': "0000:00:00.0", "vdev": "compress_isal"})
+        cc.default_eals.update({'a': "0000:00:00.0", "vdev": "compress_isal"})
         cc.default_opts.update({"driver-name": "compress_isal"})
         self._perf_result = dict()
         self.eals = copy.deepcopy(cc.default_eals)
@@ -94,5 +94,5 @@ class TestCompressdevIsalPmd(TestCase):
 
         if not self._perf_result:
             return
-        with open(self.logger.log_path + "/" + self.suite_name + ".json", "w") as f:
+        with open(self.logger.log_path + "/" + self.suite_name + ".json", "a") as f:
             json.dump(self._perf_result, f, indent=4)

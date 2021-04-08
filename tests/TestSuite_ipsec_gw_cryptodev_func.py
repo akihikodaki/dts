@@ -248,7 +248,7 @@ class TestIPsecGW(TestCase):
             dev = "crypto_aesni_mb"
         elif self.get_case_cfg()["devtype"] == "crypto_qat":
             w = cc.get_qat_devices(self, cpm_num=1, num=num)
-            device["w"] = ' -w '.join(w)
+            device["a"] = ' -a '.join(w)
             device["vdev"] = None
         elif self.get_case_cfg()["devtype"] == "crypto_openssl":
             dev = "crypto_openssl"
@@ -270,7 +270,7 @@ class TestIPsecGW(TestCase):
             for i in range(num):
                 vdev = "{}{}".format(dev, i)
                 vdev_list.append(vdev)
-            device["w"] = "0000:00:00.0"
+            device["a"] = "0000:00:00.0"
             device["vdev"] = ' --vdev '.join(vdev_list)
 
         return device

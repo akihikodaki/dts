@@ -106,7 +106,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         default_eal_opts = {
             "c": None,
             "l": ','.join(self.cores),
-            "w": None,
+            "a": None,
             "vdev": None,
             "config": None,
             "socket-mem": "2048,0",
@@ -163,7 +163,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.set_cfg(dut, 'ep1.cfg', ep1)
 
     def set_cfg(self, dut, filename, cfg):
-        with open(filename, 'w') as f:
+        with open(filename, 'a') as f:
             f.write(cfg)
 
         dut.session.copy_file_to(filename, dut.base_dir)
@@ -286,7 +286,7 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         eal_opt_str_0 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm0.cores[-3:]),
                                                 "socket-mem":"512,0",
-                                                "w": " -w ".join(self.vm0.ports),
+                                                "a": " -a ".join(self.vm0.ports),
                                                 "vdev":"crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2"})
 
         crypto_ipsec_opt_str0 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep0.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:])})
@@ -296,7 +296,7 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         eal_opt_str_1 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm1.cores[-3:]),
                                                 "socket-mem":"512,0",
-                                                "w": " -w ".join(self.vm1.ports),
+                                                "a": " -a ".join(self.vm1.ports),
                                                 "vdev": "crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2"})
 
         crypto_ipsec_opt_str1 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep1.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:])})
@@ -312,7 +312,7 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         eal_opt_str_0 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm0.cores[-3:]),
                                                 "socket-mem":"512,0",
-                                                "w": " -w ".join(self.vm0.ports + self.vm0.virtio_list),
+                                                "a": " -a ".join(self.vm0.ports + self.vm0.virtio_list),
                                                 "vdev":None})
 
         crypto_ipsec_opt_str0 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep0.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm0.cores[-2:])})
@@ -321,7 +321,7 @@ class VirtioCryptodevIpsecTest(TestCase):
 
         eal_opt_str_1 = cc.get_eal_opt_str(self, {"l": ','.join(self.vm1.cores[-3:]),
                                                 "socket-mem":"512,0",
-                                                "w": " -w ".join(self.vm1.ports + self.vm1.virtio_list),
+                                                "a": " -a ".join(self.vm1.ports + self.vm1.virtio_list),
                                                 "vdev": None})
 
         crypto_ipsec_opt_str1 = cc.get_opt_str(self, self._default_ipsec_gw_opts, override_opts={'f': "/root/dpdk/ep1.cfg", "config": '"(0,0,%s),(1,0,%s)"' % tuple(self.vm1.cores[-2:])})

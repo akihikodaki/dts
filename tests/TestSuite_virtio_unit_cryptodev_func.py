@@ -90,7 +90,7 @@ class VirtioCryptodevUnitTest(TestCase):
         default_eal_opts = {
             "c": None,
             "l": ','.join(self.cores),
-            "w": None,
+            "a": None,
             "vdev": None,
             "socket-mem": "2048,0",
             "n": self.mem_channel,
@@ -158,7 +158,7 @@ class VirtioCryptodevUnitTest(TestCase):
         return vm, vm_dut
 
     def test_cryptodev_virtio_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self, {"w":None, "vdev":None})
+        eal_opt_str = cc.get_eal_opt_str(self, {"a":None, "vdev":None})
         self.__run_unit_test("cryptodev_virtio_autotest", eal_opt_str)
 
     def __run_unit_test(self, testsuite, eal_opt_str='', timeout=600):

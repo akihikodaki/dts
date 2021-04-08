@@ -90,7 +90,7 @@ The options of ipsec-secgw is below::
 
     ./build/ipsec-secgw [EAL options] --
                         -p PORTMASK -P -u PORTMASK -j FRAMESIZE
-                        -l -w REPLAY_WINOW_SIZE -e -a
+                        -l -a REPLAY_WINOW_SIZE -e -a
                         --config (port,queue,lcore)[,(port,queue,lcore]
                         --single-sa SAIDX
                         --rxoffload MASK
@@ -125,7 +125,7 @@ In Host:
 
     ./examples/vhost_crypto/build/vhost-crypto \
     --socket-mem 2048,0 --legacy-mem \
-    -w 1a:01.0 -w 1c:01.0 -w 1e:01.0 \
+    -a 1a:01.0 -a 1c:01.0 -a 1e:01.0 \
     --vdev crypto_scheduler_pmd_1,slave=0000:1a:01.0_qat_sym,slave=0000:1c:01.0_qat_sym,slave=0000:1e:01.0_qat_sym,mode=round-robin,ordering=enable \
     -l 8,9,10,11,12 -n 6 \
     -- --config "(9,0,0),(10,0,0),(11,0,0),(12,0,0)" \
@@ -186,11 +186,11 @@ Test Case: Cryptodev AESNI_MB test
 
 In vm0::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
 In vm1::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 --vdev crypto_aesni_mb_pmd_1 --vdev crypto_aesni_mb_pmd_2 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
 send packets and verify
 
@@ -199,10 +199,10 @@ Test Case: Cryptodev VIRTIO test
 
 In vm0::
 
-    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
+    ./examples/ipsec-secgw/build/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test0.cfg
 
 In vm1::
 
-    ./examples/ipsec-secgw/ibuild/ipsec-secgw --socket-mem 1024,0  -w 0000:00:06.0 -w 0000:00:07.0 -w 00:04.0 -w 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
+    ./examples/ipsec-secgw/ibuild/ipsec-secgw --socket-mem 1024,0  -a 0000:00:06.0 -a 0000:00:07.0 -a 00:04.0 -a 00:05.0 -l 1,2,3 -n 4  -- -P  --config "(0,0,2),(1,0,3)" -u 0x1 -p 0x3 -f /root/ipsec_test1.cfg
 
 send packets and verify
