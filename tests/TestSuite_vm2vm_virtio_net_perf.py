@@ -227,7 +227,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         if iperf_mode == "tso":
             iperf_server = "iperf -f g -s -i 1"
             iperf_client = "iperf -f g -c 1.1.1.2 -i 1 -t 60"
-        else:
+        elif iperf_mode == 'ufo':
             iperf_server = "iperf -f g -s -u -i 1"
             iperf_client = "iperf -f g -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
         self.vm_dut[0].send_expect("%s > iperf_server.log &" % iperf_server, "", 10)
@@ -393,7 +393,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
 
-    def test_vm2vm_split_ring_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
+    def test_vm2vm_split_ring_with_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
         TestCase5: VM2VM virtio-net split ring mergeable CBDMA enable test with large packet payload valid check
         """
@@ -433,7 +433,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
                     "CMDMA enable: %s is lower than CBDMA disable: %s" % (
                         iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_8_queue))
 
-    def test_vm2vm_split_ring_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
+    def test_vm2vm_split_ring_with_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
         TestCase6: VM2VM virtio-net split ring non-mergeable CBDMA enable test with large packet payload valid check
         """
@@ -480,7 +480,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         self.prepare_test_env(cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2,
                               server_mode=False, opt_queue=1, combined=False, rxq_txq=None)
-        self.start_iperf_and_verify_vhost_xstats_info()
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
 
     def test_vm2vm_packed_ring_iperf_with_tso_and_cbdma_enable(self):
         """
@@ -490,28 +490,28 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=1, nb_cores=2,
                               server_mode=False, opt_queue=None, combined=False, rxq_txq=None)
-        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='other')
+        self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='ufo')
 
-    def test_vm2vm_packed_ring_device_capbility(self):
+    def test_vm2vm_packed_ring_iperf_with_ufo(self):
         """
-        TestCase9: Check packed ring virtio-net device capability
+        Test Case 9: VM2VM packed ring vhost-user/virtio-net test with udp trafficc
         """
         self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         self.prepare_test_env(cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2,
                               server_mode=False, opt_queue=None, combined=False, rxq_txq=None)
         self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='ufo')
 
-    def test_vm2vm_packed_ring_mergeable_path_check_large_packet(self):
+    def test_vm2vm_packed_ring_device_capbility(self):
         """
-        TestCase10: VM2VM packed ring virtio-net mergeable with large packet payload valid check
+        Test Case 10: Check packed ring virtio-net device capability
         """
-        self.vm_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
+        self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on"
         self.start_vhost_testpmd(cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2, rxq_txq=None)
         self.start_vms()
         self.offload_capbility_check(self.vm_dut[0])
         self.offload_capbility_check(self.vm_dut[1])
 
-    def test_vm2vm_packed_ring_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
+    def test_vm2vm_packed_ring_with_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
         Test Case 11: VM2VM virtio-net packed ring mergeable 8 queues CBDMA enable test with large packet payload valid check
         """
@@ -520,9 +520,9 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, allow_diff_socket=True)
 
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
-        self.vm_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
+        self.vm_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8, vm_config='vm')
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
         self.check_scp_file_valid_between_vms()
         iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
@@ -551,7 +551,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
                     "CMDMA enable: %s is lower than CBDMA disable: %s" % (
                         iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_8_queue))
 
-    def test_vm2vm_packed_ring_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
+    def test_vm2vm_packed_ring_with_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
         Test Case 12: VM2VM virtio-net packed ring non-mergeable 8 queues CBDMA enable test with large packet payload valid check
         """
@@ -562,7 +562,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
         self.vm_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
         self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8, vm_config='vm')
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
         self.check_scp_file_valid_between_vms()
         iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
         ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
