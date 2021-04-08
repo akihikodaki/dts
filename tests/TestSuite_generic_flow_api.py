@@ -241,11 +241,11 @@ class TestGeneric_flow_api(TestCase):
         for flow_action in basic_flow_actions:
             # generate the flow rule and corresponding packet.
             flow_process = self.generate_random_command(**flow_action)
-            expected_queue.append(flow_process['queue'])
             # caculate the rule number created.
             rule_created = self.flow_test_process(flow_process, flow_action)
             if rule_created:
                 rule_num += 1
+                expected_queue.append(flow_process['queue'])
                 extra_packet.append(flow_process['extrapacket'])
         # Configure a return value.
         extrapkt_rulenum = {'extrapacket': extra_packet, 'rulenum': rule_num, 'queue': expected_queue}
