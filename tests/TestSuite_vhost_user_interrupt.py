@@ -278,7 +278,7 @@ class TestVhostUserInterrupt(TestCase):
         self.virtio_user.send_expect("set fwd txonly", "testpmd> ", 20)
         self.send_and_verify()
 
-    def test_wake_up_split_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled_and_cbdma_enabled(self):
+    def test_wake_up_packed_ring_vhost_user_core_with_l3fwd_power_sample_when_multi_queues_enabled_and_cbdma_enabled(self):
         """
         Test Case6: Wake up packed ring vhost-user cores with l3fwd-power sample when multi queues and cbdma are enabled
         """
