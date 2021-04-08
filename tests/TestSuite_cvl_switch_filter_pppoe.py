@@ -2048,6 +2048,11 @@ class CVLSwitchFilterPPPOETest(TestCase):
         """
         Run before each test case.
         """
+        self.reload_ice()
+
+    def reload_ice(self):
+        self.dut.send_expect("rmmod ice", "# ", 15)
+        self.dut.send_expect("modprobe ice", "# ", 15)
 
     def generate_file_with_fdir_rules(self):
         """

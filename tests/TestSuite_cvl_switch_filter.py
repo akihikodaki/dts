@@ -2566,10 +2566,15 @@ class CVLSwitchFilterTest(TestCase):
         self.generate_file_with_fdir_rules()
         self.path = self.dut.apps_name['test-pmd']
 
+    def reload_ice(self):
+        self.dut.send_expect("rmmod ice", "# ", 15)
+        self.dut.send_expect("modprobe ice", "# ", 15)
+
     def set_up(self):
         """
         Run before each test case.
         """
+        self.reload_ice()
 
     def generate_file_with_fdir_rules(self):
         """

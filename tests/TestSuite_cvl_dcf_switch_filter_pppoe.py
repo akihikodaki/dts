@@ -548,11 +548,15 @@ class CVLDCFSwitchFilterPPPOETest(TestCase):
             port.bind_driver(self.vf_driver)
         time.sleep(5)
 
+    def reload_ice(self):
+        self.dut.send_expect("rmmod ice", "# ", 15)
+        self.dut.send_expect("modprobe ice", "# ", 15)
+
     def set_up(self):
         """
         Run before each test case.
         """
-        pass
+        self.reload_ice()
 
     def create_testpmd_command(self):
         """
