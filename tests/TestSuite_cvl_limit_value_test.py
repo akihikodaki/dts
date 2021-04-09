@@ -94,6 +94,7 @@ class TestCvlLimitValue(TestCase):
         localPort = self.tester.get_local_port(self.dut_ports[0])
         self.__tx_iface = self.tester.get_interface(localPort)
         self.pkt = Packet()
+        self.is_chapman = self.is_chapman_beach()
 
     def set_up_for_iavf_dir(self):
         """
@@ -120,11 +121,9 @@ class TestCvlLimitValue(TestCase):
         self.dut.generate_sriov_vfs_by_port(self.used_dut_port_1, 2, driver=driver)
         self.sriov_vfs_pf0 = self.dut.ports_info[self.used_dut_port_0]['vfs_port']
         self.sriov_vfs_pf1 = self.dut.ports_info[self.used_dut_port_1]['vfs_port']
-
-        self.dut.send_expect('ip link set %s vf 0 mac 00:11:22:33:44:55' % self.pf0_intf, '#')
-        self.dut.send_expect('ip link set %s vf 1 mac 00:11:22:33:44:66' % self.pf0_intf, '#')
-        self.dut.send_expect('ip link set %s vf 0 mac 00:11:22:33:44:77' % self.pf1_intf, '#')
-        self.dut.send_expect('ip link set %s vf 1 mac 00:11:22:33:44:88' % self.pf1_intf, '#')
+        self.mac_list = [f'00:11:22:33:44:{mac}' for mac in [55,66,77,88]]
+        for i in range(0,4):
+            self.dut.send_expect('ip link set {} vf {} mac {}'.format(eval(f'self.pf{i//2}_intf'),i%2,self.mac_list[i]), '#')
 
         # bind VF0 and VF1 to dpdk driver
         try:
@@ -213,7 +212,7 @@ class TestCvlLimitValue(TestCase):
     def launch_testpmd(self):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--rxq={} --txq={}".format(self.cvlq_num, self.cvlq_num),
-                                      eal_param="-w %s -w %s" % (
+                                      eal_param="-a %s -a %s" % (
                                           self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci),
                                       socket=self.ports_socket)
         self.config_testpmd()
@@ -311,6 +310,13 @@ class TestCvlLimitValue(TestCase):
             self.verify(len(li) == num, "the amount of rules is wrong.")
         return out
 
+    def get_rule_number(self, port_id=0):
+        out = self.dut.send_command("flow list %s" % port_id, timeout=300)
+        result_scanner = r'\d*.*?\d*.*?\d*.*?=>*'
+        scanner = re.compile(result_scanner, re.DOTALL)
+        li = scanner.findall(out)
+        return len(li)
+
     def send_and_check_packets(self, dic, session_name="", tx_iface=""):
         """
         general packets processing workflow.
@@ -328,9 +334,26 @@ class TestCvlLimitValue(TestCase):
         out = session_name.send_expect("stop", "testpmd> ", 15)
         dic["check_func"]["func"](out, dic["check_func"]["param"], dic["expect_results"])
 
-    def test_maxnum_14336rules_1vf(self):
+    def get_nic_product_name(self,port_id=0):
+        pf_pci = self.dut.ports_info[port_id]['pci']
+        out = self.dut.send_expect('lspci -s {} -vvv |grep "Product Name"'.format(pf_pci), '#')
+        res = re.search(r"Network Adapter\s+(?P<product_name>E810-.*)", out)
+        self.verify(res, "product name not found'")
+        return res.group('product_name')
+
+    def is_chapman_beach(self,port_id=0):
+        if 'E810-2CQDA2' in self.get_nic_product_name(port_id):
+            return True
+        return False
+
+    def test_maxnum_rules_1vf(self):
         """
         vfs share 14336 rules table
+        maximum number of rules varies with NIC, it can be identified by product name as below:
+        product name   NIC type           rule maximum
+        E810-XXVDA4   cvl25g*4             14336
+        E810-CQDA2    cvl100g*2            14336
+        E810-2CQDA2   chapmanbeach100g*2   14336 (1 vf)
         """
         dut_file_dir = '/tmp/'
         self.set_up_for_iavf_dir()
@@ -348,7 +371,7 @@ class TestCvlLimitValue(TestCase):
         self.verify(count == 14336, "failed to create 14336 fdir rules on vf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
 
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c f -n 6 -a %s -a %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (
         self.cvlq_num, self.cvlq_num) + " --cmdline-file=%s" % (dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 300)
@@ -400,215 +423,284 @@ class TestCvlLimitValue(TestCase):
         out_14336 = self.send_pkts_getouput(pkts=pkt_14336, pf_id=0)
         rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=True)
 
-    def test_maxnum_14336rules_2vf(self):
+    def test_maxnum_rules_2vf(self):
         """
-        vfs share 14336 rules table
+        maximum number of rules varies with NIC, it can be identified by product name as below:
+        product name   NIC type           rule maximum
+        E810-XXVDA4   cvl25g*4             14336
+        E810-CQDA2    cvl100g*2            14336
+        E810-2CQDA2   chapmanbeach100g*2   14336*2 (if vfs generated by 2 pf port, each can create 14336 rules at most)
         """
         dut_file_dir = '/tmp/'
         self.dut.kill_all()
         self.set_up_for_iavf_dir()
         self.session_secondary = self.dut.new_session()
-        src_file = 'create_14336_rules_2vf'
-        flows = open(self.src_file_dir + src_file, mode='w')
-        flows.write(
-            'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 5 / mark / end \n')
-        count = 1
-        for i in range(55):
-            for j in range(256):
-                flows.write(
-                    'flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.%d.%d / end actions queue index 5 / mark / end \n' % (
-                    i, j))
-                count = count + 1
-        for j in range(255):
-            flows.write(
-                'flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.%d / end actions queue index 5 / mark / end \n' % j)
-            count = count + 1
-        flows.close()
-        self.verify(count == 14336, "failed to create 14336 fdir rules on 2 vfs.")
-        self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
-
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf1[0].pci)
-        command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (
-        self.cvlq_num, self.cvlq_num) + " --cmdline-file=%s" % (dut_file_dir + src_file)
-        self.dut.send_expect(command, "testpmd> ", 1200)
-
+        #create one rule on vf0 and 14335 rules on vf1, if card is chapman beach100g*2,needs to create one rule on
+        # vf2 and 14335 rules on vf3 in addition
+        max_rules = 14336
+        ports = [self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf1[0].pci]
+        if self.is_chapman:
+            max_rules *= 2
+            ports.extend([self.sriov_vfs_pf0[1].pci, self.sriov_vfs_pf1[1].pci])
+        file_name = 'create_maxnum_{}rules_2vf'.format(max_rules)
+        src_file = os.path.join(self.src_file_dir,file_name)
+        rule = 'flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.{}.{} / end actions queue index 5 / mark / end \n'
+        k,n = 0,2
+        with open(src_file,'w') as file_handle:
+            for i in range(56):
+                for j in range(256):
+                    if self.is_chapman:
+                        if i != 0 or j != 0:
+                            k,n = 1,3
+                        file_handle.write(rule.format(k, i, j))
+                        file_handle.write(rule.format(n, i, j))
+                    else:
+                        if i != 0 or j != 0:
+                            k = 1
+                        file_handle.write(rule.format(k, i, j))
+        self.dut.session.copy_file_to(src_file, dut_file_dir)
+        param = "--rxq={} --txq={} --cmdline-file={}".format(self.cvlq_num, self.cvlq_num, os.path.join(dut_file_dir,file_name))
+        self.pmd_output.start_testpmd(param=param, ports=ports,timeout=1200)
         self.config_testpmd()
         self.check_fdir_rule(port_id=0, rule_list=['0'])
 
         # can't create more than 14336 rules on 2vf
-        rule_14335_vf1 = "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
-        self.create_fdir_rule(rule_14335_vf1, check_stats=False)
+        rule_14336_vf = "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
+        self.create_fdir_rule(rule_14336_vf.format(1), check_stats=False)
+
         # check there are 14336 rules created.
-        out = self.check_rule_number(port_id=1, num=14335)
-        self.verify("14335" not in out, "more than 14336 rules are created on 2vf")
+        vf_num = 0
+        for i in range(0,len(ports)):
+            vf_num += self.get_rule_number(port_id=i)
 
-        # can't create new rule on vf0
-        rule_1_vf0 = "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
-        self.create_fdir_rule(rule_1_vf0, check_stats=False)
-        self.check_rule_number(port_id=0, num=1)
+        self.verify(vf_num == max_rules, f"rules number is {vf_num} not match expected {max_rules}")
 
-        pkt_0 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.0.0")/Raw("x" * 80)'
-        pkt_1 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.0.0")/Raw("x" * 80)'
-        pkt_14335 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.55.254")/Raw("x" * 80)'
-        pkt_14336 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
-
+        pkt = 'Ether(dst="{}")/IP(src="192.168.0.20",dst="{}")/Raw("x" * 80)'
+        dst_list = [[self.mac_list[0],'192.168.0.0'],[self.mac_list[1 if self.is_chapman else 2],'192.168.55.254']]
+        packet_list = [pkt.format(dst_mac,dst_ip)for dst_mac,dst_ip in dst_list]
         self.session_secondary.send_expect("ifconfig %s up" % self.pf0_intf, "# ", 15)
         self.session_secondary.send_expect("ifconfig %s up" % self.pf1_intf, "# ", 15)
-        time.sleep(1)
+        time.sleep(0.5)
 
         # check packet match rule 0 and rule 14335 can be redirected to expected queue
-        out_0 = self.send_pkts_getouput(pkts=pkt_0, pf_id=0)
-        rfc.check_iavf_fdir_mark(out_0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=True)
-        out_1 = self.send_pkts_getouput(pkts=pkt_1, pf_id=1)
-        rfc.check_iavf_fdir_mark(out_1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
+        for i,_pkt in enumerate(packet_list):
+            out = self.send_pkts_getouput(pkts=_pkt, pf_id=0 if self.is_chapman else i)
+            rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": i, "mark_id": 0, "queue": 5}, stats=True)
 
-        out_14335 = self.send_pkts_getouput(pkts=pkt_14335, pf_id=1)
-        rfc.check_iavf_fdir_mark(out_14335, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
-        # check packet match rule 14336 can't be redirected to expected queue.
-        out_14336 = self.send_pkts_getouput(pkts=pkt_14336, pf_id=1)
+        # check packet match rule 14336 can't be redirected to expected queue
+        packet_list1 = [pkt.format(self.mac_list[1 if self.is_chapman else 2],'192.168.56.0')]
+        out_14336 = self.send_pkts_getouput(pkts=packet_list1[0], pf_id=0 if self.is_chapman else 1)
         rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 1, "queue": 5}, stats=False)
 
-        # destroy rule 0 on vf0, then create a new rule on vf1 successfully.
+        #destroy one rule of vf0 and create a new rule on vf1
         self.dut.send_expect("flow flush 0", "testpmd> ")
-        self.create_fdir_rule(rule_14335_vf1, check_stats=True)
-        out_14336 = self.send_pkts_getouput(pkts=pkt_14336, pf_id=1)
+        self.create_fdir_rule(rule_14336_vf.format(1), check_stats=True)
+
+        #send matched packet for new rule of vf1
+        out_14336 = self.send_pkts_getouput(pkts=packet_list1[0], pf_id=0 if self.is_chapman else 1)
         rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
 
-        self.dut.send_expect("flow flush 1", "testpmd> ", timeout=300)
+        if self.is_chapman:
+            #repeat above steps for vf2 and vf3
+            packet_list.extend([pkt.format(dst_mac,dst_ip)for dst_mac,dst_ip in [[self.mac_list[2], '192.168.0.0'],
+                                                                                [self.mac_list[3], '192.168.55.254']]])
 
-        self.check_fdir_rule(port_id=0, stats=False)
-        self.check_fdir_rule(port_id=1, stats=False)
+            # check packet match rule 0 and rule 14335 can be redirected to expected queue for vf2 and vf3
+            for j in range(2,4):
+                out = self.send_pkts_getouput(pkts=packet_list[j], pf_id=1)
+                rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": j, "mark_id": 0, "queue": 5}, stats=True)
 
-        out_0 = self.send_pkts_getouput(pkts=pkt_0, pf_id=0)
-        out_1 = self.send_pkts_getouput(pkts=pkt_1, pf_id=1)
-        out_14335 = self.send_pkts_getouput(pkts=pkt_14335, pf_id=1)
-        rfc.check_iavf_fdir_mark(out_0, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5}, stats=False)
-        rfc.check_iavf_fdir_mark(out_1, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=False)
-        rfc.check_iavf_fdir_mark(out_14335, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5},
-                                 stats=False)
+            packet_list1.extend([pkt.format(self.mac_list[3],'192.168.56.0')])
+
+            # check packet match rule 14336 for vf3 can't be redirected to expected queue
+            out_14336 = self.send_pkts_getouput(pkts=packet_list1[1], pf_id=1)
+            rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 3, "queue": 5}, stats=False)
+
+            # destroy one rule of vf2 and create a new rule on vf3
+            self.dut.send_expect("flow flush 2", "testpmd> ")
+            self.create_fdir_rule(rule_14336_vf.format(3), check_stats=True)
+
+            # send matched packet for new rule of vf3
+            out_14336 = self.send_pkts_getouput(pkts=packet_list1[1], pf_id=1)
+            rfc.check_iavf_fdir_mark(out_14336, pkt_num=1, check_param={"port_id": 3, "mark_id": 0, "queue": 5},stats=True)
+
+        #flush all the rules and check the rule list,no rule listed
+        for i in range(len(ports)):
+            self.dut.send_expect(f"flow flush {i}", "testpmd> ", timeout=500)
+            self.check_fdir_rule(port_id=i, stats=False)
+
+        #verify matched packet received without FDIR matched ID
+        for k, _pkt in enumerate(packet_list):
+            pf_id = k
+            if self.is_chapman:
+                if k <= 1:
+                    pf_id = 0
+                else:
+                    pf_id = 1
+            out = self.send_pkts_getouput(pkts=_pkt, pf_id=pf_id)
+            rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": k, "mark_id": 0, "queue": 5}, stats=False)
         self.dut.close_session(self.session_secondary)
 
-    def test_maxnum_15360rules_1pf_2vf(self):
+    def test_maxnum_rules_1pf_2vf(self):
         """
         2*100G NIC, each pf can create 1024 rules at least, vfs share 14336 rules table
         4*25G NIC, each pf can create 512 rules at least, vfs share 14336 rules table
         so if 2*25G NIC, max number is 14848 on 1pf and 2vfs.
+        if hardware is chapman beach 100g*2, 1 pf can create 2048 rules,vfs generated by the same pf share 14336 rules,
+        so this card can create (2048 + 14336)*2=32768 rules
         """
         dut_file_dir = '/tmp/'
         self.dut.kill_all()
         self.set_up_for_iavf_dir()
         self.session_secondary = self.dut.new_session()
-        # create 1025 rules on pf1
-        src_file = 'create_1025_kernel_rules'
-        flows = open(self.src_file_dir + src_file, mode='w')
-        count = 0
+        # create kernel rules on pf1
+        rule = 'ethtool -N {} flow-type tcp4 src-ip 192.168.{}.{} dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n'
         if self.nic in ["columbiaville_100g"]:
-            for i in range(4):
-                for j in range(256):
-                    flows.write(
-                        'ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (
-                        self.pf1_intf, i, j))
-                    count = count + 1
-            flows.write(
-                'ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % self.pf1_intf)
-            count = count + 1
-            flows.close()
-            self.verify(count == 1025, "failed to create 1025 fdir rules on pf.")
-        elif self.nic in ["columbiaville_25g"]:
-            for i in range(2):
-                for j in range(256):
-                    flows.write(
-                        'ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (
-                        self.pf1_intf, i, j))
-                    count = count + 1
-            flows.write(
-                'ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % self.pf1_intf)
-            count = count + 1
-            flows.close()
-            self.verify(count == 513, "failed to create 1025 fdir rules on pf.")
-        self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
-        # create 1025 rules on pf1
-        fkr = open(self.src_file_dir + src_file, "r+")
-        kernel_rules = fkr.read()
-        fkr.close()
-        self.dut.send_expect(kernel_rules, "# ")
-        time.sleep(15)
-        # create 1 rule on vf00, and 14334 rules on vf01
-        src_file_vf = 'create_14335_rules_on_2vfs'
-        flows = open(self.src_file_dir + src_file_vf, mode='w')
-        flows.write(
-            'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.0 / end actions queue index 5 / mark / end \n')
-        count = 1
-        for i in range(55):
+            num = 4
+            if self.is_chapman:
+                num = 8
+        if self.nic in ["columbiaville_25g"]:
+            num = 2
+        for i in range(num):
             for j in range(256):
-                flows.write(
-                    'flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.%d.%d / end actions queue index 5 / mark / end \n' % (
-                    i, j))
-                count = count + 1
-        for j in range(254):
-            flows.write(
-                'flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.55.%d / end actions queue index 5 / mark / end \n' % j)
-            count = count + 1
-        flows.close()
-        self.verify(count == 14335, "failed to create 14335 fdir rules on vfs.")
-        self.dut.session.copy_file_to(self.src_file_dir + src_file_vf, dut_file_dir)
-        # start testpmd with creating rules in commandline
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
-        command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (
-        self.cvlq_num, self.cvlq_num) + " --cmdline-file=%s" % (dut_file_dir + src_file_vf)
-        fdw = open("15360_rules_vf_result.txt", "w")
-        fdw.write(self.dut.send_expect(command, "testpmd> ", 360))
-        fdw.close()
+                self.dut.send_expect(rule.format(self.pf0_intf,i,j),'#')
+                if self.is_chapman:
+                    self.dut.send_expect(rule.format(self.pf1_intf,i,j),'#')
+
+        self.dut.send_expect(rule.format(self.pf0_intf,'100','0'),'#')
+        if self.is_chapman:
+            self.dut.send_expect(rule.format(self.pf1_intf, '100', '0'),'#')
+
+        # create 1 rule on vf0, and 14334 rules on vf1, if card is chapman beach100g*2,needs to create 1 rule on
+        # vf2 and 14334 rules on vf3 in addition
+        rules_num = 14335
+        ports = [self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf1[0].pci]
+        if self.is_chapman:
+            rules_num *= 2
+            ports.extend([self.sriov_vfs_pf0[1].pci, self.sriov_vfs_pf1[1].pci])
+        file_name = 'create_14335_rules_on_2vfs'
+        src_file = os.path.join(self.src_file_dir,file_name)
+        rule = 'flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.{}.{} / end actions queue index 5 / mark / end \n'
+        k,n = 0,2
+        with open(src_file,'w') as file_handle:
+            for i in range(56):
+                for j in range(256):
+                    if i == j == 255: break
+                    if self.is_chapman:
+                        if i != 0 or j != 0:
+                            k,n = 1,3
+                        file_handle.write(rule.format(k, i, j))
+                        file_handle.write(rule.format(n, i, j))
+                    else:
+                        if i != 0 or j != 0:
+                            k = 1
+                        file_handle.write(rule.format(k, i, j))
+        self.dut.session.copy_file_to(src_file, dut_file_dir)
+        param = "--rxq={} --txq={} --cmdline-file={}".format(self.cvlq_num, self.cvlq_num, os.path.join(dut_file_dir,file_name))
+        self.pmd_output.start_testpmd(param=param, ports=ports,timeout=1200)
         self.config_testpmd()
-        # check there is 1 rule created on vf00
+
+        # check there is 1 rule created on vf0
         self.check_fdir_rule(port_id=0, rule_list=['0'])
-        # can't create more than 14335 rules on 2vf, the rule index is from 0
-        rule_14334_vf1 = "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
-        pkt_14334 = 'Ether(dst="00:11:22:33:44:66")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
-        self.create_fdir_rule(rule_14334_vf1, check_stats=False)
-        # check there are 14334 rules created on vf01
+
+        # can't create more than 14335 rules on vf1, the rule index is from 0
+        rule_14334 = "flow create {} ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
+        self.create_fdir_rule(rule_14334.format(1), check_stats=False)
+
+        # check there are 14334 rules created on vf1
         out = self.check_rule_number(port_id=1, num=14334)
-        self.verify("14334" not in out, "more than 15360 rules are created on 2vf")
+        self.verify("14334" not in out, "more than 14335 rules are created on 2vf")
+
+        #send match rule0 and rule14333 packet,packets redirected to expected queue
+        pkt = 'Ether(dst="{}")/IP(src="192.168.0.20",dst="{}")/Raw("x" * 80)'
+        dst_list = [[self.mac_list[0],'192.168.0.0'],[self.mac_list[1 if self.is_chapman else 2],'192.168.55.254']]
+        packet_list = [pkt.format(dst_mac,dst_ip)for dst_mac,dst_ip in dst_list]
+        for i,_pkt in enumerate(packet_list):
+            out = self.send_pkts_getouput(pkts=_pkt, pf_id=0 if self.is_chapman else i)
+            rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": i, "mark_id": 0, "queue": 5}, stats=True)
+
         # delete a rule on pf0
-        self.session_secondary.send_expect("ethtool -N %s delete 14847" % self.pf1_intf, "# ")
-        # then can create one more rule on vf01
-        self.create_fdir_rule(rule_14334_vf1, check_stats=True)
-        out_14334 = self.send_pkts_getouput(pkts=pkt_14334, pf_id=0)
+        self.session_secondary.send_expect("ethtool -N %s delete 14847" % self.pf0_intf, "# ")
+
+        #then can create one rule on vf1 and send matched packet, it can be redirected to expected queue
+        pkt_14334 = 'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+        self.create_fdir_rule(rule_14334.format(1), check_stats=True)
+        out_14334 = self.send_pkts_getouput(pkts=pkt_14334.format(self.mac_list[1 if self.is_chapman else 2]), pf_id=0 if self.is_chapman else 1)
         rfc.check_iavf_fdir_mark(out_14334, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5}, stats=True)
-        self.dut.send_expect("flow flush 0", "testpmd> ", timeout=600)
-        self.dut.send_expect("flow flush 1", "testpmd> ", timeout=600)
-        self.check_fdir_rule(port_id=0, stats=False)
-        self.check_fdir_rule(port_id=1, stats=False)
-        out_14334 = self.send_pkts_getouput(pkts=pkt_14334, pf_id=0)
-        rfc.check_iavf_fdir_mark(out_14334, pkt_num=1, check_param={"port_id": 1, "mark_id": 0, "queue": 5},
-                                 stats=False)
-        self.dut.send_expect("quit", "# ")
+
+        # if hardware is chapman beach100g*2 repeat above steps on vf2,vf3 and pf1
+        if self.is_chapman:
+
+            # check there is 1 rule created on vf2
+            self.check_fdir_rule(port_id=2, rule_list=['0'])
+            # can't create more than 14335 rules on vf3
+            self.create_fdir_rule(rule_14334.format(3), check_stats=False)
+            # check there are 14334 rules created on vf3
+            out = self.check_rule_number(port_id=3, num=14334)
+            self.verify("14334" not in out, "more than 14335 rules are created on 2vf")
+
+            packet_list.extend([pkt.format(dst_mac,dst_ip)for dst_mac,dst_ip in [[self.mac_list[2], '192.168.0.0'],
+                                                                                [self.mac_list[3], '192.168.55.254']]])
+            # check packet match rule 0 and rule 14335 can be redirected to expected queue for vf2 and vf3
+            for j in range(2,4):
+                out = self.send_pkts_getouput(pkts=packet_list[j], pf_id=1)
+                rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": j, "mark_id": 0, "queue": 5}, stats=True)
+
+            # delete a rule on pf1
+            self.session_secondary.send_expect("ethtool -N %s delete 14847" % self.pf1_intf, "# ")
+
+            #then can create one rule on vf3 and send matched packet, it can be redirected to expected queue
+            pkt_14334 = 'Ether(dst="{}")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+            self.create_fdir_rule(rule_14334.format(3), check_stats=True)
+            out_14334 = self.send_pkts_getouput(pkts=pkt_14334.format(self.mac_list[3]), pf_id=1)
+            rfc.check_iavf_fdir_mark(out_14334, pkt_num=1, check_param={"port_id": 3, "mark_id": 0, "queue": 5}, stats=True)
+
+        #flush all the rules and check the rule list,no rule listed
+        for i in range(len(ports)):
+            self.dut.send_expect(f"flow flush {i}", "testpmd> ", timeout=500)
+            self.check_fdir_rule(port_id=i, stats=False)
+
+        #verify matched packet received without FDIR matched ID
+        for k, _pkt in enumerate(packet_list):
+            pf_id = k
+            if self.is_chapman:
+                if k <= 1:
+                    pf_id = 0
+                else:
+                    pf_id = 1
+            out = self.send_pkts_getouput(pkts=_pkt, pf_id=pf_id)
+            rfc.check_iavf_fdir_mark(out, pkt_num=1, check_param={"port_id": k, "mark_id": 0, "queue": 5}, stats=False)
         self.dut.close_session(self.session_secondary)
 
-    def test_maxnum_15360rules_1pf_0_rules_vf(self):
+    def test_maxnum_rules_1pf_0_rules_vf(self):
         """
         2*100G NIC, each pf can create 1024 rules at least, vfs share 14336 rules table
         4*25G NIC, each pf can create 512 rules at least, vfs share 14336 rules table
         so if 2*25G NIC, max number is 14848 on 1pf and vfs.
         create 15360/14848 rules on pf1, check failed to create rule on vf00 and vf10
+        if hardware is chapman beach 100g*2, 1 pf can create 2048 rules,vfs generated by the same pf share 14336 rules,
+        so if create 14386 rules on pf1,check failed to create rule on vf00 and vf10(vf00 and vf10 generated by pf1)
         """
         dut_file_dir = '/tmp/'
         self.dut.kill_all()
         self.set_up_for_iavf_dir()
         self.session_secondary = self.dut.new_session()
-        # create 15360 rules on pf1
+        # create maxinum rules on pf1
         src_file = 'create_15360_kernel_rules'
         flows = open(self.src_file_dir + src_file, mode='w')
         count = 0
+        num = 60
+        if self.is_chapman:
+            num = 64
         if self.nic in ["columbiaville_100g"]:
-            for i in range(60):
+            for i in range(num):
                 for j in range(256):
                     flows.write(
                         'ethtool -N %s flow-type tcp4 src-ip 192.168.%d.%d dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8 \n' % (
                         self.pf1_intf, i, j))
                     count = count + 1
             flows.close()
-            self.verify(count == 15360, "failed to create 15360 fdir rules on pf.")
+            self.verify(count == num*256, "failed to create %s fdir rules on pf."%(num*256))
         elif self.nic in ["columbiaville_25g"]:
             for i in range(58):
                 for j in range(256):
@@ -619,7 +711,7 @@ class TestCvlLimitValue(TestCase):
             flows.close()
             self.verify(count == 14848, "failed to create 14848 fdir rules on pf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
-        # create 15360 rules on pf1
+        # create maxinum rules on pf1
         fkr = open(self.src_file_dir + src_file, "r+")
         kernel_rules = fkr.read()
         fkr.close()
@@ -630,7 +722,9 @@ class TestCvlLimitValue(TestCase):
             "ethtool -N %s flow-type tcp4 src-ip 192.168.100.0 dst-ip 192.168.100.2 src-port 32 dst-port 33 action 8" % self.pf1_intf,
             "Cannot insert RX class rule: No space left on device")
         # start testpmd with creating rules in commandline
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf1[0].pci)
+        eal_param = "-c f -n 6 -a %s -a %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf1[0].pci)
+        if self.is_chapman:
+            eal_param = "-c f -n 6 -a %s -a %s" % (self.sriov_vfs_pf1[0].pci, self.sriov_vfs_pf1[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (self.cvlq_num, self.cvlq_num)
         self.dut.send_expect(command, "testpmd> ", 20)
 
@@ -639,6 +733,9 @@ class TestCvlLimitValue(TestCase):
         pkt_0_vf00 = 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
         rule_0_vf10 = "flow create 1 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.56.0 / end actions queue index 5 / mark / end"
         pkt_0_vf10 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+        if self.is_chapman:
+            pkt_0_vf00 = 'Ether(dst="00:11:22:33:44:77")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
+            pkt_0_vf10 = 'Ether(dst="00:11:22:33:44:88")/IP(src="192.168.0.20",dst="192.168.56.0")/Raw("x" * 80)'
 
         # failed to create rule on vf00 and vf10
         self.create_fdir_rule(rule_0_vf00, check_stats=False)
@@ -662,7 +759,7 @@ class TestCvlLimitValue(TestCase):
         self.create_fdir_rule(rule_0_vf10, check_stats=True)
         self.check_rule_number(port_id=1, num=1)
 
-        out_0_vf00 = self.send_pkts_getouput(pkts=pkt_0_vf00, pf_id=0)
+        out_0_vf00 = self.send_pkts_getouput(pkts=pkt_0_vf00, pf_id=1 if self.is_chapman else 0)
         rfc.check_iavf_fdir_mark(out_0_vf00, pkt_num=1, check_param={"port_id": 0, "mark_id": 0, "queue": 5},
                                  stats=True)
 
@@ -698,7 +795,7 @@ class TestCvlLimitValue(TestCase):
         self.verify(count == 14336, "failed to add/delete 14336 times of fdir rules on vf.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
 
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c f -n 6 -a %s -a %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (
         self.cvlq_num, self.cvlq_num) + " --cmdline-file=%s" % (dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 900)
@@ -737,7 +834,7 @@ class TestCvlLimitValue(TestCase):
         self.verify(count == 14336, "failed to add/delete 14336 times of fdir rules on 2 vfs.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, dut_file_dir)
 
-        eal_param = "-c f -n 6 -w %s -w %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
+        eal_param = "-c f -n 6 -a %s -a %s" % (self.sriov_vfs_pf0[0].pci, self.sriov_vfs_pf0[1].pci)
         command = self.path + eal_param + " -- -i --rxq=%s --txq=%s" % (
         self.cvlq_num, self.cvlq_num) + " --cmdline-file=%s" % (dut_file_dir + src_file)
         self.dut.send_expect(command, "testpmd> ", 900)
@@ -755,7 +852,7 @@ class TestCvlLimitValue(TestCase):
         self.pmd_output.start_testpmd(cores="1S/4C/1T",
                                       param="--portmask=%s --rxq=%d --txq=%d --port-topology=loop" % (
                                           self.portMask, rxq, txq),
-                                      eal_param="-w %s -w %s --log-level=ice,7" % (
+                                      eal_param="-a %s -a %s --log-level=ice,7" % (
                                           self.pci0, self.pci1), socket=self.ports_socket)
         self.config_testpmd_cvl_fidr()
 
@@ -859,6 +956,7 @@ class TestCvlLimitValue(TestCase):
                 matched_packet = 'Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.%d.%d")/TCP(sport=25,dport=23)/Raw("X"*480)' % (
                 i, j)
                 out = self.dut.send_expect(rule, "testpmd> ", timeout=2)  # create a rule
+                time.sleep(0.5)
                 m1 = p.search(out)
                 if m1:
                     rule_list.append(m1.group(1))
