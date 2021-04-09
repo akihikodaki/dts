@@ -174,7 +174,7 @@ class TestPVPVhostUserReconnect(TestCase):
         if packed is True:
             setting_args = "%s,packed=on" % setting_args
         for i in range(self.vm_num):
-            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample')
+            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample_copy')
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
             vm_params['opt_path'] = './vhost-net%d' % (i)
@@ -391,6 +391,8 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, 'before reconnet')
+        # Because of repeat iperf test on FVL-40g nic, the result is unstable, so use 15Gb/s as check value.
+        self.check_data = 15.000
 
         vm_cycle = 1
         # reconnet from vhost
@@ -400,7 +402,8 @@ class TestPVPVhostUserReconnect(TestCase):
             self.launch_testpmd_as_vhost_user_with_no_pci()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
-            self.check_reconnect_perf()
+            self.verify(self.reconnect_data >= self.check_data,
+                        'iperf test result lower than {0} after reconnect from vhost'.format(self.check_data))
 
         # reconnet from VM
         self.logger.info('now reconnect from vm')
@@ -413,7 +416,8 @@ class TestPVPVhostUserReconnect(TestCase):
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vm')
-            self.check_reconnect_perf()
+            self.verify(self.reconnect_data > self.check_data,
+                        'iperf test result lower than {0} after reconnect from vm'.format(self.check_data))
         self.result_table_print()
 
     def test_perf_packed_ring_reconnet_one_vm(self):
@@ -494,6 +498,8 @@ class TestPVPVhostUserReconnect(TestCase):
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, 'before reconnet')
+        # Because of repeat iperf test on FVL-40g nic, the result is unstable, so use 15Gb/s as check value.
+        self.check_data = 15.000
 
         vm_cycle = 1
         # reconnet from vhost
@@ -503,7 +509,8 @@ class TestPVPVhostUserReconnect(TestCase):
             self.launch_testpmd_as_vhost_user_with_no_pci()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vhost')
-            self.check_reconnect_perf()
+            self.verify(self.reconnect_data > self.check_data,
+                        'iperf test result lower than {0} after reconnect from vhost'.format(self.check_data))
 
         # reconnet from VM
         self.logger.info('now reconnect from vm')
@@ -515,7 +522,8 @@ class TestPVPVhostUserReconnect(TestCase):
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vm')
-            self.check_reconnect_perf()
+            self.verify(self.reconnect_data > self.check_data,
+                        'iperf test result lower than {0} after recconnect from vm'.format(self.check_data))
         self.result_table_print()
 
     def tear_down(self):
