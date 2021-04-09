@@ -199,7 +199,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         start qemus
         """
         for i in range(vm_num):
-            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_event_idx_interrupt')
+            vm_info = VM(self.dut, 'vm%d' % i, 'vhost_sample_copy')
             vm_info.load_config()
             vm_params = {}
             vm_params['driver'] = 'vhost-user'
@@ -279,6 +279,45 @@ class TestVhostEventIdxInterrupt(TestCase):
                 session_info[sess_index].send_expect("^c", "#")
                 self.vm_dut[vm_index].close_session(session_info[sess_index])
 
+    def bind_nic_driver(self, ports, driver=""):
+        for port in ports:
+            netdev = self.dut.ports_info[port]['port']
+            driver_now = netdev.get_nic_driver()
+            if driver == "":
+                driver = netdev.default_driver
+            if driver != driver_now:
+                netdev.bind_driver(driver=driver)
+
+    def get_cbdma_ports_info_and_bind_to_dpdk(self):
+        """
+        get all cbdma ports
+        """
+        # check driver name in execution.cfg
+        self.verify(self.drivername == 'igb_uio',
+                    "CBDMA test case only use igb_uio driver, need config drivername=igb_uio in execution.cfg")
+        self.cbdma_dev_infos = []
+        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
+        device_info = out.split('\n')
+        for device in device_info:
+            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
+            if pci_info is not None:
+                # dev_info = pci_info.group(1)
+                # the numa id of ioat dev, only add the device which
+                # on same socket with nic dev
+                self.cbdma_dev_infos.append(pci_info.group(1))
+        self.verify(len(self.cbdma_dev_infos) >= self.queues, 'There no enough cbdma device to run this suite')
+        if self.queues == 1:
+            self.cbdma_dev_infos=[self.cbdma_dev_infos[0], self.cbdma_dev_infos[-1]]
+        self.used_cbdma = self.cbdma_dev_infos[0:self.queues*self.vm_num]
+        self.device_str = ' '.join(self.used_cbdma)
+        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s' % (self.drivername, self.device_str), '# ', 60)
+
+    def bind_cbdma_device_to_kernel(self):
+        if self.device_str is not None:
+            self.dut.send_expect('modprobe ioatdma', '# ')
+            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
+            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
+
     def stop_all_apps(self):
         """
         close all vms
@@ -289,7 +328,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_core_with_event_idx_interrupt(self):
         """
-        wake up vhost-user core with l3fwd-power sample
+        Test Case 1: wake up split ring vhost-user core with event idx interrupt mode
         """
         self.vm_num = 1
         self.queues = 1
@@ -302,7 +341,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues(self):
         """
-        wake up vhost-user core with l3fwd-power sample when multi queues are enabled
+        Test Case 2: wake up split ring vhost-user cores with event idx interrupt mode 16 queues test
         """
         self.vm_num = 1
         self.queues = 16
@@ -316,7 +355,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt(self):
         """
-        wake up vhost-user cores with l3fwd-power sample and multi VMs
+        Test Case 3: wake up split ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode
         """
         self.vm_num = 2
         self.queues = 1
@@ -342,7 +381,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_packed_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues(self):
         """
-        wake up vhost-user core with l3fwd-power sample when multi queues are enabled
+        Test Case 5: wake up packed ring vhost-user cores with event idx interrupt mode 16 queues test
         """
         self.vm_num = 1
         self.queues = 16
@@ -356,7 +395,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_packed_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt(self):
         """
-        wake up vhost-user cores with l3fwd-power sample and multi VMs
+        Test Case 6: wake up packed ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode
         """
         self.vm_num = 2
         self.queues = 1
@@ -369,7 +408,7 @@ class TestVhostEventIdxInterrupt(TestCase):
 
     def test_wake_up_split_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues_with_cbdma(self):
         """
-        wake up vhost-user cores with l3fwd-power sample and multi VMs
+        Test Case 7: wake up split ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
         """
         self.vm_num = 1
         self.bind_nic_driver(self.dut_ports)
@@ -385,6 +424,9 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.stop_all_apps()
 
     def test_wake_up_split_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt_with_cbdma(self):
+        """
+        Test Case 8: wake up split ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
+        """
         self.vm_num = 2
         self.bind_nic_driver(self.dut_ports)
         self.queues = 1
@@ -398,44 +440,39 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.send_and_verify()
         self.stop_all_apps()
 
-    def bind_nic_driver(self, ports, driver=""):
-        if driver == "igb_uio":
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver = netdev.get_nic_driver()
-                if driver != 'igb_uio':
-                    netdev.bind_driver(driver='igb_uio')
-        else:
-            for port in ports:
-                netdev = self.dut.ports_info[port]['port']
-                driver_now = netdev.get_nic_driver()
-                if driver == "":
-                    driver = netdev.default_driver
-                if driver != driver_now:
-                    netdev.bind_driver(driver=driver)
-
-    def get_cbdma_ports_info_and_bind_to_dpdk(self):
+    def test_wake_up_packed_ring_vhost_user_cores_with_event_idx_interrupt_mode_16_queues_with_cbdma(self):
         """
-        get all cbdma ports
+        Test Case 9: wake up packed ring vhost-user cores with event idx interrupt mode and cbdma enabled 16 queues test
         """
-        self.cbdma_dev_infos = []
-        out = self.dut.send_expect('./usertools/dpdk-devbind.py --status-dev misc', '# ', 30)
-        device_info = out.split('\n')
-        for device in device_info:
-            pci_info = re.search('\s*(0000:\d*:\d*.\d*)', device)
-            if pci_info is not None:
-                # dev_info = pci_info.group(1)
-                # the numa id of ioat dev, only add the device which
-                # on same socket with nic dev
-                self.cbdma_dev_infos.append(pci_info.group(1))
-        self.verify(len(self.cbdma_dev_infos) >= self.queues, 'There no enough cbdma device to run this suite')
-        if self.queues == 1:
-            self.cbdma_dev_infos=[self.cbdma_dev_infos[0], self.cbdma_dev_infos[-1]]
-        self.used_cbdma = self.cbdma_dev_infos[0:self.queues*self.vm_num]
+        self.vm_num = 1
+        self.bind_nic_driver(self.dut_ports)
+        self.queues = 16
+        self.get_core_mask()
+        self.nopci=False
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.lanuch_l3fwd_power(cbdma=True)
+        self.start_vms(vm_num=self.vm_num, packed=True)
+        self.relanuch_l3fwd_power(cbdma=True)
+        self.config_virito_net_in_vm()
+        self.send_and_verify()
+        self.stop_all_apps()
 
-        self.device_str = ' '.join(self.used_cbdma)
-        self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=%s %s ' %
-                             ("igb_uio", self.device_str), '# ', 60)
+    def test_wake_up_packed_ring_vhost_user_cores_by_multi_virtio_net_in_vms_with_event_idx_interrupt_with_cbdma(self):
+        """
+        Test Case 10: wake up packed ring vhost-user cores by multi virtio-net in VMs with event idx interrupt mode and cbdma enabled test
+        """
+        self.vm_num = 2
+        self.bind_nic_driver(self.dut_ports)
+        self.queues = 1
+        self.get_core_mask()
+        self.nopci=False
+        self.get_cbdma_ports_info_and_bind_to_dpdk()
+        self.lanuch_l3fwd_power(cbdma=True)
+        self.start_vms(vm_num=self.vm_num,)
+        self.relanuch_l3fwd_power(cbdma=True)
+        self.config_virito_net_in_vm()
+        self.send_and_verify()
+        self.stop_all_apps()
 
     def tear_down(self):
         """
@@ -445,14 +482,8 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.dut.send_expect(f"killall {self.l3fwdpower_name}", "#")
         self.dut.send_expect("killall -s INT qemu-system-x86_64", "#")
         self.bind_cbdma_device_to_kernel()
-        self.bind_nic_driver(self.dut_ports, self.drivername)
-
-    def bind_cbdma_device_to_kernel(self):
-        if self.device_str is not None:
-            self.dut.send_expect('modprobe ioatdma', '# ')
-            self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
-            self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str,
-                                 '# ', 60)
+        if "cbdma" in self.running_case:
+            self.bind_nic_driver(self.dut_ports, self.drivername)
 
     def tear_down_all(self):
         """
