@@ -332,10 +332,10 @@ class DPDKdut(Dut):
 
         self.send_expect("rm -rf " + target, "#")
         out = self.send_expect("CC=%s meson -Denable_kmods=True -Dlibdir=lib %s --default-library=%s %s" % (
-                        toolchain, extra_options, default_library, target), "# ", build_time)
+                        toolchain, extra_options, default_library, target), "[~|~\]]# ", build_time)
         assert ("FAILED" not in out), "meson setup failed ..."
 
-        out = self.send_expect("ninja -C %s" % target, "# ", build_time)
+        out = self.send_expect("ninja -C %s" % target, "[~|~\]]# ", build_time)
         assert ("FAILED" not in out), "ninja complie failed ..."
 
         # copy kmod file to the folder same as make
