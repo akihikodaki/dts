@@ -6988,11 +6988,30 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
             self.pmd_output.quit()
             self.launch_testpmd(symmetric=symmetric)
             self.pmd_output.execute_cmd("start")
-        self.pmd_output.execute_cmd('vlan set filter on 0')
-        self.pmd_output.execute_cmd('rx_vlan add 1 0')
-        self.pmd_output.execute_cmd('rx_vlan add 3 0')
-        self.pmd_output.execute_cmd('rx_vlan add 5 0')
-        self.pmd_output.execute_cmd('rx_vlan add 7 0')
+
+    def set_vlan_filter(self,state='on',port_id=0):
+        """
+        :param state: on/off
+        """
+        self.pmd_output.execute_cmd('vlan set filter {} {}'.format(state, port_id))
+
+    def vlan_action(self,action,vlan_id,port_id=0):
+        """
+        :param action: add/rm
+        :param vlan_id: support int and list
+        """
+        if not isinstance(vlan_id,list):
+            vlan_id = [vlan_id]
+        [self.pmd_output.execute_cmd('rx_vlan {} {} {}'.format(action, id , port_id)) for id in vlan_id]
+
+    def handle_vlan_case(self,cases_info,vlan_id,port_id):
+        try:
+            self.set_vlan_filter('on',port_id)
+            self.vlan_action('add',vlan_id,port_id)
+            self.rssprocess.handle_rss_distribute_cases(cases_info=cases_info)
+        finally:
+            self.vlan_action('rm', vlan_id,port_id)
+            self.set_vlan_filter('off', port_id)
 
     def test_mac_ipv4_gtpu_ipv4(self):
         self.switch_testpmd(symmetric=False)
@@ -7804,35 +7823,35 @@ class TestCVLAdvancedIAVFRSSGTPU(TestCase):
     # vf rss gtpc gtpu
     def test_mac_ipv4_gtpu(self):
         self.switch_testpmd(symmetric=False)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gtpu_toeplitz)
+        self.handle_vlan_case(mac_ipv4_gtpu_toeplitz, [1,3,5], 0)
 
     def test_mac_ipv6_gtpu(self):
         self.switch_testpmd(symmetric=False)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gtpu_toeplitz)
+        self.handle_vlan_case(mac_ipv6_gtpu_toeplitz, [1,5,7], 0)
 
     def test_mac_ipv4_gtpc(self):
         self.switch_testpmd(symmetric=False)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gtpc_toeplitz)
+        self.handle_vlan_case(mac_ipv4_gtpc_toeplitz, [1,3,5], 0)
 
     def test_mac_ipv6_gtpc(self):
         self.switch_testpmd(symmetric=False)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gtpc_toeplitz)
+        self.handle_vlan_case(mac_ipv6_gtpc_toeplitz, [1,3,5], 0)
 
     def test_mac_ipv4_gtpu_symmetric(self):
         self.switch_testpmd(symmetric=True)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gtpu_symmetric_toeplitz)
+        self.handle_vlan_case(mac_ipv4_gtpu_symmetric_toeplitz, 1, 0)
 
     def test_mac_ipv6_gtpu_symmetric(self):
         self.switch_testpmd(symmetric=True)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gtpu_symmetric_toeplitz)
+        self.handle_vlan_case(mac_ipv6_gtpu_symmetric_toeplitz, 1, 0)
 
     def test_mac_ipv4_gtpc_symmetric(self):
         self.switch_testpmd(symmetric=True)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv4_gtpc_symmetric_toeplitz)
+        self.handle_vlan_case(mac_ipv4_gtpc_symmetric_toeplitz, 1, 0)
 
     def test_mac_ipv6_gtpc_symmetric(self):
         self.switch_testpmd(symmetric=True)
-        self.rssprocess.handle_rss_distribute_cases(cases_info=mac_ipv6_gtpc_symmetric_toeplitz)
+        self.handle_vlan_case(mac_ipv6_gtpc_symmetric_toeplitz, 1, 0)
 
     def tear_down(self):
         # destroy all flow rule on port 0
