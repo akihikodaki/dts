@@ -578,7 +578,7 @@ class DPDKdut(Dut):
             example = '/'.join(folder_info[folder_info.index('examples')+1:])
         out = self.send_expect("meson configure -Dexamples=%s %s" % (example, self.target), "# ")
         assert ("FAILED" not in out), "Compilation error..."
-        out = self.send_expect("ninja -C %s" % self.target, "# ", timeout)
+        out = self.send_expect("ninja -C %s" % self.target, "[~|~\]]# ", timeout)
         assert ("FAILED" not in out), "Compilation error..."
 
         # verify the app build in the config path
