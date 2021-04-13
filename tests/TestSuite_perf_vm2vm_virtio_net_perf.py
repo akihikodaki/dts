@@ -164,16 +164,12 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
 
         self.verify("FAIL" not in status_result, "Exceeded Gap")
 
-    def start_vhost_testpmd(self, zerocopy=False):
+    def start_vhost_testpmd(self):
         """
         launch the testpmd with different parameters
         """
-        if zerocopy is True:
-            zerocopy_arg = ",dequeue-zero-copy=1"
-        else:
-            zerocopy_arg = ""
-        vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1%s' " % (self.base_dir, zerocopy_arg)
-        vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1%s' " % (self.base_dir, zerocopy_arg)
+        vdev1 = "--vdev 'net_vhost0,iface=%s/vhost-net0,queues=1' " % self.base_dir
+        vdev2 = "--vdev 'net_vhost1,iface=%s/vhost-net1,queues=1' " % self.base_dir
         eal_params = self.dut.create_eal_parameters(cores=self.cores_list, prefix='vhost', no_pci=True)
         para = " -- -i --nb-cores=2 --txd=1024 --rxd=1024"
         self.command_line = self.path + eal_params + vdev1 + vdev2 + para
@@ -227,11 +223,11 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         self.vm_dut[0].send_expect("arp -s %s %s" % (self.virtio_ip2, self.virtio_mac2), "#", 10)
         self.vm_dut[1].send_expect("arp -s %s %s" % (self.virtio_ip1, self.virtio_mac1), "#", 10)
 
-    def prepare_test_env(self, zerocopy, path_mode, packed_mode=False):
+    def prepare_test_env(self, path_mode, packed_mode=False):
         """
         start vhost testpmd and qemu, and config the vm env
         """
-        self.start_vhost_testpmd(zerocopy)
+        self.start_vhost_testpmd()
         self.start_vms(mode=path_mode, packed=packed_mode)
         self.config_vm_env()
 
@@ -310,24 +306,10 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         """
         VM2VM split ring vhost-user/virtio-net test with tcp traffic
         """
-        zerocopy = False
         path_mode = "tso"
         self.test_target = "split_tso"
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        self.prepare_test_env(zerocopy, path_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
-        self.handle_expected()
-        self.handle_results()
-
-    def test_vm2vm_split_ring_dequeue_zero_copy_iperf_with_tso(self):
-        """
-        VM2VM split ring vhost-user/virtio-net zero copy test with tcp traffic
-        """
-        zerocopy = True
-        path_mode = "tso"
-        self.test_target = "split_zero_copy_tso"
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        self.prepare_test_env(zerocopy, path_mode)
+        self.prepare_test_env(path_mode)
         self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
         self.handle_expected()
         self.handle_results()
@@ -336,26 +318,11 @@ class TestPerfVM2VMVirtioNetPerf(TestCase):
         """
         VM2VM packed ring vhost-user/virtio-net test with tcp traffic
         """
-        zerocopy = False
         path_mode = "tso"
         self.test_target = "packed_tso"
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
         packed_mode = True
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
-        self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
-        self.handle_expected()
-        self.handle_results()
-
-    def test_vm2vm_packed_ring_dequeue_zero_copy_iperf_with_tso(self):
-        """
-        VM2VM packed ring vhost-user/virtio-net zero copy test with tcp traffic
-        """
-        zerocopy = True
-        path_mode = "tso"
-        packed_mode = True
-        self.test_target = "packed_zero_copy_tso"
-        self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        self.prepare_test_env(zerocopy, path_mode, packed_mode)
+        self.prepare_test_env(path_mode, packed_mode)
         self.start_iperf_and_verify_vhost_xstats_info(mode="tso")
         self.handle_expected()
         self.handle_results()
