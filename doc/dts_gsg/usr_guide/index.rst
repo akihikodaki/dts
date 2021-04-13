@@ -28,13 +28,15 @@
     (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
     OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-=====================
-Getting Started Guide
-=====================
+User Guide
+==========
 
 .. toctree::
-    :maxdepth: 2
-    :numbered:
 
-    quick_start
-    usr_guide/index
+    intro
+    sys_reqs
+    usage
+    results
+    trex
+    ixia
+    igb_uio

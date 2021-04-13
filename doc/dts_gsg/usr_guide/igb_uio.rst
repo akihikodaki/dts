@@ -1,5 +1,5 @@
-Test DPDK based on igb_uio
-==========================
+Practice for igb_uio
+====================
 
 The kernel module igb_uio is moved to the dpdk-kmods repository in the
 /linux/igb_uio/ directory snice DPDK 20.11 (commit: 56bb5841fd06).
