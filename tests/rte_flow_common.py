@@ -728,17 +728,19 @@ class RssProcessing(object):
     def check_hash_different(self, out, key='', port_id=0):
         hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
         if len(key) == 0:
-            if hashes == self.current_saved_hash:
-                error_msg = 'hash value {} should be different ' \
-                            'with current saved hash {}'.format(hashes, self.current_saved_hash)
-                self.logger.error(error_msg)
-                self.error_msgs.append(error_msg)
+            for item in hashes:
+                if item in self.current_saved_hash:
+                    error_msg = 'hash value {} should be different ' \
+                    'with current saved hash {}'.format(item, self.current_saved_hash)
+                    self.logger.error(error_msg)
+                    self.error_msgs.append(error_msg)
         else:
-            if hashes == self.hash_records[key]:
-                error_msg = 'hash value {} should be different ' \
-                            'with {} {}'.format(hashes, key, self.hash_records[key])
-                self.logger.error(error_msg)
-                self.error_msgs.append(error_msg)
+            for item in hashes:
+                if item in self.hash_records[key]:
+                    error_msg = 'hash value {} should be different ' \
+                                'with {} {}'.format(item, key, self.hash_records[key])
+                    self.logger.error(error_msg)
+                    self.error_msgs.append(error_msg)
         if not rss_distribute:
             error_msg = 'the packet do not distribute by rss'
             self.logger.error(error_msg)
