@@ -79,12 +79,19 @@ class Crb(object):
             self.alt_session = None
 
     def send_expect(self, cmds, expected, timeout=TIMEOUT,
-                    alt_session=False, verify=False):
+                    alt_session=False, verify=False, trim_whitespace=True):
         """
         Send commands to crb and return string before expected string. If
         there's no expected string found before timeout, TimeoutException will
         be raised.
+
+        By default, it will trim the whitespace from the expected string. This
+        behavior can be turned off via the trim_whitespace argument.
         """
+
+        if trim_whitespace:
+            expected = expected.strip()
+
         # sometimes there will be no alt_session like VM dut
         if alt_session and self.alt_session:
             return self.alt_session.session.send_expect(cmds, expected,
