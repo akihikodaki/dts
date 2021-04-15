@@ -103,10 +103,18 @@ class Result(object):
 
     def __set_dpdk_version(self, dpdk_version):
         if dpdk_version not in self.internals[self.__dut + 1]:
-            self.internals[self.__dut + 1].append(dpdk_version)
+            dpdk_current = self.__get_dpdk_version()
+            if dpdk_current:
+                if dpdk_version not in dpdk_current:
+                    self.internals[self.__dut + 1][4] = dpdk_current + '/' + dpdk_version
+            else:
+                self.internals[self.__dut + 1].append(dpdk_version)
 
     def __get_dpdk_version(self):
-        return self.internals[self.__dut + 1][3]
+        try:
+            return self.internals[self.__dut + 1][4]
+        except:
+            return ''
 
     def current_kdriver(self, dut):
         """
@@ -120,10 +128,18 @@ class Result(object):
 
     def __set_kdriver(self, driver):
         if not self.internals[self.__dut + 1]:
-            self.internals[self.__dut + 1].append(driver)
+            kdriver_current = self.__get_kdriver()
+            if kdriver_current:
+                if driver not in kdriver_current:
+                    self.internals[self.__dut + 1][0] = kdriver_current + '/' + driver
+            else:
+                self.internals[self.__dut + 1].append(driver)
 
     def __get_kdriver(self):
-        return self.internals[self.__dut + 1][0]
+        try:
+            return self.internals[self.__dut + 1][0]
+        except:
+            return ''
 
     def current_firmware_version(self, dut):
         """
@@ -137,10 +153,18 @@ class Result(object):
 
     def __set_firmware(self, firmware):
         if firmware not in self.internals[self.__dut + 1]:
-            self.internals[self.__dut + 1].append(firmware)
+            firmware_current = self.__get_firmware()
+            if firmware_current:
+                if firmware not in firmware_current:
+                    self.internals[self.__dut + 1][1] = firmware_current + '/' + firmware
+            else:
+                self.internals[self.__dut + 1].append(firmware)
 
     def __get_firmware(self):
-        return self.internals[self.__dut + 1][1]
+        try:
+            return self.internals[self.__dut + 1][1]
+        except:
+            return ''
 
     def current_package_version(self, dut):
         """
@@ -154,10 +178,18 @@ class Result(object):
 
     def __set_ddp_package(self, package):
         if package not in self.internals[self.__dut + 1]:
-            self.internals[self.__dut + 1].append(package)
+            pkg_current = self.__get_ddp_package()
+            if pkg_current != '':
+                if pkg_current and package not in pkg_current:
+                    self.internals[self.__dut + 1][2] = pkg_current + '/' + package
+            else:
+                self.internals[self.__dut + 1].append(package)
 
     def __get_ddp_package(self):
-        return self.internals[self.__dut + 1][2]
+        try:
+            return self.internals[self.__dut + 1][2]
+        except:
+            return ''
 
     def current_driver(self, dut):
         """
