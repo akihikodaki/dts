@@ -380,17 +380,8 @@ Test case 04: negative eCPRI port config in DCF
     testpmd> port config a udp_tunnel_port add ecpri 0x5123
     Bad arguments
 
-    testpmd> port config 0 udp_tunnel_port add ecpri 0
-    udp tunneling port add error: (Permission denied)
-
-    testpmd> port config 0 udp_tunnel_port rm ecpri 0
-    udp tunneling port add error: (Operation not permitted)
-
     testpmd> port config 0 udp_tunnel_port add ecpri ffff
     Bad arguments
-
-    testpmd> port config 0 udp_tunnel_port add ecpri 0xffff
-    udp tunneling port add error: (Permission denied)
 
 
 Test case 05: rss for udp ecpri
