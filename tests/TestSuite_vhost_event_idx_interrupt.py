@@ -468,7 +468,7 @@ class TestVhostEventIdxInterrupt(TestCase):
         self.nopci=False
         self.get_cbdma_ports_info_and_bind_to_dpdk()
         self.lanuch_l3fwd_power(cbdma=True)
-        self.start_vms(vm_num=self.vm_num,)
+        self.start_vms(vm_num=self.vm_num, packed=True)
         self.relanuch_l3fwd_power(cbdma=True)
         self.config_virito_net_in_vm()
         self.send_and_verify()
