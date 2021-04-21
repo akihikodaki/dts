@@ -168,7 +168,7 @@ class TestMeteringAndPolicing(TestCase):
         """
         cir = 3125000000
         pir = 3125000000
-        self.dut.send_expect("add port meter profile trtcm_rfc2698 %d %d %d %d %d %d"
+        self.dut.send_expect("add port meter profile trtcm_rfc2698 %d %d %d %d %d %d 0"
                              % (self.port_id, profile_id, cir, pir, cbs, pbs), "testpmd>")
 
     def create_port_meter(self, mtr_id, profile_id, gyrd_action):
