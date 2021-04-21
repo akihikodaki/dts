@@ -4821,7 +4821,7 @@ class TestCVLAdvancedRSSGTPU(TestCase):
             'flow create 0 ingress pattern eth / ipv6 / udp / gtpu / ipv6 / tcp / end actions rss types ipv6-tcp ipv6 end key_len 0 queues end / end',
             'flow create 0 ingress pattern eth / ipv6 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions rss types ipv6-tcp ipv6 end key_len 0 queues end / end',
         ]
-        self.rssprocess.create_rule(rule=negative_rules, check_stats=False, msg="Invalid input pattern: Invalid argument")
+        self.rssprocess.create_rule(rule=negative_rules, check_stats=False)
 
     def test_symmetric_negative_cases(self):
         rules = [
