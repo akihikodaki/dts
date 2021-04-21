@@ -163,7 +163,7 @@ class VirtioCryptodevIpsecTest(TestCase):
         self.set_cfg(dut, 'ep1.cfg', ep1)
 
     def set_cfg(self, dut, filename, cfg):
-        with open(filename, 'a') as f:
+        with open(filename, 'w') as f:
             f.write(cfg)
 
         dut.session.copy_file_to(filename, dut.base_dir)
