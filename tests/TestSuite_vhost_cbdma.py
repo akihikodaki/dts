@@ -43,6 +43,7 @@ Here is an example:
    --vdev 'net_vhost0,iface=/tmp/s0,queues=1,dmas=[txq0@80:04.0],dmathr=1024'
 """
 import rst, json
+import os
 import re
 import time
 from test_case import TestCase
@@ -98,13 +99,17 @@ class TestVirTioVhostCbdma(TestCase):
         self.test_parameters = self.get_suite_cfg()['test_parameters']
         # traffic duraion in second
         self.test_duration = self.get_suite_cfg()['test_duration']
-        # initilize throughput attribution
+        # traffic packet length mode
+        # 'fixed' or 'imix', default is 'fixed'
+        suite_cfg = self.get_suite_cfg()
+        self.pkt_length_mode = (suite_cfg or {}).get('pkt_length_mode') or 'fixed'
+        # initialize throughput attribution
         # {'TestCase':{ 'Mode': {'$framesize':{"$nb_desc": 'throughput'}}}
         self.throughput = {}
         # Accepted tolerance in Mpps
         self.gap = self.get_suite_cfg()['accepted_tolerance']
         self.test_result = {}
-        self.nb_desc = self.test_parameters[64][0]
+        self.nb_desc = self.test_parameters.get(list(self.test_parameters.keys())[0])[0]
         self.dut.send_expect("killall -I %s" % self.testpmd_name, '#', 20)
         self.dut.send_expect("rm -rf %s/vhost-net*" % self.base_dir, "#")
         self.dut.send_expect("rm -rf /tmp/s0", "#")
@@ -507,10 +512,58 @@ class TestVirTioVhostCbdma(TestCase):
             check_dict[size] = round(speed * linerate[size], 2)
         return check_dict
 
+    def send_imix_and_verify(self, mode, multiple_queue=True, queue_list=[]):
+        """
+        Send imix packet with packet generator and verify
+        """
+        frame_sizes = [
+            64, 128, 256, 512, 1024, 1280, 1518, ]
+        tgenInput = []
+        for frame_size in frame_sizes:
+            payload_size = frame_size - self.headers_size
+            port = self.tester.get_local_port(self.dut_ports[0])
+            fields_config = {'ip': {'src': {'action': 'random'}, }, }
+            if not multiple_queue:
+                fields_config = None
+            pkt = Packet()
+            pkt.assign_layers(['ether', 'ipv4', 'raw'])
+            pkt.config_layers([('ether', {'dst': '%s' % self.virtio_mac}), ('ipv4', {'src': '1.1.1.1'}),
+                               ('raw', {'payload': ['01'] * int('%d' % payload_size)})])
+            pkt.save_pcapfile(self.tester, "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size))
+            tgenInput.append((port, port, "%s/multiqueuerandomip_%s.pcap" % (self.out_path, frame_size)))
+
+        self.tester.pktgen.clear_streams()
+        streams = self.pktgen_helper.prepare_stream_from_tginput(tgenInput, 100, fields_config, self.tester.pktgen)
+        trans_options = {'delay': 5, 'duration': self.test_duration}
+        bps, pps = self.tester.pktgen.measure_throughput(stream_ids=streams, options=trans_options)
+        Mpps = pps / 1000000.0
+        Mbps = bps / 1000000.0
+        self.verify(Mbps > 0,
+                    f"{self.running_case} can not receive packets of frame size {frame_sizes}")
+        bps_linerate = self.wirespeed(self.nic, 64, 1) * 8 * (64 + 20)
+        throughput = Mbps * 100 / float(bps_linerate)
+        self.throughput[mode] = {
+            'imix': {
+                self.nb_desc: [Mbps, Mpps],
+                }
+        }
+        results_row = ['imix']
+        results_row.append(mode)
+        results_row.append(Mpps)
+        results_row.append(throughput)
+        self.result_table_add(results_row)
+        if queue_list:
+            # check RX/TX can work normally in each queues
+            self.check_packets_of_each_queue(queue_list=queue_list)
+
     def send_and_verify(self, mode, multiple_queue=True, queue_list=[]):
         """
         Send packet with packet generator and verify
         """
+        if self.pkt_length_mode == 'imix':
+            self.send_imix_and_verify(mode, multiple_queue, queue_list)
+            return
+
         self.throughput[mode] = dict()
         for frame_size in self.frame_sizes:
             self.throughput[mode][frame_size] = dict()
@@ -551,8 +604,12 @@ class TestVirTioVhostCbdma(TestCase):
             for mode in mode_list:
                 for frame_size in self.test_parameters.keys():
                     for nb_desc in self.test_parameters[frame_size]:
-                        self.expected_throughput[mode][frame_size][nb_desc] = round(
-                            self.throughput[mode][frame_size][nb_desc], 3)
+                        if frame_size == 'imix':
+                            self.expected_throughput[mode][frame_size][nb_desc] = round(
+                                self.throughput[mode][frame_size][nb_desc][1], 3)
+                        else:
+                            self.expected_throughput[mode][frame_size][nb_desc] = round(
+                                self.throughput[mode][frame_size][nb_desc], 3)
 
     def handle_results(self, mode_list):
         """
@@ -573,23 +630,42 @@ class TestVirTioVhostCbdma(TestCase):
         for mode in mode_list:
             self.test_result[mode] = dict()
             for frame_size in self.test_parameters.keys():
-                wirespeed = self.wirespeed(self.nic, frame_size, self.number_of_ports)
                 ret_datas = {}
-                for nb_desc in self.test_parameters[frame_size]:
-                    ret_data = {}
-                    ret_data[header[0]] = frame_size
-                    ret_data[header[1]] = mode
-                    ret_data[header[2]] = "{:.3f} Mpps".format(
-                        self.throughput[mode][frame_size][nb_desc])
-                    ret_data[header[3]] = "{:.3f}%".format(
-                        self.throughput[mode][frame_size][nb_desc] * 100 / wirespeed)
-                    ret_data[header[4]] = nb_desc
-                    ret_data[header[5]] = "{:.3f} Mpps".format(
-                        self.expected_throughput[mode][frame_size][nb_desc])
-                    ret_data[header[6]] = "{:.3f} Mpps".format(
-                        self.throughput[mode][frame_size][nb_desc] -
-                        self.expected_throughput[mode][frame_size][nb_desc])
-                    ret_datas[nb_desc] = deepcopy(ret_data)
+                if frame_size == 'imix':
+                    bps_linerate = self.wirespeed(self.nic, 64, 1) * 8 * (64 + 20)
+                    ret_datas = {}
+                    for nb_desc in self.test_parameters[frame_size]:
+                        ret_data = {}
+                        ret_data[header[0]] = frame_size
+                        ret_data[header[1]] = mode
+                        ret_data[header[2]] = "{:.3f} Mpps".format(
+                            self.throughput[mode][frame_size][nb_desc][1])
+                        ret_data[header[3]] = "{:.3f}%".format(
+                            self.throughput[mode][frame_size][nb_desc][0] * 100 / bps_linerate)
+                        ret_data[header[4]] = nb_desc
+                        ret_data[header[5]] = "{:.3f} Mpps".format(
+                            self.expected_throughput[mode][frame_size][nb_desc])
+                        ret_data[header[6]] = "{:.3f} Mpps".format(
+                            self.throughput[mode][frame_size][nb_desc][1] -
+                            self.expected_throughput[mode][frame_size][nb_desc])
+                        ret_datas[nb_desc] = deepcopy(ret_data)
+                else:
+                    wirespeed = self.wirespeed(self.nic, frame_size, self.number_of_ports)
+                    for nb_desc in self.test_parameters[frame_size]:
+                        ret_data = {}
+                        ret_data[header[0]] = frame_size
+                        ret_data[header[1]] = mode
+                        ret_data[header[2]] = "{:.3f} Mpps".format(
+                            self.throughput[mode][frame_size][nb_desc])
+                        ret_data[header[3]] = "{:.3f}%".format(
+                            self.throughput[mode][frame_size][nb_desc] * 100 / wirespeed)
+                        ret_data[header[4]] = nb_desc
+                        ret_data[header[5]] = "{:.3f} Mpps".format(
+                            self.expected_throughput[mode][frame_size][nb_desc])
+                        ret_data[header[6]] = "{:.3f} Mpps".format(
+                            self.throughput[mode][frame_size][nb_desc] -
+                            self.expected_throughput[mode][frame_size][nb_desc])
+                        ret_datas[nb_desc] = deepcopy(ret_data)
                 self.test_result[mode][frame_size] = deepcopy(ret_datas)
         # Create test results table
         self.result_table_create(header)
