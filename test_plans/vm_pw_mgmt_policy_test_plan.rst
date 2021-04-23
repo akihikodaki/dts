@@ -172,7 +172,7 @@ Set up testing environment
     export RTE_TARGET=x86_64-native-linuxapp-gcc
     make -C examples/vm_power_manager
 
-   ./examples/vm_power_manager/build/vm_power_mgr -c 0x7 -n 4
+   ./examples/vm_power_manager/build/vm_power_mgr -c 0xffff -n 4
 
     vmpower> add_vm <vm_name>
     vmpower> add_channels <vm_name> all
@@ -195,7 +195,7 @@ Set up testing environment
     make -C examples/vm_power_manager/guest_cli
 
    ./examples/vm_power_manager/guest_cli/build/guest_vm_power_mgr \
-   -c 0x1f -n 4 --file-prefix=vmpower2 -- -i --vm-name=<vm name> \
+   -c 0xff -n 4 --file-prefix=vmpower2 -- -i --vm-name=<vm name> \
    --policy=<policy name> --vcpu-list=<vcpus list> --busy-hours=<time stage>
 
     options description::

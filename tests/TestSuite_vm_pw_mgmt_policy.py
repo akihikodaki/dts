@@ -311,7 +311,7 @@ class TestVmPwMgmtPolicy(TestCase):
                 'name': ch_name.format(cnt)}
             self.vm.add_vm_virtio_serial_channel(**channel)
         # set vm default driver
-        self.vm.def_driver = 'igb_uio'
+        self.vm.def_driver = 'vfio-pci'
         # boot up vm
         self.vm_dut = self.vm.start()
         self.is_vm_on = True
@@ -348,7 +348,7 @@ class TestVmPwMgmtPolicy(TestCase):
             '-v '
             '-c {core_mask} '
             '-n {mem_channel} ').format(**{
-                'core_mask': self.get_cores_mask("1S/3C/1T"),
+                'core_mask': self.get_cores_mask("1S/12C/1T"),
                 'mem_channel': self.dut.get_memory_channels(), })
         prompt = 'vmpower>'
         cmd = [' '.join([self.vm_power_mgr, eal_option]), prompt, 30]
@@ -566,7 +566,7 @@ class TestVmPwMgmtPolicy(TestCase):
         drv_name = output.splitlines()[0].strip()
         return drv_name
 
-    def get_linux_cpu_attrs(self, core_num, name="cpuinfo_cur_freq"):
+    def get_linux_cpu_attrs(self, core_num, name="scaling_setspeed"):
         freq_path = "/sys/devices/system/cpu/cpu{0}/cpufreq/{1}".format(
             core_num, name)
         output = self.d_a_con("cat %s" % freq_path)
@@ -924,6 +924,7 @@ class TestVmPwMgmtPolicy(TestCase):
         """
         Run after each test case.
         """
+        self.dut.send_expect('systemctl restart chronyd', '# ')
         self.vm_dut.kill_all()
         self.dut.kill_all()
 
