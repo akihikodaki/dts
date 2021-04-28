@@ -1065,3 +1065,12 @@ class RssProcessing(object):
                               .replace('IP()', 'IPv6()').replace('mac_ipv4', 'mac_ipv6'))
                          for element in template]
         return ipv6_template
+
+    @staticmethod
+    def get_ipv6_template_by_ipv4_gtpogre(template):
+        if isinstance(template, dict):
+            template = [template]
+        ipv6_template = [eval(str(element).replace('eth / ipv4', 'eth / ipv6')
+                              .replace('IP(proto=0x2F)/GRE(proto=0x0800)/IP()', 'IPv6(nh=0x2F)/GRE(proto=0x86DD)/IPv6()').replace('mac_ipv4', 'mac_ipv6'))
+                         for element in template]
+        return ipv6_template
