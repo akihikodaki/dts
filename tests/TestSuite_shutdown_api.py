@@ -616,7 +616,7 @@ class TestShutdownApi(TestCase):
             self.dut.send_expect("port start all", "testpmd> ", 100)
             self.dut.send_expect("start", "testpmd> ")
 
-            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'springville', 'powerville', 'sageville', 'sagepond']:
+            if self.nic in ['magnolia_park', 'niantic', 'twinpond', 'kawela_4', 'ironpond', 'springfountain', 'sageville', 'sagepond']:
                 # nantic vlan length will not be calculated
                 vlan_jumbo_size = jumbo_size + 4
             else:
@@ -639,7 +639,7 @@ class TestShutdownApi(TestCase):
         """
         On 1G NICs, when the jubmo frame MTU set as X, the software adjust it to (X + 4).
         """
-        if self.nic in ["powerville", "springville", "kawela_4"]:
+        if self.nic in ["kawela_4"]:
             jumbo_size += 4
         self.check_forwarding(pktSize=jumbo_size - 1)
         self.check_forwarding(pktSize=jumbo_size)
