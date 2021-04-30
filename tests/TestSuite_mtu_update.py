@@ -108,7 +108,7 @@ class TestMtuUpdate(TestCase):
         # The packet total size include ethernet header, ip header, and payload.
         # ethernet header length is 18 bytes, ip standard header length is 20 bytes.
         # pktlen = pktsize - ETHER_HEADER_LEN
-        if self.kdriver == "ixgbe":
+        if self.kdriver in ["igb", "igc", "ixgbe"]:
             max_pktlen = pktsize + ETHER_HEADER_LEN + VLAN
             padding = max_pktlen - IP_HEADER_LEN - ETHER_HEADER_LEN-VLAN
         else:
@@ -172,7 +172,7 @@ class TestMtuUpdate(TestCase):
         self.port_mask = utils.create_mask([self.rx_port, self.tx_port])
 
         self.pmdout = PmdOutput(self.dut)
-        self.set_mtu(ETHER_JUMBO_FRAME_MTU + 600)
+        self.set_mtu(ETHER_JUMBO_FRAME_MTU + 200)
 
     def set_up(self):
         """
@@ -240,10 +240,17 @@ class TestMtuUpdate(TestCase):
         self.exec("port start all")
         self.exec("set fwd mac")
         self.exec("start")
-
-        self.send_packet_of_size_to_tx_port(packet_size - 1, received=True)
-        self.send_packet_of_size_to_tx_port(packet_size, received=True)
-        self.send_packet_of_size_to_tx_port(packet_size + 1, received=False)
+        """
+        On 1G NICs, when the jubmo frame MTU set > 1500, the software adjust it to MTU+4.
+        """
+        if self.nic in ["powerville", "springville", "foxville"] and packet_size > 1500:
+            self.send_packet_of_size_to_tx_port(packet_size + 4 - 1, received=True)
+            self.send_packet_of_size_to_tx_port(packet_size + 4, received=True)
+            self.send_packet_of_size_to_tx_port(packet_size + 4 + 1, received=False)
+        else:
+            self.send_packet_of_size_to_tx_port(packet_size - 1, received=True)
+            self.send_packet_of_size_to_tx_port(packet_size, received=True)
+            self.send_packet_of_size_to_tx_port(packet_size + 1, received=False)
 
         self.exec("stop")
         self.pmdout.quit()
