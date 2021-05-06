@@ -390,7 +390,7 @@ class TestPmdrssHash(TestCase):
                 status = "true"
                 result.insert(i, 0)
                 if(i % 2 == 1):
-                    if(pre_RSS_hash == tmp_reta_line["RSS hash"]):
+                    if(pre_RSS_hash != tmp_reta_line["RSS hash"]):
                         status = "true"
                         result.insert(len(reta_lines) + (i - 1) // 2, 0)
                     else:
@@ -494,6 +494,7 @@ class TestPmdrssHash(TestCase):
         dutPorts = self.dut.get_ports(self.nic)
         localPort = self.tester.get_local_port(dutPorts[0])
         itf = self.tester.get_interface(localPort)
+        rule_action = 'func symmetric_toeplitz queues end / end'
         global reta_num
         global iptypes
 
@@ -512,10 +513,13 @@ class TestPmdrssHash(TestCase):
                 "set nbcore %d" % (queue + 1), "testpmd> ")
 
             self.dut.send_expect("port stop all", "testpmd> ")
-            self.dut.send_expect(
-                "set_hash_global_config 0 toeplitz %s enable" % iptype, "testpmd> ")
-            self.dut.send_expect(
-                "set_sym_hash_ena_per_port 0 enable", "testpmd> ")
+            self.dut.send_expect("flow flush 0", "testpmd> ")
+            rule_cmd = f'flow create 0 ingress pattern eth / ipv4 / end actions rss types {iptype} end queues end {rule_action}'
+            if 'sctp' in iptype or 'udp' in iptype or 'tcp' in iptype:
+                rule_cmd = rule_cmd.replace('/ ipv4 /', f'/ ipv4 / {rsstype} /')
+            if 'ipv6' in iptype:
+                rule_cmd = rule_cmd.replace('ipv4', 'ipv6')
+            self.dut.send_expect(rule_cmd, "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect(
                 "port config all rss %s" % rsstype, "testpmd> ")
@@ -528,6 +532,7 @@ class TestPmdrssHash(TestCase):
                     "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
 
             self.send_packet_symmetric(itf, iptype)
+            self.dut.send_expect("flow flush 0", "testpmd> ")
 
         self.dut.send_expect("quit", "# ", 30)
 
