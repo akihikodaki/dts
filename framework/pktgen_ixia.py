@@ -610,13 +610,13 @@ class Ixia(SSHConnection):
                 for item in self.ports]),
             "% ", 10)
         if out.strip()[-1] != '0':
-            return False
-        out = self.send_expect("ixTakeOwnership [list %s] force" % ' '.join(
+            self.logger.info("Force to take ownership:")
+            out = self.send_expect("ixTakeOwnership [list %s] force" % ' '.join(
             ['[list %d %d %d]' % (self.chasId, item['card'], item['port'])
                 for item in self.ports]),
             "% ", 10)
-        if out.strip()[-1] != '0':
-            return False
+            if out.strip()[-1] != '0':
+                return False
 
         return True
 
