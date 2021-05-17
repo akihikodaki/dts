@@ -4464,11 +4464,11 @@ class TestPipeline(TestCase):
         self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "udp")
         self.dut.send_expect("^C", "# ", 20)
 
-    def test_tencent_001(self):
+    def test_u100_001(self):
 
-        cli_file = '/tmp/pipeline/tencent_001/tencent_001.cli'
+        cli_file = '/tmp/pipeline/u100_001/u100_001.cli'
         self.run_dpdk_app(cli_file)
-        base_dir = 'pipeline/tencent_001/pcap_files/'
+        base_dir = 'pipeline/u100_001/pcap_files/'
 
         # TCP Packets
         in_pcap = ['in_1.txt']
@@ -4502,6 +4502,55 @@ class TestPipeline(TestCase):
         out_pcap = ['out_41.txt', 'out_42.txt', 'out_43.txt', 'out_44.txt']
         out_pcap = [base_dir + s for s in out_pcap]
         filters = ["igmp"] * 4
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_u100_002(self):
+
+        cli_file = '/tmp/pipeline/u100_002/u100_002.cli'
+        self.run_dpdk_app(cli_file)
+        base_dir = 'pipeline/u100_002/pcap_files/'
+
+        # TCP Packets
+        in_pcap = ['in_1.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_11.txt', 'out_12.txt', 'out_13.txt', 'out_14.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["tcp", "vlan 16", "vlan 16", "tcp"]
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # UDP Packets
+        in_pcap = ['in_2.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_21.txt', 'out_22.txt', 'out_23.txt', 'out_24.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["udp port 200", "vlan 16", "vlan 16", "udp port 200"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # ICMP Packets
+        in_pcap = ['in_3.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_31.txt', 'out_32.txt', 'out_33.txt', 'out_34.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["icmp", "vlan 16", "vlan 16", "icmp"]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # IGMP Packets
+        in_pcap = ['in_4.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_41.txt', 'out_42.txt', 'out_43.txt', 'out_44.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["igmp", "vlan 16", "vlan 16", "igmp"] * 4
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # IPv6 Packets
+        in_pcap = ['in_5.txt']
+        in_pcap = [base_dir + s for s in in_pcap]
+        out_pcap = ['out_51.txt', 'out_52.txt', 'out_53.txt', 'out_54.txt']
+        out_pcap = [base_dir + s for s in out_pcap]
+        filters = ["tcp"] * 4
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
