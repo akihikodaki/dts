@@ -308,7 +308,9 @@ To Be Filled
 
 Acl
 ===
-To Be Filled
+Performs ACL functional validation.
+If DPDK version permits, then start with " --force-max-simd-bitwidth=0" EAL parameter.
+That will ensure validation of all supported on given HW ACL algorithms.
 
 Link_bonding
 ============
