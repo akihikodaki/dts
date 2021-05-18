@@ -640,6 +640,9 @@ class TestL3fwdacl(TestCase):
         self.core_mask = utils.create_mask(cores)
         print("Core mask: %s" % self.core_mask)
 
+        if self.dut.dpdk_version >= '20.11.0':
+            self.eal_para += " --force-max-simd-bitwidth=0"
+
         valid_ports = [port for port in ports if self.tester.get_local_port(port) != -1]
         self.verify(
             len(valid_ports) >= 2, "Insufficient active dut_ports for speed testing")
