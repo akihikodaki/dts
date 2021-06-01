@@ -130,8 +130,8 @@ class TestStatsChecks(TestCase):
             src_ip = self.get_random_ip()
             pkt.config_layers([('ether', {'dst': mac}),
                                ('ipv4', {'src': src_ip})])
-            pkt.send_pkt(crb=self.tester, tx_port=self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])))
-
+            pkt.send_pkt(crb=self.tester,
+                         tx_port=self.tester.get_interface(self.tester.get_local_port(self.dut_ports[0])))
 
     def send_packet_of_size_to_tx_port(self, pktsize, received=True):
         """
@@ -180,7 +180,7 @@ class TestStatsChecks(TestCase):
             out = self.exec('show port xstats %s' % port_id)
             tmp_data = dict()
             for prefix in prefix_list:
-                pattern = re.compile('%s:(\s+)([0-9]+)' % prefix)
+                pattern = re.compile('%s:(\\s+)([0-9]+)' % prefix)
                 m = pattern.search(out)
                 if not m:
                     tmp_data.setdefault(prefix, 0)
@@ -193,39 +193,41 @@ class TestStatsChecks(TestCase):
         if if_zero:
             for port in xstats_data.keys():
                 self.verify(not any(xstats_data[port].values()), 'xstats Initial value error! port {} xstats '
-                                                                         'data is {}'.format(port, xstats_data[port]))
+                                                                 'data is {}'.format(port, xstats_data[port]))
         else:
             self.verify(xstats_data[rx_port]['rx_good_packets'] == stats_data[rx_port]['RX-packets']
-                                == xstats_data[tx_port]['tx_good_packets'] == stats_data[tx_port]['TX-packets']
-                                == 100, "pkt recieve or transport count error!")
+                        == xstats_data[tx_port]['tx_good_packets'] == stats_data[tx_port]['TX-packets']
+                        == 100, "pkt recieve or transport count error!")
             self.verify(xstats_data[rx_port]['rx_good_bytes'] == stats_data[rx_port]['RX-bytes'] ==
                         xstats_data[tx_port]['tx_good_bytes'] == stats_data[tx_port]['TX-bytes'],
                         'pkt recieve or transport bytes error!')
 
     def xstats_check(self, rx_port, tx_port, if_vf=False):
-        self.exec ("port config all rss all")
-        self.exec ("set fwd mac")
+        self.exec("port config all rss all")
+        self.exec("set fwd mac")
+        self.exec("clear port xstats all")
         org_xstats = self.get_xstats([rx_port, tx_port])
         self.verify_results(org_xstats, rx_port, tx_port, if_zero=True)
-        self.exec ("start")
+        self.exec("start")
 
         self.send_pkt_with_random_ip(tx_port, count=100, if_vf=if_vf)
 
-        self.exec ("stop")
+        self.exec("stop")
         if rx_port == tx_port:
             final_xstats = self.get_xstats([rx_port])
-            stats_data = {rx_port: self.pmdout.get_pmd_stats(rx_port)}
+            stats_data = {
+                rx_port: self.pmdout.get_pmd_stats(rx_port)
+            }
         else:
             rx_stats_info = self.pmdout.get_pmd_stats(rx_port)
             tx_stats_info = self.pmdout.get_pmd_stats(tx_port)
             final_xstats = self.get_xstats([rx_port, tx_port])
-            stats_data = {rx_port: rx_stats_info,
-                          tx_port: tx_stats_info
-                          }
+            stats_data = {
+                rx_port: rx_stats_info,
+                tx_port: tx_stats_info
+            }
         self.verify_results(final_xstats, rx_port, tx_port, stats_data=stats_data)
-
         self.pmdout.quit()
-
 
     def set_up_all(self):
         """
