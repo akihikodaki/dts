@@ -176,22 +176,18 @@ Test Case: Update flow type to GTP-U IPv4 pctype mapping item
 
     testpmd> show port 0 pctype mapping
 	
-4. Add udp key to hash input set for flow type id 26 on port 0::
-
-    testpmd> set_hash_input_set 0 26 udp-key add
-
-5. Enable flow type id 26's RSS::
+4. Enable flow type id 26's RSS::
 
     testpmd> port config all rss 26
 
-6. Start testpmd
+5. Start testpmd
 
-7. Send GTP-U IPv4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U IPv4 packets, check RSS could work, print PKT_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
 
-8. Send GTP-U IPv6, GTP-U PAY4 and GTP-C PAY4 packets, check receive packets 
+7. Send GTP-U IPv6, GTP-U PAY4 and GTP-C PAY4 packets, check receive packets 
    from queue 0 and don't have PKT_RX_RSS_HASH print.
   
 
@@ -209,22 +205,18 @@ Test Case: Update flow type to GTP-U IPv6 pctype mapping item
 
     testpmd> show port 0 pctype mapping
 	
-4. Add udp key to hash input set for flow type id 23 on port 0::
-
-    testpmd> set_hash_input_set 0 23 udp-key add
-
-5. Enable flow type id 23's RSS::
+4. Enable flow type id 23's RSS::
 
     testpmd> port config all rss 23
 
-6. Start testpmd
+5. Start testpmd
 
-7. Send GTP-U IPv6 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U IPv6 packets, check RSS could work, print PKT_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
 
-8. Send GTP-U IPv4, GTP-U PAY4 and GTP-C PAY4 packets, check receive 
+7. Send GTP-U IPv4, GTP-U PAY4 and GTP-C PAY4 packets, check receive 
    packets from queue 0 and don't have PKT_RX_RSS_HASH print
   
 
@@ -243,22 +235,18 @@ Test Case: Update flow type to GTP-U PAY4 pctype mapping item
 
     testpmd> show port 0 pctype mapping
 	
-4. Add udp key to hash input set for flow type id 24 on port 0::
-
-    testpmd> set_hash_input_set 0 24 udp-key add
-
-5. Enable flow type id 24's RSS::
+4. Enable flow type id 24's RSS::
 
     testpmd> port config all rss 24
 
-6. Start testpmd
+5. Start testpmd
 
-7. Send GTP-U, PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-U, PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
 
-8. Send GTP-U IPv4, GTP-U IPv6 and GTP-C PAY4 packets, check receive 
+7. Send GTP-U IPv4, GTP-U IPv6 and GTP-C PAY4 packets, check receive 
    packets from queue 0 and don't have PKT_RX_RSS_HASH print.
  
 	  
@@ -274,22 +262,18 @@ Test Case: Update flow type to GTP-C PAY4 pctype mapping item
 	
 3. Check flow ptype to pctype mapping adds 25 this mapping 
 	
-4. Add udp key to hash input set for flow type id 25 on port 0::
-
-    testpmd> set_hash_input_set 0 25 udp-key add
-
-5. Enable flow type id 25's RSS::
+4. Enable flow type id 25's RSS::
 
     testpmd> port config all rss 25
 
-6. Start testpmd
+5. Start testpmd
 
-7. Send GTP-C PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
+6. Send GTP-C PAY4 packets, check RSS could work, print PKT_RX_RSS_HASH::
 
     >>> p=Ether()/IP()/UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
     >>> p=Ether()/IPv6()/UDP(dport=2123)/GTP_U_Header()/Raw('x'*20)
 
-8. Send GTP-U IPv4, GTP-U IPv6 and GTP-U PAY4 packets, check receive packets
+7. Send GTP-U IPv4, GTP-U IPv6 and GTP-U PAY4 packets, check receive packets
    from queue 0 and don't have PKT_RX_RSS_HASH print.
 
    
