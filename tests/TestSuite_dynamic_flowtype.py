@@ -235,8 +235,6 @@ class TestDynamicFlowtype(TestCase):
                     % (pctype, flowtype) in out,
                     "Failed update flow type to pctype mapping!!!")
         if reset is False:
-            self.dut_testpmd.execute_cmd(
-                'set_hash_input_set 0 %s udp-key add' % flowtype)
             self.dut_testpmd.execute_cmd('port config all rss %s' % flowtype)
         else:
             self.dut_testpmd.execute_cmd('port config 0 pctype mapping reset')
