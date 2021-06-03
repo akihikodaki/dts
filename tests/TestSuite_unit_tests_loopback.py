@@ -81,7 +81,7 @@ class TestUnitTestsLoopback(TestCase):
         pass
 
     def get_max_traffic_burst(self):
-        pmd_file = self.dut.send_expect("cat app/test/test_pmd_perf.c", "# ", 30)
+        pmd_file = self.dut.send_expect("cat app/test/test_pmd_perf.c", "# ", 30, trim_whitespace=False)
         result_scanner = r"#define MAX_TRAFFIC_BURST\s+([0-9]+)"
         scanner = re.compile(result_scanner, re.DOTALL)
         m = scanner.search(pmd_file)

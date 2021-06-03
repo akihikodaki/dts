@@ -165,7 +165,7 @@ class TestDistributor(TestCase):
         self.verify(len(self.dut_ports) >= 1, "Not enough ports")
 
         cmd_fmt = "%s %s -- -p 0x1"
-        out = self.dut.send_expect("sed -n '/#define RTE_DISTRIB_MAX_WORKERS/p' lib/distributor/distributor_private.h", "# ")
+        out = self.dut.send_expect("sed -n '/#define RTE_DISTRIB_MAX_WORKERS/p' lib/distributor/distributor_private.h", "# ", trim_whitespace=False)
         reg_match = r"#define RTE_DISTRIB_MAX_WORKERS (.*)"
         m = re.match(reg_match, out)
         self.verify(m, "Can't find maximum worker number")

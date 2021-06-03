@@ -129,7 +129,7 @@ class TestFlowClassifySoftnic(TestCase):
         """
         param = ""
         direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
-        out = self.tester.send_expect('tcpdump -h', '# ')
+        out = self.tester.send_expect('tcpdump -h', '# ', trim_whitespace=False)
         for line in out.split('\n'):
             m = re.match(direct_param, line)
             if m:
