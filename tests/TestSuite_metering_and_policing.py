@@ -171,12 +171,26 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("add port meter profile trtcm_rfc2698 %d %d %d %d %d %d 0"
                              % (self.port_id, profile_id, cir, pir, cbs, pbs), "testpmd>")
 
-    def create_port_meter(self, mtr_id, profile_id, gyrd_action):
+    def add_port_meter_policy(self, port_id, policy_id, g_actions, y_actions, r_actions):
+        """
+        Add port meter policy
+        """
+        gyrd_action_list = [g_actions, y_actions, r_actions]
+
+        for i in range(len(gyrd_action_list)):
+            if gyrd_action_list[i] != "drop":
+                gyrd_action_list[i] = "color type " + gyrd_action_list[i]
+
+        self.dut.send_expect(
+            "add port meter policy %d %d g_actions %s / end y_actions %s / end r_actions %s / end"
+            % (port_id, policy_id, gyrd_action_list[0], gyrd_action_list[1], gyrd_action_list[2]), "testpmd>")
+
+    def create_port_meter(self, port_id, mtr_id, profile_id, policy_id, gyrd_action):
         """
         Create new meter object for the ethernet device.
         """
-        self.dut.send_expect("create port meter %d %d %d yes %s"
-                             % (self.port_id, mtr_id, profile_id, gyrd_action), "testpmd>")
+        self.dut.send_expect("create port meter %d %d %d %d yes %s"
+                             % (port_id, mtr_id, profile_id, policy_id, gyrd_action), "testpmd>")
 
     def create_flow_rule(self, ret_id, ip_ver, protocol, spec_id,  mtr_id, queue_index_id):
         """
@@ -336,7 +350,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
@@ -351,7 +366,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
@@ -366,7 +382,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=1)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","sctp",2,pkt_list,[1,-1,-1,1])
@@ -381,7 +398,9 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=28)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="d y r 0 0 0")
+
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="udp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","udp",2,pkt_list,[0,0,0,-1])
@@ -396,7 +415,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=40)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="d d d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="drop", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
@@ -411,7 +431,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","sctp",2,pkt_list,[0,0])
@@ -428,7 +449,8 @@ class TestMeteringAndPolicing(TestCase):
         # test 1 'g y r 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
@@ -437,7 +459,8 @@ class TestMeteringAndPolicing(TestCase):
         # test 2 'g y d 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
@@ -446,7 +469,8 @@ class TestMeteringAndPolicing(TestCase):
         # test 5 'd d d 0 0 0'
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="d d d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="drop", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
@@ -456,7 +480,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=32)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="sctp", spec_id=2, mtr_id=0, queue_index_id=1)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","sctp",2,pkt_list,[1,-1,-1,1])
@@ -466,7 +491,8 @@ class TestMeteringAndPolicing(TestCase):
         pkt_list = self.run_param(cbs=cbs, pbs=pbs, head=28)
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="udp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.dut.send_expect("start", "testpmd>")
         self.run_port_list("ipv4","udp",2,pkt_list,[0,0,0,-1])
@@ -481,8 +507,10 @@ class TestMeteringAndPolicing(TestCase):
         pbs = 500
         self.start_testpmd(self.new_firmware_cli)
         self.add_port_meter_profile(profile_id=0, cbs=cbs, pbs=pbs)
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y d 0 0 0")
-        self.create_port_meter(mtr_id=1, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv6", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.create_flow_rule(ret_id=1, ip_ver="ipv6", protocol="udp", spec_id=2, mtr_id=1, queue_index_id=1)
         self.dut.send_expect("start","testpmd>")
@@ -502,9 +530,11 @@ class TestMeteringAndPolicing(TestCase):
         self.add_port_meter_profile(profile_id=0, cbs=400, pbs=500)
         self.add_port_meter_profile(profile_id=1, cbs=300, pbs=400)
 
-        gyrd_action_list = ["g y r 0 0 0", "g y d 0 0 0", "g d r 0 0 0", "d y r 0 0 0", "g y d 0 0 0", "g d r 0 0 0", "d y r 0 0 0", "d d d 0 0 0"]
+        gyrd_action_list = [["green", "yellow", "red"], ["green", "yellow", "drop"], ["green", "drop", "red"], ["drop", "yellow", "red"],
+                            ["green", "yellow", "drop"], ["green", "drop", "red"], ["drop", "yellow", "red"], ["drop", "drop", "drop"]]
         for i in range(0,len(gyrd_action_list)):
-            self.create_port_meter(mtr_id=i, profile_id=i*2/len(gyrd_action_list), gyrd_action=gyrd_action_list[i])
+            self.add_port_meter_policy(self.port_id, policy_id=i, g_actions=gyrd_action_list[i][0], y_actions=gyrd_action_list[i][1], r_actions=gyrd_action_list[i][2])
+            self.create_port_meter(self.port_id, mtr_id=i, profile_id=i * 2 / len(gyrd_action_list), policy_id=i, gyrd_action="0 0 0")
             self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=i, mtr_id=i, queue_index_id=i%len(self.dut_ports))
         self.create_flow_rule(ret_id=0, ip_ver="ipv4", protocol="tcp", spec_id=8, mtr_id=7, queue_index_id=0)
 
@@ -550,22 +580,26 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
         # test 1: GYD
-        self.create_port_meter(mtr_id=1, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,-1,-1,-1])
 
         # test 2: GDR
-        self.create_port_meter(mtr_id=2, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
         # test 3: DYR
-        self.create_port_meter(mtr_id=3, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
@@ -582,22 +616,26 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
         # test 1: GYD
-        self.create_port_meter(mtr_id=1, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
 
         # test 2: GDR
-        self.create_port_meter(mtr_id=2, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,-1])
 
         # test 3: DYR
-        self.create_port_meter(mtr_id=3, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
@@ -614,22 +652,26 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
         # test 1: GYD
-        self.create_port_meter(mtr_id=1, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
 
         # test 2: GDR
-        self.create_port_meter(mtr_id=2, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,0])
 
         # test 3: DYR
-        self.create_port_meter(mtr_id=3, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,-1])
 
@@ -646,22 +688,26 @@ class TestMeteringAndPolicing(TestCase):
         self.dut.send_expect("start", "testpmd>")
 
         # test 0: GYR
-        self.create_port_meter(mtr_id=0, profile_id=0, gyrd_action="g y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=0, g_actions="green", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=0, profile_id=0, policy_id=0, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=0, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,0])
 
         # test 1: GYD
-        self.create_port_meter(mtr_id=1, profile_id=0, gyrd_action="g y d 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=1, g_actions="green", y_actions="yellow", r_actions="drop")
+        self.create_port_meter(self.port_id, mtr_id=1, profile_id=0, policy_id=1, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=1, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[-1,0,0,0])
 
         # test 2: GDR
-        self.create_port_meter(mtr_id=2, profile_id=0, gyrd_action="g d r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=2, g_actions="green", y_actions="drop", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=2, profile_id=0, policy_id=2, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=2, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,-1,-1,0])
 
         # test 3: DYR
-        self.create_port_meter(mtr_id=3, profile_id=0, gyrd_action="d y r 0 0 0")
+        self.add_port_meter_policy(self.port_id, policy_id=3, g_actions="drop", y_actions="yellow", r_actions="red")
+        self.create_port_meter(self.port_id, mtr_id=3, profile_id=0, policy_id=3, gyrd_action="0 0 0")
         self.create_flow_rule(ret_id=1, ip_ver="ipv4", protocol="tcp", spec_id=2, mtr_id=3, queue_index_id=0)
         self.run_port_list("ipv4","tcp",2,pkt_list,[0,0,0,-1])
 
