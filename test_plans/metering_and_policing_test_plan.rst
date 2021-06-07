@@ -179,8 +179,9 @@ Test Case 1: ipv4 ACL table RFC2698 GYR
 
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -230,8 +231,9 @@ Test Case 2: ipv4 ACL table RFC2698 GYD
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y d 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -278,8 +280,9 @@ Test Case 3: ipv4 ACL table RFC2698 GDR
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g d r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 132 / sctp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 1 / end
     testpmd> start
 
@@ -329,8 +332,9 @@ Test Case 4: ipv4 ACL table RFC2698 DYR
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes d y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 17 / udp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -379,8 +383,9 @@ Test Case 5: ipv4 ACL table RFC2698 DDD
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes d d d 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions drop / end y_actions drop / end r_actions drop / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -426,8 +431,9 @@ Test Case 6: ipv4 with same CBS and PBS GDR
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 500 500
-    testpmd> create port meter 2 0 0 yes g d r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 500 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -466,17 +472,22 @@ Test Case 7: ipv4 HASH table RFC2698
   Add rules to table,
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
     a)GYR
-    testpmd> create port meter 2 0 0 yes g y r 0 0 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     b)GYD
-    testpmd> create port meter 2 0 0 yes g y d 0 0 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     c)GDR
-    testpmd> create port meter 2 0 0 yes g d r 0 0 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     d)DYR
-    testpmd> create port meter 2 0 0 yes d y r 0 0 0
+    testpmd> add port meter policy 2 0 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     e)DDD
-    testpmd> create port meter 2 0 0 yes d d d 0 0 0
+    testpmd> add port meter policy 2 0 g_actions drop / end y_actions drop / end r_actions drop / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -501,9 +512,11 @@ Test Case 8: ipv6 ACL table RFC2698
   Add rules to table,
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y d 0 0 0
-    testpmd> create port meter 2 1 0 yes d y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
+    testpmd> add port meter policy 2 1 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 1 0 1 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv6 proto mask 255 src mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff dst mask 0:0:0:0:0:0:0:0 src spec ABCD:EF01:2345:6789:ABCD:EF01:2345:5789 dst spec 0:0:0:0:0:0:0:0 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> flow create 2 group 0 ingress pattern eth / ipv6 proto mask 255 src mask ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff dst mask 0:0:0:0:0:0:0:0 src spec ABCD:EF01:2345:6789:ABCD:EF01:2345:5789 dst spec 0:0:0:0:0:0:0:0 proto spec 17 / udp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 1 / queue index 1 / end
     testpmd> start
@@ -553,16 +566,24 @@ Test Case 9: multiple meter and profile
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 4 0 3125000000 3125000000 400 500
-    testpmd> add port meter profile trtcm_rfc2698 4 1 3125000000 3125000000 300 400
-    testpmd> create port meter 4 0 0 yes g y r 0 0 0
-    testpmd> create port meter 4 1 0 yes g y d 0 0 0
-    testpmd> create port meter 4 2 0 yes g d r 0 0 0
-    testpmd> create port meter 4 3 0 yes d y r 0 0 0
-    testpmd> create port meter 4 4 1 yes g y d 0 0 0
-    testpmd> create port meter 4 5 1 yes g d r 0 0 0
-    testpmd> create port meter 4 6 1 yes d y r 0 0 0
-    testpmd> create port meter 4 128 1 yes d d d 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 4 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter profile trtcm_rfc2698 4 1 3125000000 3125000000 300 400 0
+    testpmd> add port meter policy 4 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 4 0 0 0 yes 0 0 0
+    testpmd> add port meter policy 4 1 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 4 1 0 1 yes 0 0 0
+    testpmd> add port meter policy 4 2 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 4 2 0 2 yes 0 0 0
+    testpmd> add port meter policy 4 3 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 4 3 0 3 yes 0 0 0
+    testpmd> add port meter policy 4 4 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 4 4 1 4 yes 0 0 0
+    testpmd> add port meter policy 4 5 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 4 5 1 5 yes 0 0 0
+    testpmd> add port meter policy 4 6 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 4 6 1 6 yes 0 0 0
+    testpmd> add port meter policy 4 7 g_actions drop / end y_actions drop / end r_actions drop / end
+    testpmd> create port meter 4 7 1 7 yes 0 0 0
     testpmd> flow create 4 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 0 dst spec 0 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> flow create 4 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 1 dst spec 1 / end actions meter mtr_id 1 / queue index 1 / end
     testpmd> flow create 4 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 2 / queue index 2 / end
@@ -648,8 +669,9 @@ Test Case 10: ipv4 RFC2698 pre-colored red by DSCP table
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -667,7 +689,8 @@ Test Case 10: ipv4 RFC2698 pre-colored red by DSCP table
 
   ::
 
-    testpmd> create port meter 2 1 0 yes g y d 0 0 0
+    testpmd> add port meter policy 2 1 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 1 0 1 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 1 / queue index 0 / end
 
 5. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -684,7 +707,8 @@ Test Case 10: ipv4 RFC2698 pre-colored red by DSCP table
 
   ::
 
-    testpmd> create port meter 2 2 0 yes g d r 0 0 0
+    testpmd> add port meter policy 2 2 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 2 0 2 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 2 / queue index 0 / end
 
 7. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -701,7 +725,8 @@ Test Case 10: ipv4 RFC2698 pre-colored red by DSCP table
 
   ::
 
-    testpmd> create port meter 2 3 0 yes d y r 0 0 0
+    testpmd> add port meter policy 2 3 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 3 0 3 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 3 / queue index 0 / end
 
 9. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -735,8 +760,9 @@ Test Case 11: ipv4 RFC2698 pre-colored yellow by DSCP table
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -754,7 +780,8 @@ Test Case 11: ipv4 RFC2698 pre-colored yellow by DSCP table
 
   ::
 
-    testpmd> create port meter 2 1 0 yes g y d 0 0 0
+    testpmd> add port meter policy 2 1 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 1 0 1 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 1 / queue index 0 / end
 
 5. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -772,7 +799,8 @@ Test Case 11: ipv4 RFC2698 pre-colored yellow by DSCP table
 
   ::
 
-    testpmd> create port meter 2 2 0 yes g d r 0 0 0
+    testpmd> add port meter policy 2 2 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 2 0 2 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 2 / queue index 0 / end
 
 7. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -790,7 +818,8 @@ Test Case 11: ipv4 RFC2698 pre-colored yellow by DSCP table
 
   ::
 
-    testpmd> create port meter 2 3 0 yes d y r 0 0 0
+    testpmd> add port meter policy 2 3 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 3 0 3 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 3 / queue index 0 / end
 
 9. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -824,8 +853,9 @@ Test Case 12: ipv4 RFC2698 pre-colored green by DSCP table
   Add rules to table, set CBS to 400 bytes, PBS to 500 bytes
   ::
 
-    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500
-    testpmd> create port meter 2 0 0 yes g y r 0 0 0
+    testpmd> add port meter profile trtcm_rfc2698 2 0 3125000000 3125000000 400 500 0
+    testpmd> add port meter policy 2 0 g_actions color type green / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 0 0 0 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 0 / queue index 0 / end
     testpmd> start
 
@@ -843,7 +873,8 @@ Test Case 12: ipv4 RFC2698 pre-colored green by DSCP table
 
   ::
 
-    testpmd> create port meter 2 1 0 yes g y d 0 0 0
+    testpmd> add port meter policy 2 1 g_actions color type green / end y_actions color type yellow / end r_actions drop / end
+    testpmd> create port meter 2 1 0 1 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 1 / queue index 0 / end
 
 5. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -861,7 +892,8 @@ Test Case 12: ipv4 RFC2698 pre-colored green by DSCP table
 
   ::
 
-    testpmd> create port meter 2 2 0 yes g d r 0 0 0
+    testpmd> add port meter policy 2 2 g_actions color type green / end y_actions drop / end r_actions color type red / end
+    testpmd> create port meter 2 2 0 2 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 2 / queue index 0 / end
 
 7. Configure the packets with specified src/dst IP address and TCP dport/sport.
@@ -879,7 +911,8 @@ Test Case 12: ipv4 RFC2698 pre-colored green by DSCP table
 
   ::
 
-    testpmd> create port meter 2 3 0 yes d y r 0 0 0
+    testpmd> add port meter policy 2 3 g_actions drop / end y_actions color type yellow / end r_actions color type red / end
+    testpmd> create port meter 2 3 0 3 yes 0 0 0
     testpmd> flow create 2 group 0 ingress pattern eth / ipv4 proto mask 255 src mask 255.255.255.255 dst mask 255.255.255.255 src spec 1.10.11.12 dst spec 2.20.21.22 proto spec 6 / tcp src mask 65535 dst mask 65535 src spec 2 dst spec 2 / end actions meter mtr_id 3 / queue index 0 / end
 
 9. Configure the packets with specified src/dst IP address and TCP dport/sport.
