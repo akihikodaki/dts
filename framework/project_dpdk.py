@@ -462,7 +462,7 @@ class DPDKdut(Dut):
             self.send_expect("rm -rf %s" % self.base_dir, "#")
 
             # unpack dpdk
-            out = self.send_expect("tar zxf %s%s -C %s" %
+            out = self.send_expect("tar zxfm %s%s -C %s" %
                                    (dst_dir, self.package.split('/')[-1], p_dir),
                                    "# ", 30, verify=True)
             if out == -1:
@@ -704,10 +704,10 @@ class DPDKtester(Tester):
             self.session.copy_file_to("dep/tgen.tgz")
             self.session.copy_file_to("dep/tclclient.tgz")
             # unpack tgen
-            out = self.send_expect("tar zxf tgen.tgz", "# ")
+            out = self.send_expect("tar zxfm tgen.tgz", "# ")
             assert "Error" not in out
             # unpack tclclient
-            out = self.send_expect("tar zxf tclclient.tgz", "# ")
+            out = self.send_expect("tar zxfm tclclient.tgz", "# ")
             assert "Error" not in out
 
         self.send_expect("modprobe uio", "# ")
