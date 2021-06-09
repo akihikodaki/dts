@@ -158,7 +158,7 @@ class VirtioCryptodevUnitTest(TestCase):
         return vm, vm_dut
 
     def test_cryptodev_virtio_autotest(self):
-        eal_opt_str = cc.get_eal_opt_str(self, {"a":None, "vdev":None})
+        eal_opt_str = cc.get_eal_opt_str(self, {"a":None, "vdev": "crypto_virtio"})
         self.__run_unit_test("cryptodev_virtio_autotest", eal_opt_str)
 
     def __run_unit_test(self, testsuite, eal_opt_str='', timeout=600):
