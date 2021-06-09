@@ -53,6 +53,37 @@ class UnitTestsCryptodev(TestCase):
     def tear_down_all(self):
         cc.clear_dpdk_config(self)
 
+    def _get_crypto_device(self, num):
+        device = {}
+        if self.get_case_cfg()["devtype"] == "crypto_aesni_mb":
+            dev = "crypto_aesni_mb"
+        elif self.get_case_cfg()["devtype"] == "crypto_qat":
+            w = cc.get_qat_devices(self, cpm_num=1, num=num)
+            device["vdev"] = None
+        elif self.get_case_cfg()["devtype"] == "crypto_openssl":
+            dev = "crypto_openssl"
+        elif self.get_case_cfg()["devtype"] == "crypto_aesni_gcm":
+            dev = "crypto_aesni_gcm"
+        elif self.get_case_cfg()["devtype"] == "crypto_kasumi":
+            dev = "crypto_kasumi"
+        elif self.get_case_cfg()["devtype"] == "crypto_snow3g":
+            dev = "crypto_snow3g"
+        elif self.get_case_cfg()["devtype"] == "crypto_zuc":
+            dev = "crypto_zuc"
+        elif self.get_case_cfg()["devtype"] == "crypto_null":
+            dev = "crypto_null"
+        else:
+            return {}
+
+        if not device:
+            vdev_list = []
+            for i in range(num):
+                vdev = "{}{}".format(dev, i)
+                vdev_list.append(vdev)
+            device["vdev"] = ' --vdev '.join(vdev_list)
+
+        return device
+
     def test_cryptodev_qat_autotest(self):
         self.__run_unit_test("cryptodev_qat_autotest")
 
@@ -105,7 +136,8 @@ class UnitTestsCryptodev(TestCase):
         self.__run_unit_test("cryptodev_scheduler_autotest")
 
     def __run_unit_test(self, testsuite, timeout=600):
-        eal_opt_str = cc.get_eal_opt_str(self)
+        devices = self._get_crypto_device(num=1)
+        eal_opt_str = cc.get_eal_opt_str(self, devices)
         w = cc.get_qat_devices(self, num=1)
 
         self.logger.info("STEP_TEST: " + testsuite)
