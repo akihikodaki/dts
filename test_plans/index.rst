@@ -127,7 +127,7 @@ The following are the test plans for the DPDK DTS automated test system.
     perf_virtio_user_loopback_test_plan
     perf_virtio_user_pvp_test_plan
     perf_vm2vm_virtio_net_perf_test_plan
-    pf_smoke_test
+    pf_smoke_test_plan
     pipeline_test_plan
     pvp_virtio_user_multi_queues_port_restart_test_plan
     pmd_bonded_8023ad_test_plan
@@ -197,7 +197,7 @@ The following are the test plans for the DPDK DTS automated test system.
     vf_port_start_stop_test_plan
     vf_rss_test_plan
     vf_single_core_perf_test_plan
-    vf_smoke_test
+    vf_smoke_test_plan
     vf_to_vf_nic_bridge_test_plan
     vf_vlan_test_plan
     kernelpf_iavf_test_plan
@@ -302,3 +302,5 @@ The following are the test plans for the DPDK DTS automated test system.
     port_representor_test_plan
     vm2vm_virtio_user_test_plan
     vmdq_dcb_test_plan
+    acl_test_plan
+    power_negative_test_plan
