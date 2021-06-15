@@ -157,21 +157,12 @@ class TestShutdownApi(TestCase):
         rx_bytes_exp = pktSize*4
         tx_bytes_exp = pktSize*4
 
-        if self.kdriver == "fm10k":
-            # RRC will always strip rx/tx crc
-            rx_bytes_exp -= 4
-            tx_bytes_exp -= 4
-            if vlan_strip is True:
-                # RRC will always strip rx/tx vlan
-                rx_bytes_exp -= 4
-                tx_bytes_exp -= 4
-        else:
-            # some NIC will always include tx crc
-            rx_bytes_exp -= 16
+        # The NIC will always include tx crc
+        rx_bytes_exp -= 16
+        tx_bytes_exp -= 16
+        if vlan_strip is True:
+            # vlan strip default is off
             tx_bytes_exp -= 16
-            if vlan_strip is True:
-                # vlan strip default is off
-                tx_bytes_exp -= 16
          
         # fortville nic enable send lldp packet function when port setup
         # now the tx-packets size is lldp_size(110) * n + forward packe size
@@ -188,10 +179,6 @@ class TestShutdownApi(TestCase):
         """
         Check link status of the ports.
         """
-        # RRC not support link speed change
-        if self.kdriver == "fm10k":
-            return
-
         for port in self.ports:
             out = self.tester.send_expect(
                 "ethtool %s" % self.tester.get_interface(self.tester.get_local_port(port)), "# ")
@@ -475,10 +462,6 @@ class TestShutdownApi(TestCase):
         """
         Change Link Speed.
         """
-        if self.kdriver == "fm10k":
-            print((utils.RED("RRC not support\n")))
-            return
-
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
         self.dut.send_expect("set promisc all off", "testpmd>")
 
@@ -598,10 +581,6 @@ class TestShutdownApi(TestCase):
         """
         Enable/Disable Jumbo Frames.
         """
-        if self.kdriver == "fm10k":
-            print((utils.RED("RRC not support\n")))
-            return
-
         jumbo_size = 2048
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
         self.dut.send_expect("set promisc all off", "testpmd>")
@@ -779,10 +758,6 @@ class TestShutdownApi(TestCase):
         """
         port link stats test
         """
-        if self.kdriver == "fm10k":
-            print((utils.RED("RRC not support\n")))
-            return
-
         self.pmdout.start_testpmd("Default", "--portmask=%s --port-topology=loop" % utils.create_mask(self.ports), socket=self.ports_socket)
         self.dut.send_expect("set promisc all off", "testpmd>")
         self.dut.send_expect("set fwd mac", "testpmd>")

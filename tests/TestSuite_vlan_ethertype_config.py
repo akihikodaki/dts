@@ -165,9 +165,6 @@ class TestVlanEthertypeConfig(TestCase):
         """
         Test Case 1: change VLAN TPID
         """
-        if self.kdriver == "fm10k":
-            print((dts.RED("fm10k not support this case\n")))
-            return
         random_vlan = random.randint(1, MAX_VLAN - 1)
         self.dut.send_expect("set fwd rxonly", "testpmd> ")
         self.dut.send_expect("set verbose 1", "testpmd> ")
@@ -324,12 +321,6 @@ class TestVlanEthertypeConfig(TestCase):
                 vlan_string = str("%04x" % tpid) + str("%04x" % tx_vlan)
                 self.verify(vlan_string not in out, "Wrong vlan:" + str(out))
 
-        if self.kdriver == "fm10k":
-            for tx_vlan in tx_vlans:
-                netobj = self.dut.ports_info[dutTxPortId]['port']
-                # not delete vlan for self.vlan will used later
-                netobj.delete_txvlan(vlan_id=tx_vlan)
-
     def test_vlan_qinq_tpid(self):
         """
         Test Case 6: Change S-Tag and C-Tag within QinQ
@@ -377,7 +368,3 @@ class TestVlanEthertypeConfig(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        if self.kdriver == "fm10k":
-            netobj = self.dut.ports_info[dutRxPortId]['port']
-            netobj.delete_txvlan(vlan_id=self.vlan)
-            netobj.delete_vlan(vlan_id=self.vlan)

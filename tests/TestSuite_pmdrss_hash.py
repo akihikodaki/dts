@@ -414,8 +414,7 @@ class TestPmdrssHash(TestCase):
         """
 
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g","fortville_eagle", "fortville_spirit",
-                    "fortville_spirit_single", "redrockcanyou", "atwood",
-                    "boulderrapid", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "niantic", "carlsville", "foxville"],
+                    "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T","fortville_25g", "niantic", "carlsville", "foxville"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
         global iptypes
@@ -436,13 +435,11 @@ class TestPmdrssHash(TestCase):
                        'ipv6-tcp': 'tcp',
                        'ipv6-frag': 'ip'
                        }
-        elif self.nic in ["redrockcanyou", "atwood", "boulderrapid"]:
-            reta_num = 128
         else:
             self.verify(False, "NIC Unsupported:%s" % str(self.nic))
         ports = self.dut.get_ports(self.nic)
         self.verify(len(ports) >= 1, "Not enough ports available")
-        self.path=self.dut.apps_name['test-pmd']
+        self.path = self.dut.apps_name['test-pmd']
 
     def set_up(self):
         """
@@ -543,10 +540,6 @@ class TestPmdrssHash(TestCase):
         global reta_num
         global iptypes
 
-        if self.kdriver in ["fm10k"]:
-            iptypes.pop('ipv4-sctp')
-            iptypes.pop('ipv6-sctp')
-
         self.dut.kill_all()
 
         # test with different rss queues
@@ -564,9 +557,8 @@ class TestPmdrssHash(TestCase):
 
             self.dut.send_expect("port stop all", "testpmd> ")
             # some nic not support change hash algorithm
-            if self.kdriver not in ["fm10k"]:
-                self.dut.send_expect(
-                    "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
+            self.dut.send_expect(
+                "set_hash_global_config 0 simple_xor %s enable" % iptype, "testpmd> ")
             self.dut.send_expect("port start all", "testpmd> ")
             out = self.dut.send_expect(
                 "port config all rss %s" % rsstype, "testpmd> ")

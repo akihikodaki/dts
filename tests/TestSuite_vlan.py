@@ -79,10 +79,6 @@ class TestVlan(TestCase):
         self.dut.send_expect("vlan set strip off %s" % dutRxPortId, "testpmd> ")
         self.vlan = 51
 
-        if self.kdriver == "fm10k":
-            netobj = self.dut.ports_info[dutRxPortId]['port']
-            netobj.add_vlan(vlan_id = self.vlan)
-
     def get_tcpdump_package(self):
         pkts = self.tester.load_tcpdump_sniff_packets(self.inst)
         vlans = []
@@ -128,10 +124,6 @@ class TestVlan(TestCase):
         """
         Enable receipt of VLAN packets and strip off
         """
-
-        if self.kdriver == "fm10k":
-            print((utils.RED("fm10k not support this case\n")))
-            return
         self.dut.send_expect("rx_vlan add %d %s" % (self.vlan, dutRxPortId), "testpmd> ")
         self.dut.send_expect("vlan set strip off  %s" % dutRxPortId, "testpmd> ")
         self.dut.send_expect("start", "testpmd> ", 120)
@@ -183,11 +175,6 @@ class TestVlan(TestCase):
         """
         Enable VLAN header insertion in transmitted packets
         """
-        if self.kdriver == "fm10k":
-            netobj = self.dut.ports_info[dutTxPortId]['port']
-            netobj.add_vlan(vlan_id = self.vlan)
-            netobj.add_txvlan(vlan_id = self.vlan)
-
         self.dut.send_expect("stop", "testpmd> ")
         self.dut.send_expect("port stop all", "testpmd> ")
         self.dut.send_expect("tx_vlan set %s %d" % (dutTxPortId, self.vlan), "testpmd> ")
@@ -204,11 +191,6 @@ class TestVlan(TestCase):
         self.dut.send_expect("port start all", "testpmd> ")
         self.dut.send_expect("stop", "testpmd> ", 30)
 
-        if self.kdriver == "fm10k":
-            netobj = self.dut.ports_info[dutTxPortId]['port']
-            # not delete vlan for self.vlan will used later
-            netobj.delete_txvlan(vlan_id = self.vlan)
-
     def tear_down(self):
         """
         Run after each test case.
@@ -220,7 +202,3 @@ class TestVlan(TestCase):
         Run after each test suite.
         """
         self.dut.kill_all()
-        if self.kdriver == "fm10k":
-            netobj = self.dut.ports_info[dutRxPortId]['port']
-            netobj.delete_txvlan(vlan_id = self.vlan)
-            netobj.delete_vlan(vlan_id = self.vlan)

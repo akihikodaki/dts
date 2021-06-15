@@ -171,8 +171,7 @@ class TestRssKeyUpdate(TestCase):
         """
 
         self.verify(self.nic in ["columbiaville_25g", "columbiaville_100g", "fortville_eagle", "fortville_spirit",
-                                 "fortville_spirit_single", "redrockcanyou", "atwood",
-                                 "boulderrapid", "fortpark_TLV", "fortpark_BASE-T", "fortville_25g", "niantic",
+                                 "fortville_spirit_single", "fortpark_TLV", "fortpark_BASE-T", "fortville_25g", "niantic",
                                  "carlsville", "foxville"],
                     "NIC Unsupported: " + str(self.nic))
         global reta_num
@@ -195,8 +194,6 @@ class TestRssKeyUpdate(TestCase):
                        'ipv6-tcp': 'tcp',
                        'ipv6-frag': 'ip'
                        }
-        elif self.nic in ["redrockcanyou", "atwood", "boulderrapid"]:
-            reta_num = 128
         else:
             self.verify(False, f"NIC Unsupported: {self.nic}")
 
@@ -301,13 +298,10 @@ class TestRssKeyUpdate(TestCase):
     def test_set_hash_key_short_long(self):
 
         nic_rss_key_size = {"columbiaville_25g": 52, "columbiaville_100g": 52, "fortville_eagle": 52,
-                            "fortville_spirit": 52,
-                            "fortville_spirit_single": 52, "fortville_25g": 52, "niantic": 40, "e1000": 40,
-                            "redrockcanyou": 40,
-                            "atwood": 40, "boulderrapid": 40, "fortpark_TLV": 52, "fortpark_BASE-T": 52, "hi1822": 40,
-                            "cavium_a063": 48,
-                            "cavium_a064": 48, "carlsville": 52, "sagepond": 40, "sageville": 40, "foxville": 40,
-                            "twinpond": 40}
+                            "fortville_spirit": 52, "fortville_spirit_single": 52, "fortville_25g": 52,
+                            "niantic": 40, "e1000": 40, "fortpark_TLV": 52, "fortpark_BASE-T": 52,
+                            "hi1822": 40, "cavium_a063": 48, "cavium_a064": 48, "carlsville": 52,
+                            "sagepond": 40, "sageville": 40, "foxville": 40, "twinpond": 40}
 
         self.verify(self.nic in list(nic_rss_key_size.keys()), f"Not supported rss key on {self.nic}")
 

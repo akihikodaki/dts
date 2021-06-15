@@ -204,10 +204,7 @@ class TestVfRss(TestCase):
         self.verify(len(reta_lines) > 0, "The testpmd output has no RSS hash!")
         for tmp_reta_line in reta_lines:
             status = "false"
-            if self.kdriver == "fm10k":
-                # compute the hash result of five tuple into the 7 LSBs value.
-                hash_index = int(tmp_reta_line["RSS hash"], 16) % 128
-            elif self.kdriver == 'i40e' or self.kdriver == 'ice' or self.nic in ['sageville', 'sagepond']:
+            if self.kdriver == 'i40e' or self.kdriver == 'ice' or self.nic in ['sageville', 'sagepond']:
                 # compute the hash result of five tuple into the 7 LSBs value.
                 hash_index = int(tmp_reta_line["RSS hash"], 16) % 64
             else:
@@ -233,9 +230,9 @@ class TestVfRss(TestCase):
         """
 
         self.verify(
-            self.nic in ["redrockcanyou", "atwood", "boulderrapid", "fortville_eagle", "fortville_spirit",
-                         "fortville_spirit_single", "fortville_25g", "sageville", "sagepond", "fortpark_TLV",
-                         "fortpark_BASE-T", "carlsville", "columbiaville_25g", "columbiaville_100g"],
+            self.nic in ["fortville_eagle", "fortville_spirit", "fortville_spirit_single", "fortville_25g",
+                         "sageville", "sagepond", "fortpark_TLV","fortpark_BASE-T", "carlsville",
+                         "columbiaville_25g", "columbiaville_100g"],
             "NIC Unsupported: " + str(self.nic))
         self.dut_ports = self.dut.get_ports(self.nic)
         self.verify(len(self.dut_ports) >= 1, "Not enough ports available")
@@ -358,13 +355,7 @@ class TestVfRss(TestCase):
                     "set nbcore %d" % (queue + 1), "testpmd> ")
 
                 # configure the reta with specific mappings.
-                if self.nic in ["redrockcanyou", "atwood", "boulderrapid"]:
-                    for i in range(128):
-                        reta_entries.insert(i, random.randint(0, queue - 1))
-                        self.vm_dut_0.send_expect(
-                            "port config 0 rss reta (%d,%d)" % (i, reta_entries[i]), "testpmd> ")
-                    self.vm_dut_0.send_expect("port config all rss %s" % rss_type, "testpmd> ")
-                elif self.kdriver == 'i40e' or self.kdriver == 'ice' or self.nic in ['sageville', 'sagepond']:
+                if self.kdriver == 'i40e' or self.kdriver == 'ice' or self.nic in ['sageville', 'sagepond']:
                     if self.nic in ['sageville', 'sagepond'] and rss_type == 'sctp':
                         self.logger.info('sageville and sagepond do not support rsstype sctp')
                         continue

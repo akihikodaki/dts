@@ -264,10 +264,6 @@ class TestVfOffload(TestCase):
                     'IPv6/UDP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IPv6(src="%s")/UDP()/("X"*46)' % (mac, expIPv6),
                     'IPv6/TCP': 'Ether(dst="02:00:00:00:00:00", src="%s")/IPv6(src="%s")/TCP()/("X"*46)' % (mac, expIPv6)}
 
-        if self.nic in ['redrockcanyou', 'atwood']:
-            del pkts['IP/SCTP']
-            del pkts_ref['IP/SCTP']
-
         self.checksum_enablehw(0,self.vm_dut_0)
 
         self.vm0_testpmd.execute_cmd('start')
