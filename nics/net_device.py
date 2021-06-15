@@ -954,6 +954,7 @@ def get_from_list(host, domain_id, bus_id, devfun_id):
                 return nic['port']
     return None
 
+
 def remove_from_list(host):
     """
     Remove network device object from global structure
@@ -963,37 +964,24 @@ def remove_from_list(host):
         if host == nic['host']:
             NICS_LIST.remove(nic)
 
+
 def GetNicObj(crb, domain_id, bus_id, devfun_id):
     """
     Get network device object. If network device has been initialized, just
-    return object. Based on nic type, some special nics like RRC will return
-    object different from default.
+    return object.
     """
     # find existed NetDevice object
     obj = get_from_list(crb.crb['My IP'], domain_id, bus_id, devfun_id)
     if obj:
         return obj
 
-    pci_id = get_pci_id(crb, domain_id, bus_id, devfun_id)
-    nic = settings.get_nic_name(pci_id)
+    # generate NetDevice object
+    obj = NetDevice(crb, domain_id, bus_id, devfun_id)
 
-    if nic == 'redrockcanyou':
-        # redrockcanyou nic need special initialization
-        from rrc import RedRockCanyou
-        obj = RedRockCanyou(crb, domain_id, bus_id, devfun_id)
-    elif nic == 'atwood':
-        # atwood nic need special initialization
-        from atwood import Atwood
-        obj = Atwood(crb, domain_id, bus_id, devfun_id)
-    elif nic == 'boulderrapid':
-        # atwood nic need special initialization
-        from br import BoulderRapid
-        obj = BoulderRapid(crb, domain_id, bus_id, devfun_id)
-    else:
-        obj = NetDevice(crb, domain_id, bus_id, devfun_id)
-
+    # save NetDevice object to cache, directly get it from cache next time
     add_to_list(crb.crb['My IP'], obj)
     return obj
+
 
 def RemoveNicObj(crb):
     """
