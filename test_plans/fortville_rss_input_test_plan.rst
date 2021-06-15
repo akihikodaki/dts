@@ -38,9 +38,9 @@ Fortville Configuration of RSS in RTE Flow Tests
 Description
 ===========
 
-The feature remove legacy filter API and switch to rte_flow in driver fm10k,
-i40e, ixgbe, ice. What is need is that remove the function in filter_ctrl 
-ops in drivers and implement functions in rte_flow. Many functions have been
+The feature remove legacy filter API and switch to rte_flow in driver i40e,
+ixgbe, ice. What is need is that remove the function in filter_ctrl ops in
+drivers and implement functions in rte_flow. Many functions have been
 implemented in rte_flow in the early patches. this feature implement that
 set global configurations of hash filters, set symmetric hash configuration
 enable and Set GRE key length for input set in driver i40e. 
