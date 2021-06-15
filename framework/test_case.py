@@ -507,8 +507,6 @@ class TestCase(object):
             bitrate *= 10
         elif nic == 'fortpark_TLV':
             bitrate *= 10
-        elif nic == 'redrockcanyou':
-            bitrate *= 40
         elif driver == 'thunder-nicvf':
             bitrate *= 10
         elif nic == 'fortville_25g':

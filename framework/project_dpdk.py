@@ -203,8 +203,7 @@ class DPDKdut(Dut):
                                         'RTE_LIBRTE_I40E_RX_ALLOW_BULK_ALLOC': 'n'})
             elif mode == 'novector':
                 self.set_build_options({'RTE_IXGBE_INC_VECTOR': 'n',
-                                        'RTE_LIBRTE_I40E_INC_VECTOR': 'n',
-                                        'RTE_LIBRTE_FM10K_INC_VECTOR': 'n'})
+                                        'RTE_LIBRTE_I40E_INC_VECTOR': 'n'})
             elif mode == 'avx512':
                 self.logger.warning(RED('*********AVX512 is not supported by makefile!!!********'))
         else:

@@ -459,7 +459,7 @@ class Dut(Crb):
 
     def stop_ports(self):
         """
-        After all execution done, some special nic like fm10k should be stop
+        After all execution done, the nic should be stop
         """
         for (pci_bus, pci_id) in self.pci_devices_info:
             driver = settings.get_nic_driver(pci_id)

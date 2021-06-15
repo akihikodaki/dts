@@ -83,24 +83,20 @@ NICS = {
     'fortville_eagle': '8086:1572',
     'fortville_spirit': '8086:1583',
     'fortville_spirit_single': '8086:1584',
-    'redrockcanyou': '8086:15a4',
     'fortpark': '8086:374c',
     'fortpark_1g': '8086:37d1',
     'fortpark_TLV': '8086:37d0',
     'fortpark_BASE-T': '8086:37d2',
     'fortpark_TLV_vf': '8086:37cd',
     'fvl10g_vf': '8086:154c',
-    'atwood': '8086:15d5',
     'ConnectX3_MT4103': '15b3:1007',
     'ConnectX4_MT4115': '15b3:1013',
     'ConnectX4_LX_MT4117': '15b3:1015',
     'ConnectX5_MT4119': '15b3:1017',
     'ConnectX5_MT4121': '15b3:1019',
-    'boulderrapid': '8086:15d0',
     'fortville_25g': '8086:158b',
     'cavium_a034': '177d:a034',
     'cavium_0011': '177d:0011',
-    'hi1822': '19e5:1822',
     'fortvile_bdw_de': '8086:15ac',
     'cavium_a063': '177d:a063',
     'cavium_a064': '177d:a064',
@@ -151,24 +147,20 @@ DRIVERS = {
     'fortville_eagle': 'i40e',
     'fortville_spirit': 'i40e',
     'fortville_spirit_single': 'i40e',
-    'redrockcanyou': 'fm10k',
     'fortpark': 'i40e',
     'fortpark_1g': 'i40e',
     'fortpark_TLV': 'i40e',
     'fortpark_BASE-T': 'i40e',
     'fortpark_TLV_vf': 'i40evf',
     'fvl10g_vf': 'i40evf',
-    'atwood': 'fm10k',
     'ConnectX3_MT4103': 'mlx4_core',
     'ConnectX4_MT4115': 'mlx5_core',
     'ConnectX4_LX_MT4117': 'mlx5_core',
     'ConnectX5_MT4119': 'mlx5_core',
     'ConnectX5_MT4121': 'mlx5_core',
-    'boulderrapid': 'fm10k',
     'fortville_25g': 'i40e',
     'cavium_a034': 'thunder-nicvf',
     'cavium_0011': 'thunder-nicvf',
-    'hi1822': 'hinic',
     'fortvile_bdw_de': 'ixgbe',
     'cavium_a063': 'octeontx2-nicpf',
     'cavium_a064': 'octeontx2-nicvf',
@@ -295,9 +287,8 @@ def get_nic_driver(pci_id):
     """
     Return linux driver for specified pci device
     """
-    driverlist = dict(list(zip(list(NICS.values()), list(DRIVERS.keys()))))
     try:
-        driver = DRIVERS[driverlist[pci_id]]
+        driver = DRIVERS[{NICS[key]:key for key in NICS}[pci_id]]
     except Exception as e:
         driver = None
     return driver
