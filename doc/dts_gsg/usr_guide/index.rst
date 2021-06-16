@@ -35,6 +35,7 @@ User Guide
 
     intro
     sys_reqs
+    setup_dut
     usage
     results
     trex
