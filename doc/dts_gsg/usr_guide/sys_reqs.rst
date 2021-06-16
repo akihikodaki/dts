@@ -23,8 +23,8 @@ Since DPDK Test Suite Tester communicates with DUT via SSH, please install and s
 
 .. code-block:: console
 
-   apt-get install sshd
-   systemctl enable ssh
+   apt-get install openssh-server      # download / install ssh software
+   service ssh start                   # start ssh service
 
 Generally DTS use Linux username and password to login, but it also supports to use authorized login.
 For create authorized login session, user needs to generate RSA authentication keys to ssh connectioni:

@@ -90,8 +90,8 @@ Tester and DUT should have one interface connected to the same internet, so that
 
 .. code-block:: console
 
-   apt-get install sshd                # download / install ssh software
-   systemctl enable ssh                # start ssh service
+   apt-get install openssh-server      # download / install ssh software
+   service ssh start                   # start ssh service
 
 .. note::
 
@@ -110,7 +110,7 @@ Please install them as the following:
 .. code-block:: console
 
    apt-get install python3
-   python3 -m pip install requirements.txt
+   python3 -m pip install -r requirements.txt
 
 BIOS setting for DUT
 ~~~~~~~~~~~~~~~~~~~~
