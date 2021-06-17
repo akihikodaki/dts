@@ -248,6 +248,9 @@ class TestNicSingleCorePerf(TestCase):
                 param += " --rxq=1 --txq=1"
                 # workaround for that testpmd can't forward packets in io forward mode
                 param += " --port-topology=loop"
+            # improves performance and reduces fluctuations
+            elif self.nic in ['ConnectX5_MT4121', 'ConnectX4_LX_MT4117']:
+                param += " --burst=64 --mbcache=512"
 
             self.throughput[fwd_config] = dict()
             for frame_size in list(self.test_parameters[fwd_config].keys()):
