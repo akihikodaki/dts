@@ -84,9 +84,6 @@ class TestIavf(TestCase):
         else:
             self.vf_assign_method = 'vfio-pci'
             self.dut.send_expect('modprobe vfio-pci', '#')
-        self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-        self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-        self.dut.build_install_dpdk(self.target)
         self.setup_vm_env()
 
     def set_up(self):
@@ -153,9 +150,6 @@ class TestIavf(TestCase):
 
         self.vm0_dut_ports = self.vm_dut_0.get_ports('any')
         self.vm0_testpmd = PmdOutput(self.vm_dut_0)
-        self.vm_dut_0.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-        self.vm_dut_0.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-        self.vm_dut_0.build_install_dpdk(self.target)
         self.env_done = True
 
     def bind_nic_driver(self, ports, driver=""):
@@ -183,9 +177,6 @@ class TestIavf(TestCase):
                     netdev.bind_driver(driver=driver)
 
     def destroy_vm_env(self):
-        self.vm_dut_0.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },/d' drivers/net/iavf/iavf_ethdev.c", "# ")
-        self.vm_dut_0.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g' drivers/net/i40e/base/i40e_devids.h", "# ")
-        self.vm_dut_0.build_install_dpdk(self.target)
         if getattr(self, 'vm0', None):
             if getattr(self, 'vm_dut_0', None):
                 self.vm_dut_0.kill_all()
@@ -771,9 +762,6 @@ class TestIavf(TestCase):
         self.dut.send_expect("quit", "# ")
         if self.env_done is True:
             self.destroy_vm_env()
-            self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },/d' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g' drivers/net/i40e/base/i40e_devids.h", "# ")
-            self.dut.build_install_dpdk(self.target)
             self.env_done = False
         else:
             pass

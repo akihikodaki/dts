@@ -307,20 +307,8 @@ class TestVfL3fwd(TestCase):
         for idx in self.dut_ports:
             self.verify(self.dut.ports_info[idx]['port'].default_driver == 'i40e', 'The case is only designed for Fortville')
 
-        self.build_iavf()
         self.set_rxtx_descriptor_2048_and_rebuild_l3fwd()
         self.measure_vf_performance(host_driver='default', vf_driver=self.get_kernel_pf_vf_driver())
-
-    def build_iavf(self):
-        self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-        self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-        self.dut.build_install_dpdk(self.target)
-
-    def restore_dpdk(self):
-        if self.running_case == "test_perf_kernel_pf_dpdk_iavf_perf_host_only":
-            self.dut.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) }/d' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.dut.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x164C/0x154C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-            self.dut.build_install_dpdk(self.target)
 
     def set_rxtx_descriptor_2048_and_rebuild_l3fwd(self):
         """
@@ -344,7 +332,6 @@ class TestVfL3fwd(TestCase):
 
     def tear_down(self):
         self.destroy_vf_env()
-        self.restore_dpdk()
 
     def tear_down_all(self):
         self.dut.bind_interfaces_linux(self.drivername)
