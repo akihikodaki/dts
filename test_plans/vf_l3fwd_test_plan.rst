@@ -85,11 +85,6 @@ Prerequisites
 * Case config:
     For test vf_l3fwd perf, need to set "define RTE_TEST_RX_DESC_DEFAULT 2048" and "define RTE_TEST_TX_DESC_DEFAULT 2048"
     in ./examples/l3fwd/l3fwd.h and re-build l3fwd.
-  Note:
-    Only FVL need to change code to support iavf, when dpdk use iavf as default vf driver, no need to change code.
-    If test iavf on FVL, need to change "{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) }" to
-    "a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) }" in ./drivers/net/iavf/iavf_ethdev.c,
-    and set "I40E_DEV_ID_VF 0x164C" in ./drivers/net/i40e/base/i40e_devids.h and re-build DPDK.
 
 Setup overview
 ==============

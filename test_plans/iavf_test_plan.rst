@@ -43,14 +43,7 @@ I40E driver NIC (Fortville XXV710, Fortville Spirit, Fortville Eagle)
 
 Prerequisites
 =======================
-1. Modify and build DPDK source code to enable IAVF function for I40E NIC::
-
-    sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c
-    sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h
-
-    make install RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
-
-2. Configure PF and VF::
+1. Configure PF and VF::
 
     modprobe uio;
     insmod x86_64-native-linuxapp-gcc/kmod/igb_uio.ko;
@@ -59,14 +52,14 @@ Prerequisites
     echo 1 > /sys/bus/pci/devices/0000\:08\:00.0/max_vfs
     echo 1 > /sys/bus/pci/devices/0000\:08\:00.1/max_vfs
 
-3. Start testpmd on host to configure VF ports' mac::
+2. Start testpmd on host to configure VF ports' mac::
 
     ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-5 -n 4  -- -i
 
     testpmd>set vf mac addr 0 0 00:12:34:56:78:01
     testpmd>set vf mac addr 1 0 00:12:34:56:78:02
 
-4. Pass through VF 09:02.0 and 09:0a.0 to VM0::
+3. Pass through VF 09:02.0 and 09:0a.0 to VM0::
 
     taskset -c 24,25 qemu-system-x86_64  \
     -name vm0 -enable-kvm -pidfile /tmp/.vm0.pid -daemonize -monitor unix:/tmp/vm0_monitor.sock,server,nowait \
@@ -76,15 +69,7 @@ Prerequisites
     -device virtio-serial -device virtserialport,chardev=vm0_qga0,name=org.qemu.guest_agent.0 -vnc :1 \
     -drive file=/home/image/sriov-fc25-1.img,format=raw,if=virtio,index=0,media=disk
 
-
-5. Modify and build DPDK source code to enable IAVF function for I40E NIC in VM::
-
-    sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c
-    sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h
-
-    make install RTE_SDK=`pwd` T=x86_64-native-linuxapp-gcc
-
-6. Bind VF to igb_uio or vfio-pic in VM::
+4. Bind VF to igb_uio or vfio-pic in VM::
 
     ./usertools/dpdk-devbind.py --bind=igb_uio 00:04.0 00:05.0
     or
