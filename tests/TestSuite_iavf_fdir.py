@@ -7971,7 +7971,6 @@ class TestIAVFFdir(TestCase):
         """
         rule = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions drop / end",
                 "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions queue index 1 / end",
-                "flow create 0 ingress pattern eth type is 0x8863 / end actions queue index 1 / mark id 1 / end",
                 "flow create 0 ingress pattern eth / ipv4 / l2tpv3oip session_id is 17 / end actions rss queues 1 2 end / mark id 6 / end",
                 "flow create 0 ingress pattern eth / ipv6 / udp / esp spi is 6 / end actions rss queues 1 2 end / mark id 6 / end"]
         self.launch_testpmd()
