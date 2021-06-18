@@ -59,6 +59,8 @@ The following are the test plans for the DPDK DTS automated test system.
     cvl_dcf_flow_priority_test_plan
     cvl_ecpri_test_plan
     cvl_fdir_test_plan
+    cvl_ip_fragment_rte_flow_test_plan
+    cvl_iavf_ip_fragment_rte_flow_test_plan
     cvl_iavf_rss_configure_test_plan
     cvl_limit_value_test_test_plan
     cvl_qinq_test_plan
