@@ -287,13 +287,6 @@ class DPDKdut(Dut):
             kernel_driver = self.nic.default_driver
             nic_name = self.nic.name
 
-        if nic_name in ['fortpark_TLV', 'fortpark_BASE-T']:
-            self.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/i { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_X722_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.send_expect("sed -i '/I40E_DEV_ID_X722_VF/d' drivers/net/i40e/i40e_ethdev_vf.c", "# ")
-        elif kernel_driver == 'i40e':
-            self.send_expect("sed -i '/{ RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_ADAPTIVE_VF) },/a { RTE_PCI_DEVICE(IAVF_INTEL_VENDOR_ID, IAVF_DEV_ID_VF) },' drivers/net/iavf/iavf_ethdev.c", "# ")
-            self.send_expect("sed -i -e '/I40E_DEV_ID_VF/s/0x154C/0x164C/g'  drivers/net/i40e/base/i40e_devids.h", "# ")
-
         build_type = load_global_setting(HOST_BUILD_TYPE_SETTING)
         build_install_dpdk = getattr(self, 'build_install_dpdk_%s_%s' % (self.get_os_type(), build_type))
         build_install_dpdk(target, extra_options)
