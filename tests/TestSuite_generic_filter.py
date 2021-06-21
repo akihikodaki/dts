@@ -729,7 +729,6 @@ class TestGeneric_filter(TestCase):
                 "vlan set filter off %s" % valports[0], "testpmd> ")
             self.dut.send_expect(
                 "vlan set filter off %s" % valports[1], "testpmd> ")
-            frames_to_send = 1
             queue = ['64', '127', '128']
 
             for i in [0, 1, 2]:
@@ -739,30 +738,31 @@ class TestGeneric_filter(TestCase):
                     if 'Invalid RX queue %s' % (queue[i]) not in out:
                         set_filter_flag = 0
                         break
-                    out = self.dut.send_expect(
-                        "5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port %s src_port 1 protocol 0x06 mask 0x1f tcp_flags 0x0 priority 3 queue %s " % (valports[0], (i + 1), queue[i]), "testpmd> ")
-                    if 'error' not in out:
+                    cmd = "flow create {} ingress pattern eth / ".format(
+                        valports[0]) + "ipv4 dst is 2.2.2.5 src is 2.2.2.4 / tcp dst is {} src is 1 / ".format(
+                        i + 1) + "end actions queue index {} / end".format(queue[i])
+                    out = self.dut.send_expect(cmd, "testpmd> ")
+                    if 'Invalid argument' not in out:
                         set_filter_flag = 0
                         break
                     continue
                 else:
                     self.dut.send_expect("set stat_qmap rx %s %s %s" %
                                          (valports[0], queue[i], (i + 1)), "testpmd> ")
-                    out = self.dut.send_expect("5tuple_filter %s add dst_ip 2.2.2.5 src_ip 2.2.2.4 dst_port %s src_port 1 protocol 0x06 mask 0x1f tcp_flags 0x0 priority %d queue %s " % (
-                        valports[0], (i + 1), (3 - i), queue[i]), "testpmd> ")
+                    cmd = "flow create {} ingress pattern eth / ".format(
+                        valports[0]) + "ipv4 dst is 2.2.2.5 src is 2.2.2.4 / tcp dst is {} src is 1 / ".format(
+                        i + 1) + "end actions queue index {} / end".format(queue[i])
+                    self.dut.send_expect(cmd, "testpmd> ")
                     self.dut.send_expect("start", "testpmd> ", 120)
                 global filters_index
                 filters_index = i
                 self.filter_send_packet("packet")
                 time.sleep(1)
                 out = self.dut.send_expect("stop", "testpmd> ")
-                cmd = "Stats reg  %s RX-packets:             ([0-9]+)" % (
-                    i + 1)
-                result_scanner = r"%s" % cmd
-                scanner = re.compile(result_scanner, re.DOTALL)
-                m = scanner.search(out)
-                cur_pkt = m.group(1)
-                if int(cur_pkt) != frames_to_send:
+                p = re.compile(r"Forward Stats for RX Port= \d+/Queue=(\s?\d+)")
+                res = p.findall(out)
+                queues = [int(i) for i in res]
+                if queues[0] != int(queue[i]):
                     packet_flag = 0
                     break
             self.dut.send_expect("quit", "#", timeout=30)
