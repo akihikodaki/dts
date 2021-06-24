@@ -46,59 +46,107 @@ Description
 Pattern and input set
 ---------------------
 
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |    Packet Type               |        Pattern             |            Input Set                                              |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | IPv4/IPv6 + TCP/UDP/SCTP     |      MAC_IPV4_PAY          | [Source IP], [Dest IP], [IP protocol], [TTL], [DSCP]              |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV4_UDP          | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV4_TCP          | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV4_SCTP         | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_PAY          | [Source IP], [Dest IP], [IP protocol], [TTL], [TC]                |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_UDP          | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_TCP          | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_SCTP         | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | L2 Ethertype                 |      L2 Ethertype          | [Ethertype]                                                       |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | PFCP                         |   MAC_IPV4_PFCP_NODE       | [Dest Port], [S-field]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV4_PFCP_SESSION    | [Dest Port], [S-field]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV6_PFCP_NODE       | [Dest Port], [S-field]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV6_PFCP_SESSION    | [Dest Port], [S-field]                                            |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | IPv4/IPv6 + GTP-U            |   MAC_IPV4_GTPU            | [Source IP], [Dest IP], [TEID]                                    |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV4_GTPU_EH         | [Source IP], [Dest IP], [TEID], [QFI]                             |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV6_GTPU            | [Source IPV6], [Dest IPV6], [TEID]                                |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |   MAC_IPV6_GTPU_EH         | [Source IPV6], [Dest IPV6], [TEID], [QFI]                         |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | L2TPv3                       |      MAC_IPV4_L2TPv3       | [Session ID]                                                      |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_L2TPv3       | [Session ID]                                                      |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    | ESP                          |      MAC_IPV4_ESP          | [SPI]                                                             |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_ESP          | [SPI]                                                             |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV4_AH           | [SPI]                                                             |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |      MAC_IPV6_AH           | [SPI]                                                             |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |     MAC_IPV4_NAT-T-ESP     | [Source IP], [Dest IP], [SPI]                                     |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
-    |                              |     MAC_IPV6_NAT-T-ESP     | [Source IP], [Dest IP], [SPI]                                     |
-    +------------------------------+----------------------------+-------------------------------------------------------------------+
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |    Packet Type               |        Pattern               |            Input Set                                              |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPv4/IPv6 + TCP/UDP/SCTP     |MAC_IPV4_PAY                  | [Source IP], [Dest IP], [IP protocol], [TTL], [DSCP]              |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_UDP                  | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_TCP                  | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_SCTP                 | [Source IP], [Dest IP], [TTL], [DSCP], [Source Port], [Dest Port] |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_PAY                  | [Source IP], [Dest IP], [IP protocol], [TTL], [TC]                |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_UDP                  | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_TCP                  | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_SCTP                 | [Source IP], [Dest IP], [TTL], [TC], [Source Port], [Dest Port]   |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | L2 Ethertype                 |L2 Ethertype                  | [Ethertype]                                                       |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | PFCP                         |MAC_IPV4_PFCP_NODE            | [Dest Port], [S-field]                                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_PFCP_SESSION         | [Dest Port], [S-field]                                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_PFCP_NODE            | [Dest Port], [S-field]                                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_PFCP_SESSION         | [Dest Port], [S-field]                                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | L2TPv3                       |MAC_IPV4_L2TPv3               | [Session ID]                                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_L2TPv3               | [Session ID]                                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | ESP                          |MAC_IPV4_ESP                  | [SPI]                                                             |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_ESP                  | [SPI]                                                             |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_AH                   | [SPI]                                                             |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_AH                   | [SPI]                                                             |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_NAT-T-ESP            | [Source IP], [Dest IP], [SPI]                                     |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_NAT-T-ESP            | [Source IP], [Dest IP], [SPI]                                     |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPv4 + GTP-U  outer          |MAC_IPV4_GTPU                 | outer:[Source IP], [Dest IP], [TEID]                              |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH              | outer:[Source IP], [Dest IP], [TEID], [QFI]                       |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPv6 + GTP-U  outer          |MAC_IPV6_GTPU                 | outer:[Source IPV6], [Dest IPV6], [TEID]                          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GTPU_EH              | outer:[Source IPV6], [Dest IPV6], [TEID], [QFI]                   |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPv4 + GTP-U + inner IPv4    |MAC_IPV4_GTPU_IPV4            | inner:[Source IP], [Dest IP]                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_IPV4_UDP        | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_IPV4_TCP        | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV4         | inner:[Source IP], [Dest IP]                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV4_UDP     | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV4_TCP     | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_DL_IPV4      | inner:[Source IP], [Dest IP]                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_DL_IPV4_UDP  | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_DL_IPV4_TCP  | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV4      | inner:[Source IP], [Dest IP]                                      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV4_UDP  | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV4_TCP  | inner:[Source IP], [Dest IP], [Source Port], [Dest Port]          |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPv4 + GTP-U + inner IPv6    |MAC_IPV4_GTPU_IPV6            | inner:[Source IPv6], [Dest IPv6]                                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_IPV6_UDP        | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_IPV6_TCP        | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV6         | inner:[Source IPv6], [Dest IPv6]                                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV6_UDP     | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_IPV6_TCP     | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6      | inner:[Source IPv6], [Dest IPv6]                                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6_UDP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6_TCP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6      | inner:[Source IPv6], [Dest IPv6]                                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6_UDP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GTPU_EH_UL_IPV6_TCP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
 
 
 Supported function type
@@ -191,7 +239,7 @@ Default parameters
 
     [Dest MAC]: 00:11:22:33:44:88
 
-   IPv4::
+   outer/inner IPv4::
 
     [Source IP]: 192.168.0.20
     [Dest IP]: 192.168.0.21
@@ -199,7 +247,7 @@ Default parameters
     [TTL]: 2
     [DSCP]: 4
 
-   IPv6::
+   outer/inner IPv6::
 
     [Source IPv6]: 2001::2
     [Dest IPv6]: CDCD:910A:2222:5498:8475:1111:3900:2020
@@ -581,6 +629,382 @@ Send packets
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=12)/Raw('x'*480),iface="enp134s0f1")
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(dst="1111:2222:3333:4444:5555:6666:7777:9999")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
     sendp(Ether(dst='00:11:22:33:44:55')/IPv6(src="1111:2222:3333:4444:5555:6666:7777:8888")/UDP(dport=4500)/ESP(spi=2)/Raw('x'*480),iface="enp134s0f1")
+
+* MAC_IPV4_GTPU_IPV4
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/SCTP()/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_IPV4_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_IPV4_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV4
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV4_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=25, dport=24)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV4_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV4
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw('x'*20)
+    pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV4_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=25, dport=24)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV4_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV4
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/SCTP()/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/Raw('x'*20)
+    pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV4_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=25, dport=24)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV4_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+    pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+
+* MAC_IPV4_GTPU_IPV6
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP()/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_IPV6_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_IPV6_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV6
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV6_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_IPV6_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV6
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw('x'*20)
+    pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV6_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_DL_IPV6_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt15 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP(sport=22, dport=23)/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV6
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw('x'*20)
+    pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP()/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV6_TCP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw('x'*20)
+
+* MAC_IPV4_GTPU_EH_UL_IPV6_UDP
+
+   matched packets::
+
+    pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+   mismatched packets::
+
+    pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+    pkt13 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw('x'*20)
+    pkt14 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+    pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+    pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP(sport=22, dport=23)/Raw('x'*20)
 
 
 Test case: flow validation
@@ -4817,3 +5241,1192 @@ Test Case: MAC_IPV6_UDP_WITHOUT_INPUT_SET
 1. replace "tcp" with "udp" in all the subcases of MAC_IPV6_TCP_WITHOUT_INPUT_SET pattern.
 2. Then repeat all the steps in all the subcases of MAC_IPV6_TCP_WITHOUT_INPUT_SET pattern.
 3. get the same result.
+
+Test case: MAC_IPV4_GTPU_IPV4 pattern
+=====================================
+
+Subcase 1: MAC_IPV4_GTPU_IPV4 inner src ip queue index
+------------------------------------------------------
+all index cases steps and expected result are the same
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 1 with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are not distributed to queue 1 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are received without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 2: MAC_IPV4_GTPU_IPV4 inner src ip rss queues
+-----------------------------------------------------
+all rss queues cases steps and expected result are the same
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end
+
+2. send matched packets, check the packets are distributed to queue 2 or queue 3 with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 3: MAC_IPV4_GTPU_IPV4 inner src ip passthru
+---------------------------------------------------
+all passthru cases steps and expected result are the same
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 4: MAC_IPV4_GTPU_IPV4 inner src ip drop
+-----------------------------------------------
+all drop cases steps and expected result are the same
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped.
+   Then check there is no rule listed.
+
+Subcase 5: MAC_IPV4_GTPU_IPV4 inner src ip mark+rss
+---------------------------------------------------
+all mark+rss cases steps and expected result are the same
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions rss / mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are received without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are received without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 6: MAC_IPV4_GTPU_IPV4 inner dst ip queue index
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of subcase 1.
+
+Subcase 7: MAC_IPV4_GTPU_IPV4 inner dst ip rss queues
+-----------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of subcase 2.
+
+Subcase 8: MAC_IPV4_GTPU_IPV4 inner dst ip passthru
+---------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of subcase 3.
+
+Subcase 9: MAC_IPV4_GTPU_IPV4 inner dst ip drop
+------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions drop / end
+
+replace rule and repeat step of subcase 4.
+
+Subcase 10: MAC_IPV4_GTPU_IPV4 inner dst ip mark+rss
+----------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions rss / mark / end
+
+replace rule and repeat step of subcase 5.
+
+Subcase 11: MAC_IPV4_GTPU_IPV4 2 tuple queue index
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 12: MAC_IPV4_GTPU_IPV4 2 tuple queue group
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 13: MAC_IPV4_GTPU_IPV4 2 tuple passthru
+-----------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of subcase 3.
+
+Subcase 14: MAC_IPV4_GTPU_IPV4 2 tuple drop
+-------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end
+
+replace rule and repeat step of subcase 4.
+
+Subcase 15: MAC_IPV4_GTPU_IPV4 2 tuple mark/rss
+-----------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss / mark / end
+
+replace rule and repeat step of subcase 5.
+
+Test case: MAC_IPV4_GTPU_IPV4_TCP pattern
+=========================================
+
+Subcase 1: MAC_IPV4_GTPU_IPV4_TCP inner src ip queue index
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 2: MAC_IPV4_GTPU_IPV4_TCP inner src ip rss queues
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 3: MAC_IPV4_GTPU_IPV4_TCP inner src ip passthru
+-------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 4: MAC_IPV4_GTPU_IPV4_TCP inner src ip drop
+---------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 5: MAC_IPV4_GTPU_IPV4_TCP inner src ip mark+rss
+-------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 6: MAC_IPV4_GTPU_IPV4_TCP inner dst ip queue index
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 7: MAC_IPV4_GTPU_IPV4_TCP inner dst ip rss queues
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 8: MAC_IPV4_GTPU_IPV4_TCP inner dst ip passthru
+-------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 9: MAC_IPV4_GTPU_IPV4_TCP inner dst ip drop
+----------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 10: MAC_IPV4_GTPU_IPV4_TCP inner dst ip mark+rss
+--------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 11: MAC_IPV4_GTPU_IPV4_TCP 4 tuple queue index
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 12: MAC_IPV4_GTPU_IPV4_TCP 4 tuple queue group
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 13: MAC_IPV4_GTPU_IPV4_TCP 4 tuple passthru
+---------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 14: MAC_IPV4_GTPU_IPV4_TCP 4 tuple drop
+-----------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 15: MAC_IPV4_GTPU_IPV4_TCP 4 tuple mark/rss
+---------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss/ mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 16: MAC_IPV4_GTPU_IPV4_TCP inner src port queue index
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 17: MAC_IPV4_GTPU_IPV4_TCP inner src port queue group
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 18: MAC_IPV4_GTPU_IPV4_TCP inner src port passthru
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 19: MAC_IPV4_GTPU_IPV4_TCP inner src port drop
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 20: MAC_IPV4_GTPU_IPV4_TCP inner src port mark/rss
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 21: MAC_IPV4_GTPU_IPV4_TCP inner dst port queue index
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 22: MAC_IPV4_GTPU_IPV4_TCP inner dst port queue group
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 23: MAC_IPV4_GTPU_IPV4_TCP inner dst port passthru
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 24: MAC_IPV4_GTPU_IPV4_TCP inner dst port drop
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 25: MAC_IPV4_GTPU_IPV4_TCP inner dst port mark/rss
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 26: MAC_IPV4_GTPU_IPV4_TCP without inputset queue index
+---------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/TCP()/("X"*480)], iface="ens192f0")
+
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/UDP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/SCTP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/ICMP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/TCP()/("X"*480)], iface="ens192f0")
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 27: MAC_IPV4_GTPU_IPV4_TCP without inputset queue group
+---------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src / udp / gtpu / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets of subcase 26, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets of subcase 26, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 28: MAC_IPV4_GTPU_IPV4_TCP without inputset passthru
+------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions passthru / mark id 1 / end
+
+2. send matched packets of subcase 26, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets of subcase 26, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 29: MAC_IPV4_GTPU_IPV4_TCP without inputset drop
+--------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions drop / end
+
+2. send matched packets of subcase 26, check the packets are dropped.
+   send mismatched packets of subcase 26, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 30: MAC_IPV4_GTPU_IPV4_TCP without inputset mark/rss
+------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions rss / mark / end
+
+2. send matched packets of subcase 26, check the packets are redirected by RSS with FDIR matched ID=0x0.
+   send mismatched packets of subcase 26, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU_IPV4_UDP pattern
+=========================================
+
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV4_GTPU_IPV4_TCP pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_IPV4_TCP pattern.
+3. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_IPV4 pattern
+========================================
+
+Subcase 1: MAC_IPV4_GTPU_EH_IPV4 inner src ip queue index
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 2: MAC_IPV4_GTPU_EH_IPV4 inner src ip rss queues
+--------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 3: MAC_IPV4_GTPU_EH_IPV4 inner src ip passthru
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 4: MAC_IPV4_GTPU_EH_IPV4 inner src ip drop
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 5: MAC_IPV4_GTPU_EH_IPV4 inner src ip mark+rss
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 6: MAC_IPV4_GTPU_EH_IPV4 inner dst ip queue index
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 7: MAC_IPV4_GTPU_EH_IPV4 inner dst ip rss queues
+--------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 8: MAC_IPV4_GTPU_EH_IPV4 inner dst ip passthru
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 9: MAC_IPV4_GTPU_EH_IPV4 inner dst ip drop
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 10: MAC_IPV4_GTPU_EH_IPV4 inner dst ip mark+rss
+-------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 11: MAC_IPV4_GTPU_EH_IPV4 2 tuple queue index
+-----------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 12: MAC_IPV4_GTPU_EH_IPV4 2 tuple queue group
+-----------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 13: MAC_IPV4_GTPU_EH_IPV4 2 tuple passthru
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 14: MAC_IPV4_GTPU_EH_IPV4 2 tuple drop
+----------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 15: MAC_IPV4_GTPU_EH_IPV4 2 tuple mark/rss
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions mark id 1 / rss / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+
+Test case: MAC_IPV4_GTPU_EH_IPV4_TCP pattern
+============================================
+
+Subcase 1: MAC_IPV4_GTPU_EH_IPV4_TCP inner src ip queue index
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 2: MAC_IPV4_GTPU_EH_IPV4_TCP inner src ip rss queues
+------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 3: MAC_IPV4_GTPU_EH_IPV4_TCP inner src ip passthru
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 4: MAC_IPV4_GTPU_EH_IPV4_TCP inner src ip drop
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 5: MAC_IPV4_GTPU_EH_IPV4_TCP inner src ip mark+rss
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 6: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst ip queue index
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 7: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst ip rss queues
+------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 8: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst ip passthru
+----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 9: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst ip drop
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 10: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst ip mark+rss
+-----------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 11: MAC_IPV4_GTPU_EH_IPV4_TCP 4 tuple queue index
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 12: MAC_IPV4_GTPU_EH_IPV4_TCP 4 tuple queue group
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 13: MAC_IPV4_GTPU_EH_IPV4_TCP 4 tuple passthru
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 14: MAC_IPV4_GTPU_EH_IPV4_TCP 4 tuple drop
+--------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 15: MAC_IPV4_GTPU_EH_IPV4_TCP 4 tuple mark/rss
+------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 16: MAC_IPV4_GTPU_EH_IPV4_TCP inner src port queue index
+----------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 17: MAC_IPV4_GTPU_EH_IPV4_TCP inner src port queue group
+----------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 18: MAC_IPV4_GTPU_EH_IPV4_TCP inner src port passthru
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 19: MAC_IPV4_GTPU_EH_IPV4_TCP inner src port drop
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 20: MAC_IPV4_GTPU_EH_IPV4_TCP inner src port mark/rss
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 21: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst port queue index
+----------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 1.
+
+Subcase 22: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst port queue group
+----------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions rss queues 2 3 end / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 2.
+
+Subcase 23: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst port passthru
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 3.
+
+Subcase 24: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst port drop
+---------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions drop / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 4.
+
+Subcase 25: MAC_IPV4_GTPU_EH_IPV4_TCP inner dst port mark/rss
+-------------------------------------------------------------
+
+rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions rss / mark / end
+
+replace rule and repeat step of MAC_IPV4_GTPU_IPV4 pattern subcase 5.
+
+Subcase 26: MAC_IPV4_GTPU_EH_IPV4_TCP without inputset queue index
+------------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions mark id 1 / rss / end
+
+2. send matched packets, check the packets are redirected by RSS with FDIR matched ID=0x1::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)], iface="ens192f0")
+
+   send mismatched packets, check the packets are redirected by RSS without FDIR matched ID::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/SCTP()("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/ICMP()("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)], iface="ens192f0")
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 27: MAC_IPV4_GTPU_EH_IPV4_TCP without inputset queue group
+------------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 src / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end
+
+2. send matched packets of subcase 26, check the packets are distributed to queue group with FDIR matched ID=0x1.
+   send mismatched packets of subcase 26, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 28: MAC_IPV4_GTPU_EH_IPV4_TCP without inputset passthru
+---------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions passthru / mark id 1 / end
+
+2. send matched packets of subcase 26, check the packets are redirected by RSS with FDIR matched ID=0x1.
+   send mismatched packets of subcase 26, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR ID.
+   check there is no rule listed.
+
+Subcase 29: MAC_IPV4_GTPU_EH_IPV4_TCP without inputset drop
+-----------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions drop / end
+
+2. send matched packets of subcase 26, check the packets are dropped.
+   send mismatched packets of subcase 26, check the packets are not dropped without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped without FDIR matched ID.
+   Then check there is no rule listed.
+
+Subcase 30: MAC_IPV4_GTPU_EH_IPV4_TCP without inputset mark/rss
+---------------------------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss / mark / end
+
+2. send matched packets of subcase 26, check the packets are redirected by RSS with FDIR matched ID=0x0.
+   send mismatched packets of subcase 26, check the packets are redirected by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV4_GTPU_EH_IPV4_UDP pattern
+============================================
+
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+3. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern
+===============================================
+
+without inputset match packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)], iface="ens192f0")
+
+without inputset mismatch packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/ICMP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)], iface="ens192f0")
+
+1. replace "gtp_psc" with "gtp_psc pdu_t is 0" in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+2. replace without inputset packets in the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+4. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_DL_IPV4_UDP pattern
+===============================================
+
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern.
+3. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_UL_IPV4 pattern
+===========================================
+
+1. replace "gtp_psc" with "gtp_psc pdu_t is 1" in all the subcases of MAC_IPV4_GTPU_EH_IPV4 pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV4 pattern.
+3. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern
+===============================================
+
+without inputset match packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)], iface="ens192f0")
+
+without inputset mismatch packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/SCTP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/ICMP()/("X"*480)], iface="ens192f0")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)], iface="ens192f0")
+
+1. replace "gtp_psc" with "gtp_psc pdu_t is 1" in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+2. replace without inputset packets in the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+4. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_UL_IPV4_UDP pattern
+===============================================
+1. replace "tcp" with "udp" in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern.
+2. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern.
+3. get the same result.
+
+Test case: MAC_IPV4_GTPU_IPV6 pattern
+=====================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_IPV4 pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_IPV4 pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_IPV4 pattern.
+4. get the same result
+
+Test case: MAC_IPV4_GTPU_IPV6_TCP pattern
+=========================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_IPV4_TCP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_IPV4_TCP pattern.
+4. get the same result
+
+Test case: MAC_IPV4_GTPU_IPV6_UDP pattern
+=========================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_IPV4_UDP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_IPV4_UDP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_IPV4_UDP pattern.
+4. get the same result
+
+Test case: MAC_IPV4_GTPU_EH_IPV6_TCP pattern
+============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV4_TCP pattern.
+4. get the same result
+
+Test case: MAC_IPV4_GTPU_EH_IPV6_UDP pattern
+============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_IPV6_UDP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_IPV6_UDP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_IPV6_UDP pattern.
+4. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_DL_IPV6_TCP pattern
+===============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV4_TCP pattern.
+4. get the same result
+
+Test case: MAC_IPV4_GTPU_EH_DL_IPV6_UDP pattern
+===============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV6_UDP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV6_UDP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_DL_IPV6_UDP pattern.
+4. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_UL_IPV6_TCP pattern
+===============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV4_TCP pattern.
+4. get the same result.
+
+Test case: MAC_IPV4_GTPU_EH_UL_IPV6_UDP pattern
+===============================================
+1. replace inner "ipv4" with "ipv6" in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV6_UDP pattern.
+2. replace inner ipv4 src/dst ip with ipv6 src/dst value in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV6_UDP pattern.
+3. Then repeat all the steps in all the subcases of MAC_IPV4_GTPU_EH_UL_IPV6_UDP pattern.
+4. get the same result.
+
+Test case: GTPU inner co-exist test
+===================================
+
+Subcase 1: inner IPv4 gtpu conflict rule
+-----------------------------------------
+
+Rules::
+
+   #1 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end
+   #2 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #3 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #4 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end
+   #5 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #6 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #7 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end
+   #8 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #9 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #10 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end
+   #11 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #12 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+
+packets::
+
+   pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+   pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+   pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+   pkt8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt9 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt10 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw('x'*20)
+   pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+1. First create #1 rule, verify #2/3 rule create failed and #4 create successfully.
+   send match packets(pkt1/4), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+2. destroy #1 rule, verify #5-12 any rule create failed and #2 create successfully.
+   send match packets(pkt2/4), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+3. destroy #4 rule, verify #1 rule create failed and #5 create successfully.
+   send match packets(pkt2/5), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+4. destroy #2 rule, verify #4/7/8/10/11 rule create failed and #6 create successfully.
+   send match packets(pkt5/6), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+5. destroy #5 rule, verify #4/7/9/10/12 rule create failed and #8 create successfully.
+   send match packets(pkt6/8), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+6. destroy #6 rule, verify #4/5/7 rule create failed and #9 create successfully.
+   send match packets(pkt8/9), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+7. destroy #8 rule, verify #4/6/7 rule create failed and #10 create successfully.
+   send match packets(pkt9/10), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+8. destroy #9 rule, verify #4/5/6/11/12 rule create failed and #7 create successfully.
+   send match packets(pkt7/10), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+9. destroy #10 rule, verify #4/5/6/8/9 rule create failed and #11 create successfully.
+   send match packets(pkt7/11), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+10. verify #4/5/6/8/9/10 rule create failed and #12 create successfully.
+    send match packets(pkt7/11/12), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+11. verify #4/5/6/8/9/10 rule create failed and #3 create successfully.
+    send match packets(pkt3/7/11/12), check the packets are distributed to queue 10 with FDIR matched ID=0x1.
+
+Subcase 2: inner IPv6 gtpu conflict rule
+----------------------------------------
+
+Rules::
+
+   #1 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end
+   #2 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #3 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #4 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end
+   #5 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #6 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #7 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end
+   #8 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #9 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #10 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end
+   #11 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+   #12 flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end
+
+packets::
+
+   pkt1 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+   pkt2 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt3 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt4 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+   pkt5 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt6 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt7 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+   pkt8 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt9 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+   pkt10 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
+   pkt11 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw('x'*20)
+   pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
+
+repeat step 1-12 of subcase 1.
