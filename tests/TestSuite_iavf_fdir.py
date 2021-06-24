@@ -607,6 +607,395 @@ MAC_IPV6_UDP_WITHOUT = {
                  'Ether(dst="00:11:22:33:44:55")/IPv6()/SCTP(sport=RandShort(),dport=RandShort())']
 }
 
+# inner L3/L4 packets
+MAC_IPV4_GTPU_IPV4 = {
+    "match" : ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+               'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw("x"*20)',
+               'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw("x"*20)',
+               'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+               'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV4_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_IPV4_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6()/UDP(sport=22, dport=23)/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_IPV4 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV4_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_IPV4_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP(sport=22, dport=23)/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV4 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV4_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=25, dport=24)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)',],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV4_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV4 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21", frag=1)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV4_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/TCP(sport=25, dport=24)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV4_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.22", dst="192.168.0.23")/UDP(sport=25, dport=24)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_IPV6 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV6_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_IPV6_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/IP()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_IPV6 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV6_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_IPV6_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IP()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV6 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV6_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV6_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP()/("X"*480)',
+              'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP()/UDP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV6 = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP()/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+              'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/ICMP()/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV6_TCP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/TCP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/TCP()/("X"*480)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV6_UDP = {
+    "match": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)'],
+    "mismatch": ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::4", dst="CDCD:910A:2222:5498:8475:1111:3900:2024")/UDP(sport=24, dport=25)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP(sport=22, dport=23)/Raw("x"*20)',
+                 'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/Raw("x"*20)']
+}
+
+MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET = {
+    "match": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/UDP()/("X"*480)'],
+    "mismatch": ['Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer()/IPv6()/UDP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/TCP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6()/ICMP()/("X"*480)',
+                 'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)']
+}
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -1995,6 +2384,4231 @@ tv_mac_ipv6_udp_without_input_set_mark = {
     "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
 }
 
+#inner L3/L4 cases
+# mac_ipv4_gtpu_ipv4 test case
+tv_mac_ipv4_gtpu_ipv4_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_tcp test case
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_udp test case
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 dst is 192.168.0.21 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / ipv4 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv4_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv4 test case
+tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv4_tcp test case
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv4_udp test case
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 dst is 192.168.0.21 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# MAC_IPV4_GTPU_EH_DL_ipv4 test case
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_tcp test case
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_udp test case
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 dst is 192.168.0.21 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# MAC_IPV4_GTPU_EH_UL_ipv4 test case
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_tcp test case
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv4_udp test case
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 dst is 192.168.0.21 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV4_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6 test case
+tv_mac_ipv4_gtpu_ipv6_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_tcp test case
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / ipv6 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_udp test case
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / ipv6 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_ipv6_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv4 test case
+tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv6_tcp test case
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc / ipv6 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_eh_ipv6_udp test case
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc / ipv6 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_GTPU_EH_DL_ipv4 test case
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_tcp test case
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_udp test case
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_DL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_GTPU_EH_UL_ipv4 test case
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_tcp test case
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / tcp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_TCP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+# mac_ipv4_gtpu_ipv6_udp test case
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss queues 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 10}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_passthru = {
+    "name": "tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp src is 22 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp src is 22 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp src is 22 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp src is 22 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp src is 22 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp dst is 23 / end actions queue index 1 / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 3, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp dst is 23 / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp dst is 23 / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_index = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp / end actions queue index 1 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_group = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_group",
+    "rule": "flow create 0 ingress pattern eth / ipv4  / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp / end actions rss queues 0 1 2 3 end / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "mark_id": 1, "queue": [0, 1, 2, 3]}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_passthru = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_drop = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp / end actions drop / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_mark_rss = {
+    "name": "test_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 / udp / end actions rss / mark / end",
+    "scapy_str": MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
 vectors_ipv4_pay = [tv_mac_ipv4_pay_queue_index, tv_mac_ipv4_pay_mark_rss,tv_mac_ipv4_pay_passthru,
                          tv_mac_ipv4_pay_drop, tv_mac_ipv4_pay_queue_group, tv_mac_ipv4_pay_mark]
 
@@ -2100,6 +6714,390 @@ vectors_ipv6_tcp_without_input_set = [tv_mac_ipv6_tcp_without_input_set_queue_in
 vectors_ipv6_udp_without_input_set = [tv_mac_ipv6_udp_without_input_set_queue_index, tv_mac_ipv6_udp_without_input_set_queue_group,
                                       tv_mac_ipv6_udp_without_input_set_mark_rss, tv_mac_ipv6_udp_without_input_set_passthru,
                                       tv_mac_ipv6_udp_without_input_set_drop, tv_mac_ipv6_udp_without_input_set_mark]
+
+vectors_ipv4_gtpu_ipv4 = [tv_mac_ipv4_gtpu_ipv4_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv4_inner_srcip_queue_group,
+                          tv_mac_ipv4_gtpu_ipv4_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv4_inner_srcip_drop,
+                          tv_mac_ipv4_gtpu_ipv4_inner_srcip_mark_rss,
+                          tv_mac_ipv4_gtpu_ipv4_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv4_inner_dstip_queue_group,
+                          tv_mac_ipv4_gtpu_ipv4_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv4_inner_dstip_drop,
+                          tv_mac_ipv4_gtpu_ipv4_inner_dstip_mark_rss,
+                          tv_mac_ipv4_gtpu_ipv4_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv4_inner_tuple_queue_group,
+                          tv_mac_ipv4_gtpu_ipv4_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv4_inner_tuple_drop,
+                          tv_mac_ipv4_gtpu_ipv4_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_ipv4_tcp = [tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_ipv4_udp = [tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_ipv4_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv4 = [tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv4_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv4_tcp = [tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv4_udp = [tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv4_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv4 = [tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv4_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv4_tcp = [tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv4_udp = [tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv4_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv4 = [tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv4_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv4_tcp = [tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv4_udp = [tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv4_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_ipv6 = [tv_mac_ipv4_gtpu_ipv6_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv6_inner_srcip_queue_group,
+                         tv_mac_ipv4_gtpu_ipv6_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv6_inner_srcip_drop,
+                         tv_mac_ipv4_gtpu_ipv6_inner_srcip_mark_rss,
+                         tv_mac_ipv4_gtpu_ipv6_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv6_inner_dstip_queue_group,
+                         tv_mac_ipv4_gtpu_ipv6_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv6_inner_dstip_drop,
+                         tv_mac_ipv4_gtpu_ipv6_inner_dstip_mark_rss,
+                         tv_mac_ipv4_gtpu_ipv6_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv6_inner_tuple_queue_group,
+                         tv_mac_ipv4_gtpu_ipv6_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv6_inner_tuple_drop,
+                         tv_mac_ipv4_gtpu_ipv6_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_ipv6_tcp = [tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_tuple_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_srcport_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_inner_dstport_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_drop,
+                             tv_mac_ipv4_gtpu_ipv6_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_ipv6_udp = [tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_tuple_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_srcport_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_inner_dstport_mark_rss,
+                             tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_queue_group,
+                             tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_drop,
+                             tv_mac_ipv4_gtpu_ipv6_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv6 = [tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_ipv6_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv6_tcp = [tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ipv6_udp = [tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ipv6_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv6 = [tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_dl_ipv6_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv6_tcp = [tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_dl_ipv6_udp = [tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_dl_ipv6_udp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv6 = [tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_srcip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_dstip_mark_rss,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_queue_group,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_drop,
+                             tv_mac_ipv4_gtpu_eh_ul_ipv6_inner_tuple_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv6_tcp = [tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_tcp_without_inputset_mark_rss]
+
+vectors_ipv4_gtpu_eh_ul_ipv6_udp = [tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstip_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_tuple_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_dstport_mark_rss,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_group,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_drop,
+                                 tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_mark_rss]
 
 class TestIAVFFdir(TestCase):
 
@@ -4183,6 +9181,196 @@ class TestIAVFFdir(TestCase):
         self.check_fdir_rule(port_id=0, stats=True)
         out = self.send_pkts_getouput(pkt_ipv4_pay_ipv6_pay)
         rfc.verify_iavf_fdir_directed_by_rss(out, stats=True)
+
+    def test_mac_ipv4_gtpu_ipv4(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv4)
+
+    def test_mac_ipv4_gtpu_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv4_tcp)
+
+    def test_mac_ipv4_gtpu_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv4_udp)
+
+    def test_mac_ipv4_gtpu_eh_ipv4(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4)
+
+    def test_mac_ipv4_gtpu_eh_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4_tcp)
+
+    def test_mac_ipv4_gtpu_eh_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4_udp)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv4(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4_tcp)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4_udp)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv4(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4_tcp)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4_udp)
+
+    def test_mac_ipv4_gtpu_ipv6(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv6)
+
+    def test_mac_ipv4_gtpu_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv6_tcp)
+
+    def test_mac_ipv4_gtpu_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_ipv6_udp)
+
+    def test_mac_ipv4_gtpu_eh_ipv6(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6)
+
+    def test_mac_ipv4_gtpu_eh_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6_tcp)
+
+    def test_mac_ipv4_gtpu_eh_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6_udp)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv6(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6_tcp)
+
+    def test_mac_ipv4_gtpu_eh_dl_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6_udp)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv6(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6_tcp)
+
+    def test_mac_ipv4_gtpu_eh_ul_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6_udp)
+
+    def _rte_conflict_rule(self, conflict_rule, rule, match_pkt, stats=True):
+        check_param = {"port_id": 0, "mark_id": 1, "queue": 10}
+
+        self.create_fdir_rule(conflict_rule, check_stats=False)
+        rule_id = self.create_fdir_rule(rule, check_stats=True)
+        out = self.send_pkts_getouput(pkts=match_pkt)
+        pkt_num = len(match_pkt)
+        rfc.check_iavf_fdir_mark(out, pkt_num=pkt_num, check_param=check_param)
+        if int(rule_id[0]) > 1:
+            rule_id = int(rule_id[0]) - 1
+        else:
+            rule_id = 0
+        if stats:
+            self.destroy_fdir_rule(rule_id)
+
+    def _create_check_conflict_rule(self, rules, pkts):
+        self.create_fdir_rule(rules[0], check_stats=True)
+        pkt_list = [pkts[0], pkts[3]]
+        self._rte_conflict_rule(rules[1:3], rules[3], pkt_list)
+
+        pkt_list = [pkts[1], pkts[3]]
+        self._rte_conflict_rule(rules[5:], rules[1], pkt_list)
+
+        pkt_list = [pkts[1], pkts[4]]
+        self._rte_conflict_rule(rules[0], rules[4], pkt_list)
+
+        c_rules = [rules[3], rules[4], rules[7], rules[9], rules[10]]
+        pkt_list = [pkts[4], pkts[5]]
+        self._rte_conflict_rule(c_rules, rules[5], pkt_list)
+
+        c_rules = [rules[3], rules[6], rules[8], rules[9], rules[11]]
+        pkt_list = [pkts[5], pkts[7]]
+        self._rte_conflict_rule(c_rules, rules[7], pkt_list)
+
+        c_rules = [rules[3], rules[4], rules[6]]
+        pkt_list = [pkts[7], pkts[8]]
+        self._rte_conflict_rule(c_rules, rules[8], pkt_list)
+
+        c_rules = [rules[3], rules[5], rules[6]]
+        pkt_list = [pkts[8], pkts[9]]
+        self._rte_conflict_rule(c_rules, rules[9], pkt_list)
+
+        c_rules = [rules[3], rules[4], rules[5], rules[9], rules[10], rules[11]]
+        pkt_list = [pkts[6], pkts[9]]
+        self._rte_conflict_rule(c_rules, rules[6], pkt_list)
+
+        c_rules = [rules[3], rules[4], rules[5], rules[7], rules[8]]
+        pkt_list = [pkts[6], pkts[10]]
+        self._rte_conflict_rule(c_rules, rules[10], pkt_list, stats=False)
+
+        c_rules = [rules[3], rules[4], rules[5], rules[7], rules[8], rules[9]]
+        pkt_list = [pkts[6], pkts[10], pkts[11]]
+        self._rte_conflict_rule(c_rules, rules[11], pkt_list, stats=False)
+
+        c_rules = [rules[3], rules[4], rules[5], rules[7], rules[8], rules[9]]
+        pkt_list = [pkts[2], pkts[6], pkts[10], pkts[11]]
+        self._rte_conflict_rule(c_rules, rules[2], pkt_list, stats=False)
+
+    def test_mac_inner_ipv4_gtpu_conflict_rule(self):
+        rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+                 "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end"]
+
+        pkts = ['Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/TCP(sport=22, dport=23)/Raw("x"*20)',
+                'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP(src="192.168.0.20", dst="192.168.0.21")/UDP(sport=22, dport=23)/Raw("x"*20)']
+
+        self._create_check_conflict_rule(rules, pkts)
+
+    def test_mac_inner_ipv6_gtpu_conflict_rule(self):
+        rules = [
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 0 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
+            "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / gtp_psc pdu_t is 1 / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / udp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end"]
+
+        pkts = [
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer()/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=0)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22, dport=23)/Raw("x"*20)',
+            'Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw("x"*20)']
+
+        self._create_check_conflict_rule(rules, pkts)
 
     def tear_down(self):
         # destroy all flow rule on port 0
