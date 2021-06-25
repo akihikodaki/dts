@@ -147,7 +147,10 @@ class SuiteConf(UserConf):
 
         conf = dict(case_confs)
         for key, data_string in list(conf.items()):
-            case_cfg[key] = eval(data_string)
+            try:
+                case_cfg[key] = eval(data_string)
+            except NameError:  # happens when data_string is actually a string, not an int, bool or dict
+                case_cfg[key] = data_string
 
         return case_cfg
 
