@@ -75,8 +75,10 @@ class TestPortHotPlug(TestCase):
         attach port
         """
         # dpdk hotplug discern NIC by pci bus and include domid
-        self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'], "is attached", 60)
-        self.dut.send_expect("port start %s" % port, "Configuring Port", 120)
+        out = self.dut.send_expect("port attach %s" % self.dut.ports_info[port]['pci'], "testpmd>", 60)
+        self.verify("is attached" in out, "Failed to attach")
+        out = self.dut.send_expect("port start %s" % port, "testpmd>", 120)
+        self.verify("Configuring Port" in out, "Failed to start port")
         # sleep 10 seconds for fortville update link stats
         time.sleep(10)
         self.dut.send_expect("show port info %s" % port, "testpmd>", 60)
@@ -85,10 +87,12 @@ class TestPortHotPlug(TestCase):
         """
         detach port
         """
-        self.dut.send_expect("port stop %s" % port, "Stopping ports", 60)
+        out = self.dut.send_expect("port stop %s" % port, "testpmd>", 60)
+        self.verify("Stopping ports" in out, "Failed to stop port")
         # sleep 10 seconds for fortville update link stats
         time.sleep(10)
-        self.dut.send_expect("port detach %s" % port, "is detached", 60)
+        out = self.dut.send_expect("port detach %s" % port, "testpmd>", 60)
+        self.verify("is detached" in out, "Failed to detach port")
 
     def test_after_attach(self):
         """
@@ -103,13 +107,15 @@ class TestPortHotPlug(TestCase):
         self.dut.close_session(session_secondary)
         self.attach(self.port)
         self.dut.send_expect("start", "testpmd>", 60)
-        self.dut.send_expect("port detach %s" % self.port, "Port not stopped", 60)
+        out = self.dut.send_expect("port detach %s" % self.port, "testpmd>", 60)
+        self.verify("Port not stopped" in out, "able to detach port without stopping")
         self.dut.send_expect("stop", "testpmd>", 60)
         self.detach(self.port)
         self.attach(self.port)
 
         self.dut.send_expect("start", "testpmd>", 60)
-        self.dut.send_expect("port detach %s" % self.port, "Port not stopped", 60)
+        out = self.dut.send_expect("port detach %s" % self.port, "testpmd>", 60)
+        self.verify("Port not stopped" in out, "able to detach port without stopping")
         self.dut.send_expect("clear port stats %s" % self.port, "testpmd>", 60)
         self.send_packet(self.port)
         out = self.dut.send_expect("show port stats %s" % self.port, "testpmd>", 60)
@@ -144,7 +150,8 @@ class TestPortHotPlug(TestCase):
         self.attach(self.port)
 
         self.dut.send_expect("start", "testpmd>", 60)
-        self.dut.send_expect("port detach %s" % self.port, "Port not stopped", 60)
+        out = self.dut.send_expect("port detach %s" % self.port, "testpmd>", 60)
+        self.verify("Port not stopped" in out, "able to detach port without stopping")
         self.dut.send_expect("clear port stats %s" % self.port, "testpmd>", 60)
         self.send_packet(self.port)
         out = self.dut.send_expect("show port stats %s" % self.port, "testpmd>", 60)
@@ -165,12 +172,14 @@ class TestPortHotPlug(TestCase):
         testpmd_cmd = "%s " % self.path + eal_param + ' -- -i'
         self.dut.send_expect(testpmd_cmd, "testpmd>", timeout=60)
         self.dut.send_expect("port stop 0", "testpmd>")
-        self.dut.send_expect("port detach 0", "Device is detached")
+        out = self.dut.send_expect("port detach 0", "testpmd>")
+        self.verify("Device is detached" in out, "Failed to detach")
         stats = self.dut.send_expect("ls %s" % path, "#", timeout=3,
                                      alt_session=True, verify=True)
         self.verify(stats == 2, 'port detach failed')
         time.sleep(1)
-        self.dut.send_expect("port attach eth_vhost1,iface=%s,queues=1" % iface, "Port 0 is attached.")
+        out = self.dut.send_expect("port attach eth_vhost1,iface=%s,queues=1" % iface, "testpmd>")
+        self.verify("Port 0 is attached." in out, "Failed to attach")
         self.dut.send_expect("port start 0", "testpmd>")
         out = self.dut.send_expect("ls %s" % path, "#", timeout=3,
                                    alt_session=True, verify=True)
