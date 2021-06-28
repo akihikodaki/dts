@@ -100,7 +100,7 @@ class TestACL(TestCase):
         # 	grep FAILED test-acl.*.out
         for burst_size in ('15', '16', '17', '18', '23', '24', '25', '31', '32', '33', '34', '35', '47', '48', '51', '255', '256', '257'):
             acl_test_cmd = f'/bin/bash -x {self.test_acl_sh} {self.test_acl_bin} {self.acl_rules_dir} {alg} {burst_size}'
-            out = self.dut.send_expect(acl_test_cmd,  '# ', 1200)
+            out = self.dut.send_expect(acl_test_cmd,  '# ', 1200, trim_whitespace=False)
             self.verify('FAILED' not in out, f'for details see TestACL.log')
         self.logger.info('All tests have ended successfully')
 
