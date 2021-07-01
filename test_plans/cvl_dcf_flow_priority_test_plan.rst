@@ -1786,4 +1786,4 @@ subcase 3: some rules overlap
 
 10. destroy rule 0, repeat step 8 and check the pkts can not be received::
 
-    flow destroy 0 rule 0
+     flow destroy 0 rule 0
