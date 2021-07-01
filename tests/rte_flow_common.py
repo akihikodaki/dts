@@ -674,9 +674,23 @@ def check_pf_rss_queue(out, count):
     else:
         return False
 
+def send_ipfragment_pkt(test_case, pkts, tx_port):
+    if isinstance(pkts, str):
+        pkts = [pkts]
+    for i in range(len(pkts)):
+        test_case.tester.scapy_session.send_expect(
+            'p=eval("{}")'.format(pkts[i]), '>>> ')
+        if 'IPv6ExtHdrFragment' in pkts[i]:
+            test_case.tester.scapy_session.send_expect(
+                'pkts=fragment6(p, 500)', '>>> ')
+        else:
+            test_case.tester.scapy_session.send_expect(
+                'pkts=fragment(p, fragsize=500)', '>>> ')
+        test_case.tester.scapy_session.send_expect(
+            'sendp(pkts, iface="{}")'.format(tx_port), '>>> ')
 
 class RssProcessing(object):
-    def __init__(self, test_case, pmd_output, tester_ifaces, rxq):
+    def __init__(self, test_case, pmd_output, tester_ifaces, rxq, ipfrag_flag=False):
         self.test_case = test_case
         self.pmd_output = pmd_output
         self.tester_ifaces = tester_ifaces
@@ -697,6 +711,7 @@ class RssProcessing(object):
             'check_no_hash': self.check_no_hash,
         }
         self.error_msgs = []
+        self.ipfrag_flag = ipfrag_flag
 
     def save_hash(self, out, key='', port_id=0):
         hashes, rss_distribute = self.get_hash_verify_rss_distribute(out, port_id)
@@ -858,11 +873,15 @@ class RssProcessing(object):
         return hashes, queues
 
     def send_pkt_get_output(self, pkts, port_id=0, count=1, interval=0):
-        self.pkt.update_pkt(pkts)
         tx_port = self.tester_ifaces[0] if port_id == 0 else self.tester_ifaces[1]
         self.logger.info('----------send packet-------------')
         self.logger.info('{}'.format(pkts))
-        self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
+        if self.ipfrag_flag == True:
+            count = 2
+            send_ipfragment_pkt(self.test_case, pkts, tx_port)
+        else:
+            self.pkt.update_pkt(pkts)
+            self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
         out = self.pmd_output.get_output(timeout=1)
         pkt_pattern = 'port\s%d/queue\s\d+:\sreceived\s(\d+)\spackets.+?\n.*length=\d{2,}\s' % port_id
         reveived_data = re.findall(pkt_pattern, out)
@@ -1074,3 +1093,197 @@ class RssProcessing(object):
                               .replace('IP(proto=0x2F)/GRE(proto=0x0800)/IP()', 'IPv6(nh=0x2F)/GRE(proto=0x86DD)/IPv6()').replace('mac_ipv4', 'mac_ipv6'))
                          for element in template]
         return ipv6_template
+
+
+class FdirProcessing(object):
+    def __init__(self, test_case, pmd_output, tester_ifaces, rxq, ipfrag_flag=False):
+        self.test_case = test_case
+        self.pmd_output = pmd_output
+        self.tester_ifaces = tester_ifaces
+        self.logger = test_case.logger
+        self.pkt = Packet()
+        self.rxq = rxq
+        self.verify = self.test_case.verify
+        self.ipfrag_flag = ipfrag_flag
+
+    def send_pkt_get_output(self, pkts, port_id=0, count=1, interval=0, drop=False):
+        tx_port = self.tester_ifaces[0] if port_id == 0 else self.tester_ifaces[1]
+        self.logger.info('----------send packet-------------')
+        self.logger.info('{}'.format(pkts))
+        if drop:
+            self.pmd_output.execute_cmd("clear port stats all")
+            time.sleep(1)
+            if self.ipfrag_flag == True:
+                send_ipfragment_pkt(self.test_case, pkts, tx_port)
+            else:
+                self.pkt.update_pkt(pkts)
+                self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
+            out = self.pmd_output.execute_cmd("stop")
+            self.pmd_output.execute_cmd("start")
+            return out
+        else:
+            if self.ipfrag_flag == True:
+                count = 2
+                send_ipfragment_pkt(self.test_case, pkts, tx_port)
+            else:
+                self.pkt.update_pkt(pkts)
+                self.pkt.send_pkt(crb=self.test_case.tester, tx_port=tx_port, count=count, interval=interval)
+            out = self.pmd_output.get_output(timeout=1)
+        pkt_pattern = 'port\s%d/queue\s\d+:\sreceived\s(\d+)\spackets.+?\n.*length=\d{2,}\s' % port_id
+        reveived_data = re.findall(pkt_pattern, out)
+        reveived_pkts = sum(map(int, [i[0] for i in reveived_data]))
+        if isinstance(pkts, list):
+            self.verify(reveived_pkts == len(pkts) * count,
+                        'expect received %d pkts, but get %d instead' % (len(pkts) * count, reveived_pkts))
+        else:
+            self.verify(reveived_pkts == 1 * count,
+                        'expect received %d pkts, but get %d instead' % (1 * count, reveived_pkts))
+        return out
+
+    def check_rule(self, port_id=0, stats=True, rule_list=None):
+        out = self.pmd_output.execute_cmd("flow list %s" % port_id)
+        p = re.compile(r"ID\s+Group\s+Prio\s+Attr\s+Rule")
+        matched = p.search(out)
+        if stats:
+            self.verify(matched, "flow rule on port %s is not existed" % port_id)
+            if rule_list:
+                p2 = re.compile("^(\d+)\s")
+                li = out.splitlines()
+                res = list(filter(bool, list(map(p2.match, li))))
+                result = [i.group(1) for i in res]
+                self.verify(set(rule_list).issubset(set(result)),
+                            "check rule list failed. expect %s, result %s" % (rule_list, result))
+        else:
+            if matched:
+                if rule_list:
+                    res_li = [i.split()[0].strip() for i in out.splitlines() if re.match('\d', i)]
+                    self.verify(not set(rule_list).issubset(res_li), 'rule specified should not in result.')
+                else:
+                    raise Exception('expect no rule listed')
+            else:
+                self.verify(not matched, "flow rule on port %s is existed" % port_id)
+
+    def destroy_rule(self, port_id=0, rule_id=None):
+        if rule_id is None:
+            rule_id = 0
+        if isinstance(rule_id, list):
+            for i in rule_id:
+                out = self.test_case.dut.send_command("flow destroy %s rule %s" % (port_id, i), timeout=1)
+                p = re.compile(r"Flow rule #(\d+) destroyed")
+                m = p.search(out)
+                self.verify(m, "flow rule %s delete failed" % rule_id)
+        else:
+            out = self.test_case.dut.send_command("flow destroy %s rule %s" % (port_id, rule_id), timeout=1)
+            p = re.compile(r"Flow rule #(\d+) destroyed")
+            m = p.search(out)
+            self.verify(m, "flow rule %s delete failed" % rule_id)
+
+    def create_rule(self, rule: (list, str), check_stats=True, msg=None):
+        p = re.compile(r"Flow rule #(\d+) created")
+        rule_list = list()
+        if isinstance(rule, list):
+            for i in rule:
+                out = self.pmd_output.execute_cmd(i, timeout=1)
+                if msg:
+                    self.verify(msg in out, "failed: expect %s in %s" % (msg, out))
+                m = p.search(out)
+                if m:
+                    rule_list.append(m.group(1))
+                else:
+                    rule_list.append(False)
+        elif isinstance(rule, str):
+            out = self.pmd_output.execute_cmd(rule, timeout=1)
+            if msg:
+                self.verify(msg in out, "failed: expect %s in %s" % (msg, out))
+            m = p.search(out)
+            if m:
+                rule_list.append(m.group(1))
+            else:
+                rule_list.append(False)
+        else:
+            raise Exception("unsupported rule type, only accept list or str")
+        if check_stats:
+            self.verify(all(rule_list), "some rules create failed, result %s" % rule_list)
+        elif not check_stats:
+            self.verify(not any(rule_list), "all rules should create failed, result %s" % rule_list)
+        return rule_list
+
+    def validate_rule(self, rule, check_stats=True, check_msg=None):
+        flag = 'Flow rule validated'
+        if isinstance(rule, str):
+            if 'create' in rule:
+                rule = rule.replace('create', 'validate')
+            out = self.pmd_output.execute_cmd(rule, timeout=1)
+            if check_stats:
+                self.verify(flag in out.strip(), "rule %s validated failed, result %s" % (rule, out))
+            else:
+                if check_msg:
+                    self.verify(flag not in out.strip() and check_msg in out.strip(),
+                                "rule %s validate should failed with msg: %s, but result %s" % (rule, check_msg, out))
+                else:
+                    self.verify(flag not in out.strip(), "rule %s validate should failed, result %s" % (rule, out))
+        elif isinstance(rule, list):
+            for r in rule:
+                if 'create' in r:
+                    r = r.replace('create', 'validate')
+                out = self.pmd_output.execute_cmd(r, timeout=1)
+                if check_stats:
+                    self.verify(flag in out.strip(), "rule %s validated failed, result %s" % (r, out))
+                else:
+                    if not check_msg:
+                        self.verify(flag not in out.strip(), "rule %s validate should failed, result %s" % (r, out))
+                    else:
+                        self.verify(flag not in out.strip() and check_msg in out.strip(),
+                                    "rule %s should validate failed with msg: %s, but result %s" % (
+                                        r, check_msg, out))
+
+    def flow_director_validate(self, vectors):
+        """
+        FDIR test: validate/create rule, check match pkts and unmatched pkts, destroy rule...
+
+        :param vectors: test vectors
+        """
+        test_results = dict()
+        for tv in vectors:
+            try:
+                self.logger.info("====================sub_case: {}=========================".format(tv["name"]))
+                port_id = tv["check_param"]["port_id"] if tv["check_param"].get("port_id") is not None else 0
+                drop = tv["check_param"].get("drop")
+                # create rule
+                self.test_case.dut.send_expect("flow flush %d" % port_id, "testpmd> ", 120)
+                rule_li = self.create_rule(tv["rule"])
+                # send and check match packets
+                out1 = self.send_pkt_get_output(pkts=tv["scapy_str"]["matched"], port_id=port_id, drop=drop)
+                matched_queue = check_mark(out1, pkt_num=len(tv["scapy_str"]["matched"]) * 2 if self.ipfrag_flag else
+                    len(tv["scapy_str"]["matched"]), check_param=tv["check_param"])
+
+                # send and check unmatched packets
+                out2 = self.send_pkt_get_output(pkts=tv["scapy_str"]["unmatched"], port_id=port_id, drop=drop)
+                check_mark(out2, pkt_num=len(tv["scapy_str"]["unmatched"]) * 2 if self.ipfrag_flag else len(
+                    tv["scapy_str"]["unmatched"]), check_param=tv["check_param"], stats=False)
+
+                # list and destroy rule
+                self.check_rule(port_id=tv["check_param"]["port_id"], rule_list=rule_li)
+                self.destroy_rule(rule_id=rule_li, port_id=port_id)
+                # send matched packet
+                out3 = self.send_pkt_get_output(pkts=tv["scapy_str"]["matched"], port_id=port_id, drop=drop)
+                matched_queue2 = check_mark(out3, pkt_num=len(tv["scapy_str"]["matched"]) * 2 if self.ipfrag_flag else len(
+                    tv["scapy_str"]["matched"]), check_param=tv["check_param"], stats=False)
+                if tv["check_param"].get("rss"):
+                    self.verify(matched_queue == matched_queue2 and None not in matched_queue,
+                                     "send twice matched packet, received in deferent queues")
+                # check not rule exists
+                self.check_rule(port_id=port_id, stats=False)
+                test_results[tv["name"]] = True
+                self.logger.info((GREEN("case passed: %s" % tv["name"])))
+            except Exception as e:
+                self.logger.warning((RED(e)))
+                self.test_case.dut.send_command("flow flush 0", timeout=1)
+                test_results[tv["name"]] = False
+                self.logger.info((GREEN("case failed: %s" % tv["name"])))
+                continue
+        failed_cases = []
+        for k, v in list(test_results.items()):
+            if not v:
+                failed_cases.append(k)
+        self.verify(all(test_results.values()), "{} failed".format(failed_cases))
