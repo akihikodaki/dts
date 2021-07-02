@@ -791,77 +791,56 @@ Test Case 11: packed virtqueue vm2vm vectorized path test with ring size is not 
 
 9. Quit pdump,vhost received packets in pdump-vhost-rx.pcap,check headers and payload of all packets in pdump-virtio-rx.pcap and pdump-vhost-rx.pcap and ensure the content are same.
 
-Test Case 12: split virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
+Test Case 12: split virtqueue vm2vm non-mergeable path multi-queues payload check with cbdma enabled
 ========================================================================================================
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=64' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=64' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
+    testpmd>vhost enable tx all
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=0,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
 
-3. Attach pdump secondary process to primary process by same file-prefix::
+3. Launch virtio-user0 and send packets::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio1 -- --pdump 'device_id=net_virtio_user1,queue=*,rx-dev=./pdump-virtio-rx.pcap,mbuf-size=8000'
-
-4. Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=0,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>set txpkts 64,128,256,512
     testpmd>start tx_first 27
     testpmd>stop
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set txpkts 2000
+    testpmd>set txpkts 64
     testpmd>start tx_first 1
 
-5. Start vhost testpmd, then quit pdump and all testpmd, check 566 packets received by virtio-user1 and 502 packets are 8k length and 64 packets are 2k length in pdump-virtio-rx.pcap.
-
-6. Restart step 1-3, Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=1,queue_size=4096 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-    testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 27
-    testpmd>stop
-    testpmd>set burst 32
-    testpmd>set txpkts 2000
-    testpmd>start tx_first 7
-    testpmd>stop
-    testpmd>set txpkts 2000
-    testpmd>start tx_first 1
-
-7. Start vhost testpmd, then quit pdump and all testpmd, check 512 packets received by virtio-user1, check 54 packets with 8k length and 458 packets with 2k length in pdump-virtio-rx.pcap.
+4. Start vhost testpmd, check virtio-user1 RX-packets is 566 and RX-bytes is 486016.
 
 Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
 ================================================================================================
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3],dmathr=512' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
+    testpmd>vhost enable tx all
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
@@ -874,107 +853,70 @@ Test Case 13: split virtqueue vm2vm mergeable path multi-queues payload check wi
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>set txpkts 64,256,2000,64,256,2000
     testpmd>start tx_first 27
     testpmd>stop
     testpmd>set burst 32
-    testpmd>set txpkts 2000
+    testpmd>set txpkts 64
     testpmd>start tx_first 7
 
-5. Start vhost testpmd, then quit pdump, check 502 packets received by virtio-user1 and 54 packets with 8k length and 448 packets with 2k length in pdump-virtio-rx.pcap.
+5. Start vhost testpmd, check 502 packets received by virtio-user1 and 54 packets with 4640 length and 448 packets with 64 length in pdump-virtio-rx.pcap.
 
-6. Restart step 1-3, Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=0,mrg_rxbuf=1,in_order=0,queue_size=4096 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
-    testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 27
-    testpmd>stop
-    testpmd>set burst 32
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 7
-
-7. Start vhost testpmd, then quit pdump, check 502 packets received by virtio-user1, check 502 packets with 8k length in pdump-virtio-rx.pcap.
-
-Test Case 14: packed virtqueue vm2vm inorder mergeable path multi-queues payload check with cbdma enabled
+Test Case 14: packed virtqueue vm2vm non-mergeable path multi-queues payload check with cbdma enabled
 =========================================================================================================
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=64' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=64' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
+    testpmd>vhost enable tx all
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
-    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=4096 \
+    --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=1,mrg_rxbuf=0,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set fwd rxonly
     testpmd>start
 
-3. Attach pdump secondary process to primary process by same file-prefix::
+3. Launch virtio-user0 and send packets::
 
-    ./x86_64-native-linuxapp-gcc/app/dpdk-pdump -v --file-prefix=virtio1 -- --pdump 'device_id=net_virtio_user1,queue=*,rx-dev=./pdump-virtio-rx.pcap,mbuf-size=8000'
-
-4. Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=4096 \
+    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=1,mrg_rxbuf=0,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>set txpkts 64,128,256,512
     testpmd>start tx_first 27
     testpmd>stop
     testpmd>set burst 32
     testpmd>start tx_first 7
     testpmd>stop
-    testpmd>set txpkts 2000
+    testpmd>set txpkts 64
     testpmd>start tx_first 1
 
-5. Start vhost testpmd, then quit pdump and all testpmd, check 566 packets received by virtio-user1 and 502 packets are 8k length and 64 packets are 2k length in pdump-virtio-rx.pcap.
-
-6. Restart step 1-3, Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=1,queue_size=4096 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=256 --rxd=256
-    testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 27
-    testpmd>stop
-    testpmd>set burst 32
-    testpmd>set txpkts 2000
-    testpmd>start tx_first 7
-    testpmd>stop
-    testpmd>set txpkts 2000
-    testpmd>start tx_first 1
-
-7. Start vhost testpmd, then quit pdump and all testpmd, check 512 packets received by virtio-user1, check 54 packets with 8k length and 458 packets with 2k length in pdump-virtio-rx.pcap.
+4. Start vhost testpmd, check virtio-user1 RX-packets is 566 and RX-bytes is 486016.
 
 Test Case 15: packed virtqueue vm2vm mergeable path multi-queues payload check with cbdma enabled
 =================================================================================================
 
 1. Launch vhost by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -l 1-2 -n 4 \
-    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@80:04.0;txq1@80:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@80:04.2;txq1@80:04.3],dmathr=512' -- \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -l 1-2 -n 4 \
+    --vdev 'eth_vhost0,iface=vhost-net,queues=2,client=1,dmas=[txq0@00:04.0;txq1@00:04.1],dmathr=512' --vdev 'eth_vhost1,iface=vhost-net1,queues=2,client=1,dmas=[txq0@00:04.2;txq1@00:04.3],dmathr=512' -- \
     -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096 --no-flush-rx
+    testpmd>vhost enable tx all
 
 2. Launch virtio-user1 by below command::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 7-8 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 7-8 \
     --no-pci --file-prefix=virtio1 \
     --vdev=net_virtio_user1,mac=00:01:02:03:04:05,path=./vhost-net1,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
@@ -987,32 +929,16 @@ Test Case 15: packed virtqueue vm2vm mergeable path multi-queues payload check w
 
 4. Launch virtio-user0 and send 8k length packets::
 
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -n 4 -l 5-6 \
     --no-pci --file-prefix=virtio \
     --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=0,queue_size=4096 \
     -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
     testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
+    testpmd>set txpkts 64,256,2000,64,256,2000
     testpmd>start tx_first 27
     testpmd>stop
     testpmd>set burst 32
-    testpmd>set txpkts 2000
+    testpmd>set txpkts 64
     testpmd>start tx_first 7
 
-5. Start vhost testpmd, then quit pdump, check 502 packets received by virtio-user1 and 54 packets with 8k length and 448 packets with 2k length in pdump-virtio-rx.pcap.
-
-6. Restart step 1-3, Launch virtio-user0 and send packets::
-
-    ./x86_64-native-linuxapp-gcc/app/testpmd -n 4 -l 5-6 \
-    --no-pci --file-prefix=virtio \
-    --vdev=net_virtio_user0,mac=00:01:02:03:04:05,path=./vhost-net,queues=2,server=1,packed_vq=1,mrg_rxbuf=1,in_order=0,queue_size=4096 \
-    -- -i --nb-cores=1 --rxq=2 --txq=2 --txd=4096 --rxd=4096
-    testpmd>set burst 1
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 27
-    testpmd>stop
-    testpmd>set burst 32
-    testpmd>set txpkts 2000,2000,2000,2000
-    testpmd>start tx_first 7
-
-7. Start vhost testpmd, then quit pdump, check 502 packets received by virtio-user1, check 502 packets with 8k length in pdump-virtio-rx.pcap.
+5. Start vhost testpmd, then quit pdump, check 502 packets received by virtio-user1 and 54 packets with 4640 length and 448 packets with 64 length in pdump-virtio-rx.pcap.
