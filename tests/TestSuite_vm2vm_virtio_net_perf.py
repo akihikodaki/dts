@@ -225,11 +225,11 @@ class TestVM2VMVirtioNetPerf(TestCase):
 
         # add -f g param, use Gbits/sec report teste result
         if iperf_mode == "tso":
-            iperf_server = "iperf -f g -s -i 1"
-            iperf_client = "iperf -f g -c 1.1.1.2 -i 1 -t 60"
+            iperf_server = "iperf -s -i 1"
+            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 60"
         elif iperf_mode == 'ufo':
-            iperf_server = "iperf -f g -s -u -i 1"
-            iperf_client = "iperf -f g -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
+            iperf_server = "iperf -s -u -i 1"
+            iperf_client = "iperf -c 1.1.1.2 -i 1 -t 30 -P 4 -u -b 1G -l 9000"
         self.vm_dut[0].send_expect("%s > iperf_server.log &" % iperf_server, "", 10)
         self.vm_dut[1].send_expect("%s > iperf_client.log &" % iperf_client, "", 60)
         time.sleep(90)
@@ -252,6 +252,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         iperfdata = re.compile('\S*\s*[M|G]bits/sec').findall(fmsg)
         # the last data of iperf is the ave data from 0-30 sec
         self.verify(len(iperfdata) != 0, "The iperf data between to vms is 0")
+        self.verify((iperfdata[-1]).split()[1] == "Gbits/sec", "The iperf data is %s,Can't reach Gbits/sec" % iperfdata[-1])
         self.logger.info("The iperf data between vms is %s" % iperfdata[-1])
 
         # put the result to table
@@ -357,7 +358,7 @@ class TestVM2VMVirtioNetPerf(TestCase):
         """
         TestCase1: VM2VM split ring vhost-user/virtio-net test with tcp traffic
         """
-        self.vm_args = "disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
+        self.vm_args = "disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on"
         self.prepare_test_env(cbdma=False, no_pci=True, client_mode=False, enable_queues=1, nb_cores=2,
                               server_mode=False, opt_queue=1, combined=False, rxq_txq=None)
         self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
@@ -521,35 +522,19 @@ class TestVM2VMVirtioNetPerf(TestCase):
 
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
         self.vm_args = "disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
-
-        self.logger.info("Re-launch without CBDMA and used 8 queue")
-        self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=8)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_disable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable', 'mergeable path', 8, iperf_data_cbdma_disable_8_queue])
-
-        self.logger.info("Re-launch without CBDMA and used 1 queue")
-        self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=1)
-        self.config_vm_env(combined=True, rxq_txq=1)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_disable_1_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable', 'mergeable path', 1, iperf_data_cbdma_disable_1_queue])
-
-        self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
-        self.result_table_create(self.table_header)
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=8, nb_cores=4,
+                              server_mode=False, opt_queue=8, combined=True, rxq_txq=8)
+        for i in range(0,5):
+            self.check_scp_file_valid_between_vms()
+            iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+            ipef_result.append(['Enable_%d' % i, 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
+            if i > 0:
+                self.verify(abs(ipef_result[0][3]-ipef_result[i][3])/ipef_result[0][3] < 0.2 ,"Performance fluctuates too much")
+            self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
+            self.result_table_create(self.table_header)
         for table_row in ipef_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.verify(iperf_data_cbdma_enable_8_queue > iperf_data_cbdma_disable_8_queue, \
-                    "CMDMA enable: %s is lower than CBDMA disable: %s" % (
-                        iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_8_queue))
 
     def test_vm2vm_packed_ring_with_no_mergeable_path_check_large_packet_and_cbdma_enable_8queue(self):
         """
@@ -561,35 +546,19 @@ class TestVM2VMVirtioNetPerf(TestCase):
 
         self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
         self.vm_args = "disable-modern=false,mrg_rxbuf=off,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on"
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
-                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
-
-        self.logger.info("Re-launch without CBDMA and used 8 queue")
-        self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=8)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_disable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable', 'mergeable path', 8, iperf_data_cbdma_disable_8_queue])
-
-        self.logger.info("Re-launch without CBDMA and used 1 queue")
-        self.vhost.send_expect("quit", "# ", 30)
-        self.start_vhost_testpmd(cbdma=False, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4, rxq_txq=1)
-        self.config_vm_env(combined=True, rxq_txq=1)
-        self.check_scp_file_valid_between_vms()
-        iperf_data_cbdma_disable_1_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
-        ipef_result.append(['Disable', 'mergeable path', 1, iperf_data_cbdma_disable_1_queue])
-
-        self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
-        self.result_table_create(self.table_header)
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=False, enable_queues=8, nb_cores=4,
+                              server_mode=False, opt_queue=8, combined=True, rxq_txq=8)
+        for i in range(0,5):
+            self.check_scp_file_valid_between_vms()
+            iperf_data_cbdma_enable_8_queue = self.start_iperf_and_verify_vhost_xstats_info(iperf_mode='tso')
+            ipef_result.append(['Enable', 'mergeable path', 8, iperf_data_cbdma_enable_8_queue])
+            if i > 0:
+                self.verify(abs(ipef_result[0][3]-ipef_result[i][3])/ipef_result[0][3] < 0.2 ,"Performance fluctuates too much")
+            self.table_header = ['CBDMA Enable/Disable', 'Mode', 'rxq/txq', 'Gbits/sec']
+            self.result_table_create(self.table_header)
         for table_row in ipef_result:
             self.result_table_add(table_row)
         self.result_table_print()
-        self.verify(iperf_data_cbdma_enable_8_queue > iperf_data_cbdma_disable_8_queue, \
-                    "CMDMA enable: %s is lower than CBDMA disable: %s" % (
-                        iperf_data_cbdma_enable_8_queue, iperf_data_cbdma_disable_8_queue))
 
     def tear_down(self):
         """
