@@ -473,6 +473,7 @@ class TestTSO(TestCase):
         """
         Run after each test case.
         """
+        self.dut.send_expect("quit", "# ")
         self.dut.kill_all()
         time.sleep(2)
 
