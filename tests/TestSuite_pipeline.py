@@ -65,8 +65,6 @@ from scapy.sendrecv import sendp
 
 import itertools
 
-MODE = 1  # 0: Development, 1: Release
-
 TIMESTAMP = re.compile(r'\d{2}\:\d{2}\:\d{2}\.\d{6}')
 PAYLOAD = re.compile(r'\t0x([0-9a-fA-F]+):  ([0-9a-fA-F ]+)')
 
@@ -129,7 +127,7 @@ class TestPipeline(TestCase):
         """
         param = ""
         direct_param = r"(\s+)\[ (\S+) in\|out\|inout \]"
-        out = self.tester.send_expect('tcpdump -h', '# ')
+        out = self.tester.send_expect('tcpdump -h', '# ', trim_whitespace=False)
         for line in out.split('\n'):
             m = re.match(direct_param, line)
             if m:
@@ -179,7 +177,7 @@ class TestPipeline(TestCase):
 
         return pcap_pkts
 
-    def send_and_sniff_pkts(self, from_port, to_port, in_pcap_file, out_pcap_file, filters=""):
+    def send_and_sniff_pkts(self, from_port, to_port, in_pcap, out_pcap, filters=""):
         """
         Sent pkts that read from the pcap_file.
         Return the sniff pkts.
@@ -195,7 +193,7 @@ class TestPipeline(TestCase):
 
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
-        self.tester.send_expect('text2pcap -q {} /tmp/packet_tx.pcap'.format('/tmp/' + in_pcap_file), '# ')
+        self.tester.send_expect('text2pcap -q {} /tmp/packet_tx.pcap'.format('/tmp/' + in_pcap), '# ')
         self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
         self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
         self.tester.scapy_execute()
@@ -204,7 +202,7 @@ class TestPipeline(TestCase):
             'tcpdump -n -r /tmp/tcpdump_{}.pcap -xx > /tmp/packet_rx.txt'.format(rx_interface), '# ')
         self.convert_tcpdump_to_text2pcap('/tmp/packet_rx.txt', '/tmp/packet_rx_rcv.txt')
         out = self.tester.send_command(
-            'diff -sqw /tmp/packet_rx_rcv.txt {}'.format('/tmp/' + out_pcap_file), timeout=0.5)
+            'diff -sqw /tmp/packet_rx_rcv.txt {}'.format('/tmp/' + out_pcap), timeout=0.5)
         if "are identical" not in out:
             self.dut.send_expect('^C', '# ')
             self.verify(False, "Output pcap files mismatch error")
@@ -340,9 +338,6 @@ class TestPipeline(TestCase):
         # update the ./dep/pipeline.tar.gz file
         PIPELINE_TAR_FILE = DEP_DIR + 'pipeline.tar.gz'
         self.tester.send_expect('rm -rf /tmp/pipeline', '# ')
-        if MODE == 0:  # Development
-            self.tester.send_expect('rm -rf {}'.format(PIPELINE_TAR_FILE), '# ')
-            self.tester.send_expect('tar -czf {} -C {} pipeline/'.format(PIPELINE_TAR_FILE, DEP_DIR), '# ')
         self.tester.send_expect('tar -zxf {} --directory /tmp'.format(PIPELINE_TAR_FILE), "# ", 20)
 
         # copy the ./dep/pipeline.tar.gz file to DUT
@@ -371,14 +366,17 @@ class TestPipeline(TestCase):
                 # print('Rxd: ' + response)
                 if "pipeline>" not in response:
                     s.close()
+                    self.dut.send_expect("^C", "# ", 20)
                     self.verify(0, "CLI Response Error")
                 else:
                     return s
             except socket.error as err:
-                print("Socket connection failed with error %s" % (err))
+                print("socket connection failed with error %s" % (err))
+                self.dut.send_expect("^C", "# ", 20)
                 self.verify(0, "Failed to connect to server")
         except socket.error as err:
-            print("Socket creation failed with error %s" % (err))
+            print("socket creation failed with error %s" % (err))
+            self.dut.send_expect("^C", "# ", 20)
             self.verify(0, "Failed to create socket")
 
     def socket_send_cmd(self, socket, cmd, expected_rsp):
@@ -387,7 +385,7 @@ class TestPipeline(TestCase):
         sleep(0.1)
         msg = socket.recv(BUFFER_SIZE)
         response = msg.decode()
-        print('Rxd: ' + response)
+        # print('Rxd: ' + response)
         if expected_rsp not in response:
             socket.close()
             self.dut.send_expect("^C", "# ", 20)
@@ -404,9 +402,9 @@ class TestPipeline(TestCase):
         cmd = "sed -i -e 's/0000:00:07.0/%s/' {}".format(cli_file) % self.dut_p3_pci
         self.dut.send_expect(cmd, "# ", 20)
         cmd = "{0} {1} -- -s {2}".format(self.app_pipeline_path, self.eal_para, cli_file)
-        self.dut.send_expect(cmd, "PIPELINE0 enable", 75)
+        self.dut.send_expect(cmd, "PIPELINE0 enable", 60)
 
-    def send_pkts(self, from_port, to_port, in_pcap_file):
+    def send_pkts(self, from_port, to_port, in_pcap):
         """
         Send pkts read from the input pcap file.
         """
@@ -420,7 +418,7 @@ class TestPipeline(TestCase):
 
         # Prepare the pkts to be sent
         self.tester.scapy_foreground()
-        self.tester.send_expect('text2pcap -q {} /tmp/packet_tx.pcap'.format('/tmp/' + in_pcap_file), '# ')
+        self.tester.send_expect('text2pcap -q {} /tmp/packet_tx.pcap'.format('/tmp/' + in_pcap), '# ')
         self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
         self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
         self.tester.scapy_execute()
@@ -2323,9 +2321,10 @@ class TestPipeline(TestCase):
 
         # single rule scenario
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_2.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2335,9 +2334,10 @@ class TestPipeline(TestCase):
 
         # two rules scenario
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_3.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_3.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_3.txt'] * 4
         filters = ["tcp"] * 4
@@ -2347,9 +2347,10 @@ class TestPipeline(TestCase):
 
         # delete one rule scenario
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_4_1.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_4_1.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_4_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2359,9 +2360,10 @@ class TestPipeline(TestCase):
 
         # delete all rules scenario
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_4_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_4_2.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_4_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2371,18 +2373,20 @@ class TestPipeline(TestCase):
 
         # action update scenario (restore one of the previously deleted rules and check the update)
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_5_1.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = 'pipeline/table_002/pcap_files/in_5_1.txt'
         out_pcap = 'pipeline/table_002/pcap_files/out_5_1.txt'
         self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
 
         # action update scenario (change the action of restored rule and check the update)
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_5_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_5_1.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_5_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2392,9 +2396,10 @@ class TestPipeline(TestCase):
 
         # deafult action scenario [empty table]
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_6_1.txt'  # delete the previously added rule
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update none {} none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_6_1.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_6_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2408,9 +2413,10 @@ class TestPipeline(TestCase):
                      Lookup MISS for any other packets with default action executed
         '''
         CMD_FILE = '/tmp/pipeline/table_002/cmd_files/cmd_6_2.txt'  # add a new rule
-        CLI_CMD = 'pipeline PIPELINE0 table table_002_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_002_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_002/pcap_files/in_6_2.txt'] * 4
         out_pcap = ['pipeline/table_002/pcap_files/out_6_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2438,9 +2444,10 @@ class TestPipeline(TestCase):
 
         # Single rule scenario
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_2.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2450,9 +2457,10 @@ class TestPipeline(TestCase):
 
         # test two rules scenario
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_3.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_3.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_3.txt'] * 4
         filters = ["tcp"] * 4
@@ -2462,9 +2470,10 @@ class TestPipeline(TestCase):
 
         # delete one rule scenario
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_4_1.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update none {} none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_4_1.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_4_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2474,9 +2483,10 @@ class TestPipeline(TestCase):
 
         # delete all rules scenario
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_4_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update none {} none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_4_2.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_4_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2486,18 +2496,20 @@ class TestPipeline(TestCase):
 
         # action update scenario (restore one of the previously deleted rules and check the update)
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_5_1.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = 'pipeline/table_003/pcap_files/in_5_1.txt'
         out_pcap = 'pipeline/table_003/pcap_files/out_5_1.txt'
         self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
 
         # action update scenario (change the action of restored rule and check the update)
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_5_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_5_1.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_5_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2508,9 +2520,12 @@ class TestPipeline(TestCase):
         # Default action scenario [Empty table]
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_6_1_1.txt'  # delete the previously added rule
         CMD_FILE_2 = '/tmp/pipeline/table_003/cmd_files/cmd_6_1_2.txt'  # change the default action of table
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update none {} {} \n'.format(CMD_FILE, CMD_FILE_2)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table delete {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table default {}\n'.format(CMD_FILE_2)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_6_1.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_6_1.txt'] * 4
         filters = ["tcp"] * 4
@@ -2524,9 +2539,10 @@ class TestPipeline(TestCase):
                      Lookup MISS for any other packets with default action executed
         '''
         CMD_FILE = '/tmp/pipeline/table_003/cmd_files/cmd_6_2.txt'  # add a new rule
-        CLI_CMD = 'pipeline PIPELINE0 table table_003_table update {} none none\n'.format(CMD_FILE)
+        CLI_CMD = 'pipeline PIPELINE0 table table_003_table add {}\n'.format(CMD_FILE)
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
         in_pcap = ['pipeline/table_003/pcap_files/in_6_2.txt'] * 4
         out_pcap = ['pipeline/table_003/pcap_files/out_6_2.txt'] * 4
         filters = ["tcp"] * 4
@@ -2548,6 +2564,71 @@ class TestPipeline(TestCase):
         tx_port = [0, 1, 2, 3]
         rx_port = [0, 1, 2, 3]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_table_005(self):
+
+        cli_file = '/tmp/pipeline/table_005/table_005.cli'
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        # [1]: Empty table: Default action executed for all the packets.
+        in_pcap = 'pipeline/table_005/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
+
+        # [2]: Single rule: Defined action for hit, Default action for miss.
+        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/table_005/pcap_files/in_2.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_2.txt'
+        self.send_and_sniff_pkts(1, 1, in_pcap, out_pcap, "tcp")
+
+        # [3]: Two rules scenario. Appropriate action for hit.
+        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_3.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/table_005/pcap_files/in_3.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_3.txt'
+        self.send_and_sniff_pkts(2, 2, in_pcap, out_pcap, "tcp")
+
+        # [4]: Action update scenario. Updated action(s) for hit.
+        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_4.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/table_005/pcap_files/in_4.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_4.txt'
+        self.send_and_sniff_pkts(3, 2, in_pcap, out_pcap, "tcp")
+
+        # [5]: Delete one rule. Default action for packet corresponding to deleted rule.
+        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_5.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_005_table delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/table_005/pcap_files/in_5.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_5.txt'
+        self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "tcp")
+
+        # [6]: Delete remaining rule. Default action executed for all the packets.
+        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_6.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table table_005_table delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/table_005/pcap_files/in_6.txt'
+        out_pcap = 'pipeline/table_005/pcap_files/out_6.txt'
+        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
+
+        s.close()
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_001(self):
@@ -2595,9 +2676,9 @@ class TestPipeline(TestCase):
         s.close()
 
         # Read updated values through packet
-        in_pcap_file = 'pipeline/reg_002/pcap_files/in_1.txt'
-        out_pcap_file = 'pipeline/reg_002/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, "tcp")
+        in_pcap = 'pipeline/reg_002/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/reg_002/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_003(self):
@@ -2619,9 +2700,9 @@ class TestPipeline(TestCase):
         s.close()
 
         # Read updated values through packet
-        in_pcap_file = 'pipeline/reg_003/pcap_files/in_1.txt'
-        out_pcap_file = 'pipeline/reg_003/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, "tcp")
+        in_pcap = 'pipeline/reg_003/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/reg_003/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_004(self):
@@ -2643,9 +2724,9 @@ class TestPipeline(TestCase):
         s.close()
 
         # Read updated values through packet
-        in_pcap_file = 'pipeline/reg_004/pcap_files/in_1.txt'
-        out_pcap_file = 'pipeline/reg_004/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, "tcp")
+        in_pcap = 'pipeline/reg_004/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/reg_004/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_005(self):
@@ -2667,9 +2748,9 @@ class TestPipeline(TestCase):
         s.close()
 
         # Read updated values through packet
-        in_pcap_file = 'pipeline/reg_005/pcap_files/in_1.txt'
-        out_pcap_file = 'pipeline/reg_005/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap_file, out_pcap_file, "tcp")
+        in_pcap = 'pipeline/reg_005/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/reg_005/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
         self.dut.send_expect("^C", "# ", 20)
 
     def test_reg_006(self):
@@ -2690,8 +2771,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
-        in_pcap_file = 'pipeline/reg_006/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_006/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n'
@@ -2724,8 +2805,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
-        in_pcap_file = 'pipeline/reg_007/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_007/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n'
@@ -2758,8 +2839,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
-        in_pcap_file = 'pipeline/reg_008/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_008/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n'
@@ -2792,8 +2873,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send a packet to trigger the execution of apply block
-        in_pcap_file = 'pipeline/reg_009/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_009/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify written vs read values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa3a4\n'
@@ -2826,8 +2907,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_010/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_010/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -2860,8 +2941,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_011/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_011/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -2894,8 +2975,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_012/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_012/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -2930,8 +3011,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_013/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_013/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -2966,8 +3047,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_014/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_014/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3000,8 +3081,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_015/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_015/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3036,8 +3117,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_016/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_016/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3074,8 +3155,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_017/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_017/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3112,8 +3193,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_018/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_018/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3150,8 +3231,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_019/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_019/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3186,8 +3267,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_020/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_020/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3222,8 +3303,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_021/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_021/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3258,8 +3339,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_022/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_022/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3294,8 +3375,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_023/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_023/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3332,8 +3413,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_024/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_024/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3368,8 +3449,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "0x0\npipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_025/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_025/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3402,8 +3483,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_026/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_026/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3436,8 +3517,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_027/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_027/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3470,8 +3551,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_028/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_028/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3504,8 +3585,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_029/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_029/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3538,8 +3619,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_030/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_030/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3572,8 +3653,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_031/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_031/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3608,8 +3689,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_032/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_032/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3646,8 +3727,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_033/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_033/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3684,8 +3765,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_034/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_034/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3722,8 +3803,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_035/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_035/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3760,8 +3841,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_036/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_036/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3798,8 +3879,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_037/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_037/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3834,8 +3915,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_038/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_038/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -3870,8 +3951,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_039/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_039/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3908,8 +3989,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_040/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_040/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3946,8 +4027,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_041/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_041/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Update the register array locations with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -3982,8 +4063,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_042/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_042/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -4016,8 +4097,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_043/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_043/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -4050,8 +4131,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_044/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_044/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0x1a1a2a3\n'
@@ -4084,8 +4165,8 @@ class TestPipeline(TestCase):
         self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
 
         # Send packet to DUT to update the register array
-        in_pcap_file = 'pipeline/reg_045/pcap_files/in_1.txt'
-        self.send_pkts(0, 0, in_pcap_file)
+        in_pcap = 'pipeline/reg_045/pcap_files/in_1.txt'
+        self.send_pkts(0, 0, in_pcap)
 
         # Verify whether the register array is updated with required values
         CLI_CMD = 'pipeline PIPELINE0 regrd REG_ARR_1 0xa1a2\n'
@@ -4441,18 +4522,6 @@ class TestPipeline(TestCase):
         rx_port = [0, 1, 2]
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters, 1000)
         self.dut.send_expect("^C", "# ", 20)
-
-    '''
-    def test_tap_port_001(self):
-
-        cli_file = '/tmp/pipeline/tap_port_001/tap_port_001.cli'
-        self.run_dpdk_app(cli_file)
-
-        in_pcap = 'pipeline/tap_port_001/pcap_files/in_1.txt'
-        out_pcap = 'pipeline/tap_port_001/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "udp")
-        self.dut.send_expect("^C", "# ", 20)
-    '''
 
     def test_ring_port_001(self):
 
