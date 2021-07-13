@@ -99,10 +99,6 @@ class TestVirTioVhostCbdma(TestCase):
         self.test_parameters = self.get_suite_cfg()['test_parameters']
         # traffic duraion in second
         self.test_duration = self.get_suite_cfg()['test_duration']
-        # traffic packet length mode
-        # 'fixed' or 'imix', default is 'fixed'
-        suite_cfg = self.get_suite_cfg()
-        self.pkt_length_mode = (suite_cfg or {}).get('pkt_length_mode') or 'fixed'
         # initialize throughput attribution
         # {'TestCase':{ 'Mode': {'$framesize':{"$nb_desc": 'throughput'}}}
         self.throughput = {}
@@ -271,62 +267,49 @@ class TestVirTioVhostCbdma(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        used_cbdma_num = 4
-        queue = 2
+        used_cbdma_num = 8
+        queue = 8
         txd_rxd = 1024
         dmathr = 1024
         nb_cores = 1
         virtio_path = "/tmp/s0"
         path_mode = 'mrg_rxbuf=1,in_order=1'
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}],dmathr={dmathr}"
-        eal_params = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d " % (nb_cores, txd_rxd, txd_rxd, queue, queue)
-        dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params}"
+        eal_params = " --nb-cores=1 --txd=1024 --rxd=1024 --txq=%d --rxq=%d "
+        dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params % (queue,queue)}"
         virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queue},server=1"
-        vhost_dev = f"'net_vhost0,iface={virtio_path},queues={queue},client=1,%s'"
+        vhost_dev = f"'net_vhost0,iface={virtio_path},queues=%d,client=1,%s'"
         # launch vhost testpmd
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
-            if index < used_cbdma_num / 2:
-                allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
-        #  queue 2 start virtio testpmd, check perforamnce and RX/TX
-        mode = "dynamic_queue2"
+            allow_pci.append(self.cbdma_dev_infos[index])
+
+        # no cbdma to launch vhost
+        self.launch_testpmd_as_vhost_user(eal_params % (queue,queue), self.cores[0:2], dev=vhost_dev % (queue,''), ports=[allow_pci[0]])
+        mode = "no_cbdma"
         self.mode_list.append(mode)
         self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
         self.send_and_verify(mode, queue_list=range(queue))
-        # On virtio-user side, dynamic change rx/tx queue numbers from 2 queue to 1 queues
-        self.vhost_or_virtio_set_one_queue(self.virtio_user)
-        self.send_and_verify("virtio_user_" + mode + "_change_to_1", queue_list=[0])
-        self.mode_list.append("virtio_user_" + mode + "_change_to_1")
-        self.virtio_user.send_expect("stop", "testpmd> ")
-        self.virtio_user.send_expect("quit", "# ")
+        self.vhost_user.send_expect("quit", "#")
+
+        # used 4 cbdma_num and 4 queue to launch vhost
+
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}],dmathr={dmathr}"
+        self.launch_testpmd_as_vhost_user(eal_params % (queue/2,queue/2), self.cores[0:2], dev=vhost_dev % (int(queue/2),vhost_dmas), ports=allow_pci[:5])
+        self.send_and_verify("used_4_cbdma_num", queue_list=range(int(queue/2)))
+        self.mode_list.append("used_4_cbdma_num")
+        self.vhost_user.send_expect("quit", "#")
+
+        #used 8 cbdma_num to launch vhost
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}],dmathr={dmathr}"
+        self.launch_testpmd_as_vhost_user(eal_params % (queue, queue), self.cores[0:2],
+                                          dev=vhost_dev % (queue,vhost_dmas), ports=allow_pci)
+        self.send_and_verify("used_8_cbdma_num", queue_list=range(queue))
+        self.mode_list.append("used_8_cbdma_num")
+        self.send_and_verify("used_8_cbdma_num_1", queue_list=range(queue))
+        self.mode_list.append("used_8_cbdma_num_1")
+        self.virtio_user.send_expect("stop", "testpmd> ", 60)
         time.sleep(5)
-        self.dut.send_expect(f"rm -rf {virtio_path}", "#")
-        # queue 2 start virtio testpmd, check perforamnce and RX/TX
-        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
-        mode = "Relaunch_dynamic_queue2"
-        self.mode_list.append(mode)
-        self.send_and_verify(mode, queue_list=range(queue))
-        # On vhost side, dynamic change rx queue numbers from 2 queue to 1 queues
-        self.vhost_or_virtio_set_one_queue(self.vhost_user)
-        self.send_and_verify("vhost_user" + mode + "_change_to_1")
-        self.mode_list.append("vhost_user" + mode + "_change_to_1")
-        self.vhost_user.send_expect("quit", "# ")
-        time.sleep(2)
-        # Relaunch vhost with another two cbdma channels
-        mode = "Relaunch_vhost_2_cbdma"
-        self.mode_list.append(mode)
-        dmathr = 512
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[2]};txq1@{self.used_cbdma[3]}],dmathr={dmathr}"
-        allow_pci = [self.dut.ports_info[0]['pci']]
-        for index in range(used_cbdma_num):
-            if index >= used_cbdma_num / 2:
-                allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
-        self.virtio_user.send_expect("clear port stats all", "testpmd> ", 30)
-        self.send_and_verify(mode, queue_list=range(queue))
-        self.check_port_stats_result(self.virtio_user)
         self.virtio_user.send_expect("quit", "# ")
         self.vhost_user.send_expect("quit", "# ")
         self.result_table_print()
@@ -427,8 +410,8 @@ class TestVirTioVhostCbdma(TestCase):
         """
         self.test_target = self.running_case
         self.expected_throughput = self.get_suite_cfg()['expected_throughput'][self.test_target]
-        used_cbdma_num = 4
-        queue = 2
+        used_cbdma_num = 8
+        queue = 8
         txd_rxd = 1024
         dmathr = 1024
         nb_cores = 1
@@ -436,53 +419,41 @@ class TestVirTioVhostCbdma(TestCase):
         path_mode = 'mrg_rxbuf=1,in_order=1,packed_vq=1'
         self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
         vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]}],dmathr={dmathr}"
-        eal_params = " --nb-cores=%d --txd=%d --rxd=%d --txq=%d --rxq=%d " % (nb_cores, txd_rxd, txd_rxd, queue, queue)
-        dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params}"
+        eal_params = " --nb-cores=1 --txd=1024 --rxd=1024 --txq=%d --rxq=%d "
+        dynamic_queue_number_cbdma_virtio_params = f"  --tx-offloads=0x0 --enable-hw-vlan-strip {eal_params % (queue, queue)}"
         virtio_dev = f"net_virtio_user0,mac={self.virtio_mac},path={virtio_path},{path_mode},queues={queue},server=1"
-        vhost_dev = f"'net_vhost0,iface={virtio_path},queues={queue},client=1,%s'"
+        vhost_dev = f"'net_vhost0,iface={virtio_path},queues=%s,client=1,%s'"
         # launch vhost testpmd
         allow_pci = [self.dut.ports_info[0]['pci']]
         for index in range(used_cbdma_num):
-            if index < used_cbdma_num / 2:
-                allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
-        #  queue 2 start virtio testpmd, check perforamnce and RX/TX
-        mode = "dynamic_queue2"
+            allow_pci.append(self.cbdma_dev_infos[index])
+
+        # no cbdma to launch vhost
+        self.launch_testpmd_as_vhost_user(eal_params % (queue,queue), self.cores[0:2], dev=vhost_dev % (queue,''), ports= [allow_pci[0]])
+        mode = "no_cbdma"
         self.mode_list.append(mode)
         self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
         self.send_and_verify(mode, queue_list=range(queue))
-        # On virtio-user side, dynamic change rx/tx queue numbers from 2 queue to 1 queues
-        self.vhost_or_virtio_set_one_queue(self.virtio_user)
-        self.send_and_verify("virtio_user_" + mode + "_change_to_1", queue_list=[0])
-        self.mode_list.append("virtio_user_" + mode + "_change_to_1")
-        self.virtio_user.send_expect("stop", "testpmd> ")
-        self.virtio_user.send_expect("quit", "# ")
+        self.vhost_user.send_expect("quit", "#")
+
+        # used 4 cbdma_num and 4 queue to launch vhost
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]}],dmathr={dmathr}"
+        self.launch_testpmd_as_vhost_user(eal_params % (queue/2,queue/2), self.cores[0:2],
+                dev=vhost_dev % (int(queue/2),vhost_dmas), ports=allow_pci[:5])
+        self.send_and_verify("used_4_cbdma_num", queue_list=range(int(queue/2)))
+        self.mode_list.append("used_4_cbdma_num")
+        self.vhost_user.send_expect("quit", "#")
+
+        #used 8 cbdma_num to launch vhost
+        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[0]};txq1@{self.used_cbdma[1]};txq2@{self.used_cbdma[2]};txq3@{self.used_cbdma[3]};txq4@{self.used_cbdma[4]};txq5@{self.used_cbdma[5]};txq6@{self.used_cbdma[6]};txq7@{self.used_cbdma[7]}],dmathr={dmathr}"
+        self.launch_testpmd_as_vhost_user(eal_params % (queue, queue), self.cores[0:2],
+                                          dev=vhost_dev % (queue,vhost_dmas), ports=allow_pci)
+        self.send_and_verify("used_8_cbdma_num", queue_list=range(queue))
+        self.mode_list.append("used_8_cbdma_num")
+        self.send_and_verify("used_8_cbdma_num_1", queue_list=range(queue))
+        self.mode_list.append("used_8_cbdma_num_1")
+        self.virtio_user.send_expect("stop", "testpmd> ", 60)
         time.sleep(5)
-        self.dut.send_expect(f"rm -rf {virtio_path}", "#")
-        # queue 2 start virtio testpmd, check perforamnce and RX/TX
-        self.launch_testpmd_as_virtio_user(dynamic_queue_number_cbdma_virtio_params, self.cores[2:4], dev=virtio_dev)
-        mode = "Relaunch_dynamic_queue2"
-        self.mode_list.append(mode)
-        self.send_and_verify(mode, queue_list=range(queue))
-        # On vhost side, dynamic change rx queue numbers from 2 queue to 1 queues
-        self.vhost_or_virtio_set_one_queue(self.vhost_user)
-        self.send_and_verify("vhost_user" + mode + "_change_to_1")
-        self.mode_list.append("vhost_user" + mode + "_change_to_1")
-        self.vhost_user.send_expect("quit", "# ")
-        time.sleep(2)
-        # Relaunch vhost with another two cbdma channels
-        mode = "Relaunch_vhost_2_cbdma"
-        self.mode_list.append(mode)
-        dmathr = 512
-        vhost_dmas = f"dmas=[txq0@{self.used_cbdma[2]};txq1@{self.used_cbdma[3]}],dmathr={dmathr}"
-        allow_pci = [self.dut.ports_info[0]['pci']]
-        for index in range(used_cbdma_num):
-            if index >= used_cbdma_num / 2:
-                allow_pci.append(self.cbdma_dev_infos[index])
-        self.launch_testpmd_as_vhost_user(eal_params, self.cores[0:2], dev=vhost_dev % vhost_dmas, ports=allow_pci)
-        self.virtio_user.send_expect("clear port stats all", "testpmd> ", 30)
-        self.send_and_verify(mode, queue_list=range(queue))
-        self.check_port_stats_result(self.virtio_user)
         self.virtio_user.send_expect("quit", "# ")
         self.vhost_user.send_expect("quit", "# ")
         self.result_table_print()
@@ -490,6 +461,68 @@ class TestVirTioVhostCbdma(TestCase):
         result_rows = self.result_table_getrows()  #
         self.handle_expected(mode_list=self.mode_list)
         self.handle_results(mode_list=self.mode_list)
+
+
+    
+    def test_perf_compare_pvp_split_ring_performance(self):
+        """
+        Test Case6: Compare PVP split ring performance between CPU copy, CBDMA copy and Sync copy
+        """
+        used_cbdma_num = 1
+        queue = 1
+        txd_rxd = 1024
+        eal_tx_rxd = ' --nb-cores=%d --txd=%d --rxd=%d'
+        path_mode = 'mrg_rxbuf=1,in_order=1,server=1'
+        allow_pci = [self.dut.ports_info[0]['pci']]
+        self.get_cbdma_ports_info_and_bind_to_dpdk(used_cbdma_num)
+        for index in range(used_cbdma_num):
+            allow_pci.append(self.cbdma_dev_infos[index])
+        path_mode = 'mrg_rxbuf=1,in_order=1'
+        vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=%d,client=1,dmas=[txq0@{self.device_str}],%s'"
+        compare_pvp_split_ring_performance = "--tx-offloads=0x0 --enable-hw-vlan-strip --nb-cores=%d --txd=%d --rxd=%d" % (queue, txd_rxd, txd_rxd)
+        dev_path_mode_mapper = {
+            "sync_cbdma": ['dmathr=1024', 'dmathr=2000'],
+            "cpu": 'dmathr=0',
+        }
+        for key,dma_mode in dev_path_mode_mapper.items():
+            if key == "cpu":
+                vhost_vdevs = f"'net_vhost0,iface=/tmp/s0,queues=1'"
+                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2], dev=vhost_vdevs, ports=[allow_pci[0]])
+                vdevs = f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d'" % queue
+                self.launch_testpmd_as_virtio_user(compare_pvp_split_ring_performance, self.cores[2:4], dev=vdevs)
+                mode = "cpu_copy_64"
+                self.mode_list.append(mode)
+                self.send_and_verify(mode, frame_sizes=[64], pkt_length_mode='fixed')
+                perf_cpu_copy_64 = self.throughput[mode][64][self.nb_desc]
+                self.virtio_user.send_expect('show port stats all', 'testpmd> ', 10)
+                self.virtio_user.send_expect("quit", "# ")
+                self.vhost_user.send_expect("quit", "# ")
+            else:
+                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue, dma_mode[0]), ports=allow_pci)
+                vdevs = f"'net_virtio_user0,mac={self.virtio_mac},path=/tmp/s0,{path_mode},queues=%d,server=1'" % queue
+                self.launch_testpmd_as_virtio_user(compare_pvp_split_ring_performance, self.cores[2:4],dev=vdevs)
+                mode = "sync_copy_64"
+                self.mode_list.append(mode)
+                self.send_and_verify(mode,frame_sizes=[64],pkt_length_mode='fixed')
+                perf_sync_copy_64 = self.throughput[mode][64][self.nb_desc]
+                mode = "cbdma_copy_1518"
+                self.mode_list.append(mode)
+                self.send_and_verify(mode,frame_sizes=[1518],pkt_length_mode='fixed')
+                perf_cbdma_copy_1518 = self.throughput[mode][1518][self.nb_desc]
+                self.virtio_user.send_expect('show port stats all', 'testpmd> ', 10)
+                self.vhost_user.send_expect("quit", "# ")
+                time.sleep(3)
+                self.launch_testpmd_as_vhost_user(eal_tx_rxd % (queue, txd_rxd, txd_rxd), self.cores[0:2],dev=vhost_vdevs % (queue, dma_mode[1]), ports=allow_pci)
+                mode = "sync_copy_1518"
+                self.mode_list.append(mode)
+                self.send_and_verify(mode,frame_sizes=[1518],pkt_length_mode='fixed')
+                perf_sync_copy_1518 = self.throughput[mode][1518][self.nb_desc]
+                self.check_port_stats_result(self.virtio_user)
+                self.virtio_user.send_expect("quit", "# ")
+                self.vhost_user.send_expect("quit", "# ")
+        self.result_table_print()
+        self.verify(abs(perf_sync_copy_64 - perf_cpu_copy_64)/perf_sync_copy_64 < 0.1, "sync_copy_64 vs. cpu_copy_64 delta > 10%"  )
+        self.verify(abs(perf_cbdma_copy_1518 - perf_sync_copy_1518)/perf_sync_copy_1518 > 0.05,"cbdma_copy_1518 vs sync_copy_1518 delta < 5%")
 
     @staticmethod
     def vhost_or_virtio_set_one_queue(session):
@@ -556,16 +589,16 @@ class TestVirTioVhostCbdma(TestCase):
             # check RX/TX can work normally in each queues
             self.check_packets_of_each_queue(queue_list=queue_list)
 
-    def send_and_verify(self, mode, multiple_queue=True, queue_list=[]):
+    def send_and_verify(self, mode, multiple_queue=True, queue_list=[], frame_sizes=None, pkt_length_mode='imix'):
         """
         Send packet with packet generator and verify
         """
-        if self.pkt_length_mode == 'imix':
+        if pkt_length_mode == 'imix':
             self.send_imix_and_verify(mode, multiple_queue, queue_list)
             return
 
         self.throughput[mode] = dict()
-        for frame_size in self.frame_sizes:
+        for frame_size in frame_sizes:
             self.throughput[mode][frame_size] = dict()
             payload_size = frame_size - self.headers_size
             tgenInput = []
