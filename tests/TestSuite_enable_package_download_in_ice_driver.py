@@ -99,11 +99,11 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         out = self.dut_testpmd.start_testpmd("all", "--nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE), eal_param=self.eal_param)
         if ice_pkg == "false":
             if safe_mode_support == "true":
-                error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
+                error_messages = ["ice_load_pkg(): ice_copy_and_init_hw failed: -1", \
                     "ice_dev_init(): Failed to load the DDP package,Entering Safe Mode", \
                     "ice_init_rss(): RSS is not supported in safe mode"]
             if safe_mode_support == "false":
-                error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
+                error_messages = ["ice_load_pkg(): ice_copy_and_init_hw failed: -1", \
                     "ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode"]
             for error_message in error_messages:
                 self.verify(error_message in out, "There should be error messages in out: %s" % out)
@@ -291,7 +291,7 @@ class TestEnable_Package_Download_In_Ice_Driver(TestCase):
         self.use_correct_ice_pkg(flag="false")
         cmd = self.path + "-c 0x7 -n 4 -- -i --nb-cores=8 --rxq=%s --txq=%s --port-topology=chained" % (self.PF_QUEUE, self.PF_QUEUE)
         out = self.dut.send_expect(cmd, "#", 60)
-        error_messages = ["ice_load_pkg(): failed to allocate buf of size 0 for package", \
+        error_messages = ["ice_load_pkg(): ice_copy_and_init_hw failed: -1", \
                 "ice_dev_init(): Failed to load the DDP package,Use safe-mode-support=1 to enter Safe Mode"]
         for error_message in error_messages:
             self.verify(error_message in out, "There should be '%s' in out: %s" % (error_message, out))
