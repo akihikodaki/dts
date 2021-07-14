@@ -201,4 +201,5 @@ class TestVlan(TestCase):
         """
         Run after each test suite.
         """
+        self.dut.send_expect("quit", "# ", 30)
         self.dut.kill_all()
