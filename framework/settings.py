@@ -110,7 +110,9 @@ NICS = {
     'fastlinq_ql41000_vf': '1077:8090',
     'carlsville': '8086:15ff',
     'hi1822': '19e5:1822',
-    'foxville': '8086:15f2'
+    'foxville': '8086:15f2',
+    'brcm_57414': '14e4:16d7',
+    'brcm_P2100G': '14e4:1750'
 }
 
 DRIVERS = {
@@ -174,7 +176,9 @@ DRIVERS = {
     'fastlinq_ql41000_vf': 'qede',
     'carlsville': 'i40e',
     'hi1822': 'hinic',
-    'foxville':'igc'
+    'foxville':'igc',
+    'brcm_57414': 'bnxt_en',
+    'brcm_P2100G': 'bnxt_en'
 }
 
 """
