@@ -54,7 +54,8 @@ class TestNicSingleCorePerf(TestCase):
         PMD prerequisites.
         """
         self.verify(self.nic in ['niantic', 'fortville_25g', 'fortville_spirit', 'ConnectX5_MT4121',
-                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2'],
+                                 'ConnectX4_LX_MT4117', 'columbiaville_100g', 'columbiaville_25g', 'columbiaville_25gx2',
+                                 'brcm_57414', 'brcm_P2100G'],
                                  "Not required NIC ")
         self.headers_size = HEADER_SIZE['eth'] + HEADER_SIZE['ip']
 
