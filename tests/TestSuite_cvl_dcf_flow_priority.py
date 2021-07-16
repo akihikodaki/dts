@@ -1155,11 +1155,9 @@ class CVLDCFFlowPriorityTest(TestCase):
         """
         Run before each test case.
         """
-        self.suite_config = rfc.get_suite_config(self)
-        ice_driver_file_location = self.suite_config["ice_driver_file_location"]
+        #Switch's recpri resource cannot be released,so need to reload ice driver to release it, this is a known issue of ND
         self.dut.send_expect("rmmod ice","#",30)
-        self.dut.send_expect("insmod %s" % ice_driver_file_location, "# ", 60)
-        time.sleep(10)
+        self.dut.send_expect("modprobe ice","#",30)
   
     def create_testpmd_command(self):
         """
@@ -1672,6 +1670,7 @@ class CVLDCFFlowPriorityTest(TestCase):
                        "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 dst is 192.168.0.2 / end actions vf id 4 / end"]
         self.create_switch_filter_rule(negative_rule, check_stats=False)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_exclusive_case(self):
         self.setup_1pf_vfs_env()
 
@@ -1733,7 +1732,7 @@ class CVLDCFFlowPriorityTest(TestCase):
         self.dut.send_expect("flow destroy 0 rule 1", "testpmd> ", 15)
         matched_dic["expect_results"]["expect_pkts"]=0
         self.send_and_check_packets(matched_dic)
-        matched_dic = {"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=0x1)/PPP(proto=0x21)/IP()/UDP(dport=23)/("X"*480)'],
+        matched_dic = {"scapy_str":['Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8100)/Dot1Q(vlan=0x2,type=0x8864)/PPPoE(sessionid=1)/PPP(b\'\\x00\\x21\')/IP()/UDP(dport=23)/("X"*480)'],
                        "check_func":{"func":rfc.check_vf_rx_packets_number,
                                      "param":{"expect_port":2, "expect_queue":"null"}},
                        "expect_results":{"expect_pkts":1}}
