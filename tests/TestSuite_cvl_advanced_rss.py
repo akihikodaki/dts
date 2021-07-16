@@ -6365,13 +6365,6 @@ class AdvancedRSSTest(TestCase):
         self.rssprocess.handle_tests(tests, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
         self.rssprocess.check_rule(port_id=0)
-        tests = [
-                    {
-                        'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/Raw("x"*480)',
-                        'action': {'check_no_hash': 'ipv4-pay'},
-                    },
-                ]
-        self.rssprocess.handle_tests(tests, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
 
         # Subcase 3: two rules, scope smaller created first, and the larger one created later
@@ -6411,15 +6404,7 @@ class AdvancedRSSTest(TestCase):
                 ]
         self.rssprocess.handle_tests(tests, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.handle_tests(tests_3, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
-        tests = [
-                    {
-                        'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=23, dport=45)/Raw("x"*480)',
-                        'action': {'check_no_hash': 'ipv4-udp-pay'},
-                    },
-                ]
-        self.rssprocess.handle_tests(tests, 0)
 
         # Subcase 4: two rules, scope larger created first, and the smaller one created later
         self.logger.info('===================Test sub case: multirules subcase 4 ================')
@@ -6458,15 +6443,7 @@ class AdvancedRSSTest(TestCase):
                 ]
         self.rssprocess.handle_tests(tests, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_1)
-        self.rssprocess.handle_tests(tests_4, 0)
         self.rssprocess.destroy_rule(port_id=0, rule_id=rule_id_0)
-        tests = [
-                    {
-                        'send_packet': 'Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/UDP(sport=23, dport=45)/Raw("x"*480)',
-                        'action': {'check_no_hash': 'ipv4-udp-pay'},
-                    },
-                ]
-        self.rssprocess.handle_tests(tests, 0)
         self.verify(not self.rssprocess.error_msgs, 'some subcases failed')
 
     def tear_down(self):

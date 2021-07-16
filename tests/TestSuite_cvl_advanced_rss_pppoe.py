@@ -4710,12 +4710,9 @@ class Advanced_rss_pppoe(TestCase):
         # destory rule 1
         self.rsspro.destroy_rule(rule_id=1)
         self.rsspro.check_rule(rule_list=['1'], stats=False)
-        pkt_list[1], pkt_list[2] = pkt_list[2], pkt_list[1]
-        self._send_pkt_action(pkt_list, action_list=action_list1)
         # destory rule 0
         self.rsspro.destroy_rule(rule_id=0)
         self.rsspro.check_rule(rule_list=['0'], stats=False)
-        self._send_pkt_action([pkt_list[0]], action_list=action_list2)
 
     def test_two_rules_smaller_first_larger_later(self, ):
         """

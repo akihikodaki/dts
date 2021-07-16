@@ -4847,18 +4847,12 @@ Subcase 2: two rules with same pattern but different hash input set, hit default
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   send the MAC_PPPOE_IPV4_PAY packet::
-
-     sendp([Ether(src="00:11:22:33:44:55", dst="10:22:33:44:55:66")/PPPoE(sessionid=3)/PPP(proto=0x0021)/IP(src="192.168.1.1", dst="192.168.1.2")/Raw("x"*80)],iface="ens786f0")
-
-   check the hash value not exists.
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
 
    check the rule 0 not exists in the list.
-   send the MAC_PPPOE_IPV4_PAY packet, check the hash value not exists.
 
 Subcase 3: two rules, scope smaller created first, and the larger one created later
 -----------------------------------------------------------------------------------
@@ -4913,13 +4907,10 @@ Subcase 3: two rules, scope smaller created first, and the larger one created la
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   repeat step 2, get the same result.
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
-
-   send a MAC_PPPOE_IPV4_UDP_PAY packet, check the hash values not exists.
 
 Subcase 4: two rules, scope larger created first, and the smaller one created later
 -----------------------------------------------------------------------------------
@@ -4974,11 +4965,9 @@ Subcase 4: two rules, scope larger created first, and the smaller one created la
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   repeat step 2, hit pppoe_ipv4 profile, get the same result.
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
 
-   send a MAC_PPPOE_IPV4_UDP_PAY packet, check the hash values not exists.
 

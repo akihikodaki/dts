@@ -2300,11 +2300,6 @@ Subcase 2: two rules with same pattern but different hash input set, hit default
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   send the MAC_IPV4_PAY packet::
-
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.3",dst="192.168.0.5")/Raw("x"*480)], iface="ens786f0")
-
-   check the hash value is not exist.
 
 Subcase 3: two rules, scope smaller created first, and the larger one created later
 -----------------------------------------------------------------------------------
@@ -2359,13 +2354,10 @@ Subcase 3: two rules, scope smaller created first, and the larger one created la
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   repeat step 2, get the same result.
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
-
-   send a MAC_IPV4_UDP_PAY packet, check the hash values not exists.
 
 Subcase 4: two rules, scope larger created first, and the smaller one created later
 -----------------------------------------------------------------------------------
@@ -2420,10 +2412,8 @@ Subcase 4: two rules, scope larger created first, and the smaller one created la
      testpmd> flow list 0
 
    check the rule 1 not exists in the list.
-   repeat step 2, hit ipv4 profile, get the same result.
    destroy the rule 0::
 
      testpmd> flow destroy 0 rule 0
      testpmd> flow list 0
 
-   send a MAC_IPV4_UDP_PAY packet, check the hash values not exists.
