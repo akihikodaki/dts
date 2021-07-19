@@ -55,8 +55,6 @@ from test_case import TestCase
 
 class TestPowerBranchRatio(TestCase):
     BRANCH_RATIO = "BRANCH_RATIO"
-    vm_name = 'vm0'
-    vm_max_ch = 8
 
     @property
     def target_dir(self):
@@ -123,17 +121,17 @@ class TestPowerBranchRatio(TestCase):
 
         return outputs
 
-    def d_con(self, cmds):
-        return self.execute_cmds(cmds, name=self.dut.session.name)
+    def d_con(self, cmd):
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
+        return self.dut.send_expect(*_cmd)
 
-    def d_a_con(self, cmds):
-        return self.execute_cmds(cmds, name=self.dut.alt_session.name)
+    def d_a_con(self, cmd):
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
+        return self.dut.alt_session.send_expect(*_cmd)
 
-    def vm_con(self, cmds):
-        return self.execute_cmds(cmds, name=self.vm_dut.session.name)
-
-    def vm_g_con(self, cmds):
-        return self.execute_cmds(cmds, name=self.guest_con_name)
+    def d_sys_con(self, cmd):
+        _cmd = [cmd, '# ', 10] if isinstance(cmd, str) else cmd
+        return self.alt_sys_session.send_expect(*_cmd)
 
     def get_pkt_len(self, pkt_type, frame_size=1024):
         headers_size = sum([HEADER_SIZE[x] for x in ['eth', 'ip', pkt_type]])
@@ -220,70 +218,6 @@ class TestPowerBranchRatio(TestCase):
 
         return result
 
-    def create_powermonitor_folder(self):
-        # create temporary folder for power monitor
-        cmd = 'mkdir -p {0}; chmod 777 {0}'.format(self.vm_log_dir)
-        self.d_a_con(cmd)
-
-    def init_vms_params(self):
-        self.vcpu_map = self.vcpu_lst = self.vm = self.vm_dut = self.guest_session = None
-        self.vm_log_dir = '/tmp/powermonitor'
-        self.create_powermonitor_folder()
-
-    def add_pf_device(self, pci_addr, vm_inst):
-        vm_params = {
-            'driver': 'pci-assign',
-            'driver': 'vfio',
-            'opt_host': pci_addr,
-            'guestpci':  '0000:00:07.0'}
-        vm_inst.set_vm_device(**vm_params)
-
-    def start_vm(self):
-        '''
-        '''
-        # set vm initialize parameters
-        self.init_vms_params()
-        # start vm
-        self.vm = LibvirtKvm(self.dut, self.vm_name, self.suite_name)
-        # pass pf to virtual machine
-        pci_addr = self.dut.get_port_pci(self.dut_ports[0])
-        self.add_pf_device(pci_addr, self.vm)
-        # add channel
-        ch_name = 'virtio.serial.port.poweragent.{0}'
-        vm_path = os.path.join(self.vm_log_dir, '{0}.{1}')
-        for cnt in range(self.vm_max_ch):
-            channel = {
-                'path': vm_path.format(self.vm_name, cnt),
-                'name': ch_name.format(cnt)}
-            self.vm.add_vm_virtio_serial_channel(**channel)
-        # set vm default driver
-        self.vm.def_driver = 'igb_uio'
-        # boot up vm
-        self.vm_dut = self.vm.start()
-        self.is_vm_on = True
-        self.verify(self.vm_dut, "create vm_dut fail !")
-        self.add_console(self.vm_dut.session)
-        # get virtual machine cpu cores
-        self.vcpu_map = [int(core) for core in self.vm.get_vm_cpu()]
-        self.vcpu_lst = [int(item['core']) for item  in self.vm_dut.cores]
-
-    def close_vm(self):
-        '''
-        '''
-        if not self.is_vm_on:
-            return
-        if self.guest_session:
-            self.vm_dut.close_session(self.guest_session)
-        self.vm.stop()
-        self.vm = None
-        self.is_vm_on = False
-        self.dut.virt_exit()
-        cmd_fmt = 'virsh {0} {1} > /dev/null 2>&1'.format
-        cmds = [
-            [cmd_fmt('shutdown', self.vm_name), '# '],
-            [cmd_fmt('undefine', self.vm_name), '# '], ]
-        self.d_a_con(cmds)
-
     @property
     def compile_switch(self):
         sw_table = [
@@ -291,7 +225,7 @@ class TestPowerBranchRatio(TestCase):
             "CONFIG_RTE_LIBRTE_POWER_DEBUG",
         ]
         return sw_table
-    
+
     def preset_compilation(self):
         if 'meson' == load_global_setting(HOST_BUILD_TYPE_SETTING):
             compile_SWs = self.compile_switch + ["CONFIG_RTE_LIBRTE_I40E_PMD"]
@@ -354,21 +288,11 @@ class TestPowerBranchRatio(TestCase):
                 'memory_size': 1024, })
         prompt = 'vmpower>'
         option = sub_option + \
-            (' -- --core-branch-ratio={}'.format(self.branch_ratio) \
+            (' -- --core-branch-ratio={0}-{1}:{2}'.format(self.from_core, self.to_core, self.branch_ratio)
             if self.branch_ratio else '')
         cmd = [' '.join([self.vm_power_mgr, option]), prompt, 50]
         self.d_con(cmd)
         self.is_mgr_on = True
-
-    def set_vm_power_mgr(self):
-        vm_name = self.vm_name
-        cmds = [
-            "add_vm %s" % vm_name,
-            "add_channels %s all" % vm_name,
-            'set_channel_status %s all enabled' % vm_name,
-            "show_vm %s" % vm_name]
-        prompt = 'vmpower>'
-        self.d_con([[cmd, prompt] for cmd in cmds])
 
     def close_vm_power_mgr(self):
         if not self.is_mgr_on:
@@ -376,55 +300,17 @@ class TestPowerBranchRatio(TestCase):
         self.d_con(['quit', '# ', 30])
         self.is_mgr_on = False
 
-    def init_guest_mgr(self):
-        name = 'vm_power_manager/guest_cli'
-        self.guest_cli = self.prepare_binary(name, host_crb=self.vm_dut)
-        self.guest_con_name = \
-            '_'.join([self.vm_dut.NAME, name.replace('/', '-')])
-        self.guest_session = self.vm_dut.create_session(self.guest_con_name)
-        self.add_console(self.guest_session)
+    def add_alternative_session_to_dut(self):
+        self.alt_sys_session = self.dut.create_session("alt_sys_session")
 
-    def start_guest_mgr(self):
-        prompt = r"vmpower\(guest\)>"
-        option = (
-            '-v '
-            '-c {core_mask} '
-            '-n {memory_channel} '
-            '-m {memory_size} '
-            '--no-pci '
-            '--file-prefix={file_prefix} '
-            '-- '
-            '--vm-name={vm_name} '
-            '--policy={policy} '
-            '--vcpu-list={vpus} ').format(**{
-                'core_mask': '0xff',
-                'memory_channel': self.vm_dut.get_memory_channels(),
-                'memory_size': 1024,
-                'policy': self.BRANCH_RATIO,
-                'file_prefix': 'vmpower1',
-                'vm_name': self.vm_name,
-                'vpus': ','.join(
-                    [str(index) for index in self.vcpu_lst]),
-            })
-        guest_cmd = ' '.join([self.guest_cli, option])
-        self.vm_g_con([guest_cmd, prompt, 120])
-        self.is_guest_on = True
-
-    def send_policy_on_guest_mgr(self):
-        self.vm_g_con(['send_policy now', r"vmpower\(guest\)>", 20])
-
-    def close_guest_mgr(self):
-        if not self.is_guest_on:
-            return
-        self.vm_g_con("quit")
-        self.is_guest_on = False
-
-    def init_vm_testpmd(self):
-        self.vm_testpmd = os.path.join(self.target_dir,
+    def init_testpmd(self):
+        self.testpmd = os.path.join(self.target_dir,
                                        self.dut.apps_name['test-pmd'])
 
-    def start_vm_testpmd(self):
-        cores = [0, 1]
+    def start_testpmd(self):
+        cores = []
+        for core in self.testpmd_cores:
+            cores.append(core)
         core_mask = dts_create_mask(cores)
         option = (
             '-v '
@@ -434,22 +320,22 @@ class TestPowerBranchRatio(TestCase):
             '--file-prefix={file-prefix} '
             '-- -i ').format(**{
                 'core_mask': core_mask,
-                'mem_channel': self.vm_dut.get_memory_channels(),
+                'mem_channel': self.dut.get_memory_channels(),
                 'memsize': 1024,
                 'file-prefix': 'vmpower2', })
 
-        cmd = ' '.join([self.vm_testpmd, option])
-        self.vm_con([cmd, "testpmd> ", 120])
+        cmd = ' '.join([self.testpmd, option])
+        self.d_a_con([cmd, "testpmd> ", 120])
         self.is_pmd_on = True
 
-    def set_vm_testpmd(self):
+    def set_testpmd(self):
         cmd = 'start'
-        self.vm_con([cmd, "testpmd> ", 15])
+        self.d_a_con([cmd, "testpmd> ", 15])
 
-    def close_vm_testpmd(self):
+    def close_testpmd(self):
         if not self.is_pmd_on:
             return
-        self.vm_con(['quit', '# ', 15])
+        self.d_a_con(['quit', '# ', 15])
         self.is_pmd_on = False
 
     def get_sys_power_driver(self):
@@ -463,31 +349,17 @@ class TestPowerBranchRatio(TestCase):
 
     def query_cpu_freq(self):
         cmd = ';'.join([
-            "cat /sys/devices/system/cpu/cpu{0}/cpufreq/scaling_min_freq",
-            "cat /sys/devices/system/cpu/cpu{0}/cpufreq/scaling_max_freq"
+            "cat /sys/devices/system/cpu/cpu{0}/cpufreq/scaling_cur_freq"
             ]).format(self.check_core)
-        output = self.d_a_con(cmd)
+        output = self.d_sys_con(cmd)
         if not output:
-            self.scaling_min_freq, self.scaling_max_freq = 0, 0
+            self.scaling_cur_freq = 0
         else:
-            values = [int(item) for item in output.splitlines()]
-            self.scaling_min_freq, self.scaling_max_freq = values
-
-    def get_core_scaling_max_freq(self, core_index):
-        cpu_attr = '/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_max_freq'
-        cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_con(cmd)
-        return int(output)
-
-    def get_core_scaling_min_freq(self, core_index):
-        cpu_attr = '/sys/devices/system/cpu/cpu{0}/cpufreq/scaling_min_freq'
-        cmd = 'cat ' + cpu_attr.format(core_index)
-        output = self.d_a_con(cmd)
-        return int(output)
+            self.scaling_cur_freq = round(int(output))
 
     def get_no_turbo_max(self):
         cmd = 'rdmsr -p {} 0x0CE -f 15:8 -d'.format(self.check_core)
-        output = self.d_a_con(cmd)
+        output = self.d_sys_con(cmd)
         freq = output.strip() + '00000'
         return int(freq)
 
@@ -517,41 +389,32 @@ class TestPowerBranchRatio(TestCase):
     def run_test_pre(self):
         # boot up binary processes
         self.start_vm_power_mgr()
-        # set binary process command
-        self.set_vm_power_mgr()
         # boot up binary processes
-        self.start_guest_mgr()
+        self.start_testpmd()
         # set binary process command
-        self.send_policy_on_guest_mgr()
-        # boot up binary processes
-        self.start_vm_testpmd()
-        # set binary process command
-        self.set_vm_testpmd()
+        self.set_testpmd()
+
 
     def run_test_post(self):
         # close all binary processes
-        self.close_vm_testpmd()
-        self.close_guest_mgr()
+        self.close_testpmd()
         self.close_vm_power_mgr()
 
     def check_core_freq_in_traffic(self, core_index):
         '''
         check the cores frequency when running traffic
-             highest frequency[no_turbo_max]: cur_min=cur_max=no_turbo_max
+             highest frequency[no_turbo_max]: expected_freq(P1) <= cur_freq
         '''
         expected_freq = self.get_no_turbo_max()
-        msg = 'max freq is failed to get.'
-        self.verify(self.scaling_max_freq, msg)
-        msg = 'max freq is not the same as highest frequency <{0}>'
-        self.verify(expected_freq == self.scaling_max_freq,
-                    msg.format(expected_freq))
-        msg = 'min freq is failed to get.'
-        self.verify(self.scaling_min_freq, msg)
-        msg = 'min freq is not the same as highest frequency <{0}>'
-        self.verify(expected_freq == self.scaling_min_freq,
-                    msg.format(expected_freq))
+        msg = 'failed to get cur freq.'
+        self.verify(self.scaling_cur_freq, msg)
+        msg = 'cur freq <{0}> is lower than expected freq <{1}>'
+        self.verify(expected_freq <= self.scaling_cur_freq,
+                    msg.format(self.scaling_cur_freq ,expected_freq))
         msg = "core <{0}> action is ok in traffic".format(core_index)
         self.logger.info(msg)
+        displayFreqData = "Freqs in Traffic : Check Core Freq {0} >= Expected Freq {1}".format(self.scaling_cur_freq, expected_freq)
+        self.logger.info(displayFreqData)
 
     def check_vm_power_mgr_output(self):
         '''
@@ -569,20 +432,22 @@ class TestPowerBranchRatio(TestCase):
         msg = "branch ratio output is ok"
         self.logger.info(msg)
 
-    def check_dut_core_freq(self, core_index, ref_freq_name):
-        '''
-        Check the core frequency, the frequency reported should be::
-            [sys_min]: cur_min=cur_max=sys_min
-        '''
-        expected_freq = self.cpu_info.get(core_index, {}).get(ref_freq_name)
-        max_freq = self.get_core_scaling_max_freq(core_index)
-        min_freq = self.get_core_scaling_min_freq(core_index)
-        msg = 'max freq<{0}>/min_freq<{1}>/expected freq<{2}> are not the same'
-        self.verify(
-            max_freq == min_freq and max_freq == expected_freq,
-            msg.format(max_freq, min_freq, expected_freq))
-        msg = "core <{0}> action is ok after traffic stop".format(core_index)
-        self.logger.info(msg)
+    def check_core_freq_no_traffic(self, core_index, ref_freq_name):
+            '''
+            Check the core frequency, the frequency reported should be::
+                cur_freq <= sys_min
+            '''
+            expected_freq = self.cpu_info.get(core_index, {}).get(ref_freq_name)
+            self.query_cpu_freq()
+            time.sleep(1)
+            msg = 'cur freq<{0}> is higher than /expected freq<{1}> in no traffic'
+            self.verify(
+                self.scaling_cur_freq <= expected_freq,
+                msg.format(self.scaling_cur_freq, expected_freq))
+            msg = "core <{0}> action is ok after traffic stop".format(core_index)
+            self.logger.info(msg)
+            displayFreqData = "Freqs in NO Traffic: Check Core Freq {0} <= Expected Freq {1}".format(self.scaling_cur_freq, expected_freq)
+            self.logger.info(displayFreqData)
 
     def verify_branch_ratio(self):
         except_content = None
@@ -598,7 +463,7 @@ class TestPowerBranchRatio(TestCase):
             # check test result
             self.check_core_freq_in_traffic(self.check_core)
             self.check_vm_power_mgr_output()
-            self.check_dut_core_freq(self.check_core, 'cpuinfo_min_freq')
+            self.check_core_freq_no_traffic(self.check_core, 'cpuinfo_min_freq')
         except Exception as e:
             self.logger.error(traceback.format_exc())
             except_content = e
@@ -626,8 +491,7 @@ class TestPowerBranchRatio(TestCase):
         self.verify(status, msg)
 
     def init_params(self):
-        self.is_mgr_on = self.is_guest_on = self.is_pmd_on = \
-            self.is_vm_on = None
+        self.is_mgr_on = self.is_pmd_on = None
         self.ext_con = {}
         # set branch ratio test value
         self.branch_ratio = None
@@ -640,16 +504,17 @@ class TestPowerBranchRatio(TestCase):
         self.d_a_con('cpupower frequency-set -g userspace > /dev/null 2>&1')
         # compile
         self.preset_compilation()
-        # boot up vm
-        self.start_vm()
         # init binary
         self.init_vm_power_mgr()
-        self.init_vm_testpmd()
-        self.init_guest_mgr()
+        self.init_testpmd()
+        self.add_alternative_session_to_dut()
         test_content = self.get_suite_cfg()
         self.frame_size = test_content.get('frame_size') or 1024
         self.check_ratio = test_content.get('check_ratio') or 0.1
-        self.check_core = self.vcpu_map[1]
+        self.from_core = test_content.get('from_core')
+        self.to_core = test_content.get('to_core')
+        self.check_core = test_content.get('check_core')
+        self.testpmd_cores = test_content.get('testpmd_cores')
         msg = "select dut core {} as check core".format(self.check_core)
         self.logger.info(msg)
     #
@@ -672,8 +537,7 @@ class TestPowerBranchRatio(TestCase):
         """
         Run after each test suite.
         """
-        with self.restore_environment():
-            self.close_vm()
+        self.restore_environment()
 
     def set_up(self):
         """
@@ -685,15 +549,7 @@ class TestPowerBranchRatio(TestCase):
         """
         Run after each test case.
         """
-        self.vm_dut.kill_all()
         self.dut.kill_all()
-
-    def test_perf_basic_branch_ratio(self):
-        """
-        Basic branch-ratio test based on one NIC pass-through into VM scenario
-        """
-        self.branch_ratio = None
-        self.verify_branch_ratio()
 
     def test_perf_set_branch_ratio_rate_by_user(self):
         """
