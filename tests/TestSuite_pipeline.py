@@ -250,6 +250,36 @@ class TestPipeline(TestCase):
             self.dut.send_expect('^C', '# ')
             self.verify(False, "Output pcap files mismatch error")
 
+    def send_scapy_pkts(self, from_port):
+
+        tx_port = self.tester.get_local_port(self.dut_ports[from_port])
+        tx_interface = self.tester.get_interface(tx_port)
+
+        self.tester.send_expect('rm -f /tmp/*.txt /tmp/*.pcap /tmp/*.out', '# ')
+        pcap_file = '/tmp/packet_tx.pcap'
+        self.tester.scapy_foreground()
+        pr = 0
+        for a in range(192, 255):
+            for b in range(0, 255):
+                for c in range(0, 255):
+                    for d in range(0, 255):
+                        my_dst = "{}.{}.{}.{}".format(a, b, c, d)
+                        pkt = [Ether(dst=self.dut_p0_mac)/IP(src="0.0.0.2", dst=my_dst) /
+                               TCP(sport=100, dport=200)/Raw(load="X"*6)]
+                        wrpcap(pcap_file, pkt, append=True)
+                        pr += 1
+                        if pr == 50:
+                            pr = 0
+                            self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
+                            self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
+                            self.tester.scapy_execute()
+                            self.tester.send_expect('rm -f /tmp/*.txt /tmp/*.pcap /tmp/*.out', '# ')
+
+        if pr:
+            self.tester.scapy_append('pkt = rdpcap("/tmp/packet_tx.pcap")')
+            self.tester.scapy_append('sendp(pkt, iface="{}", count=1)'.format(tx_interface))
+            self.tester.scapy_execute()
+
     def setup_env(self, port_nums, driver):
         """
         This is to set up vf environment.
@@ -2566,71 +2596,6 @@ class TestPipeline(TestCase):
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
 
-    def test_table_005(self):
-
-        cli_file = '/tmp/pipeline/table_005/table_005.cli'
-        self.run_dpdk_app(cli_file)
-        sleep(1)
-        s = self.connect_cli_server()
-
-        # [1]: Empty table: Default action executed for all the packets.
-        in_pcap = 'pipeline/table_005/pcap_files/in_1.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_1.txt'
-        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
-
-        # [2]: Single rule: Defined action for hit, Default action for miss.
-        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_2.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = 'pipeline PIPELINE0 commit\n'
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        in_pcap = 'pipeline/table_005/pcap_files/in_2.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_2.txt'
-        self.send_and_sniff_pkts(1, 1, in_pcap, out_pcap, "tcp")
-
-        # [3]: Two rules scenario. Appropriate action for hit.
-        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_3.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = 'pipeline PIPELINE0 commit\n'
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        in_pcap = 'pipeline/table_005/pcap_files/in_3.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_3.txt'
-        self.send_and_sniff_pkts(2, 2, in_pcap, out_pcap, "tcp")
-
-        # [4]: Action update scenario. Updated action(s) for hit.
-        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_4.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_005_table add {}\n'.format(CMD_FILE)
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = 'pipeline PIPELINE0 commit\n'
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        in_pcap = 'pipeline/table_005/pcap_files/in_4.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_4.txt'
-        self.send_and_sniff_pkts(3, 2, in_pcap, out_pcap, "tcp")
-
-        # [5]: Delete one rule. Default action for packet corresponding to deleted rule.
-        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_5.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_005_table delete {}\n'.format(CMD_FILE)
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = 'pipeline PIPELINE0 commit\n'
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        in_pcap = 'pipeline/table_005/pcap_files/in_5.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_5.txt'
-        self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "tcp")
-
-        # [6]: Delete remaining rule. Default action executed for all the packets.
-        CMD_FILE = '/tmp/pipeline/table_005/cmd_files/cmd_6.txt'
-        CLI_CMD = 'pipeline PIPELINE0 table table_005_table delete {}\n'.format(CMD_FILE)
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        CLI_CMD = 'pipeline PIPELINE0 commit\n'
-        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
-        in_pcap = 'pipeline/table_005/pcap_files/in_6.txt'
-        out_pcap = 'pipeline/table_005/pcap_files/out_6.txt'
-        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
-
-        s.close()
-        self.dut.send_expect("^C", "# ", 20)
-
     def test_reg_001(self):
 
         cli_file = '/tmp/pipeline/reg_001/reg_001.cli'
@@ -4622,6 +4587,302 @@ class TestPipeline(TestCase):
         filters = ["tcp"] * 4
         self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
         self.dut.send_expect("^C", "# ", 20)
+
+    def test_lpm_001(self):
+
+        cli_file = '/tmp/pipeline/lpm_001/lpm_001.cli'
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        # [1]: Empty table: Default action executed for all the packets.
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(0, 0, in_pcap, out_pcap, "tcp")
+
+        # [2]: Single rule: Defined action for hit, Default action for miss.
+        CMD_FILE = '/tmp/pipeline/lpm_001/cmd_files/cmd_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_001_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_2.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_2.txt'
+        self.send_and_sniff_pkts(1, 1, in_pcap, out_pcap, "tcp")
+
+        # [3]: Two rules scenario. Appropriate action for hit.
+        CMD_FILE = '/tmp/pipeline/lpm_001/cmd_files/cmd_3.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_001_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_3.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_3.txt'
+        self.send_and_sniff_pkts(2, 2, in_pcap, out_pcap, "tcp")
+
+        # [4]: Action update scenario. Updated action(s) for hit.
+        CMD_FILE = '/tmp/pipeline/lpm_001/cmd_files/cmd_4.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_001_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_4.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_4.txt'
+        self.send_and_sniff_pkts(3, 2, in_pcap, out_pcap, "tcp")
+
+        # [5]: Delete one rule. Default action for packet corresponding to deleted rule.
+        CMD_FILE = '/tmp/pipeline/lpm_001/cmd_files/cmd_5.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_001_table delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_5.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_5.txt'
+        self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "tcp")
+
+        # [6]: Delete remaining rule. Default action executed for all the packets.
+        CMD_FILE = '/tmp/pipeline/lpm_001/cmd_files/cmd_6.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_001_table delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/lpm_001/pcap_files/in_6.txt'
+        out_pcap = 'pipeline/lpm_001/pcap_files/out_6.txt'
+        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_lpm_002(self):
+
+        cli_file = '/tmp/pipeline/lpm_002/lpm_002.cli'
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        # [1] Input packets on ports 0 .. 3:
+        #   IPv4 dest_addr has all bits randomized (mask is 0.0.0.0)
+        # Expected output packet distribution on ports 0 .. 3:
+        #   Port 0 = 25%; Port 1 = 25%; Port 2 = 25%; Port 3 = 25%
+        in_pcap = ['pipeline/lpm_002/pcap_files/in_1.txt']
+        out_pcap_1 = 'pipeline/lpm_002/pcap_files/out_11.txt'
+        out_pcap_2 = 'pipeline/lpm_002/pcap_files/out_12.txt'
+        out_pcap_3 = 'pipeline/lpm_002/pcap_files/out_13.txt'
+        out_pcap_4 = 'pipeline/lpm_002/pcap_files/out_14.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # [2] Input packets on ports 0 .. 3:
+        #   IPv4 dest_addr has all bits randomized (mask is 0.0.0.0)
+        # Expected output packet distribution on ports 0 .. 3:
+        #   Port 0 = 50%; Port 1 = 25%; Port 2 = 12.5%; Port 3 = 12.5%
+        CMD_FILE = '/tmp/pipeline/lpm_002/cmd_files/cmd_1.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_002_table delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CMD_FILE = '/tmp/pipeline/lpm_002/cmd_files/cmd_2.txt'
+        CLI_CMD = 'pipeline PIPELINE0 table lpm_002_table add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = ['pipeline/lpm_002/pcap_files/in_2.txt']
+        out_pcap_1 = 'pipeline/lpm_002/pcap_files/out_21.txt'
+        out_pcap_2 = 'pipeline/lpm_002/pcap_files/out_22.txt'
+        out_pcap_3 = 'pipeline/lpm_002/pcap_files/out_23.txt'
+        out_pcap_4 = 'pipeline/lpm_002/pcap_files/out_24.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_lpm_003(self):
+
+        cli_file = '/tmp/pipeline/lpm_003/lpm_003.cli'
+        self.run_dpdk_app(cli_file)
+
+        # Input packets on ports 0 .. 3:
+        #   IPv4 dest_addr has all bits randomized (mask is 0.0.0.0)
+        # Expected output packet distribution on ports 0 .. 3:
+        #     Port 0 = 12.5% + 25%   = 37.5%  (i.e. 3/8 = 6/16)
+        #     Port 1 = 12.5% + 12.5% = 25%    (i.e. 1/4 = 4/16)
+        #     Port 2 = 12.5% + 6.25% = 18.75% (i.e. 3/16)
+        #     Port 3 = 12.5% + 6.25% = 18.75% (i.e. 3/16)
+        in_pcap = ['pipeline/lpm_003/pcap_files/in_1.txt']
+        out_pcap_1 = 'pipeline/lpm_003/pcap_files/out_11.txt'
+        out_pcap_2 = 'pipeline/lpm_003/pcap_files/out_12.txt'
+        out_pcap_3 = 'pipeline/lpm_003/pcap_files/out_13.txt'
+        out_pcap_4 = 'pipeline/lpm_003/pcap_files/out_14.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_lpm_004(self):
+
+        cli_file = '/tmp/pipeline/lpm_004/lpm_004.cli'
+        self.run_dpdk_app(cli_file)
+
+        # Input packets on ports 0 .. 3:
+        #   IPv4 dest_addr has all bits randomized (mask is 0.0.0.0)
+        # Expected output packet distribution on ports 0 .. 3:
+        #   Port 0 = 25%; Port 1 = 25%; Port 2 = 37.5%; Port 3 = 12.5%
+        in_pcap = ['pipeline/lpm_004/pcap_files/in_1.txt']
+        out_pcap_1 = 'pipeline/lpm_004/pcap_files/out_11.txt'
+        out_pcap_2 = 'pipeline/lpm_004/pcap_files/out_12.txt'
+        out_pcap_3 = 'pipeline/lpm_004/pcap_files/out_13.txt'
+        out_pcap_4 = 'pipeline/lpm_004/pcap_files/out_14.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_selector_001(self):
+
+        # ----- Selector table feature validation -----
+        cli_file = '/tmp/pipeline/selector_001/selector_001.cli'
+        self.run_dpdk_app(cli_file)
+        sleep(1)
+        s = self.connect_cli_server()
+
+        # [1]: Absence of Group
+        # Member 0 should act as the default member for each group.
+        in_pcap = 'pipeline/selector_001/pcap_files/in_1.txt'
+        out_pcap = 'pipeline/selector_001/pcap_files/out_1.txt'
+        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
+
+        # [2]: Allocate a group [Group ID: 0]
+        # All packets of this group should use this member.
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group add\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/selector_001/pcap_files/in_2.txt'
+        out_pcap = 'pipeline/selector_001/pcap_files/out_2.txt'
+        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
+
+        # [3]: Add one member [Member ID: 1, Weight: 1] to Group 0
+        # All packets of this group should use this member.
+        CMD_FILE = '/tmp/pipeline/selector_001/cmd_files/cmd_3.txt'
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group member add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/selector_001/pcap_files/in_3.txt'
+        out_pcap = 'pipeline/selector_001/pcap_files/out_3.txt'
+        self.send_and_sniff_pkts(0, 1, in_pcap, out_pcap, "tcp")
+
+        # [4]: Add a new member [Member ID: 0, Weight: 1] to Group 0
+        # Packets of this group should use members according to weights. [50:50]
+        CMD_FILE = '/tmp/pipeline/selector_001/cmd_files/cmd_4.txt'
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group member add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = ['pipeline/selector_001/pcap_files/in_4.txt']
+        out_pcap_1 = 'pipeline/selector_001/pcap_files/out_41.txt'
+        out_pcap_2 = 'pipeline/selector_001/pcap_files/out_42.txt'
+        out_pcap = [out_pcap_1, out_pcap_2]
+        filters = ["tcp"] * 2
+        tx_port = [0]
+        rx_port = [0, 1]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # [5]: Add a new member [Member ID: 2, Weight: 2] to Group 0
+        # Packets of this group should use members according to weights. [25:25:50]
+        CMD_FILE = '/tmp/pipeline/selector_001/cmd_files/cmd_5.txt'
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group member add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = ['pipeline/selector_001/pcap_files/in_5.txt']
+        out_pcap_1 = 'pipeline/selector_001/pcap_files/out_51.txt'
+        out_pcap_2 = 'pipeline/selector_001/pcap_files/out_52.txt'
+        out_pcap_3 = 'pipeline/selector_001/pcap_files/out_53.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3]
+        filters = ["tcp"] * 3
+        tx_port = [0]
+        rx_port = [0, 1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # [6]: Add a new group [Group ID: 1] & add 4 members to it.
+        # [Member IDs: 0, 1, 2, 3; Weights: 1, 1, 2, 4] [12.5% : 12.5% : 25% : 50%]
+        # Packets of this group should use members according to weights.
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group add\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CMD_FILE = '/tmp/pipeline/selector_001/cmd_files/cmd_6.txt'
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group member add {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = ['pipeline/selector_001/pcap_files/in_6.txt']
+        out_pcap_1 = 'pipeline/selector_001/pcap_files/out_61.txt'
+        out_pcap_2 = 'pipeline/selector_001/pcap_files/out_62.txt'
+        out_pcap_3 = 'pipeline/selector_001/pcap_files/out_63.txt'
+        out_pcap_4 = 'pipeline/selector_001/pcap_files/out_64.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        # [7]: Delete group with ID: 0
+        # All packets of this group should use member with ID 0.
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group delete 0\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = 'pipeline/selector_001/pcap_files/in_7.txt'
+        out_pcap = 'pipeline/selector_001/pcap_files/out_7.txt'
+        self.send_and_sniff_pkts(1, 0, in_pcap, out_pcap, "tcp")
+
+        # [8]:  Delete member with member ID 3 of Group ID 1
+        # Group ID 1: [Member IDs: 0, 1, 2; Weights: 1, 1, 2] [25% : 25% : 50%]
+        CMD_FILE = '/tmp/pipeline/selector_001/cmd_files/cmd_8.txt'
+        CLI_CMD = 'pipeline PIPELINE0 selector selector_001 group member delete {}\n'.format(CMD_FILE)
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        CLI_CMD = 'pipeline PIPELINE0 commit\n'
+        self.socket_send_cmd(s, CLI_CMD, "pipeline> ")
+        in_pcap = ['pipeline/selector_001/pcap_files/in_8.txt']
+        out_pcap_1 = 'pipeline/selector_001/pcap_files/out_81.txt'
+        out_pcap_2 = 'pipeline/selector_001/pcap_files/out_82.txt'
+        out_pcap_3 = 'pipeline/selector_001/pcap_files/out_83.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3]
+        filters = ["tcp"] * 3
+        tx_port = [0]
+        rx_port = [0, 1, 2]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+
+        s.close()
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_selector_002(self):
+
+        cli_file = '/tmp/pipeline/selector_002/selector_002.cli'
+        self.run_dpdk_app(cli_file)
+
+        in_pcap = ['pipeline/selector_002/pcap_files/in_1.txt']
+        out_pcap_1 = 'pipeline/selector_002/pcap_files/out_1.txt'
+        out_pcap_2 = 'pipeline/selector_002/pcap_files/out_2.txt'
+        out_pcap_3 = 'pipeline/selector_002/pcap_files/out_3.txt'
+        out_pcap_4 = 'pipeline/selector_002/pcap_files/out_4.txt'
+        out_pcap = [out_pcap_1, out_pcap_2, out_pcap_3, out_pcap_4]
+        filters = ["tcp"] * 4
+        tx_port = [0]
+        rx_port = [0, 1, 2, 3]
+        self.send_and_sniff_multiple(tx_port, rx_port, in_pcap, out_pcap, filters)
+        self.dut.send_expect("^C", "# ", 20)
+
+    def test_scapy_pkt_gen(self):
+
+        # self.send_scapy_pkts(0)
+        pass
 
     def tear_down(self):
         """
