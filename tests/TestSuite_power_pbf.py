@@ -174,7 +174,7 @@ class TestPowerPbf(TestCase):
         cmd = [' '.join([self.vm_power_mgr, option]), prompt, 30]
         output = self.d_con(cmd)
         self.is_mgr_on = True
-        
+
         return output
 
     def close_vm_power_mgr(self):
@@ -361,11 +361,11 @@ class TestPowerPbf(TestCase):
     def parse_vm_power_cores_freq(self, output):
         ''' get vm power management cores frequency '''
         pat_begin = (
-            'POWER: power_set_governor_performance: Power management '
+            'POWER: power_set_governor: Power management '
             'governor of lcore (\\d+) is already performance')
         pat_begin2 = (
-            'Power management governor of lcore (\d+) '
-            'has been set to performance successfully')
+            "Power management governor of lcore (\d+) "
+            "has been set to 'performance' successfully")
         pat_end = \
             'POWER: Initialized successfully for lcore (\\d+) power management'
         pat_freq = (
