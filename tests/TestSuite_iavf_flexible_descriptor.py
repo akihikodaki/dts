@@ -155,6 +155,7 @@ class TestIavfFlexibleDescriptor(TestCase, FlexibleRxdBase):
         """
         self.check_double_VLAN_fields_in_RXD_8021Q_1_VLAN_tag()
 
+    @skip_unsupported_pkg('os default')
     def test_check_double_VLAN_fields_in_RXD_8021Q_2_VLAN_tag(self):
         """
         Check double VLAN fields in RXD (802.1Q) 2 VLAN tags

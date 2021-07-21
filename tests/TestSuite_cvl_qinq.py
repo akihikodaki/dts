@@ -35,7 +35,7 @@ import time
 import random
 from packet import Packet
 from pmd_output import PmdOutput
-from test_case import TestCase, check_supported_nic
+from test_case import TestCase, check_supported_nic, skip_unsupported_pkg
 from utils import GREEN, RED
 from rte_flow_common import RssProcessing
 
@@ -467,6 +467,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_ipv6_pay)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_qinq_pppoe_pay(self):
         """
         DCF switch for MAC_QINQ_PPPOE_PAY
@@ -475,6 +476,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_pay)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_qinq_pppoe_pay_proto(self):
         """
         DCF switch for MAC_QINQ_PPPOE_PAY_Proto
@@ -483,6 +485,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_proto)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_qinq_pppoe_ipv4(self):
         """
         DCF switch for MAC_QINQ_PPPOE_IPV4
@@ -491,6 +494,7 @@ class TestCvlQinq(TestCase):
         self.launch_testpmd()
         self._rte_flow_validate_pattern(mac_qinq_pppoe_ipv4)
 
+    @skip_unsupported_pkg('os default')
     def test_mac_qinq_pppoe_ipv6(self):
         """
         DCF switch for MAC_QINQ_PPPOE_IPV6

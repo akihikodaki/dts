@@ -2898,6 +2898,7 @@ class TestCVLFdir(TestCase):
         self.dut.send_command("quit", timeout=2)
         self.launch_testpmd_with_mark()
 
+    @skip_unsupported_pkg('os default')
     def test_same_rule_on_two_ports(self):
         rule = [
             'flow create 0 ingress pattern eth / ipv4 / udp / gtpu teid is 0x12345678 / gtp_psc qfi is 0x34 / end actions queue index 1 / mark / end',
