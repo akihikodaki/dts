@@ -1944,3 +1944,55 @@ Test case: Fortville fdir for l2 mac
             testpmd> flow create 0 ingress pattern eth dst is 11:11:11:11:11:11 / ipv4 / end actions mark id 3 / rss / end
 
         Verify second rule can not be created.
+
+Test case: Dual vlan(QinQ)
+=================================
+
+1. config testpmd on DUT
+
+   1. set up testpmd with Fortville NICs::
+
+         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
+
+   2. verbose configuration::
+
+         testpmd> set verbose 8
+
+   3. PMD fwd only receive the packets::
+
+         testpmd> set fwd rxonly
+
+   4. set extend on::
+
+         testpmd> vlan set extend on <port_id>
+
+   5. create rule::
+
+         testpmd> flow create 0 ingress pattern eth / end actions rss types l2-payload end queues end func toeplitz / end
+
+   6. start packet receive::
+
+         testpmd> start
+
+
+2. using scapy to send packets with dual vlan (QinQ) on tester::
+
+
+         sendp([Ether(dst="68:05:ca:30:6a:f8")/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=2,type=0xaaaa)/Raw(load="x"*60)], iface=ttester_itf)
+
+   then got hash value and queue value that output from the testpmd on DUT.
+
+3. create flow rss type s-vlan c-vlan by testpmd on dut::
+
+
+      testpmd> flow create 0 ingress pattern eth / end actions rss types s-vlan c-vlan end key_len 0 queues end / end
+
+   1). send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2.
+
+
+   2). send packet as step 2 with changed ovlan id, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2 & step 1).
+
+   3). send packet as step 2 with changed ivlan id, got hash value and queue value that output from the testpmd on DUT, the value should be
+   different with the values in step 2 & step 1) & step 2).
