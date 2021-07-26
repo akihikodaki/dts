@@ -48,6 +48,8 @@ from pmd_output import PmdOutput
 
 class TestVM2VMVirtioPMD(TestCase):
     def set_up_all(self):
+        self.dut_ports = self.dut.get_ports()
+        self.bind_nic_driver(self.dut_ports)
         self.memory_channel = self.dut.get_memory_channels()
         self.vm_num = 2
         self.dump_pcap = "/root/pdump-rx.pcap"
@@ -437,34 +439,35 @@ class TestVM2VMVirtioPMD(TestCase):
 
     def test_vhost_vm2vm_virtio_split_ring_with_mergeable_path_cbdma_enabled(self):
         """
-        Test Case 9: VM2VM virtio-pmd split ring mergeable path 4 queues CBDMA enable with server mode stable test
+        Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable with server mode stable test
         """
         self.nb_cores = 4
         self.get_core_list(self.nb_cores + 1)
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=4, allow_diff_socket=True)
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 4 queue")
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4,
-                              server_mode=True, opt_queue=4, combined=True, rxq_txq=4)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=8, allow_diff_socket=True)
+        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
         self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="4")
+        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
         self.vm_dut[0].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.logger.info("Launch testpmd in VM2, sent imix pkts from VM2")
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="4")
+        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
+        self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set txpkts 64,256,512,1024,2000,64,256,512,1024,2000', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('start tx_first 1', 'testpmd> ', 30)
         self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0], queue_num=4)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=4)
+        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
+        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
         self.logger.info("Relaunch vhost side testpmd and Check imix packets 10 times")
         for _ in range(10):
             self.pmd_vhost.execute_cmd('quit', '#')
-            self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4,
-                                           rxq_txq=4)
+            self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
+                                           rxq_txq=8)
             self.vm_dut[1].send_expect('stop', 'testpmd> ', 30)
             self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
-            self.check_port_stats_result(self.vm_dut[0], queue_num=4)
-            self.check_port_stats_result(self.vm_dut[1], queue_num=4)
+            self.check_port_stats_result(self.vm_dut[0], queue_num=8)
+            self.check_port_stats_result(self.vm_dut[1], queue_num=8)
 
     def test_vhost_vm2vm_split_ring_with_mergeable_path_and_server_mode_cbdma_enabled(self):
         """
@@ -472,30 +475,30 @@ class TestVM2VMVirtioPMD(TestCase):
         """
         self.nb_cores = 4
         self.get_core_list(self.nb_cores + 1)
-        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=4, allow_diff_socket=True)
-        self.logger.info("Launch vhost-testpmd with CBDMA and used 4 queue")
-        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4,
-                              server_mode=True, opt_queue=4, combined=True, rxq_txq=4)
+        self.get_cbdma_ports_info_and_bind_to_dpdk(cbdma_num=16, queue_num=8, allow_diff_socket=True)
+        self.logger.info("Launch vhost-testpmd with CBDMA and used 8 queue")
+        self.prepare_test_env(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
+                              server_mode=True, opt_queue=8, combined=True, rxq_txq=8)
         self.logger.info("Launch testpmd in VM1")
-        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="4")
+        self.start_vm_testpmd(self.vm_dut[0], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
         self.vm_dut[0].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[0].send_expect('start', 'testpmd> ', 30)
         self.logger.info("Launch testpmd in VM2 and send imix pkts")
-        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="4")
+        self.start_vm_testpmd(self.vm_dut[1], "mergeable", extern_param="--max-pkt-len=9600", queues="8")
         self.vm_dut[1].send_expect('set fwd mac', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('set txpkts 64,256,512,1024,2000,64,256,512,1024,2000', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
         self.logger.info("Check imix packets")
-        self.check_port_stats_result(self.vm_dut[0], queue_num=4)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=4)
+        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
+        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
         self.logger.info("Relaunch vhost side testpmd and Check imix packets 10 times")
         self.pmd_vhost.execute_cmd('quit', '#')
-        self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=4, nb_cores=4,
-                                       rxq_txq=4)
+        self.start_vhost_testpmd_cbdma(cbdma=True, no_pci=False, client_mode=True, enable_queues=8, nb_cores=4,
+                                       rxq_txq=8)
         self.vm_dut[1].send_expect('stop', 'testpmd> ', 30)
         self.vm_dut[1].send_expect('start tx_first 32', 'testpmd> ', 30)
-        self.check_port_stats_result(self.vm_dut[0], queue_num=4)
-        self.check_port_stats_result(self.vm_dut[1], queue_num=4)
+        self.check_port_stats_result(self.vm_dut[0], queue_num=8)
+        self.check_port_stats_result(self.vm_dut[1], queue_num=8)
 
     def test_vhost_vm2vm_packed_ring_with_mergeable_path_and_8queues_cbdma_enabled(self):
         """
@@ -722,6 +725,15 @@ class TestVM2VMVirtioPMD(TestCase):
             self.dut.send_expect('modprobe ioatdma', '# ')
             self.dut.send_expect('./usertools/dpdk-devbind.py -u %s' % self.device_str, '# ', 30)
             self.dut.send_expect('./usertools/dpdk-devbind.py --force --bind=ioatdma  %s' % self.device_str, '# ', 60)
+
+    def bind_nic_driver(self, ports, driver=""):
+            for port in ports:
+                netdev = self.dut.ports_info[port]['port']
+                driver_now = netdev.get_nic_driver()
+                if driver == "":
+                    driver = netdev.default_driver
+                if driver != driver_now:
+                    netdev.bind_driver(driver=driver)
 
     def tear_down(self):
         #
