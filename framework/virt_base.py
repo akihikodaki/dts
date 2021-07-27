@@ -275,7 +275,7 @@ class VirtBase(object):
         self._attach_vm()
         return None
 
-    def start(self, load_config=True, set_target=True, cpu_topo=''):
+    def start(self, load_config=True, set_target=True, cpu_topo='', bind_dev=True):
         """
         Start VM and instantiate the VM with VirtDut.
         """
@@ -290,7 +290,7 @@ class VirtBase(object):
 
             if self.vm_status is ST_RUNNING:
                 # connect vm dut and init running environment
-                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, autodetect_topo=True)
+                vm_dut = self.instantiate_vm_dut(set_target, cpu_topo, bind_dev=bind_dev, autodetect_topo=True)
             else:
                 vm_dut = None
 
