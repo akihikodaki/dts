@@ -247,68 +247,6 @@ and using scapy to send packets with ipv6-udp on tester::
 
 and the test result should be same as Test Case 2.
 
-Test Case 5: test dual vlan(QinQ)
-=================================
-
-1. config testpmd on DUT
-
-   1. set up testpmd with Fortville NICs::
-
-         ./testpmd -c 0x1ffff -n 4 -- -i --coremask=0x1fffe --portmask=0x1 --rxq=16 --txq=16 --tx-offloads=0x8fff
-
-   2. set qinq on::
-
-         testpmd> vlan set qinq on <port_id>
-
-   3. Reta Configuration(optional, if not set, will use default)::
-
-         testpmd> port config 0 rss reta (hash_index,queue_id)
-
-   4. PMD fwd only receive the packets::
-
-         testpmd> set fwd rxonly
-
-   5. verbose configuration::
-
-         testpmd> set verbose 8
-
-   6. start packet receive::
-
-         testpmd> start
-
-   7. rss received package type configuration::
-
-         testpmd> port config all rss ether
-
-2. using scapy to send packets with dual vlan (QinQ) on tester::
-
-
-      sendp([Ether(dst="00:00:00:00:01:00")/Dot1Q(id=0x8100,vlan=1)/Dot1Q(id=0x8100,vlan=2)], iface=tester_itf)
-
-   then got hash value and queue value that output from the testpmd on DUT.
-
-3. set hash input set to "none" by testpmd on dut::
-
-
-      testpmd> set_hash_input_set 0 l2_payload none select
-
-   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
-   same with the values in step 2.
-
-4. set hash input set by testpmd on dut, enable ovlan field::
-
-
-      testpmd> set_hash_input_set 0 l2_payload ovlan add
-
-   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
-   different with the values in step 2.
-
-5. set hash input set by testpmd on dut, enable ovlan, ivlan field::
-
-      testpmd> set_hash_input_set 0 l2_payload ivlan add
-
-   send packet as step 2, got hash value and queue value that output from the testpmd on DUT, the value should be
-   different with the values in step 2 & step 4.
 
 Test Case 6: 32-bit GRE keys and 24-bit GRE keys test
 =====================================================
