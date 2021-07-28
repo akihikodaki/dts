@@ -104,9 +104,9 @@ take 'MAC_IPV4_FRAG fdir queue index' for fdir example
 ------------------------------------------------------
 1. validate and create rule::
 
-      flow validate 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end
+      flow validate 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
       Flow rule validated
-      flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end
+      flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
       Flow rule #0 created
 
 2. send matched pkts and check two pkts distributed to queue 1, `RSS hash=0x261a7deb - RSS queue=0x1` in output::
@@ -238,7 +238,7 @@ Subcase 1: MAC_IPV4_FRAG fdir queue index
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
 
 2. matched packets::
 
@@ -253,7 +253,7 @@ Subcase 2: MAC_IPV4_FRAG fdir rss queues
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions rss queues 2 3 end / mark / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions rss queues 2 3 end / mark / end
 
 2. matched packets::
 
@@ -268,7 +268,7 @@ Subcase 3: MAC_IPV4_FRAG fdir passthru
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions passthru / mark / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions passthru / mark / end
 
 2. matched packets::
 
@@ -283,7 +283,7 @@ Subcase 4: MAC_IPV4_FRAG fdir drop
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions drop / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / end
 
 2. matched packets::
 
@@ -298,7 +298,7 @@ Subcase 5: MAC_IPV4_FRAG fdir mark+rss
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions mark / rss / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark / rss / end
 
 2. matched packets::
 
@@ -313,7 +313,7 @@ Subcase 6: MAC_IPV4_FRAG fdir mark
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions mark id 1 / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark id 1 / end
 
 2. matched packets::
 
@@ -331,7 +331,7 @@ Subcase 1: MAC_IPV6_FRAG fdir queue index
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions queue index 1 / mark / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions queue index 1 / mark / end
 
 2. matched packets::
 
@@ -346,7 +346,7 @@ Subcase 2: MAC_IPV6_FRAG fdir rss queues
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions rss queues 2 3 / mark / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions rss queues 2 3 end / mark / end
 
 2. matched packets::
 
@@ -361,7 +361,7 @@ Subcase 3: MAC_IPV6_FRAG fdir passthru
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions passthru / mark / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions passthru / mark / end
 
 2. matched packets::
 
@@ -376,7 +376,7 @@ Subcase 4: MAC_IPV6_FRAG fdir drop
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions drop / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / end
 
 2. matched packets::
 
@@ -391,7 +391,7 @@ Subcase 5: MAC_IPV6_FRAG fdir mark+rss
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions mark / rss / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark / rss / end
 
 2. matched packets::
 
@@ -406,7 +406,7 @@ Subcase 6: MAC_IPV6_FRAG fdir mark
 
 1. rules::
 
-     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions mark id 1 / end
+     flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark id 1 / end
 
 2. matched packets::
 
@@ -427,7 +427,7 @@ take 'mac_ipv4_frag_l2dst_fdir_queue_index' example::
 
    1.rules:
 
-      flow create 0 ingress pattern eth dst is 00:00:00:00:00:01 / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end
+      flow create 0 ingress pattern eth dst is 00:00:00:00:00:01 / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
 
    2.matched packets:
 
@@ -452,7 +452,7 @@ take 'mac_ipv6_frag_l2dst_fdir_queue_index' example::
 
    1.rules:
 
-      flow create 0 ingress pattern eth dst is 00:00:00:00:00:01 / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions queue index 1 / mark / end
+      flow create 0 ingress pattern eth dst is 00:00:00:00:00:01 / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions queue index 1 / mark / end
 
    2.matched packets:
 
@@ -478,7 +478,7 @@ take 'mac_ipv4_frag_l3src_fdir_queue_index' example::
 
    1.rules:
 
-      flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end
+      flow create 0 ingress pattern eth / ipv4 src is 192.168.1.1 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end
 
    2.matched packets:
 
@@ -505,7 +505,7 @@ take 'mac_ipv6_frag_l3src_fdir_queue_index' example::
 
    1.rules:
 
-      flow create 0 ingress pattern eth / ipv6 src is 2001::1 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions queue index 1 / mark / end
+      flow create 0 ingress pattern eth / ipv6 src is 2001::1 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions queue index 1 / mark / end
 
    2.matched packets:
 
@@ -576,7 +576,7 @@ Subcase 1: exclusive validation fdir rule
 1. create fdir filter rules::
 
      flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / end
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 2 / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end
 
 2. hit pattern/defined input set id, the pkt received for queue 2::
 
@@ -586,7 +586,7 @@ Subcase 2: exclusive validation fdir rule
 -----------------------------------------
 1. create fdir filter rules::
 
-     flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 2 / end
+     flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end
      flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / ipv4 src is 192.168.0.20 / end actions queue index 1 / end
 
 2. hit pattern/defined input set id, the pkt received for queue 2::
@@ -600,7 +600,7 @@ Subcase 3: exclusive validation rss rule
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4 end key_len 0 queues end / end
      flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end
 
-2. hit pattern/defined input set id, the pkt received for rss diffent queue::
+2. hit pattern/defined input set id, the pkt received for rss same queue::
 
      p=Ether()/IP(id=47750)/Raw('X'*666); pkts=fragment6(p, 500)
      p=Ether()/IP(id=47751)/Raw('X'*666); pkts=fragment6(p, 500)
