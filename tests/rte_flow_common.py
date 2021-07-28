@@ -400,7 +400,7 @@ def check_mark(out, pkt_num, check_param, stats=True):
                 raise Exception("got wrong output, not match pattern %s" % p.pattern)
             if mark_id is not None:
                 mark_list = set(int(i, CVL_TXQ_RXQ_NUMBER) for i in fdir_scanner.findall(out))
-                verify(all([i == check_param["mark_id"] for i in mark_list]),
+                verify(all([i == check_param["mark_id"] for i in mark_list]) and mark_list,
                        "failed: some packet mark id of %s not match" % mark_list)
             else:
                 verify(not fdir_flag, "output should not include mark id")
