@@ -43,7 +43,7 @@ LAUNCH_QUEUE = 16
 
 tv_mac_ipv4_frag_fdir_queue_index = {
     "name": "tv_mac_ipv4_frag_fdir_queue_index",
-    "rule": "flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 1 / mark / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 1 / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -52,8 +52,7 @@ tv_mac_ipv4_frag_fdir_queue_index = {
 
 tv_mac_ipv4_frag_fdir_rss_queues = {
     "name": "tv_mac_ipv4_frag_fdir_rss_queues",
-    "rule": ["flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions rss queues 2 3 end / mark / end",
-            "flow create 0 ingress pattern eth / ipv4 / end actions rss types ipv4-frag end key_len 0 queues end / end"],
+    "rule": ["flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions rss queues 2 3 end / mark / end",],
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -62,16 +61,16 @@ tv_mac_ipv4_frag_fdir_rss_queues = {
 
 tv_mac_ipv4_frag_fdir_passthru = {
     "name": "tv_mac_ipv4_frag_fdir_passthru",
-    "rule": "flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions passthru / mark / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions passthru / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
-    "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0}
+    "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True}
 }
 
 tv_mac_ipv4_frag_fdir_drop = {
     "name": "tv_mac_ipv4_frag_fdir_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions drop / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -80,7 +79,7 @@ tv_mac_ipv4_frag_fdir_drop = {
 
 tv_mac_ipv4_frag_fdir_mark_rss = {
     "name": "tv_mac_ipv4_frag_fdir_mark_rss",
-    "rule": "flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions mark / rss / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark / rss / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -89,7 +88,7 @@ tv_mac_ipv4_frag_fdir_mark_rss = {
 
 tv_mac_ipv4_frag_fdir_mark = {
     "name": "tv_mac_ipv4_frag_fdir_mark",
-    "rule": "flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions mark id 1 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions mark id 1 / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"]
                   },
@@ -106,12 +105,12 @@ tvs_mac_ipv4_fragment_fdir = [
 ]
 
 tvs_mac_ipv4_fragment_fdir_l3src = [eval(str(element).replace('mac_ipv4_frag', 'mac_ipv4_frag_l3src')
-                                                     .replace('ipv4 packet_id', 'ipv4 src is 192.168.1.1 packet_id')
+                                                     .replace('ipv4 fragment_offset', 'ipv4 src is 192.168.1.1 fragment_offset')
                                                      .replace("IP(id=47750)", "IP(id=47750, src='192.168.1.1')"))
                                     for element in tvs_mac_ipv4_fragment_fdir]
 
 tvs_mac_ipv4_fragment_fdir_l3dst = [eval(str(element).replace('mac_ipv4_frag', 'mac_ipv4_frag_l3dst')
-                                                     .replace('ipv4 packet_id', 'ipv4 dst is 192.168.1.2 packet_id')
+                                                     .replace('ipv4 fragment_offset', 'ipv4 dst is 192.168.1.2 fragment_offset')
                                                      .replace("IP(id=47750)", "IP(id=47750, dst='192.168.1.2')"))
                                     for element in tvs_mac_ipv4_fragment_fdir]
 
@@ -119,7 +118,7 @@ tvs_mac_ipv4_frag_fdir_with_l3 = tvs_mac_ipv4_fragment_fdir_l3src + tvs_mac_ipv4
 
 tv_mac_ipv6_frag_fdir_queue_index = {
     "name": "tv_mac_ipv6_frag_fdir_queue_index",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions queue index 1 / mark / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions queue index 1 / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -128,8 +127,7 @@ tv_mac_ipv6_frag_fdir_queue_index = {
 
 tv_mac_ipv6_frag_fdir_rss_queues = {
     "name": "tv_mac_ipv6_frag_fdir_rss_queues",
-    "rule": ["flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions rss queues 2 3 end / mark / end",
-            "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext / end actions rss types ipv6-frag end key_len 0 queues end / end"],
+    "rule": ["flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions rss queues 2 3 end / mark / end",],
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -138,16 +136,16 @@ tv_mac_ipv6_frag_fdir_rss_queues = {
 
 tv_mac_ipv6_frag_fdir_passthru = {
     "name": "tv_mac_ipv6_frag_fdir_passthru",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions passthru / mark / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions passthru / mark / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
-    "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0}
+    "check_param": {"port_id": 0, "rxq": LAUNCH_QUEUE, "mark_id": 0, "rss": True}
 }
 
 tv_mac_ipv6_frag_fdir_drop = {
     "name": "tv_mac_ipv6_frag_fdir_drop",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions drop / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions drop / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -156,7 +154,7 @@ tv_mac_ipv6_frag_fdir_drop = {
 
 tv_mac_ipv6_frag_fdir_mark_rss = {
     "name": "tv_mac_ipv6_frag_fdir_mark_rss",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions mark / rss / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark / rss / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -165,7 +163,7 @@ tv_mac_ipv6_frag_fdir_mark_rss = {
 
 tv_mac_ipv6_frag_fdir_mark = {
     "name": "tv_mac_ipv6_frag_fdir_mark",
-    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext packet_id spec 0 packet_id last 0xffffffff packet_id mask 0xffffffff frag_data spec 0x0001 frag_data last 0xffff frag_data mask 0xffff / end actions mark id 1 / end",
+    "rule": "flow create 0 ingress pattern eth / ipv6 / ipv6_frag_ext frag_data spec 0x0001 frag_data mask 0x0001 / end actions mark id 1 / end",
     "scapy_str": {"matched": ["Ether(dst='00:11:22:33:55:66')/IPv6()/IPv6ExtHdrFragment(id=47750)/Raw('X'*666)"],
                   "unmatched": ["Ether(dst='00:11:22:33:55:66')/IP(id=47750)/Raw('X'*666)"]
                   },
@@ -372,7 +370,7 @@ class TestCvlIavfIpFragmentRteFlow(TestCase):
         result_list = []
         rule_list_fdir = [
             'flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 / end actions queue index 1 / end',
-            'flow create 0 ingress pattern eth / ipv4 packet_id spec 0 packet_id last 0xffff packet_id mask 0xffff fragment_offset spec 0x2000 fragment_offset last 0x1fff fragment_offset mask 0xffff / end actions queue index 2 / end']
+            'flow create 0 ingress pattern eth / ipv4 fragment_offset spec 0x2000 fragment_offset mask 0x2000 / end actions queue index 2 / end']
         pkt_fdir = "Ether()/IP(src='192.168.0.20', id=47750)/Raw('X'*666)"
 
         self.logger.info('Subcase 1: exclusive validation fdir rule')
@@ -447,7 +445,7 @@ class TestCvlIavfIpFragmentRteFlow(TestCase):
         if hashes1[0] != hashes1[1] and hashes2[0] != hashes2[1]:
             result = False
             self.logger.error("hash value is incorrect")
-        if hashes1[0] != hashes2[0]:
+        if hashes1[0] == hashes2[0]:
             result = False
             self.logger.error("hash value is incorrect")
         result_list.append(result)
