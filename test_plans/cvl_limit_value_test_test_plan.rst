@@ -556,14 +556,14 @@ Description: 32k switch filter rules can be created on a CVL card,
 and all PFs and VFs share the 32k rules. But the system will first create
 some MAC_VLAN rules in switch table, and as the number of rules increased,
 the hash conflicts in the switch filter table are increased, so we can
-create a total of 32563 switch filter rules on a DCF.
+create a total of 32500 switch filter rules on a DCF.
 
-1. create 32563 rules with the same pattern, but different input set::
+1. create 32500 rules with the same pattern, but different input set::
 
      testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.0 / end actions vf id 1 / end
      testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions vf id 1 / end
      ......
-     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.177 / end actions vf id 1 / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 src is 192.168.127.114 / end actions vf id 1 / end
      testpmd> flow list 0
 
    check the rules exist in the list.
@@ -584,14 +584,14 @@ create a total of 32563 switch filter rules on a DCF.
 
    check the rule in step 2 not exists in the list.
 
-4. send 32563 matched packets for rule 0-32562::
+4. send 32500 matched packets for rule 0-32499::
 
      sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.0")/TCP(sport=25,dport=23)/("X"*480)], iface="ens786f0", count=1)
      sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.0.1")/TCP(sport=25,dport=23)/("X"*480)], iface="ens786f0", count=1)
      ......
-     sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.127.177")/TCP(sport=25,dport=23)/("X"*480)], iface="ens786f0", count=1)
+     sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.168.127.114")/TCP(sport=25,dport=23)/("X"*480)], iface="ens786f0", count=1)
 
-   check port 1 receive the 32563 packets.
+   check port 1 receive the 32500 packets.
    send 1 mismatched packet::
 
      sendp([Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.167.0.1")/TCP(sport=25,dport=23)/("X"*480)], iface="ens786f0", count=1)
@@ -604,4 +604,4 @@ create a total of 32563 switch filter rules on a DCF.
      testpmd> flow list 0
 
    check the rules not exist in the list.
-   send 32563 matched packets, check the packets are not to port 1.
+   send 32500 matched packets, check the packets are not to port 1.
