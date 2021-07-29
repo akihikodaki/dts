@@ -875,18 +875,22 @@ class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
     def _gener_str(self, str_len=6):
         return ''.join(random.sample(string.ascii_letters + string.digits, k=str_len))
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv4_pfcp_session(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_pfcp_session)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv6_pfcp_session(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_pfcp_session)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv4_l2tpv3(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_l2tpv3)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv6_l2tpv3(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_l2tpv3)
@@ -896,14 +900,17 @@ class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_esp)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv4_udp_esp(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_udp_esp)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv6_esp(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_esp)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv6_udp_esp(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_udp_esp)
@@ -913,6 +920,7 @@ class Advanced_rss_vlan_ah_l2tp_pfcp(TestCase):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv4_ah)
 
+    @skip_unsupported_pkg("os default")
     def test_mac_ipv6_ah(self):
         self.switch_testpmd(symmetric=False)
         self.rsspro.handle_rss_distribute_cases(cases_info=mac_ipv6_ah)
