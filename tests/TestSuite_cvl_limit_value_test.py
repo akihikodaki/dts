@@ -48,7 +48,7 @@ tv_max_rule_number = {
     "matched": {"scapy_str": [],
                 "check_func": {"func": rfc.check_vf_rx_packets_number,
                                "param": {"expect_port": 1}},
-                "expect_results": {"expect_pkts": 32563}},
+                "expect_results": {"expect_pkts": 32500}},
     "mismatched": {
         "scapy_str": ['Ether(dst="68:05:ca:8d:ed:a8")/IP(src="192.167.0.1")/TCP(sport=25,dport=23)/("X"*480)'],
         "check_func": {"func": rfc.check_vf_rx_packets_number,
@@ -908,13 +908,13 @@ class TestCvlLimitValue(TestCase):
 
         # set up 4 vfs on 1 pf environment
         self.setup_1pf_vfs_env()
-        # create 32563 rules with the same pattern, but different input set to file
+        # create 32500 rules with the same pattern, but different input set to file
         src_file = 'dep/testpmd_cmds_32k_switch_rules'
         flows = open(src_file, mode='w')
         rule_count = 1
         for i in range(0, 255):
             for j in range(0, 255):
-                if not rule_count > 32563:
+                if not rule_count > 32500:
                     flows.write(
                         'flow create 0 ingress pattern eth / ipv4 src is 192.168.%d.%d / end actions vf id 1 / end \n' % (
                         i, j))
@@ -924,12 +924,12 @@ class TestCvlLimitValue(TestCase):
                     rule_count += 1
                 else:
                     break
-            if rule_count > 32563:
+            if rule_count > 32500:
                 break
         flows.close()
         dut_file_dir = '/tmp/'
         self.dut.session.copy_file_to(src_file, dut_file_dir)
-        # launch testpmd with 32563 rules
+        # launch testpmd with 32500 rules
         vf0_pci = self.sriov_vfs_port_0[0].pci
         vf1_pci = self.sriov_vfs_port_0[1].pci
         all_eal_param = self.dut.create_eal_parameters(cores="1S/4C/1T", ports=[vf0_pci, vf1_pci],
@@ -939,8 +939,8 @@ class TestCvlLimitValue(TestCase):
         self.testpmd_status = "running"
         self.dut.send_expect("set portlist 1", "testpmd> ", 15)
         self.dut.send_expect("set fwd rxonly", "testpmd> ", 15)
-        # check the rule list with 32563 rules
-        rule_list_num = list(range(0, 32563))
+        # check the rule list with 32500 rules
+        rule_list_num = list(range(0, 32500))
         rule_list = [str(x) for x in rule_list_num]
         self.check_switch_filter_rule_list(0, rule_list)
         # create other rules to make switch filter table full
