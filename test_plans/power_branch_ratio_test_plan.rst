@@ -50,7 +50,8 @@ Prepare work
 5. Set CONFIG_RTE_LIBRTE_POWER_DEBUG=y CONFIG_RTE_LIBRTE_POWER=y in /config/common_base file.
 6. modprobe msr module to let the application can get the CPU HW info.
 7. Let user space can control the CPU frequency::
-        cpupower frequency-set -g userspace
+
+    cpupower frequency-set -g userspace
 
 sys_min=/sys/devices/system/cpu/cpu2/cpufreq/cpuinfo_min_freq
 no_turbo_max=$(rdmsr -p 2 0x0CE -f 15:8 -d)00000
@@ -60,13 +61,15 @@ Test Case 1 : Set Branch-Ratio Test Rate by User ===============================
 ./x86_64-native-linuxapp-gcc/examples/dpdk-vm_power_manager  -v -c 0xe -n 1 -m 1024 --no-pci  -- --core-branch-ratio=1-3:0.3
 
 2. Launch testpmd with fwd io mode::
-./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -v -c 0x6 -n 1 -m 1024 --file-prefix=vmpower2 -- -i
+
+    ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd  -v -c 0x6 -n 1 -m 1024 --file-prefix=vmpower2 -- -i
     > start
 
 3. Inject packet with packet generator to the NIC, with line rate,
 check the branch ratio and the related CPU frequency, in this case, the
 core 2 will be used by testpmd as worker core, branch ratio will be shown as
 following in vm_power_mgr's log output::
+
     1: 0.0048 {250065} {20001}
     0: 0.0307 {35782} {20000}
     1: 0.0042 {259798} {0}
@@ -82,4 +85,5 @@ cat /sys/devices/system/cpu/cpu2/cpufreq/scaling_cur_freq
 
 5. [Check Point]Stopped the traffic from packet generator. Check the core 2
 frequency again, the Frequency reported should be::
-[sys_min]:cur_freq <= sys_min
+
+    [sys_min]:cur_freq <= sys_min

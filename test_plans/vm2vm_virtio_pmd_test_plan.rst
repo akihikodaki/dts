@@ -47,7 +47,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
-     rm -rf vhost-net*
+    rm -rf vhost-net*
     ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -65,7 +65,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -92,7 +92,7 @@ Test Case 1: VM2VM vhost-user/virtio-pmd with vector_rx path
 5. Check the performance at vhost testpmd to see the tx/rx rate with 64B packet size::
 
     testpmd>show port stats all
-    xxxxx
+    ...
     Throughput (since last show)
     RX-pps:            xxx
     TX-pps:            xxx
@@ -102,7 +102,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
-     rm -rf vhost-net*
+    rm -rf vhost-net*
     ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -120,7 +120,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -147,7 +147,7 @@ Test Case 2: VM2VM vhost-user/virtio-pmd with normal path
 5. Check the performance at vhost testpmd to see the tx/rx rate with 64B packet size::
 
     testpmd>show port stats all
-    xxxxx
+    ...
     Throughput (since last show)
     RX-pps:            xxx
     TX-pps:            xxx
@@ -157,7 +157,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
-     rm -rf vhost-net*
+    rm -rf vhost-net*
     ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -175,7 +175,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -202,7 +202,7 @@ Test Case 3: VM2VM vhost-user/virtio1.0-pmd with vector_rx path
 5. Check the performance at vhost testpmd to see the tx/rx rate with 64B packet size::
 
     testpmd>show port stats all
-    xxxxx
+    ...
     Throughput (since last show)
     RX-pps:            xxx
     TX-pps:            xxx
@@ -212,7 +212,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
-     rm -rf vhost-net*
+    rm -rf vhost-net*
     ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -230,7 +230,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -257,7 +257,7 @@ Test Case 4: VM2VM vhost-user/virtio1.0-pmd with normal path
 5. Check the performance at vhost testpmd to see the tx/rx rate with 64B packet size::
 
     testpmd>show port stats all
-    xxxxx
+    ...
     Throughput (since last show)
     RX-pps:            xxx
     TX-pps:            xxx
@@ -284,7 +284,7 @@ Test Case 5: VM2VM vhost-user/virtio-pmd mergeable path with payload valid check
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=true,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -372,7 +372,7 @@ Test Case 6: VM2VM vhost-user/virtio1.0-pmd mergeable path with payload valid ch
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -460,7 +460,7 @@ Test Case 7: VM2VM vhost-user/virtio1.1-pmd mergeable path with payload valid ch
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -531,7 +531,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 
 1. Bind one physical nic port to igb_uio, then launch the testpmd by below commands::
 
-     rm -rf vhost-net*
+    rm -rf vhost-net*
     ./testpmd -c 0xc0000 -n 4 --no-pci --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,queues=1' --vdev 'net_vhost1,iface=vhost-net1,queues=1'  -- -i --nb-cores=1 --txd=1024 --rxd=1024
     testpmd>set fwd mac
     testpmd>start
@@ -549,7 +549,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=off,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,packed=on -vnc :10
 
-   qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
+    qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 4 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu1910-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -576,7 +576,7 @@ Test Case 8: VM2VM vhost-user/virtio1.1-pmd with normal path
 5. Check the performance at vhost testpmd to see the tx/rx rate with 64B packet size::
 
     testpmd>show port stats all
-    xxxxx
+    ...
     Throughput (since last show)
     RX-pps:            xxx
     TX-pps:            xxx
@@ -604,7 +604,7 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
-   taskset -c 17-27 /home/qemu-install/qemu-5.2/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
+    taskset -c 17-27 /home/qemu-install/qemu-5.2/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -617,10 +617,10 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 
 3. On VM1 and VM2, bind virtio device with vfio-pci driver::
 
-     modprobe vfio
-     modprobe vfio-pci
-     echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
-     ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
+    modprobe vfio
+    modprobe vfio-pci
+    echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
+    ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
 
 4. Launch testpmd in VM1::
 
@@ -637,21 +637,21 @@ Test Case 9: VM2VM virtio-pmd split ring mergeable path 8 queues CBDMA enable wi
 
 6. Check imix packets can looped between two VMs for 1 mins and 8 queues all have packets rx/tx::
 
-   testpmd>show port stats all
-   testpmd>stop
+    testpmd>show port stats all
+    testpmd>stop
 
 7. Relaunch and start vhost side testpmd with below cmd, change cbdma threshold for one vhost port's cbdma channels::
 
-  ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-   --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=64'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
-   testpmd>start
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=64'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>start
 
 8. Send pkts by testpmd in VM2, check imix packets can looped between two VMs for 1 mins and 8 queues all have packets rx/tx::
 
-   testpmd>stop
-   testpmd>start tx_first 1
-   testpmd>show port stats all
-   testpmd>stop
+    testpmd>stop
+    testpmd>start tx_first 1
+    testpmd>show port stats all
+    testpmd>stop
 
 9. Rerun step 7-8 for 10 times.
 
@@ -678,7 +678,7 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on -vnc :10
 
-   taskset -c 17-27 /home/qemu-install/qemu-5.2/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
+    taskset -c 17-27 /home/qemu-install/qemu-5.2/bin/qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -691,10 +691,10 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 
 3. On VM1 and VM2, bind virtio device with vfio-pci driver::
 
-     modprobe vfio
-     modprobe vfio-pci
-     echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
-     ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
+    modprobe vfio
+    modprobe vfio-pci
+    echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
+    ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
 
 4. Launch testpmd in VM1::
 
@@ -713,16 +713,16 @@ Test Case 10: VM2VM virtio-pmd split ring mergeable path dynamic queue size CBDM
 
 6. Relaunch and start vhost side testpmd with eight queues, change cbdma threshold for one vhost port's cbdma channels::
 
-  ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
-   --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=64'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
-   testpmd>start
+    ./dpdk-testpmd -l 1-5 -n 4 --file-prefix=vhost --vdev 'net_vhost0,iface=vhost-net0,client=1,queues=8,dmas=[txq0@00:04.0;txq1@00:04.1;txq2@00:04.2;txq3@00:04.3;txq4@00:04.4;txq5@00:04.5;txq6@00:04.6;txq7@00:04.7],dmathr=512' \
+    --vdev 'net_vhost1,iface=vhost-net1,client=1,queues=8,dmas=[txq0@80:04.0;txq1@80:04.1;txq2@80:04.2;txq3@80:04.3;txq4@80:04.4;txq5@80:04.5;txq6@80:04.6;txq7@80:04.7],dmathr=64'  -- -i --nb-cores=4 --txd=1024 --rxd=1024 --rxq=8 --txq=8
+    testpmd>start
 
 7. Send pkts by testpmd in VM2, check imix packets can looped between two VMs for 1 mins and 8 queues all have packets rx/tx::
 
-   testpmd>stop
-   testpmd>start tx_first 32
-   testpmd>show port stats all
-   testpmd>stop
+    testpmd>stop
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+    testpmd>stop
 
 8. Rerun step 6-7 for 10 times.
 
@@ -750,7 +750,7 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
     -netdev type=vhost-user,id=netdev0,chardev=char0,vhostforce,queues=8 \
     -device virtio-net-pci,netdev=netdev0,mac=52:54:00:00:00:01,disable-modern=false,mrg_rxbuf=on,mq=on,vectors=40,csum=on,guest_csum=on,host_tso4=on,guest_tso4=on,guest_ecn=on,guest_ufo=on,host_ufo=on,packed=on -vnc :10
 
-   taskset -c 17-27 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
+    taskset -c 17-27 qemu-system-x86_64 -name vm2 -enable-kvm -cpu host -smp 9 -m 4096 \
     -object memory-backend-file,id=mem,size=4096M,mem-path=/mnt/huge,share=on \
     -numa node,memdev=mem -mem-prealloc -drive file=/home/osimg/ubuntu20-04-2.img  \
     -chardev socket,path=/tmp/vm2_qga0.sock,server,nowait,id=vm2_qga0 -device virtio-serial \
@@ -763,10 +763,10 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
 
 3. On VM1 and VM2, bind virtio device with vfio-pci driver::
 
-     modprobe vfio
-     modprobe vfio-pci
-     echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
-     ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
+    modprobe vfio
+    modprobe vfio-pci
+    echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
+    ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
 
 4. Launch testpmd in VM1::
 
@@ -798,13 +798,13 @@ Test Case 11: VM2VM virtio-pmd packed ring mergeable path 8 queues CBDMA enable 
 
 7. Bind virtio device with vfio-pci driver, launch testpmd in VM2 and send imix pkts, check imix packets can looped between two VMs for 1 mins and 8 queues all have packets rx/tx::
 
-   modprobe vfio
-   modprobe vfio-pci
-   echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
-   ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
-   ./testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600
-   testpmd>set mac fwd
-   testpmd>set txpkts 64,256,512,1024,20000,64,256,512,1024,20000
-   testpmd>start tx_first 32
-   testpmd>show port stats all
-   testpmd>stop
+    modprobe vfio
+    modprobe vfio-pci
+    echo 1 > /sys/module/vfio/parameters/enable_unsafe_noiommu_mode
+    ./usertools/dpdk-devbind.py --force --bind=vfio-pci 0000:00:05.0
+    ./testpmd -c 0x3 -n 4 -- -i --tx-offloads=0x00 --enable-hw-vlan-strip --txq=8 --rxq=8 --txd=1024 --rxd=1024 --max-pkt-len=9600
+    testpmd>set mac fwd
+    testpmd>set txpkts 64,256,512,1024,20000,64,256,512,1024,20000
+    testpmd>start tx_first 32
+    testpmd>show port stats all
+    testpmd>stop
