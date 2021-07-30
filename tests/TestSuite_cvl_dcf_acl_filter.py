@@ -1062,14 +1062,14 @@ class CVLDCFACLFilterTest(TestCase):
         src_file = 'max_entry_num'
         flows=open(self.src_file_dir + src_file,mode='w')
         count=0
-        for i in range(64):
-            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.255.0 / end actions drop / end \n' % i)
+        for i in range(32):
+            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.0.255 / end actions drop / end \n' % i)
             count=count+1
-        for i in range(256):
-            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.255.254 / tcp / end actions drop / end \n' % i)
+        for i in range(128):
+            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.254.255 / tcp / end actions drop / end \n' % i)
             count=count+1
         flows.close()
-        self.verify(count == 320, "failed to config 320 acl rules.")
+        self.verify(count == 160, "failed to config 160 acl rules.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
         # start testpmd with creating 512 ACL rules
@@ -1077,19 +1077,19 @@ class CVLDCFACLFilterTest(TestCase):
         out_testpmd = self.launch_testpmd(param)
         self.check_dcf_status(out_testpmd, stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("319" in rule_list, "320 rules failed to be created")
+        self.verify("159" in rule_list, "160 rules failed to be created")
 
         # create one more ACl rule failed, it is created as a switch rule.
-        rule = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.255 src mask 255.255.255.254 / tcp / end actions drop / end"
+        rule = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.255 src mask 255.255.254.255 / tcp / end actions drop / end"
         self.create_acl_filter_rule(rule, check_stats=False)
 
         # delete one ACL rule, create the rule again, it is created as an ACL rule successfully.
-        self.dut.send_expect("flow destroy 0 rule 319", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 159", "testpmd> ", 15)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("319" not in rule_list, "rule 319 is not deleted")
+        self.verify("159" not in rule_list, "rule 159 is not deleted")
         self.create_acl_filter_rule(rule, check_stats=True)
         # delete the switch rule
-        self.dut.send_expect("flow destroy 0 rule 320", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 160", "testpmd> ", 15)
         # send and check match packets
         packet = 'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.2.255", dst="192.168.0.2")/TCP(sport=22, dport=23)/Raw(load="x"*30)' % vf1_mac
         out1 = self.send_pkts_getouput(pkts=packet)
@@ -1102,37 +1102,34 @@ class CVLDCFACLFilterTest(TestCase):
 
     def test_max_entry_num(self):
         """
-        the default entry number is 512
+        the default entry number is 256
         """
         src_file = 'max_entry_num'
         flows=open(self.src_file_dir + src_file,mode='w')
         count=0
-        for i in range(256):
-            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.255.254 / tcp / end actions drop / end \n' % i)
-            count=count+1
-        for j in range(255):
-            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.%d src mask 255.255.255.254 / tcp / end actions drop / end \n' % j)
+        for i in range(255):
+            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.%d src mask 255.255.254.255 / tcp / end actions drop / end \n' % i)
             count=count+1
         flows.close()
-        self.verify(count == 511, "failed to config 511 acl rules.")
+        self.verify(count == 255, "failed to config 255 acl rules.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
-        # start testpmd with creating 512 ACL rules
+        # start testpmd with creating 255 ACL rules
         param = " --cmdline-file=%s" % (self.dut_file_dir + src_file)
         out_testpmd = self.launch_testpmd(param)
         self.check_dcf_status(out_testpmd, stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("510" in rule_list, "511 rules failed to be created")
+        self.verify("254" in rule_list, "255 rules failed to be created")
 
         # create a switch rule
         rule = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.255 src mask 255.255.255.255 / tcp / end actions drop / end"
         self.create_other_filter_rule(rule, check_stats=True)
 
-        # create the 512 ACl rule
-        rule1 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.255 src mask 255.255.255.254 / tcp / end actions drop / end"
+        # create the 256 ACl rule
+        rule1 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.255 src mask 255.0.255.255 / tcp / end actions drop / end"
         self.create_acl_filter_rule(rule1, check_stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("512" in rule_list, "the last ACL rule failed to be created")
+        self.verify("256" in rule_list, "the last ACL rule failed to be created")
 
         # send and check match packets
         packet1 = 'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.2.255", dst="192.168.0.2")/TCP(sport=22, dport=23)/Raw(load="x"*30)' % vf1_mac
@@ -1145,12 +1142,14 @@ class CVLDCFACLFilterTest(TestCase):
         # send and check match packets
         packet2 = 'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.3.255", dst="192.168.0.2")/TCP(sport=22, dport=23)/Raw(load="x"*30)' % vf1_mac
         out2 = self.send_pkts_getouput(pkts=packet2)
-        rfc.check_drop(out2, pkt_num=1, check_param={"port_id": 1, "drop": 1}, stats=False)
+        rfc.check_drop(out2, pkt_num=0, check_param={"port_id": 1, "drop": 1}, stats=False)
 
         # delete one rule, create the rule again, successfully.
-        self.dut.send_expect("flow destroy 0 rule 512", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 256", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 257", "testpmd> ", 15)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("512" not in rule_list, "rule 512 is not deleted")
+        self.verify("256" not in rule_list, "rule 256 is not deleted")
+        self.verify("257" not in rule_list, "rule 257 is not deleted")
         self.create_acl_filter_rule(rule2, check_stats=True)
         # send and check match packets
         out3 = self.send_pkts_getouput(pkts=packet2)
@@ -1163,46 +1162,46 @@ class CVLDCFACLFilterTest(TestCase):
 
     def test_max_entry_num_ipv4_other(self):
         """
-        create ipv4-other rules, 128 rules can be created at most.
+        create ipv4-other rules, 64 rules can be created at most.
         """
         src_file = 'max_entry_num_ipv4_other'
         flows=open(self.src_file_dir + src_file,mode='w')
         count=0
-        for i in range(127):
-            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.0.%d dst mask 255.255.255.254 / end actions drop / end \n' % i)
+        for i in range(63):
+            flows.write('flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.254.255 dst spec 192.168.0.%d dst mask 255.255.254.255 / end actions drop / end \n' % i)
             count=count+1
         flows.close()
-        self.verify(count == 127, "failed to config 127 acl rules.")
+        self.verify(count == 63, "failed to config 63 acl rules.")
         self.dut.session.copy_file_to(self.src_file_dir + src_file, self.dut_file_dir)
 
-        # start testpmd with creating 128 ACL rules
+        # start testpmd with creating 64 ACL rules
         param = " --cmdline-file=%s" % (self.dut_file_dir + src_file)
         out_testpmd = self.launch_testpmd(param)
         self.check_dcf_status(out_testpmd, stats=True)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("126" in rule_list, "127 rules failed to be created")
+        self.verify("62" in rule_list, "63 rules failed to be created")
 
         # create one switch rule
         rule = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.2.100 dst mask 255.255.255.255 / end actions drop / end"
         self.create_other_filter_rule(rule, check_stats=True)
 
-        # create the 128th ACl rule
-        rule1 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.0.127 dst mask 255.255.255.254 / end actions drop / end"
+        # create the 64th ACl rule
+        rule1 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.0.127 dst mask 255.255.254.255 / end actions drop / end"
         self.create_acl_filter_rule(rule1, check_stats=True)
 
         # create one more ACl rule
-        rule2 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.1.128 dst mask 255.255.255.254 / end actions drop / end"
+        rule2 = "flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 dst spec 192.168.1.128 dst mask 255.255.254.255 / end actions drop / end"
         self.create_acl_filter_rule(rule2, check_stats=False)
 
         # delete one rule, create the rule again, successfully.
-        self.dut.send_expect("flow destroy 0 rule 128", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 64", "testpmd> ", 15)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("128" not in rule_list, "rule 128 is not deleted")
+        self.verify("64" not in rule_list, "rule 64 is not deleted")
         self.create_acl_filter_rule(rule2, check_stats=True)
         # delete switch rule
-        self.dut.send_expect("flow destroy 0 rule 129", "testpmd> ", 15)
+        self.dut.send_expect("flow destroy 0 rule 65", "testpmd> ", 15)
         rule_list = self.dut.send_expect("flow list 0", "testpmd> ", 15)
-        self.verify("129" not in rule_list, "rule 129 is not deleted")
+        self.verify("65" not in rule_list, "rule 65 is not deleted")
 
         # send and check match packets
         packet = 'Ether(src="00:11:22:33:44:55", dst="%s")/IP(src="192.168.1.1", dst="192.168.1.128")/Raw(load="x"*30)' % vf1_mac
