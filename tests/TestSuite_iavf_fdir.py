@@ -9181,75 +9181,99 @@ class TestIAVFFdir(TestCase):
         out = self.send_pkts_getouput(pkt_ipv4_pay_ipv6_pay)
         rfc.verify_iavf_fdir_directed_by_rss(out, stats=True)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv4(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv4)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv4_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv4_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv4_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv4_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv4(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv4_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv4_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv4_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv4(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv4_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv4_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv4_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv4(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv4_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv4_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv4_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv6(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv6)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv6_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv6_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_ipv6_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_ipv6_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv6(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv6_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ipv6_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ipv6_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv6(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv6_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_dl_ipv6_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_dl_ipv6_udp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv6(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv6_tcp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6_tcp)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_ipv4_gtpu_eh_ul_ipv6_udp(self):
         self.rte_flow_process(vectors_ipv4_gtpu_eh_ul_ipv6_udp)
 
@@ -9311,6 +9335,7 @@ class TestIAVFFdir(TestCase):
         pkt_list = [pkts[2], pkts[6], pkts[10], pkts[11]]
         self._rte_conflict_rule(c_rules, rules[2], pkt_list, stats=False)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_inner_ipv4_gtpu_conflict_rule(self):
         rules = ["flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / end actions queue index 10 / mark id 1 / end",
                  "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv4 src is 192.168.0.20 dst is 192.168.0.21 / tcp src is 22 dst is 23 / end actions queue index 10 / mark id 1 / end",
@@ -9340,6 +9365,7 @@ class TestIAVFFdir(TestCase):
 
         self._create_check_conflict_rule(rules, pkts)
 
+    @skip_unsupported_pkg(['os default', 'wireless'])
     def test_mac_inner_ipv6_gtpu_conflict_rule(self):
         rules = [
             "flow create 0 ingress pattern eth / ipv4 / udp / gtpu / ipv6 src is 2001::2 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 / end actions queue index 10 / mark id 1 / end",
