@@ -133,7 +133,7 @@ class TestVirtioIdxInterrupt(TestCase):
         self.vhost.send_expect(command_line, "testpmd> ", 30)
         self.vhost.send_expect("start", "testpmd> ", 30)
 
-    def start_vms(self, packed=False, mode=False):
+    def start_vms(self, packed=False, mode=False, set_target=False, bind_dev=False):
         """
         start qemus
         """
@@ -154,12 +154,11 @@ class TestVirtioIdxInterrupt(TestCase):
         vm_params['opt_settings'] = opt_args
         self.vm.set_vm_device(**vm_params)
         try:
-            self.vm_dut = self.vm.start()
+            self.vm_dut = self.vm.start(set_target=set_target, bind_dev=bind_dev)
             if self.vm_dut is None:
                 raise Exception("Set up VM ENV failed")
         except Exception as e:
             self.logger.error("ERROR: Failure for %s" % str(e))
-        self.vm_dut.restore_interfaces()
 
     def config_virito_net_in_vm(self):
         """
