@@ -40,7 +40,6 @@ The following are the test plans for the DPDK DTS automated test system.
     ABI_stable_test_plan
     blocklist_test_plan
     checksum_offload_test_plan
-    cloud_filter_test_plan
     coremask_test_plan
     cvl_advanced_rss_test_plan
     cvl_advanced_rss_gtpu_test_plan
