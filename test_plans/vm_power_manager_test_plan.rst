@@ -89,30 +89,6 @@ Prerequisites
     - libvirtd (libvirt) 1.1.3.5
     - Add virio-serial port
 
-4. IXIA Traffic Generator Configuration LPM table used for packet routing is:
-
-        +---------+------------------------+----+
-        | Entry # | LPM prefix (IP/length) |    |
-        +---------+------------------------+----+
-        | 0       | 1.1.1.0/24             | P0 |
-        +---------+------------------------+----+
-        | 1       | 2.1.1.0/24             | P1 |
-        +---------+------------------------+----+
-
-
-    The flows should be configured and started by the traffic generator.
-
-        +------+---------+------------+---------+------+-------+--------+
-        | Flow | Traffic | IPv4       | IPv4    | Port | Port  | L4     |
-        |      | Gen.    | Src.       | Dst.    | Src. | Dest. | Proto. |
-        |      | Port    | Address    | Address |      |       |        |
-        +------+---------+------------+---------+------+-------+--------+
-        | 1    | TG0     | 0.0.0.0    | 2.1.1.0 | any  | any   | UDP    |
-        +------+---------+------------+---------+------+-------+--------+
-        | 2    | TG1     | 0.0.0.0    | 1.1.1.0 | any  | any   | UDP    |
-        +------+---------+------------+---------+------+-------+--------+
-
-
 
 Test Case 1: VM Power Management Channel
 ========================================
@@ -282,44 +258,3 @@ Test Case 7: VM Power Management Multi VMs
 8. Poweroff VM2 and remove VM2 from host vm_power_mgr::
 
         vmpower> rm_vm <vm2_name>
-
-Test Case 8: VM l3fwd-power Latency
-===================================
-1. Connect two physical ports to IXIA
-2. Start VM and run l3fwd-power::
-
-        l3fwd-power -c 6 -n 4 -- -p 0x3 --config '(P0,0,C{1.1.0}),(P1,0,C{1.2.0})'
-
-3. Configure packet flow in IxiaNetwork
-4. Start to send packets from IXIA and check the receiving packets and latency
-5. Record the latency of frame sizes 128
-6. Compare latency value with sample l3fwd
-
-Test Case 9: VM l3fwd-power Performance
-=======================================
-Start VM and run l3fwd-power::
-
-    l3fwd-power -c 6 -n 4 -- -p 0x3 --config '(P0,0,C{1.1.0}),(P1,0,C{1.2.0})'
-
-Input traffic linerate varied from 0 to 100%, in order to see cpu frequency
-changes.
-
-The test report should provide the throughput rate measurements (in Mpps and %
-of the line rate for 2x NIC ports) and cpu frequency as listed in the table
-below:
-
-    +---------------+---------------+-----------+
-    | % Tx linerate | Rx % linerate |  Cpu freq |
-    +---------------+---------------+-----------+
-    | 0             |               |           |
-    +---------------+---------------+-----------+
-    | 20            |               |           |
-    +---------------+---------------+-----------+
-    | 40            |               |           |
-    +---------------+---------------+-----------+
-    | 60            |               |           |
-    +---------------+---------------+-----------+
-    | 80            |               |           |
-    +---------------+---------------+-----------+
-    | 100           |               |           |
-    +---------------+---------------+-----------+
