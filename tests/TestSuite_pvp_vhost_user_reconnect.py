@@ -164,7 +164,7 @@ class TestPVPVhostUserReconnect(TestCase):
                     'in this suite, please config it in vhost_sample.cfg file')
         self.checked_vm = True
 
-    def start_vms(self, packed=False):
+    def start_vms(self, packed=False, bind_dev=True):
         """
         start two VM
         """
@@ -186,7 +186,7 @@ class TestPVPVhostUserReconnect(TestCase):
 
             try:
                 vm_dut = None
-                vm_dut = vm_info.start()
+                vm_dut = vm_info.start(bind_dev=bind_dev)
                 if vm_dut is None:
                     raise Exception("Set up VM ENV failed")
             except Exception as e:
@@ -223,8 +223,6 @@ class TestPVPVhostUserReconnect(TestCase):
         restore vm interfaces and config intf arp
         """
         for i in range(len(self.vm_dut)):
-            self.vm_dut[i].restore_interfaces()
-            time.sleep(5)
             vm_intf = self.vm_dut[i].ports_info[0]['intf']
             self.vm_dut[i].send_expect("ifconfig %s %s" %
                                        (vm_intf, self.virtio_ip[i]), "#", 10)
@@ -387,7 +385,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.vm_num = 2
         vm_cycle = 0
         self.launch_testpmd_as_vhost_user_with_no_pci()
-        self.start_vms()
+        self.start_vms(bind_dev=False)
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, 'before reconnet')
@@ -412,7 +410,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_dut[0].send_expect('rm iperf_server.log', '# ', 10)
             self.vm_dut[1].send_expect('rm iperf_client.log', '# ', 10)
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
-            self.start_vms()
+            self.start_vms(bind_dev=False)
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vm')
@@ -494,7 +492,7 @@ class TestPVPVhostUserReconnect(TestCase):
         self.vm_num = 2
         vm_cycle = 0
         self.launch_testpmd_as_vhost_user_with_no_pci()
-        self.start_vms(packed=True)
+        self.start_vms(packed=True, bind_dev=False)
         self.config_vm_intf()
         self.start_iperf()
         self.before_data = self.iperf_result_verify(vm_cycle, 'before reconnet')
@@ -518,7 +516,7 @@ class TestPVPVhostUserReconnect(TestCase):
             self.vm_dut[0].send_expect('rm iperf_server.log', '# ', 10)
             self.vm_dut[1].send_expect('rm iperf_client.log', '# ', 10)
             self.dut.send_expect("killall -s INT qemu-system-x86_64", "# ")
-            self.start_vms(packed=True)
+            self.start_vms(packed=True, bind_dev=False)
             self.config_vm_intf()
             self.start_iperf()
             self.reconnect_data = self.iperf_result_verify(vm_cycle, 'reconnet from vm')
