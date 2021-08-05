@@ -508,11 +508,11 @@ so there is some difference to UDP/TCP case.
 
 Test Case 5: max entry number
 =============================
-Note: now the default entry number is 512.
+Note: now the default entry number is 256.
 if create a IPv4 rule, will generate 4 entries:
 ipv4, ipv4-udp, ipv4-tcp, ipv4-sctp
-So we can create 128 IPv4 rules at most.
-while we can create 512 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
+So we can create 64 IPv4 rules at most.
+while we can create 256 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
 
 1. launch DPDK on VF0, request DCF mode::
 
@@ -526,55 +526,67 @@ while we can create 512 ipv4-udp/ipv4-tcp/ipv4-sctp rules at most.
 
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.255 / udp / end actions drop / end
 
-3. create 512 ipv4-udp ACL rules::
+3. create 256 ipv4-udp ACL rules::
 
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.0 src mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.0 src mask 255.254.255.255 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.254.255.255 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.254.255.255 / udp / end actions drop / end
     ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.0 src mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 / udp / end actions drop / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.255 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.254.255.255 / udp / end actions drop / end
 
    all the rules can be created successfully as ACL rules.
 
-4. list the rules, there are rule 0-512 listed.
+4. list the rules, there are rule 0-256 listed.
 
 5. send packet1::
 
-    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.0", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.255", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
-   check the packet dropped.
+   check the packet dropped. stop the forward::
+
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
 6. create one more rule::
 
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.2.1 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.0 src mask 255.254.255.255 / udp / end actions drop / end
 
-   check the rule can't be created as an ACL rule successfully.
+   the rule is created as a switch rule.
 
 7. send packet2::
 
-    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.2.1", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.0", dst="192.168.100.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
-   check the packet can be received by VF1.
+   check the packet can't be received by VF1. stop the forward::
+ 
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 0             RX-total: 0
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
-8. delete the rule 512::
-
-    flow destroy 0 rule 512
+8. delete the rule 256 and 257::
+ 
+    flow destroy 0 rule 256
+    flow destroy 0 rule 257
 
    list the rules::
 
     flow list 0
 
-   there are rule 0-511 listed.
+   there are rule 0-255 listed.
 
 9. create the rule in the step6 again,
-   check the rule can be created successfully.
-   list the rules, there are rule 0-512 listed.
+   check the rule can be created as acl rule successfully.
+   list the rules, there are rule 0-256 listed.
+ 
+10.send packet2 again, check the packet dropped. stop the forward::
 
-10. send packet2 again, check the packet dropped.
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
 Test Case 6: max entry number ipv4-other
 ========================================
@@ -590,51 +602,68 @@ Test Case 6: max entry number ipv4-other
 
     flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.255 / end actions drop / end
 
-3. create 128 ipv4-other ACL rules::
-
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.255.254 / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.2 src mask 255.255.255.254 / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.3 src mask 255.255.255.254 / end actions drop / end
-    ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.128 src mask 255.255.255.254 / end actions drop / end
+3. create 64 ipv4-other ACL rules::
+ 
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.1 src mask 255.255.0.255 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.2 src mask 255.255.0.255 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.3 src mask 255.255.0.255 / end actions drop / end
+     ......
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.1.64 src mask 255.255.0.255 / end actions drop / end
 
    all the rules can be created successfully as ACL rules.
 
-4. list the rules, there are rule 0-128 listed.
+4. list the rules, there are rule 0-64 listed.
 
 5. send packet1::
 
-    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.1", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
+    sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.1.64", dst="192.168.0.2")/Raw(load='X'*30)], iface="enp134s0f1")
 
-   check the packet dropped.
+   check the packet dropped. stop the forward::
+
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
 6. create one more rule::
 
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.2 src mask 255.255.0.255 / udp / end actions drop / end
 
    check the rule can't be created as an ACL rule successfully.
+   it's created as a switch rule.
 
 7. send packet2::
 
     sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.0.2", dst="192.168.1.2")/Raw(load='X'*30)], iface="enp134s0f1")
 
-   check the packet can be received by VF1.
+   check the packet can't be received by vf1. stop forward::
+ 
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 0             RX-total: 0
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
+ 
+8. delete the rule 64 and 65::
 
-8. delete the rule 128::
-
-    flow destroy 0 rule 128
+    flow destroy 0 rule 64
+    flow destroy 0 rule 65
 
    list the rules::
 
     flow list 0
 
-   there are rule 0-127 listed.
+   there are rule 0-63 listed.
 
 9. create the rule in the step6 again,
-   check the rule can be created successfully.
-   list the rules, there are rule 0-128 listed.
+   check the rule can be created as an ACL rule successfully.
+   list the rules, there are rule 0-64 listed.
 
-10. send packet2 again, check the packet dropped.
+10.send packet2 again, check the packet dropped. stop the forward::
+
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
 Test Case 7: max entry number combined patterns
 ===============================================
@@ -646,27 +675,27 @@ Test Case 7: max entry number combined patterns
 
     ./x86_64-native-linuxapp-gcc/app/dpdk-testpmd -c 0xf0 -n 4 -w 86:01.1 --file-prefix=vf1 -- -i
 
-2. create 64 ipv4-other ACL rules::
+2. create 32 ipv4-other ACL rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.255.0 / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.0 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.0.255 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.0.255 / end actions drop / end
     ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.62 src mask 255.255.255.0 / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.63 src mask 255.255.255.0 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.30 src mask 255.255.0.255 / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.31 src mask 255.255.0.255 / end actions drop / end
 
    all the rules can be created successfully as ACL rules.
 
-3. create 256 ipv4-udp ACL rules::
+3. create 128 ipv4-udp ACL rules::
 
-    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 dst spec 192.168.0.0 dst mask 255.255.0.255 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.1 src mask 255.255.0.255 / udp / end actions drop / end
     ......
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.254 src mask 255.255.255.254 / udp / end actions drop / end
-    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.255 src mask 255.255.255.254 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.126 src mask 255.255.0.255 / udp / end actions drop / end
+    flow create 0 ingress pattern eth / ipv4 src spec 192.168.0.127 src mask 255.255.0.255 / udp / end actions drop / end
 
    all the rules can be created successfully as ACL rules.
 
-4. list the rules, there are rule 0-319 listed.
+4. list the rules, there are rule 0-159 listed.
 
 5. create one more ACl rule failed, it is created as a switch rule::
 
@@ -678,7 +707,12 @@ Test Case 7: max entry number combined patterns
 
     sendp([Ether(dst="00:01:23:45:67:89")/IP(src="192.168.2.255", dst="192.168.0.2")/UDP(sport=8010,dport=8017)/Raw(load='X'*30)], iface="enp134s0f1")
 
-   check the packet dropped.
+   check the packet dropped. stop the forward::
+
+    ---------------------- Forward statistics for port 1  ----------------------
+    RX-packets: 0              RX-dropped: 1             RX-total: 1
+    TX-packets: 0              TX-dropped: 0             TX-total: 0
+    ----------------------------------------------------------------------------
 
 8. delete all the rules, check the packet is received by vf1.
 
