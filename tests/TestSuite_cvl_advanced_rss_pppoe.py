@@ -3780,16 +3780,6 @@ mac_pppoe_ipv6_udp_pay_symmetric = {
             'action': {'check_hash_different': 'mac_ipv6_udp_pay_mismatch'},
         },
     ],
-    'post-test': [
-        {
-            'send_packet': mac_pppoe_ipv6_udp_pay_symmetric_packets['match']['mac_pppoe_ipv6_udp_pay'][0],
-            'action': {'save_hash': 'mac_pppoe_ipv6_udp_pay_match_post'},
-        },
-        {
-            'send_packet': mac_pppoe_ipv6_udp_pay_symmetric_packets['match']['mac_pppoe_ipv6_udp_pay'][1:],
-            'action': {'check_hash_different': 'mac_pppoe_ipv6_udp_pay_match_post'},
-        },
-    ],
 }
 
 mac_pppoe_ipv6_pay_symmetric_packets = {
@@ -4061,16 +4051,6 @@ mac_pppoe_ipv4_udp_pay_symmetric = {
         {
             'send_packet': mac_pppoe_ipv4_udp_pay_symmetric_packets['mismatch']['mac_ipv4_udp_pay'][1:],
             'action': {'check_hash_different': 'mac_ipv4_udp_pay_mismatch'},
-        },
-    ],
-    'post-test': [
-        {
-            'send_packet': mac_pppoe_ipv4_udp_pay_symmetric_packets['match']['mac_pppoe_ipv4_udp_pay'][0],
-            'action': {'save_hash': 'mac_ipv4_udp_pay_match_post'},
-        },
-        {
-            'send_packet': mac_pppoe_ipv4_udp_pay_symmetric_packets['match']['mac_pppoe_ipv4_udp_pay'][1:],
-            'action': {'check_hash_different': 'mac_ipv4_udp_pay_match_post'},
         },
     ],
 }

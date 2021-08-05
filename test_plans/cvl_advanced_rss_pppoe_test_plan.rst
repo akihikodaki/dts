@@ -4278,14 +4278,6 @@ Test case: MAC_PPPOE_IPV4_UDP_PAY_symmetric
 
      check the hash values of the two packets are different.
 
-6. destroy the rule::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   repeat step 4, swap the values of [Source IP] and [Dest IP], [Source Port] and [Dest Port],
-   check the hash value is changed.
 
 Test case: MAC_PPPOE_IPV4_TCP_PAY_symmetric
 ===========================================
@@ -4540,14 +4532,6 @@ Test case: MAC_PPPOE_IPV6_UDP_PAY_symmetric
 
      check the hash values of the two packets are different.
 
-6. destroy the rule::
-
-     testpmd> flow destroy 0 rule 0
-     testpmd> flow list 0
-
-   check the rule not exists in the list.
-   repeat step 3, swap the values of [Source IP] and [Dest IP], [Source Port] and [Dest Port],
-   check the hash values are changed.
 
 Test case: MAC_PPPOE_IPV6_TCP_PAY_symmetric
 ===========================================
