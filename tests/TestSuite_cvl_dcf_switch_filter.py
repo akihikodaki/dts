@@ -853,8 +853,8 @@ tv_mac_ipv4_drop = {
 
 tv_mac_ipv4_mask_drop = {
     "name": "tv_mac_ipv4_drop",
-    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end",
-    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)'],
+    "rte_flow_pattern": "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end",
+    "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(dst="224.0.0.0")/TCP()/Raw("x"*80)'],
                "check_func": {"func": rfc.check_vf_rx_packets_number,
                              "param": {"expect_port": 1, "expect_queues": "null"}},
                "expect_results": {"expect_pkts": 0}},
@@ -945,7 +945,7 @@ tv_mac_esp_drop = {
 tv_mac_blend_pkg_drop = {
     "name": "tv_mac_blend_pkg_drop",
     "rte_flow_pattern": ["flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end",
-                         "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end",
+                         "flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end",
                          "flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.3 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end",
                          "flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions drop / end",
                          "flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions drop / end",
@@ -953,7 +953,7 @@ tv_mac_blend_pkg_drop = {
                          "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.4 / l2tpv3oip session_id is 1 / end actions drop / end",
                          "flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.5 / esp spi is 1 / end actions drop / end"],
     "matched": {"scapy_str": ['Ether(dst="00:11:22:33:44:55")/IP(src="192.168.0.1")/Raw("x"*80)',
-                              'Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)',
+                              'Ether(dst="00:11:22:33:44:55")/IP(dst="224.0.0.0")/TCP()/Raw("x"*80)',
                               'Ether(dst="00:11:22:33:44:55")/IP(dst="192.168.0.3")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)',
                               'Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b"\\x00\\x21")/IP()/Raw("X" * 80)',
                               'Ether(dst="00:11:22:33:44:55")/IP()/UDP(dport=8805)/PFCP(S=0)',
