@@ -3236,7 +3236,7 @@ Subcase 2: DCF DROP IPV4 SRC SPEC MASK PACKAGES
 
 1. validate a rule::
 
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end
 
    get the message::
 
@@ -3250,14 +3250,14 @@ Subcase 2: DCF DROP IPV4 SRC SPEC MASK PACKAGES
 
 2. create MAC_IPV4_SRC_SPEC_PAY rule::
 
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end
      testpmd> flow list 0
 
    check the rule exists in the list.
 
 3. send matched packets::
 
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)],iface="enp27s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="224.0.0.0")/TCP()/Raw("x"*80)],iface="enp27s0f0")
 
    check port can't receive the packet.
 
@@ -3545,7 +3545,7 @@ Subcase 8:  DCF DROP blend PACKAGES
 1. validate a rule::
 
      testpmd> flow validate 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end
-     testpmd> flow validate 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end
+     testpmd> flow validate 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end
      testpmd> flow validate 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end
      testpmd> flow validate 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions drop / end
      testpmd> flow validate 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions drop / end
@@ -3566,7 +3566,7 @@ Subcase 8:  DCF DROP blend PACKAGES
 2. create rule::
 
      testpmd> flow create 0 priority 0 ingress pattern eth / ipv4 src is 192.168.0.1 / end actions drop / end
-     testpmd> flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 240.0.0.0 / end actions drop / end
+     testpmd> flow create 0 ingress pattern eth / ipv4 dst spec 224.0.0.0 dst mask 255.255.255.255 / end actions drop / end
      testpmd> flow create 0 ingress pattern eth / ipv4 dst is 192.168.0.1 / nvgre tni is 2 / eth / ipv4 src is 192.168.1.2 dst is 192.168.1.3 / end actions drop / end
      testpmd> flow create 0 ingress pattern eth dst is 00:11:22:33:44:55 / vlan tci is 1 / pppoes seid is 3 / pppoe_proto_id is 0x0021 / end actions drop / end
      testpmd> flow create 0 ingress pattern eth / ipv4 / udp / pfcp s_field is 0 / end actions drop / end
@@ -3579,7 +3579,7 @@ Subcase 8:  DCF DROP blend PACKAGES
 3. send matched packets::
 
      sendp([Ether()/IP(src="192.168.0.1")/Raw("x"*80)],iface="enp27s0f0")
-     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="239.0.0.0")/TCP()/Raw("x"*80)],iface="enp27s0f0")
+     sendp([Ether(dst="00:11:22:33:44:55")/IP(dst="224.0.0.0")/TCP()/Raw("x"*80)],iface="enp27s0f0")
      sendp([Ether()/IP(dst="192.168.0.3")/NVGRE(TNI=2)/Ether()/IP(src="192.168.1.2", dst="192.168.1.3")/Raw("x"*80)],iface="enp27s0f0")
      sendp([Ether(dst="00:11:22:33:44:55",type=0x8100)/Dot1Q(vlan=1,type=0x8864)/PPPoE(sessionid=3)/PPP(b'\\x00\\x21')/IP()/Raw("x" * 80)],iface="enp27s0f0")
      sendp(Ether(dst="00:11:22:33:44:11")/IP()/UDP(dport=8805)/PFCP(S=0),iface="enp27s0f0")
