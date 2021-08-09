@@ -281,7 +281,6 @@ The following are the test plans for the DPDK DTS automated test system.
     rxtx_callbacks_test_plan
     skeleton_test_plan
     timer_test_plan
-    vxlan_sample_test_plan
     ptpclient_test_plan
     distributor_test_plan
     efd_test_plan
