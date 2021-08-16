@@ -39,6 +39,7 @@ Enable fdir filter for IPv4/IPv6 + TCP/UDP/SCTP  (OS default package)
 Enable fdir filter for GTP (comm #1 package)
 Enable fdir filter for L2 Ethertype (comm #1 package)
 Enable fdir filter for PFCP (comm #1 package)
+Enable fdir filter for IPv4/IPv6 + GRE + IPV4/IPV6 + TCP/UDP
 
 Description
 ===========
@@ -146,6 +147,38 @@ Pattern and input set
     |                              |MAC_IPV4_GTPU_EH_UL_IPV6_UDP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
     +------------------------------+------------------------------+-------------------------------------------------------------------+
     |                              |MAC_IPV4_GTPU_EH_UL_IPV6_TCP  | inner:[Source IPv6], [Dest IPv6], [Source Port], [Dest Port]      |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6      |MAC_IPV4_GRE_IPV4             | [Inner Source IP], [Inner Dest IP], [Inner DSCP]                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV4             | [Inner Source IP], [Inner Dest IP], [Inner DSCP]                  |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GRE_IPV6             | [Inner Source IP], [Inner Dest IP], [Inner TC]                    |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV6             | [Inner Source IP], [Inner Dest IP], [Inner TC]                    |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+TCP  |MAC_IPV4_GRE_IPV4_TCP         | [Inner Source IP], [Inner Dest IP], [Inner DSCP],                 |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV4_TCP         | [Inner Source IP], [Inner Dest IP], [Inner DSCP],                 |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GRE_IPV6_TCP         | [Inner Source IP], [Inner Dest IP], [Inner TC],                   |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV6_TCP         | [Inner Source IP], [Inner Dest IP], [Inner TC],                   |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    | IPV4/IPV6+GRE+IPV4/IPV6+UDP  |MAC_IPV4_GRE_IPV4_UDP         | [Inner Source IP], [Inner Dest IP], [Inner DSCP],                 |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV4_UDP         | [Inner Source IP], [Inner Dest IP], [Inner DSCP],                 |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV4_GRE_IPV6_UDP         | [Inner Source IP], [Inner Dest IP], [Inner TC],                   |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
+    +------------------------------+------------------------------+-------------------------------------------------------------------+
+    |                              |MAC_IPV6_GRE_IPV6_UDP         | [Inner Source IP], [Inner Dest IP], [Inner TC],                   |
+    |                              |                              | [Inner Source Port], [Inner Dest Port]                            |
     +------------------------------+------------------------------+-------------------------------------------------------------------+
 
 
@@ -1006,6 +1039,69 @@ Send packets
     pkt16 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/Raw('x'*20)
     pkt17 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP(sport=22, dport=23)/Raw('x'*20)
 
+* MAC_IPV4_GRE_IPV4
+
+   matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.22",dst="192.168.0.21", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.23", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=8)/Raw('x' * 80)],iface="enp134s0f1")
+
+* MAC_IPV6_GRE_IPV4
+
+   matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(src="192.168.0.22",dst="192.168.0.21", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(src="192.168.0.20",dst="192.168.0.23", tos=4)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IPv6()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=8)/Raw('x' * 80)],iface="enp134s0f1")
+
+* MAC_IPV4_GRE_IPV6
+
+   matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="2001::2", tc=1)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::3", tc=1)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=2)/Raw('x' * 80)],iface="enp134s0f1")
+
+* MAC_IPV4_GRE_IPV4_TCP
+
+   matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.22",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.23", tos=4)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=8)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=21,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=24)/Raw('x' * 80)],iface="enp134s0f1")
+
+* MAC_IPV4_GRE_IPV6_TCP
+
+   matched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+
+   mismatched packets::
+
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="2001::2", tc=1)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::3", tc=1)/TCP(sport=22,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=2))/TCP(sport=22,dport=23)Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1)/TCP(sport=21,dport=23)/Raw('x' * 80)],iface="enp134s0f1")
+    sendp([Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2", tc=1)/TCP(sport=22,dport=24)/Raw('x' * 80)],iface="enp134s0f1")
 
 Test case: flow validation
 ==========================
@@ -6430,3 +6526,589 @@ packets::
    pkt12 = Ether(src="a4:bf:01:51:27:ca", dst="00:11:22:33:44:55")/IP()/UDP(dport=2152)/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IPv6(src="2001::2", dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22, dport=23)/Raw('x'*20)
 
 repeat step 1-12 of subcase 1.
+
+Test case: MAC_IPV4_GRE_IPV4 pattern
+====================================
+
+Subcase 1: MAC_IPV4_GRE_IPV4 queue index
+----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions queue index 1 / end
+
+2. send matched packets, check the packets are distributed to queue 1 without FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 1 without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packets are not distributed to queue 1 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_GRE_IPV4 rss queues
+---------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions rss queues 2 3 end / end
+
+2. send matched packets, check the packets are distributed to queue 2 or 3 without FDIR matched ID.
+   send mismatched packets, check the packets are not distributed to queue 2 or 3 without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not distributed to queue 2 or 3 without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_GRE_IPV4 passthru
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions passthru / end
+
+2. send matched packets, check the packets are distributed by RSS without FDIR matched ID.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID=0x0.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_GRE_IPV4 drop
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions drop / end
+
+2. send matched packets, check the packets are dropped
+   send mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are not dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_GRE_IPV4 mark+rss
+-------------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions mark / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_GRE_IPV4 mark
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Test case: MAC_IPV6_GRE_IPV4 pattern
+====================================
+
+Subcase 1: MAC_IPV6_GRE_IPV4 queue index
+----------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV4 rss queues
+---------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV4 passthru
+-------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV4 drop
+---------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV4 mark+rss
+-------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV4 mark
+---------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4 pattern, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv4'
+
+Test case: MAC_IPV4_GRE_IPV6 pattern
+====================================
+
+Subcase 1: MAC_IPV4_GRE_IPV6 queue index
+----------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions queue index 15 / mark / end
+
+2. send matched packets, check the packets is distributed to queue 15 with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_GRE_IPV6 rss queues
+---------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions rss queues 8 9 10 11 12 13 14 15 end / mark id 1/ end
+
+2. send matched packets, check the packets is distributed to queue 8-15 with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_GRE_IPV6 passthru
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions passthru / mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are destributed to the same queue without FDIR matched ID .
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_GRE_IPV6 drop
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions drop / end
+
+2. send matched packets, check the packets are dropped.
+   send mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_GRE_IPV6 mark+rss
+-------------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions mark / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_GRE_IPV6 mark
+---------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions mark / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are destributed to the same queue without FDIR matched ID .
+   check there is no rule listed.
+
+Test case: MAC_IPV6_GRE_IPV6 pattern
+====================================
+
+Subcase 1: MAC_IPV6_GRE_IPV6 queue index
+----------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV6 rss queues
+---------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV6 passthru
+-------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV6 drop
+---------------------------------
+
+Subcase 5: MAC_IPV4_GRE_IPV6 mark+rss
+-------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV6 mark
+---------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6 pattern, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv6'
+
+Test case: MAC_IPV4_GRE_IPV4_TCP pattern
+========================================
+
+Subcase 1: MAC_IPV4_GRE_IPV4_TCP queue index
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
+
+2. send matched packets, check the packets is distributed to queue 1 with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_GRE_IPV4_TCP rss queues
+-------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions rss queues 1 2 3 4 end / mark id 4294967294 / end
+
+2. send matched packets, check the packets is distributed to queue 1-4 with FDIR matched ID=0xfffffffe.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_GRE_IPV4_TCP passthru
+-----------------------------------------
+
+1. create filter rule with mark::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_GRE_IPV4_TCP drop
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / end
+
+2. send matched packet, check the packet is dropped.
+   send mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_GRE_IPV4_TCP mark+rss
+-----------------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 2 / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x2
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_GRE_IPV4_TCP mark
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 1 / end
+
+2. repeat the step 2-3 of in subcase 3,
+   get the same result.
+
+Test case: MAC_IPV6_GRE_IPV4_TCP pattern
+========================================
+
+Subcase 1: MAC_IPV6_GRE_IPV4_TCP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV4_TCP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV4_TCP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV4_TCP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV4_TCP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV4_TCP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4_TCP pattern, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv4 / tcp'
+
+Test case: MAC_IPV4_GRE_IPV6_TCP pattern
+========================================
+
+Subcase 1: MAC_IPV4_GRE_IPV6_TCP queue index
+--------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end
+
+2. send matched packets, check the packets is distributed to queue 1 with FDIR matched ID=0x0.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. verify rules can be listed and destroyed::
+
+    testpmd> flow list 0
+
+   check the rule listed.
+   destroy the rule::
+
+    testpmd> flow destroy 0 rule 0
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 2: MAC_IPV4_GRE_IPV6_TCP rss queues
+-------------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions rss queues 4 5 6 7 end / mark id 4294967294 / end
+
+2. send matched packets, check the packets is distributed to queue 4-7 with FDIR matched ID=0xfffffffe.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is distributed by RSS without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 3: MAC_IPV4_GRE_IPV6_TCP passthru
+-----------------------------------------
+
+1. create filter rule with mark::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x1.
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 4: MAC_IPV4_GRE_IPV6_TCP drop
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions drop / end
+
+2. send matched packet, check the packet is dropped.
+   send mismatched packets, check the packets are not dropped.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packet is dropped.
+   check there is no rule listed.
+
+Subcase 5: MAC_IPV4_GRE_IPV6_TCP mark+rss
+-----------------------------------------
+Note: This combined action is mark with RSS which is without queues specified.
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions mark id 2 / rss / end
+
+2. send matched packets, check the packets are distributed by RSS with FDIR matched ID=0x2
+   send mismatched packets, check the packets are distributed by RSS without FDIR matched ID.
+
+3. repeat step 3 of subcase 1.
+
+4. verify matched packets are distributed to the same queue without FDIR matched ID.
+   check there is no rule listed.
+
+Subcase 6: MAC_IPV4_GRE_IPV6_TCP mark
+-------------------------------------
+
+1. create filter rules::
+
+    flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions mark id 1 / end
+
+2. repeat the step 2-3 of in subcase 3,
+   get the same result.
+
+Test case: MAC_IPV6_GRE_IPV6_TCP pattern
+========================================
+
+Subcase 1: MAC_IPV6_GRE_IPV6_TCP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV6_TCP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV6_TCP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV6_TCP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV6_TCP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV6_TCP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6_TCP pattern, just only pattern is different,
+replace it with 'eth / ipv6 / gre / ipv6 / tcp'
+
+Test case: MAC_IPV4_GRE_IPV4_UDP pattern
+========================================
+
+Subcase 1: MAC_IPV4_GRE_IPV4_UDP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV4_GRE_IPV4_UDP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV4_GRE_IPV4_UDP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV4_GRE_IPV4_UDP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV4_GRE_IPV4_UDP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV4_GRE_IPV4_UDP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV4_TCP pattern, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV4_GRE_IPV6_UDP pattern
+========================================
+
+Subcase 1: MAC_IPV4_GRE_IPV6_UDP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV4_GRE_IPV6_UDP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV4_GRE_IPV6_UDP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV4_GRE_IPV6_UDP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV4_GRE_IPV6_UDP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV4_GRE_IPV6_UDP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV4_GRE_IPV6_TCP pattern, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV6_GRE_IPV4_UDP pattern
+========================================
+
+Subcase 1: MAC_IPV6_GRE_IPV4_UDP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV4_UDP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV4_UDP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV4_UDP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV4_UDP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV4_UDP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV6_GRE_IPV4_TCP pattern, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
+
+Test case: MAC_IPV6_GRE_IPV6_UDP pattern
+========================================
+
+Subcase 1: MAC_IPV6_GRE_IPV6_UDP queue index
+--------------------------------------------
+
+Subcase 2: MAC_IPV6_GRE_IPV6_UDP rss queues
+-------------------------------------------
+
+Subcase 3: MAC_IPV6_GRE_IPV6_UDP passthru
+-----------------------------------------
+
+Subcase 4: MAC_IPV6_GRE_IPV6_UDP drop
+-------------------------------------
+
+Subcase 5: MAC_IPV6_GRE_IPV6_UDP mark+rss
+-----------------------------------------
+
+Subcase 6: MAC_IPV6_GRE_IPV6_UDP mark
+-------------------------------------
+
+each subcase is the same as the subcase of Test case: MAC_IPV6_GRE_IPV6_TCP pattern, just only pattern is different,
+replace "tcp" with "udp" in all the subcases
