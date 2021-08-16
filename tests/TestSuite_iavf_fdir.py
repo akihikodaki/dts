@@ -996,6 +996,52 @@ MAC_IPV4_GTPU_EH_UL_IPV6_UDP_WITHOUT_INPUTSET = {
                  'Ether(dst="00:11:22:33:44:55")/IP()/UDP()/GTP_U_Header()/GTPPDUSessionContainer(type=1)/IP()/UDP()/("X"*480)']
 }
 
+MAC_IPV4_GRE_IPV4 = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/Raw("x" * 80)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.22",dst="192.168.0.21", tos=4)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.22", tos=4)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=8)/Raw("x" * 80)',
+    ]
+}
+
+MAC_IPV4_GRE_IPV4_TCP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.22",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.22", tos=4)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=8)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=21,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IP(src="192.168.0.20",dst="192.168.0.21", tos=4)/TCP(sport=22,dport=24)/Raw("x" * 80)'
+    ]
+}
+
+MAC_IPV4_GRE_IPV6_TCP = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1)/TCP(sport=22,dport=23)/Raw("x" * 80)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="2001::2",tc=1)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::3",tc=1)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=2)/TCP(sport=22,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1)/TCP(sport=21,dport=23)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1)/TCP(sport=22,dport=24)/Raw("x" * 80)'
+    ]
+}
+
+MAC_IPV6_GRE_IPV4 = eval(str(MAC_IPV4_GRE_IPV4).replace('IP()','IPv6()'))
+
+MAC_IPV4_GRE_IPV6 = {
+    "match": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=1)/Raw("x" * 80)'],
+    "mismatch": [
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2021", src="2001::2",tc=1)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::3",tc=1)/Raw("x" * 80)',
+        'Ether(dst="00:11:22:33:44:55")/IP()/GRE()/IPv6(dst="CDCD:910A:2222:5498:8475:1111:3900:2020", src="2001::2",tc=2)/Raw("x" * 80)',
+    ]
+}
+
 tv_mac_ipv4_pay_queue_index = {
     "name": "test_mac_ipv4_pay_queue_index",
     "rule": "flow create 0 ingress pattern eth / ipv4 src is 192.168.0.20 dst is 192.168.0.21 proto is 255 ttl is 2 tos is 4 / end actions queue index 1 / end",
@@ -6609,6 +6655,175 @@ tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_mark_rss = {
     "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
 }
 
+#gre tunnel inner fdir
+tv_mac_ipv4_gre_ipv4_queue_index = {
+    "name": "test_mac_ipv4_gre_ipv4_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions queue index 1 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "queue": 1}
+}
+
+tv_mac_ipv4_gre_ipv4_rss_queue = {
+    "name": "mac_ipv4_gre_ipv4_rss_queue",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions rss queues 2 3 end / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "queue": [2,3]}
+}
+
+tv_mac_ipv4_gre_ipv4_passthru = {
+    "name": "mac_ipv4_gre_ipv4_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions passthru / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1}
+}
+
+tv_mac_ipv4_gre_ipv4_drop = {
+    "name": "mac_ipv4_gre_ipv4_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "drop":1}
+}
+
+tv_mac_ipv4_gre_ipv4_mark_rss ={
+    "name": "mac_ipv4_gre_ipv4_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions mark / rss / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gre_ipv4_mark = {
+    "name": "mac_ipv4_gre_ipv4_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / end actions mark id 5 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 5}
+}
+
+tv_mac_ipv4_gre_ipv6_queue_index = {
+    "name": "test_mac_ipv4_gre_ipv6_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions queue index 15 / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "queue": 15, "mark_id": 1}
+}
+
+tv_mac_ipv4_gre_ipv6_drop = {
+    "name": "test_mac_ipv4_gre_ipv6_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gre_ipv6_rss_queue = {
+    "name": "test_mac_ipv4_gre_ipv6_rss_queue",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions rss queues 8 9 10 11 12 13 14 15 end / mark id 2 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "queue": [8, 9, 10, 11, 12, 13, 14, 15], "mark_id": 2}
+}
+
+tv_mac_ipv4_gre_ipv6_passthru = {
+    "name": "test_mac_ipv4_gre_ipv6_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions passthru / mark id 3 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 3}
+}
+
+tv_mac_ipv4_gre_ipv6_mark_rss = {
+    "name": "test_mac_ipv4_gre_ipv6_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions mark id 4 / rss / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 4}
+}
+
+tv_mac_ipv4_gre_ipv6_mark = {
+    "name": "test_mac_ipv4_gre_ipv6_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / end actions mark id 5 / rss / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 5}
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_queue_index = {
+    "name": "test_mac_ipv4_gre_ipv4_tcp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions queue index 1 / mark id 0 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "queue": 1, "mark_id": 0}
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_rss_queue = {
+    "name": "mac_ipv4_gre_ipv4_tcp_rss_queue",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions rss queues 1 2 3 4 end / mark id 4294967294 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "queue": [1, 2, 3, 4], "mark_id": 4294967294 }
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_passthru = {
+    "name": "mac_ipv4_gre_ipv4_tcp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions passthru / mark id 1 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1 }
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_drop = {
+    "name": "mac_ipv4_gre_ipv4_tcp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "drop": 1 }
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_mark_rss = {
+    "name": "mac_ipv4_gre_ipv4_tcp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 2 / rss / end ",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 2}
+}
+
+tv_mac_ipv4_gre_ipv4_tcp_mark = {
+    "name": "mac_ipv4_gre_ipv4_tcp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv4 src is 192.168.0.20 dst is 192.168.0.21 tos is 4 / tcp src is 22 dst is 23 / end actions mark id 1 / end ",
+    "scapy_str": MAC_IPV4_GRE_IPV4_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 1}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_queue_index = {
+    "name": "test_mac_ipv4_gre_ipv6_tcp_queue_index",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions queue index 6 / mark id 4 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "queue": 6, "mark_id": 4}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_rss_queue = {
+    "name": "mac_ipv4_gre_ipv6_tcp_rss_queue",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions rss queues 4 5 6 7 end / mark id 4294967294 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "queue": [4, 5, 6, 7], "mark_id": 4294967294}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_passthru = {
+    "name": "mac_ipv4_gre_ipv6_tcp_passthru",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions passthru / mark id 7 / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 7}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_drop = {
+    "name": "mac_ipv4_gre_ipv6_tcp_drop",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions drop / end",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "drop": 1}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_mark_rss = {
+    "name": "mac_ipv4_gre_ipv6_tcp_mark_rss",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions mark id 6 / rss / end ",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 6}
+}
+
+tv_mac_ipv4_gre_ipv6_tcp_mark = {
+    "name": "mac_ipv4_gre_ipv6_tcp_mark",
+    "rule": "flow create 0 ingress pattern eth / ipv4 / gre / ipv6 dst is CDCD:910A:2222:5498:8475:1111:3900:2020 src is 2001::2 tc is 1 / tcp src is 22 dst is 23 / end actions mark id 3 / end ",
+    "scapy_str": MAC_IPV4_GRE_IPV6_TCP,
+    "check_param": {"port_id": 0, "passthru": 1, "mark_id": 3}
+}
+
 vectors_ipv4_pay = [tv_mac_ipv4_pay_queue_index, tv_mac_ipv4_pay_mark_rss,tv_mac_ipv4_pay_passthru,
                          tv_mac_ipv4_pay_drop, tv_mac_ipv4_pay_queue_group, tv_mac_ipv4_pay_mark]
 
@@ -7098,6 +7313,63 @@ vectors_ipv4_gtpu_eh_ul_ipv6_udp = [tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_inner_srcip_
                                  tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_index, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_queue_group,
                                  tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_passthru, tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_drop,
                                  tv_mac_ipv4_gtpu_eh_ul_ipv6_udp_without_inputset_mark_rss]
+
+#gre tunnel inner
+vectors_ipv4_gre_ipv4 = [
+    tv_mac_ipv4_gre_ipv4_queue_index,
+    tv_mac_ipv4_gre_ipv4_rss_queue,
+    tv_mac_ipv4_gre_ipv4_passthru,
+    tv_mac_ipv4_gre_ipv4_drop,
+    tv_mac_ipv4_gre_ipv4_mark_rss,
+    tv_mac_ipv4_gre_ipv4_mark
+                          ]
+
+vectors_ipv6_gre_ipv4 = [eval(str(each).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in vectors_ipv4_gre_ipv4]
+
+vectors_ipv4_gre_ipv6 = [
+    tv_mac_ipv4_gre_ipv6_queue_index,
+    tv_mac_ipv4_gre_ipv6_rss_queue,
+    tv_mac_ipv4_gre_ipv6_passthru,
+    tv_mac_ipv4_gre_ipv6_drop,
+    tv_mac_ipv4_gre_ipv6_mark_rss,
+    tv_mac_ipv4_gre_ipv6_mark
+]
+
+vectors_ipv6_gre_ipv6 = [eval(str(each).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('IP()','IPv6()')
+                           .replace('eth / ipv4','eth / ipv6')) for each in vectors_ipv4_gre_ipv6]
+
+vectors_ipv4_gre_ipv4_tcp = [
+    tv_mac_ipv4_gre_ipv4_tcp_queue_index,
+    tv_mac_ipv4_gre_ipv4_tcp_rss_queue,
+    tv_mac_ipv4_gre_ipv4_tcp_passthru,
+    tv_mac_ipv4_gre_ipv4_tcp_drop,
+    tv_mac_ipv4_gre_ipv4_tcp_mark_rss,
+    tv_mac_ipv4_gre_ipv4_tcp_mark
+]
+
+vectors_ipv6_gre_ipv4_tcp = [eval(str(each).replace('ipv4_gre_ipv4','ipv6_gre_ipv4').replace('eth / ipv4','eth / ipv6')
+                                  .replace('IP()','IPv6()')) for each in vectors_ipv4_gre_ipv4_tcp]
+
+vectors_ipv4_gre_ipv6_tcp = [
+    tv_mac_ipv4_gre_ipv6_tcp_queue_index,
+    tv_mac_ipv4_gre_ipv6_tcp_rss_queue,
+    tv_mac_ipv4_gre_ipv6_tcp_passthru,
+    tv_mac_ipv4_gre_ipv6_tcp_drop,
+    tv_mac_ipv4_gre_ipv6_tcp_mark_rss,
+    tv_mac_ipv4_gre_ipv6_tcp_mark
+    ]
+
+vectors_ipv6_gre_ipv6_tcp = [eval(str(each).replace('ipv4_gre_ipv6','ipv6_gre_ipv6').replace('eth / ipv4','eth / ipv6')
+                                  .replace('IP()','IPv6()'))for each in vectors_ipv4_gre_ipv6_tcp]
+
+vectors_ipv4_gre_ipv4_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP')) for each in vectors_ipv4_gre_ipv4_tcp]
+
+vectors_ipv6_gre_ipv4_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP')) for each in vectors_ipv6_gre_ipv4_tcp]
+
+vectors_ipv4_gre_ipv6_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP')) for each in vectors_ipv4_gre_ipv6_tcp]
+
+vectors_ipv6_gre_ipv6_udp = [eval(str(each).replace('tcp','udp').replace('TCP','UDP')) for each in vectors_ipv6_gre_ipv6_tcp]
 
 class TestIAVFFdir(TestCase):
 
@@ -9397,6 +9669,42 @@ class TestIAVFFdir(TestCase):
 
         self._create_check_conflict_rule(rules, pkts)
 
+    def test_mac_ipv4_gre_ipv4(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv4)
+
+    def test_mac_ipv6_gre_ipv4(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv4)
+
+    def test_mac_ipv4_gre_ipv6(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv6)
+
+    def test_mac_ipv6_gre_ipv6(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv6)
+
+    def test_mac_ipv4_gre_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv4_tcp)
+
+    def test_mac_ipv6_gre_ipv4_tcp(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv4_tcp)
+
+    def test_mac_ipv4_gre_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv6_tcp)
+
+    def test_mac_ipv6_gre_ipv6_tcp(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv6_tcp)
+
+    def test_mac_ipv4_gre_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv4_udp)
+
+    def test_mac_ipv6_gre_ipv4_udp(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv4_udp)
+
+    def test_mac_ipv4_gre_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv4_gre_ipv6_udp)
+
+    def test_mac_ipv6_gre_ipv6_udp(self):
+        self.rte_flow_process(vectors_ipv6_gre_ipv6_udp)
+        
     def tear_down(self):
         # destroy all flow rule on port 0
         self.dut.kill_all()
