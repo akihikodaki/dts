@@ -58,35 +58,6 @@ Prerequisites
     testpmd>set verbose 1
     testpmd>start
 
-Test Case: test global configurations of hash filter
-====================================================
-
-create a rule that set global configurations of hash filters is toeplitz::
-
-    testpmd> flow create 0 ingress pattern end actions rss types end queues end func simple_xor / end
-    testpmd> flow list 0
-
-verify the Rule is RSS.
-
-get the status of hash configuration::
-
-    testpmd> get_hash_global_config 0
-
-verify Hash function is simple_xor.
-
-delete the rule::
-
-    testpmd> flow flush 0
-    testpmd> flow list 0
-
-verify the rules have been destroyed.
-
-get the status of hash configuration::
-
-    testpmd> get_hash_global_config 0
-
-verify Hash function is toeplitz.
-
 Test Case: test symmetric hash configuration
 ============================================
 
