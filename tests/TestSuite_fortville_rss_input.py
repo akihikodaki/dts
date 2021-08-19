@@ -305,38 +305,6 @@ class TestFortvilleRssInput(TestCase):
         res = self.pmdout.wait_link_status_up("all")
         self.verify(res is True, "link is down")
 
-    def test_global_hash_configuration(self):
-        """
-        Test with flow type ipv4-tcp.
-        """
-        flag = 1
-
-        self.start_testpmd()
-
-        # set hash input set by testpmd on dut, enable default input set
-        self.dut.send_expect(
-            "flow create 0 ingress pattern end actions rss types end queues end func simple_xor / end", "testpmd> ")
-            
-        out = self.dut.send_expect("get_hash_global_config 0", "testpmd>")
-        result_scanner = r"Hash function is Simple XOR"
-        scanner = re.compile(result_scanner, re.DOTALL)
-        m = scanner.search(out)
-        if m:
-            self.verify(1, "Pass")
-        else:
-            self.verify(0, "Fail")
-
-        self.dut.send_expect(
-            "flow destroy 0 rule 0", "testpmd>")
-        out = self.dut.send_expect("get_hash_global_config 0", "testpmd>")
-        rexp = r"Hash function is Toeplitz"
-        scanner = re.compile(rexp, re.DOTALL)
-        m = scanner.search(out)
-        if m:
-            self.verify(1, "Pass")
-        else:
-            self.verify(0, "Fail")
-
     def test_symmetric_hash_configuration(self):
         """
         Test with flow type ipv4-tcp.
