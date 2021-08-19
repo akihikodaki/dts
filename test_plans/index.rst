@@ -80,7 +80,6 @@ The following are the test plans for the DPDK DTS automated test system.
     dynamic_flowtype_test_plan
     dynamic_queue_test_plan
     eeprom_dump_test_plan
-    etag_test_plan
     external_memory_test_plan
     external_mempool_handler_test_plan
     fdir_test_plan
