@@ -555,10 +555,6 @@ ipv4-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.1.2')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-nonfrag packets::
 
@@ -575,10 +571,6 @@ ipv4-icmp packets::
 ipv4-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4-udp-vxlan packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.1.1", src='192.168.0.2')/UDP(sport=32,dport=33)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_L3DST
 -----------------------
@@ -624,10 +616,6 @@ ipv4-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.1.2')/UDP(sport=32,dport=33)/("X"*480)], iface="ens786f0")
-
 Subcase: MAC_IPV4_ALL
 ---------------------
 1. create rss rule::
@@ -654,11 +642,6 @@ ipv4-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
-ipv4-udp-vxlan packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.1.1", src='192.168.0.2')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.1.2')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
 
 3. hit pattern/not defined input set:
 ipv4-nonfrag packets::
@@ -765,10 +748,6 @@ ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)], iface="ens786f0")
-
 Subcase: MAC_IPV4_UDP_L3DST
 ---------------------------
 1. create rss rule::
@@ -789,10 +768,6 @@ ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=33)/("X"*480)], iface="ens786f0")
-
 Subcase: MAC_IPV4_UDP_L3SRC_L4SRC
 ---------------------------------
 1. create rss rule::
@@ -805,19 +780,10 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_L3SRC_L4DST
 ---------------------------------
@@ -831,19 +797,10 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_L3DST_L4SRC
 ---------------------------------
@@ -857,19 +814,10 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_L3DST_L4DST
 ---------------------------------
@@ -883,19 +831,10 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_L4SRC
 ---------------------------
@@ -908,18 +847,10 @@ ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_L4DST
 ---------------------------
@@ -932,18 +863,10 @@ ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.1.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_IPV4
 --------------------------
@@ -957,20 +880,10 @@ ipv4-udp packets::
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-
-
 3. hit pattern/not defined input set:
 ipv4-udp packets::
 
     sendp([Ether(dst="00:11:22:33:44:53", src="68:05:CA:BB:27:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=233/("X"*480)], iface="ens786f0")
 
 Subcase: MAC_IPV4_UDP_ALL
 -------------------------
@@ -985,13 +898,6 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=33)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=32,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.1.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.1.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
 
 3. hit pattern/not defined input set:
 ipv4-udp packets::
@@ -1276,10 +1182,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1296,10 +1198,6 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_L3DST
 -----------------------
@@ -1324,10 +1222,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1344,10 +1238,6 @@ ipv6-icmp packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
-
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_ALL
 ---------------------
@@ -1376,11 +1266,6 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-nonfrag packets::
 
@@ -1398,9 +1283,6 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)],iface="ens786f0")
 
 Test case: MAC_IPV6_UDP
 =======================
@@ -1480,18 +1362,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L3DST
@@ -1505,18 +1379,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L3SRC_L4SRC
@@ -1530,18 +1396,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L3SRC_L4DST
@@ -1555,18 +1413,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L3DST_L4SRC
@@ -1580,18 +1430,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L3DST_L4DST
@@ -1605,18 +1447,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L4SRC
@@ -1630,18 +1464,10 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
 
 Subcase: MAC_IPV6_UDP_L4DST
@@ -1655,18 +1481,11 @@ ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_IPV6
 --------------------------
@@ -1680,19 +1499,11 @@ ipv6-udp packets::
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
     sendp([Ether(dst="00:11:22:33:44:55", src="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="enp134s0f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. hit pattern/not defined input set:
 ipv6-udp packets::
 
     sendp([Ether(dst="00:11:22:33:44:53", src="68:05:CA:BB:27:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=33)/("X"*480)],iface="enp134s0f0")
 
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:53", dst="68:05:CA:BB:27:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
 
 Subcase: MAC_IPV6_UDP_ALL
 -------------------------
@@ -1707,13 +1518,6 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
-
-ipv4_udp_vxlan_ipv6_udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2928",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2021")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=32,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=33)/("X"*480)],iface="ens786f0")
 
 3. hit pattern/not defined input set:
 ipv6-udp packets::
@@ -1870,11 +1674,6 @@ ipv4-tcp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-
 3. not hit pattern with switched value of input set in the rule:
 ipv6-nonfrag packets::
 
@@ -1895,23 +1694,12 @@ ipv4-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv4-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
 
 Test case: symmetric MAC_IPV4_TCP
 =================================
@@ -1927,23 +1715,12 @@ ipv4-tcp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/TCP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/TCP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan-eth-ipv4-tcp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/TCP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/TCP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/TCP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/TCP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv4-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan-eth-ipv4-udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/UDP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
 
 Test case: symmetric MAC_IPV4_SCTP
 ==================================
@@ -1958,13 +1735,6 @@ ipv4-sctp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.1", src="192.168.0.2")/SCTP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP(dst="192.168.0.2", src="192.168.0.1")/SCTP(sport=23,dport=22)/("X"*480)],iface="ens786f0")
-
-ipv4-udp-vxlan-eth-ipv4-sctp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/SCTP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/SCTP(sport=22,dport=23)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.1", src='192.168.0.2')/SCTP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IP(dst="192.168.0.2", src='192.168.0.1')/SCTP(sport=23,dport=22)/("X"*480)], iface="ens786f0")
 
 3. not hit pattern/not defined input set packets::
 ipv4-udp packets::
@@ -1999,11 +1769,6 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-ipv4-udp-vxlan-eth-ipv6 packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/UDP()/VXLAN()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/("X"*480)], iface="ens786f0")
-
 3. not hit pattern with switched value of input set in the rule:
 ipv4-nonfrag packets::
 
@@ -2022,21 +1787,11 @@ ipv6-udp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre-eth-ipv6-udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv6-tcp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre-eth-ipv6-tcp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: symmetric MAC_IPV6_TCP
 =================================
@@ -2050,21 +1805,12 @@ ipv6-tcp packets::
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre-eth-ipv6-tcp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/TCP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
 3. not hit pattern/not defined input set packets::
 ipv6-udp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
-nvgre-eth-ipv6-udp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/UDP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 Test case: symmetric MAC_IPV6_SCTP
 ==================================
@@ -2077,11 +1823,6 @@ ipv6-sctp packets::
 
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
     sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-
-nvgre-eth-ipv6-sctp packet::
-
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(src="ABAB:910B:6666:3457:8295:3333:1800:2929",dst="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
-    sendp([Ether(src="00:11:22:33:44:55", dst="68:05:CA:BB:26:E0")/IP()/NVGRE()/Ether()/IPv6(dst="ABAB:910B:6666:3457:8295:3333:1800:2929",src="CDCD:910A:2222:5498:8475:1111:3900:2020")/SCTP(sport=22,dport=23)/("X"*480)],iface="ens786f0")
 
 3. not hit pattern/not defined input set packets::
 ipv6-udp packets::
